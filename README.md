@@ -1,1 +1,1 @@
-Princeton Geniza Project Flask App
+# Princeton Geniza Project Research Partnership
