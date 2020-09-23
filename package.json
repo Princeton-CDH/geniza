@@ -1,0 +1,8 @@
+{
+  "name": "geniza",
+  "version": "0.5.0",
+  "description": "The Princeton Geniza Project",
+  "author": "The Center for Digital Humanities at Princeton <cdhdevteam@princeton.edu>",
+  "license": "Apache-2.0",
+  "private": true
+}
