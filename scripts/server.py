@@ -34,36 +34,19 @@ def root():
 def search():
     '''Search for an incipit and return a list of matching results.'''
     if request.method == 'POST':
-        search_term = request.form['incipit']
+        search_term = request.form['geniza']
         output_format = request.form.get('format', '')
     elif request.method == 'GET':
         search_term = request.args.get('incipit', '')
         output_format = request.args.get('format', '')
 
-    #: incipit query alias field syntax
-    search_incipit_query = '{!qf=$incipit_qf pf=$incipit_pf ps=2 v=$incipit_query}'
-
     queryset = SolrQuerySet(get_solr())
     if search_term:
-        queryset = queryset.highlight('incipit_txt_gez',
-                                      method='unified', fragsize=0) \
-            .search(search_incipit_query) \
-            .raw_query_parameters(incipit_query=search_term) \
+        queryset = queryset.raw_query_parameters(description_txt=search_term) \
             .order_by('-score') \
-            .only('id', 'macomber_id_s', 'recension_id_s', 'incipit_txt_gez', 'score',
-                  'source_s', 'canonical_b')
+            .only('id', 'description_txt', 'shelfmark_current_s', 'library_s', 'score')
 
     results = queryset.get_results(rows=20)
-
-    if results and search_term:
-        # patch in the highlighted incipits into the main result
-        # to avoid accessing separately in the template or json
-        highlights = queryset.get_highlighting()
-        for i, result in enumerate(results):
-            highlighted_incipits = highlights[result['id']] \
-                .get('incipit_txt_gez', None)
-            if highlighted_incipits:
-                result['incipit_txt_gez'] = highlighted_incipits[0]
 
     # if html response was requested, render results.html template
     if output_format == 'html':
