@@ -37,12 +37,12 @@ def search():
         search_term = request.form['geniza']
         output_format = request.form.get('format', '')
     elif request.method == 'GET':
-        search_term = request.args.get('incipit', '')
+        search_term = request.args.get('geniza', '')
         output_format = request.args.get('format', '')
 
     queryset = SolrQuerySet(get_solr())
     if search_term:
-        queryset = queryset.raw_query_parameters(description_txt=search_term) \
+        queryset = queryset.search(description_txt=search_term) \
             .order_by('-score') \
             .only('id', 'description_txt', 'shelfmark_current_s', 'library_s', 'score')
 

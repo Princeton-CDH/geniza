@@ -25,7 +25,7 @@
         <li class="cf ph2-ns pl0" data-id="{{ result.id }}">
             <div class="fl w-20 w-10-ns pa2 b tr avenir fw5">{{ result.id }}</div>
             <div class="fl w-80 pa2">
-                <span>{{ result.description_txt|safe }}</span><br/>
+                <span>{{ result.description_txt[0]|safe }}</span><br/>
                 <!-- source mss -->
                 <span class="id fl purple avenir">{{ result.shelfmark_current_s }} | {{ result.library_s }}</span><br>
                 
