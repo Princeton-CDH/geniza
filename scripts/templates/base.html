@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% block head %}
+    <link rel="stylesheet" href="style.css" />
+    <title>{% block title %}{% endblock %}PEMM</title>
+    {% endblock %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
+</head>
+<body>
+    <h1 class="bw2 pa2 pb0 f3">Princeton Geniza Project</h1>
+
+    <main class="pa4 pb2 f5">{% block content %}{% endblock %}</main>
+
+    {% block footer %}
+    <footer class="pv2 ph3 ph5-m ph6-l mid-gray">
+      <div class="tc mt3">
+        <p class="f6 dib pr2 mid-gray dim">version {{ version }}</p>
+        <a class="f6 dib pr2 mid-gray dim" id="pu-logo" href="https://www.princeton.edu/">
+            <img class="w-90" src="https://cdh.princeton.edu/static/img/PUsig1-bw-bs.svg" alt="Princeton University">
+        </a>
+        <a class="f6 dib pr2 mid-gray dim" id="cdh-logo" href="https://cdh.princeton.edu/">
+            <img class="w-50" src="https://cdh.princeton.edu/static/img/CDH_logo.svg" alt="The Center for Digital Humanities at Princeton">
+        </a>
+      </div>
+     <small class="f6 db tc">©2020 Trustees of Princeton University</small>
+    </footer>
+    {% endblock %}
+
+{% if env and env != 'development' %}
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<!-- <script async src="https://www.googletagmanager.com/gtag/js?id=UA-87887700-7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+   gtag('config', 'UA-87887700-7', {
+        'custom_map': {
+            'dimension1': 'env'
+        }
+    })
+    gtag('event', 'env_dimension', {'env': '{{ env }}'})
+</script>
+ -->{% endif %}
+</body>
+</html>

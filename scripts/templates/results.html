@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Incipit Search | Search results for {{ search_term }} | {% endblock %}
+
+{% block head %}
+ {{ super() }}
+    <style>
+        /*input[type=text] {font-size: 16pt; width: 90%;}*/
+        /* style highlights tagged by Solr */
+        em {color: #FF6300; font-weight: bold; font-style: normal; }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% include 'incipit_form.html' %}
+
+    <p class="fr w-100 w-20-ns ma0">Showing {{ results|length }} of {{ total }} result{% if total > 1 %}s{% endif %}</p>
+    {% if results|length > 0 %}
+    <ul class="mw9 ml0 pl0 center ph3-ns list">
+        <li class="f5 lh-copy cf ph2-ns serif fw6 pl0 avenir">
+            <span class="fl w-20 w-10-ns pa2 tr">PGP ID</span>
+            <span class="fl w-30 w-30-ns pa2">Description</span>
+        </li>
+        {% for result in results %}
+        <li class="cf ph2-ns pl0" data-id="{{ result.id }}">
+            <div class="fl w-20 w-10-ns pa2 b tr avenir fw5">{{ result.id }}</div>
+            <div class="fl w-80 pa2">
+                <span>{{ result.description_txt|safe }}</span><br/>
+                <!-- source mss -->
+                <span class="id fl purple avenir">{{ result.shelfmark_current_s }} | {{ result.library_s }}</span><br>
+                <!-- recension -->
+                {% if result.recension_id_s %}
+                <table class="avenir i collapse">
+                    <tr>
+                        <td>Recension:</td>
+                        <td>{{result.macomber_id_s}}</td>
+                        <td>{{result.recension_id_s}}</td>
+                    </tr>
+                </table>
+                {% endif %}
+
+                <!-- score + relevance bar -->
+                {% if result.score %}
+                <div class="fr w-20-ns w-100">
+                    <!-- relevance bar -->
+                    <div class="ba w-25-ns w-30 h1 fr ma1">
+                        <div class="bg-light-blue h-100 mw-100" style="width:{{ result.score / 100 * 100 }}%">
+                        </div>
+                    </div>
+                    <span class="score light-silver fr pa1">{{ result.score }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+{% endblock %}

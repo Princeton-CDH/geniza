@@ -1,0 +1,9 @@
+<form action="/search" method="get" class="pa3 black-80">
+        <label for="incipit" class="f4 b db mb2">Incipit search</label>
+        <input type="text" name="incipit" size="200"
+            placeholder="search on all or part of an incipit"
+            value="{{ search_term }}"
+            class="input-reset ba br3 ba b--black-20 pa2 mb2 db w-100 f5" type="text" aria-describedby="incipit-desc"/>
+        <input type="hidden" name="format" value="html"/>
+        <input class="br3 ba pv1 ph3" type="submit" value="Search"/>
+</form>

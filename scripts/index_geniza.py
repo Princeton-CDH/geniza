@@ -46,7 +46,7 @@ def index_geniza(solr_url, solr_core, csv_path):
 
     df = pd.read_csv(csv_path)
     # Ensure the CSV file contains the expected columns
-    expected_columns = ['PGPID', 'Technical notes (optional)', 'Library', 
+    expected_columns = ['PGPID', 'Description', 'Library', 
         'Shelfmark - Current', 'Link to image']
     df = df[expected_columns]
     
@@ -56,14 +56,14 @@ def index_geniza(solr_url, solr_core, csv_path):
     solr.update.index([{
         # identifier required for current Solr config
         'id': row['PGPID'],
-        'technical_notes_s': row['Technical notes (optional)'],
+        'description_txt': row['Description'],
         'library_s': row['Library'],
         'shelfmark_current_s': row['Shelfmark - Current'],
         'link_s': row['Link to image']
     } for i, row in df.iterrows()])
 
     # Ensure the CSV file contains the expected columns
-    expected_columns = ['PGPID', 'Technical notes (optional)', 'Library', 
+    expected_columns = ['PGPID', 'Description', 'Library', 
         'Shelfmark - Current', 'Link to image']
     df = df[expected_columns]
 
