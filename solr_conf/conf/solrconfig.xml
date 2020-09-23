@@ -730,10 +730,10 @@
 
       <!-- incipit search pseudo field for members-->
       <str name="incipit_qf">
-        incipit_txt_gez
+        description_txt
       </str>
       <str name="incipit_pf">
-        incipit_txt_gez
+        description_txt
       </str>
 
     </lst>

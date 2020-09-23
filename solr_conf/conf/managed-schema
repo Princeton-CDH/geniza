@@ -97,7 +97,6 @@
   <dynamicField name="ignored_*" type="ignored" multiValued="true"/>
   <dynamicField name="*_s_lower" type="lowercase" indexed="true" stored="true"/>
   <dynamicField name="random_*" type="random"/>
-  <dynamicField name="*_txt_gez" type="text_gez" indexed="true" stored="true"/>
   <dynamicField name="*_point" type="point" indexed="true" stored="true"/>
   <dynamicField name="*_srpt" type="location_rpt" indexed="true" stored="true"/>
   <dynamicField name="*_pdts" type="pdates" indexed="true" stored="true"/>
