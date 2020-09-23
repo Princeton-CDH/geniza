@@ -12,10 +12,8 @@ Create a solr core with the local solr:
 Run this script, providing solr connection details and a path
 to the CSV file you'd like to index.
 
-    python index_geniza.py http://localhost:8983/solr/ geniza \
-        /path/to/data.csv
-
-python index_geniza.py http://localhost:8983/solr/ geniza pgp-metadata.csv
+    python scripts/index_geniza.py http://localhost:8983/solr/ \
+        geniza data/pgp-metadata.csv
 
 '''
 
