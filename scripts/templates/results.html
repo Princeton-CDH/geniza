@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Incipit Search | Search results for {{ search_term }} | {% endblock %}
+{% block title %}Geniza Search | Search results for {{ search_term }} | {% endblock %}
 
 {% block head %}
  {{ super() }}
@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block content %}
-    {% include 'incipit_form.html' %}
+    {% include 'search_form.html' %}
 
     <p class="fr w-100 w-20-ns ma0">Showing {{ results|length }} of {{ total }} result{% if total > 1 %}s{% endif %}</p>
     {% if results|length > 0 %}
@@ -28,17 +28,7 @@
                 <span>{{ result.description_txt|safe }}</span><br/>
                 <!-- source mss -->
                 <span class="id fl purple avenir">{{ result.shelfmark_current_s }} | {{ result.library_s }}</span><br>
-                <!-- recension -->
-                {% if result.recension_id_s %}
-                <table class="avenir i collapse">
-                    <tr>
-                        <td>Recension:</td>
-                        <td>{{result.macomber_id_s}}</td>
-                        <td>{{result.recension_id_s}}</td>
-                    </tr>
-                </table>
-                {% endif %}
-
+                
                 <!-- score + relevance bar -->
                 {% if result.score %}
                 <div class="fr w-20-ns w-100">
