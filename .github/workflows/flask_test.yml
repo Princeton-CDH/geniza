@@ -1,4 +1,4 @@
-name: Valid CSVs
+name: flask_pytest
 
 on: [push]
 
