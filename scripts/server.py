@@ -34,10 +34,10 @@ def root():
 def search():
     '''Search for an incipit and return a list of matching results.'''
     if request.method == 'POST':
-        search_term = request.form['geniza']
+        search_term = request.form['geniza_search']
         output_format = request.form.get('format', '')
     elif request.method == 'GET':
-        search_term = request.args.get('geniza', '')
+        search_term = request.args.get('geniza_search', '')
         output_format = request.args.get('format', '')
 
     queryset = SolrQuerySet(get_solr())
