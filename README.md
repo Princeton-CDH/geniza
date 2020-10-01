@@ -1,5 +1,6 @@
 # Princeton Geniza Project - search prototype
 
+![tests](https://github.com/Princeton-CDH/geniza/workflows/tests/badge.svg?branch=experiment%2Fsearch)
 
 ## Development instructions
 

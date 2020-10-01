@@ -1,9 +1,9 @@
-name: flask_pytest
+name: tests
 
 on: [push]
 
 jobs:
-  validate:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
