@@ -728,12 +728,26 @@
       <str name="defType">edismax</str>
       <!-- <str name="df">text</str> -->
 
-      <!-- incipit search pseudo field for members-->
-      <str name="incipit_qf">
+      <!-- keyword search field for geniza prototype -->
+      <str name="keyword_qf">
         description_txt
+        id
+        type_s
+        shelfmark_txt
+        shelfmark_s
+        tags_txt
+        editors_txt
+        translators_txt
       </str>
-      <str name="incipit_pf">
+      <str name="keyword_pf">
         description_txt
+        id
+        type_s
+        shelfmark_txt
+        shelfmark_s
+        tags_txt
+        editors_txt
+        translators_txt
       </str>
 
     </lst>
