@@ -23,9 +23,8 @@ def test_index(client):
     # check home page
     rv = client.get('/')
     assert 'version %s' % __version__ in rv.data.decode()
-    assert b'<form action="/search" method="get"' in rv.data
-    assert b'<input type="hidden" name="format" value="html"/>' in rv.data
-    assert b'<input type="text" name="geniza_search"' in rv.data
+    assert b'<form action="/" method="get"' in rv.data
+    assert b'<input type="text" name="keywords"' in rv.data
 
 
 @patch('scripts.server.SolrClient')
