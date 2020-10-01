@@ -21,10 +21,15 @@ def client():
 
 def test_index(client):
     # check home page
-    rv = client.get('/')
-    assert 'version %s' % __version__ in rv.data.decode()
-    assert b'<form action="/" method="get"' in rv.data
-    assert b'<input type="text" name="keywords"' in rv.data
+    with patch('scripts.server.SolrQuerySet') as mock_solrqueryset:
+        mock_solrqueryset.return_value.get_results \
+            .return_value.__len__.return_value = 8
+        mock_solrqueryset.return_value.count.return_value = 100
+        rv = client.get('/')
+        assert 'version %s' % __version__ in rv.data.decode()
+        assert b'<form action="/" method="get"' in rv.data
+        assert b'<input type="text" name="keywords"' in rv.data
+        assert b'Showing 8 of 100 results' in rv.data
 
 
 @patch('scripts.server.SolrClient')
