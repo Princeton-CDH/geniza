@@ -21,10 +21,14 @@ solr create -c geniza -d solr_conf
 Copy `local_settings.cfg.sample` to `local_settings.cfg` and configure
 as appropriate for your environment.
 
-Set required Flask environment variables:
+Set required Flask environment variables.
+
+In Bash:
 ```bash
 export FLASK_APP=scripts/server.py FLASK_ENV=development
 ```
+
+In Csh:
 ```csh
 setenv FLASK_APP scripts/server.py 
 setenv FLASK_ENV=development
@@ -36,7 +40,7 @@ to the CSV file you'd like to index.
 flask index data/pgp-metadata.csv
 ```
 
-Run the Flask server:
+To run the Flask server:
 ```
 flask run 
 ```
