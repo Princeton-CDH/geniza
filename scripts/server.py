@@ -11,53 +11,43 @@ Run a debug server for development with:
 
 '''
 
-from flask import Flask, g, jsonify, render_template, request
+from flask import Flask, g, render_template, request
 from parasolr.query import SolrQuerySet
 from parasolr.solr.client import SolrClient
 
 from scripts import __version__
+from scripts import index
+
 
 # create a new flask app from this module
 app = Flask(__name__)
 # load configuration from local settings
 app.config.from_pyfile('local_settings.cfg')
+# register command
+app.cli.add_command(index.index)
 
 
-@app.route('/')
-def root():
-    '''Display version info and a basic html search form.'''
-    return render_template('index.html', version=__version__,
-                           env=app.config.get('ENV', None))
-
-
-@app.route('/search', methods=['GET', 'POST'])
+@app.route('/', methods=['GET'])
 def search():
-    '''Search for an incipit and return a list of matching results.'''
-    if request.method == 'POST':
-        search_term = request.form['geniza_search']
-        output_format = request.form.get('format', '')
-    elif request.method == 'GET':
-        search_term = request.args.get('geniza_search', '')
-        output_format = request.args.get('format', '')
+    '''Search PGP records and display return a list of matching results.'''
+    search_terms = request.args.get('keywords', '')
+
+    #: keyword search field query alias field syntax
+    search_query = '{!qf=$keyword_qf pf=$keyword_pf ps=2 v=$search_terms}'
 
     queryset = SolrQuerySet(get_solr())
-    if search_term:
-        queryset = queryset.search(description_txt=search_term) \
-            .order_by('-score') \
-            .only('id', 'description_txt', 'shelfmark_current_s', 'library_s', 'score')
+    if search_terms:
+        queryset = queryset.search(search_query) \
+            .raw_query_parameters(search_terms=search_terms) \
+            .order_by('-score').only('*', 'score')
 
     results = queryset.get_results(rows=20)
 
-    # if html response was requested, render results.html template
-    if output_format == 'html':
-        return render_template('results.html', results=results,
-                               total=queryset.count(),
-                               search_term=search_term,
-                               version=__version__,
-                               env=app.config.get('ENV', None))
-
-    # by default, return JSON
-    return jsonify(results)
+    return render_template('results.html', results=results,
+                           total=queryset.count(),
+                           search_term=search_terms,
+                           version=__version__,
+                           env=app.config.get('ENV', None))
 
 
 def get_solr():

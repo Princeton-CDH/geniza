@@ -1,9 +1,8 @@
-<form action="/search" method="get" class="pa3 black-80">
-        <label for="geniza_search" class="f4 b db mb2">Geniza search</label>
-        <input type="text" name="geniza_search" size="200"
-            placeholder="search on all or part of a description"
+<form action="/" method="get" class="pa3 black-80">
+        <label for="keywords" class="f4 b db mb2">Search by keyword or phrase</label>
+        <input type="text" name="keywords" size="200"
+            placeholder="search across metadata fields"
             value="{{ search_term }}"
             class="input-reset ba br3 ba b--black-20 pa2 mb2 db w-100 f5" type="text"/>
-        <input type="hidden" name="format" value="html"/>
         <input class="br3 ba pv1 ph3" type="submit" value="Search"/>
 </form>

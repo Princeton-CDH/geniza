@@ -27,8 +27,8 @@
             <div class="fl w-80 pa2">
                 <span>{{ result.description_txt[0]|safe }}</span><br/>
                 <!-- source mss -->
-                <span class="id fl purple avenir">{{ result.shelfmark_current_s }} | {{ result.library_s }}</span><br>
-                
+                <span class="id fl purple avenir">{{ result.shelfmark_s }} | {{ result.library_s }}</span><br>
+
                 <!-- score + relevance bar -->
                 {% if result.score %}
                 <div class="fr w-20-ns w-100">
