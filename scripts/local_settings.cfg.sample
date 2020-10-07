@@ -1,4 +1,5 @@
-# configuration settings for pemm flask app
+# configuration settings for geniza flask search prototype
 
 SOLR_URL = 'http://localhost:8983/solr/'
 SOLR_CORE = 'geniza'
+METADATA_CSV_URL = ''
