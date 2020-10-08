@@ -19,7 +19,7 @@ distributed solr configuration files for this project:
 solr create -c geniza -d solr_conf
 ```
 
-Copy `local_settings.cfg.sample` to `local_settings.cfg` and configure
+Copy `local_settings.py.sample` to `local_settings.py` and configure
 as appropriate for your environment.
 
 Set required Flask environment variables.

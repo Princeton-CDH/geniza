@@ -18,7 +18,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Configure local settings
-      run: cp scripts/local_settings.cfg.sample scripts/local_settings.cfg
+      run: cp scripts/local_settings.py.sample scripts/local_settings.py
 
     - name: Run tests
       run: python -m pytest

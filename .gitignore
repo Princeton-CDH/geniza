@@ -1,5 +1,5 @@
 # local settings
-scripts/local_settings.cfg
+scripts/local_settings.py
 
 # Webpack files
 webpack-stats.json

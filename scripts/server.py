@@ -2,7 +2,7 @@
 '''
 An HTTP server that proxies requests to solr to search for similar incipits.
 
-Copy local_settings.cfg.sample to local_settings.cfg and configure
+Copy local_settings.py.sample to local_settings.py and configure
 as appropriate for your environment.
 
 Run a debug server for development with:
@@ -22,7 +22,7 @@ from scripts import index
 # create a new flask app from this module
 app = Flask(__name__)
 # load configuration from local settings
-app.config.from_pyfile('local_settings.cfg')
+app.config.from_pyfile('local_settings.py')
 # register command
 app.cli.add_command(index.index)
 
