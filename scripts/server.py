@@ -33,7 +33,7 @@ def search():
     search_terms = request.args.get('keywords', '')
 
     #: keyword search field query alias field syntax
-    search_query = '{!qf=$keyword_qf pf=$keyword_pf ps=2 v=$search_terms}'
+    search_query = "{!dismax qf=$keyword_qf pf=$keyword_pf ps=2 v=$search_terms}"
 
     queryset = SolrQuerySet(get_solr())
     if search_terms:
