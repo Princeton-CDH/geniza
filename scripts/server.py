@@ -16,15 +16,16 @@ from parasolr.query import SolrQuerySet
 from parasolr.solr.client import SolrClient
 
 from scripts import __version__
-from scripts import index
+from scripts import index, tei_transcriptions
 
 
 # create a new flask app from this module
 app = Flask(__name__)
 # load configuration from local settings
 app.config.from_pyfile('local_settings.py')
-# register command
+# register commands
 app.cli.add_command(index.index)
+app.cli.add_command(tei_transcriptions.transcriptions)
 
 
 @app.route('/', methods=['GET'])
