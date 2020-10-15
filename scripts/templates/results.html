@@ -26,8 +26,14 @@
             <div class="fl w-20 w-10-ns pa2 b tr avenir fw5">{{ result.id }}</div>
             <div class="fl w-80 pa2">
                 <span>{{ result.description_txt[0]|safe }}</span><br/>
-                <!-- source mss -->
-                <span class="id fl purple avenir">{{ result.shelfmark_s }} | {{ result.library_s }}</span><br>
+                <div class="w-100 flex justify-between">
+                    <!-- source mss -->
+                    <div class="id fl purple avenir">{{ result.shelfmark_s }} | {{ result.library_s }}</div><br>
+                    <!-- View external source -->
+                    {% if result.link_s %}
+                    <div><a class="id no-underline fl purple avenir" href="{{ result.link_s }}">View external record</a></div>
+                    {% endif %}
+                </div>
 
                 <!-- score + relevance bar -->
                 {% if result.score %}
