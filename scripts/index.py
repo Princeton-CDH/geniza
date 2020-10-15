@@ -46,8 +46,8 @@ def index():
         'library_s': row['Library'],
         'shelfmark_s': row['Shelfmark - Current'],
         'shelfmark_txt': row['Shelfmark - Current'],
-        'tags_txt': [tag.strip() for tag in row['Tags'].split('#')],
-        'tags_ss': [tag.strip() for tag in row['Tags'].split('#')],
+        'tags_txt': [tag.strip() for tag in row['Tags'].split('#') if tag.strip() != ''],
+        'tags_ss': [tag.strip() for tag in row['Tags'].split('#') if tag.strip() != ''],
         'link_s': row['Link to image'],
         'iiif_link_s': (
             row['Link to image'].replace('/view/', '/iiif/') 
