@@ -34,18 +34,28 @@
                     <div><a class="id no-underline fl purple avenir" href="{{ result.link_s }}">View external record</a></div>
                     {% endif %}
                 </div>
-
-                <!-- score + relevance bar -->
-                {% if result.score %}
-                <div class="fr w-20-ns w-100">
-                    <!-- relevance bar -->
-                    <div class="ba w-25-ns w-30 h1 fr ma1">
-                        <div class="bg-light-blue h-100 mw-100" style="width:{{ result.score / 100 * 100 }}%">
-                        </div>
+                <div class="w-100 flex justify-between items-right">
+                    <!-- source mss -->
+                    <div class="id">
+                    {% if result.tags_ss %}
+                    Tags: {{ result.tags_ss|join(', ') }}
+                    {% endif %}
                     </div>
-                    <span class="score light-silver fr pa1">{{ result.score }}</span>
+                    <!-- View external source -->
+                    <!-- score + relevance bar -->
+                    {% if result.score %}
+                    <div class="fr w-20-ns">
+                        <!-- relevance bar -->
+                        <div class="ba w-25-ns w-30 h1 fr ma1">
+                            <div class="bg-light-blue h-100 mw-100" style="width:{{ result.score / 100 * 100 }}%">
+                            </div>
+                        </div>
+                        <span class="score light-silver fr pa1">{{ result.score }}</span>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
+
+                
             </div>
         </li>
         {% endfor %}
