@@ -49,6 +49,11 @@ def index():
         'tags_txt': [tag.strip() for tag in row['Tags'].split('#')],
         'tags_ss': [tag.strip() for tag in row['Tags'].split('#')],
         'link_s': row['Link to image'],
+        'iiif_link_s': (
+            row['Link to image'].replace('/view/', '/iiif/') 
+            if 'cudl.lib.cam.ac.uk' in row['Link to image']
+            else None
+        ),
         'editors_txt': row['Editor(s)'],
         'translators_txt': row['Translator (optional)']
     } for row in rows], commitWithin=100)
