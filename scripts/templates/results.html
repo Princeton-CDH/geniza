@@ -18,25 +18,33 @@
     {% if results|length > 0 %}
     <ul class="mw9 ml0 pl0 center ph3-ns list">
         <li class="f5 lh-copy cf ph2-ns serif fw6 pl0 avenir">
-            <span class="fl w-20 w-10-ns pa2 tr">PGP ID</span>
-            <span class="fl w-30 w-30-ns pa2">Description</span>
+            <div class="fl w-20 w-10-ns pa2 b tr avenir b">
+                PGP ID
+                <div class="pt0">Type</div>
+            </div>
+            <div class="fl w-80 w-10-ns pa2 b avenir">Description</div>
         </li>
         {% for result in results %}
         <li class="cf ph2-ns pl0" data-id="{{ result.id }}">
-            <div class="fl w-20 w-10-ns pa2 b tr avenir fw5">{{ result.id }}</div>
+            <div class="fl w-20 w-10-ns pa2 b tr avenir fw5">
+                {{ result.id }}
+                <div class="pt2">
+                {{ result.type_s}}
+                </div>
+            </div>
             <div class="fl w-80 pa2">
                 <span>{{ result.description_txt[0]|safe }}</span><br/>
-                <div class="w-100 flex justify-between">
+                <div class="w-100 flex justify-between pt2">
                     <!-- source mss -->
                     <div class="id fl purple avenir">{{ result.shelfmark_s }} | {{ result.library_s }}</div><br>
                     <!-- View external source -->
                     {% if result.link_s %}
-                    <div><a class="id no-underline fl purple avenir" href="{{ result.link_s }}">View external record</a></div>
+                    <div><a class="id fl purple avenir" href="{{ result.link_s }}">View external record</a></div>
                     {% endif %}
                 </div>
                 <div class="w-100 pt2 flex justify-between items-right">
                     <div>
-                        <ul class="list pl0">
+                        <ul class="list pl0 dark-gray">
                         {% for tag in result.tags_ss %}
                          <li class="di">#{{ tag }}</li>
                         {% endfor %}
