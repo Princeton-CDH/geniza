@@ -36,22 +36,32 @@ def index():
         print('Warning: PGPIDs are not unique!')
 
     # add a quick progress bar here?
+    index_data = []
+    for row in rows:
+        tags = [tag.strip() for tag in row['Tags'].split('#') if tag.strip()]
+        extlink = row['Link to image']
+        iiif_link = None
+        # cambridge iiif manifest links use the same id as view links
+        if 'cudl.lib.cam.ac.uk' in extlink:
+            iiif_link = extlink.replace('/view/', '/iiif/')
 
-    # index pgp data into Solr
-    solr.update.index([{
-        # use PGPID as Solr identifier
-        'id': row['PGPID'],
-        'description_txt': row['Description'],
-        'type_s': row['Type'],
-        'library_s': row['Library'],
-        'shelfmark_s': row['Shelfmark - Current'],
-        'shelfmark_txt': row['Shelfmark - Current'],
-        'tags_txt': [tag.strip() for tag in row['Tags'].split('#')],
-        'tags_ss': [tag.strip() for tag in row['Tags'].split('#')],
-        'link_s': row['Link to image'],
-        'editors_txt': row['Editor(s)'],
-        'translators_txt': row['Translator (optional)']
-    } for row in rows], commitWithin=100)
+        index_data.append({
+            # use PGPID as Solr identifier
+            'id': row['PGPID'],
+            'description_txt': row['Description'],
+            'type_s': row['Type'],
+            'library_s': row['Library'],
+            'shelfmark_s': row['Shelfmark - Current'],
+            'shelfmark_txt': row['Shelfmark - Current'],
+            'tags_txt': tags,
+            'tags_ss': tags,
+            'link_s': extlink or None,
+            'iiif_link_s': iiif_link,
+            'editors_txt': row['Editor(s)'] or None,
+            'translators_txt': row['Translator (optional)'] or None
+        })
+
+    solr.update.index(index_data, commitWithin=1000)
 
     print(f'Indexed {len(rows):,} records')
 

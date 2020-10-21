@@ -26,20 +26,37 @@
             <div class="fl w-20 w-10-ns pa2 b tr avenir fw5">{{ result.id }}</div>
             <div class="fl w-80 pa2">
                 <span>{{ result.description_txt[0]|safe }}</span><br/>
-                <!-- source mss -->
-                <span class="id fl purple avenir">{{ result.shelfmark_s }} | {{ result.library_s }}</span><br>
-
-                <!-- score + relevance bar -->
-                {% if result.score %}
-                <div class="fr w-20-ns w-100">
-                    <!-- relevance bar -->
-                    <div class="ba w-25-ns w-30 h1 fr ma1">
-                        <div class="bg-light-blue h-100 mw-100" style="width:{{ result.score / 100 * 100 }}%">
-                        </div>
-                    </div>
-                    <span class="score light-silver fr pa1">{{ result.score }}</span>
+                <div class="w-100 flex justify-between">
+                    <!-- source mss -->
+                    <div class="id fl purple avenir">{{ result.shelfmark_s }} | {{ result.library_s }}</div><br>
+                    <!-- View external source -->
+                    {% if result.link_s %}
+                    <div><a class="id no-underline fl purple avenir" href="{{ result.link_s }}">View external record</a></div>
+                    {% endif %}
                 </div>
-                {% endif %}
+                <div class="w-100 pt2 flex justify-between items-right">
+                    <div>
+                        <ul class="list pl0">
+                        {% for tag in result.tags_ss %}
+                         <li class="di">#{{ tag }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                    <!-- View external source -->
+                    <!-- score + relevance bar -->
+                    {% if result.score %}
+                    <div class="fr w-20-ns">
+                        <!-- relevance bar -->
+                        <div class="ba w-25-ns w-30 h1 fr ma1">
+                            <div class="bg-light-blue h-100 mw-100" style="width:{{ result.score / 100 * 100 }}%">
+                            </div>
+                        </div>
+                        <span class="score light-silver fr pa1">{{ result.score }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+
             </div>
         </li>
         {% endfor %}
