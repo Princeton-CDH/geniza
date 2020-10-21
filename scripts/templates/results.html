@@ -34,12 +34,13 @@
                     <div><a class="id no-underline fl purple avenir" href="{{ result.link_s }}">View external record</a></div>
                     {% endif %}
                 </div>
-                <div class="w-100 flex justify-between items-right">
-                    <!-- source mss -->
-                    <div class="id">
-                    {% if result.tags_ss %}
-                    Tags: {{ result.tags_ss|join(', ') }}
-                    {% endif %}
+                <div class="w-100 pt2 flex justify-between items-right">
+                    <div>
+                        <ul class="list pl0">
+                        {% for tag in result.tags_ss %}
+                         <li class="di">#{{ tag }}</li>
+                        {% endfor %}
+                        </ul>
                     </div>
                     <!-- View external source -->
                     <!-- score + relevance bar -->
@@ -55,7 +56,7 @@
                     {% endif %}
                 </div>
 
-                
+
             </div>
         </li>
         {% endfor %}
