@@ -41,7 +41,7 @@ def search():
             .raw_query_parameters(search_terms=search_terms) \
             .order_by('-score').only('*', 'score')
 
-    results = queryset.get_results(rows=20)
+    results = queryset.get_results(rows=50)
 
     return render_template('results.html', results=results,
                            total=queryset.count(),
