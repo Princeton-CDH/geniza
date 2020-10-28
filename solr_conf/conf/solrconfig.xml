@@ -733,6 +733,7 @@
         description_txt
         id
         type_s
+        library_s
         shelfmark_txt
         shelfmark_s
         tags_txt
@@ -743,6 +744,7 @@
         description_txt
         id
         type_s
+        library_s
         shelfmark_txt
         shelfmark_s
         tags_txt
