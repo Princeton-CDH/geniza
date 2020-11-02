@@ -739,6 +739,7 @@
         tags_txt
         editors_txt
         translators_txt
+        transcription_txt
       </str>
       <str name="keyword_pf">
         description_txt
@@ -750,6 +751,7 @@
         tags_txt
         editors_txt
         translators_txt
+        transcription_txt
       </str>
 
     </lst>
