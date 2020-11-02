@@ -37,12 +37,26 @@ def search():
     search_query = "{!dismax qf=$keyword_qf pf=$keyword_pf ps=2 v=$search_terms}"
 
     queryset = SolrQuerySet(get_solr())
+    # highlighting lines only instead of text blob; lines in full text are so
+    # short the highlight snippets end up getting the whole thing in many cases
     if search_terms:
         queryset = queryset.search(search_query) \
             .raw_query_parameters(search_terms=search_terms) \
+            .highlight('transcription_lines_txt', snippets=3, method='unified') \
             .order_by('-score').only('*', 'score')
 
     results = queryset.get_results(rows=50)
+
+    # copied from pemm
+    if results and search_terms:
+        # patch in the highlighted incipits into the main result
+        # to avoid accessing separately in the template or json
+        highlights = queryset.get_highlighting()
+        for i, result in enumerate(results):
+            highlighted_text = highlights[result['id']] \
+                .get('transcription_lines_txt', None)
+            if highlighted_text:
+                result['transcription_highlights'] = highlighted_text[0]
 
     return render_template('results.html', results=results,
                            total=queryset.count(),
