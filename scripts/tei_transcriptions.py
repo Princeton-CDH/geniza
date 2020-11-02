@@ -7,7 +7,6 @@ from eulxml import xmlmap
 from eulxml.xmlmap import teimap
 from flask import current_app
 from flask.cli import with_appcontext
-# from polyglot.detect import Detector
 
 
 class GenizaTeiLine(teimap.TeiLine):
@@ -78,8 +77,9 @@ def transcriptions():
 
         docdata = {
             'blocks': blocks,
+            'lines': [str(l) for l in tei.text.lines]
         }
         data[tei.pgpid] = docdata
 
-    with open('data/geniza-transcriptions.json', 'w') as outfile:
+    with open('data/transcriptions.json', 'w') as outfile:
         json.dump(data, outfile, indent=4)
