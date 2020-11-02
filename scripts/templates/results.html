@@ -7,7 +7,13 @@
     <style>
         /*input[type=text] {font-size: 16pt; width: 90%;}*/
         /* style highlights tagged by Solr */
-        em {color: #FF6300; font-weight: bold; font-style: normal; }
+        em {background-color: #3DFF6A; font-weight: bold; font-style: normal; }
+
+        .transcription {
+            direction: rtl;  /* assuming all for now */
+            text-align: right;
+            white-space: pre;
+        }
     </style>
 {% endblock %}
 
@@ -36,6 +42,7 @@
                 <div>{{ result.description_txt[0]|safe }}</div>
                 {% if result.editors_txt %}<div><span class="mid-gray">Editor:</span> {{ result.editors_txt[0] }}</div>{% endif %}
                 {% if result.translators_txt %}<div><span class="mid-gray">Translator:</span> {{ result.translators_txt[0] }}</div>{% endif %}
+                {% if result.transcription_highlights %}<div class="pt2 transcription">{{ result.transcription_highlights|safe }}</div>{% endif %}
                 <div class="w-100 flex justify-between pt2">
                     <!-- source mss -->
                     <div class="id fl purple avenir">{{ result.shelfmark_s }} | {{ result.library_s }}</div><br>
