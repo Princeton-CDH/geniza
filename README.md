@@ -32,7 +32,7 @@ export FLASK_APP=scripts/server.py FLASK_ENV=development
 In Csh:
 ```csh
 setenv FLASK_APP scripts/server.py 
-setenv FLASK_ENV=development
+setenv FLASK_ENV development
 ```
 
 To index data in Solr, run the index Flask command with the path

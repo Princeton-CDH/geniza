@@ -1,5 +1,6 @@
 import codecs
 import csv
+import json
 
 import click
 from flask import current_app
@@ -14,6 +15,9 @@ from parasolr.solr.client import SolrClient
 def index():
     solr = SolrClient(current_app.config['SOLR_URL'],
                       current_app.config['SOLR_CORE'])
+
+    with open('data/transcriptions.json') as transcriptionsfile:
+        transcriptions = json.load(transcriptionsfile)
 
     # clear the index in case any records have been removed or merged
     solr.update.delete_by_query('*:*')
@@ -45,9 +49,23 @@ def index():
         if 'cudl.lib.cam.ac.uk' in extlink:
             iiif_link = extlink.replace('/view/', '/iiif/')
 
+        pgpid = row['PGPID']
+        text = text_blob = None
+        if pgpid in transcriptions:
+            # TBD: should labels also be searchable ?
+            # throw everything into a text blob
+            text_blob = ' '.join(transcriptions[pgpid]['lines'])
+            # but also index as lines so highlighting can return single lines
+            # instead of the whole text
+            text = transcriptions[pgpid]['lines']
+            # index language from spreadsheet?
+            # TODO: languages will need to be auto-detected; may be useful
+            # to check against language from the spreadsheet
+            # print(row['Language (optional)'])
+
         index_data.append({
             # use PGPID as Solr identifier
-            'id': row['PGPID'],
+            'id': pgpid,
             'description_txt': row['Description'],
             'type_s': row['Type'],
             'library_s': row['Library'],
@@ -58,7 +76,9 @@ def index():
             'link_s': extlink or None,
             'iiif_link_s': iiif_link,
             'editors_txt': row['Editor(s)'] or None,
-            'translators_txt': row['Translator (optional)'] or None
+            'translators_txt': row['Translator (optional)'] or None,
+            'transcription_lines_txt': text,
+            'transcription_txt': text_blob
         })
 
     solr.update.index(index_data, commitWithin=1000)
