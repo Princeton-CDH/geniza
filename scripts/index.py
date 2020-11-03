@@ -1,6 +1,7 @@
 import codecs
 import csv
 import json
+import os
 
 import click
 from flask import current_app
@@ -16,7 +17,11 @@ def index():
     solr = SolrClient(current_app.config['SOLR_URL'],
                       current_app.config['SOLR_CORE'])
 
-    with open('data/transcriptions.json') as transcriptionsfile:
+    # get absolute path to data file relative to this script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.join(script_dir, '..', 'data')
+
+    with open(os.path.join(data_dir, 'transcriptions.json')) as transcriptionsfile:
         transcriptions = json.load(transcriptionsfile)
 
     # clear the index in case any records have been removed or merged
