@@ -41,6 +41,11 @@
     {% if documents %}
     <div class="fl w-100 w-60-ns pa2">
       <div class="bl-ns bt bt-0-ns pv4">
+        <div class="pl3">
+            <div class="f2 lh-copy blue">{{ current_cluster }}</div>
+            <div>{{ documents|length() }} Documents</div>
+        </div>
+
           {# todo: group by distinct sets of tags #}
           <ol>
           {% for doc in documents %}

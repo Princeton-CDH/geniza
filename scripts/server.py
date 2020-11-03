@@ -114,12 +114,14 @@ def clusters():
         document_sqs = SolrQuerySet(get_solr()) \
             .filter(tags_ss='(%s)' % tag_query)
 
+        # todo: group by distinct sets of tags
         documents = document_sqs.get_results(rows=1000)
 
-    return render_template('clusters.html', clusters=clusters,
-                           documents=documents,
-                           version=__version__,
-                           env=app.config.get('ENV', None))
+    return render_template(
+        'clusters.html', clusters=clusters,
+        current_cluster=' '.join('#%s' % tag for tag in selected_cluster.split('/')),
+        documents=documents, version=__version__,
+        env=app.config.get('ENV', None))
 
 
 def get_solr():
