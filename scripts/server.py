@@ -117,9 +117,12 @@ def clusters():
         # todo: group by distinct sets of tags
         documents = document_sqs.get_results(rows=1000)
 
+    current_cluster_tags = selected_cluster.split('/')
+
     return render_template(
         'clusters.html', clusters=clusters,
-        current_cluster=' '.join('#%s' % tag for tag in selected_cluster.split('/')),
+        current_cluster=' '.join('#%s' % tag for tag in current_cluster_tags),
+        current_tags=current_cluster_tags,
         documents=documents, version=__version__,
         env=app.config.get('ENV', None))
 

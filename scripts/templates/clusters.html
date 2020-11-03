@@ -52,7 +52,7 @@
               <li class="pb3">
                 <ul class="list pl0 dark-gray">
                     {% for tag in doc.tags_ss %}
-                        <li class="di">#{{ tag }}</li>
+                        <li class="di {% if tag in current_tags %}blue{% endif %}">#{{ tag }}</li>
                     {% endfor %}
                 </ul>
 
