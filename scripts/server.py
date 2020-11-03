@@ -90,18 +90,34 @@ def clusters():
             tag_pairs.append(tag_pair)
             tag_pair_counts[tag_pair] = pivot['count']
 
+    # check for currently selected cluster
+    selected_cluster = request.args.get('cluster', None)
+
     # combine tag pairs & counts into a format that will be easy to render
     clusters = []
     for tag_pair in tag_pairs:
         clusters.append({
             'value': tag_pair,
             'label': ' '.join('#%s' % tag for tag in tag_pair.split('/')),
-            'count': tag_pair_counts[tag_pair]
+            'count': tag_pair_counts[tag_pair],
+            'selected': tag_pair == selected_cluster
         })
     # sort by count, highest counts first
     clusters = sorted(clusters, key=lambda i: i['count'], reverse=True)
 
+    # if a cluster is selected, find all documents
+    documents = None
+    if selected_cluster:
+        cluster_tags = selected_cluster.split('/')
+        # generate query for items that match both tags
+        tag_query = ' AND '.join(['"%s"' % tag for tag in cluster_tags])
+        document_sqs = SolrQuerySet(get_solr()) \
+            .filter(tags_ss='(%s)' % tag_query)
+
+        documents = document_sqs.get_results(rows=1000)
+
     return render_template('clusters.html', clusters=clusters,
+                           documents=documents,
                            version=__version__,
                            env=app.config.get('ENV', None))
 

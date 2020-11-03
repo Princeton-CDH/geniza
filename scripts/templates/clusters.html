@@ -18,14 +18,52 @@
 {% endblock %}
 
 {% block content %}
-<h2>Clusters</h2>
-<p>Sorted by size</p>
+{# two columns #}
+<div class="mw9 center ph3-ns">
+  <div class="cf ph2-ns">
+    <div class="fl w-100 w-40-ns pa2">
 
-<ol>
-    {% for cluster in clusters %}
-    <li class="pl1 pb2"><div class="f3 lh-copy">{{ cluster.label }}</div>
-        {{ cluster.count }} Documents
-    </li>
-    {% endfor %}
-</ol>
+    <h2>Clusters</h2>
+    <p>Sorted by size</p>
+
+    <ol>
+        {% for cluster in clusters %}
+        <li class="pl1 pb2"><a class="dib no-underline dim black v-mid" href="?cluster={{ cluster.value }}">
+            <div class="f3 lh-copy {% if cluster.selected %}blue{% endif %}">{{ cluster.label }}</div>
+            {{ cluster.count }} Documents
+            </a>
+        </li>
+        {% endfor %}
+    </ol>
+    </div> {# end first column #}
+
+    {# second column, when there are documents #}
+    {% if documents %}
+    <div class="fl w-100 w-60-ns pa2">
+      <div class="bl-ns bt bt-0-ns pv4">
+          {# todo: group by distinct sets of tags #}
+          <ol>
+          {% for doc in documents %}
+              <li class="pb3">
+                <ul class="list pl0 dark-gray">
+                    {% for tag in doc.tags_ss %}
+                        <li class="di">#{{ tag }}</li>
+                    {% endfor %}
+                </ul>
+
+                <div>{{ doc.shelfmark_s }}</div>
+                <div>{{ doc.type_s }}</div>
+                <div>{{ doc.description_txt.0|truncate(150) }}</div>
+                <div>{% if doc.transcription_txt %}<span class="green">✓</span> Transcription{% endif %}
+              </li>
+          {% endfor %}
+          </ol>
+      </div>
+
+    </div>
+  {% endif %}
+  </div>
+
+</div>
+
 {% endblock %}
