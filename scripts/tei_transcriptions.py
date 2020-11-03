@@ -64,7 +64,8 @@ def transcriptions():
 
             elif line.name == 'l':
                 if line.lang:
-                    # TODO: can we assume a default/unspecified language where not set?
+                    # NOTE: will need to add logic to detect languages;
+                    # language tags in the xml are sparse
                     languages.add(line.lang)
                 lines.append(str(line))
 

@@ -49,7 +49,7 @@ def search():
 
     # copied from pemm
     if results and search_terms:
-        # patch in the highlighted incipits into the main result
+        # patch highlighted transcription lines into the main result
         # to avoid accessing separately in the template or json
         highlights = queryset.get_highlighting()
         for i, result in enumerate(results):
