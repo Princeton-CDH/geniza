@@ -10,7 +10,6 @@ Run a debug server for development with:
     $ flask run
 
 '''
-
 from flask import Flask, g, render_template, request
 from parasolr.query import SolrQuerySet
 from parasolr.solr.client import SolrClient
@@ -61,6 +60,48 @@ def search():
     return render_template('results.html', results=results,
                            total=queryset.count(),
                            search_term=search_terms,
+                           version=__version__,
+                           env=app.config.get('ENV', None))
+
+
+@app.route('/clusters/', methods=['GET'])
+def clusters():
+    # use a facet pivot query to get tags that occur together on at
+    # at least 50 documents
+    sqs = SolrQuerySet(get_solr()) \
+        .facet('tags_ss', pivot='tags_ss,tags_ss', **{'pivot.mincount': 50})
+    facets = sqs.get_facets()
+
+    # iterate over the facet pivots to generate a unique list of pairs & counts
+    tag_pairs = []
+    tag_pair_counts = {}
+    for tag_pivot in facets.facet_pivot['tags_ss,tags_ss']:
+        tag_a = tag_pivot['value']
+        for pivot in tag_pivot['pivot']:
+            tag_b = pivot['value']
+            # every pivot repeats the first tag; skip that one
+            if tag_b == tag_a:
+                continue
+            tag_pair = '/'.join([tag_a, tag_b])
+            # each pair will show up twice; only add it the first time
+            alt_tag_pair = '/'.join([tag_b, tag_a])
+            if alt_tag_pair in tag_pairs:
+                continue
+            tag_pairs.append(tag_pair)
+            tag_pair_counts[tag_pair] = pivot['count']
+
+    # combine tag pairs & counts into a format that will be easy to render
+    clusters = []
+    for tag_pair in tag_pairs:
+        clusters.append({
+            'value': tag_pair,
+            'label': ' '.join('#%s' % tag for tag in tag_pair.split('/')),
+            'count': tag_pair_counts[tag_pair]
+        })
+    # sort by count, highest counts first
+    clusters = sorted(clusters, key=lambda i: i['count'], reverse=True)
+
+    return render_template('clusters.html', clusters=clusters,
                            version=__version__,
                            env=app.config.get('ENV', None))
 
