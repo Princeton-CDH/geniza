@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Geniza Prototype | New Search {% endblock %}
+
+{% block head %}
+ {{ super() }}
+    <style>
+        /*input[type=text] {font-size: 16pt; width: 90%;}*/
+        /* style highlights tagged by Solr */
+        em {background-color: #3DFF6A; font-weight: bold; font-style: normal; }
+
+        .transcription {
+            direction: rtl;  /* assuming all for now */
+            text-align: right;
+            white-space: pre;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<h2>Clusters</h2>
+<p>Sorted by size</p>
+
+<ol>
+    {% for cluster in clusters %}
+    <li class="pl1 pb2"><div class="f3 lh-copy">{{ cluster.label }}</div>
+        {{ cluster.count }} Documents
+    </li>
+    {% endfor %}
+</ol>
+{% endblock %}

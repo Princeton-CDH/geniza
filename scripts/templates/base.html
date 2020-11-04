@@ -8,7 +8,15 @@
     <link rel="stylesheet" href="https://unpkg.com/tachyons/css/tachyons.min.css">
 </head>
 <body>
+
+  <nav class="flex justify-between">
     <h1 class="bw2 pa2 pb0 f3">Princeton Geniza Project — Search prototype</h1>
+  <div class="flex-grow pa3 flex items-center">
+    <a class="bg-mid-gray pa3 f6 link dib dim mr3 mr4-ns white ttu" href="/">Search</a>
+    <a class="bg-mid-gray pa3 f6 link dib dim mr3 mr4-ns white ttu" href="/clusters/">Clusters</a>
+  </div>
+</nav>
+
 
     <main class="pa4 pb2 f5">{% block content %}{% endblock %}</main>
 
