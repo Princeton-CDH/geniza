@@ -49,13 +49,13 @@
             <div class="f2 lh-copy blue">{{ current_cluster }}</div>
             <div>{{ current_cluster_count }} Documents</div>
         </div>
-
-          {# todo: group by distinct sets of tags #}
           <ol>
           {% for doc in documents %}
               <li class="pb3">
+                {# show the first document, with tags #}
                 {% set show_tags = true %}
                 {% include "cluster_result.html" %}
+                {# if there is more than one document in this group, show all others without tags #}
                 {% if doc.tagset_s in groups %}
                 {% for group_doc in groups[doc.tagset_s]['docs'] %}
                     {# don't repeat tags, since they are the same for theg roup #}
