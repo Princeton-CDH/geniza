@@ -14,6 +14,10 @@
             text-align: right;
             white-space: pre;
         }
+
+        ol ::marker {
+            font-weight: bold;
+        }
     </style>
 {% endblock %}
 
@@ -43,23 +47,37 @@
       <div class="bl-ns bt bt-0-ns pv4">
         <div class="pl3">
             <div class="f2 lh-copy blue">{{ current_cluster }}</div>
-            <div>{{ documents|length() }} Documents</div>
+            <div>{{ current_cluster_count }} Documents</div>
         </div>
 
           {# todo: group by distinct sets of tags #}
           <ol>
           {% for doc in documents %}
               <li class="pb3">
-                <ul class="list pl0 dark-gray">
-                    {% for tag in doc.tags_ss %}
-                        <li class="di {% if tag in current_tags %}blue{% endif %}">#{{ tag }}</li>
-                    {% endfor %}
-                </ul>
+                <div class="pb3">
+                    <ul class="list pl0 pb2 dark-gray">
+                        {% for tag in doc.tags_ss %}
+                            <li class="di {% if tag in current_tags %}blue{% endif %}">#{{ tag }}</li>
+                        {% endfor %}
+                    </ul>
 
-                <div>{{ doc.shelfmark_s }}</div>
-                <div>{{ doc.type_s }}</div>
-                <div>{{ doc.description_txt.0|truncate(170) }}</div>
-                <div>{% if doc.transcription_txt %}<span class="green">✓</span> Transcription{% endif %}
+                    <div>{{ doc.shelfmark_s }}</div>
+                    <div>{{ doc.type_s }}</div>
+                    <div>{{ doc.description_txt.0|truncate(170) }}</div>
+                    <div>{% if doc.transcription_txt %}<span class="green">✓</span> Transcription{% endif %}</div>
+                </div>
+                {% if doc.tagset_s in groups %}
+                {% for group_doc in groups[doc.tagset_s]['docs'] %}
+                <div class="pb3">
+                    {# don't repeat tags, since they are the same #}
+                    <div>{{ group_doc.shelfmark_s }}</div>
+                    <div>{{ group_doc.type_s }}</div>
+                    <div>{{ group_doc.description_txt.0|truncate(170) }}</div>
+                    <div>{% if group_doc.transcription_txt %}<span class="green">✓</span> Transcription{% endif %}</div>
+                </div>
+                {% endfor %}
+                {% endif %}
+
               </li>
           {% endfor %}
           </ol>

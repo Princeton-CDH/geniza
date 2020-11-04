@@ -1,4 +1,6 @@
-parasolr
+# using parasolr features added for ppa support that are not yet released
+#parasolr<=0.6
+git+https://github.com/Princeton-CDH/parasolr.git@develop#egg=parasolr
 flask
 pytest
 flask

@@ -95,36 +95,45 @@ def clusters():
 
     # combine tag pairs & counts into a format that will be easy to render
     clusters = []
+    current_cluster_label = None
     for tag_pair in tag_pairs:
+        label = ' '.join('#%s' % tag for tag in tag_pair.split('/'))
+        selected = tag_pair == selected_cluster
+        if selected:
+            current_cluster_label = label
         clusters.append({
             'value': tag_pair,
-            'label': ' '.join('#%s' % tag for tag in tag_pair.split('/')),
+            'label': label,
             'count': tag_pair_counts[tag_pair],
-            'selected': tag_pair == selected_cluster
+            'selected': selected
         })
     # sort by count, highest counts first
     clusters = sorted(clusters, key=lambda i: i['count'], reverse=True)
 
     # if a cluster is selected, find all documents
-    documents = None
+    documents = cluster_tags = groups = None
     if selected_cluster:
         cluster_tags = selected_cluster.split('/')
-        # generate query for items that match both tags
+        # search for items that match both tags
+        # group them by distinct tag sets, and then expand
+        # to return everything in the collapsed group
         tag_query = ' AND '.join(['"%s"' % tag for tag in cluster_tags])
         document_sqs = SolrQuerySet(get_solr()) \
-            .filter(tags_ss='(%s)' % tag_query)
+            .filter(tags_ss='(%s)' % tag_query) \
+            .filter('{!collapse field=tagset_s }') \
+            .raw_query_parameters(
+                expand='true', **{'expand.rows': 1000})
 
-        # todo: group by distinct sets of tags
         documents = document_sqs.get_results(rows=1000)
-
-    current_cluster_tags = selected_cluster.split('/')
+        groups = document_sqs.get_expanded()
 
     return render_template(
         'clusters.html', clusters=clusters,
-        current_cluster=' '.join('#%s' % tag for tag in current_cluster_tags),
-        current_tags=current_cluster_tags,
-        documents=documents, version=__version__,
-        env=app.config.get('ENV', None))
+        current_cluster=current_cluster_label,
+        current_cluster_count=tag_pair_counts[selected_cluster] if selected_cluster else None,
+        current_tags=cluster_tags,
+        documents=documents, groups=groups,
+        version=__version__, env=app.config.get('ENV', None))
 
 
 def get_solr():
