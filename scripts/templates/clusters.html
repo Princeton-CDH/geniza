@@ -58,7 +58,7 @@
 
                 <div>{{ doc.shelfmark_s }}</div>
                 <div>{{ doc.type_s }}</div>
-                <div>{{ doc.description_txt.0|truncate(150) }}</div>
+                <div>{{ doc.description_txt.0|truncate(170) }}</div>
                 <div>{% if doc.transcription_txt %}<span class="green">✓</span> Transcription{% endif %}
               </li>
           {% endfor %}
