@@ -45,9 +45,7 @@ def index():
         tags = [tag.strip() for tag in row['Tags'].split('#') if tag.strip()]
         # create a combined, sorted version of tag list for grouping
         # records with the same set of tags
-        sorted_tags = tags.copy()
-        sorted_tags.sort()
-        tagset = '|'.join(sorted_tags)
+        tagset = '|'.join(sorted(tags))
 
         extlink = row['Link to image']
         iiif_link = None
