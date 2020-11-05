@@ -48,6 +48,10 @@ def index():
     index_data = []
     for row in rows:
         tags = [tag.strip() for tag in row['Tags'].split('#') if tag.strip()]
+        # create a combined, sorted version of tag list for grouping
+        # records with the same set of tags
+        tagset = '|'.join(sorted(tags))
+
         extlink = row['Link to image']
         iiif_link = None
         # cambridge iiif manifest links use the same id as view links
@@ -78,6 +82,7 @@ def index():
             'shelfmark_txt': row['Shelfmark - Current'],
             'tags_txt': tags,
             'tags_ss': tags,
+            'tagset_s': tagset,
             'link_s': extlink or None,
             'iiif_link_s': iiif_link,
             'editors_txt': row['Editor(s)'] or None,

@@ -1,0 +1,20 @@
+{% set result = group_doc or doc %} {# use group doc if defined, otherwise doc #}
+<div class="pb3">
+    {% if show_tags %} {# only show tags if set #}
+    <ul class="list pl0 pb2 dark-gray">
+        {% for tag in result.tags_ss %}
+            <li class="di {% if tag in current_tags %}blue{% endif %}">#{{ tag }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <div>{{ result.shelfmark_s }}</div>
+    <div>{{ result.type_s }}</div>
+    <div>{{ result.description_txt.0|truncate(170) }}</div>
+    {% if result.transcription_txt or result.editors_txt or result.translators_txt %}
+    <ul class="list pl0">
+        <li class="di green">✓</li>
+        {% if result.transcription_txt %}<li class="di pr2">Transcription</li>{% endif %}
+        {% if result.editors_txt or result.translators_txt %}<li class="di pr2">Bibliography</li>{% endif %}
+    </ul>
+    {% endif %}
+</div>
