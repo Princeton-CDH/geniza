@@ -55,7 +55,7 @@ def search():
             highlighted_text = highlights[result['id']] \
                 .get('transcription_lines_txt', None)
             if highlighted_text:
-                result['transcription_highlights'] = highlighted_text[0]
+                result['transcription_highlights'] = highlighted_text
 
     return render_template('results.html', results=results,
                            total=queryset.count(),

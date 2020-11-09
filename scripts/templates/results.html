@@ -42,7 +42,7 @@
                 <div>{{ result.description_txt[0]|safe }}</div>
                 {% if result.editors_txt %}<div><span class="mid-gray">Editor:</span> {{ result.editors_txt[0] }}</div>{% endif %}
                 {% if result.translators_txt %}<div><span class="mid-gray">Translator:</span> {{ result.translators_txt[0] }}</div>{% endif %}
-                {% if result.transcription_highlights %}<div class="pt2 transcription">{{ result.transcription_highlights|safe }}</div>{% endif %}
+                {% if result.transcription_highlights %}<div class="pt2 transcription">{% for line in result.transcription_highlights %}{% if line %}<div class="pa0">{{ line|safe }}</div>{% endif %}{% endfor %}</div>{% endif %}
                 <div class="w-100 flex justify-between pt2">
                     <!-- source mss -->
                     <div class="id fl purple avenir">{{ result.shelfmark_s }} | {{ result.library_s }}</div><br>
