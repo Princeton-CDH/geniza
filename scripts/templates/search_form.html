@@ -1,8 +1,17 @@
 <form action="/" method="get" class="pa3 black-80">
-        <label for="keywords" class="f4 b db mb2">Search by keyword or phrase</label>
-        <input type="text" name="keywords" size="200"
-            placeholder="search across metadata fields"
-            value="{{ search_term }}"
-            class="input-reset ba br3 ba b--black-20 pa2 mb2 db w-100 f5" type="text"/>
-        <input class="br3 ba pv1 ph3" type="submit" value="Search"/>
+    <label for="keywords" class="f4 b db mb2">Search by keyword or phrase</label>
+    <input type="text" name="keywords" size="200"
+    placeholder="search across metadata fields"
+    value="{{ search_term }}"
+    class="input-reset ba br3 ba b--black-20 pa2 mb2 db w-100 f5" type="text"/>
+
+    {% for tag, count in facets.facet_fields.tags_ss.items() %}
+    <label>
+        <input name="tag" value="{{ tag }}" type="checkbox">
+        {{ tag }} ({{ count }})
+    </label>    
+    {% endfor %}
+
+
+    <input class="br3 ba pv1 ph3" type="submit" value="Search"/>
 </form>
