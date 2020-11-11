@@ -5,12 +5,15 @@
     value="{{ search_term }}"
     class="input-reset ba br3 ba b--black-20 pa2 mb2 db w-100 f5" type="text"/>
 
-    {% for tag, count in facets.facet_fields.tags_ss.items() %}
-    <label>
-        <input name="tag" value="{{ tag }}" type="checkbox">
-        {{ tag }} ({{ count }})
-    </label>    
-    {% endfor %}
+    <fieldset>
+        {% for tag, count in facets.facet_fields.tags_ss.items() %}
+        <label class="pr2">
+
+            <input name="tag" value="{{ tag }}" type="checkbox" {% if tag in selected_tags %} checked {% endif %}>
+            {{ tag }} <span class="gray f7">({{ count }})</span>
+        </label>
+        {% endfor %}
+    </fieldset>
 
 
     <input class="br3 ba pv1 ph3" type="submit" value="Search"/>

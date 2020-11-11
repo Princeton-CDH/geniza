@@ -31,6 +31,7 @@ app.cli.add_command(tei_transcriptions.transcriptions)
 def search():
     '''Search PGP records and display return a list of matching results.'''
     search_terms = request.args.get('keywords', '')
+    tags = request.args.getlist('tag')
 
     #: keyword search field query alias field syntax
     search_query = "{!dismax qf=$keyword_qf pf=$keyword_pf ps=2 v=$search_terms}"
@@ -44,6 +45,9 @@ def search():
             .highlight('transcription_lines_txt', snippets=3, method='unified') \
             .order_by('-score').only('*', 'score')
 
+    if tags:
+        # find documents that match any of the selected tags
+        queryset = queryset.filter(tags_ss__in=tags)
 
     results = queryset.get_results(rows=50)
 
@@ -63,6 +67,7 @@ def search():
                            search_term=search_terms,
                            facets=queryset.get_facets(),
                            version=__version__,
+                           selected_tags=tags,
                            env=app.config.get('ENV', None))
 
 
