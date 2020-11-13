@@ -15,6 +15,15 @@
         {% endfor %}
     </fieldset>
 
+    <div class="ma2">
+        <label for="male">
+            <input type="radio" id="logical_or" name="tag_logic" value="logical_or" checked> Show records that contain ANY of these tags
+        </label>
+        <br>
+        <label for="male">
+            <input type="radio" id="logical_and" name="tag_logic" value="logical_and"> Show records that contain ALL of these tags
+        </label>
+    </div>
 
     <input class="br3 ba pv1 ph3" type="submit" value="Search"/>
 </form>
