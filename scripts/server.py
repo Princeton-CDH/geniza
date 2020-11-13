@@ -32,6 +32,7 @@ def search():
     '''Search PGP records and display return a list of matching results.'''
     search_terms = request.args.get('keywords', '')
     tags = request.args.getlist('tag')
+    tag_logic = request.args.get('tag_logic', 'logical_or')
 
     #: keyword search field query alias field syntax
     search_query = "{!dismax qf=$keyword_qf pf=$keyword_pf ps=2 v=$search_terms}"
@@ -47,7 +48,13 @@ def search():
 
     if tags:
         # find documents that match any of the selected tags
-        queryset = queryset.filter(tags_ss__in=tags)
+        if tag_logic == 'logical_or':
+            queryset = queryset.filter(tags_ss__in=tags)
+        else:
+            # find documents that match all of the selected tags
+            query_string = ' AND '.join([f"tags_ss:{tag}" for tag in tags])
+            queryset = queryset.filter(query_string)
+
 
     results = queryset.get_results(rows=50)
 
