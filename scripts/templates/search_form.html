@@ -7,8 +7,7 @@
 
     <fieldset>
         {% for tag, count in facets.facet_fields.tags_ss.items() %}
-        <label class="pr2">
-
+        <label class="dib pr2">
             <input name="tag" value="{{ tag }}" type="checkbox" {% if tag in selected_tags %} checked {% endif %}>
             {{ tag }} <span class="gray f7">({{ count }})</span>
         </label>
