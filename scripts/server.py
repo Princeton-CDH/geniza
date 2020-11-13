@@ -52,7 +52,7 @@ def search():
             queryset = queryset.filter(tags_ss__in=tags)
         else:
             # find documents that match all of the selected tags
-            query_string = ' AND '.join([f"tags_ss:{tag}" for tag in tags])
+            query_string = ' AND '.join([f'tags_ss:"{tag}"' for tag in tags])
             queryset = queryset.filter(query_string)
 
 
