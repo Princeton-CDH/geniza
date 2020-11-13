@@ -73,6 +73,7 @@ def search():
                            total=queryset.count(),
                            search_term=search_terms,
                            facets=queryset.get_facets(),
+                           selected_tag_logic=tag_logic,
                            version=__version__,
                            selected_tags=tags,
                            env=app.config.get('ENV', None))
