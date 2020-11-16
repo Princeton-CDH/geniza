@@ -12,6 +12,17 @@
             {{ tag }} <span class="gray f7">({{ count }})</span>
         </label>
         {% endfor %}
+
+        <!-- Include selected tags if they're not in results -->
+        {% for tag in selected_tags %}
+            {% if tag not in facets.facet_fields.tags_ss %}
+                <label class="dib pr2">
+                    <input name="tag" value="{{ tag }}" type="checkbox" checked>
+                    {{ tag }} <span class="gray f7">(0)</span>
+                </label>
+            {% endif %}
+        {% endfor  %}
+
     </fieldset>
 
     <div class="ma2">
