@@ -15,17 +15,18 @@
     </fieldset>
 
     <div class="ma2">
+        Show records that contain
         <label for="logical_or">
             <input type="radio" id="logical_or" name="tag_logic" value="logical_or" 
                 {% if selected_tag_logic == "logical_or" %} checked {% endif %}>
-                Show records that contain ANY of these tags
+                ANY 
         </label>
-        <br>
         <label for="logical_and">
             <input type="radio" id="logical_and" name="tag_logic" value="logical_and"
                 {% if selected_tag_logic == "logical_and" %} checked {% endif %}>
-                Show records that contain ALL of these tags
+                ALL
         </label>
+        of these tags
     </div>
 
     <input class="br3 ba pv1 ph3" type="submit" value="Search"/>
