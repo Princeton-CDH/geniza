@@ -21,6 +21,5 @@ jobs:
       run: cp scripts/local_settings.py.sample scripts/local_settings.py
 
       # Ignoring testing for now while prototyping
-    - name: Run tests
-      # run: python -m pytest
-      run: echo "Hello World"
+    # - name: Run tests
+    #   run: python -m pytest
