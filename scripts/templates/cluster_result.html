@@ -3,13 +3,19 @@
     {% if show_tags %} {# only show tags if set #}
     <ul class="list pl0 pb2 dark-gray">
         {% for tag in result.tags_ss %}
-            <li class="di {% if tag in current_tags %}blue{% endif %}">#{{ tag }}</li>
+            <li class="di {% if current_tags and tag in current_tags or tag in search_words %}blue{% endif %}">#{{ tag }}</li>
         {% endfor %}
     </ul>
     {% endif %}
     <div>{{ result.shelfmark_s }}</div>
     <div>{{ result.type_s }}</div>
+    {# display description with highlighted search terms if available #}
+    {% set doc_highlights = highlights[result.id] if highlights and result.id in highlights %}
+    {% if doc_highlights and doc_highlights.description_txt %}
+        <div>{{ doc_highlights.description_txt.0|safe }}</div>
+    {% else %} {# otherwise, display truncated description #}
     <div>{{ result.description_txt.0|truncate(170) }}</div>
+    {% endif %}
     {% if result.transcription_txt or result.editors_txt or result.translators_txt %}
     <ul class="list pl0">
         <li class="di green">✓</li>

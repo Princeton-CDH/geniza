@@ -10,12 +10,40 @@ Run a debug server for development with:
     $ flask run
 
 '''
+from logging.config import dictConfig
+
 from flask import Flask, g, render_template, request
 from parasolr.query import SolrQuerySet
 from parasolr.solr.client import SolrClient
 
 from scripts import __version__
 from scripts import index, tei_transcriptions
+
+
+dictConfig({
+    'version': 1,
+    'formatters': {
+        'default': {
+            'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'default',
+            'level': 'DEBUG',
+        },
+    },
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console']
+    },
+    'parasolr': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+        'propagate': False
+    },
+})
 
 
 # create a new flask app from this module
@@ -26,14 +54,14 @@ app.config.from_pyfile('local_settings.py')
 app.cli.add_command(index.index)
 app.cli.add_command(tei_transcriptions.transcriptions)
 
+#: keyword search field query alias field syntax
+search_query = "{!dismax qf=$keyword_qf pf=$keyword_pf ps=2 v=$search_terms}"
+
 
 @app.route('/', methods=['GET'])
 def search():
     '''Search PGP records and display return a list of matching results.'''
     search_terms = request.args.get('keywords', '')
-
-    #: keyword search field query alias field syntax
-    search_query = "{!dismax qf=$keyword_qf pf=$keyword_pf ps=2 v=$search_terms}"
 
     queryset = SolrQuerySet(get_solr())
     # highlighting lines only instead of text blob; lines in full text are so
@@ -68,6 +96,9 @@ def search():
 def clusters():
     # use a facet pivot query to get tags that occur together on at
     # at least 50 documents
+
+    search_terms = request.args.get('keywords', '')
+
     sqs = SolrQuerySet(get_solr()) \
         .facet('tags_ss', pivot='tags_ss,tags_ss', **{'pivot.mincount': 50})
     facets = sqs.get_facets()
@@ -111,21 +142,34 @@ def clusters():
     clusters = sorted(clusters, key=lambda i: i['count'], reverse=True)
 
     # if a cluster is selected, find all documents
-    documents = cluster_tags = groups = None
-    if selected_cluster:
-        cluster_tags = selected_cluster.split('/')
-        # search for items that match both tags
-        # group them by distinct tag sets, and then expand
-        # to return everything in the collapsed group
-        tag_query = ' AND '.join(['"%s"' % tag for tag in cluster_tags])
-        document_sqs = SolrQuerySet(get_solr()) \
-            .filter(tags_ss='(%s)' % tag_query) \
-            .filter('{!collapse field=tagset_s }') \
-            .raw_query_parameters(
-                expand='true', **{'expand.rows': 1000})
+    documents = cluster_tags = groups = highlights = None
+    if selected_cluster or search_terms:
+        document_sqs = SolrQuerySet(get_solr())
+
+        # if search terms are present, filter by search terms
+        # configure highlighting, and order by relevance
+        if search_terms:
+            document_sqs = document_sqs.search(search_query) \
+                .raw_query_parameters(search_terms=search_terms) \
+                .highlight('transcription_lines_txt', snippets=3, method='unified') \
+                .highlight('description_txt', snippets=3, method='unified') \
+                .order_by('-score')
+
+        # otherwise get all documents for the selected cluster
+        elif selected_cluster:
+            cluster_tags = selected_cluster.split('/')
+            # search for items that match both tags
+            tag_query = ' AND '.join(['"%s"' % tag for tag in cluster_tags])
+            # group documents by distinct tag sets, and then expand
+            # to return everything in the collapsed group
+            document_sqs = document_sqs.filter(tags_ss='(%s)' % tag_query) \
+                .filter('{!collapse field=tagset_s }') \
+                .raw_query_parameters(
+                    expand='true', **{'expand.rows': 1000})
 
         documents = document_sqs.get_results(rows=1000)
         groups = document_sqs.get_expanded()
+        highlights = document_sqs.get_highlighting()
 
     return render_template(
         'clusters.html', clusters=clusters,
@@ -133,6 +177,9 @@ def clusters():
         current_cluster_count=tag_pair_counts[selected_cluster] if selected_cluster else None,
         current_tags=cluster_tags,
         documents=documents, groups=groups,
+        total=document_sqs.count(),
+        search_term=search_terms, highlights=highlights,
+        search_words=search_terms.split(),
         version=__version__, env=app.config.get('ENV', None))
 
 
