@@ -30,6 +30,7 @@
   <div class="cf ph2-ns">
     <div class="fl w-100 w-40-ns pa2">
         {% set form_url = "/clusters/" %}
+        {% set no_tags = True %}
         {% include 'search_form.html' %}
 
     {% if not search_term %}
