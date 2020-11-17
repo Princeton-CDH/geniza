@@ -37,7 +37,8 @@ def search():
     #: keyword search field query alias field syntax
     search_query = "{!dismax qf=$keyword_qf pf=$keyword_pf ps=2 v=$search_terms}"
 
-    queryset = SolrQuerySet(get_solr()).facet('tags_ss', mincount=1)
+    queryset = SolrQuerySet(get_solr()) \
+        .facet('tags_ss', mincount=1, limit=150)
     # highlighting lines only instead of text blob; lines in full text are so
     # short the highlight snippets end up getting the whole thing in many cases
     if search_terms:
@@ -52,9 +53,8 @@ def search():
             queryset = queryset.filter(tags_ss__in=tags)
         else:
             # find documents that match all of the selected tags
-            query_string = ' AND '.join([f'tags_ss:"{tag}"' for tag in tags])
-            queryset = queryset.filter(query_string)
-
+            query_string = '(%s)' % ' AND '.join(['"%s"' % tag for tag in tags])
+            queryset = queryset.filter(tags_ss=query_string)
 
     results = queryset.get_results(rows=50)
 
