@@ -1,2 +1,6 @@
 venv/
 .vscode/
+data/
+scripts/
+db.sqlite3
+docker-compose.yml
