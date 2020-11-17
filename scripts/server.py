@@ -10,6 +10,7 @@ Run a debug server for development with:
     $ flask run
 
 '''
+from collections import defaultdict
 from logging.config import dictConfig
 
 from flask import Flask, g, render_template, request
@@ -142,7 +143,8 @@ def clusters():
     clusters = sorted(clusters, key=lambda i: i['count'], reverse=True)
 
     # if a cluster is selected, find all documents
-    documents = cluster_tags = groups = highlights = None
+    documents = cluster_tags = groups = highlights = total = None
+    doc_clusters = defaultdict(list)
     if selected_cluster or search_terms:
         document_sqs = SolrQuerySet(get_solr())
 
@@ -168,8 +170,24 @@ def clusters():
                     expand='true', **{'expand.rows': 1000})
 
         documents = document_sqs.get_results(rows=1000)
+        # groups are for cluster browse only
         groups = document_sqs.get_expanded()
+        total = document_sqs.count()
+        # highlight is for search only
         highlights = document_sqs.get_highlighting()
+
+        # for search, determine which clusters each document belongs to
+        if search_terms:
+            for doc in documents:
+                for cluster in clusters:
+                    cluster_tags = cluster['value'].split('/')
+                    # if all tags in a cluster occur in this document,
+                    # add cluster label and value to the list
+                    if all(ctag in doc.get('tags_ss', []) for ctag in cluster_tags):
+                        doc_clusters[doc['id']].append({
+                            'value': cluster['value'],
+                            'label': cluster['label']
+                        })
 
     return render_template(
         'clusters.html', clusters=clusters,
@@ -177,7 +195,8 @@ def clusters():
         current_cluster_count=tag_pair_counts[selected_cluster] if selected_cluster else None,
         current_tags=cluster_tags,
         documents=documents, groups=groups,
-        total=document_sqs.count(),
+        document_clusters=doc_clusters,
+        total=total,
         search_term=search_terms, highlights=highlights,
         search_words=search_terms.split(),
         version=__version__, env=app.config.get('ENV', None))

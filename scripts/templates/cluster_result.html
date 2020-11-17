@@ -16,11 +16,27 @@
     {% else %} {# otherwise, display truncated description #}
     <div>{{ result.description_txt.0|truncate(170) }}</div>
     {% endif %}
+    {% if doc_highlights and doc_highlights.transcription_txt %}
+        {% for transcription in doc.highlights.transcription_txt %}
+            <div>{{ transcription }}</div>
+        {% endfor %}
+    {% endif %}
     {% if result.transcription_txt or result.editors_txt or result.translators_txt %}
     <ul class="list pl0">
         <li class="di green">✓</li>
         {% if result.transcription_txt %}<li class="di pr2">Transcription</li>{% endif %}
         {% if result.editors_txt or result.translators_txt %}<li class="di pr2">Bibliography</li>{% endif %}
     </ul>
+    {% endif %}
+    {% if result.id in document_clusters %}
+    <div class="bl mt3 pl2">
+        <span class="mid-gray f6">This document appears in the following clusters</span>
+        <ul class="list pl0 pt1">
+        {% for cluster in document_clusters[result.id] %}
+            {# NOTE: designs have tag highlighted if it matches the search term; skipping for now #}
+            <li><a class="no-underline pa1 bg-lightest-blue black" href="?cluster={{ cluster.value }}">{{ cluster.label }}</a></li>
+        {% endfor %}
+        </ul>
+    </div>
     {% endif %}
 </div>
