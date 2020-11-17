@@ -3,7 +3,7 @@
     {% if show_tags %} {# only show tags if set #}
     <ul class="list pl0 pb2 dark-gray">
         {% for tag in result.tags_ss %}
-            <li class="di {% if current_tags and tag in current_tags or tag in search_words %}blue{% endif %}">#{{ tag }}</li>
+            <li class="di {% if current_tags and tag in current_tags or tag.lower() in search_words %}blue{% endif %}">#{{ tag }}</li>
         {% endfor %}
     </ul>
     {% endif %}
@@ -34,7 +34,7 @@
         <ul class="list pl0 pt1">
         {% for cluster in document_clusters[result.id] %}
             {# NOTE: designs have tag highlighted if it matches the search term; skipping for now #}
-            <li><a class="no-underline pa1 bg-lightest-blue black" href="?cluster={{ cluster.value }}">{{ cluster.label }}</a></li>
+            <li><a class="dib no-underline pa1 mb2 bg-lightest-blue black" href="?cluster={{ cluster.value }}">{{ cluster.label }}</a></li>
         {% endfor %}
         </ul>
     </div>

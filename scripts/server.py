@@ -213,7 +213,7 @@ def clusters():
         document_clusters=doc_clusters,
         total=total,
         search_term=search_terms, highlights=highlights,
-        search_words=search_terms.split(),
+        search_words=[term.lower() for term in search_terms.split()],
         version=__version__, env=app.config.get('ENV', None))
 
 
