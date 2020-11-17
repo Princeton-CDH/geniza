@@ -1,8 +1,51 @@
 <form action="/" method="get" class="pa3 black-80">
-        <label for="keywords" class="f4 b db mb2">Search by keyword or phrase</label>
-        <input type="text" name="keywords" size="200"
-            placeholder="search across metadata fields"
-            value="{{ search_term }}"
-            class="input-reset ba br3 ba b--black-20 pa2 mb2 db w-100 f5" type="text"/>
-        <input class="br3 ba pv1 ph3" type="submit" value="Search"/>
+    <label for="keywords" class="f4 b db mb2">Search by keyword or phrase</label>
+    <input type="text" name="keywords" size="200"
+    placeholder="search across metadata fields and transcriptions"
+    value="{{ search_term }}"
+    class="input-reset ba br3 ba b--black-20 pa2 mb2 db w-100 f5" type="text"/>
+
+    <details class="pb2">
+        <summary>Filter by tags</summary>
+        <fieldset>
+            {% if facets.facet_fields %}
+            {% for tag, count in facets.facet_fields.tags_ss.items() %}
+            <label class="pr2 fl w-10">
+                <input name="tag" value="{{ tag }}" type="checkbox" {% if tag in selected_tags %} checked {% endif %}>
+                {{ tag }} <span class="gray f7">({{ count }})</span>
+            </label>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Include selected tags if they're not in results -->
+            {% for tag in selected_tags %}
+                {% if not facets.facet_fields or tag not in facets.facet_fields.tags_ss %}
+                    <label class="pr2 fl w-10">
+                        <input name="tag" value="{{ tag }}" type="checkbox" checked>
+                        {{ tag }} <span class="gray f7">(0)</span>
+                    </label>
+                {% endif %}
+            {% endfor  %}
+        </fieldset>
+
+        <div class="ma2">
+            Show records that contain
+            <label for="logical_or">
+                <input type="radio" id="logical_or" name="tag_logic" value="logical_or"
+                    {% if selected_tag_logic == "logical_or" %} checked {% endif %}>
+                    ANY
+            </label>
+            <label for="logical_and">
+                <input type="radio" id="logical_and" name="tag_logic" value="logical_and"
+                    {% if selected_tag_logic == "logical_and" %} checked {% endif %}>
+                    ALL
+            </label>
+            of these tags
+        </div>
+    </details>
+
+    <input class="br3 ba pv1 ph3" type="submit" value="Search"/>
+    <a href="{{ url_for('search') }}">
+        <input class="br3 ba pv1 ph3" type="button" value="Reset">
+    </a>
 </form>

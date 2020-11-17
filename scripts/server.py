@@ -31,11 +31,14 @@ app.cli.add_command(tei_transcriptions.transcriptions)
 def search():
     '''Search PGP records and display return a list of matching results.'''
     search_terms = request.args.get('keywords', '')
+    tags = request.args.getlist('tag')
+    tag_logic = request.args.get('tag_logic', 'logical_or')
 
     #: keyword search field query alias field syntax
     search_query = "{!dismax qf=$keyword_qf pf=$keyword_pf ps=2 v=$search_terms}"
 
-    queryset = SolrQuerySet(get_solr())
+    queryset = SolrQuerySet(get_solr()) \
+        .facet('tags_ss', mincount=1, limit=150)
     # highlighting lines only instead of text blob; lines in full text are so
     # short the highlight snippets end up getting the whole thing in many cases
     if search_terms:
@@ -43,6 +46,15 @@ def search():
             .raw_query_parameters(search_terms=search_terms) \
             .highlight('transcription_lines_txt', snippets=3, method='unified') \
             .order_by('-score').only('*', 'score')
+
+    if tags:
+        # find documents that match any of the selected tags
+        if tag_logic == 'logical_or':
+            queryset = queryset.filter(tags_ss__in=tags)
+        else:
+            # find documents that match all of the selected tags
+            query_string = '(%s)' % ' AND '.join(['"%s"' % tag for tag in tags])
+            queryset = queryset.filter(tags_ss=query_string)
 
     results = queryset.get_results(rows=50)
 
@@ -60,7 +72,10 @@ def search():
     return render_template('results.html', results=results,
                            total=queryset.count(),
                            search_term=search_terms,
+                           facets=queryset.get_facets(),
+                           selected_tag_logic=tag_logic,
                            version=__version__,
+                           selected_tags=tags,
                            env=app.config.get('ENV', None))
 
 
