@@ -3,3 +3,4 @@ data/
 .vscode/
 venv/
 docker-compose.yml
+db.sqlite3
