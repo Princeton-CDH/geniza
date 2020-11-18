@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h2>{% translate "Professions" %}</h2>
+<ul>
+    {% for profession in professions %}
+    <li>{{ profession.title }} ({{ profession.description }})</li>
+    {% endfor %}
+</ul>
+{% endblock content %}

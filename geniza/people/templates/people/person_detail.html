@@ -4,9 +4,13 @@
 {% block content %}
 <h2>{{ person.name }}</h2>
 <p>
+{% if person.profession %}
 {# Translators: description on a person's detail page #}
 {% blocktranslate with name=person.name profession=person.profession %}
 {{ name }} was a {{ profession }}.
 {% endblocktranslate %}
+{% else %}
+{% translate "No profession recorded." %}
+{% endif %}
 </p>
 {% endblock content %}

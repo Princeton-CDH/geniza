@@ -5,7 +5,7 @@
 <h2>{% translate "People" %}</h2>
 <ul>
     {% for person in people %}
-    <li><a href="{% url 'people:detail' person.pk %}">{{ person.name }} ({{ person.profession }})</a></li>
+    <li><a href="{% url 'people:detail' person.pk %}">{{ person.name }}</a></li>
     {% endfor %}
 </ul>
 {% endblock content %}
