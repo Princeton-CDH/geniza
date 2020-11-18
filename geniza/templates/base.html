@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load static i18n %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,11 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/normalize.css">
     <link rel="stylesheet" href="https://unpkg.com/concrete.css">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
     <title>Geniza i18n</title>
 </head>
 <body>
     <header>
+        <nav aria-label="header">
+            <a href="{% url 'home' %}">{% translate "home" %}</a>
+            <a href="{% url 'people:list' %}">{% translate "people" %}</a>
+            <a href="{% url 'people:profession-list' %}">{% translate "professions" %}</a>
+        </nav>
         <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+            <fieldset>
             <input name="next" type="hidden" value="{{ redirect_to }}">
             <select name="language">
                 {% get_current_language as LANGUAGE_CODE %}
@@ -23,6 +30,7 @@
                 {% endfor %}
             </select>
             <input type="submit" value="Go">
+            </fieldset>
         </form>
     </header>
     <main>
@@ -30,7 +38,7 @@
     {% endblock content %}
     </main>
     <footer>
-    <span>{% translate "©2017 Trustees of Princeton University" %}</span>
+    <span>{% translate "©2020 Trustees of Princeton University" %}</span>
     </footer>
 </body>
 </html>
