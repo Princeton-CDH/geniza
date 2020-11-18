@@ -7,7 +7,10 @@
     <style>
         /*input[type=text] {font-size: 16pt; width: 90%;}*/
         /* style highlights tagged by Solr */
-        em {background-color: #3DFF6A; font-weight: bold; font-style: normal; }
+        em {
+            color: #357edd;
+            font-style: normal;
+        }
 
         .transcription {
             direction: rtl;  /* assuming all for now */
@@ -26,10 +29,19 @@
 <div class="mw9 center ph3-ns">
   <div class="cf ph2-ns">
     <div class="fl w-100 w-40-ns pa2">
+        {% set form_url = "/clusters/" %}
+        {% set no_tags = True %}
+        {% include 'search_form.html' %}
 
+    {% if not search_term %}
     <h2>Clusters</h2>
     <p>Sorted by size</p>
+    {% else %}
+    <div class="fl w-80 pa2">Total results {{ total }} document{% if total != 1 %}s{% endif %}</div>
+    <div class="fl w-20 pa2 b">sorted by relevance</div>
+    {% endif %}
 
+    {% if not search_term %}
     <ol>
         {% for cluster in clusters %}
         <li class="pl1 pb2"><a class="dib no-underline dim black v-mid" href="?cluster={{ cluster.value }}">
@@ -40,15 +52,19 @@
         {% endfor %}
     </ol>
     </div> {# end first column #}
+    {% endif %}
 
-    {# second column, when there are documents #}
     {% if documents %}
-    <div class="fl w-100 w-60-ns pa2">
-      <div class="bl-ns bt bt-0-ns pv4">
-        <div class="pl3">
-            <div class="f2 lh-copy blue">{{ current_cluster }}</div>
-            <div>{{ current_cluster_count }} Documents</div>
-        </div>
+        {% if not search_term %}
+        {# second column, when there are documents but no search term #}
+        <div class="fl w-100 w-60-ns pa2">
+          <div class="bl-ns bt bt-0-ns pv4">
+            <div class="pl3">
+                <div class="f2 lh-copy blue">{{ current_cluster }}</div>
+                <div>{{ current_cluster_count }} Documents</div>
+            </div>
+        {% endif %}
+
           <ol>
           {% for doc in documents %}
               <li class="pb3">
