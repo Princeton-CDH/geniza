@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-18 10:13-0500\n"
+"POT-Creation-Date: 2020-11-18 16:12-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,34 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % "
 "1 == 0) ? 1: (n % 10 == 0 && n % 1 == 0 && n > 10) ? 2 : 3;\n"
-#: people/models.py:7
-msgid "Full name"
-msgstr ""
-
-#: people/models.py:11
-msgid "person"
-msgstr ""
-
-#: people/models.py:12
-msgid "people"
-msgstr ""
-
-#: people/models.py:20
-msgid "profession"
-msgstr ""
-
-#: people/models.py:21
-msgid "professions"
-msgstr ""
 
 #. Translators: description on a person's detail page
-#: people/templates/people/person_detail.html:8
+#: people/templates/people/person_detail.html:9
 #, python-format
 msgid ""
 "\n"
 "%(name)s was a %(profession)s.\n"
 msgstr ""
 
+#: people/templates/people/person_detail.html:13
+msgid "No profession recorded."
+msgstr ""
+
 #: people/templates/people/person_list.html:5
 msgid "People"
+msgstr ""
+
+#: people/templates/people/profession_list.html:5
+msgid "Professions"
 msgstr ""

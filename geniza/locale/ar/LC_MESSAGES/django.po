@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-18 10:13-0500\n"
+"POT-Creation-Date: 2020-11-18 16:12-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,20 +19,32 @@ msgstr ""
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
-#: settings.py:121
+#: settings.py:122
 msgid "English"
 msgstr ""
 
-#: settings.py:122
+#: settings.py:123
 msgid "Hebrew"
 msgstr ""
 
-#: settings.py:123
+#: settings.py:124
 msgid "Arabic"
 msgstr ""
 
-#: templates/base.html:31
-msgid "©2017 Trustees of Princeton University"
+#: templates/base.html:15
+msgid "home"
+msgstr ""
+
+#: templates/base.html:16
+msgid "people"
+msgstr ""
+
+#: templates/base.html:17
+msgid "professions"
+msgstr ""
+
+#: templates/base.html:41
+msgid "©2020 Trustees of Princeton University"
 msgstr ""
 
 #. Translators: main heading on homepage
@@ -40,10 +52,10 @@ msgstr ""
 msgid "Geniza multi-language testing"
 msgstr ""
 
-#: templates/home.html:7
+#: templates/home.html:8
 msgid "View the list of people"
 msgstr ""
 
-#: urls.py:29
-msgid "people/"
+#: templates/home.html:9
+msgid "View the list of professions"
 msgstr ""
