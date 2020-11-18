@@ -6,7 +6,7 @@
 <h1>{% translate "Geniza multi-language testing" %}</h1>
 {% get_current_language as LANGUAGE_CODE %}
 {# Translators: subheading on homepage #}
-<h2>{% blocktranslate %}Your locale is: {{ LANGUAGE_CODE }}{% endblocktranslate %}</h2>
+<h2>{% blocktranslate with lang_name=LANGUAGE_CODE|language_name_local %}Your language is: {{ lang_name }}{% endblocktranslate %}</h2>
 <ul>
     <li><a href="{% url 'people:list' %}">{% translate "View the list of people" %}</a></li>
     <li><a href="{% url 'people:profession-list' %}">{% translate "View the list of professions" %}</a></li>

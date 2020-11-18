@@ -26,6 +26,16 @@ body > header fieldset {
 body > header fieldset > input[type="submit"],
 body > header fieldset > select {
     margin-bottom: 0;
+    background-image: url("/static/triangle-black.svg");
+    background-repeat: no-repeat;
+    background-position-x: 92%;
+    background-position-y: 50%;
+    background-size: 6%;
+}
+@media (prefers-color-scheme: dark) {
+    body > header fieldset > select {
+        background-image: url("/static/triangle-white.svg");
+    }
 }
 
 /* main content */

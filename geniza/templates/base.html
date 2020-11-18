@@ -12,7 +12,7 @@
 <body>
     <header>
         <nav aria-label="header">
-            <a href="{% url 'home' %}">{% translate "home" %}</a>
+            <a href="{% url 'home' %}">{% translate "home" context "homepage" %}</a>
             <a href="{% url 'people:list' %}">{% translate "people" %}</a>
             <a href="{% url 'people:profession-list' %}">{% translate "professions" %}</a>
         </nav>
@@ -29,7 +29,8 @@
                     </option>
                 {% endfor %}
             </select>
-            <input type="submit" value="Go">
+            {# Translators: button on language chooser in navigation #}
+            <input type="submit" value="{% translate 'go' context 'choose this option' %}">
             </fieldset>
         </form>
     </header>

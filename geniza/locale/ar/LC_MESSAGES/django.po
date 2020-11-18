@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-18 16:30-0500\n"
+"POT-Creation-Date: 2020-11-18 16:44-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,18 +20,25 @@ msgstr ""
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
 #: templates/base.html:15
+msgctxt "homepage"
 msgid "home"
-msgstr ""
+msgstr "مَوْقِع"
 
 #: templates/base.html:16
 msgid "people"
-msgstr ""
+msgstr "اشخاص"
 
 #: templates/base.html:17
 msgid "professions"
+msgstr "المهن"
+
+#. Translators: button on language chooser in navigation
+#: templates/base.html:33
+msgctxt "choose this option"
+msgid "go"
 msgstr ""
 
-#: templates/base.html:41
+#: templates/base.html:42
 msgid "©2020 Trustees of Princeton University"
 msgstr ""
 
@@ -43,7 +50,7 @@ msgstr ""
 #. Translators: subheading on homepage
 #: templates/home.html:9
 #, python-format
-msgid "Your locale is: %(LANGUAGE_CODE)s"
+msgid "Your language is: %(lang_name)s"
 msgstr ""
 
 #: templates/home.html:11
