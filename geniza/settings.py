@@ -119,9 +119,9 @@ USE_L10N = True
 USE_TZ = True
 
 LANGUAGES = [
-    ("en", _("English")),
-    ("he", _("Hebrew")),
-    ("ar", _("Arabic")),
+    ("en", "English"),
+    ("he", "Hebrew"),
+    ("ar", "Arabic"),
 ]
 
 # Static files (CSS, JavaScript, Images)
