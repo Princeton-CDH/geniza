@@ -16,9 +16,9 @@
     {% else %} {# otherwise, display truncated description #}
     <div>{{ result.description_txt.0|truncate(170) }}</div>
     {% endif %}
-    {% if doc_highlights and doc_highlights.transcription_txt %}
-        {% for transcription in doc.highlights.transcription_txt %}
-            <div>{{ transcription }}</div>
+    {% if doc_highlights and doc_highlights.transcription_lines_txt %}
+        {% for transcription in doc_highlights.transcription_lines_txt %}
+            <div>{{ transcription|safe }}</div>
         {% endfor %}
     {% endif %}
     {% if result.transcription_txt or result.editors_txt or result.translators_txt %}

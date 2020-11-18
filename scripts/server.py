@@ -168,8 +168,8 @@ def clusters():
         if search_terms:
             document_sqs = document_sqs.search(search_query) \
                 .raw_query_parameters(search_terms=search_terms) \
-                .highlight('transcription_lines_txt', snippets=3, method='unified') \
-                .highlight('description_txt', snippets=3, method='unified') \
+                .highlight('description_txt,transcription_lines_txt',
+                           snippets=3, method='unified') \
                 .order_by('-score')
 
         # otherwise get all documents for the selected cluster
