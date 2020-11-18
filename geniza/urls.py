@@ -16,7 +16,6 @@ Including another URLconf
 from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.urls import include, path
-from django.utils.translation import gettext_lazy as _
 
 from . import views
 
@@ -26,6 +25,6 @@ urlpatterns = [
 ]
 
 urlpatterns += i18n_patterns(
-    path(_("people/"), include("geniza.people.urls")),
-    path("", views.HomepageView.as_view()),
+    path("people/", include("geniza.people.urls")),
+    path("", views.HomepageView.as_view(), name="home"),
 )
