@@ -4,3 +4,5 @@ data/
 venv/
 docker-compose.yml
 db.sqlite3
+__pycache__
+*.pyc
