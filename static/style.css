@@ -9,25 +9,32 @@ body {
 body > header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    padding: 1rem clamp(1rem, 5vw, 4rem);
+    width: 100vw;
+}
+body > header form {
+    margin: 0;
 }
 body > header fieldset {
     display: grid;
     grid-template-columns: minmax(15rem, 1fr) auto;
     grid-gap: 1rem;
     align-items: center;
+    margin: 0;
 }
 body > header fieldset > input[type="submit"],
 body > header fieldset > select {
     margin-bottom: 0;
 }
 
-
 /* main content */
 body > main {
-    margin: clamp(1rem, 5vw, 4rem);
+    padding: 1rem clamp(1rem, 5vw, 4rem);
 }
 
 /* footer */
 body > footer {
+    padding: 1rem 0;
     text-align: center;
 }
