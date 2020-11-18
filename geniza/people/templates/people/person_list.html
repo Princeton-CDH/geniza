@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h2>{% translate "People" %}</h2>
+<ul>
+    {% for person in people %}
+    <li><a href="{% url 'people:detail' person.pk %}">{{ person.name }} ({{ person.profession }})</a></li>
+    {% endfor %}
+</ul>
+{% endblock content %}

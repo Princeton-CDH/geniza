@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h2>{{ person.name }}</h2>
+<p>
+{# Translators: description on a person's detail page #}
+{% blocktranslate with name=person.name profession=person.profession %}
+{{ name }} was a {{ profession }}.
+{% endblocktranslate %}
+</p>
+{% endblock content %}
