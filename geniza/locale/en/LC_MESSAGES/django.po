@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-18 16:12-0500\n"
+"POT-Creation-Date: 2020-11-18 16:29-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -51,10 +51,16 @@ msgstr ""
 msgid "Geniza multi-language testing"
 msgstr ""
 
-#: templates/home.html:8
+#. Translators: subheading on homepage
+#: templates/home.html:9
+#, python-format
+msgid "Your locale is: %(LANGUAGE_CODE)s"
+msgstr ""
+
+#: templates/home.html:11
 msgid "View the list of people"
 msgstr ""
 
-#: templates/home.html:9
+#: templates/home.html:12
 msgid "View the list of professions"
 msgstr ""
