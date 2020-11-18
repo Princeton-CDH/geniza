@@ -1,6 +1,6 @@
 from django.views.generic import DetailView, ListView
 
-from .models import Person
+from .models import Person, Profession
 
 
 class PersonListView(ListView):
@@ -10,3 +10,8 @@ class PersonListView(ListView):
 
 class PersonDetailView(DetailView):
     model = Person
+
+
+class ProfessionListView(ListView):
+    model = Profession
+    context_object_name = "professions"

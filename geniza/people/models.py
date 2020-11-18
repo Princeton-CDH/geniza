@@ -4,18 +4,24 @@ from django.utils.translation import gettext_lazy as _
 
 class Person(models.Model):
     """Person mentioned in or related to a geniza document."""
-    name = models.CharField(max_length=100, help_text=_("Full name"))
-    profession = models.ForeignKey("Profession", on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    profession = models.ForeignKey("Profession", null=True, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return self.name
 
     class Meta:
-        verbose_name = _("person")
-        verbose_name_plural = _("people")
+        ordering = ("-name",)
+        verbose_name_plural = "people"
 
 
 class Profession(models.Model):
     """Historical profession held by a person mentioned in the geniza."""
     title = models.CharField(max_length=100)
+    description = models.TextField(null=True)
+
+    def __str__(self) -> str:
+        return f"{self.title} ({self.description})"
 
     class Meta:
-        verbose_name = _("profession")
-        verbose_name_plural = _("professions")
+        ordering = ("-title",)
