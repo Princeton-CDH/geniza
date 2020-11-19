@@ -13,7 +13,7 @@ Run a debug server for development with:
 from collections import defaultdict
 from logging.config import dictConfig
 
-from flask import Flask, g, render_template, request
+from flask import Flask, g, render_template, request, send_from_directory
 from parasolr.query import SolrQuerySet
 from parasolr.solr.client import SolrClient
 
@@ -54,6 +54,7 @@ app.config.from_pyfile('local_settings.py')
 # register commands
 app.cli.add_command(index.index)
 app.cli.add_command(tei_transcriptions.transcriptions)
+app.cli.add_command(tei_transcriptions.transcription_iiif)
 
 #: keyword search field query alias field syntax
 search_query = "{!dismax qf=$keyword_qf pf=$keyword_pf ps=2 v=$search_terms}"
@@ -215,6 +216,25 @@ def clusters():
         search_term=search_terms, highlights=highlights,
         search_words=[term.lower() for term in search_terms.split()],
         version=__version__, env=app.config.get('ENV', None))
+
+
+@app.route('/iiif/', methods=['GET'])
+def iiif():
+    # todo: get a list of manifests in the data dir
+    # and pass in for inclusion in the catalog
+    # (make a subdir?)
+    return render_template(
+        'iiif_viewer.html',
+        version=__version__, env=app.config.get('ENV', None))
+
+
+@app.route('/data/<path:path>')
+def send_data(path):
+    # quick way to serve data dir with iiif manifests
+    # TODO: update id for annotation list so it will be loaded from
+    # the current flask server
+    # (TODO first: check if annotation list can be relative)
+    return send_from_directory(app.config['DATA_DIR'], path)
 
 
 def get_solr():
