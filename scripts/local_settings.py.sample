@@ -4,3 +4,5 @@ SOLR_URL = 'http://localhost:8983/solr/'
 SOLR_CORE = 'geniza'
 METADATA_CSV_URL = ''
 XML_TRANSCRIPTIONS_DIR = ''
+# path to data dir that includes the transcription json file
+DATA_DIR = ''

@@ -34,6 +34,7 @@ class GenizaTei(teimap.Tei):
 @with_appcontext
 def transcriptions():
     xml_dir = current_app.config['XML_TRANSCRIPTIONS_DIR']
+    data_dir = current_app.config['DATA_DIR']
 
     data = {}
 
@@ -82,5 +83,6 @@ def transcriptions():
         }
         data[tei.pgpid] = docdata
 
-    with open('data/transcriptions.json', 'w') as outfile:
+    with open(os.path.join(data_dir,
+                           'transcriptions.json'), 'w') as outfile:
         json.dump(data, outfile, indent=4)
