@@ -134,3 +134,12 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+try:
+    from geniza.local_settings import *
+except ImportError:
+    import sys
+    print >> sys.stderr, '''Settings not defined.  Please configure a version of
+    local_settings.py for this site.  See local_settings.py.sample for an example.'''
+    del sys
+
