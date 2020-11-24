@@ -2,6 +2,7 @@ import codecs
 import csv
 import json
 import os
+import re
 
 import click
 from flask import current_app
@@ -55,6 +56,8 @@ def index():
         # cambridge iiif manifest links use the same id as view links
         if 'cudl.lib.cam.ac.uk' in extlink:
             iiif_link = extlink.replace('/view/', '/iiif/')
+            # view links end with /1 or /2 but iiif link does not include it
+            iiif_link = re.sub(r'/\d$', '', iiif_link)
 
         pgpid = row['PGPID']
         text = text_blob = None
