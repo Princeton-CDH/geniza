@@ -24,11 +24,6 @@
             sideBarOpenByDefault: true,
             defaultSidebarPanelWidth: 475,
         },
-        // show the first manifest by default
-        // (would prefer to show catalog but can't find a config for that!)
-        windows: [
-            { manifestId: '/iiif/manifests/{{ manifests[0] }}' },
-        ],
         catalog: [
         {% for manifest in manifests %}
             { manifestId: '/iiif/manifests/{{ manifest }}' },
@@ -38,7 +33,9 @@
             defaultPosition: 'far-right'
         },
         workspace: {
-            showZoomControls: true
+            showZoomControls: true,
+            // show the list of loaded manifests by default
+            isWorkspaceAddVisible: true
         }
      });
     </script>
