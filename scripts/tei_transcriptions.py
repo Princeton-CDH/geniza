@@ -91,41 +91,19 @@ def transcriptions():
         json.dump(data, outfile, indent=4)
 
 
-# first pass at creating iiif annotations with tei transcriptions
-
-# - iterate over metadata csv (or use solr?)
-# - identify documents with iiif link (cudl only for now) that ALSo have a transcription
-# - generate iiif annotation list; one annotation for each block in the tei
-# - get a local copy of the iiif manifest and add the annotation list
-# - generate test mirador viewer with the manifests loaded (static? in flask?)
-
-
-annotation_list_template = {
-    "@context": "http://iiif.io/api/presentation/2/context.json",
-    "@id": "http://localhost:8003/coin/canvas/AnnotationList",
-    "@type": "sc:AnnotationList",
-    "resources": [
-        {
-            "@id": "https://images.lib.cam.ac.uk/iiif/MS-ADD-02586-000-00001.jp2",
-            "@type": "oa:Annotation",
-            "motivation": "sc:painting",
-            "resource": {
-                "@type": "cnt:ContentAsText",
-                "format": "text/html",
-                "chars": "<p style='direction:rtl'>מעידים אנו <b>חתומי</b> מטה מה שהיה בפנינו באחד בשבת יום אחד ועשרים מחדש סיון בשנת אתקמד לשטרות<br/>למניננו אשר הורגלנו למנות בו פה בפסטאט מצרים אשר על נהר נילוס היא יושבת הדרת אדוננו הנגיד<br/>הגדול מרנו ורבנו אברהם הרב המובהק [. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .]לב.[. . . . . . . . .<br/>לפנינו אלשיך אבו אלפכר הזקן היקר בן מר ורב עמרם הזקן הנכבד נע ויאמר לנו היו עלי עדים וקנו ממני<br/>בכל לשון שלזכות וכתבו וחתמו ותנו לידי בני אלשיך אבו אלפרג הזקן היקר בן מר ורב אלשיך אבו אלפכר הזקן היקר<br/>שצ להיות בידיו לראיה כי רציתי ברצון נפשי ובגמ[ר] דעתי ולא אנוס ולא שוגג ולא מוטעה כי אם בדעתי<br/>שלימה ונטלתי וקבלתי שבעה עשר דינרים זהב מצרים מידיו ומכרתי ל[ו] בעדם את רבע הדירה אשר לי בכט<br/>תגיב במצר אלדאכלה פי כוכה אלמעתמד פי אלדאר אלמ/ע/רופה  בסכן סת אלרצא הזקנה היקרה אם [אבו] אלפכר<br/>הנזכר פה מכירה גמורה שלימה וחלוטה גלויה ומפורסמת ממכר שלם אשר לא ישוב והרבע אשר<br/>מכרתי לו בכלל חלקיהם שלשותפים בדירה הזאת שאיע גיר מקסום בעומקא ורומא מתהום ארעא<br/>ועד רום רקיעא בתחתיותיה ועליותיה חדריה וחלונותיה וקירותיה ותקרותיה על ארבעת רבעיה סביב<br/>ימה וקדמה וצפונה ונגבה ומצריה וגבוליה סביב בכל זכיות אשר לד[יר]ה הזאת כאשר כתובהם בשטר<br/>ערבי הנכתב לדירה הזאת ובכללה מכרתי לבני זה אבו אלפרג את הרבע הנזכר בכל זכיות אשר בו ולא שיירתי<br/>לעצמי מן זכות רבע הזה כלום ומהיום הזה והלאה יש לזה אבו אלפרג רשות לעשות ברבע הזה אשר מכרתי<br/>לו כל מה שירצה לבנות בו ולהרוס ולהשכין ולגרש ולהחליף ולמכור ולהוריש ולתת במתנה לכל מי שירצה<br/>ואין מי שימחה בידו וכל מי שיבא מארבע רוחות העולם לערער מכחי אח או אחות קרוב או רחוק ארמ[י<br/>או יהודי יורש נכסי ופורע חובי יהיו דבריו בטלים ושבורים כשבר נבל יוצרים אשר אין לו תקנה ועלי להשתיק<br/>את כל המערער על רבע הדירה הזה הנזכר ולהעמיד הממכר הזה ביד הקונה אותו אנא איקום ואשפה<br/>ואפצה ואדכה ואמרק זביני רבעא דנן אנון ועמליהון ושבחיהון ואוקמינון בידי זבונא וצבי זבונא דנן וקביל<br/>עלוהי וקניוא מן אלשיך אבו אלפכר בכלי הכשר לקנות בו על הממכר הזה וכתבנו בשטר הזה וחתמנו בו<br/>ונתננו לידי אלשיך אבו אלפרג להיות בידיו לראייה וחומר שטר מכירה דנן כחומר כל שטרי מכירת<br/>קרקעות דנהיגי בישראל דלא כאסמכתא ודלא כטופסי דשטרי אלא כחומר וכחוזק כל שטרי מזורזי<br/>ומוחזקי בבי דינא ונהגין ישראל בהון מן קדמת דנא וקנינא מן תרויהון אכל(!) מאי דכתיב ומפרש לעילא<br/>במנא דכשר למקניא ביה בביטול כל מודעי ותנאי בלשון מעכשיו בנפש חפצה ובגמר דעת<br/>עין אלמערופה דתלי ביני שיטי דין קיומה והכל שריר ובריר מהימן וקיים<br/>אביתר הכהן בר אפרים נין  דניאל בר סעדיה . .<br/>יהוסף בית דין כהן צדק זצל  . .</p>"
-            },
-           "on": "https://cudl.lib.cam.ac.uk/iiif/MS-ADD-02586/canvas/1#xywh=0,0,6324,7500"
-        }
-    ]
-}
-
-
 @click.command()
 @with_appcontext
 def transcription_iiif():
-    # xml_dir = current_app.config['XML_TRANSCRIPTIONS_DIR']
+    # first pass at creating iiif annotations with tei transcriptions
+    # (currently only for items with IIIF and transcriptions)
+
     data_dir = current_app.config['DATA_DIR']
-    # TODO: make a subdir for iiif/manifests?
+    # use a subdir for iiif manifests; make sure it exists
+    manifest_dir = os.path.join(data_dir, 'iiif', 'manifests')
+    os.makedirs(manifest_dir, exist_ok=True)
+    # and another subdir for annotations
+    annotation_dir = os.path.join(data_dir, 'iiif', 'annotations')
+    os.makedirs(annotation_dir, exist_ok=True)
 
     with open(os.path.join(data_dir, 'transcriptions.json')) as transcriptionsfile:
         transcriptions = json.load(transcriptionsfile)
@@ -133,14 +111,14 @@ def transcription_iiif():
     solr = SolrClient(current_app.config['SOLR_URL'],
                       current_app.config['SOLR_CORE'])
     # find documents that have a IIIF link that ALSO have transcription
-    iiifdocs = SolrQuerySet(solr).filter(iiif_link_s='*', transcription_txt='*')
+    iiifdocs = SolrQuerySet(solr).filter(iiif_link_s='*',
+                                         transcription_txt='*')
     print('%d documents' % iiifdocs.count())
-    for doc in iiifdocs[:3]:
-        print(doc)
+    for doc in iiifdocs[:2000]:
         # get the manifest for this document
         response = requests.get(doc['iiif_link_s'])
         if response.status_code != requests.codes.ok:
-            print('Error retrieving manifest: %s' % response)
+            print('Error retrieving manifest: %s' % doc['iiif_link_s'])
             continue
 
         manifest = response.json()
@@ -182,7 +160,8 @@ def transcription_iiif():
             annotation_list['resources'].append(annotation)
 
         # write the new annotation list to a file
-        annotation_filename = os.path.join(data_dir, '%s_annotation.json' % doc['id'])
+        base_filename = '%s.json' % doc['id']
+        annotation_filename = os.path.join(annotation_dir, base_filename)
         with open(annotation_filename, 'w') as outfile:
             json.dump(annotation_list, outfile, indent=2)
 
@@ -190,12 +169,12 @@ def transcription_iiif():
         canvas1['otherContent'] = [
             {
                 "@context": "http://iiif.io/api/presentation/2/context.json",
-                "@id": annotation_filename,  # FIXME: needs uri?
+                "@id": 'http://FLASK_URL/iiif/annotations/%s' % base_filename,
                 "@type": "sc:AnnotationList"
             }
         ]
 
-        manifest_filename = os.path.join(data_dir, '%s_manifest.json' % doc['id'])
+        # write out a local copy of the modified manifest
+        manifest_filename = os.path.join(manifest_dir, base_filename)
         with open(manifest_filename, 'w') as outfile:
             json.dump(manifest, outfile, indent=2)
-
