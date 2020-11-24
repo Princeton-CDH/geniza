@@ -10,10 +10,14 @@ Run a debug server for development with:
     $ flask run
 
 '''
+import glob
+import json
+import os.path
 from collections import defaultdict
 from logging.config import dictConfig
 
-from flask import Flask, g, render_template, request, send_from_directory
+from flask import Flask, g, jsonify, render_template, request, \
+    send_from_directory
 from parasolr.query import SolrQuerySet
 from parasolr.solr.client import SolrClient
 
@@ -220,21 +224,43 @@ def clusters():
 
 @app.route('/iiif/', methods=['GET'])
 def iiif():
-    # todo: get a list of manifests in the data dir
-    # and pass in for inclusion in the catalog
-    # (make a subdir?)
+    manifest_path = os.path.join(app.config['DATA_DIR'], 'iiif',
+                                 'manifests', '*.json')
+    # get a list of manifests in the data dir to pass to mirador
+    manifests = [os.path.basename(filename)
+                 for filename in glob.glob(manifest_path)]
     return render_template(
         'iiif_viewer.html',
+        manifests=manifests,
         version=__version__, env=app.config.get('ENV', None))
 
 
-@app.route('/data/<path:path>')
-def send_data(path):
-    # quick way to serve data dir with iiif manifests
-    # TODO: update id for annotation list so it will be loaded from
-    # the current flask server
-    # (TODO first: check if annotation list can be relative)
-    return send_from_directory(app.config['DATA_DIR'], path)
+@app.route('/iiif/manifests/<path:path>')
+def iiif_manifests(path):
+    # serve out local manifests
+    filename = os.path.join(app.config['DATA_DIR'], 'iiif',
+                            'manifests', path)
+    with open(filename) as datafile:
+        manifest = json.load(datafile)
+
+    # adjust annotation list uri to match current request
+    # so mirador will be able to load it
+    canvas1 = manifest['sequences'][0]['canvases'][0]
+    annotation_uri = canvas1['otherContent'][0]['@id']
+    annotation_uri = annotation_uri.replace('FLASK_URL', request.host)
+    if request.is_secure:
+        annotation_uri = annotation_uri.replace('http://', 'https://')
+    canvas1['otherContent'][0]['@id'] = annotation_uri
+
+    return jsonify(manifest)
+
+
+@app.route('/iiif/annotations/<path:path>')
+def iiif_annotations(path):
+    annotation_dir = os.path.join(app.config['DATA_DIR'], 'iiif',
+                                  'annotations')
+    # quick way to serve annotation list files
+    return send_from_directory(annotation_dir, path)
 
 
 def get_solr():

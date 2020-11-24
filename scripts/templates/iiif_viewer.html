@@ -13,18 +13,33 @@
 
     <script type="text/javascript">
     var miradorInstance = Mirador.viewer({
-       id: 'mirador',
-       theme: {
-         transitions: window.location.port === '4488' ?  { create: () => 'none' } : {},
-       },
-       windows: [
-       { manifestId: '/data/3951_manifest.json'}
-       ],
-       catalog: [
-         { manifestId: '/data/3951_manifest.json' },
-         { manifestId: '/data/3952_manifest.json' },
-         { manifestId: '/data/3953_manifest.json' },
-       ]
+        id: 'mirador',
+        theme: {
+            transitions: window.location.port === '4488' ?  { create: () => 'none' } : {},
+        },
+        window: {
+            // open annotations by default, and set wide enough
+            // that most transcription text won't wrap
+            defaultSideBarPanel: 'annotations',
+            sideBarOpenByDefault: true,
+            defaultSidebarPanelWidth: 475,
+        },
+        // show the first manifest by default
+        // (would prefer to show catalog but can't find a config for that!)
+        windows: [
+            { manifestId: '/iiif/manifests/{{ manifests[0] }}' },
+        ],
+        catalog: [
+        {% for manifest in manifests %}
+            { manifestId: '/iiif/manifests/{{ manifest }}' },
+        {% endfor %}
+        ],
+        thumbnailNavigation: {
+            defaultPosition: 'far-right'
+        },
+        workspace: {
+            showZoomControls: true
+        }
      });
     </script>
 
