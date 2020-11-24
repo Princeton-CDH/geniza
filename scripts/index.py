@@ -54,7 +54,9 @@ def index():
         extlink = row['Link to image']
         iiif_link = None
         # cambridge iiif manifest links use the same id as view links
-        if 'cudl.lib.cam.ac.uk' in extlink:
+        # NOTE: exclude search link like this one:
+        # https://cudl.lib.cam.ac.uk/search?fileID=&keyword=T-s%2013J33.12&page=1&x=0&y=
+        if 'cudl.lib.cam.ac.uk/view/' in extlink:
             iiif_link = extlink.replace('/view/', '/iiif/')
             # view links end with /1 or /2 but iiif link does not include it
             iiif_link = re.sub(r'/\d$', '', iiif_link)
