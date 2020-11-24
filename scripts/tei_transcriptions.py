@@ -115,13 +115,29 @@ def transcription_iiif():
                                          transcription_txt='*')
     print('%d documents' % iiifdocs.count())
     for doc in iiifdocs[:2000]:
+        # filenames where the file will be written
+        base_filename = '%s.json' % doc['id']
+        # write the new annotation list to a file
+        annotation_filename = os.path.join(annotation_dir, base_filename)
+        # write out a local copy of the modified manifest
+        manifest_filename = os.path.join(manifest_dir, base_filename)
+
+        # if the files already exist, don't regenerate them
+        if all(os.path.exists(f) for f in
+               [manifest_filename, annotation_filename]):
+            continue
+
         # get the manifest for this document
         response = requests.get(doc['iiif_link_s'])
         if response.status_code != requests.codes.ok:
             print('Error retrieving manifest: %s' % doc['iiif_link_s'])
             continue
+        try:
+            manifest = response.json()
+        except json.decoder.JSONDecodeError as err:
+            print('Error decoding json: %s\n%s' % (err, doc['iiif_link_s']))
+            continue
 
-        manifest = response.json()
         # for now, assume simple structure, single sequence
         # for now, associate the annotation with the first image
         canvas1 = manifest['sequences'][0]['canvases'][0]
@@ -132,7 +148,8 @@ def transcription_iiif():
 
         annotation_list = {
             "@context": "http://iiif.io/api/presentation/2/context.json",
-            "@id": "http://localhost:8003/coin/canvas/AnnotationList",
+            # placeholder id; should probably be unique!
+            "@id": "https://cdh.geniza.princeton.edu/iiif/canvas/AnnotationList",
             "@type": "sc:AnnotationList",
             "resources": []
         }
@@ -159,9 +176,6 @@ def transcription_iiif():
             }
             annotation_list['resources'].append(annotation)
 
-        # write the new annotation list to a file
-        base_filename = '%s.json' % doc['id']
-        annotation_filename = os.path.join(annotation_dir, base_filename)
         with open(annotation_filename, 'w') as outfile:
             json.dump(annotation_list, outfile, indent=2)
 
@@ -174,7 +188,5 @@ def transcription_iiif():
             }
         ]
 
-        # write out a local copy of the modified manifest
-        manifest_filename = os.path.join(manifest_dir, base_filename)
         with open(manifest_filename, 'w') as outfile:
             json.dump(manifest, outfile, indent=2)
