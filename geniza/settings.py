@@ -26,7 +26,7 @@ SECRET_KEY = "3@o09-xhawfnlh$p-^#y1hi6ws#4ae-ri#@$ra4j1dws3i91=+"
 # SECURITY WARNING: don"t run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["test-geniza.cdh.princeton.edu", "localhost"]
 
 
 # Application definition
