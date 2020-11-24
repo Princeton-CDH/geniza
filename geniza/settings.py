@@ -129,17 +129,15 @@ LOCALE_PATHS = [BASE_DIR / "geniza" / "locale"]
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
+STATIC_ROOT = BASE_DIR / "static"
+
 STATIC_URL = "/static/"
 
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / "sitemedia",
 ]
 
 try:
     from geniza.local_settings import *
 except ImportError:
-    import sys
-    print >> sys.stderr, '''Settings not defined.  Please configure a version of
-    local_settings.py for this site.  See local_settings.py.sample for an example.'''
-    del sys
-
+    print('Settings not defined. Please configure a version of local_settings.py for this site.')
