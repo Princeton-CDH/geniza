@@ -6,6 +6,11 @@
  {{ super() }}
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500">
     <script type='text/javascript' src='https://unpkg.com/mirador@latest/dist/mirador.min.js'></script>
+    <style type="text/css">
+        p[dir=rtl] {
+            text-align: right;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -36,6 +41,9 @@
             showZoomControls: true,
             // show the list of loaded manifests by default
             isWorkspaceAddVisible: true
+        },
+        annotations: {
+            htmlSanitizationRuleSet: 'mirador2'
         }
      });
     </script>
