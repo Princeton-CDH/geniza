@@ -1,6 +1,6 @@
 # local settings
 scripts/local_settings.py
-data/transcriptions.json
+data/
 
 # Webpack files
 webpack-stats.json

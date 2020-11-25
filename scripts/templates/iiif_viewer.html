@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Geniza Prototype | IIIF Transcription test{% endblock %}
+
+{% block head %}
+ {{ super() }}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500">
+    <script type='text/javascript' src='https://unpkg.com/mirador@latest/dist/mirador.min.js'></script>
+{% endblock %}
+
+{% block content %}
+    <div id="mirador" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0;"></div>
+
+    <script type="text/javascript">
+    var miradorInstance = Mirador.viewer({
+        id: 'mirador',
+        theme: {
+            transitions: window.location.port === '4488' ?  { create: () => 'none' } : {},
+        },
+        window: {
+            // open annotations by default, and set wide enough
+            // that most transcription text won't wrap
+            defaultSideBarPanel: 'annotations',
+            sideBarOpenByDefault: true,
+            defaultSidebarPanelWidth: 475,
+        },
+        catalog: [
+        {% for manifest in manifests %}
+            { manifestId: '/iiif/manifests/{{ manifest }}' },
+        {% endfor %}
+        ],
+        thumbnailNavigation: {
+            defaultPosition: 'far-right'
+        },
+        workspace: {
+            showZoomControls: true,
+            // show the list of loaded manifests by default
+            isWorkspaceAddVisible: true
+        }
+     });
+    </script>
+
+{% endblock %}
