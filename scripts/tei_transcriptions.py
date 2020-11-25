@@ -156,8 +156,9 @@ def transcription_iiif():
 
         # for each block
         for i, text_block in enumerate(transcriptions[doc['id']]['blocks']):
-            text_lines = '%s<br/>%s' % (text_block['label'],
-                                        '<br/>'.join(text_block['lines']))
+            text_lines = [text_block['label']] + text_block['lines']
+            text_lines = '<br/>'.join(line for line in text_lines
+                                      if line.strip())
             annotation = {
                 # uri for this annotation; make something up
                 "@id": "https://cdh.geniza.princeton.edu/iiif/%s/list/%d" % \
@@ -190,3 +191,55 @@ def transcription_iiif():
 
         with open(manifest_filename, 'w') as outfile:
             json.dump(manifest, outfile, indent=2)
+
+    # NOTE: preliminary / placeholder!
+    # test creating annotatio list for content not available as IIIF
+
+    # find documents that with transcription but NO IIIF link
+    iiifdocs = SolrQuerySet(solr).filter(iiif_link_s__exists=False,
+                                         transcription_txt='*')
+    for doc in iiifdocs[:15]:
+        # hard coded canvas id and size for now
+        canvas_id = 'https://test-geniza.cdh.princteon.edu/iiif/na/canvas/1'
+        canvas_width = 3200
+        canvas_height = 4000
+
+        # filenames where the file will be written
+        base_filename = '%s.json' % doc['id']
+        # write the new annotation list to a file
+        annotation_filename = os.path.join(annotation_dir, base_filename)
+
+        # NOTE: largely duplicates the functionality above
+        annotation_list = {
+            "@context": "http://iiif.io/api/presentation/2/context.json",
+            # placeholder id; should probably be unique!
+            "@id": "https://cdh.geniza.princeton.edu/iiif/canvas/AnnotationList",
+            "@type": "sc:AnnotationList",
+            "resources": []
+        }
+
+        # for each block
+        for i, text_block in enumerate(transcriptions[doc['id']]['blocks']):
+            text_lines = [text_block['label']] + text_block['lines']
+            text_lines = '<br/>'.join(line for line in text_lines if line.strip())
+            annotation = {
+                # uri for this annotation; make something up
+                "@id": "https://cdh.geniza.princeton.edu/iiif/%s/list/%d" % \
+                       (doc['id'], i),
+                "@type": "oa:Annotation",
+                "motivation": "sc:painting",
+                "resource": {
+                    "@type": "cnt:ContentAsText",
+                    "format": "text/html",
+                    # language todo
+                    "chars": "<p dir='rtl'>%s</p>" % text_lines
+                },
+                # annotate the entire canvas for now
+                "on": "%s#xywh=0,0,%d,%d" % (canvas_id, canvas_width,
+                                             canvas_height)
+            }
+            annotation_list['resources'].append(annotation)
+
+        with open(annotation_filename, 'w') as outfile:
+            json.dump(annotation_list, outfile, indent=2)
+        print('saved transcription without iiif as %s' % annotation_filename)
