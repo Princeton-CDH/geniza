@@ -248,7 +248,8 @@ def iiif_manifests(path):
     canvas1 = manifest['sequences'][0]['canvases'][0]
     annotation_uri = canvas1['otherContent'][0]['@id']
     annotation_uri = annotation_uri.replace('FLASK_URL', request.host)
-    if request.is_secure:
+    # assume https for any environment other than dev
+    if app.config['ENV'] != 'development':
         annotation_uri = annotation_uri.replace('http://', 'https://')
     canvas1['otherContent'][0]['@id'] = annotation_uri
 
