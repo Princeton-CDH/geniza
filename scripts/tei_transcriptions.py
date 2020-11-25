@@ -156,9 +156,14 @@ def transcription_iiif():
 
         # for each block
         for i, text_block in enumerate(transcriptions[doc['id']]['blocks']):
-            text_lines = [text_block['label']] + text_block['lines']
-            text_lines = '<br/>'.join(line for line in text_lines
-                                      if line.strip())
+            # text_lines = [text_block['label']] + text_block['lines']
+            # text_lines = '<br/>'.join(line for line in text_lines
+                                      # if line.strip())
+            label = '<p><b>%s</b></p>' % text_block['label'] if text_block['label'] else ''
+            text_lines = '<ol>%s</ol>' % ''.join(
+                '<li>%s</li>' % line
+                for line in text_block['lines'] if line.strip())
+
             annotation = {
                 # uri for this annotation; make something up
                 "@id": "https://cdh.geniza.princeton.edu/iiif/%s/list/%d" % \
@@ -169,7 +174,7 @@ def transcription_iiif():
                     "@type": "cnt:ContentAsText",
                     "format": "text/html",
                     # language todo
-                    "chars": "<p dir='rtl'>%s</p>" % text_lines
+                    "chars": "<div dir='rtl'>%s%s</div>" % (label, text_lines)
                 },
                 # annotate the entire canvas for now
                 "on": "%s#xywh=0,0,%d,%d" % (canvas_id, canvas_width,
@@ -198,7 +203,7 @@ def transcription_iiif():
     # find documents that with transcription but NO IIIF link
     iiifdocs = SolrQuerySet(solr).filter(iiif_link_s__exists=False,
                                          transcription_txt='*')
-    for doc in iiifdocs[:15]:
+    for doc in iiifdocs[:5]:
         # hard coded canvas id and size for now
         canvas_id = 'https://test-geniza.cdh.princteon.edu/iiif/na/canvas/1'
         canvas_width = 3200
@@ -220,8 +225,10 @@ def transcription_iiif():
 
         # for each block
         for i, text_block in enumerate(transcriptions[doc['id']]['blocks']):
-            text_lines = [text_block['label']] + text_block['lines']
-            text_lines = '<br/>'.join(line for line in text_lines if line.strip())
+            label = '<p><b>%s</b></p>' % text_block['label'] if text_block['label'] else ''
+            text_lines = '<ol>%s</ol>' % ''.join(
+                '<li>%s</li>' % line
+                for line in text_block['lines'] if line.strip())
             annotation = {
                 # uri for this annotation; make something up
                 "@id": "https://cdh.geniza.princeton.edu/iiif/%s/list/%d" % \
@@ -232,7 +239,7 @@ def transcription_iiif():
                     "@type": "cnt:ContentAsText",
                     "format": "text/html",
                     # language todo
-                    "chars": "<p dir='rtl'>%s</p>" % text_lines
+                    "chars": "<div dir='rtl'>%s%s</div>" % (label, text_lines)
                 },
                 # annotate the entire canvas for now
                 "on": "%s#xywh=0,0,%d,%d" % (canvas_id, canvas_width,
