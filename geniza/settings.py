@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_cas_ng",
+    "pucas",
     "geniza.people",
 ]
 
@@ -84,6 +86,14 @@ DATABASES = {
         "NAME": "/home/deploy/data/db.sqlite3",
     }
 }
+
+# Authentication backends
+# https://docs.djangoproject.com/en/3.1/topics/auth/customizing/#specifying-authentication-backends
+
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",
+    "django_cas_ng.backends.CASBackend",
+)
 
 
 # Password validation
@@ -140,4 +150,4 @@ STATICFILES_DIRS = [
 try:
     from geniza.local_settings import *
 except ImportError:
-    print('Settings not defined. Please configure a version of local_settings.py for this site.')
+    print("Settings not defined. Please configure a version of local_settings.py for this site.")

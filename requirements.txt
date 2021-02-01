@@ -1,3 +1,4 @@
 django
 django-modeltranslation
 psycopg2
+pucas
