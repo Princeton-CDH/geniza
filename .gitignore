@@ -1,7 +1,9 @@
 scripts/
 data/
 .vscode/
+static/
 venv/
+local_settings.py
 docker-compose.yml
 db.sqlite3
 __pycache__
