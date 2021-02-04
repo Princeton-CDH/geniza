@@ -75,7 +75,7 @@ jobs:
         if: ${{ always() }}
         env:
           JOB_STATUS: ${{ job.status }}
-          run: echo "SLACK_COLOR=$(if [ "$JOB_STATUS" == "success" ]; then echo "good"; elif [ "$JOB_STATUS" == "failure" ]; then echo "danger"; else echo "warning"; fi)" >> $GITHUB_ENV
+        run: echo "SLACK_COLOR=$(if [ "$JOB_STATUS" == "success" ]; then echo "good"; elif [ "$JOB_STATUS" == "failure" ]; then echo "danger"; else echo "warning"; fi)" >> $GITHUB_ENV
 
       # Send a message to slack to report the build status. The webhook is stored
       # at the organization level and available to all repositories. Only run on
