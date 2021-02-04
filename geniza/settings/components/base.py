@@ -153,12 +153,3 @@ PUCAS_LDAP = {
     }
 }
 
-# if DEBUG:
-#     try:
-#         import debug_toolbar
-#         INSTALLED_APPS.append('debug_toolbar')
-#         MIDDLEWARE += (
-#             'debug_toolbar.middleware.DebugToolbarMiddleware',
-#         )
-#     except ImportError:
-#         pass
