@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -67,8 +67,6 @@ TEMPLATES = [
     },
 ]
 
-print([BASE_DIR / 'geniza' / 'templates'])
-
 WSGI_APPLICATION = 'geniza.wsgi.application'
 
 
@@ -76,12 +74,15 @@ WSGI_APPLICATION = 'geniza.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "geniza",
+        "USER": "geniza",
+        "PASSWORD": "",
+        "HOST": "",  # empty string for localhost
+        "PORT": "",  # empty string for default
     }
 }
-
 
 # Authentication backends
 # https://docs.djangoproject.com/en/3.1/topics/auth/customizing/#specifying-authentication-backends
@@ -140,32 +141,24 @@ STATIC_ROOT = BASE_DIR / "static"
 STATIC_URL = "/static/"
 
 
-# # pucas configuration that is not expected to change across deploys
-# # and does not reference local server configurations or fields
-# PUCAS_LDAP = {
-#     # basic user profile attributes
-#     'ATTRIBUTES': ['givenName', 'sn', 'mail'],
-#     'ATTRIBUTE_MAP': {
-#         'first_name': 'givenName',
-#         'last_name': 'sn',
-#         'email': 'mail',
-#     }
-# }
+# pucas configuration that is not expected to change across deploys
+# and does not reference local server configurations or fields
+PUCAS_LDAP = {
+    # basic user profile attributes
+    'ATTRIBUTES': ['givenName', 'sn', 'mail'],
+    'ATTRIBUTE_MAP': {
+        'first_name': 'givenName',
+        'last_name': 'sn',
+        'email': 'mail',
+    }
+}
 
-
-try:
-    from geniza.local_settings import *
-except ImportError as err:
-    print('''Error importing local settings: %s
-Please copy and configure local_settings.py.sample for this application.''' % err)
-
-
-if DEBUG:
-    try:
-        import debug_toolbar
-        INSTALLED_APPS.append('debug_toolbar')
-        MIDDLEWARE += (
-            'debug_toolbar.middleware.DebugToolbarMiddleware',
-        )
-    except ImportError:
-        pass
+# if DEBUG:
+#     try:
+#         import debug_toolbar
+#         INSTALLED_APPS.append('debug_toolbar')
+#         MIDDLEWARE += (
+#             'debug_toolbar.middleware.DebugToolbarMiddleware',
+#         )
+#     except ImportError:
+#         pass
