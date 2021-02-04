@@ -9,6 +9,7 @@ class Library(models.Model):
 
     class Meta:
         verbose_name_plural = 'Libraries'
+        ordering = ['name']
 
     def __str__(self):
         return self.name
