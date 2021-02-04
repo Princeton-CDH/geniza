@@ -31,6 +31,12 @@ Remember to add a ``SECRET_KEY`` setting!
     python manage.py migrate
 
 
+Unit Tests
+----------
+
+Python unit tests are written with `py.test <http://doc.pytest.org/>`_
+and should be run with `pytest`.
+
 License
 -------
 This project is licensed under the `Apache 2.0 License <https://github.com/Princeton-CDH/mep-django/blob/main/LICENSE>`_.
