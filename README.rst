@@ -37,13 +37,13 @@ Initial setup and installation:
 
 - Copy sample local settings and configure for your environment::
 
-    cp geniza/local_settings.py.sample geniza/local_settings.py
+	cp geniza/settings/local_settings.py.sample geniza/settings/local_settings.py
 
 Remember to add a ``SECRET_KEY`` setting!
 
-- Create an empty database and configure your local settings accordingly
+- Create a new database and update your database settings accordingly
 
-- Run datbase migrations
+- Run database migrations
 
     python manage.py migrate
 
