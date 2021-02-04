@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
 import requests
 
-from geniza.docs.models import Library
+from geniza.corpus.models import Library
 
 
 class Command(BaseCommand):

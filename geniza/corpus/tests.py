@@ -1,4 +1,4 @@
-from geniza.docs.models import Library
+from geniza.corpus.models import Library
 
 
 class TestLibrary:
