@@ -1,0 +1,34 @@
+# This file is imported into settings. It does not have access
+# to variables declared in settings.
+# If this file is changed in development, the development server will
+# have to be manually restarted because changes will not be noticed
+# immediately.
+
+from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+DEBUG = True
+
+# Turn this on in test/QA site to show test banner
+# SHOW_TEST_WARNING = True
+
+# Turn this on to enable google analytics in production
+# INCLUDE_ANALYTICS = True
+
+# SECURITY WARNING: keep the secret key used in production secret!
+# Make these unique, and don't share them with anybody.
+SECRET_KEY = ""
+NEVERCACHE_KEY = ""
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "geniza",
+        "USER": "",
+        "PASSWORD": "",
+        "HOST": "",  # empty string for localhost
+        "PORT": "",  # empty string for default
+    }
+}

@@ -1,0 +1,9 @@
+# production and test requirements
+
+-r prod.txt
+
+pytest>=4.6 # required for pytest-cov
+pytest-django
+pytest-cov
+wheel
+django-dbml>=0.4.0

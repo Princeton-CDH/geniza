@@ -1,0 +1,8 @@
+# all requirements for production, test, and dev
+-r prod.txt
+-r test.txt
+
+# sugar is optional but pretty
+django-debug-toolbar
+sphinx
+pytest-ordering
