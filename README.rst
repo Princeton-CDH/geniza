@@ -7,6 +7,23 @@ Python/Django web application for a new version of the `Princeton Geniza Project
 Python 3.8 / Django 3.1 / Postgresql
 
 
+.. image:: https://github.com/Princeton-CDH/geniza/workflows/unit_tests/badge.svg
+    :target: https://github.com/Princeton-CDH/geniza/actions?query=workflow%3Aunit_tests
+    :alt: Unit Test status
+
+.. image:: https://codecov.io/gh/Princeton-CDH/geniza/branch/main/graph/badge.svg
+   :target: https://codecov.io/gh/Princeton-CDH/geniza
+   :alt: Code coverage
+
+.. image:: https://requires.io/github/Princeton-CDH/geniza/requirements.svg?branch=main
+     :target: https://requires.io/github/Princeton-CDH/geniza/requirements/?branch=main
+     :alt: Requirements Status
+
+.. image:: https://github.com/Princeton-CDH/geniza/workflows/dbdocs/badge.svg
+    :target: https://dbdocs.io/princetoncdh/geniza
+    :alt: dbdocs build
+
+
 Development instructions
 ------------------------
 
