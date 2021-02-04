@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_cas_ng',
     'pucas',
+    'geniza.docs',
 ]
 
 MIDDLEWARE = [
