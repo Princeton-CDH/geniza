@@ -1,11 +1,10 @@
 import os
 
-from geniza.settings.components.base import DATABASES
+from geniza.settings.components.base import DATABASES, INSTALLED_APPS
 
 # These settings correspond to the service container settings in the
 # .github/workflow .yml files.
 DATABASES['default'].update({
-    'ENGINE': 'django.db.backends.%s' % os.getenv('DJANGO_DB_BACKEND'),
     'PASSWORD': os.getenv('DB_PASSWORD'),
     'USER': os.getenv('DB_USER'),
     'NAME': os.getenv('DB_NAME'),
@@ -16,3 +15,6 @@ DEBUG = False
 
 # required for tests when DEBUG = False
 ALLOWED_HOSTS = ['*']
+
+# enable django-dbml for generating dbdocs
+INSTALLED_APPS.append('django_dbml')

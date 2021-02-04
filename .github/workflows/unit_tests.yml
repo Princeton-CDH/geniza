@@ -10,7 +10,6 @@ env:
   DB_NAME: geniza
   DB_USER: geniza
   DB_PASSWORD: geniza
-  DJANGO_DB_BACKEND: postgresql
   DJANGO_ENV: test
 
 jobs:
@@ -58,8 +57,7 @@ jobs:
         run: pip install -r requirements/test.txt
 
       - name: Setup local_settings.py
-        run: |
-          python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
+        run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
 
       - name: Build static assets
         run: python manage.py compress
