@@ -59,9 +59,6 @@ jobs:
       - name: Setup local_settings.py
         run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
 
-      - name: Build static assets
-        run: python manage.py compress
-
       - name: Run pytest
         run: py.test --cov=./ --cov-report=xml
 
