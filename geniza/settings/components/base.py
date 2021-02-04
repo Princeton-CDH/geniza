@@ -155,3 +155,5 @@ PUCAS_LDAP = {
     }
 }
 
+# username for logging scripted activity
+SCRIPT_USERNAME = 'script'
