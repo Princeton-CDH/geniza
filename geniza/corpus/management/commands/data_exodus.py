@@ -43,6 +43,8 @@ class Command(BaseCommand):
     def import_libraries(self):
         library_content_type = ContentType.objects.get_for_model(Library)
 
+        # clear out any existing libraries
+        Library.objects.all().delete()
         # import list of libraries and abbreviations
         library_data = self.get_csv('libraries')
         # create a Library entry for every row in the sheet with both

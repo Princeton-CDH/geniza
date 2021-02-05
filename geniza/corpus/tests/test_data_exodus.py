@@ -49,6 +49,9 @@ def test_get_csv_success():
 
 @pytest.mark.django_db
 def test_import_libraries():
+    # create test library to confirm it is removed
+    Library.objects.create(name='Junk Library', abbrev='JunkL')
+
     data_exodus_cmd = data_exodus.Command()
     data_exodus_cmd.setup()
     with patch.object(data_exodus.Command, 'get_csv') as mock_lib_csv:
@@ -61,3 +64,5 @@ def test_import_libraries():
     assert Library.objects.count() == 2
     assert Library.objects.get(abbrev='BL').name == 'British Library'
     assert LogEntry.objects.filter(action_flag=ADDITION).count() == 2
+    # existing library records removed
+    assert not Library.objects.filter(name='Junk Library').exists()
