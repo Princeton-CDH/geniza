@@ -12,6 +12,24 @@ from geniza.corpus.management.commands import data_exodus
 from geniza.corpus.models import Library
 
 
+@pytest.mark.django_db
+@override_settings()
+def test_setup_config_error():
+    del settings.DATA_IMPORT_URLS
+    with pytest.raises(CommandError):
+        data_exodus.Command().setup()
+
+
+@pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})
+def test_setup():
+    data_exodus_cmd = data_exodus.Command()
+    data_exodus_cmd.setup()
+    # script user should be set
+    assert data_exodus_cmd.script_user
+    assert data_exodus_cmd.script_user.username == settings.SCRIPT_USERNAME
+
+
 @override_settings(DATA_IMPORT_URLS={})
 def test_get_csv_notconfigured():
     with pytest.raises(CommandError) as err:
@@ -48,6 +66,7 @@ def test_get_csv_success():
 
 
 @pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})  # must be set for command setup
 def test_import_libraries():
     # create test library to confirm it is removed
     Library.objects.create(name='Junk Library', abbrev='JunkL')
