@@ -47,6 +47,19 @@ Remember to add a ``SECRET_KEY`` setting!
 
     python manage.py migrate
 
+- Compile microcopy and translated content to make it available for the application:
+
+	cd geniza && django-admin compilemessages
+
+
+Internationalization & Translation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This application has internationalization and translation enabled.
+
+- If you create any new translatable content, you should run [makemessages](https://docs.djangoproject.com/en/3.1/ref/django-admin/#makemessages) to create or update message files.
+
+	cd geniza && django-admin makemessages
 
 Unit Tests
 ----------
