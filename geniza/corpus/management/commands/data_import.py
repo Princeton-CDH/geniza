@@ -14,7 +14,7 @@ from geniza.corpus.models import Library
 class Command(BaseCommand):
     'Import existing data from PGP spreadsheets into the database'
 
-    logentry_message = 'Created via data exodus script'
+    logentry_message = 'Created via data import script'
 
     def setup(self):
         if not hasattr(settings, 'DATA_IMPORT_URLS'):
