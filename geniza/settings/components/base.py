@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_cas_ng',
     'pucas',
+    'geniza.common',
+    'geniza.corpus',
 ]
 
 MIDDLEWARE = [
@@ -157,3 +159,5 @@ PUCAS_LDAP = {
     }
 }
 
+# username for logging scripted activity
+SCRIPT_USERNAME = 'script'

@@ -27,3 +27,9 @@ PUCAS_LDAP.update({
     'SEARCH_BASE': '',
     'SEARCH_FILTER': "",
 })
+
+
+# urls to google sheets data published as csv for import
+DATA_IMPORT_URLS = {
+    'libraries': '',
+}

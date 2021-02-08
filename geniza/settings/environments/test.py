@@ -8,6 +8,7 @@ DATABASES['default'].update({
     'PASSWORD': os.getenv('DB_PASSWORD'),
     'USER': os.getenv('DB_USER'),
     'NAME': os.getenv('DB_NAME'),
+    'HOST': '127.0.0.1'
 })
 
 # turn off debug so we see 404s when testing
