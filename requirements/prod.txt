@@ -1,0 +1,4 @@
+django>=3.1
+psycopg2
+pucas>=0.6
+django-split-settings

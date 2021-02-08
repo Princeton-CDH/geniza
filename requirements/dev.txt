@@ -1,0 +1,7 @@
+# all requirements for production, test, and dev
+-r prod.txt
+-r test.txt
+
+django-debug-toolbar
+#sphinx
+#pytest-ordering
