@@ -9,7 +9,7 @@ import pytest
 import requests
 
 from geniza.corpus.management.commands import data_import
-from geniza.corpus.models import Library
+from geniza.corpus.models import Library, LanguageScript
 
 
 @pytest.mark.django_db
@@ -89,3 +89,27 @@ def test_import_libraries():
 
     # existing library records removed
     assert not Library.objects.filter(name='Junk Library').exists()
+
+
+@pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})  # must be set for command setup
+def test_import_languages():
+    LanguageScript.objects.create(script='Wingdings', language='English')
+
+    data_import_cmd = data_import.Command()
+    data_import_cmd.setup()
+    with patch.object(data_import.Command, 'get_csv') as mock_lang_csv:
+        mock_lang_csv.return_value = [
+            {'Display Name': '', 'Language': 'Polish', 'Script': 'Latin'},
+            {'Display Name': '', 'Language': 'Portuguese', 'Script': 'Latin'}
+        ]
+        data_import_cmd.import_languages()
+    assert LanguageScript.objects.count() == 2
+    assert LanguageScript.objects.get(language='Polish').script == 'Latin'
+    assert LogEntry.objects.filter(action_flag=ADDITION).count() == 2
+
+    assert LogEntry.objects.filter(action_flag=ADDITION)[0].change_message == \
+        data_import_cmd.logentry_message
+
+    # existing LanguageScript records removed
+    assert not LanguageScript.objects.filter(script='Wingdings').exists()

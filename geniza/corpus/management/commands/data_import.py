@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
 import requests
 
-from geniza.corpus.models import Library
+from geniza.corpus.models import Library, LanguageScript
 
 
 class Command(BaseCommand):
@@ -25,6 +25,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.setup()
         self.import_libraries()
+        self.import_languages()
 
     def get_csv(self, name):
         # given a name for a file in the configured data import urls,
@@ -63,5 +64,25 @@ class Command(BaseCommand):
                 content_type_id=library_content_type.pk,
                 object_id=library.pk,
                 object_repr=str(library),
+                change_message=self.logentry_message,
+                action_flag=ADDITION)
+
+    def import_languages(self):
+        language_content_type = ContentType.objects.get_for_model(LanguageScript)
+
+        LanguageScript.objects.all().delete()
+        language_data = self.get_csv('languageScripts')
+        languages = LanguageScript.objects.bulk_create([
+            LanguageScript(display_name=row['Display Name'], language=row['Language'],
+            script=row['Script']) for row in language_data
+        ])
+
+        # log all new objects
+        for lang in languages:
+            LogEntry.objects.log_action(
+                user_id=self.script_user.id,
+                content_type_id=language_content_type.pk,
+                object_id=lang.pk,
+                object_repr=str(lang),
                 change_message=self.logentry_message,
                 action_flag=ADDITION)

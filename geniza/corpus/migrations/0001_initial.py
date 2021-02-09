@@ -21,6 +21,19 @@ class Migration(migrations.Migration):
             ],
             options={
                 'verbose_name_plural': 'Libraries',
+                'ordering': ['name']
             },
         ),
+        migrations.CreateModel(
+            name='LanguageScript',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('language', models.CharField(max_length=255)),
+                ('script', models.CharField(max_length=255)),
+                ('display_name', models.CharField(max_length=255, blank=True))
+            ],
+            options={
+                'ordering': ['language'],
+            },
+        )
     ]
