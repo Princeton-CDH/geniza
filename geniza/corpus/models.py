@@ -18,7 +18,7 @@ class LanguageScript(models.Model):
     '''Combination language and script'''
     language = models.CharField(max_length=255)
     script = models.CharField(max_length=255)
-    display_name = models.CharField(max_length=255, blank=True, unique=True)
+    display_name = models.CharField(max_length=255, blank=True)
 
     class Meta:
         ordering = ['language']
