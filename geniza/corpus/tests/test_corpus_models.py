@@ -17,5 +17,3 @@ class TestLanguageScripts:
         # test proper string formatting
         lang = LanguageScript(language='Judaeo-Arabic', script='Hebrew')
         assert str(lang) == 'Judaeo-Arabic (Hebrew script)'
-        lang = LanguageScript(language='Judaeo-Arabic')
-        assert str(lang) == lang.language
