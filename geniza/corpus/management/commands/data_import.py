@@ -73,7 +73,7 @@ class Command(BaseCommand):
         LanguageScript.objects.all().delete()
         language_data = self.get_csv('languages')
         languages = LanguageScript.objects.bulk_create([
-            LanguageScript(display_name=row['Display Name'], language=row['Language'],
+            LanguageScript(language=row['Language'],
             script=row['Script']) for row in language_data
         ])
 
