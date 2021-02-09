@@ -100,8 +100,8 @@ def test_import_languages():
     data_import_cmd.setup()
     with patch.object(data_import.Command, 'get_csv') as mock_lang_csv:
         mock_lang_csv.return_value = [
-            {'Display Name': '', 'Language': 'Polish', 'Script': 'Latin'},
-            {'Display Name': '', 'Language': 'Portuguese', 'Script': 'Latin'}
+            {'Language': 'Polish', 'Script': 'Latin'},
+            {'Language': 'Portuguese', 'Script': 'Latin'}
         ]
         data_import_cmd.import_languages()
     assert LanguageScript.objects.count() == 2
