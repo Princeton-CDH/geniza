@@ -71,7 +71,7 @@ class Command(BaseCommand):
         language_content_type = ContentType.objects.get_for_model(LanguageScript)
 
         LanguageScript.objects.all().delete()
-        language_data = self.get_csv('languageScripts')
+        language_data = self.get_csv('languages')
         languages = LanguageScript.objects.bulk_create([
             LanguageScript(display_name=row['Display Name'], language=row['Language'],
             script=row['Script']) for row in language_data
