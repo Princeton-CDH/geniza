@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_cas_ng',
+    'taggit',
     'pucas',
     'geniza.common',
     'geniza.corpus',

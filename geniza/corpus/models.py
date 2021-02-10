@@ -1,5 +1,5 @@
 from django.db import models
-
+from taggit.managers import TaggableManager
 
 class Collection(models.Model):
     '''Collection at a library that holds Geniza fragments'''
@@ -42,3 +42,67 @@ class LanguageScript(models.Model):
         # otherwise combine language and script
         #   e.g. Judaeo-Arabic (Hebrew script)
         return self.display_name or f"{self.language} ({self.script} script)"
+
+
+class Fragment(models.Model):
+    shelfmark = models.CharField(max_length=255)
+    library = models.ForeignKey(Library, blank=True, on_delete=models.SET_NULL, null=True)
+    # multiple, semicolon-delimited values. Keeping as single-valued for now
+    old_shelfmarks = models.CharField(max_length=255)
+    url = models.URLField('URL', blank=True, help_text="Link to library's catalog record for this fragment.")
+    iiif_url = models.URLField('URL', blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.shelfmark
+
+
+class DocumentType(models.Model):
+    '''The category of document in question.'''
+    name = models.CharField(max_length=255)
+
+
+class Document(models.Model):
+    '''A collection of text blocks with a unique PGPID'''
+    fragments = models.ManyToManyField(Fragment, through='DocumentFragment')
+    languages = models.ManyToManyField(LanguageScript, blank=True) 
+    description = models.TextField(blank=True)
+    doctype = models.ForeignKey(DocumentType, blank=True, on_delete=models.SET_NULL, null=True)
+    tags = TaggableManager()
+    old_input_by = models.CharField(max_length=255, 
+        help_text='Legacy input information from Google Sheets')
+    old_input_date = models.CharField(max_length=255, 
+        help_text='Legacy input date from Google Sheets')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.shelfmark
+
+    @property
+    def shelfmark(self):
+        return ' + '.join([fragment.shelfmark for fragment in self.fragments.all()])
+
+    @property
+    def library(self):
+        return ', '.join(set([fragment.library.abbrev for fragment in self.fragments.all()]))
+
+
+class DocumentFragment(models.Model):
+    '''Document-Fragment through model'''
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
+    text_block = models.CharField(max_length=255)
+    multifragment = models.CharField(max_length=255)
+
+    RECTO = 'r'
+    VERSO = 'v'
+    RECTO_VERSO = 'rv'
+    RECTO_VERSO_CHOICES = [
+        (RECTO, 'Recto'),
+        (VERSO, 'Verso'),
+        (RECTO_VERSO, 'Recto and Verso'),
+    ]
+    side = models.CharField(blank=True, max_length=255, choices=RECTO_VERSO_CHOICES)

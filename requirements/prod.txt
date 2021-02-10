@@ -3,3 +3,4 @@ psycopg2
 pucas>=0.6
 django-split-settings
 requests
+django-taggit
