@@ -45,10 +45,10 @@ class LanguageScript(models.Model):
 
 
 class Fragment(models.Model):
-    shelfmark = models.CharField(max_length=255)
+    shelfmark = models.CharField(max_length=255, unique=True)
     library = models.ForeignKey(Library, blank=True, on_delete=models.SET_NULL, null=True)
     # multiple, semicolon-delimited values. Keeping as single-valued for now
-    old_shelfmarks = models.CharField(max_length=255)
+    old_shelfmarks = models.CharField(max_length=255, blank=True)
     url = models.URLField('URL', blank=True, help_text="Link to library's catalog record for this fragment.")
     iiif_url = models.URLField('URL', blank=True)
     notes = models.TextField(blank=True)
@@ -61,33 +61,43 @@ class Fragment(models.Model):
 
 class DocumentType(models.Model):
     '''The category of document in question.'''
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Document(models.Model):
-    '''A collection of text blocks with a unique PGPID'''
+    '''A unified document such as a letter or legal document that
+    appears on one or more fragments.'''
+    id = models.AutoField('PGPID', primary_key=True)
     fragments = models.ManyToManyField(Fragment, through='DocumentFragment')
-    languages = models.ManyToManyField(LanguageScript, blank=True) 
+    languages = models.ManyToManyField(LanguageScript, blank=True)
     description = models.TextField(blank=True)
-    doctype = models.ForeignKey(DocumentType, blank=True, on_delete=models.SET_NULL, null=True)
+    doctype = models.ForeignKey(
+        DocumentType, blank=True, on_delete=models.SET_NULL, null=True)
     tags = TaggableManager()
-    old_input_by = models.CharField(max_length=255, 
+    old_input_by = models.CharField(
+        max_length=255,
         help_text='Legacy input information from Google Sheets')
-    old_input_date = models.CharField(max_length=255, 
+    old_input_date = models.CharField(
+        max_length=255,
         help_text='Legacy input date from Google Sheets')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.shelfmark
 
     @property
     def shelfmark(self):
-        return ' + '.join([fragment.shelfmark for fragment in self.fragments.all()])
+        return ' + '.join([fragment.shelfmark
+                           for fragment in self.fragments.all()])
 
     @property
     def library(self):
-        return ', '.join(set([fragment.library.abbrev for fragment in self.fragments.all()]))
+        return ', '.join(set([fragment.library.abbrev for
+                              fragment in self.fragments.all()]))
 
 
 class DocumentFragment(models.Model):
