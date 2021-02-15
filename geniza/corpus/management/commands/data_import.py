@@ -74,7 +74,8 @@ class Command(BaseCommand):
         language_data = self.get_csv('languages')
         languages = LanguageScript.objects.bulk_create([
             LanguageScript(language=row['Language'],
-            script=row['Script']) for row in language_data
+                           script=row['Script'])
+            for row in language_data if row['Language'] and row['Script']
         ])
 
         # log all new objects

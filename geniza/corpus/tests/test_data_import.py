@@ -101,7 +101,8 @@ def test_import_languages():
     with patch.object(data_import.Command, 'get_csv') as mock_lang_csv:
         mock_lang_csv.return_value = [
             {'Language': 'Polish', 'Script': 'Latin'},
-            {'Language': 'Portuguese', 'Script': 'Latin'}
+            {'Language': 'Portuguese', 'Script': 'Latin'},
+            {'Language': '', 'Script': ''} # should ignore empty row
         ]
         data_import_cmd.import_languages()
     assert LanguageScript.objects.count() == 2
