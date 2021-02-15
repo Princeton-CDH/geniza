@@ -144,9 +144,10 @@ STATIC_ROOT = BASE_DIR / "static"
 
 STATIC_URL = "/static/"
 
-STATICFILES_DIRS = [
-    BASE_DIR / "sitemedia",
-]
+# disable until this exists, since otherwise collectstatic fails
+# STATICFILES_DIRS = [
+#     BASE_DIR / "sitemedia",
+# ]
 
 # pucas configuration that is not expected to change across deploys
 # and does not reference local server configurations or fields
