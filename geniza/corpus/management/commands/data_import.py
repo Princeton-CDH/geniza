@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.setup()
-        self.import_libraries()
+        # self.import_libraries()
         self.import_languages()
 
     def get_csv(self, name):
