@@ -15,7 +15,7 @@ def create_script_user(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('common', '0001_data_editor_group'),
+        ('common', '0001_content_editor_group'),
     ]
 
     operations = [
