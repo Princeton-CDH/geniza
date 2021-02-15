@@ -35,7 +35,7 @@ msgstr ""
 #: templates/base.html:33
 msgctxt "choose this option"
 msgid "go"
-msgstr ""
+msgstr "שלום"
 
 #: templates/base.html:42
 msgid "©2020 Trustees of Princeton University"
@@ -50,7 +50,7 @@ msgstr ""
 #: templates/home.html:9
 #, python-format
 msgid "Your language is: %(lang_name)s"
-msgstr ""
+msgstr "עברית"
 
 #: templates/home.html:11
 msgid "View the list of people"
