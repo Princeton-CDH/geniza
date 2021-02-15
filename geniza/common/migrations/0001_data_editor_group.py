@@ -7,7 +7,7 @@ CONTENT_EDITOR = 'Content Editor'
 # permissions for content editor
 content_editor_perms = {
     'corpus': [
-        'view_library'
+        'view_library', 'view_languagescript'
     ]
 }
 
@@ -16,6 +16,7 @@ CONTENT_ADMIN = 'Content Admin'
 content_admin_perms = {
     'corpus': [
         'add_library', 'change_library', 'delete_library',
+        'add_languagescript', 'change_languagescript', 'delete_languagescript',
     ]
 }
 
