@@ -16,11 +16,9 @@ class LanguageScriptAdmin(admin.ModelAdmin):
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('shelfmark', 'library', # todo: fragment_historical
-        'doctype', 'tag_list', 'all_languages', 'description', # todo: editor, translator
-        # todo: thumbnail
-        # todo: is_multifragment, has_textblock (place method on model)
-        # asking: legacy data, 'fragment__side'
+    list_display = (
+        'shelfmark', 'description', 'doctype',
+        'tag_list', 'all_languages', 'is_textblock',
         'last_modified'
     )
     readonly_fields = ('old_input_by', 'old_input_date',

@@ -89,16 +89,19 @@ class Document(models.Model):
     appears on one or more fragments.'''
     id = models.AutoField('PGPID', primary_key=True)
     fragments = models.ManyToManyField(Fragment, through='DocumentFragment')
-    languages = models.ManyToManyField(LanguageScript, blank=True)
     description = models.TextField(blank=True)
     doctype = models.ForeignKey(
-        DocumentType, blank=True, on_delete=models.SET_NULL, null=True)
+        DocumentType, blank=True, on_delete=models.SET_NULL, null=True,
+        verbose_name='Type')
     tags = TaggableManager()
+    languages = models.ManyToManyField(LanguageScript, blank=True)
+    # TODO footnotes for edition/translation
+    notes = models.TextField(blank=True)
     old_input_by = models.CharField(
-        max_length=255,
+        'Legacy input by', max_length=255,
         help_text='Legacy input information from Google Sheets')
     old_input_date = models.CharField(
-        max_length=255,
+        'Legacy input date', max_length=255,
         help_text='Legacy input date from Google Sheets')
     created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
@@ -108,21 +111,26 @@ class Document(models.Model):
 
     @property
     def shelfmark(self):
+        '''shelfmarks for associated fragments'''
         return ' + '.join([fragment.shelfmark
                            for fragment in self.fragments.all()])
 
     @property
-    def library(self):
-        return ', '.join(set([fragment.library.abbrev for
+    def collection(self):
+        '''collection (abbreviation) for associated fragments'''
+        return ', '.join(set([fragment.collection.abbrev for
                               fragment in self.fragments.all()]))
+
+    def is_textblock(self):
+        return any(bool(frag.text_block) for frag in self.fragments.all())
+    is_textblock.short_description = 'Text Block?'
+    is_textblock.boolean = True
 
 
 class DocumentFragment(models.Model):
     '''Document-Fragment through model'''
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
-    text_block = models.CharField(max_length=255, blank=True)
-
     RECTO = 'r'
     VERSO = 'v'
     RECTO_VERSO = 'rv'
@@ -131,4 +139,7 @@ class DocumentFragment(models.Model):
         (VERSO, 'Verso'),
         (RECTO_VERSO, 'Recto and Verso'),
     ]
-    side = models.CharField(blank=True, max_length=255, choices=RECTO_VERSO_CHOICES)
+    side = models.CharField(blank=True, max_length=255,
+                            choices=RECTO_VERSO_CHOICES)
+    text_block = models.CharField(max_length=255, blank=True)
+    # TODO: order
