@@ -59,7 +59,7 @@ def remove_content_editor_groups(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corpus', '0002_create_languagescript'),
+        ('corpus', '0001_create_library_languagescript'),
     ]
 
     operations = [

@@ -1,11 +1,11 @@
-from geniza.corpus.models import Library, LanguageScript
+from geniza.corpus.models import LanguageScript, Library
 
 
 class TestLibrary:
 
     def test_str(self):
-        lib = Library(name='British Library', abbrev='BL')
-        assert str(lib) == lib.name
+        lib = Library(library='British Library', abbrev='BL')
+        assert str(lib) == lib.abbrev
 
 
 class TestLanguageScripts:

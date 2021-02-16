@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
 import requests
 
-from geniza.corpus.models import Library, LanguageScript
+from geniza.corpus.models import LanguageScript, Library
 
 
 class Command(BaseCommand):
@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.setup()
-        # self.import_libraries()
+        self.import_libraries()
         self.import_languages()
 
     def get_csv(self, name):
@@ -51,7 +51,9 @@ class Command(BaseCommand):
         # create a Library entry for every row in the sheet with both
         # required values
         libraries = Library.objects.bulk_create([
-            Library(name=row['Library'], abbrev=row['Abbreviation'])
+            Library(library=row['Library'], abbrev=row['Abbreviation'],
+                    location=row['Location (current)'],
+                    collection=row['Collection (if different from library)'])
             for row in library_data if row['Library'] and row['Abbreviation']
         ])
         # NOTE: because we're using postgres, we can use bulk

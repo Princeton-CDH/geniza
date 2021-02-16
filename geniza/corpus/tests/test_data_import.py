@@ -69,26 +69,41 @@ def test_get_csv_success():
 @override_settings(DATA_IMPORT_URLS={})  # must be set for command setup
 def test_import_libraries():
     # create test library to confirm it is removed
-    Library.objects.create(name='Junk Library', abbrev='JunkL')
+    Library.objects.create(library='Junk Library', abbrev='JunkL')
 
     data_import_cmd = data_import.Command()
     data_import_cmd.setup()
     with patch.object(data_import.Command, 'get_csv') as mock_lib_csv:
         mock_lib_csv.return_value = [
-            {'Library': 'British Library', 'Abbreviation': 'BL'},
-            {'Library': 'Bodleian Library', 'Abbreviation': 'BODL'},
-            {'Library': 'Incomplete', 'Abbreviation': ''}
+            {'Library': 'British Library', 'Abbreviation': 'BL',
+             'Location (current)': '',
+             'Collection (if different from library)': ''},
+            {'Library': 'Bodleian Library', 'Abbreviation': 'BODL',
+             'Location (current)': '',
+             'Collection (if different from library)': ''},
+            {'Library': 'Incomplete', 'Abbreviation': '',
+             'Location (current)': '',
+             'Collection (if different from library)': ''},
+            {'Library': 'National Library of Russia', 'Abbreviation': 'RNL',
+             'Location (current)': 'St. Petersburg',
+             'Collection (if different from library)': 'Firkovitch'}
         ]
         data_import_cmd.import_libraries()
-    assert Library.objects.count() == 2
-    assert Library.objects.get(abbrev='BL').name == 'British Library'
-    assert LogEntry.objects.filter(action_flag=ADDITION).count() == 2
+    assert Library.objects.count() == 3
+    bl = Library.objects.get(abbrev='BL')
+    assert bl.library == 'British Library'
+    assert not bl.collection
+    assert LogEntry.objects.filter(action_flag=ADDITION).count() == 3
+    # check that location and collection are populated when present
+    rnl = Library.objects.get(abbrev='RNL')
+    assert rnl.location == 'St. Petersburg'
+    assert rnl.collection == 'Firkovitch'
 
     assert LogEntry.objects.filter(action_flag=ADDITION)[0].change_message == \
         data_import_cmd.logentry_message
 
     # existing library records removed
-    assert not Library.objects.filter(name='Junk Library').exists()
+    assert not Library.objects.filter(library='Junk Library').exists()
 
 
 @pytest.mark.django_db
@@ -102,7 +117,7 @@ def test_import_languages():
         mock_lang_csv.return_value = [
             {'Language': 'Polish', 'Script': 'Latin'},
             {'Language': 'Portuguese', 'Script': 'Latin'},
-            {'Language': '', 'Script': ''} # should ignore empty row
+            {'Language': '', 'Script': ''}  # should ignore empty row
         ]
         data_import_cmd.import_languages()
     assert LanguageScript.objects.count() == 2
