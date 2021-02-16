@@ -9,7 +9,7 @@ import pytest
 import requests
 
 from geniza.corpus.management.commands import data_import
-from geniza.corpus.models import Library, LanguageScript
+from geniza.corpus.models import Collection, LanguageScript
 
 
 @pytest.mark.django_db
@@ -67,9 +67,9 @@ def test_get_csv_success():
 
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={})  # must be set for command setup
-def test_import_libraries():
-    # create test library to confirm it is removed
-    Library.objects.create(library='Junk Library', abbrev='JunkL')
+def test_import_collections():
+    # create test collection to confirm it is removed
+    Collection.objects.create(library='Junk Library', abbrev='JunkL')
 
     data_import_cmd = data_import.Command()
     data_import_cmd.setup()
@@ -88,14 +88,14 @@ def test_import_libraries():
              'Location (current)': 'St. Petersburg',
              'Collection (if different from library)': 'Firkovitch'}
         ]
-        data_import_cmd.import_libraries()
-    assert Library.objects.count() == 3
-    bl = Library.objects.get(abbrev='BL')
+        data_import_cmd.import_collections()
+    assert Collection.objects.count() == 3
+    bl = Collection.objects.get(abbrev='BL')
     assert bl.library == 'British Library'
     assert not bl.collection
     assert LogEntry.objects.filter(action_flag=ADDITION).count() == 3
     # check that location and collection are populated when present
-    rnl = Library.objects.get(abbrev='RNL')
+    rnl = Collection.objects.get(abbrev='RNL')
     assert rnl.location == 'St. Petersburg'
     assert rnl.collection == 'Firkovitch'
 
@@ -103,7 +103,7 @@ def test_import_libraries():
         data_import_cmd.logentry_message
 
     # existing library records removed
-    assert not Library.objects.filter(library='Junk Library').exists()
+    assert not Collection.objects.filter(library='Junk Library').exists()
 
 
 @pytest.mark.django_db

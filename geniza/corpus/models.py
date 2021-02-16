@@ -1,8 +1,8 @@
 from django.db import models
 
 
-class Library(models.Model):
-    '''Library or collection that holds Geniza fragments'''
+class Collection(models.Model):
+    '''Collection at a library that holds Geniza fragments'''
     library = models.CharField(max_length=255)
     abbrev = models.CharField('Abbreviation', max_length=255, unique=True)
     collection = models.CharField(
@@ -12,7 +12,6 @@ class Library(models.Model):
         max_length=255, help_text='Current location of the collection')
 
     class Meta:
-        verbose_name_plural = 'Libraries'
         ordering = ['abbrev']
         constraints = [
             models.UniqueConstraint(fields=['library', 'collection'],

@@ -1,10 +1,10 @@
-from geniza.corpus.models import LanguageScript, Library
+from geniza.corpus.models import Collection, LanguageScript
 
 
-class TestLibrary:
+class TestCollection:
 
     def test_str(self):
-        lib = Library(library='British Library', abbrev='BL')
+        lib = Collection(library='British Library', abbrev='BL')
         assert str(lib) == lib.abbrev
 
 

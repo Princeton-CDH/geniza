@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
 import requests
 
-from geniza.corpus.models import LanguageScript, Library
+from geniza.corpus.models import Collection, LanguageScript
 
 
 class Command(BaseCommand):
@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.setup()
-        self.import_libraries()
+        self.import_collections()
         self.import_languages()
 
     def get_csv(self, name):
@@ -41,31 +41,31 @@ class Command(BaseCommand):
         return csv.DictReader(codecs.iterdecode(response.iter_lines(),
                               'utf-8'))
 
-    def import_libraries(self):
-        library_content_type = ContentType.objects.get_for_model(Library)
+    def import_collections(self):
+        collection_content_type = ContentType.objects.get_for_model(Collection)
 
-        # clear out any existing libraries
-        Library.objects.all().delete()
+        # clear out any existing collections
+        Collection.objects.all().delete()
         # import list of libraries and abbreviations
         library_data = self.get_csv('libraries')
-        # create a Library entry for every row in the sheet with both
+        # create a collection entry for every row in the sheet with both
         # required values
-        libraries = Library.objects.bulk_create([
-            Library(library=row['Library'], abbrev=row['Abbreviation'],
-                    location=row['Location (current)'],
-                    collection=row['Collection (if different from library)'])
+        collections = Collection.objects.bulk_create([
+            Collection(library=row['Library'], abbrev=row['Abbreviation'],
+                       location=row['Location (current)'],
+                       collection=row['Collection (if different from library)'])
             for row in library_data if row['Library'] and row['Abbreviation']
         ])
         # NOTE: because we're using postgres, we can use bulk
         # create and still get pks for the newly created items
 
         # create log entries to document when & how records were created
-        for library in libraries:
+        for coll in collections:
             LogEntry.objects.log_action(
                 user_id=self.script_user.id,
-                content_type_id=library_content_type.pk,
-                object_id=library.pk,
-                object_repr=str(library),
+                content_type_id=collection_content_type.pk,
+                object_id=coll.pk,
+                object_repr=str(coll),
                 change_message=self.logentry_message,
                 action_flag=ADDITION)
 
