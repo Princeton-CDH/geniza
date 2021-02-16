@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from geniza.corpus.models import Fragment, Collection, LanguageScript, Document, DocumentType
+from geniza.corpus.models import Collection, Fragment, \
+    Document, DocumentType, LanguageScript, TextUnit
 
 
 @admin.register(Collection)
@@ -14,6 +15,13 @@ class LanguageScriptAdmin(admin.ModelAdmin):
     list_display = ('language', 'script', 'display_name')
 
 
+class TextUnitInline(admin.TabularInline):
+    model = TextUnit
+    autocomplete_fields = ['fragment']
+    # TODO: iiif viewer? can we adapt same embed from fragment page,
+    # maybe as a widget
+
+
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
     list_display = (
@@ -22,10 +30,34 @@ class DocumentAdmin(admin.ModelAdmin):
         'last_modified'
     )
     readonly_fields = ('old_input_by', 'old_input_date',
-                       'created', 'last_modified')
+                       'created', 'last_modified', 'shelfmark')
+    search_fields = ('shelfmark', 'tag__name', 'description',
+                     'old_input_by')  #  TODO search on edition when we add footnotes
+
+    list_filter = (
+        'doctype', 'languages', 'textunit__text_block',
+    )
+
+    fields = (
+        'shelfmark',
+        'doctype',
+        'languages',
+        'description',
+        'tags',
+        # edition, translation
+        'notes',
+        # text block
+        ('old_input_by', 'old_input_date'),
+        ('created', 'last_modified')
+    )
+    filter_horizontal = ('languages', )
+    inlines = [
+        TextUnitInline,
+    ]
 
     def all_languages(self, doc):
         return ','.join([str(lang) for lang in doc.languages.all()])
+    all_languages.short_description = 'Language'
 
     def get_queryset(self, request):
         return super().get_queryset(request) \
