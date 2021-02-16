@@ -45,4 +45,21 @@ class DocumentTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Fragment)
 class FragmentAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('shelfmark', 'collection', 'url',
+                    'is_multifragment')
+    search_fields = ('shelfmark', 'old_shelfmarks', 'notes')
+    readonly_fields = ('old_shelfmarks', 'created', 'last_modified',)
+    list_filter = (
+        'collection',
+        ('multifragment', admin.BooleanFieldListFilter),
+        ('url', admin.BooleanFieldListFilter),
+    )
+    list_editable = ('url',)
+    fields = (
+        ('shelfmark', 'old_shelfmarks'),
+        'collection',
+        ('url', 'iiif_url'),
+        'multifragment',
+        'notes',
+        ('created', 'last_modified')
+    )

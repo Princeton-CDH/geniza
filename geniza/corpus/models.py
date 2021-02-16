@@ -1,6 +1,11 @@
 from django.db import models
 from taggit.managers import TaggableManager
 
+from django.utils.safestring import mark_safe
+from piffle.image import IIIFImageClient
+from piffle.presentation import IIIFPresentation
+
+
 class Collection(models.Model):
     '''Collection at a library that holds Geniza fragments'''
     library = models.CharField(max_length=255)
@@ -46,17 +51,29 @@ class LanguageScript(models.Model):
 
 class Fragment(models.Model):
     shelfmark = models.CharField(max_length=255, unique=True)
-    library = models.ForeignKey(Library, blank=True, on_delete=models.SET_NULL, null=True)
     # multiple, semicolon-delimited values. Keeping as single-valued for now
-    old_shelfmarks = models.CharField(max_length=255, blank=True)
-    url = models.URLField('URL', blank=True, help_text="Link to library's catalog record for this fragment.")
-    iiif_url = models.URLField('URL', blank=True)
+    old_shelfmarks = models.CharField(
+        'Historical Shelfmarks',
+        max_length=255, blank=True)
+    collection = models.ForeignKey(Collection, blank=True,
+                                   on_delete=models.SET_NULL, null=True)
+    url = models.URLField(
+        'URL', blank=True,
+        help_text="Link to library catalog record for this fragment.")
+    iiif_url = models.URLField('IIIF URL', blank=True)
+    multifragment = models.CharField(max_length=255, blank=True)
     notes = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.shelfmark
+
+    def is_multifragment(self):
+        return bool(self.multifragment)
+    is_multifragment.short_description = 'Multifragment?'
+    is_multifragment.boolean = True
 
 
 class DocumentType(models.Model):
@@ -104,8 +121,7 @@ class DocumentFragment(models.Model):
     '''Document-Fragment through model'''
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
-    text_block = models.CharField(max_length=255)
-    multifragment = models.CharField(max_length=255)
+    text_block = models.CharField(max_length=255, blank=True)
 
     RECTO = 'r'
     VERSO = 'v'

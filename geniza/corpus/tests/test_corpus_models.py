@@ -1,4 +1,4 @@
-from geniza.corpus.models import Collection, LanguageScript
+from geniza.corpus.models import Collection, Fragment, LanguageScript
 
 
 class TestCollection:
@@ -17,3 +17,17 @@ class TestLanguageScripts:
         # test proper string formatting
         lang = LanguageScript(language='Judaeo-Arabic', script='Hebrew')
         assert str(lang) == 'Judaeo-Arabic (Hebrew script)'
+
+
+class TestFragment:
+
+    def test_str(self):
+        frag = Fragment(shelfmark='TS 1')
+        assert str(frag) == frag.shelfmark
+
+    def test_is_multifragment(self):
+        frag = Fragment(shelfmark='TS 1')
+        assert not frag.is_multifragment()
+
+        frag.multifragment = 'a'
+        assert frag.is_multifragment()
