@@ -1,6 +1,12 @@
 from django.db import models
 
 
+class CollectionManager(models.Manager):
+
+    def get_by_natural_key(self, abbrev):
+        return self.get(abbrev=abbrev)
+
+
 class Collection(models.Model):
     '''Collection at a library that holds Geniza fragments'''
     library = models.CharField(max_length=255)
@@ -11,6 +17,8 @@ class Collection(models.Model):
     location = models.CharField(
         max_length=255, help_text='Current location of the collection')
 
+    objects = CollectionManager()
+
     class Meta:
         ordering = ['abbrev']
         constraints = [
@@ -20,6 +28,9 @@ class Collection(models.Model):
 
     def __str__(self):
         return self.abbrev
+
+    def natural_key(self):
+        return (self.abbrev, )
 
 
 class LanguageScript(models.Model):
