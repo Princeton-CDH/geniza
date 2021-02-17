@@ -4,3 +4,5 @@ pucas>=0.6
 django-split-settings
 requests
 django-taggit
+#next version of piffle
+git+https://github.com/princeton-cdh/piffle.git@feature/iiif_pres#egg=piffle
