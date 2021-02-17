@@ -1,3 +1,7 @@
+from unittest.mock import patch
+
+from attrdict import AttrDict
+from django.utils.safestring import SafeString
 import pytest
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
@@ -35,6 +39,47 @@ class TestFragment:
 
         frag.multifragment = 'a'
         assert frag.is_multifragment()
+
+
+#        manifest = IIIFPresentation.from_url(self.iiif_url)
+
+    @patch('geniza.corpus.models.IIIFPresentation')
+    def test_iiif_thumbnails(self, mockiifpres):
+        # no iiif
+        frag = Fragment(shelfmark='TS 1')
+        assert frag.iiif_thumbnails() == ''
+
+        frag.iiif_url = 'http://example.co/iiif/ts-1'
+        # return simplified part of the manifest we need for this
+        mockiifpres.from_url.return_value = AttrDict({
+            "sequences": [{
+                "canvases": [
+                    {
+                        "images": [{
+                            "resource": {
+                                "id": "http://example.co/iiif/ts-1/00001",
+                            }
+                        }],
+                        'label': '1r'
+                    },
+                    {
+                        "images": [{
+                            "resource": {
+                                "id": "http://example.co/iiif/ts-1/00002",
+                            }
+                        }],
+                        'label': '1v'
+                    }
+                ]
+            }]
+        })
+
+        thumbnails = frag.iiif_thumbnails()
+        assert '<img src="http://example.co/iiif/ts-1/00001/full/,200/0/default.jpg" loading="lazy"' \
+            in thumbnails
+        assert 'title="1r"' in thumbnails
+        assert 'title="1v"' in thumbnails
+        assert isinstance(thumbnails, SafeString)
 
 
 class TestDocumentType:
@@ -115,7 +160,8 @@ class TestDocument:
         # single language
         assert doc.all_languages() == str(lang)
 
-        arabic = LanguageScript.objects.create(language='Arabic', script='Arabic')
+        arabic = LanguageScript.objects.create(language='Arabic',
+                                               script='Arabic')
         doc.languages.add(arabic)
         assert doc.all_languages() == '%s,%s' % (arabic, lang)
 
@@ -129,7 +175,7 @@ class TestDocument:
         assert ', ' in tag_list
 
 
-@pytest.mark.django_db
+@ pytest.mark.django_db
 class TestTextUnit:
 
     def test_str(self):

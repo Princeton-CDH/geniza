@@ -77,15 +77,18 @@ class Fragment(models.Model):
     is_multifragment.boolean = True
 
     def iiif_thumbnails(self):
+        # if there is no iiif for this fragment, bail out
+        if not self.iiif_url:
+            return ''
+
         images = []
         labels = []
-        if self.iiif_url:
-            manifest = IIIFPresentation.from_url(self.iiif_url)
-            for canvas in manifest.sequences[0].canvases:
-                image_id = canvas.images[0].resource.id
-                images.append(IIIFImageClient(*image_id.rsplit('/', 1)))
-                labels.append(canvas.label)
-                # label provides library's recto/verso designation
+        manifest = IIIFPresentation.from_url(self.iiif_url)
+        for canvas in manifest.sequences[0].canvases:
+            image_id = canvas.images[0].resource.id
+            images.append(IIIFImageClient(*image_id.rsplit('/', 1)))
+            # label provides library's recto/verso designation
+            labels.append(canvas.label)
 
         return mark_safe(' '.join(
             # include label as title for now
