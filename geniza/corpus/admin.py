@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from geniza.corpus.models import Collection, Fragment, \
-    Document, DocumentType, LanguageScript, TextUnit
+from geniza.corpus.models import Collection, Document, DocumentType, \
+    Fragment, LanguageScript, TextUnit
 
 
 @admin.register(Collection)
@@ -18,8 +18,9 @@ class LanguageScriptAdmin(admin.ModelAdmin):
 class TextUnitInline(admin.TabularInline):
     model = TextUnit
     autocomplete_fields = ['fragment']
-    # TODO: iiif viewer? can we adapt same embed from fragment page,
-    # maybe as a widget
+    readonly_fields = ('thumbnail', )
+    fields = ('fragment', 'side', 'text_block', 'order',
+              'thumbnail')
 
 
 @admin.register(Document)
@@ -31,8 +32,9 @@ class DocumentAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('old_input_by', 'old_input_date',
                        'created', 'last_modified', 'shelfmark')
-    search_fields = ('shelfmark', 'tag__name', 'description',
-                     'old_input_by')  #  TODO search on edition when we add footnotes
+    search_fields = ('fragments__shelfmark', 'tags__name', 'description',
+                     'old_input_by')
+    # TODO include search on edition once we add footnotes
 
     list_filter = (
         'doctype', 'languages', 'textunit__text_block',

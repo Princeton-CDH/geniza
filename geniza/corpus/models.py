@@ -1,4 +1,7 @@
 from django.db import models
+from django.utils.safestring import mark_safe
+from piffle.image import IIIFImageClient
+from piffle.presentation import IIIFPresentation
 from taggit.managers import TaggableManager
 
 
@@ -72,6 +75,24 @@ class Fragment(models.Model):
         return bool(self.multifragment)
     is_multifragment.short_description = 'Multifragment?'
     is_multifragment.boolean = True
+
+    def iiif_thumbnails(self):
+        images = []
+        labels = []
+        if self.iiif_url:
+            manifest = IIIFPresentation.from_url(self.iiif_url)
+            for canvas in manifest.sequences[0].canvases:
+                image_id = canvas.images[0].resource.id
+                images.append(IIIFImageClient(*image_id.rsplit('/', 1)))
+                labels.append(canvas.label)
+                # label provides library's recto/verso designation
+
+        return mark_safe(' '.join(
+            # include label as title for now
+            '<img src="%s" loading="lazy" height="200" title="%s">' %
+            (img.size(height=200), labels[i])
+            for i, img in enumerate(images)
+        ))
 
 
 class DocumentType(models.Model):
@@ -154,3 +175,6 @@ class TextUnit(models.Model):
 
     def __str__(self):
         return '%s %s' % (self.fragment.shelfmark, self.get_side_display())
+
+    def thumbnail(self):
+        return self.fragment.iiif_thumbnails()
