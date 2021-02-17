@@ -7,8 +7,8 @@ Python/Django web application for a new version of the `Princeton Geniza Project
 Python 3.8 / Django 3.1 / Postgresql
 
 
-.. image:: https://github.com/Princeton-CDH/geniza/workflows/unit_tests/badge.svg
-    :target: https://github.com/Princeton-CDH/geniza/actions?query=workflow%3Aunit_tests
+.. image:: https://github.com/Princeton-CDH/geniza/workflows/unit%20tests/badge.svg
+    :target: https://github.com/Princeton-CDH/geniza/actions?query=workflow%3Aunit&20tests
     :alt: Unit Test status
 
 .. image:: https://codecov.io/gh/Princeton-CDH/geniza/branch/main/graph/badge.svg
