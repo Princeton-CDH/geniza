@@ -40,8 +40,14 @@ class TestFragment:
         frag.multifragment = 'a'
         assert frag.is_multifragment()
 
+    def test_natural_key(self):
+        frag = Fragment(shelfmark='TS 1')
+        assert frag.natural_key() == (frag.shelfmark, )
 
-#        manifest = IIIFPresentation.from_url(self.iiif_url)
+    @pytest.mark.django_db
+    def test_get_by_natural_key(self):
+        frag = Fragment.objects.create(shelfmark='TS 1')
+        assert Fragment.objects.get_by_natural_key(frag.shelfmark) == frag
 
     @patch('geniza.corpus.models.IIIFPresentation')
     def test_iiif_thumbnails(self, mockiifpres):

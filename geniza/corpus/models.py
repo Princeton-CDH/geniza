@@ -50,6 +50,12 @@ class LanguageScript(models.Model):
         return self.display_name or f"{self.language} ({self.script} script)"
 
 
+class FragmentManager(models.Manager):
+
+    def get_by_natural_key(self, shelfmark):
+        return self.get(shelfmark=shelfmark)
+
+
 class Fragment(models.Model):
     shelfmark = models.CharField(max_length=255, unique=True)
     # multiple, semicolon-delimited values. Keeping as single-valued for now
@@ -68,8 +74,13 @@ class Fragment(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
 
+    objects = FragmentManager()
+
     def __str__(self):
         return self.shelfmark
+
+    def natural_key(self):
+        return (self.shelfmark, )
 
     def is_multifragment(self):
         return bool(self.multifragment)
