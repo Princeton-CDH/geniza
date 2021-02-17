@@ -57,17 +57,9 @@ class DocumentAdmin(admin.ModelAdmin):
         TextUnitInline,
     ]
 
-    def all_languages(self, doc):
-        return ','.join([str(lang) for lang in doc.languages.all()])
-    all_languages.short_description = 'Language'
-
     def get_queryset(self, request):
         return super().get_queryset(request) \
-            .prefetch_related('tags', 'languages', 'fragments')
-
-    def tag_list(self, obj):
-        return ", ".join(o.name for o in obj.tags.all())
-    tag_list.short_description = 'tags'
+            .prefetch_related('tags', 'languages', 'textunit_set')
 
 
 @admin.register(DocumentType)

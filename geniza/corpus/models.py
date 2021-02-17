@@ -134,19 +134,31 @@ class Document(models.Model):
     @property
     def shelfmark(self):
         '''shelfmarks for associated fragments'''
-        return ' + '.join([fragment.shelfmark
-                           for fragment in self.fragments.all()])
+        # TODO: honor order in text unit
+        return ' + '.join([tu.fragment.shelfmark
+                           for tu in self.textunit_set.all()])
 
     @property
     def collection(self):
         '''collection (abbreviation) for associated fragments'''
-        return ', '.join(set([fragment.collection.abbrev for
-                              fragment in self.fragments.all()]))
+        # use set to ensure unique; sort for reliable output order
+        return ', '.join(sorted(set([tu.fragment.collection.abbrev for
+                                tu in self.textunit_set.all()
+                                if tu.fragment.collection])))
 
     def is_textblock(self):
+        '''Is this document part of a notated text block?'''
         return any(bool(textu.text_block) for textu in self.textunit_set.all())
     is_textblock.short_description = 'Text Block?'
     is_textblock.boolean = True
+
+    def all_languages(self):
+        return ','.join([str(lang) for lang in self.languages.all()])
+    all_languages.short_description = 'Language'
+
+    def tag_list(self):
+        return ", ".join(t.name for t in self.tags.all())
+    tag_list.short_description = 'tags'
 
 
 class TextUnit(models.Model):
@@ -158,9 +170,9 @@ class TextUnit(models.Model):
     VERSO = 'v'
     RECTO_VERSO = 'rv'
     RECTO_VERSO_CHOICES = [
-        (RECTO, 'Recto'),
-        (VERSO, 'Verso'),
-        (RECTO_VERSO, 'Recto and Verso'),
+        (RECTO, 'recto'),
+        (VERSO, 'verso'),
+        (RECTO_VERSO, 'recto and verso'),
     ]
     side = models.CharField(blank=True, max_length=255,
                             choices=RECTO_VERSO_CHOICES)
@@ -174,7 +186,10 @@ class TextUnit(models.Model):
         ordering = ['order']
 
     def __str__(self):
-        return '%s %s' % (self.fragment.shelfmark, self.get_side_display())
+        # combine shelfmark, side, and optionally text block
+        labels = [self.fragment.shelfmark, self.get_side_display(),
+                  self.text_block]
+        return ' '.join(label for label in labels if label)
 
     def thumbnail(self):
         return self.fragment.iiif_thumbnails()

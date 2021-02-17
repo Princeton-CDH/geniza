@@ -1,4 +1,7 @@
-from geniza.corpus.models import Collection, Fragment, LanguageScript
+import pytest
+
+from geniza.corpus.models import Collection, Document, DocumentType, \
+    Fragment, LanguageScript, TextUnit
 
 
 class TestCollection:
@@ -11,7 +14,8 @@ class TestCollection:
 class TestLanguageScripts:
     def test_str(self):
         # test display_name overwrite
-        lang = LanguageScript(display_name='Judaeo-Arabic', language='Judaeo-Arabic', script='Hebrew')
+        lang = LanguageScript(display_name='Judaeo-Arabic',
+                              language='Judaeo-Arabic', script='Hebrew')
         assert str(lang) == lang.display_name
 
         # test proper string formatting
@@ -31,3 +35,111 @@ class TestFragment:
 
         frag.multifragment = 'a'
         assert frag.is_multifragment()
+
+
+class TestDocumentType:
+
+    def test_str(self):
+        doctype = DocumentType(name='Legal')
+        assert str(doctype) == doctype.name
+
+
+@pytest.mark.django_db
+class TestDocument:
+
+    def test_shelfmark(self):
+        # T-S 8J22.21 + T-S NS J193
+        frag = Fragment.objects.create(shelfmark='T-S 8J22.21')
+        doc = Document.objects.create()
+        doc.fragments.add(frag)
+        # single fragment
+        assert doc.shelfmark == frag.shelfmark
+
+        frag2 = Fragment.objects.create(shelfmark='T-S NS J193')
+        doc.fragments.add(frag2)
+        # multiple fragments: combine shelfmarks
+        assert doc.shelfmark == '%s + %s' % \
+            (frag.shelfmark, frag2.shelfmark)
+
+    def test_str(self):
+        frag = Fragment.objects.create(shelfmark='Or.1081 2.25')
+        doc = Document.objects.create()
+        doc.fragments.add(frag)
+        assert str(doc) == doc.shelfmark
+
+    def test_collection(self):
+        # T-S 8J22.21 + T-S NS J193
+        frag = Fragment.objects.create(shelfmark='T-S 8J22.21')
+        doc = Document.objects.create()
+        doc.fragments.add(frag)
+        # single fragment with no collection
+        assert doc.collection == ''
+
+        cul = Collection.objects.create(library='Cambridge', abbrev='CUL')
+        frag.collection = cul
+        frag.save()
+        assert doc.collection == cul.abbrev
+
+        # second fragment in the same collection
+        frag2 = Fragment.objects.create(shelfmark='T-S NS J193',
+                                        collection=cul)
+        doc.fragments.add(frag2)
+        assert doc.collection == cul.abbrev
+
+        # second fragment in a different collection
+        jts = Collection.objects.create(library='Jewish Theological',
+                                        abbrev='JTS')
+        frag2.collection = jts
+        frag2.save()
+        assert doc.collection == 'CUL, JTS'
+
+    def test_is_textblock(self):
+        doc = Document.objects.create()
+        # no fragments
+        assert not doc.is_textblock()
+
+        # fragment but not text block
+        frag = Fragment.objects.create(shelfmark='T-S 8J22.21')
+        tu = TextUnit.objects.create(document=doc, fragment=frag)
+        assert not doc.is_textblock()
+
+        tu.text_block = 'a'
+        tu.save()
+        assert doc.is_textblock()
+
+    def test_all_languages(self):
+        doc = Document.objects.create()
+        lang = LanguageScript.objects \
+            .create(language='Judaeo-Arabic', script='Hebrew')
+        doc.languages.add(lang)
+        # single language
+        assert doc.all_languages() == str(lang)
+
+        arabic = LanguageScript.objects.create(language='Arabic', script='Arabic')
+        doc.languages.add(arabic)
+        assert doc.all_languages() == '%s,%s' % (arabic, lang)
+
+    def test_tag_list(self):
+        doc = Document.objects.create()
+        doc.tags.add('marriage', 'women')
+        tag_list = doc.tag_list()
+        # tag order is not reliable, so just check all the pieces
+        assert 'women' in tag_list
+        assert 'marriage' in tag_list
+        assert ', ' in tag_list
+
+
+@pytest.mark.django_db
+class TestTextUnit:
+
+    def test_str(self):
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark='T-S 8J22.21')
+        tu = TextUnit.objects.create(document=doc, fragment=frag,
+                                     side='r')
+        assert str(tu) == '%s recto' % frag.shelfmark
+
+        # with text block
+        tu.text_block = 'a'
+        tu.save()
+        assert str(tu) == '%s recto a' % frag.shelfmark
