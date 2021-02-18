@@ -181,7 +181,7 @@ class TestDocument:
         assert ', ' in tag_list
 
 
-@ pytest.mark.django_db
+@pytest.mark.django_db
 class TestTextUnit:
 
     def test_str(self):
@@ -195,3 +195,11 @@ class TestTextUnit:
         tu.text_block = 'a'
         tu.save()
         assert str(tu) == '%s recto a' % frag.shelfmark
+
+    def test_thumbnail(self):
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark='T-S 8J22.21')
+        tu = TextUnit.objects.create(document=doc, fragment=frag,
+                                     side='r')
+        with patch.object(frag, 'iiif_thumbnails') as mock_frag_thumbnails:
+            assert tu.thumbnail() == mock_frag_thumbnails.return_value
