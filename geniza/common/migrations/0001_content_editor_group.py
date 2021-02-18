@@ -7,7 +7,7 @@ CONTENT_EDITOR = 'Content Editor'
 # permissions for content editor
 content_editor_perms = {
     'corpus': [
-        'view_library', 'view_languagescript'
+        'view_collection', 'view_languagescript'
     ]
 }
 
@@ -15,7 +15,7 @@ CONTENT_ADMIN = 'Content Admin'
 # additional permissions for content admin (also get content edit permissions)
 content_admin_perms = {
     'corpus': [
-        'add_library', 'change_library', 'delete_library',
+        'add_collection', 'change_collection', 'delete_collection',
         'add_languagescript', 'change_languagescript', 'delete_languagescript',
     ]
 }
@@ -59,7 +59,7 @@ def remove_content_editor_groups(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corpus', '0002_create_languagescript'),
+        ('corpus', '0001_create_collection_languagescript'),
     ]
 
     operations = [
