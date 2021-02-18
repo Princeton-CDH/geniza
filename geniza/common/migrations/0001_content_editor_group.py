@@ -44,7 +44,7 @@ def create_content_editor_groups(apps, schema_editor):
 
     # update content admin group; add to content edit permissions
     admin_group = Group.objects.create(name=CONTENT_ADMIN)
-    for model, codenames in content_editor_perms.items():
+    for model, codenames in content_admin_perms.items():
         for codename in codenames:
             permissions.append(Permission.objects.get(codename=codename))
     admin_group.permissions.set(permissions)
