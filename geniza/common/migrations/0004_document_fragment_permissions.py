@@ -9,7 +9,7 @@ content_editor_perms = [
     'view_documenttype', 'view_tag',
     'view_document', 'add_document', 'change_document',
     'view_fragment', 'add_fragment', 'change_fragment',
-    'view_textunit', 'add_textunit', 'change_textunit', 'delete_textunit',
+    'view_textblock', 'add_textblock', 'change_textblock', 'delete_textblock',
     'view_tag',
     # question: are content editors allowed to add new tags?
 ]

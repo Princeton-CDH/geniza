@@ -143,7 +143,7 @@ class Document(models.Model):
     '''A unified document such as a letter or legal document that
     appears on one or more fragments.'''
     id = models.AutoField('PGPID', primary_key=True)
-    fragments = models.ManyToManyField(Fragment, through='TextUnit')
+    fragments = models.ManyToManyField(Fragment, through='TextBlock')
     description = models.TextField(blank=True)
     doctype = models.ForeignKey(
         DocumentType, blank=True, on_delete=models.SET_NULL, null=True,
@@ -171,20 +171,21 @@ class Document(models.Model):
     def shelfmark(self):
         '''shelfmarks for associated fragments'''
         # TODO: honor order in text unit
-        return ' + '.join([tu.fragment.shelfmark
-                           for tu in self.textunit_set.all()])
+        return ' + '.join([block.fragment.shelfmark
+                           for block in self.textblock_set.all()])
 
     @property
     def collection(self):
         '''collection (abbreviation) for associated fragments'''
         # use set to ensure unique; sort for reliable output order
-        return ', '.join(sorted(set([tu.fragment.collection.abbrev for
-                                tu in self.textunit_set.all()
-                                if tu.fragment.collection])))
+        return ', '.join(sorted(set([block.fragment.collection.abbrev for
+                                block in self.textblock_set.all()
+                                if block.fragment.collection])))
 
     def is_textblock(self):
         '''Is this document part of a notated text block?'''
-        return any(bool(textu.text_block) for textu in self.textunit_set.all())
+        return any(bool(block.extent_label)
+                   for block in self.textblock_set.all())
     is_textblock.short_description = 'Text Block?'
     is_textblock.boolean = True
 
@@ -197,9 +198,8 @@ class Document(models.Model):
     tag_list.short_description = 'tags'
 
 
-class TextUnit(models.Model):
-    '''A portion of a document that appears on a particular fragment.
-    Document-Fragment through model'''
+class TextBlock(models.Model):
+    '''The portion of a document that appears on a particular fragment.'''
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
     RECTO = 'r'
@@ -212,7 +212,7 @@ class TextUnit(models.Model):
     ]
     side = models.CharField(blank=True, max_length=255,
                             choices=RECTO_VERSO_CHOICES)
-    text_block = models.CharField(blank=True, max_length=255)
+    extent_label = models.CharField(blank=True, max_length=255)
     order = models.PositiveIntegerField(
         null=True, blank=True,
         help_text='Order if there are multiple fragments. ' +
@@ -223,9 +223,9 @@ class TextUnit(models.Model):
 
     def __str__(self):
         # combine shelfmark, side, and optionally text block
-        labels = [self.fragment.shelfmark, self.get_side_display(),
-                  self.text_block]
-        return ' '.join(label for label in labels if label)
+        parts = [self.fragment.shelfmark, self.get_side_display(),
+                 self.extent_label]
+        return ' '.join(p for p in parts if p)
 
     def thumbnail(self):
         return self.fragment.iiif_thumbnails()

@@ -5,7 +5,7 @@ from django.utils.safestring import SafeString
 import pytest
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
-    Fragment, LanguageScript, TextUnit
+    Fragment, LanguageScript, TextBlock
 
 
 class TestCollection:
@@ -172,11 +172,11 @@ class TestDocument:
 
         # fragment but not text block
         frag = Fragment.objects.create(shelfmark='T-S 8J22.21')
-        tu = TextUnit.objects.create(document=doc, fragment=frag)
+        block = TextBlock.objects.create(document=doc, fragment=frag)
         assert not doc.is_textblock()
 
-        tu.text_block = 'a'
-        tu.save()
+        block.extent_label = 'a'
+        block.save()
         assert doc.is_textblock()
 
     def test_all_languages(self):
@@ -208,19 +208,19 @@ class TestTextUnit:
     def test_str(self):
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark='T-S 8J22.21')
-        tu = TextUnit.objects.create(document=doc, fragment=frag,
-                                     side='r')
-        assert str(tu) == '%s recto' % frag.shelfmark
+        block = TextBlock.objects.create(document=doc, fragment=frag,
+                                         side='r')
+        assert str(block) == '%s recto' % frag.shelfmark
 
-        # with text block
-        tu.text_block = 'a'
-        tu.save()
-        assert str(tu) == '%s recto a' % frag.shelfmark
+        # with labeled extent
+        block.extent_label = 'a'
+        block.save()
+        assert str(block) == '%s recto a' % frag.shelfmark
 
     def test_thumbnail(self):
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark='T-S 8J22.21')
-        tu = TextUnit.objects.create(document=doc, fragment=frag,
-                                     side='r')
+        block = TextBlock.objects.create(document=doc, fragment=frag,
+                                         side='r')
         with patch.object(frag, 'iiif_thumbnails') as mock_frag_thumbnails:
-            assert tu.thumbnail() == mock_frag_thumbnails.return_value
+            assert block.thumbnail() == mock_frag_thumbnails.return_value

@@ -52,11 +52,11 @@ class Migration(migrations.Migration):
             options={'ordering': ['language'], 'verbose_name': 'Language + Script', 'verbose_name_plural': 'Languages + Scripts'},
         ),
         migrations.CreateModel(
-            name='TextUnit',
+            name='TextBlock',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('side', models.CharField(blank=True, choices=[('r', 'Recto'), ('v', 'Verso'), ('rv', 'Recto and Verso')], max_length=255)),
-                ('text_block', models.CharField(blank=True, max_length=255)),
+                ('extent_label', models.CharField(blank=True, max_length=255)),
                 ('order', models.PositiveIntegerField(blank=True, help_text='Order if there are multiple fragments. Top to bottom or right to left.', null=True)),
                 ('document', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='corpus.document')),
                 ('fragment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='corpus.fragment')),
@@ -70,7 +70,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='document',
             name='fragments',
-            field=models.ManyToManyField(through='corpus.TextUnit', to='corpus.Fragment'),
+            field=models.ManyToManyField(through='corpus.TextBlock', to='corpus.Fragment'),
         ),
         migrations.AddField(
             model_name='document',

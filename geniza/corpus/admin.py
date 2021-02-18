@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
-    Fragment, LanguageScript, TextUnit
+    Fragment, LanguageScript, TextBlock
 
 
 @admin.register(Collection)
@@ -15,11 +15,11 @@ class LanguageScriptAdmin(admin.ModelAdmin):
     list_display = ('language', 'script', 'display_name')
 
 
-class TextUnitInline(admin.TabularInline):
-    model = TextUnit
+class TextBlockInline(admin.TabularInline):
+    model = TextBlock
     autocomplete_fields = ['fragment']
     readonly_fields = ('thumbnail', )
-    fields = ('fragment', 'side', 'text_block', 'order',
+    fields = ('fragment', 'side', 'extent_label', 'order',
               'thumbnail')
 
 
@@ -37,7 +37,7 @@ class DocumentAdmin(admin.ModelAdmin):
     # TODO include search on edition once we add footnotes
 
     list_filter = (
-        'doctype', 'languages', 'textunit__text_block',
+        'doctype', 'languages', 'textblock__extent_label',
     )
 
     fields = (
@@ -54,12 +54,12 @@ class DocumentAdmin(admin.ModelAdmin):
     )
     filter_horizontal = ('languages', )
     inlines = [
-        TextUnitInline,
+        TextBlockInline,
     ]
 
     def get_queryset(self, request):
         return super().get_queryset(request) \
-            .prefetch_related('tags', 'languages', 'textunit_set')
+            .prefetch_related('tags', 'languages', 'textblock_set')
 
 
 @admin.register(DocumentType)
