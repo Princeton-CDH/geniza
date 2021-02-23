@@ -43,6 +43,7 @@ class LanguageScriptManager(models.Manager):
         return self.get(language=language, script=script)
 
 
+
 class LanguageScript(models.Model):
     '''Combination language and script'''
     language = models.CharField(max_length=255)
@@ -210,7 +211,7 @@ class TextBlock(models.Model):
         (VERSO, 'verso'),
         (RECTO_VERSO, 'recto and verso'),
     ]
-    side = models.CharField(blank=True, max_length=255,
+    side = models.CharField(blank=True, max_length=5,
                             choices=RECTO_VERSO_CHOICES)
     extent_label = models.CharField(blank=True, max_length=255)
     order = models.PositiveIntegerField(

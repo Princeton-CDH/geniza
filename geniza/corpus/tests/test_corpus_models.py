@@ -203,7 +203,7 @@ class TestDocument:
 
 
 @pytest.mark.django_db
-class TestTextUnit:
+class TestTextBlock:
 
     def test_str(self):
         doc = Document.objects.create()
