@@ -1,4 +1,5 @@
 import pytest
+from django.db.utils import IntegrityError
 
 from geniza.corpus.models import Collection, LanguageScript
 
@@ -18,12 +19,19 @@ class TestCollection:
         lib = Collection.objects.create(library='British Library', abbrev='BL')
         assert Collection.objects.get_by_natural_key('BL') == lib
 
+    @pytest.mark.django_db
+    def test_caseinsensitive_unique(self):
+        Collection.objects.create(library='British Library', abbrev='BL')
+        with pytest.raises(IntegrityError):
+            Collection.objects.create(library='Bermuda Library', abbrev='bl')
+
 
 class TestLanguageScripts:
 
     def test_str(self):
         # test display_name overwrite
-        lang = LanguageScript(display_name='Judaeo-Arabic', language='Judaeo-Arabic', script='Hebrew')
+        lang = LanguageScript(display_name='Judaeo-Arabic',
+                              language='Judaeo-Arabic', script='Hebrew')
         assert str(lang) == lang.display_name
 
         # test proper string formatting
