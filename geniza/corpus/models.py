@@ -150,7 +150,7 @@ class Document(models.Model):
     doctype = models.ForeignKey(
         DocumentType, blank=True, on_delete=models.SET_NULL, null=True,
         verbose_name='Type')
-    tags = TaggableManager()
+    tags = TaggableManager(blank=False)
     languages = models.ManyToManyField(LanguageScript, blank=True)
     # TODO footnotes for edition/translation
     notes = models.TextField(blank=True)

@@ -8,6 +8,7 @@ from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
+from django.utils.text import slugify
 
 import requests
 
@@ -25,17 +26,18 @@ csv_fields = {
     },
     'languages': {
         # lower case for each should be fine
+    },
+    'metadata': {
+        'Shelfmark - Current': 'shelfmark',
+        'Input by (optional)': 'input_by',
+        'Date entered (optional)': 'date_entered',
+        'Recto or verso (optional)': 'recto_verso',
+        'Text-block (optional)': 'text_block',
+        'Shelfmark - Historical (optional)': 'shelfmark_historic',
+        'Multifragment (optional)': 'multifragment',
+        'Link to image': 'image_link'
     }
 }
-
-# named tuple for CSV fields in library spreadsheet
-# LibraryRow = namedtuple('LibraryCollection', (
-#     'current',  # Current List of Libraries
-#     'library',  # Library
-#     'abbrev',   # Abbreviation
-#     'location',  # Location (current)
-#     'collection'  # Collection (if different from library)
-# ))
 
 
 class Command(BaseCommand):
@@ -56,7 +58,7 @@ class Command(BaseCommand):
         self.setup()
         self.import_collections()
         self.import_languages()
-        # self.import_documents()
+        self.import_documents()
 
     def get_csv(self, name):
         # given a name for a file in the configured data import urls,
@@ -76,7 +78,7 @@ class Command(BaseCommand):
         # Create a namedtuple based on headers in the csv
         # and local mapping of csv names to access names
         CsvRow = namedtuple('%sCSVRow' % name, (
-            csv_fields[name].get(col, col.lower() or 'empty')
+            csv_fields[name].get(col, slugify(col).replace('-', '_') or 'empty')
             for col in header
             # NOTE: allows one empty header; more will cause an error
         ))
@@ -153,51 +155,56 @@ class Command(BaseCommand):
         Document.objects.all().delete()
         Fragment.objects.all().delete()
 
+        # create a reverse lookup for recto/verso labels used in the
+        # spreadsheet to the codes used in the database
+        recto_verso_lookup = {label: code
+                              for label, code in TextBlock.RECTO_VERSO_CHOICES}
+
         for row in metadata:
-            if ';' in row['Type']:
-                print('skipping PGPID %s (demerge)' % row['PGPID'])
+            if ';' in row.type:
+                print('skipping PGPID %s (demerge)' % row.pgpid)
                 continue
 
-            doctype = self.get_doctype(row['Type'])
+            doctype = self.get_doctype(row.type)
             fragment = self.get_fragment(row)
             doc = Document.objects.create(
-                id=row['PGPID'],
+                id=row.pgpid,
                 doctype=doctype,
-                description=row['Description'],
-                old_input_by=row['Input by (optional)'],
-                old_input_date=row['Date entered (optional)']
+                description=row.description,
+                old_input_by=row.input_by,
+                old_input_date=row.date_entered
             )
             doc.fragments.add(fragment)
             doc.tags.add(*[tag.strip() for tag in
-                         row['Tags'].split('#') if tag.strip()])
+                         row.tags.split('#') if tag.strip()])
             # associate fragment via text block
             TextBlock.objects.create(
                 document=doc,
                 fragment=fragment,
-                # TODO: convert recto/verso value to code!
-                side=row['Recto or verso (optional)'],
-                extent_label=row['Text-block (optional)']
+                # convert recto/verso value to code
+                side=recto_verso_lookup.get(row.recto_verso, None),
+                extent_label=row.text_block
             )
             # TODO: language/script; needs mapping
             # joins
 
-            # TODO: handle joins on a second pass?
-            # so fragments will already exist if referenced directly
-            if row['Joins']:
-                join_shelfmarks = set(row['Joins'].strip().split(' + '))
-                try:
-                    join_shelfmarks.remove(row['Shelfmark - Current'])
-                except KeyError:
-                    print('key error for %s / %s' % (row['PGPID'], row['Shelfmark - Current']))
-                print('join_shelfmarks')
-                print(join_shelfmarks)
+            # TODO: handle joins on a second pass
+            # so fragments will already exist if referenced by another doc
+            # if row.joins:
+            #     join_shelfmarks = set(row.joins.strip().split(' + '))
+            #     try:
+            #         join_shelfmarks.remove(row.shelfmark)
+            #     except KeyError:
+            #         print('key error for %s / %s' % (row.pgpid, row.shelfmark))
+            #     print('join_shelfmarks')
+            #     print(join_shelfmarks)
 
-                for shelfmark in join_shelfmarks:
-                    join_fragment = Fragment.objects.filter(shelfmark=shelfmark).first()
-                    if not join_fragment:
-                        print('!! join fragment %s doesn\'t exist' % shelfmark)
-                    # create stub fragment
-                    # add textblock
+            #     for shelfmark in join_shelfmarks:
+            #         join_fragment = Fragment.objects.filter(shelfmark=shelfmark).first()
+            #         if not join_fragment:
+            #             print('!! join fragment %s doesn\'t exist' % shelfmark)
+            #         # create stub fragment
+            #         # add textblock
 
     doctype_lookup = {}
 
@@ -213,23 +220,19 @@ class Command(BaseCommand):
     def get_fragment(self, data):
         # get the fragment for this document if it already exists;
         # if it doesn't, create it
-        shelfmark = data.get('Shelfmark - Current', None)
-        if not shelfmark:
-            # warn? shouldn't be missing
-            return
-        fragment = Fragment.objects.filter(shelfmark=shelfmark).first()
+        fragment = Fragment.objects.filter(shelfmark=data.shelfmark).first()
         if fragment:
             # check against current values and warn if mismatch?
             return fragment
 
         # if fragment was not found, create it
         fragment = Fragment.objects.create(
-            shelfmark=shelfmark,
+            shelfmark=data.shelfmark,
             # todo: handle missing libraries (set from shelfmark?)
-            collection=self.library_lookup.get(data['Library'].strip(), None),
-            old_shelfmarks=data['Shelfmark - Historical (optional)'],
-            multifragment=data['Multifragment (optional)'],
-            url=data['Link to image'],
+            collection=self.library_lookup.get(data.library.strip(), None),
+            old_shelfmarks=data.shelfmark_historic,
+            multifragment=data.multifragment,
+            url=data.image_link,
             iiif_url=self.get_iiif_url(data)
         )
         # TODO: logentry to document creation or update
@@ -241,7 +244,7 @@ class Command(BaseCommand):
         # cambridge iiif manifest links use the same id as view links
         # NOTE: should exclude search link like this one:
         # https://cudl.lib.cam.ac.uk/search?fileID=&keyword=T-s%2013J33.12&page=1&x=0&y=
-        extlink = data['Link to image']
+        extlink = data.image_link
         if 'cudl.lib.cam.ac.uk/view/' in extlink:
             iiif_link = extlink.replace('/view/', '/iiif/')
             # view links end with /1 or /2 but iiif link does not include it
