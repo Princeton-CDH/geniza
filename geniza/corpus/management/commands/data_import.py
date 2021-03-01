@@ -182,7 +182,7 @@ class Command(BaseCommand):
                 document=doc,
                 fragment=fragment,
                 # convert recto/verso value to code
-                side=recto_verso_lookup.get(row.recto_verso, None),
+                side=recto_verso_lookup.get(row.recto_verso, ''),
                 extent_label=row.text_block
             )
             # TODO: language/script; needs mapping
