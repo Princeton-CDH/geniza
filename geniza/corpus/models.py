@@ -80,6 +80,8 @@ class FragmentManager(models.Manager):
 
 
 class Fragment(models.Model):
+    '''A single fragment or multifragment held by a
+    particular library or archive.'''
     shelfmark = models.CharField(max_length=255, unique=True)
     # multiple, semicolon-delimited values. Keeping as single-valued for now
     old_shelfmarks = models.CharField(
