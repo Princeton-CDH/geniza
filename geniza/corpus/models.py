@@ -14,7 +14,7 @@ class CollectionManager(models.Manager):
 class Collection(models.Model):
     '''Collection at a library that holds Geniza fragments'''
     library = models.CharField(max_length=255)
-    abbrev = models.CharField('Abbreviation', max_length=255, unique=True)
+    abbrev = models.CharField('Abbreviation', max_length=255)
     collection = models.CharField(
         max_length=255, blank=True,
         help_text='Collection name, if different than Library')
@@ -41,7 +41,6 @@ class LanguageScriptManager(models.Manager):
 
     def get_by_natural_key(self, language, script):
         return self.get(language=language, script=script)
-
 
 
 class LanguageScript(models.Model):

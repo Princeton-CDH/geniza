@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('library', models.CharField(max_length=255)),
-                ('abbrev', models.CharField(max_length=255, unique=True, verbose_name='Abbreviation')),
+                ('abbrev', models.CharField(max_length=255, verbose_name='Abbreviation')),
                 ('collection', models.CharField(blank=True, help_text='Collection name, if different than Library', max_length=255)),
                 ('location', models.CharField(help_text='Current location of the collection', max_length=255)),
             ],
