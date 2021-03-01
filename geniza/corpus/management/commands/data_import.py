@@ -1,6 +1,7 @@
 import codecs
 import csv
 import re
+from collections import namedtuple
 
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
@@ -12,6 +13,29 @@ import requests
 
 from geniza.corpus.models import Collection, Document, DocumentType, Fragment,\
     LanguageScript, TextBlock
+
+# mapping for csv header fields and local name we want to use
+# if not specified, column will be lower-cased
+csv_fields = {
+    'libraries': {
+        'Current List of Libraries': 'current',
+        'Abbreviation': 'abbrev',
+        'Location (current)': 'location',
+        'Collection (if different from library)': 'collection'
+    },
+    'languages': {
+        # lower case for each should be fine
+    }
+}
+
+# named tuple for CSV fields in library spreadsheet
+# LibraryRow = namedtuple('LibraryCollection', (
+#     'current',  # Current List of Libraries
+#     'library',  # Library
+#     'abbrev',   # Abbreviation
+#     'location',  # Location (current)
+#     'collection'  # Collection (if different from library)
+# ))
 
 
 class Command(BaseCommand):
@@ -32,11 +56,12 @@ class Command(BaseCommand):
         self.setup()
         self.import_collections()
         self.import_languages()
-        self.import_documents()
+        # self.import_documents()
 
     def get_csv(self, name):
         # given a name for a file in the configured data import urls,
-        # load the data by url and initialize and return a csv reader
+        # load the data by url and initialize and return a generator
+        # of namedtuple elements for each row
         csv_url = settings.DATA_IMPORT_URLS.get(name, None)
         if not csv_url:
             raise CommandError('Import URL for %s is not configured' % name)
@@ -45,8 +70,18 @@ class Command(BaseCommand):
             raise CommandError('Error accessing CSV for %s: %s' %
                                (name, response))
 
-        return csv.DictReader(codecs.iterdecode(response.iter_lines(),
-                              'utf-8'))
+        csvreader = csv.reader(codecs.iterdecode(response.iter_lines(),
+                               'utf-8'))
+        header = next(csvreader)
+        # Create a namedtuple based on headers in the csv
+        # and local mapping of csv names to access names
+        CsvRow = namedtuple('%sCSVRow' % name, (
+            csv_fields[name].get(col, col.lower()) for col in header
+        ))
+
+        # iterate over csv rows and yield a generator of the namedtuple
+        for row in csvreader:
+            yield CsvRow(*row)
 
     def import_collections(self):
         collection_content_type = ContentType.objects.get_for_model(Collection)
@@ -56,14 +91,14 @@ class Command(BaseCommand):
         # import list of libraries and abbreviations
         # convert to list so we can iterate twice
         library_data = list(self.get_csv('libraries'))
-        # create a collection entry for every row in the sheet with both
 
+        # create a collection entry for every row in the sheet with both
         # required values
         collections = Collection.objects.bulk_create([
-            Collection(library=row['Library'], abbrev=row['Abbreviation'],
-                       location=row['Location (current)'],
-                       collection=row['Collection (if different from library)'])
-            for row in library_data if row['Library'] and row['Abbreviation']
+            Collection(library=row.library, abbrev=row.abbrev,
+                       location=row.location,
+                       collection=row.collection)
+            for row in library_data if row.library and row.abbrev
         ])
         # NOTE: because we're using postgres, we can use bulk
         # create and still get pks for the newly created items
@@ -85,8 +120,8 @@ class Command(BaseCommand):
         # create a lookup for library as listed in the spreadsheet
         # mapping to newly created library object
         self.library_lookup = {
-            row['Current List of Libraries']: lib_abbrev[row['Abbreviation']]
-            for row in library_data}
+            row.current: lib_abbrev[row.abbrev]
+            for row in library_data if row.abbrev and row.current}
 
     def import_languages(self):
         language_content_type = ContentType.objects.get_for_model(LanguageScript)
@@ -94,9 +129,9 @@ class Command(BaseCommand):
         LanguageScript.objects.all().delete()
         language_data = self.get_csv('languages')
         languages = LanguageScript.objects.bulk_create([
-            LanguageScript(language=row['Language'],
-                           script=row['Script'])
-            for row in language_data if row['Language'] and row['Script']
+            LanguageScript(language=row.language,
+                           script=row.script)
+            for row in language_data if row.language and row.script
         ])
 
         # log all new objects
