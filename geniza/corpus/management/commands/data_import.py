@@ -76,7 +76,9 @@ class Command(BaseCommand):
         # Create a namedtuple based on headers in the csv
         # and local mapping of csv names to access names
         CsvRow = namedtuple('%sCSVRow' % name, (
-            csv_fields[name].get(col, col.lower()) for col in header
+            csv_fields[name].get(col, col.lower() or 'empty')
+            for col in header
+            # NOTE: allows one empty header; more will cause an error
         ))
 
         # iterate over csv rows and yield a generator of the namedtuple
