@@ -1,5 +1,8 @@
 from django.contrib import admin
 
+from django.utils.html import format_html
+from django.urls import reverse
+
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
 
@@ -12,8 +15,15 @@ class CollectionAdmin(admin.ModelAdmin):
 
 @admin.register(LanguageScript)
 class LanguageScriptAdmin(admin.ModelAdmin):
-    list_display = ('language', 'script', 'display_name')
+    list_display = ('language', 'script', 'display_name', 'usage_count')
 
+    def usage_count(self, obj):
+        admin_link_url = 'admin:corpus_document_changelist'
+        return format_html(
+            '<a href="{0}?languages__id__exact={1!s}" target="_blank">{2}</a>',
+            reverse(admin_link_url), str(obj.id),
+            obj.document_set.count()
+        )
 
 class TextBlockInline(admin.TabularInline):
     model = TextBlock
