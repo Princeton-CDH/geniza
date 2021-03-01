@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('taggit', '0003_taggeditem_add_unique_index'),
-        ('corpus', '0002_create_document_fragment.py'),
+        ('corpus', '0002_create_document_fragment'),
     ]
 
     operations = [
