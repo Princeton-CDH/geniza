@@ -86,8 +86,12 @@ class Command(BaseCommand):
         ))
 
         # iterate over csv rows and yield a generator of the namedtuple
-        for row in csvreader:
-            yield CsvRow(*row)
+        if name == 'metadata':
+            for row in list(csvreader)[:500]:
+                yield CsvRow(*row)
+        else:
+            for row in csvreader:
+                yield CsvRow(*row)
 
     def import_collections(self):
         collection_content_type = ContentType.objects.get_for_model(Collection)
@@ -223,16 +227,16 @@ class Command(BaseCommand):
                 side=recto_verso_lookup.get(row.recto_verso, ''),
                 extent_label=row.text_block
             )
-            
+        
             self.add_document_language(doc, row)
 
-            if row.joins:
+            if row.joins.strip():
                 joins.append((doc, row.joins))
-            # joins
 
         for doc, join in joins:
-            shelfmarks = row.joins.strip().split(' + ')
+            shelfmarks = join.strip().split(' + ')
             for shelfmark in shelfmarks:
+                # !!!: we're making this comparison doc.shelfmark changes
                 if shelfmark != doc.shelfmark:
                     join_fragment = Fragment.objects.filter(shelfmark=shelfmark).first()
                     if not join_fragment:
