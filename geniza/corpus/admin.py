@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Count
 
 from django.utils.html import format_html
 from django.urls import reverse
@@ -17,16 +18,20 @@ class CollectionAdmin(admin.ModelAdmin):
 class LanguageScriptAdmin(admin.ModelAdmin):
     list_display = ('language', 'script', 'display_name', 'documents')
 
-    
+    def get_queryset(self, request):
+        return super().get_queryset(request) \
+            .annotate(Count('document'))
 
     def documents(self, obj):
         admin_link_url = 'admin:corpus_document_changelist'
         return format_html(
             '<a href="{0}?languages__id__exact={1!s}" target="_blank">{2}</a>',
             reverse(admin_link_url), str(obj.id),
-            obj.document_set.count()
+            obj.document__count
         )
     documents.short_description = "# documents"
+    documents.admin_order_field = 'document__count'
+
 
 class TextBlockInline(admin.TabularInline):
     model = TextBlock
