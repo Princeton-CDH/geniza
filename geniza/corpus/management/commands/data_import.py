@@ -227,7 +227,7 @@ class Command(BaseCommand):
                 side=recto_verso_lookup.get(row.recto_verso, ''),
                 extent_label=row.text_block
             )
-        
+
             self.add_document_language(doc, row)
 
             if row.joins.strip():
@@ -235,9 +235,9 @@ class Command(BaseCommand):
 
         for doc, join in joins:
             shelfmarks = join.strip().split(' + ')
+            existing_shelfmark = doc.shelfmark
             for shelfmark in shelfmarks:
-                # !!!: we're making this comparison doc.shelfmark changes
-                if shelfmark != doc.shelfmark:
+                if shelfmark != existing_shelfmark:
                     join_fragment = Fragment.objects.filter(shelfmark=shelfmark).first()
                     if not join_fragment:
                         join_fragment = Fragment.objects.create(shelfmark=shelfmark)
