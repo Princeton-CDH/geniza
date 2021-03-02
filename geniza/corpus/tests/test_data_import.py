@@ -69,6 +69,23 @@ def test_get_csv_success():
         assert data[0].library == 'British Library'
 
 
+@override_settings(DATA_IMPORT_URLS={'metadata': 'http://example.co/mdata.csv'})
+def test_get_csv_maximum():
+    # simulate 200 result
+    with patch.object(requests, 'get') as mockget:
+        mockget.return_value.status_code = 200
+        mockget.return_value.iter_lines.return_value = iter([
+            b'Library,Abbreviation',
+            b'British Library,BL',
+            b'Bodleian Library,BODL',
+            b'Third,3rd'
+        ])
+        data_import_cmd = data_import.Command()
+        data_import_cmd.max_documents = 2
+        data = list(data_import_cmd.get_csv('metadata'))
+        assert len(data) == 2
+
+
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={'libraries': 'lib.csv'})  # must be set for command setup
 @patch('geniza.corpus.management.commands.data_import.requests')
@@ -211,6 +228,7 @@ def test_import_documents(mockrequests):
     Document.objects.create(notes='test doc')
 
     data_import_cmd = data_import.Command()
+    data_import_cmd.stdout = StringIO()
     # simulate library lookup already populated
     data_import_cmd.library_lookup = {
         'CUL': Collection.objects.create(library='CUL')
@@ -221,7 +239,8 @@ def test_import_documents(mockrequests):
     mockrequests.get.return_value.iter_lines.return_value = iter([
         b'PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins',
         b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,',
-        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA'
+        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA',
+        b'2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,'
     ])
     data_import_cmd.import_documents()
     assert Document.objects.count() == 2
@@ -243,6 +262,10 @@ def test_import_documents(mockrequests):
     doc2 = Document.objects.get(id=2292)
     assert doc2.fragments.count() == 3
     assert Fragment.objects.get(shelfmark='NA')
+    output = data_import_cmd.stdout.getvalue()
+    assert 'Imported 2 documents' in output
+    assert '1 with joins' in output
+    assert 'skipped 1' in output
 
 
 @pytest.mark.django_db
@@ -286,6 +309,7 @@ def test_add_document_language():
 
 
 @pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})
 def test_command_line():
     # test calling via command line
     with patch.multiple('geniza.corpus.management.commands.data_import.Command',

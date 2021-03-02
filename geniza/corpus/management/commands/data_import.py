@@ -1,7 +1,7 @@
 import codecs
 import csv
 import re
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
@@ -49,6 +49,10 @@ class Command(BaseCommand):
     library_lookup = {}
     document_type = {}
     language_lookup = {}  # this is provisional, assumes one language -> script mapping
+    max_documents = None
+
+    def add_arguments(self, parser):
+        parser.add_argument('-m', '--max_documents', type=int)
 
     def setup(self):
         if not hasattr(settings, 'DATA_IMPORT_URLS'):
@@ -56,8 +60,9 @@ class Command(BaseCommand):
 
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
-    def handle(self, *args, **kwargs):
+    def handle(self, max_documents=None, *args, **kwargs):
         self.setup()
+        self.max_documents = max_documents
         self.import_collections()
         self.import_languages()
         self.import_documents()
@@ -86,12 +91,12 @@ class Command(BaseCommand):
         ))
 
         # iterate over csv rows and yield a generator of the namedtuple
-        if name == 'metadata':
-            for row in list(csvreader)[:500]:
-                yield CsvRow(*row)
-        else:
-            for row in csvreader:
-                yield CsvRow(*row)
+        for count, row in enumerate(csvreader, start=1):
+            yield CsvRow(*row)
+            # if max documents is configured, bail out for metadata
+            if self.max_documents and name == 'metadata' and \
+               count >= self.max_documents:
+                break
 
     def import_collections(self):
         collection_content_type = ContentType.objects.get_for_model(Collection)
@@ -203,9 +208,11 @@ class Command(BaseCommand):
         }
 
         joins = []
+        docstats = defaultdict(int)
         for row in metadata:
             if ';' in row.type:
                 self.stdout.write('skipping PGPID %s (demerge)' % row.pgpid)
+                docstats['skipped'] += 1
                 continue
 
             doctype = self.get_doctype(row.type)
@@ -227,22 +234,31 @@ class Command(BaseCommand):
                 side=recto_verso_lookup.get(row.recto_verso, ''),
                 extent_label=row.text_block
             )
-
             self.add_document_language(doc, row)
+            docstats['documents'] += 1
 
+            # keep track of any joins to handle on a second pass
             if row.joins.strip():
-                joins.append((doc, row.joins))
+                joins.append((doc, row.joins.strip()))
 
+        # handle joins collected on the first pass
         for doc, join in joins:
-            shelfmarks = join.strip().split(' + ')
-            existing_shelfmark = doc.shelfmark
-            for shelfmark in shelfmarks:
-                if shelfmark != existing_shelfmark:
-                    join_fragment = Fragment.objects.filter(shelfmark=shelfmark).first()
-                    if not join_fragment:
-                        join_fragment = Fragment.objects.create(shelfmark=shelfmark)
-                    doc.fragments.add(join_fragment)
-        self.stdout.write(f'Imported {len(joins)} joins')
+            initial_shelfmark = doc.shelfmark
+            for shelfmark in join.split(' + '):
+                # skip the initial shelfmark, already associated
+                if shelfmark == initial_shelfmark:
+                    continue
+                # get the fragment if it already exists
+                join_fragment = Fragment.objects.filter(shelfmark=shelfmark).first()
+                # if not, create a stub fragment record
+                if not join_fragment:
+                    join_fragment = Fragment.objects.create(shelfmark=shelfmark)
+                # associate the fragment with the document
+                doc.fragments.add(join_fragment)
+
+        self.stdout.write(
+            'Imported %d documents, %d with joins; skipped %d' %
+            (docstats['documents'], len(joins), docstats['skipped']))
 
     doctype_lookup = {}
 
