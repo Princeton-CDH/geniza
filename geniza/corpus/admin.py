@@ -15,15 +15,18 @@ class CollectionAdmin(admin.ModelAdmin):
 
 @admin.register(LanguageScript)
 class LanguageScriptAdmin(admin.ModelAdmin):
-    list_display = ('language', 'script', 'display_name', 'usage_count')
+    list_display = ('language', 'script', 'display_name', 'documents')
 
-    def usage_count(self, obj):
+    
+
+    def documents(self, obj):
         admin_link_url = 'admin:corpus_document_changelist'
         return format_html(
             '<a href="{0}?languages__id__exact={1!s}" target="_blank">{2}</a>',
             reverse(admin_link_url), str(obj.id),
             obj.document_set.count()
         )
+    documents.short_description = "# documents"
 
 class TextBlockInline(admin.TabularInline):
     model = TextBlock
