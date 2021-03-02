@@ -48,7 +48,7 @@ class Command(BaseCommand):
 
     library_lookup = {}
     document_type = {}
-    language_lookup = {}
+    language_lookup = {}  # this is provisional, assumes one language -> script mapping
 
     def setup(self):
         if not hasattr(settings, 'DATA_IMPORT_URLS'):
@@ -157,28 +157,30 @@ class Command(BaseCommand):
     def add_document_language(self, doc, row):
         '''Parse languages and set probable_language and language_notes'''
         notes_list = []
-        if row.language:
-            for lang in row.language.split(';'):
-                lang = lang.strip()
-                # Place language in the language note if there're any non-question
-                # mark notes in language entry
-                if re.search(r'\([^?]+\)', lang):
-                    notes_list.append(lang)
+        if not row.language:
+            return
 
-                is_probable = '?' in lang
+        for lang in row.language.split(';'):
+            lang = lang.strip()
+            # Place language in the language note if there're any non-question
+            # mark notes in language entry
+            if re.search(r'\([^?]+\)', lang):
+                notes_list.append(lang)
 
-                # remove parentheticals and question marks
-                lang = re.sub(r'\(.+\)', '', lang).replace('some', '').strip('? ')
-                
+            is_probable = '?' in lang
 
-                lang_model = self.language_lookup.get(lang)
-                if not lang_model:
-                    print(f'ERROR language not found. PGPID: {row.pgpid}, Language: {lang}')
+            # remove parentheticals and question marks
+            lang = re.sub(r'\(.+\)', '', lang).replace('some', '').strip('? ')
+            
+
+            lang_model = self.language_lookup.get(lang)
+            if not lang_model:
+                print(f'ERROR language not found. PGPID: {row.pgpid}, Language: {lang}')
+            else:
+                if is_probable:
+                    doc.probable_languages.add(lang_model)
                 else:
-                    if is_probable:
-                        doc.probable_languages.add(lang_model)
-                    else:
-                        doc.languages.add(lang_model)
+                    doc.languages.add(lang_model)
 
         if notes_list:
             doc.language_note = '\n'.join(notes_list)

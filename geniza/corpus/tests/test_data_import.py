@@ -238,5 +238,35 @@ def test_import_documents(mockrequests):
     tags = set([t.name for t in doc.tags.all()])
     assert set(['lease', 'synagogue', '11th c']) == tags
 
+@pytest.mark.django_db
 def test_add_document_language():
-    pass
+    data_import_cmd = data_import.Command()
+    # simulate language lookup already populated
+    arabic = LanguageScript.objects.create(language='Arabic', script='Arabic')
+    hebrew = LanguageScript.objects.create(language='Hebrew', script='Hebrew')
+    data_import_cmd.language_lookup = {
+        'Arabic': arabic,
+        'Hebrew': hebrew
+    }
+    
+    doc = Document.objects.create()
+
+    row = AttrMap({
+        'pgpid': '3550',
+        'language': 'Hebrew? (Tiberian vocalisation); Arabic'
+    })
+
+    data_import_cmd.add_document_language(doc, row)
+
+    # languages with non-question mark notes are added to language_note
+    assert 'Hebrew? (Tiberian vocalisation)' in doc.language_note
+    assert 'Arabic' not in doc.language_note
+
+    # languages with question marks are probable
+    assert hebrew in doc.probable_languages.all()
+    assert arabic in doc.languages.all()
+
+    row.language = 'some Arabic    '
+    doc.languages.clear()
+    data_import_cmd.add_document_language(doc, row)
+    assert arabic in doc.languages.all()
