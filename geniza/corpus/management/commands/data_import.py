@@ -149,18 +149,12 @@ class Command(BaseCommand):
             for row in language_data if row.language and row.script
         ])
 
-        # log all new objects
-        for lang in languages:
-            # Add to lookup for document import
-            self.language_lookup[lang.language] = lang
-            LogEntry.objects.log_action(
-                user_id=self.script_user.id,
-                content_type_id=language_content_type.pk,
-                object_id=lang.pk,
-                object_repr=str(lang),
-                change_message=self.logentry_message,
-                action_flag=ADDITION)
-
+        # create log entries
+        self.log_creation(*languages)
+        # create lookup for associating documents & languages
+        # NOTE: this lookup is provisional
+        self.language_lookup = {lang.language: lang
+                                for lang in languages}
         self.stdout.write('Imported %d languages' % len(languages))
 
     def add_document_language(self, doc, row):
@@ -175,10 +169,8 @@ class Command(BaseCommand):
             # mark notes in language entry
             if re.search(r'\([^?]+\)', lang):
                 notes_list.append(lang)
-
             is_probable = '?' in lang
-
-            # remove parentheticals and question marks
+            # remove parentheticals, question marks, "some"
             lang = re.sub(r'\(.+\)', '', lang).replace('some', '').strip('? ')
 
             lang_model = self.language_lookup.get(lang)
@@ -236,6 +228,8 @@ class Command(BaseCommand):
             )
             self.add_document_language(doc, row)
             docstats['documents'] += 1
+            # create log entries as we go
+            self.log_creation(doc)
 
             # keep track of any joins to handle on a second pass
             if row.joins.strip():
@@ -276,7 +270,6 @@ class Command(BaseCommand):
         # if it doesn't, create it
         fragment = Fragment.objects.filter(shelfmark=data.shelfmark).first()
         if fragment:
-            # check against current values and warn if mismatch?
             return fragment
 
         # if fragment was not found, create it
@@ -289,7 +282,8 @@ class Command(BaseCommand):
             url=data.image_link,
             iiif_url=self.get_iiif_url(data)
         )
-        # TODO: logentry to document creation or update
+        # log object creation
+        self.log_creation(fragment)
         return fragment
 
     def get_iiif_url(self, data):
@@ -308,3 +302,16 @@ class Command(BaseCommand):
         # TODO: get new figgy iiif urls for JTS images based on shelfmark
         # if no url, return empty string for blank instead of null
         return ''
+
+    def log_creation(self, *objects):
+        # create log entries to document when & how records were created
+        # get content type based on first object
+        content_type = ContentType.objects.get_for_model(objects[0].__class__)
+        for obj in objects:
+            LogEntry.objects.log_action(
+                user_id=self.script_user.id,
+                content_type_id=content_type.pk,
+                object_id=obj.pk,
+                object_repr=str(obj),
+                change_message=self.logentry_message,
+                action_flag=ADDITION)

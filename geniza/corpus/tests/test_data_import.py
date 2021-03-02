@@ -4,6 +4,7 @@ from unittest.mock import patch, DEFAULT
 from attrdict import AttrMap
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import override_settings
@@ -186,6 +187,7 @@ def test_get_fragment():
     # get existing fragment if there is one
     myfrag = Fragment.objects.create(shelfmark='CUL Add.3350')
     data_import_cmd = data_import.Command()
+    data_import_cmd.setup()
     data = AttrMap({
         'shelfmark': 'CUL Add.3350'
     })
@@ -209,6 +211,10 @@ def test_get_fragment():
     assert newfrag.iiif_url   # should be set
     assert not newfrag.old_shelfmarks
     assert not newfrag.multifragment
+    # log entry should be created
+    fragment_ctype = ContentType.objects.get_for_model(Fragment)
+    assert LogEntry.objects.get(action_flag=ADDITION, object_id=newfrag.pk,
+                                content_type_id=fragment_ctype.pk)
 
     # test historic & multifrag values
     data.shelfmark = 'something else 123'
@@ -258,6 +264,10 @@ def test_import_documents(mockrequests):
     assert doc.old_input_date == '2017'
     tags = set([t.name for t in doc.tags.all()])
     assert set(['lease', 'synagogue', '11th c']) == tags
+    # log entry should be created
+    document_ctype = ContentType.objects.get_for_model(Document)
+    assert LogEntry.objects.get(action_flag=ADDITION, object_id=doc.pk,
+                                content_type_id=document_ctype.pk)
 
     doc2 = Document.objects.get(id=2292)
     assert doc2.fragments.count() == 3
@@ -266,6 +276,8 @@ def test_import_documents(mockrequests):
     assert 'Imported 2 documents' in output
     assert '1 with joins' in output
     assert 'skipped 1' in output
+    assert LogEntry.objects.get(action_flag=ADDITION, object_id=doc2.pk,
+                                content_type_id=document_ctype.pk)
 
 
 @pytest.mark.django_db
