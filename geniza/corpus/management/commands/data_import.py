@@ -157,8 +157,10 @@ class Command(BaseCommand):
 
         # create a reverse lookup for recto/verso labels used in the
         # spreadsheet to the codes used in the database
-        recto_verso_lookup = {label: code
-                              for label, code in TextBlock.RECTO_VERSO_CHOICES}
+        recto_verso_lookup = {
+            label.lower(): code
+            for code, label in TextBlock.RECTO_VERSO_CHOICES
+        }
 
         for row in metadata:
             if ';' in row.type:
@@ -174,7 +176,6 @@ class Command(BaseCommand):
                 old_input_by=row.input_by,
                 old_input_date=row.date_entered
             )
-            doc.fragments.add(fragment)
             doc.tags.add(*[tag.strip() for tag in
                          row.tags.split('#') if tag.strip()])
             # associate fragment via text block
