@@ -3,6 +3,7 @@ from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
 from taggit.managers import TaggableManager
+from django.core.exceptions import ValidationError
 
 
 class CollectionManager(models.Manager):
@@ -171,6 +172,10 @@ class Document(models.Model):
 
     def __str__(self):
         return self.shelfmark
+
+    def clean(self):
+        if any([plang in self.languages.all() for plang in self.probable_languages.all()]):
+            raise ValidationError('Languages cannot be both probable and definite.')
 
     @property
     def shelfmark(self):

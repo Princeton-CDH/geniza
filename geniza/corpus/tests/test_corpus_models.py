@@ -3,6 +3,7 @@ from unittest.mock import patch
 from attrdict import AttrDict
 from django.utils.safestring import SafeString
 import pytest
+from django.core.exceptions import ValidationError
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
@@ -200,6 +201,17 @@ class TestDocument:
         assert 'women' in tag_list
         assert 'marriage' in tag_list
         assert ', ' in tag_list
+
+    def test_clean(self):
+        doc = Document.objects.create()
+        lang = LanguageScript.objects \
+            .create(language='Judaeo-Arabic', script='Hebrew')
+        doc.languages.add(lang)
+        doc.clean()  # Shouldn't error when not duplicated
+
+        doc.probable_languages.add(lang)
+        with pytest.raises(ValidationError):
+            doc.clean()
 
 
 @pytest.mark.django_db
