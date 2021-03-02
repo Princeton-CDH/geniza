@@ -65,6 +65,7 @@ class DocumentAdmin(admin.ModelAdmin):
     search_fields = ('fragments__shelfmark', 'tags__name', 'description',
                      'old_input_by')
     # TODO include search on edition once we add footnotes
+    save_as = True
 
     list_filter = (
         'doctype', 'languages', 'textblock__extent_label',
@@ -94,6 +95,15 @@ class DocumentAdmin(admin.ModelAdmin):
         return super().get_queryset(request) \
             .prefetch_related('tags', 'languages', 'textblock_set')
 
+    def save_model(self, request, obj, form, change):
+        '''Customize this model's save_model function and then execute the
+         existing admin.ModelAdmin save_model function'''
+        if '_saveasnew' in request.POST:
+            # HACK: I'm having trouble finding the original ID in the given parameters. Ideas?
+            original_doc = Document.objects.get(pk=int(request.POST['textblock_set-0-document']))
+            clone_message = f'Cloned from {str(original_doc)}'
+            obj.notes = obj.notes + '\n' + clone_message if obj.notes else clone_message
+        super().save_model(request, obj, form, change)
 
 @admin.register(DocumentType)
 class DocumentTypeAdmin(admin.ModelAdmin):
