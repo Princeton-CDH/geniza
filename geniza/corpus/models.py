@@ -152,6 +152,9 @@ class Document(models.Model):
         verbose_name='Type')
     tags = TaggableManager(blank=False)
     languages = models.ManyToManyField(LanguageScript, blank=True)
+    probable_languages = models.ManyToManyField(
+        LanguageScript, blank=True, related_name='probable_documents',
+        limit_choices_to=~models.Q(language='Unknown'))
     # TODO footnotes for edition/translation
     notes = models.TextField(blank=True)
     old_input_by = models.CharField(
@@ -172,7 +175,7 @@ class Document(models.Model):
     @property
     def shelfmark(self):
         '''shelfmarks for associated fragments'''
-        # TODO: honor order in text unit
+        # access via textblock so we follow specified order
         return ' + '.join([block.fragment.shelfmark
                            for block in self.textblock_set.all()])
 

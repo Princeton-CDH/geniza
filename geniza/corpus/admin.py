@@ -52,7 +52,7 @@ class DocumentAdmin(admin.ModelAdmin):
         ('old_input_by', 'old_input_date'),
         ('created', 'last_modified')
     )
-    filter_horizontal = ('languages', )
+    filter_horizontal = ('languages', 'probable_languages')
     inlines = [
         TextBlockInline,
     ]
