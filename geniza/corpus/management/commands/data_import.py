@@ -36,7 +36,7 @@ csv_fields = {
         'Text-block (optional)': 'text_block',
         'Shelfmark - Historical (optional)': 'shelfmark_historic',
         'Multifragment (optional)': 'multifragment',
-        'Link to image': 'image_link'
+        'Link to image': 'image_link',
     }
 }
 
@@ -198,6 +198,7 @@ class Command(BaseCommand):
             for code, label in TextBlock.RECTO_VERSO_CHOICES
         }
 
+        joins = []
         for row in metadata:
             if ';' in row.type:
                 print('skipping PGPID %s (demerge)' % row.pgpid)
@@ -225,25 +226,19 @@ class Command(BaseCommand):
             
             self.add_document_language(doc, row)
 
+            if row.joins:
+                joins.append((doc, row.joins))
             # joins
 
-            # TODO: handle joins on a second pass
-            # so fragments will already exist if referenced by another doc
-            # if row.joins:
-            #     join_shelfmarks = set(row.joins.strip().split(' + '))
-            #     try:
-            #         join_shelfmarks.remove(row.shelfmark)
-            #     except KeyError:
-            #         print('key error for %s / %s' % (row.pgpid, row.shelfmark))
-            #     print('join_shelfmarks')
-            #     print(join_shelfmarks)
-
-            #     for shelfmark in join_shelfmarks:
-            #         join_fragment = Fragment.objects.filter(shelfmark=shelfmark).first()
-            #         if not join_fragment:
-            #             print('!! join fragment %s doesn\'t exist' % shelfmark)
-            #         # create stub fragment
-            #         # add textblock
+        for doc, join in joins:
+            shelfmarks = row.joins.strip().split(' + ')
+            for shelfmark in shelfmarks:
+                if shelfmark != doc.shelfmark:
+                    join_fragment = Fragment.objects.filter(shelfmark=shelfmark).first()
+                    if not join_fragment:
+                        join_fragment = Fragment.objects.create(shelfmark=shelfmark)
+                    doc.fragments.add(join_fragment)
+        print(f'Imported {len(joins)} joins')
 
     doctype_lookup = {}
 

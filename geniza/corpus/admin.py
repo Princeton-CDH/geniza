@@ -31,7 +31,7 @@ class DocumentAdmin(admin.ModelAdmin):
         'last_modified'
     )
     readonly_fields = ('old_input_by', 'old_input_date',
-                       'created', 'last_modified', 'shelfmark')
+                       'created', 'last_modified', 'shelfmark', 'id')
     search_fields = ('fragments__shelfmark', 'tags__name', 'description',
                      'old_input_by')
     # TODO include search on edition once we add footnotes
@@ -41,7 +41,7 @@ class DocumentAdmin(admin.ModelAdmin):
     )
 
     fields = (
-        'shelfmark',
+        ('shelfmark', 'id'),
         'doctype',
         'languages',
         'probable_languages',

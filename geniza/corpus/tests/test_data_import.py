@@ -218,14 +218,15 @@ def test_import_documents(mockrequests):
     mockrequests.codes = requests.codes   # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
-        b'PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional)',
-        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,'
+        b'PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins',
+        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,',
+        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA'
     ])
     data_import_cmd.import_documents()
-    assert Document.objects.count() == 1
-    assert Fragment.objects.count() == 1
-    doc = Document.objects.first()
-    assert doc.id == 2291
+    assert Document.objects.count() == 2
+    assert Fragment.objects.count() == 3
+    doc = Document.objects.get(id=2291)
+    assert doc.fragments.count() == 1
     assert doc.shelfmark == 'CUL Add.3358'
     assert doc.fragments.first().collection.library == 'CUL'
     assert doc.doctype.name == 'Legal'
@@ -237,6 +238,10 @@ def test_import_documents(mockrequests):
     assert doc.old_input_date == '2017'
     tags = set([t.name for t in doc.tags.all()])
     assert set(['lease', 'synagogue', '11th c']) == tags
+    
+    doc2 = Document.objects.get(id=2292)
+    assert doc2.fragments.count() == 3
+    assert Fragment.objects.get(shelfmark='NA')
 
 @pytest.mark.django_db
 def test_add_document_language():
