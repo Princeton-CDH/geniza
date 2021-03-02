@@ -156,6 +156,7 @@ class Document(models.Model):
     probable_languages = models.ManyToManyField(
         LanguageScript, blank=True, related_name='probable_documents',
         limit_choices_to=~models.Q(language='Unknown'))
+    language_note = models.TextField(blank=True, help_text='Notes on diacritics, vocalisation, etc.')
     # TODO footnotes for edition/translation
     notes = models.TextField(blank=True)
     old_input_by = models.CharField(

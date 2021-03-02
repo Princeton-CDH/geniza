@@ -23,6 +23,7 @@ class Migration(migrations.Migration):
                 ('old_input_date', models.CharField(help_text='Legacy input date from Google Sheets', max_length=255, verbose_name='Legacy input date')),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('last_modified', models.DateTimeField(auto_now=True)),
+                ('language_note', models.TextField(blank=True, help_text='Notes on diacritics, vocalisation, etc.'))
             ],
             options={
                 'ordering': ['fragments__shelfmark'],
@@ -92,5 +93,5 @@ class Migration(migrations.Migration):
             model_name='document',
             name='tags',
             field=taggit.managers.TaggableManager(help_text='A comma-separated list of tags.', through='taggit.TaggedItem', to='taggit.Tag', verbose_name='Tags'),
-        ),
+        )
     ]
