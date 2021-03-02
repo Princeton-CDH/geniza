@@ -1,9 +1,10 @@
-from collections import namedtuple
-from unittest.mock import patch
+from io import StringIO
+from unittest.mock import patch, DEFAULT
 
 from attrdict import AttrMap
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
+from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import override_settings
 import pytest
@@ -238,14 +239,17 @@ def test_import_documents(mockrequests):
     assert doc.old_input_date == '2017'
     tags = set([t.name for t in doc.tags.all()])
     assert set(['lease', 'synagogue', '11th c']) == tags
-    
+
     doc2 = Document.objects.get(id=2292)
     assert doc2.fragments.count() == 3
     assert Fragment.objects.get(shelfmark='NA')
 
+
 @pytest.mark.django_db
 def test_add_document_language():
     data_import_cmd = data_import.Command()
+    data_import_cmd.stdout = StringIO()
+
     # simulate language lookup already populated
     arabic = LanguageScript.objects.create(language='Arabic', script='Arabic')
     hebrew = LanguageScript.objects.create(language='Hebrew', script='Hebrew')
@@ -253,7 +257,7 @@ def test_add_document_language():
         'Arabic': arabic,
         'Hebrew': hebrew
     }
-    
+
     doc = Document.objects.create()
 
     row = AttrMap({
@@ -275,3 +279,20 @@ def test_add_document_language():
     doc.languages.clear()
     data_import_cmd.add_document_language(doc, row)
     assert arabic in doc.languages.all()
+
+    row.language = 'missing'
+    data_import_cmd.add_document_language(doc, row)
+    assert 'language not found' in data_import_cmd.stdout.getvalue()
+
+
+@pytest.mark.django_db
+def test_command_line():
+    # test calling via command line
+    with patch.multiple('geniza.corpus.management.commands.data_import.Command',
+                        import_collections=DEFAULT,
+                        import_languages=DEFAULT,
+                        import_documents=DEFAULT) as mock:
+        call_command('data_import')
+        mock['import_collections'].assert_called_with()
+        mock['import_languages'].assert_called_with()
+        mock['import_documents'].assert_called_with()

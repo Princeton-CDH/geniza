@@ -175,11 +175,11 @@ class Command(BaseCommand):
 
             # remove parentheticals and question marks
             lang = re.sub(r'\(.+\)', '', lang).replace('some', '').strip('? ')
-            
 
             lang_model = self.language_lookup.get(lang)
             if not lang_model:
-                print(f'ERROR language not found. PGPID: {row.pgpid}, Language: {lang}')
+                self.stdout.write(
+                    f'ERROR language not found. PGPID: {row.pgpid}, Language: {lang}')
             else:
                 if is_probable:
                     doc.probable_languages.add(lang_model)
@@ -205,7 +205,7 @@ class Command(BaseCommand):
         joins = []
         for row in metadata:
             if ';' in row.type:
-                print('skipping PGPID %s (demerge)' % row.pgpid)
+                self.stdout.write('skipping PGPID %s (demerge)' % row.pgpid)
                 continue
 
             doctype = self.get_doctype(row.type)
@@ -218,7 +218,7 @@ class Command(BaseCommand):
                 old_input_date=row.date_entered
             )
             doc.tags.add(*[tag.strip() for tag in
-                         row.tags.split('#') if tag.strip()])
+                           row.tags.split('#') if tag.strip()])
             # associate fragment via text block
             TextBlock.objects.create(
                 document=doc,
@@ -242,7 +242,7 @@ class Command(BaseCommand):
                     if not join_fragment:
                         join_fragment = Fragment.objects.create(shelfmark=shelfmark)
                     doc.fragments.add(join_fragment)
-        print(f'Imported {len(joins)} joins')
+        self.stdout.write(f'Imported {len(joins)} joins')
 
     doctype_lookup = {}
 
