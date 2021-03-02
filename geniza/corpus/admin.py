@@ -44,6 +44,8 @@ class DocumentAdmin(admin.ModelAdmin):
         'shelfmark',
         'doctype',
         'languages',
+        'probable_languages',
+        'language_note',
         'description',
         'tags',
         # edition, translation

@@ -32,6 +32,7 @@ csv_fields = {
         'Input by (optional)': 'input_by',
         'Date entered (optional)': 'date_entered',
         'Recto or verso (optional)': 'recto_verso',
+        'Language (optional)': 'language',
         'Text-block (optional)': 'text_block',
         'Shelfmark - Historical (optional)': 'shelfmark_historic',
         'Multifragment (optional)': 'multifragment',
@@ -47,6 +48,7 @@ class Command(BaseCommand):
 
     library_lookup = {}
     document_type = {}
+    language_lookup = {}
 
     def setup(self):
         if not hasattr(settings, 'DATA_IMPORT_URLS'):
@@ -140,6 +142,8 @@ class Command(BaseCommand):
 
         # log all new objects
         for lang in languages:
+            # Add to lookup for document import
+            self.language_lookup[lang.language] = lang
             LogEntry.objects.log_action(
                 user_id=self.script_user.id,
                 content_type_id=language_content_type.pk,
@@ -149,6 +153,36 @@ class Command(BaseCommand):
                 action_flag=ADDITION)
 
         self.stdout.write('Imported %d languages' % len(languages))
+
+    def add_document_language(self, doc, row):
+        '''Parse languages and set probable_language and language_notes'''
+        notes_list = []
+        if row.language:
+            for lang in row.language.split(';'):
+                lang = lang.strip()
+                # Place language in the language note if there're any non-question
+                # mark notes in language entry
+                if re.search(r'\([^?]+\)', lang):
+                    notes_list.append(lang)
+
+                is_probable = '?' in lang
+
+                # remove parentheticals and question marks
+                lang = re.sub(r'\(.+\)', '', lang).replace('some', '').strip('? ')
+                
+
+                lang_model = self.language_lookup.get(lang)
+                if not lang_model:
+                    print(f'ERROR language not found. PGPID: {row.pgpid}, Language: {lang}')
+                else:
+                    if is_probable:
+                        doc.probable_languages.add(lang_model)
+                    else:
+                        doc.languages.add(lang_model)
+
+        if notes_list:
+            doc.language_note = '\n'.join(notes_list)
+            doc.save()
 
     def import_documents(self):
         metadata = self.get_csv('metadata')
@@ -186,7 +220,9 @@ class Command(BaseCommand):
                 side=recto_verso_lookup.get(row.recto_verso, ''),
                 extent_label=row.text_block
             )
-            # TODO: language/script; needs mapping
+            
+            self.add_document_language(doc, row)
+
             # joins
 
             # TODO: handle joins on a second pass

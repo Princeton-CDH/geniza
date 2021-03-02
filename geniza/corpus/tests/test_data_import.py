@@ -237,3 +237,6 @@ def test_import_documents(mockrequests):
     assert doc.old_input_date == '2017'
     tags = set([t.name for t in doc.tags.all()])
     assert set(['lease', 'synagogue', '11th c']) == tags
+
+def test_add_document_language():
+    pass
