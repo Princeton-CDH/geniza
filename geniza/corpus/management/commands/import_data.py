@@ -240,6 +240,7 @@ class Command(BaseCommand):
                 # if not, create a stub fragment record
                 if not join_fragment:
                     join_fragment = Fragment.objects.create(shelfmark=shelfmark)
+                    self.log_creation(join_fragment)
                 # associate the fragment with the document
                 doc.fragments.add(join_fragment)
 
