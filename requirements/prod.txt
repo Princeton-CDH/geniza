@@ -3,4 +3,6 @@ psycopg2
 pucas>=0.6
 django-split-settings
 requests
-django-postgres-extra
+django-taggit
+#next version of piffle
+git+https://github.com/princeton-cdh/piffle.git@develop#egg=piffle

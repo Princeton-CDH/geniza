@@ -1,0 +1,15 @@
+{% extends "admin/change_form.html" %}
+{% block extrahead %}{{ block.super }}
+<script type="text/javascript" id="embedUV" src="http://universalviewer.io/uv/lib/embed.js"></script>
+{% endblock %}
+
+{% block field_sets %}
+{% if original.iiif_url %}
+	<div class="wrapper">
+		<div id="change_form">{{ block.super }}</div>
+		<div class="uv" data-uri="{{ original.iiif_url }}" data-collectionindex="0" data-manifestindex="0" data-sequenceindex="0" data-canvasindex="0" data-rotation="0" style="width:100%; height:450px"></div>	
+	</div>
+{% else %}
+	{{ block.super }}
+{% endif %}
+{% endblock %}

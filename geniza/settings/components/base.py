@@ -35,8 +35,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.postgres',
-    'psqlextra',
     'django_cas_ng',
+    'taggit',
     'pucas',
     'geniza.common',
     'geniza.corpus',
@@ -81,8 +81,7 @@ WSGI_APPLICATION = 'geniza.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": "psqlextra.backend",
-        # "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "django.db.backends.postgresql",
         "NAME": "geniza",
         "USER": "geniza",
         "PASSWORD": "",
