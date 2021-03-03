@@ -1,4 +1,8 @@
 from django.contrib import admin
+from django.db.models import Count
+
+from django.utils.html import format_html
+from django.urls import reverse
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
@@ -12,7 +16,33 @@ class CollectionAdmin(admin.ModelAdmin):
 
 @admin.register(LanguageScript)
 class LanguageScriptAdmin(admin.ModelAdmin):
-    list_display = ('language', 'script', 'display_name')
+    list_display = ('language', 'script', 'display_name', 'documents',
+                    'probable_documents')
+
+    document_admin_url = 'admin:corpus_document_changelist'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request) \
+            .annotate(Count('document', distinct=True),
+                      Count('probable_document', distinct=True))
+
+    def documents(self, obj):
+        return format_html(
+            '<a href="{0}?languages__id__exact={1!s}">{2}</a>',
+            reverse(self.document_admin_url), str(obj.id),
+            obj.document__count
+        )
+    documents.short_description = "# documents"
+    documents.admin_order_field = 'document__count'
+
+    def probable_documents(self, obj):
+        return format_html(
+            '<a href="{0}?probable_languages__id__exact={1!s}">{2}</a>',
+            reverse(self.document_admin_url), str(obj.id),
+            obj.probable_document__count
+        )
+    probable_documents.short_description = "# probable documents"
+    probable_documents.admin_order_field = 'probable_document__count'
 
 
 class TextBlockInline(admin.TabularInline):
@@ -38,6 +68,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
     list_filter = (
         'doctype', 'languages', 'textblock__extent_label',
+        'probable_languages',
     )
 
     fields = (

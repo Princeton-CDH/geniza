@@ -87,11 +87,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='document',
             name='probable_languages',
-            field=models.ManyToManyField(blank=True, limit_choices_to=models.Q(_negated=True, language='Unknown'), related_name='probable_documents', to='corpus.LanguageScript'),
+            field=models.ManyToManyField(blank=True, limit_choices_to=models.Q(_negated=True, language='Unknown'), related_name='probable_document', to='corpus.LanguageScript'),
         ),
         migrations.AddField(
             model_name='document',
             name='tags',
-            field=taggit.managers.TaggableManager(help_text='A comma-separated list of tags.', through='taggit.TaggedItem', to='taggit.Tag', verbose_name='Tags'),
+            field=taggit.managers.TaggableManager(help_text='A comma-separated list of tags.', through='taggit.TaggedItem', to='taggit.Tag', verbose_name='Tags', blank=True),
         )
     ]
