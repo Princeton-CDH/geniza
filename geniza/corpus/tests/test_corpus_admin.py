@@ -23,13 +23,25 @@ class TestLanguageScriptAdmin(TestCase):
         qs = lang_admin.get_queryset(request=None)
 
         arabic_usage_link = lang_admin.documents(qs.get(language='Arabic'))
-        assert f'languages__id__exact={arabic.pk}' in arabic_usage_link
+        assert f'?languages__id__exact={arabic.pk}' in arabic_usage_link
         assert '2</a>' in arabic_usage_link
 
         french_usage_link = lang_admin.documents(qs.get(language='French'))
-        assert f'languages__id__exact={french.pk}' in french_usage_link
+        assert f'?languages__id__exact={french.pk}' in french_usage_link
         assert '1</a>' in french_usage_link
 
         english_usage_link = lang_admin.documents(qs.get(language='English'))
-        assert f'languages__id__exact={english.pk}' in english_usage_link
+        assert f'?languages__id__exact={english.pk}' in english_usage_link
         assert '0</a>' in english_usage_link
+
+        # test probable documents
+        arabic = qs.get(language='Arabic')
+        arabic_probable_link = lang_admin.probable_documents(qs.get(language='Arabic'))
+        assert f'?probable_languages__id__exact={arabic.pk}' in arabic_probable_link
+        assert '0</a>' in arabic_probable_link
+
+        # add a probable language to our arabic document
+        arabic_doc.probable_languages.add(french)
+        french_probable_link = lang_admin.probable_documents(qs.get(language='French'))
+        assert f'?probable_languages__id__exact={french.pk}' in french_probable_link
+        assert '1</a>' in french_probable_link

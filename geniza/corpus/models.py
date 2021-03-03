@@ -154,7 +154,7 @@ class Document(models.Model):
     tags = TaggableManager(blank=True)
     languages = models.ManyToManyField(LanguageScript, blank=True)
     probable_languages = models.ManyToManyField(
-        LanguageScript, blank=True, related_name='probable_documents',
+        LanguageScript, blank=True, related_name='probable_document',
         limit_choices_to=~models.Q(language='Unknown'))
     language_note = models.TextField(blank=True, help_text='Notes on diacritics, vocalisation, etc.')
     # TODO footnotes for edition/translation
