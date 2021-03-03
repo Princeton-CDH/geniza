@@ -5,6 +5,8 @@ from piffle.presentation import IIIFPresentation
 from taggit.managers import TaggableManager
 from django.core.exceptions import ValidationError
 
+from psqlextra.indexes import CaseInsensitiveUniqueIndex
+
 
 class CollectionManager(models.Manager):
 
@@ -29,6 +31,9 @@ class Collection(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['library', 'collection'],
                                     name='unique_library_collection')
+        ]
+        indexes = [
+            CaseInsensitiveUniqueIndex(fields=['abbrev']),
         ]
 
     def __str__(self):

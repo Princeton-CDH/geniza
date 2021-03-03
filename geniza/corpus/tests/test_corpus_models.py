@@ -4,6 +4,7 @@ from attrdict import AttrDict
 from django.utils.safestring import SafeString
 import pytest
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
@@ -23,6 +24,12 @@ class TestCollection:
     def test_get_by_natural_key(self):
         lib = Collection.objects.create(library='British Library', abbrev='BL')
         assert Collection.objects.get_by_natural_key('BL') == lib
+
+    @pytest.mark.django_db
+    def test_caseinsensitive_unique(self):
+        Collection.objects.create(library='British Library', abbrev='BL')
+        with pytest.raises(IntegrityError):
+            Collection.objects.create(library='Bermuda Library', abbrev='bl')
 
 
 class TestLanguageScripts:
