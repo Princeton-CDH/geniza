@@ -46,6 +46,7 @@ class Command(BaseCommand):
 
     logentry_message = 'Created via data import script'
 
+    content_types = {}
     library_lookup = {}
     document_type = {}
     language_lookup = {}  # this is provisional, assumes one language -> script mapping
@@ -59,6 +60,10 @@ class Command(BaseCommand):
             raise CommandError('Please configure DATA_IMPORT_URLS in local settings')
 
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
+        self.content_types = {
+            model: ContentType.objects.get_for_model(model)
+            for model in [Fragment, Collection, Document, LanguageScript]
+        }
 
     def handle(self, max_documents=None, *args, **kwargs):
         self.setup()
@@ -99,8 +104,6 @@ class Command(BaseCommand):
                 break
 
     def import_collections(self):
-        collection_content_type = ContentType.objects.get_for_model(Collection)
-
         # clear out any existing collections
         Collection.objects.all().delete()
         # import list of libraries and abbreviations
@@ -119,15 +122,7 @@ class Command(BaseCommand):
         # create and still get pks for the newly created items
 
         # create log entries to document when & how records were created
-        for coll in collections:
-            LogEntry.objects.log_action(
-                user_id=self.script_user.id,
-                content_type_id=collection_content_type.pk,
-                object_id=coll.pk,
-                object_repr=str(coll),
-                change_message=self.logentry_message,
-                action_flag=ADDITION)
-
+        self.log_creation(*collections)
         self.stdout.write('Imported %d collections' % len(collections))
 
         # lookup for collection object by abbreviation
@@ -139,8 +134,6 @@ class Command(BaseCommand):
             for row in library_data if row.abbrev and row.current}
 
     def import_languages(self):
-        language_content_type = ContentType.objects.get_for_model(LanguageScript)
-
         LanguageScript.objects.all().delete()
         language_data = self.get_csv('languages')
         languages = LanguageScript.objects.bulk_create([
@@ -306,7 +299,7 @@ class Command(BaseCommand):
     def log_creation(self, *objects):
         # create log entries to document when & how records were created
         # get content type based on first object
-        content_type = ContentType.objects.get_for_model(objects[0].__class__)
+        content_type = self.content_types[objects[0].__class__]
         for obj in objects:
             LogEntry.objects.log_action(
                 user_id=self.script_user.id,

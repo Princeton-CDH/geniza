@@ -183,6 +183,7 @@ def test_get_iiif_url():
 
 
 @pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})
 def test_get_fragment():
     # get existing fragment if there is one
     myfrag = Fragment.objects.create(shelfmark='CUL Add.3350')
