@@ -3,6 +3,7 @@ from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
 from taggit.managers import TaggableManager
+from django.core.exceptions import ValidationError
 
 
 class CollectionManager(models.Manager):
@@ -14,7 +15,7 @@ class CollectionManager(models.Manager):
 class Collection(models.Model):
     '''Collection at a library that holds Geniza fragments'''
     library = models.CharField(max_length=255)
-    abbrev = models.CharField('Abbreviation', max_length=255, unique=True)
+    abbrev = models.CharField('Abbreviation', max_length=255)
     collection = models.CharField(
         max_length=255, blank=True,
         help_text='Collection name, if different than Library')
@@ -79,6 +80,8 @@ class FragmentManager(models.Manager):
 
 
 class Fragment(models.Model):
+    '''A single fragment or multifragment held by a
+    particular library or archive.'''
     shelfmark = models.CharField(max_length=255, unique=True)
     # multiple, semicolon-delimited values. Keeping as single-valued for now
     old_shelfmarks = models.CharField(
@@ -150,6 +153,10 @@ class Document(models.Model):
         verbose_name='Type')
     tags = TaggableManager(blank=True)
     languages = models.ManyToManyField(LanguageScript, blank=True)
+    probable_languages = models.ManyToManyField(
+        LanguageScript, blank=True, related_name='probable_documents',
+        limit_choices_to=~models.Q(language='Unknown'))
+    language_note = models.TextField(blank=True, help_text='Notes on diacritics, vocalisation, etc.')
     # TODO footnotes for edition/translation
     notes = models.TextField(blank=True)
     old_input_by = models.CharField(
@@ -167,10 +174,14 @@ class Document(models.Model):
     def __str__(self):
         return self.shelfmark
 
+    def clean(self):
+        if any([plang in self.languages.all() for plang in self.probable_languages.all()]):
+            raise ValidationError('Languages cannot be both probable and definite.')
+
     @property
     def shelfmark(self):
         '''shelfmarks for associated fragments'''
-        # TODO: honor order in text unit
+        # access via textblock so we follow specified order
         return ' + '.join([block.fragment.shelfmark
                            for block in self.textblock_set.all()])
 
@@ -210,7 +221,7 @@ class TextBlock(models.Model):
         (VERSO, 'verso'),
         (RECTO_VERSO, 'recto and verso'),
     ]
-    side = models.CharField(blank=True, max_length=255,
+    side = models.CharField(blank=True, max_length=5,
                             choices=RECTO_VERSO_CHOICES)
     extent_label = models.CharField(blank=True, max_length=255)
     order = models.PositiveIntegerField(
