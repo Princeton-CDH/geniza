@@ -11,7 +11,7 @@ from django.test import override_settings
 import pytest
 import requests
 
-from geniza.corpus.management.commands import data_import
+from geniza.corpus.management.commands import import_data
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript
 
@@ -21,35 +21,35 @@ from geniza.corpus.models import Collection, Document, DocumentType, \
 def test_setup_config_error():
     del settings.DATA_IMPORT_URLS
     with pytest.raises(CommandError):
-        data_import.Command().setup()
+        import_data.Command().setup()
 
 
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={})
 def test_setup():
-    data_import_cmd = data_import.Command()
-    data_import_cmd.setup()
+    import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
     # script user should be set
-    assert data_import_cmd.script_user
-    assert data_import_cmd.script_user.username == settings.SCRIPT_USERNAME
+    assert import_data_cmd.script_user
+    assert import_data_cmd.script_user.username == settings.SCRIPT_USERNAME
 
 
 @override_settings(DATA_IMPORT_URLS={})
 def test_get_csv_notconfigured():
     with pytest.raises(CommandError) as err:
         # NOTE: must consume the generator to make sure code executes
-        list(data_import.Command().get_csv('libraries'))
+        list(import_data.Command().get_csv('libraries'))
     assert 'not configured' in str(err)
 
 
 @override_settings(DATA_IMPORT_URLS={'libraries': 'http://example.co/lib.csv'})
-@patch('geniza.corpus.management.commands.data_import.requests')
+@patch('geniza.corpus.management.commands.import_data.requests')
 def test_get_csv_error(mockrequests):
     # simulate 404 result
     mockrequests.codes = requests.codes
     mockrequests.get.return_value.status_code = 404
     with pytest.raises(CommandError) as err:
-        list(data_import.Command().get_csv('libraries'))
+        list(import_data.Command().get_csv('libraries'))
 
     mockrequests.get.assert_called_with(settings.DATA_IMPORT_URLS['libraries'],
                                         stream=True)
@@ -66,7 +66,7 @@ def test_get_csv_success():
             b'British Library,BL',
             b'Bodleian Library,BODL'
         ])
-        data = list(data_import.Command().get_csv('libraries'))
+        data = list(import_data.Command().get_csv('libraries'))
         assert data[0].library == 'British Library'
 
 
@@ -81,21 +81,21 @@ def test_get_csv_maximum():
             b'Bodleian Library,BODL',
             b'Third,3rd'
         ])
-        data_import_cmd = data_import.Command()
-        data_import_cmd.max_documents = 2
-        data = list(data_import_cmd.get_csv('metadata'))
+        import_data_cmd = import_data.Command()
+        import_data_cmd.max_documents = 2
+        data = list(import_data_cmd.get_csv('metadata'))
         assert len(data) == 2
 
 
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={'libraries': 'lib.csv'})  # must be set for command setup
-@patch('geniza.corpus.management.commands.data_import.requests')
+@patch('geniza.corpus.management.commands.import_data.requests')
 def test_import_collections(mockrequests):
     # create test collection to confirm it is removed
     Collection.objects.create(library='Junk Library', abbrev='JunkL')
 
-    data_import_cmd = data_import.Command()
-    data_import_cmd.setup()
+    import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
     mockrequests.codes = requests.codes   # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
@@ -105,7 +105,7 @@ def test_import_collections(mockrequests):
         b'BODL,Incomplete,,,',
         b'RNL,National Library of Russia,RNL,St. Petersburg,Firkovitch'
     ])
-    data_import_cmd.import_collections()
+    import_data_cmd.import_collections()
     assert Collection.objects.count() == 3
     bl = Collection.objects.get(abbrev='BL')
     assert bl.library == 'British Library'
@@ -117,7 +117,7 @@ def test_import_collections(mockrequests):
     assert rnl.collection == 'Firkovitch'
 
     assert LogEntry.objects.filter(action_flag=ADDITION)[0].change_message == \
-        data_import_cmd.logentry_message
+        import_data_cmd.logentry_message
 
     # existing library records removed
     assert not Collection.objects.filter(library='Junk Library').exists()
@@ -125,12 +125,12 @@ def test_import_collections(mockrequests):
 
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={'languages': 'mylangs.csv'})  # must be set for command setup
-@patch('geniza.corpus.management.commands.data_import.requests')
+@patch('geniza.corpus.management.commands.import_data.requests')
 def test_import_languages(mockrequests):
     LanguageScript.objects.create(script='Wingdings', language='English')
 
-    data_import_cmd = data_import.Command()
-    data_import_cmd.setup()
+    import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
     mockrequests.codes = requests.codes   # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
@@ -139,14 +139,14 @@ def test_import_languages(mockrequests):
         b'Portuguese,Latin,,,',
         b',,,,note'  # should ignore empty row
     ])
-    data_import_cmd.import_languages()
+    import_data_cmd.import_languages()
     mockrequests.get.assert_called_with('mylangs.csv', stream=True)
     assert LanguageScript.objects.count() == 2
     assert LanguageScript.objects.get(language='Polish').script == 'Latin'
     assert LogEntry.objects.filter(action_flag=ADDITION).count() == 2
 
     assert LogEntry.objects.filter(action_flag=ADDITION)[0].change_message == \
-        data_import_cmd.logentry_message
+        import_data_cmd.logentry_message
 
     # existing LanguageScript records removed
     assert not LanguageScript.objects.filter(script='Wingdings').exists()
@@ -154,32 +154,32 @@ def test_import_languages(mockrequests):
 
 @pytest.mark.django_db
 def test_get_doctype():
-    data_import_cmd = data_import.Command()
-    letter = data_import_cmd.get_doctype('Letter')
+    import_data_cmd = import_data.Command()
+    letter = import_data_cmd.get_doctype('Letter')
     assert isinstance(letter, DocumentType)
     assert letter.name == 'Letter'
-    assert data_import_cmd.doctype_lookup['Letter'] == letter
+    assert import_data_cmd.doctype_lookup['Letter'] == letter
 
 
 def test_get_iiif_url():
-    data_import_cmd = data_import.Command()
+    import_data_cmd = import_data.Command()
 
     # use attrdict to simulate namedtuple used for csv data
     data = AttrMap({
         # cudl links can be converted to iiif
         'image_link': 'https://cudl.lib.cam.ac.uk/view/MS-ADD-02586'
     })
-    assert data_import_cmd.get_iiif_url(data) == \
+    assert import_data_cmd.get_iiif_url(data) == \
         'https://cudl.lib.cam.ac.uk/iiif/MS-ADD-02586'
 
     # some cudl urls have trailing /#
     data.image_link = 'https://cudl.lib.cam.ac.uk/view/MS-ADD-03430/1'
-    assert data_import_cmd.get_iiif_url(data) == \
+    assert import_data_cmd.get_iiif_url(data) == \
         'https://cudl.lib.cam.ac.uk/iiif/MS-ADD-03430'
 
     # cudl search link cannot be converted
     data.image_link = 'https://cudl.lib.cam.ac.uk/search?fileID=&keyword=T-s%2013J33'
-    assert data_import_cmd.get_iiif_url(data) == ''
+    assert import_data_cmd.get_iiif_url(data) == ''
 
 
 @pytest.mark.django_db
@@ -187,12 +187,12 @@ def test_get_iiif_url():
 def test_get_fragment():
     # get existing fragment if there is one
     myfrag = Fragment.objects.create(shelfmark='CUL Add.3350')
-    data_import_cmd = data_import.Command()
-    data_import_cmd.setup()
+    import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
     data = AttrMap({
         'shelfmark': 'CUL Add.3350'
     })
-    assert data_import_cmd.get_fragment(data) == myfrag
+    assert import_data_cmd.get_fragment(data) == myfrag
 
     # create new fragment if there isn't
     data = AttrMap({
@@ -203,10 +203,10 @@ def test_get_fragment():
         'image_link': 'https://cudl.lib.cam.ac.uk/view/MS-ADD-03430/1'
     })
     # simulate library lookup already populated
-    data_import_cmd.library_lookup = {
+    import_data_cmd.library_lookup = {
         'CUL': Collection.objects.create(library='CUL')
     }
-    newfrag = data_import_cmd.get_fragment(data)
+    newfrag = import_data_cmd.get_fragment(data)
     assert newfrag.shelfmark == data.shelfmark
     assert newfrag.url == data.image_link
     assert newfrag.iiif_url   # should be set
@@ -221,26 +221,26 @@ def test_get_fragment():
     data.shelfmark = 'something else 123'
     data.shelfmark_historic = 'old id 1, old id 2'
     data.multifragment = 'a'
-    newfrag = data_import_cmd.get_fragment(data)
+    newfrag = import_data_cmd.get_fragment(data)
     assert newfrag.old_shelfmarks == data.shelfmark_historic
     assert newfrag.multifragment == data.multifragment
 
 
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={'metadata': 'pgp_meta.csv'})
-@patch('geniza.corpus.management.commands.data_import.requests')
+@patch('geniza.corpus.management.commands.import_data.requests')
 def test_import_documents(mockrequests):
     # create test fragments & documents to confirm they are removed
     Fragment.objects.create(shelfmark='foo 1')
     Document.objects.create(notes='test doc')
 
-    data_import_cmd = data_import.Command()
-    data_import_cmd.stdout = StringIO()
+    import_data_cmd = import_data.Command()
+    import_data_cmd.stdout = StringIO()
     # simulate library lookup already populated
-    data_import_cmd.library_lookup = {
+    import_data_cmd.library_lookup = {
         'CUL': Collection.objects.create(library='CUL')
     }
-    data_import_cmd.setup()
+    import_data_cmd.setup()
     mockrequests.codes = requests.codes   # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
@@ -249,7 +249,7 @@ def test_import_documents(mockrequests):
         b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA',
         b'2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,'
     ])
-    data_import_cmd.import_documents()
+    import_data_cmd.import_documents()
     assert Document.objects.count() == 2
     assert Fragment.objects.count() == 3
     doc = Document.objects.get(id=2291)
@@ -273,7 +273,7 @@ def test_import_documents(mockrequests):
     doc2 = Document.objects.get(id=2292)
     assert doc2.fragments.count() == 3
     assert Fragment.objects.get(shelfmark='NA')
-    output = data_import_cmd.stdout.getvalue()
+    output = import_data_cmd.stdout.getvalue()
     assert 'Imported 2 documents' in output
     assert '1 with joins' in output
     assert 'skipped 1' in output
@@ -283,13 +283,13 @@ def test_import_documents(mockrequests):
 
 @pytest.mark.django_db
 def test_add_document_language():
-    data_import_cmd = data_import.Command()
-    data_import_cmd.stdout = StringIO()
+    import_data_cmd = import_data.Command()
+    import_data_cmd.stdout = StringIO()
 
     # simulate language lookup already populated
     arabic = LanguageScript.objects.create(language='Arabic', script='Arabic')
     hebrew = LanguageScript.objects.create(language='Hebrew', script='Hebrew')
-    data_import_cmd.language_lookup = {
+    import_data_cmd.language_lookup = {
         'Arabic': arabic,
         'Hebrew': hebrew
     }
@@ -301,7 +301,7 @@ def test_add_document_language():
         'language': 'Hebrew? (Tiberian vocalisation); Arabic'
     })
 
-    data_import_cmd.add_document_language(doc, row)
+    import_data_cmd.add_document_language(doc, row)
 
     # languages with non-question mark notes are added to language_note
     assert 'Hebrew? (Tiberian vocalisation)' in doc.language_note
@@ -313,23 +313,23 @@ def test_add_document_language():
 
     row.language = 'some Arabic    '
     doc.languages.clear()
-    data_import_cmd.add_document_language(doc, row)
+    import_data_cmd.add_document_language(doc, row)
     assert arabic in doc.languages.all()
 
     row.language = 'missing'
-    data_import_cmd.add_document_language(doc, row)
-    assert 'language not found' in data_import_cmd.stdout.getvalue()
+    import_data_cmd.add_document_language(doc, row)
+    assert 'language not found' in import_data_cmd.stdout.getvalue()
 
 
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={})
 def test_command_line():
     # test calling via command line
-    with patch.multiple('geniza.corpus.management.commands.data_import.Command',
+    with patch.multiple('geniza.corpus.management.commands.import_data.Command',
                         import_collections=DEFAULT,
                         import_languages=DEFAULT,
                         import_documents=DEFAULT) as mock:
-        call_command('data_import')
+        call_command('import_data')
         mock['import_collections'].assert_called_with()
         mock['import_languages'].assert_called_with()
         mock['import_documents'].assert_called_with()
