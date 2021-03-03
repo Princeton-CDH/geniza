@@ -25,12 +25,6 @@ class TestCollection:
         lib = Collection.objects.create(library='British Library', abbrev='BL')
         assert Collection.objects.get_by_natural_key('BL') == lib
 
-    @pytest.mark.django_db
-    def test_caseinsensitive_unique(self):
-        Collection.objects.create(library='British Library', abbrev='BL')
-        with pytest.raises(IntegrityError):
-            Collection.objects.create(library='Bermuda Library', abbrev='bl')
-
 
 class TestLanguageScripts:
 
