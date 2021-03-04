@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import Count
 
 from django.utils.html import format_html
-from django.urls import reverse
+from django.urls import reverse, resolve
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
@@ -99,8 +99,10 @@ class DocumentAdmin(admin.ModelAdmin):
         '''Customize this model's save_model function and then execute the
          existing admin.ModelAdmin save_model function'''
         if '_saveasnew' in request.POST:
-            # HACK: I'm having trouble finding the original ID in the given parameters. Ideas?
-            original_doc = Document.objects.get(pk=int(request.POST['textblock_set-0-document']))
+            # Get the ID from the admin URL
+            original_pk = resolve(request.path).kwargs['object_id']
+            # Get the original object
+            original_doc = obj._meta.concrete_model.objects.get(id=original_pk)
             clone_message = f'Cloned from {str(original_doc)}'
             obj.notes = obj.notes + '\n' + clone_message if obj.notes else clone_message
         super().save_model(request, obj, form, change)

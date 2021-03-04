@@ -175,8 +175,9 @@ class Document(models.Model):
         return self.shelfmark
 
     def clean(self):
-        if any([plang in self.languages.all() for plang in self.probable_languages.all()]):
-            raise ValidationError('Languages cannot be both probable and definite.')
+        pass
+        # if any([plang in self.languages.all() for plang in self.probable_languages.all()]):
+        #     raise ValidationError('Languages cannot be both probable and definite.')
 
     @property
     def shelfmark(self):
