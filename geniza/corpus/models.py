@@ -172,12 +172,12 @@ class Document(models.Model):
         ordering = ['fragments__shelfmark']
 
     def __str__(self):
-        return self.shelfmark
+        return f"{self.shelfmark} ({self.id or '??'})"
 
     def clean(self):
-        pass
-        # if any([plang in self.languages.all() for plang in self.probable_languages.all()]):
-        #     raise ValidationError('Languages cannot be both probable and definite.')
+        if self.pk:
+            if any([plang in self.languages.all() for plang in self.probable_languages.all()]):
+                raise ValidationError('Languages cannot be both probable and definite.')
 
     @property
     def shelfmark(self):

@@ -69,4 +69,4 @@ class TestDocumentAdmin(TestCase):
         assert Document.objects.count() == 2
         original_id = doc.id
         cloned_doc = Document.objects.exclude(pk=original_id).first()
-        assert 'Cloned from CUL 123' in cloned_doc.notes
+        assert f'Cloned from CUL 123 ({doc.id})' in cloned_doc.notes
