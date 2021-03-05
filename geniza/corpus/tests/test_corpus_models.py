@@ -142,7 +142,7 @@ class TestDocument:
         assert doc.shelfmark in str(doc) and str(doc.id) in str(doc)
 
         unsaved_doc = Document()
-        assert str(unsaved_doc) == ' (??)'
+        assert str(unsaved_doc) == '?? (PGPID ??)'
 
     def test_collection(self):
         # T-S 8J22.21 + T-S NS J193
