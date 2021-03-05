@@ -2,6 +2,7 @@ from django.test import TestCase, RequestFactory
 from django.contrib import admin
 from django.urls import reverse
 from django.forms import modelform_factory
+from django.forms.models import model_to_dict
 
 from geniza.corpus.models import LanguageScript, Document, Fragment
 from geniza.corpus.admin import LanguageScriptAdmin, DocumentAdmin
@@ -53,12 +54,17 @@ class TestDocumentAdmin(TestCase):
     def test_save_model(self):
         '''Ensure that save_as creates a new document and appends a note'''
         fragment = Fragment.objects.create(shelfmark='CUL 123')
-        doc = Document.objects.create()
+        doc = Document.objects.create(notes='Test note')
         doc.fragments.add(fragment)
 
         request_factory = RequestFactory()
         url = reverse('admin:corpus_document_change', args=(doc.id,))
-        request = request_factory.post(url, data={'_saveasnew': 'Save as new'})
+
+        data = model_to_dict(doc)
+        data['_saveasnew'] = 'Save as new'
+        for k, v in data.items():
+            data[k] = '' if v is None else v
+        request = request_factory.post(url, data=data)
         DocumentForm = modelform_factory(Document, exclude=[])
         form = DocumentForm(doc)
 
@@ -70,3 +76,4 @@ class TestDocumentAdmin(TestCase):
         original_id = doc.id
         cloned_doc = Document.objects.exclude(pk=original_id).first()
         assert f'Cloned from {str(doc)}' in cloned_doc.notes
+        assert 'Test note' in cloned_doc.notes
