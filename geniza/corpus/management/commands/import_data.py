@@ -20,7 +20,8 @@ from geniza.corpus.models import Collection, Document, DocumentType, Fragment,\
 csv_fields = {
     'libraries': {
         'Current List of Libraries': 'current',
-        'Abbreviation': 'abbrev',
+        'Library abbreviation': 'lib_abbrev',
+        'Collection abbreviation': 'abbrev',
         'Location (current)': 'location',
         'Collection (if different from library)': 'collection'
     },
@@ -112,26 +113,24 @@ class Command(BaseCommand):
 
         # create a collection entry for every row in the sheet with both
         # required values
-        collections = Collection.objects.bulk_create([
-            Collection(library=row.library, abbrev=row.abbrev,
-                       location=row.location,
-                       collection=row.collection)
-            for row in library_data if row.library and row.abbrev
-        ])
-        # NOTE: because we're using postgres, we can use bulk
-        # create and still get pks for the newly created items
+        collections = []
+        # at the same time, populate a library lookup to map existing data
+        for row in library_data:
+            # must have at least library or collection
+            if row.library or row.collection:
+                new_collection = Collection.objects.create(
+                    library=row.library,
+                    lib_abbrev=row.lib_abbrev,
+                    abbrev=row.abbrev,
+                    location=row.location,
+                    name=row.collection)
+                collections.append(new_collection)
 
+                # add to library lookup
+                self.library_lookup[row.current] = new_collection
         # create log entries to document when & how records were created
         self.log_creation(*collections)
         self.stdout.write('Imported %d collections' % len(collections))
-
-        # lookup for collection object by abbreviation
-        lib_abbrev = {lib.abbrev: lib for lib in collections}
-        # create a lookup for library as listed in the spreadsheet
-        # mapping to newly created library object
-        self.library_lookup = {
-            row.current: lib_abbrev[row.abbrev]
-            for row in library_data if row.abbrev and row.current}
 
     def import_languages(self):
         LanguageScript.objects.all().delete()

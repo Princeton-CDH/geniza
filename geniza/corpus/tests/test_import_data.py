@@ -99,22 +99,28 @@ def test_import_collections(mockrequests):
     mockrequests.codes = requests.codes   # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
-        b'Current List of Libraries,Library,Abbreviation,Location (current),Collection (if different from library)',
-        b'BL,British Library,BL,,',
-        b'BODL,Bodleian Library,BODL,,',
-        b'BODL,Incomplete,,,',
-        b'RNL,National Library of Russia,RNL,St. Petersburg,Firkovitch'
+        b'Current List of Libraries,Library,Library abbreviation,Location (current),Collection (if different from library),Collection abbreviation',
+        b'BL,British Library,BL,,,',
+        b'BODL,Bodleian Library,BODL,,,',
+        b'BODL,,Incomplete,,,',
+        b'CHAPIRA,,,,Chapira,',
+        b'RNL,National Library of Russia,RNL,St. Petersburg,Firkovitch,'
     ])
     import_data_cmd.import_collections()
-    assert Collection.objects.count() == 3
-    bl = Collection.objects.get(abbrev='BL')
+    assert Collection.objects.count() == 4
+    bl = Collection.objects.get(lib_abbrev='BL')
     assert bl.library == 'British Library'
-    assert not bl.collection
-    assert LogEntry.objects.filter(action_flag=ADDITION).count() == 3
+    assert not bl.name
+    assert LogEntry.objects.filter(action_flag=ADDITION).count() == 4
     # check that location and collection are populated when present
-    rnl = Collection.objects.get(abbrev='RNL')
+    rnl = Collection.objects.get(lib_abbrev='RNL')
     assert rnl.location == 'St. Petersburg'
-    assert rnl.collection == 'Firkovitch'
+    assert rnl.name == 'Firkovitch'
+
+    # check collection-only entry
+    chapira = Collection.objects.get(name='Chapira')
+    for unset_field in ['library', 'location', 'lib_abbrev', 'abbrev']:
+        assert not getattr(chapira, unset_field)
 
     assert LogEntry.objects.filter(action_flag=ADDITION)[0].change_message == \
         import_data_cmd.logentry_message
