@@ -54,7 +54,7 @@ class TestDocumentAdmin(TestCase):
     def test_save_model(self):
         '''Ensure that save_as creates a new document and appends a note'''
         fragment = Fragment.objects.create(shelfmark='CUL 123')
-        doc = Document.objects.create(notes='Test note')
+        doc = Document.objects.create()
         doc.fragments.add(fragment)
 
         request_factory = RequestFactory()
@@ -72,8 +72,10 @@ class TestDocumentAdmin(TestCase):
         new_doc = Document.objects.create()
         response = doc_admin.save_model(request, new_doc, form, False)
 
+        # add notes to test existing notes are preserved
         assert Document.objects.count() == 2
-        original_id = doc.id
-        cloned_doc = Document.objects.exclude(pk=original_id).first()
-        assert f'Cloned from {str(doc)}' in cloned_doc.notes
-        assert 'Test note' in cloned_doc.notes
+        new_doc.notes = 'Test note'
+        new_doc.save()
+        response = doc_admin.save_model(request, new_doc, form, False)
+        assert f'Cloned from {str(doc)}' in new_doc.notes
+        assert 'Test note' in new_doc.notes
