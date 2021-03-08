@@ -1,8 +1,9 @@
+from django import forms
 from django.contrib import admin
+from django.core.exceptions import ValidationError
 from django.db.models import Count
-
-from django.utils.html import format_html
 from django.urls import reverse
+from django.utils.html import format_html
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
@@ -20,6 +21,7 @@ class LanguageScriptAdmin(admin.ModelAdmin):
                     'probable_documents')
 
     document_admin_url = 'admin:corpus_document_changelist'
+    search_fields = ('language', 'script', 'display_name')
 
     def get_queryset(self, request):
         return super().get_queryset(request) \
@@ -53,8 +55,29 @@ class TextBlockInline(admin.TabularInline):
               'thumbnail')
 
 
+class DocumentForm(forms.ModelForm):
+
+    class Meta:
+        model = Document
+        exclude = ()
+
+    def clean(self):
+        # error if there is any overlap between language and probable lang
+        probable_languages = self.cleaned_data['probable_languages']
+        if any(plang in self.cleaned_data['languages']
+               for plang in probable_languages):
+            raise ValidationError(
+                'The same language cannot be both probable and definite.')
+        # check for unknown as probable here, since autocomplete doesn't
+        # honor limit_choices_to option set on thee model
+        if any(plang.language == 'Unknown' for plang in probable_languages):
+            raise ValidationError(
+                '"Unknown" is not allowed for probable language.')
+
+
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
+    form = DocumentForm
     list_display = (
         'shelfmark', 'description', 'doctype',
         'tag_list', 'all_languages', 'is_textblock',
@@ -85,7 +108,8 @@ class DocumentAdmin(admin.ModelAdmin):
         ('old_input_by', 'old_input_date'),
         ('created', 'last_modified')
     )
-    filter_horizontal = ('languages', 'probable_languages')
+    autocomplete_fields = ['languages', 'probable_languages']
+    # NOTE: autocomplete does not honor limit_choices_to in model
     inlines = [
         TextBlockInline,
     ]
