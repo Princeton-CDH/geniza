@@ -8,15 +8,18 @@ from django.core.exceptions import ValidationError
 
 class CollectionManager(models.Manager):
 
-    def get_by_natural_key(self, abbrev):
-        return self.get(abbrev=abbrev)
+    def get_by_natural_key(self, name, library):
+        return self.get(name=name, library=library)
 
 
 class Collection(models.Model):
     '''Collection at a library that holds Geniza fragments'''
-    library = models.CharField(max_length=255)
-    abbrev = models.CharField('Abbreviation', max_length=255)
-    collection = models.CharField(
+    library = models.CharField(max_length=255)   # optional
+    lib_abbrev = models.CharField(
+        'Library Abbreviation', max_length=255, blank=True)
+    abbrev = models.CharField(
+        'Collection Abbreviation', max_length=255, blank=True)
+    name = models.CharField(
         max_length=255, blank=True,
         help_text='Collection name, if different than Library')
     location = models.CharField(
@@ -27,15 +30,21 @@ class Collection(models.Model):
     class Meta:
         ordering = ['abbrev']
         constraints = [
-            models.UniqueConstraint(fields=['library', 'collection'],
-                                    name='unique_library_collection')
+            # require at least one of library OR name
+            models.CheckConstraint(
+                check=(models.Q(library__regex='.+') |
+                       models.Q(name__regex='.+')),
+                name='req_library_or_name'
+            ),
+            models.UniqueConstraint(fields=['library', 'name'],
+                                    name='unique_library_name')
         ]
 
     def __str__(self):
-        return self.abbrev
+        return ', '.join([val for val in (self.name, self.library) if val])
 
     def natural_key(self):
-        return (self.abbrev, )
+        return (self.name, self.library)
 
 
 class LanguageScriptManager(models.Manager):

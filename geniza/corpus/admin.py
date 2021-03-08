@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.db.models import Count
 
-from django.utils.html import format_html
 from django.urls import reverse
+from django.utils.html import format_html
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
@@ -10,8 +10,8 @@ from geniza.corpus.models import Collection, Document, DocumentType, \
 
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
-    list_display = ('abbrev', 'library', 'location', 'collection')
-    search_fields = ('library', 'location', 'collection')
+    list_display = ('library', 'name', 'lib_abbrev', 'abbrev', 'location')
+    search_fields = ('library', 'location', 'name')
 
 
 @admin.register(LanguageScript)
