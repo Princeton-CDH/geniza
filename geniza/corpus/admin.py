@@ -21,6 +21,11 @@ class LanguageScriptAdmin(admin.ModelAdmin):
 
     document_admin_url = 'admin:corpus_document_changelist'
 
+    class Media:
+        css = {
+            'all': ('css/admin-local.css', )
+        }
+
     def get_queryset(self, request):
         return super().get_queryset(request) \
             .annotate(Count('document', distinct=True),
@@ -32,7 +37,7 @@ class LanguageScriptAdmin(admin.ModelAdmin):
             reverse(self.document_admin_url), str(obj.id),
             obj.document__count
         )
-    documents.short_description = "# documents"
+    documents.short_description = "# documents on which this language appears"
     documents.admin_order_field = 'document__count'
 
     def probable_documents(self, obj):
@@ -41,7 +46,8 @@ class LanguageScriptAdmin(admin.ModelAdmin):
             reverse(self.document_admin_url), str(obj.id),
             obj.probable_document__count
         )
-    probable_documents.short_description = "# probable documents"
+    probable_documents.short_description = \
+        "# documents on which this language might appear (requires confirmation)"
     probable_documents.admin_order_field = 'probable_document__count'
 
 
