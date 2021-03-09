@@ -1,11 +1,14 @@
-from django.test import TestCase
+import pytest
+
 from django.contrib import admin
+from django.core.exceptions import ValidationError
 
 from geniza.corpus.models import LanguageScript, Document
-from geniza.corpus.admin import LanguageScriptAdmin
+from geniza.corpus.admin import LanguageScriptAdmin, DocumentForm
 
 
-class TestLanguageScriptAdmin(TestCase):
+@pytest.mark.django_db
+class TestLanguageScriptAdmin:
 
     def test_documents(self):
         '''Language script admin should report document usage of script with link'''
@@ -45,3 +48,34 @@ class TestLanguageScriptAdmin(TestCase):
         french_probable_link = lang_admin.probable_documents(qs.get(language='French'))
         assert f'?probable_languages__id__exact={french.pk}' in french_probable_link
         assert '1</a>' in french_probable_link
+
+
+@pytest.mark.django_db
+class TestDocumentForm:
+
+    def test_clean(self):
+        LanguageScript.objects \
+            .create(language='Judaeo-Arabic', script='Hebrew')
+        LanguageScript.objects \
+            .create(language='Unknown', script='Unknown')
+
+        docform = DocumentForm()
+        ja = LanguageScript.objects.filter(language='Judaeo-Arabic')
+        # return the same option for both, should error
+        with pytest.raises(ValidationError) as err:
+            docform.cleaned_data = {
+                'languages': ja,
+                'probable_languages': ja,
+            }
+            docform.clean()
+        assert 'cannot be both probable and definite' in str(err)
+
+        # return all (including unknown) for probable; should error
+        with pytest.raises(ValidationError) as err:
+            docform.cleaned_data = {
+                'languages': [],
+                'probable_languages': LanguageScript.objects.all()
+            }
+            docform.clean()
+
+        assert '"Unknown" is not allowed for probable language' in str(err)
