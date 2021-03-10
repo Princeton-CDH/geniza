@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'django_cas_ng',
     'taggit',
+    'taggit_selectize',
     'pucas',
     'geniza.common',
     'geniza.corpus',

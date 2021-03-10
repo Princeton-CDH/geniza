@@ -25,6 +25,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("accounts/", include("pucas.cas_urls")),
     path("i18n/", include("django.conf.urls.i18n")),
+    path("taggit/", include('taggit_selectize.urls')),
 ]
 
 

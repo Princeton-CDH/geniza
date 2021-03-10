@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
-from taggit.managers import TaggableManager
+from taggit_selectize.managers import TaggableManager
 
 
 class CollectionManager(models.Manager):
