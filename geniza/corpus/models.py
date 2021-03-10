@@ -12,7 +12,7 @@ class CollectionManager(models.Manager):
 
 
 class Collection(models.Model):
-    '''Collection at a library that holds Geniza fragments'''
+    '''Collection or library that holds Geniza fragments'''
     library = models.CharField(max_length=255, blank=True)   # optional
     lib_abbrev = models.CharField(
         'Library Abbreviation', max_length=255, blank=True)
