@@ -3,7 +3,6 @@ from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
 from taggit.managers import TaggableManager
-from django.core.exceptions import ValidationError
 
 
 class CollectionManager(models.Manager):
@@ -164,8 +163,9 @@ class Document(models.Model):
     languages = models.ManyToManyField(LanguageScript, blank=True)
     probable_languages = models.ManyToManyField(
         LanguageScript, blank=True, related_name='probable_document',
-        limit_choices_to=~models.Q(language='Unknown'))
-    language_note = models.TextField(blank=True, help_text='Notes on diacritics, vocalisation, etc.')
+        limit_choices_to=~models.Q(language__exact='Unknown'))
+    language_note = models.TextField(
+        blank=True, help_text='Notes on diacritics, vocalisation, etc.')
     # TODO footnotes for edition/translation
     notes = models.TextField(blank=True)
     old_input_by = models.CharField(
@@ -181,11 +181,7 @@ class Document(models.Model):
         ordering = ['fragments__shelfmark']
 
     def __str__(self):
-        return self.shelfmark
-
-    def clean(self):
-        if any([plang in self.languages.all() for plang in self.probable_languages.all()]):
-            raise ValidationError('Languages cannot be both probable and definite.')
+        return f"{self.shelfmark or '??'} (PGPID {self.id or '??'})"
 
     @property
     def shelfmark(self):
