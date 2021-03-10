@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from attrdict import AttrDict
+from django.db import IntegrityError
 from django.utils.safestring import SafeString
 import pytest
 
