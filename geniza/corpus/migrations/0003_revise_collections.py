@@ -29,6 +29,11 @@ class Migration(migrations.Migration):
             name='abbrev',
             field=models.CharField(blank=True, max_length=255, verbose_name='Collection Abbreviation'),
         ),
+        migrations.AlterField(
+            model_name='collection',
+            name='library',
+            field=models.CharField(blank=True, max_length=255),
+        ),
         migrations.AddConstraint(
             model_name='collection',
             constraint=models.CheckConstraint(check=models.Q(('library__regex', '.+'), ('name__regex', '.+'), _connector='OR'), name='req_library_or_name'),

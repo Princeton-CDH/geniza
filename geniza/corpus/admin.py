@@ -12,6 +12,7 @@ from geniza.corpus.models import Collection, Document, DocumentType, \
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ('library', 'name', 'lib_abbrev', 'abbrev', 'location')
     search_fields = ('library', 'location', 'name')
+    list_display_links = ('library', 'name')
 
 
 @admin.register(LanguageScript)
