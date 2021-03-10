@@ -188,6 +188,33 @@ def test_get_iiif_url():
     assert import_data_cmd.get_iiif_url(data) == ''
 
 
+def test_get_collection():
+    import_data_cmd = import_data.Command()
+    # simulate collection lookup already populated
+    bl = Collection(library='British Library')
+    cul_or = Collection(library='Cambridge', abbrev='Or.')
+    import_data_cmd.collection_lookup = {
+        'BL': bl,
+        'CUL_Or.': cul_or
+    }
+    # use attrdict to simulate namedtuple used for csv data
+    # - simple library lookup
+    data = AttrMap({
+        'library': 'BL'
+    })
+    assert import_data_cmd.get_collection(data) == bl
+    # - library + collection lookup
+    data = AttrMap({
+        'library': 'CUL',
+        'shelfmark': 'CUL Or. 10G5.3'
+    })
+    assert import_data_cmd.get_collection(data) == cul_or
+
+    # - library + collection lookup mismatch
+    data.shelfmark = 'ENA 1234.5'
+    assert import_data_cmd.get_collection(data) is None
+
+
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={})
 def test_get_fragment():
@@ -242,9 +269,9 @@ def test_import_documents(mockrequests):
 
     import_data_cmd = import_data.Command()
     import_data_cmd.stdout = StringIO()
-    # simulate library lookup already populated
-    import_data_cmd.library_lookup = {
-        'CUL': Collection.objects.create(library='CUL')
+    # simulate collection lookup already populated
+    import_data_cmd.collection_lookup = {
+        'CUL_Add.': Collection.objects.create(library='CUL', abbrev='Add.')
     }
     import_data_cmd.setup()
     mockrequests.codes = requests.codes   # patch in actual response codes
