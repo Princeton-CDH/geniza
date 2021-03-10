@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from attrdict import AttrDict
+from django.db import IntegrityError
 from django.utils.safestring import SafeString
 import pytest
 
@@ -11,17 +12,54 @@ from geniza.corpus.models import Collection, Document, DocumentType, \
 class TestCollection:
 
     def test_str(self):
+        # library only
         lib = Collection(library='British Library', abbrev='BL')
-        assert str(lib) == lib.abbrev
+        assert str(lib) == lib.library
+
+        # library + collection
+        cul_ts = Collection(
+            library='Cambridge UL', name='Taylor-Schechter',
+            lib_abbrev='CUL', abbrev='T-S')
+        assert str(cul_ts) == '%s, %s' % (cul_ts.name, cul_ts.library)
+
+        # collection only
+        chapira = Collection(name='Chapira')
+        assert str(chapira) == 'Chapira'
 
     def test_natural_key(self):
         lib = Collection(library='British Library', abbrev='BL')
-        assert lib.natural_key() == ('BL',)
+        assert lib.natural_key() == ('', 'British Library')
+
+        # library + collection
+        cul_ts = Collection(
+            library='Cambridge UL', name='Taylor-Schechter',
+            lib_abbrev='CUL', abbrev='T-S')
+        assert cul_ts.natural_key() == ('Taylor-Schechter', 'Cambridge UL')
 
     @pytest.mark.django_db
     def test_get_by_natural_key(self):
         lib = Collection.objects.create(library='British Library', abbrev='BL')
-        assert Collection.objects.get_by_natural_key('BL') == lib
+        assert Collection.objects.get_by_natural_key('', 'British Library') \
+            == lib
+
+        cul_ts = Collection.objects.create(
+            library='Cambridge UL', name='Taylor-Schechter',
+            lib_abbrev='CUL', abbrev='T-S')
+        assert Collection.objects.get_by_natural_key(
+            'Taylor-Schechter', 'Cambridge UL') == cul_ts
+
+    @pytest.mark.django_db
+    def test_library_or_name_required(self):
+        # library only
+        Collection.objects.create(library='British Library')
+        # collection only
+        Collection.objects.create(name='Chapira')
+        # library + collection
+        Collection.objects.create(library='Cambridge UL', name='Taylor-Schechter')
+
+        # one of library or name is required
+        with pytest.raises(IntegrityError):
+            Collection.objects.create(lib_abbrev='BL')
 
 
 class TestLanguageScripts:

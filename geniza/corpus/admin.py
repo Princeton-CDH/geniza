@@ -3,8 +3,8 @@ from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db.models import Count
 
-from django.utils.html import format_html
 from django.urls import reverse, resolve
+from django.utils.html import format_html
 from django.utils import timezone
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
@@ -13,8 +13,9 @@ from geniza.corpus.models import Collection, Document, DocumentType, \
 
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
-    list_display = ('abbrev', 'library', 'location', 'collection')
-    search_fields = ('library', 'location', 'collection')
+    list_display = ('library', 'name', 'lib_abbrev', 'abbrev', 'location')
+    search_fields = ('library', 'location', 'name')
+    list_display_links = ('library', 'name')
 
 
 @admin.register(LanguageScript)

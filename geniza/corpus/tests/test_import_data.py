@@ -99,22 +99,28 @@ def test_import_collections(mockrequests):
     mockrequests.codes = requests.codes   # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
-        b'Current List of Libraries,Library,Abbreviation,Location (current),Collection (if different from library)',
-        b'BL,British Library,BL,,',
-        b'BODL,Bodleian Library,BODL,,',
-        b'BODL,Incomplete,,,',
-        b'RNL,National Library of Russia,RNL,St. Petersburg,Firkovitch'
+        b'Current List of Libraries,Library,Library abbreviation,Location (current),Collection (if different from library),Collection abbreviation',
+        b'BL,British Library,BL,,,',
+        b'BODL,Bodleian Library,BODL,,,',
+        b'BODL,,Incomplete,,,',
+        b'CHAPIRA,,,,Chapira,',
+        b'RNL,National Library of Russia,RNL,St. Petersburg,Firkovitch,'
     ])
     import_data_cmd.import_collections()
-    assert Collection.objects.count() == 3
-    bl = Collection.objects.get(abbrev='BL')
+    assert Collection.objects.count() == 4
+    bl = Collection.objects.get(lib_abbrev='BL')
     assert bl.library == 'British Library'
-    assert not bl.collection
-    assert LogEntry.objects.filter(action_flag=ADDITION).count() == 3
+    assert not bl.name
+    assert LogEntry.objects.filter(action_flag=ADDITION).count() == 4
     # check that location and collection are populated when present
-    rnl = Collection.objects.get(abbrev='RNL')
+    rnl = Collection.objects.get(lib_abbrev='RNL')
     assert rnl.location == 'St. Petersburg'
-    assert rnl.collection == 'Firkovitch'
+    assert rnl.name == 'Firkovitch'
+
+    # check collection-only entry
+    chapira = Collection.objects.get(name='Chapira')
+    for unset_field in ['library', 'location', 'lib_abbrev', 'abbrev']:
+        assert not getattr(chapira, unset_field)
 
     assert LogEntry.objects.filter(action_flag=ADDITION)[0].change_message == \
         import_data_cmd.logentry_message
@@ -182,6 +188,33 @@ def test_get_iiif_url():
     assert import_data_cmd.get_iiif_url(data) == ''
 
 
+def test_get_collection():
+    import_data_cmd = import_data.Command()
+    # simulate collection lookup already populated
+    bl = Collection(library='British Library')
+    cul_or = Collection(library='Cambridge', abbrev='Or.')
+    import_data_cmd.collection_lookup = {
+        'BL': bl,
+        'CUL_Or.': cul_or
+    }
+    # use attrdict to simulate namedtuple used for csv data
+    # - simple library lookup
+    data = AttrMap({
+        'library': 'BL'
+    })
+    assert import_data_cmd.get_collection(data) == bl
+    # - library + collection lookup
+    data = AttrMap({
+        'library': 'CUL',
+        'shelfmark': 'CUL Or. 10G5.3'
+    })
+    assert import_data_cmd.get_collection(data) == cul_or
+
+    # - library + collection lookup mismatch
+    data.shelfmark = 'ENA 1234.5'
+    assert import_data_cmd.get_collection(data) is None
+
+
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={})
 def test_get_fragment():
@@ -236,9 +269,9 @@ def test_import_documents(mockrequests):
 
     import_data_cmd = import_data.Command()
     import_data_cmd.stdout = StringIO()
-    # simulate library lookup already populated
-    import_data_cmd.library_lookup = {
-        'CUL': Collection.objects.create(library='CUL')
+    # simulate collection lookup already populated
+    import_data_cmd.collection_lookup = {
+        'CUL_Add.': Collection.objects.create(library='CUL', abbrev='Add.')
     }
     import_data_cmd.setup()
     mockrequests.codes = requests.codes   # patch in actual response codes

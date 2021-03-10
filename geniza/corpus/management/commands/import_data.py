@@ -20,7 +20,8 @@ from geniza.corpus.models import Collection, Document, DocumentType, Fragment,\
 csv_fields = {
     'libraries': {
         'Current List of Libraries': 'current',
-        'Abbreviation': 'abbrev',
+        'Library abbreviation': 'lib_abbrev',
+        'Collection abbreviation': 'abbrev',
         'Location (current)': 'location',
         'Collection (if different from library)': 'collection'
     },
@@ -47,7 +48,7 @@ class Command(BaseCommand):
     logentry_message = 'Created via data import script'
 
     content_types = {}
-    library_lookup = {}
+    collection_lookup = {}
     document_type = {}
     language_lookup = {}  # this is provisional, assumes one language -> script mapping
     max_documents = None
@@ -112,26 +113,31 @@ class Command(BaseCommand):
 
         # create a collection entry for every row in the sheet with both
         # required values
-        collections = Collection.objects.bulk_create([
-            Collection(library=row.library, abbrev=row.abbrev,
-                       location=row.location,
-                       collection=row.collection)
-            for row in library_data if row.library and row.abbrev
-        ])
-        # NOTE: because we're using postgres, we can use bulk
-        # create and still get pks for the newly created items
+        collections = []
+        # at the same time, populate a library lookup to map existing data
+        for row in library_data:
+            # must have at least library or collection
+            if row.library or row.collection:
+                new_collection = Collection.objects.create(
+                    library=row.library,
+                    lib_abbrev=row.lib_abbrev,
+                    abbrev=row.abbrev,
+                    location=row.location,
+                    name=row.collection)
+                collections.append(new_collection)
+
+                # add the new object to library lookup
+                # special case: CUL has multiple collections which use the
+                # same library code in the metadata spreadsheet;
+                # include collection abbreviation in lookup
+                lookup_code = row.current
+                if row.current == 'CUL':
+                    lookup_code = '%s_%s' % (row.current, row.abbrev)
+                self.collection_lookup[lookup_code] = new_collection
 
         # create log entries to document when & how records were created
         self.log_creation(*collections)
         self.stdout.write('Imported %d collections' % len(collections))
-
-        # lookup for collection object by abbreviation
-        lib_abbrev = {lib.abbrev: lib for lib in collections}
-        # create a lookup for library as listed in the spreadsheet
-        # mapping to newly created library object
-        self.library_lookup = {
-            row.current: lib_abbrev[row.abbrev]
-            for row in library_data if row.abbrev and row.current}
 
     def import_languages(self):
         LanguageScript.objects.all().delete()
@@ -251,13 +257,32 @@ class Command(BaseCommand):
     doctype_lookup = {}
 
     def get_doctype(self, dtype):
-        doctype = self.doctype_lookup.get(dtype, None)
+        # don't create an empty doctype
+        if not dtype.strip():
+            return
+
+        doctype = self.doctype_lookup.get(dtype)
         # if not yet in our local lookup, get from the db
         if not doctype:
             doctype = DocumentType.objects.get_or_create(name=dtype)[0]
             self.doctype_lookup[dtype] = doctype
 
         return doctype
+
+    def get_collection(self, data):
+        lib_code = data.library.strip()
+        # differentiate CUL collections based on shelfmark
+        if lib_code == 'CUL':
+            for cul_collection in ['T-S', 'CUL Or.', 'CUL Add.']:
+                if data.shelfmark.startswith(cul_collection):
+                    lib_code = 'CUL_%s' % cul_collection.replace('CUL ', '')
+                    break
+            # if code is still CUL, there is a problem
+            if lib_code == 'CUL':
+                self.stdout.write(self.style.WARNING(
+                    'CUL collection not determined for %s'
+                    % data.shelfmark))
+        return self.collection_lookup.get(lib_code)
 
     def get_fragment(self, data):
         # get the fragment for this document if it already exists;
@@ -270,7 +295,8 @@ class Command(BaseCommand):
         fragment = Fragment.objects.create(
             shelfmark=data.shelfmark,
             # todo: handle missing libraries (set from shelfmark?)
-            collection=self.library_lookup.get(data.library.strip(), None),
+            # TODO: handle CUL — two collections, same current code in metadata
+            collection=self.get_collection(data),
             old_shelfmarks=data.shelfmark_historic,
             multifragment=data.multifragment,
             url=data.image_link,
