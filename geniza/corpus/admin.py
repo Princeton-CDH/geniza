@@ -2,8 +2,9 @@ from django import forms
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db.models import Count
-from django.urls import reverse
+
 from django.utils.html import format_html
+from django.urls import reverse, resolve
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
@@ -94,6 +95,7 @@ class DocumentAdmin(admin.ModelAdmin):
     search_fields = ('fragments__shelfmark', 'tags__name', 'description',
                      'old_input_by')
     # TODO include search on edition once we add footnotes
+    save_as = True
 
     list_filter = (
         'doctype', 'languages', 'textblock__extent_label',
@@ -123,6 +125,19 @@ class DocumentAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request) \
             .prefetch_related('tags', 'languages', 'textblock_set')
+
+    def save_model(self, request, obj, form, change):
+        '''Customize this model's save_model function and then execute the
+         existing admin.ModelAdmin save_model function'''
+        if '_saveasnew' in request.POST:
+            # Get the ID from the admin URL
+            original_pk = resolve(request.path).kwargs['object_id']
+            # Get the original object
+            original_doc = obj._meta.concrete_model.objects.get(id=original_pk)
+            clone_message = f'Cloned from {str(original_doc)}'
+            obj.notes = '\n'.join([val for val in (obj.notes, clone_message)
+                                   if val])
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(DocumentType)

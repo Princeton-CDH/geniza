@@ -172,7 +172,7 @@ class Document(models.Model):
         ordering = ['fragments__shelfmark']
 
     def __str__(self):
-        return self.shelfmark
+        return f"{self.shelfmark or '??'} (PGPID {self.id or '??'})"
 
     @property
     def shelfmark(self):

@@ -137,7 +137,10 @@ class TestDocument:
         frag = Fragment.objects.create(shelfmark='Or.1081 2.25')
         doc = Document.objects.create()
         doc.fragments.add(frag)
-        assert str(doc) == doc.shelfmark
+        assert doc.shelfmark in str(doc) and str(doc.id) in str(doc)
+
+        unsaved_doc = Document()
+        assert str(unsaved_doc) == '?? (PGPID ??)'
 
     def test_collection(self):
         # T-S 8J22.21 + T-S NS J193
