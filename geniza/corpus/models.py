@@ -22,7 +22,8 @@ class Collection(models.Model):
         max_length=255, blank=True,
         help_text='Collection name, if different than Library')
     location = models.CharField(
-        max_length=255, help_text='Current location of the collection')
+        max_length=255, help_text='Current location of the collection',
+        blank=True)
 
     objects = CollectionManager()
 
