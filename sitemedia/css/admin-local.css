@@ -1,0 +1,11 @@
+
+/* customize headings for Language+Script to handle long labels */
+th.column-documents, th.column-probable_documents {
+	max-width: 5em;
+}
+.model-languagescript.change-list #changelist table thead th {
+	vertical-align: bottom;
+}	
+.model-languagescript.change-list #changelist table thead .text {
+	white-space: break-spaces;
+}

@@ -1,4 +1,6 @@
+from django import forms
 from django.contrib import admin
+from django.core.exceptions import ValidationError
 from django.db.models import Count
 
 from django.utils.html import format_html
@@ -20,6 +22,12 @@ class LanguageScriptAdmin(admin.ModelAdmin):
                     'probable_documents')
 
     document_admin_url = 'admin:corpus_document_changelist'
+    search_fields = ('language', 'script', 'display_name')
+
+    class Media:
+        css = {
+            'all': ('css/admin-local.css', )
+        }
 
     def get_queryset(self, request):
         return super().get_queryset(request) \
@@ -32,7 +40,7 @@ class LanguageScriptAdmin(admin.ModelAdmin):
             reverse(self.document_admin_url), str(obj.id),
             obj.document__count
         )
-    documents.short_description = "# documents"
+    documents.short_description = "# documents on which this language appears"
     documents.admin_order_field = 'document__count'
 
     def probable_documents(self, obj):
@@ -41,7 +49,8 @@ class LanguageScriptAdmin(admin.ModelAdmin):
             reverse(self.document_admin_url), str(obj.id),
             obj.probable_document__count
         )
-    probable_documents.short_description = "# probable documents"
+    probable_documents.short_description = \
+        "# documents on which this language might appear (requires confirmation)"
     probable_documents.admin_order_field = 'probable_document__count'
 
 
@@ -53,8 +62,29 @@ class TextBlockInline(admin.TabularInline):
               'thumbnail')
 
 
+class DocumentForm(forms.ModelForm):
+
+    class Meta:
+        model = Document
+        exclude = ()
+
+    def clean(self):
+        # error if there is any overlap between language and probable lang
+        probable_languages = self.cleaned_data['probable_languages']
+        if any(plang in self.cleaned_data['languages']
+               for plang in probable_languages):
+            raise ValidationError(
+                'The same language cannot be both probable and definite.')
+        # check for unknown as probable here, since autocomplete doesn't
+        # honor limit_choices_to option set on thee model
+        if any(plang.language == 'Unknown' for plang in probable_languages):
+            raise ValidationError(
+                '"Unknown" is not allowed for probable language.')
+
+
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
+    form = DocumentForm
     list_display = (
         'shelfmark', 'description', 'doctype',
         'tag_list', 'all_languages', 'is_textblock',
@@ -86,7 +116,8 @@ class DocumentAdmin(admin.ModelAdmin):
         ('old_input_by', 'old_input_date'),
         ('created', 'last_modified')
     )
-    filter_horizontal = ('languages', 'probable_languages')
+    autocomplete_fields = ['languages', 'probable_languages']
+    # NOTE: autocomplete does not honor limit_choices_to in model
     inlines = [
         TextBlockInline,
     ]
@@ -104,8 +135,10 @@ class DocumentAdmin(admin.ModelAdmin):
             # Get the original object
             original_doc = obj._meta.concrete_model.objects.get(id=original_pk)
             clone_message = f'Cloned from {str(original_doc)}'
-            obj.notes = obj.notes + '\n' + clone_message if obj.notes else clone_message
+            obj.notes = '\n'.join([val for val in (obj.notes, clone_message)
+                                   if val])
         super().save_model(request, obj, form, change)
+
 
 @admin.register(DocumentType)
 class DocumentTypeAdmin(admin.ModelAdmin):
@@ -120,8 +153,8 @@ class FragmentAdmin(admin.ModelAdmin):
     readonly_fields = ('old_shelfmarks', 'created', 'last_modified',)
     list_filter = (
         'collection',
-        ('multifragment', admin.BooleanFieldListFilter),
-        ('url', admin.BooleanFieldListFilter),
+        ('multifragment', admin.EmptyFieldListFilter),
+        ('url', admin.EmptyFieldListFilter),
     )
     list_editable = ('url',)
     fields = (

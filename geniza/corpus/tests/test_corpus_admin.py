@@ -1,14 +1,19 @@
+import pytest
+
 from django.test import TestCase, RequestFactory
 from django.contrib import admin
+from django.contrib import admin
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.forms import modelform_factory
 from django.forms.models import model_to_dict
 
 from geniza.corpus.models import LanguageScript, Document, Fragment
-from geniza.corpus.admin import LanguageScriptAdmin, DocumentAdmin
+from geniza.corpus.admin import LanguageScriptAdmin, DocumentAdmin, DocumentForm
 
 
-class TestLanguageScriptAdmin(TestCase):
+@pytest.mark.django_db
+class TestLanguageScriptAdmin:
 
     def test_documents(self):
         '''Language script admin should report document usage of script with link'''
@@ -51,6 +56,7 @@ class TestLanguageScriptAdmin(TestCase):
 
 
 class TestDocumentAdmin(TestCase):
+
     def test_save_model(self):
         '''Ensure that save_as creates a new document and appends a note'''
         fragment = Fragment.objects.create(shelfmark='CUL 123')
@@ -79,3 +85,34 @@ class TestDocumentAdmin(TestCase):
         response = doc_admin.save_model(request, new_doc, form, False)
         assert f'Cloned from {str(doc)}' in new_doc.notes
         assert 'Test note' in new_doc.notes
+
+
+@pytest.mark.django_db
+class TestDocumentForm:
+
+    def test_clean(self):
+        LanguageScript.objects \
+            .create(language='Judaeo-Arabic', script='Hebrew')
+        LanguageScript.objects \
+            .create(language='Unknown', script='Unknown')
+
+        docform = DocumentForm()
+        ja = LanguageScript.objects.filter(language='Judaeo-Arabic')
+        # return the same option for both, should error
+        with pytest.raises(ValidationError) as err:
+            docform.cleaned_data = {
+                'languages': ja,
+                'probable_languages': ja,
+            }
+            docform.clean()
+        assert 'cannot be both probable and definite' in str(err)
+
+        # return all (including unknown) for probable; should error
+        with pytest.raises(ValidationError) as err:
+            docform.cleaned_data = {
+                'languages': [],
+                'probable_languages': LanguageScript.objects.all()
+            }
+            docform.clean()
+
+        assert '"Unknown" is not allowed for probable language' in str(err)
