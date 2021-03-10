@@ -186,9 +186,10 @@ class Document(models.Model):
     @property
     def shelfmark(self):
         '''shelfmarks for associated fragments'''
-        # access via textblock so we follow specified order
-        return ' + '.join([block.fragment.shelfmark
-                           for block in self.textblock_set.all()])
+        # access via textblock so we follow specified order,
+        # use dict keys to ensure unique
+        return ' + '.join(dict.fromkeys(block.fragment.shelfmark
+                          for block in self.textblock_set.all()))
 
     @property
     def collection(self):
