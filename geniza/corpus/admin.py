@@ -5,6 +5,7 @@ from django.db.models import Count
 
 from django.urls import reverse, resolve
 from django.utils.html import format_html
+from django.utils import timezone
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
@@ -138,6 +139,10 @@ class DocumentAdmin(admin.ModelAdmin):
             clone_message = f'Cloned from {str(original_doc)}'
             obj.notes = '\n'.join([val for val in (obj.notes, clone_message)
                                    if val])
+            # update date created & modified so they are accurate
+            # for the new model
+            obj.created = timezone.now()
+            obj.last_modified = None
         super().save_model(request, obj, form, change)
 
 

@@ -1,12 +1,13 @@
+from datetime import timedelta
 import pytest
 
-from django.test import TestCase, RequestFactory
-from django.contrib import admin
 from django.contrib import admin
 from django.core.exceptions import ValidationError
-from django.urls import reverse
 from django.forms import modelform_factory
 from django.forms.models import model_to_dict
+from django.test import TestCase, RequestFactory
+from django.urls import reverse
+from django.utils import timezone
 
 from geniza.corpus.models import LanguageScript, Document, Fragment
 from geniza.corpus.admin import LanguageScriptAdmin, DocumentAdmin, DocumentForm
@@ -75,7 +76,10 @@ class TestDocumentAdmin(TestCase):
         form = DocumentForm(doc)
 
         doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
-        new_doc = Document.objects.create()
+        # set dates on cloned test doc to confirm they are updated
+        lastweek = timezone.now() - timedelta(days=7)
+        new_doc = Document.objects.create(created=lastweek,
+                                          last_modified=lastweek)
         response = doc_admin.save_model(request, new_doc, form, False)
 
         # add notes to test existing notes are preserved
@@ -85,6 +89,8 @@ class TestDocumentAdmin(TestCase):
         response = doc_admin.save_model(request, new_doc, form, False)
         assert f'Cloned from {str(doc)}' in new_doc.notes
         assert 'Test note' in new_doc.notes
+        assert new_doc.created != lastweek
+        assert new_doc.last_modified != lastweek
 
 
 @pytest.mark.django_db
