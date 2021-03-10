@@ -223,7 +223,8 @@ class Command(BaseCommand):
                 fragment=fragment,
                 # convert recto/verso value to code
                 side=recto_verso_lookup.get(row.recto_verso, ''),
-                extent_label=row.text_block
+                extent_label=row.text_block,
+                multifragment=row.multifragment
             )
             self.add_document_language(doc, row)
             docstats['documents'] += 1
@@ -295,10 +296,9 @@ class Command(BaseCommand):
         fragment = Fragment.objects.create(
             shelfmark=data.shelfmark,
             # todo: handle missing libraries (set from shelfmark?)
-            # TODO: handle CUL — two collections, same current code in metadata
             collection=self.get_collection(data),
             old_shelfmarks=data.shelfmark_historic,
-            multifragment=data.multifragment,
+            is_multifragment=bool(data.multifragment),
             url=data.image_link,
             iiif_url=self.get_iiif_url(data)
         )

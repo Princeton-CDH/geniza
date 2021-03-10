@@ -92,13 +92,6 @@ class TestFragment:
         frag = Fragment(shelfmark='TS 1')
         assert str(frag) == frag.shelfmark
 
-    def test_is_multifragment(self):
-        frag = Fragment(shelfmark='TS 1')
-        assert not frag.is_multifragment()
-
-        frag.multifragment = 'a'
-        assert frag.is_multifragment()
-
     def test_natural_key(self):
         frag = Fragment(shelfmark='TS 1')
         assert frag.natural_key() == (frag.shelfmark, )
@@ -165,11 +158,23 @@ class TestDocument:
         # single fragment
         assert doc.shelfmark == frag.shelfmark
 
+        # add a second text block with the same fragment
+        TextBlock.objects.create(document=doc, fragment=frag)
+        # shelfmark should not repeat
+        assert doc.shelfmark == frag.shelfmark
+
         frag2 = Fragment.objects.create(shelfmark='T-S NS J193')
         doc.fragments.add(frag2)
         # multiple fragments: combine shelfmarks
         assert doc.shelfmark == '%s + %s' % \
             (frag.shelfmark, frag2.shelfmark)
+
+        # ensure shelfmark honors order
+        doc2 = Document.objects.create()
+        TextBlock.objects.create(document=doc2, fragment=frag2, order=1)
+        TextBlock.objects.create(document=doc2, fragment=frag, order=2)
+        assert doc2.shelfmark == '%s + %s' % \
+            (frag2.shelfmark, frag.shelfmark)
 
     def test_str(self):
         frag = Fragment.objects.create(shelfmark='Or.1081 2.25')

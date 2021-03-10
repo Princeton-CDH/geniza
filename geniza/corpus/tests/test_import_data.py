@@ -244,7 +244,7 @@ def test_get_fragment():
     assert newfrag.url == data.image_link
     assert newfrag.iiif_url   # should be set
     assert not newfrag.old_shelfmarks
-    assert not newfrag.multifragment
+    assert not newfrag.is_multifragment
     # log entry should be created
     fragment_ctype = ContentType.objects.get_for_model(Fragment)
     assert LogEntry.objects.get(action_flag=ADDITION, object_id=newfrag.pk,
@@ -256,7 +256,7 @@ def test_get_fragment():
     data.multifragment = 'a'
     newfrag = import_data_cmd.get_fragment(data)
     assert newfrag.old_shelfmarks == data.shelfmark_historic
-    assert newfrag.multifragment == data.multifragment
+    assert newfrag.is_multifragment
 
 
 @pytest.mark.django_db
@@ -278,7 +278,7 @@ def test_import_documents(mockrequests):
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
         b'PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins',
-        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,',
+        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,',
         b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA',
         b'2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,'
     ])
@@ -291,7 +291,12 @@ def test_import_documents(mockrequests):
     assert doc.fragments.first().collection.library == 'CUL'
     assert doc.doctype.name == 'Legal'
     assert doc.textblock_set.count()
-    assert doc.textblock_set.first().side == 'v'
+    # check text block side, extent label, multifragment
+    textblock = doc.textblock_set.first()
+    assert textblock.side == 'v'
+    assert textblock.extent_label == 'a'
+    assert textblock.multifragment == 'middle'
+
     assert doc.description == \
         'Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.'
     assert doc.old_input_by == 'Sarah Nisenson'
@@ -306,6 +311,8 @@ def test_import_documents(mockrequests):
     doc2 = Document.objects.get(id=2292)
     assert doc2.fragments.count() == 3
     assert Fragment.objects.get(shelfmark='NA')
+
+    # check script summary output
     output = import_data_cmd.stdout.getvalue()
     assert 'Imported 2 documents' in output
     assert '1 with joins' in output

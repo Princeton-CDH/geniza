@@ -60,8 +60,8 @@ class TextBlockInline(admin.TabularInline):
     model = TextBlock
     autocomplete_fields = ['fragment']
     readonly_fields = ('thumbnail', )
-    fields = ('fragment', 'side', 'extent_label', 'order',
-              'thumbnail')
+    fields = ('fragment', 'side', 'extent_label', 'multifragment',
+              'order', 'thumbnail')
 
 
 class DocumentForm(forms.ModelForm):
@@ -100,8 +100,10 @@ class DocumentAdmin(admin.ModelAdmin):
     save_as = True
 
     list_filter = (
-        'doctype', 'languages', 'textblock__extent_label',
+        'doctype', 'languages',
         'probable_languages',
+        ('textblock__extent_label', admin.EmptyFieldListFilter),
+        ('textblock__multifragment', admin.EmptyFieldListFilter),
     )
 
     fields = (
@@ -159,7 +161,7 @@ class FragmentAdmin(admin.ModelAdmin):
     readonly_fields = ('old_shelfmarks', 'created', 'last_modified',)
     list_filter = (
         'collection',
-        ('multifragment', admin.EmptyFieldListFilter),
+        'is_multifragment',
         ('url', admin.EmptyFieldListFilter),
     )
     list_editable = ('url',)
@@ -167,7 +169,7 @@ class FragmentAdmin(admin.ModelAdmin):
         ('shelfmark', 'old_shelfmarks'),
         'collection',
         ('url', 'iiif_url'),
-        'multifragment',
+        'is_multifragment',
         'notes',
         ('created', 'last_modified')
     )
