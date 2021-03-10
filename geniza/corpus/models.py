@@ -101,7 +101,9 @@ class Fragment(models.Model):
         'URL', blank=True,
         help_text="Link to library catalog record for this fragment.")
     iiif_url = models.URLField('IIIF URL', blank=True)
-    multifragment = models.CharField(max_length=255, blank=True)
+    is_multifragment = models.BooleanField(
+        'Multifragment', default=False,
+        help_text='True if there are multiple fragments in one shelfmark')
     notes = models.TextField(blank=True)
 
     created = models.DateTimeField(auto_now_add=True)
@@ -109,16 +111,14 @@ class Fragment(models.Model):
 
     objects = FragmentManager()
 
+    class Meta:
+        ordering = ['shelfmark']
+
     def __str__(self):
         return self.shelfmark
 
     def natural_key(self):
         return (self.shelfmark, )
-
-    def is_multifragment(self):
-        return bool(self.multifragment)
-    is_multifragment.short_description = 'Multifragment?'
-    is_multifragment.boolean = True
 
     def iiif_thumbnails(self):
         # if there is no iiif for this fragment, bail out
@@ -228,7 +228,12 @@ class TextBlock(models.Model):
     ]
     side = models.CharField(blank=True, max_length=5,
                             choices=RECTO_VERSO_CHOICES)
-    extent_label = models.CharField(blank=True, max_length=255)
+    extent_label = models.CharField(
+        blank=True, max_length=255,
+        help_text='Text block label, for fragments with multiple text blocks')
+    multifragment = models.CharField(
+        max_length=255, blank=True,
+        help_text='Where to find this document, if part of a multifragment')
     order = models.PositiveIntegerField(
         null=True, blank=True,
         help_text='Order if there are multiple fragments. ' +

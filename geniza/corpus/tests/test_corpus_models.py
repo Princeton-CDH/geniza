@@ -92,13 +92,6 @@ class TestFragment:
         frag = Fragment(shelfmark='TS 1')
         assert str(frag) == frag.shelfmark
 
-    def test_is_multifragment(self):
-        frag = Fragment(shelfmark='TS 1')
-        assert not frag.is_multifragment()
-
-        frag.multifragment = 'a'
-        assert frag.is_multifragment()
-
     def test_natural_key(self):
         frag = Fragment(shelfmark='TS 1')
         assert frag.natural_key() == (frag.shelfmark, )
