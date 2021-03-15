@@ -144,7 +144,8 @@ class Command(BaseCommand):
         language_data = self.get_csv('languages')
         languages = LanguageScript.objects.bulk_create([
             LanguageScript(language=row.language,
-                           script=row.script)
+                           script=row.script,
+                           display_name=row.display_name)
             for row in language_data if row.language and row.script
         ])
 
