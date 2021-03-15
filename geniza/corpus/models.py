@@ -178,6 +178,17 @@ class Document(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
 
+    PUBLIC = 'P'
+    SUPPRESSED = 'S'
+    STATUS_CHOICES = (
+        (PUBLIC, 'Public'),
+        (SUPPRESSED, 'Suppressed'),
+    )
+    #: status of record; currently choices are public or suppressed
+    status = models.CharField(
+        max_length=2, choices=STATUS_CHOICES, default=PUBLIC, 
+        help_text='Decide whether a document should be publicly visible')
+
     class Meta:
         ordering = ['fragments__shelfmark']
 
@@ -214,6 +225,13 @@ class Document(models.Model):
     def tag_list(self):
         return ", ".join(t.name for t in self.tags.all())
     tag_list.short_description = 'tags'
+
+    def is_public(self):
+        '''admin display field indicating if doc is public or suppressed'''
+        return self.status == self.PUBLIC
+    is_public.short_description = 'Public'
+    is_public.boolean = True
+    is_public.admin_order_field = 'status'
 
 
 class TextBlock(models.Model):
