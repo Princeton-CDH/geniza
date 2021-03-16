@@ -140,16 +140,17 @@ def test_import_languages(mockrequests):
     mockrequests.codes = requests.codes   # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
-        b'Language,Script,Vocalization,Number,',
-        b'Polish,Latin,,,',
-        b'Portuguese,Latin,,,',
-        b',,,,note'  # should ignore empty row
+        b'Language,Script,Vocalization,Number,Display name,',
+        b'Polish,Latin,,,,',
+        b'Portuguese,Latin,,,Romance,',
+        b',,,,note,'  # should ignore empty row
     ])
     import_data_cmd.import_languages()
     mockrequests.get.assert_called_with('mylangs.csv', stream=True)
     assert LanguageScript.objects.count() == 2
     assert LanguageScript.objects.get(language='Polish').script == 'Latin'
     assert LogEntry.objects.filter(action_flag=ADDITION).count() == 2
+    assert str(LanguageScript.objects.get(language='Portuguese')) == 'Romance'
 
     assert LogEntry.objects.filter(action_flag=ADDITION)[0].change_message == \
         import_data_cmd.logentry_message
