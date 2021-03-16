@@ -106,6 +106,8 @@ class Fragment(models.Model):
         'Multifragment', default=False,
         help_text='True if there are multiple fragments in one shelfmark')
     notes = models.TextField(blank=True)
+    needs_review = models.TextField(blank=True, 
+        help_text='Enter text here if an administrator needs to review this fragment.')
 
     created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)

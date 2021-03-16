@@ -168,6 +168,7 @@ class FragmentAdmin(admin.ModelAdmin):
         'collection',
         'is_multifragment',
         ('url', admin.EmptyFieldListFilter),
+        ('needs_review', admin.EmptyFieldListFilter)
     )
     list_editable = ('url',)
     fields = (
@@ -176,5 +177,6 @@ class FragmentAdmin(admin.ModelAdmin):
         ('url', 'iiif_url'),
         'is_multifragment',
         'notes',
+        'needs_review',
         ('created', 'last_modified')
     )
