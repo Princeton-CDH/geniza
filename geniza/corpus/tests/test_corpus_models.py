@@ -139,6 +139,31 @@ class TestFragment:
         assert 'title="1v"' in thumbnails
         assert isinstance(thumbnails, SafeString)
 
+    @pytest.mark.django_db
+    def test_save(self):
+        frag = Fragment(shelfmark='TS 1')
+        frag.save()
+        frag.shelfmark = 'TS 2'
+        frag.save()
+        assert frag.old_shelfmarks == 'TS 1'
+
+        frag.shelfmark = 'TS 3'
+        frag.save()
+
+        assert frag.shelfmark == 'TS 3'
+        assert 'TS 1' in frag.old_shelfmarks and 'TS 2' in frag.old_shelfmarks
+
+        # Ensure no old shelfmarks are equal to shelfmark 
+        # (this also makes duplicates impossible)
+        frag.shelfmark = 'TS 1'
+        frag.save()
+        assert 'TS 1' not in frag.old_shelfmarks
+
+        # double check uniqueness, though the above test is equivalent
+        frag.shelfmark = 'TS 4'
+        frag.save()
+        assert len(set(frag.old_shelfmarks.split(';'))) == len(frag.old_shelfmarks.split(';'))
+
 
 class TestDocumentType:
 
