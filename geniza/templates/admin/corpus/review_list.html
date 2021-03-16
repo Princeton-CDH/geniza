@@ -5,7 +5,7 @@
         <ul class="actionlist">
             {% for doc in docs_need_review %}
                 <li class="changelink">
-                    <a href="">{{ doc }}</a>
+                    <a href="{% url 'admin:corpus_document_change' doc.id %}">{{ doc }}</a>
                     <br>
                     <span class="mini quiet">Last modified: {{ doc.last_modified }}</span>
                 </li>
@@ -14,14 +14,14 @@
             {% endfor %}
         </ul>
         {% if docs_review_count > docs_need_review|length %}
-            <p style="text-align: right;"><a href="">See all...</a></p>
+            <p style="text-align: right;"><a href="{% url 'admin:corpus_document_changelist' %}?needs_review__isempty=0">See all...</a></p>
         {% endif %}
     <h3>Fragments</h3>
         <p class="small">There are <b>{{ fragments_review_count }}</b> fragments awaiting review.</p>
         <ul class="actionlist">
         {% for fragment in fragments_need_review %}
             <li class="changelink">
-                <a href="">{{ fragment }}</a>
+                <a href="{% url 'admin:corpus_fragment_change' fragment.id %}">{{ fragment }}</a>
                 <br>
                 <span class="mini quiet">Last modified: {{ fragment.last_modified }}</span>
             </li>
@@ -30,6 +30,6 @@
         {% endfor %}
         </ul>
         {% if fragments_review_count > fragments_need_review|length %}
-            <p style="text-align: right;"><a href="">See all...</a></p>
+            <p style="text-align: right;"><a href="{% url 'admin:corpus_fragment_changelist' %}?needs_review__isempty=0">See all...</a></p>
         {% endif %}
 </div>
