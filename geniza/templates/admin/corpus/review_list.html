@@ -1,7 +1,6 @@
 <div class="module" id="recent-actions-module">
     <h2>Awaiting review</h2>
-    <h3>Documents</h3>
-        <p class="small">There are <b>{{ docs_review_count }}</b> documents awaiting review.</p>
+    <h3><a href="{% url 'admin:corpus_document_changelist' %}?needs_review__isempty=0">Document{{ docs_review_count|pluralize }} ({{ docs_review_count }})</a></h3>
         <ul class="actionlist">
             {% for doc in docs_need_review %}
                 <li class="changelink">
@@ -13,11 +12,8 @@
                 <p>Reviews complete</p>
             {% endfor %}
         </ul>
-        {% if docs_review_count > docs_need_review|length %}
-            <p style="text-align: right;"><a href="{% url 'admin:corpus_document_changelist' %}?needs_review__isempty=0">See all...</a></p>
-        {% endif %}
-    <h3>Fragments</h3>
-        <p class="small">There are <b>{{ fragments_review_count }}</b> fragments awaiting review.</p>
+    <br>
+    <h3><a href="{% url 'admin:corpus_fragment_changelist' %}?needs_review__isempty=0">Fragment{{ fragments_review_count|pluralize }} ({{ fragments_review_count }})</a></h3>
         <ul class="actionlist">
         {% for fragment in fragments_need_review %}
             <li class="changelink">
@@ -29,7 +25,4 @@
             <p>Reviews complete</p>
         {% endfor %}
         </ul>
-        {% if fragments_review_count > fragments_need_review|length %}
-            <p style="text-align: right;"><a href="{% url 'admin:corpus_fragment_changelist' %}?needs_review__isempty=0">See all...</a></p>
-        {% endif %}
 </div>
