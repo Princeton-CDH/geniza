@@ -3,7 +3,7 @@ name: dbdocs
 on:
   push:
     branches:
-      - chore/99-update-dbdocs  # dev for now! switch to main later
+      - develop  # dev for now! switch to main later
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ develop ]
