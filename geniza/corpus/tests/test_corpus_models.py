@@ -247,6 +247,12 @@ class TestDocument:
         assert 'marriage' in tag_list
         assert ', ' in tag_list
 
+    def test_is_public(self):
+        doc = Document.objects.create()
+        assert doc.is_public()
+        doc.status = 'S'
+        assert not doc.is_public()
+
 
 @pytest.mark.django_db
 class TestTextBlock:

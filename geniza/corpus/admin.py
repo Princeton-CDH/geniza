@@ -90,7 +90,8 @@ class DocumentAdmin(admin.ModelAdmin):
     list_display = (
         'shelfmark', 'description', 'doctype',
         'tag_list', 'all_languages', 'is_textblock',
-        'last_modified'
+        'last_modified',
+        'is_public'
     )
     readonly_fields = ('old_input_by', 'old_input_date',
                        'created', 'last_modified', 'shelfmark', 'id')
@@ -102,6 +103,7 @@ class DocumentAdmin(admin.ModelAdmin):
     list_filter = (
         'doctype', 'languages',
         'probable_languages',
+        'status',
         ('textblock__extent_label', admin.EmptyFieldListFilter),
         ('textblock__multifragment', admin.EmptyFieldListFilter),
     )
@@ -114,6 +116,7 @@ class DocumentAdmin(admin.ModelAdmin):
         'language_note',
         'description',
         'tags',
+        'status',
         # edition, translation
         'notes',
         # text block
