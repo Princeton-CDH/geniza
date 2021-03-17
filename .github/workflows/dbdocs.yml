@@ -3,7 +3,7 @@ name: dbdocs
 on:
   push:
     branches:
-      - develop  # dev for now! switch to main later
+      - chore/99-update-dbdocs  # dev for now! switch to main later
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ develop ]
@@ -28,7 +28,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install dbdocs
-        run: npm install dbdocs
+        run: sudo npm install -g dbdocs
+      - name: Check dbdocs
+        run: dbdocs
       # Python version to use is stored in the .python-version file, which is the
       # convention for pyenv: https://github.com/pyenv/pyenv
       - name: Get Python version
@@ -45,7 +47,7 @@ jobs:
       # Build and publish dbdocs
       - name: Generate DBML
         run: python manage.py dbml corpus common > geniza.dbml
-      - name: Login to dbdocs
-        run: echo ${{ secrets.DBDOCS_KEY }} | npx dbdocs login
       - name: Push to dbdocs
-        run: npx dbdocs build geniza.dbml --project geniza
+        env:
+          DBDOCS_TOKEN: ${{ secrets.DBDOCS_KEY }}
+        run: dbdocs build geniza.dbml --project geniza
