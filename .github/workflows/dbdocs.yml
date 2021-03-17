@@ -17,7 +17,7 @@ env:
 
 jobs:
   python-unit:
-    name: Python unit tests
+    name: Publish dbdocs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -49,5 +49,5 @@ jobs:
         run: python manage.py dbml corpus common > geniza.dbml
       - name: Push to dbdocs
         env:
-          DBDOCS_TOKEN: ${{ secrets.DBDOCS_KEY }}
+          DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
         run: dbdocs build geniza.dbml --project geniza
