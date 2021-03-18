@@ -106,6 +106,7 @@ class DocumentAdmin(admin.ModelAdmin):
         'status',
         ('textblock__extent_label', admin.EmptyFieldListFilter),
         ('textblock__multifragment', admin.EmptyFieldListFilter),
+        ('needs_review', admin.EmptyFieldListFilter)
     )
 
     fields = (
@@ -117,6 +118,7 @@ class DocumentAdmin(admin.ModelAdmin):
         'description',
         'tags',
         'status',
+        'needs_review',
         # edition, translation
         'notes',
         # text block
@@ -166,6 +168,7 @@ class FragmentAdmin(admin.ModelAdmin):
         'collection',
         'is_multifragment',
         ('url', admin.EmptyFieldListFilter),
+        ('needs_review', admin.EmptyFieldListFilter)
     )
     list_editable = ('url',)
     fields = (
@@ -174,5 +177,6 @@ class FragmentAdmin(admin.ModelAdmin):
         ('url', 'iiif_url'),
         'is_multifragment',
         'notes',
+        'needs_review',
         ('created', 'last_modified')
     )
