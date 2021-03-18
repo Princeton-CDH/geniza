@@ -6,7 +6,7 @@
                 <li class="changelink">
                     <a href="{% url 'admin:corpus_document_change' doc.id %}">{{ doc }}</a>
                     <br>
-                    <span class="mini quiet">Last modified: {{ doc.last_modified }}</span>
+                    <span class="mini quiet">{{ doc.needs_review }}</span>
                 </li>
             {% empty %}
                 <p>Reviews complete</p>
@@ -19,7 +19,7 @@
             <li class="changelink">
                 <a href="{% url 'admin:corpus_fragment_change' fragment.id %}">{{ fragment }}</a>
                 <br>
-                <span class="mini quiet">Last modified: {{ fragment.last_modified }}</span>
+                <span class="mini quiet">{{ fragment.needs_review }}</span>
             </li>
         {% empty %}
             <p>Reviews complete</p>
