@@ -163,7 +163,7 @@ class FragmentAdmin(admin.ModelAdmin):
     list_display = ('shelfmark', 'collection', 'url',
                     'is_multifragment')
     search_fields = ('shelfmark', 'old_shelfmarks', 'notes')
-    readonly_fields = ('old_shelfmarks', 'created', 'last_modified',)
+    readonly_fields = ('old_shelfmarks', 'created', 'last_modified')
     list_filter = (
         'collection',
         'is_multifragment',
