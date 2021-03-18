@@ -16,7 +16,7 @@ env:
   DJANGO_ENV: test
 
 jobs:
-  python-unit:
+  publish-dbdocs:
     name: Publish dbdocs
     runs-on: ubuntu-latest
     steps:
@@ -28,7 +28,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install dbdocs
-        run: sudo npm install -g dbdocs
+        run: npm install -g dbdocs
       - name: Check dbdocs
         run: dbdocs
       # Python version to use is stored in the .python-version file, which is the
