@@ -154,7 +154,7 @@ class Fragment(TrackChangesModel):
             if self.old_shelfmarks:
                 old_shelfmarks = set(self.old_shelfmarks.split(';'))
                 old_shelfmarks.add(self.initial_value('shelfmark'))
-                self.old_shelfmarks = ';'.join([sm for sm in old_shelfmarks if sm != self.shelfmark])
+                self.old_shelfmarks = ';'.join(old_shelfmarks - {self.shelfmark})
             else:
                 self.old_shelfmarks = self.initial_value('shelfmark')
         super(Fragment, self).save(*args, **kwargs)
