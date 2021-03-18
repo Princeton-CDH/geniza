@@ -16,8 +16,8 @@ env:
   DJANGO_ENV: test
 
 jobs:
-  python-unit:
-    name: Python unit tests
+  publish-dbdocs:
+    name: Publish dbdocs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -28,7 +28,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install dbdocs
-        run: npm install dbdocs
+        run: npm install -g dbdocs
+      - name: Check dbdocs
+        run: dbdocs
       # Python version to use is stored in the .python-version file, which is the
       # convention for pyenv: https://github.com/pyenv/pyenv
       - name: Get Python version
@@ -45,7 +47,7 @@ jobs:
       # Build and publish dbdocs
       - name: Generate DBML
         run: python manage.py dbml corpus common > geniza.dbml
-      - name: Login to dbdocs
-        run: echo ${{ secrets.DBDOCS_KEY }} | npx dbdocs login
       - name: Push to dbdocs
-        run: npx dbdocs build geniza.dbml --project geniza
+        env:
+          DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
+        run: dbdocs build geniza.dbml --project geniza
