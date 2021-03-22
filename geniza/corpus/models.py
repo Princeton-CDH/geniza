@@ -44,7 +44,12 @@ class Collection(models.Model):
         ]
 
     def __str__(self):
-        return ', '.join([val for val in (self.name, self.library) if val])
+        # by default, combine abbreviations
+        values = [val for val in (self.lib_abbrev, self.abbrev) if val]
+        # but abbreviations are optional, so fallback to names
+        if not values:
+            values = [val for val in (self.name, self.library) if val]
+        return ', '.join(values)
 
     def natural_key(self):
         return (self.name, self.library)

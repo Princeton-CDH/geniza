@@ -13,18 +13,21 @@ class TestCollection:
 
     def test_str(self):
         # library only
-        lib = Collection(library='British Library', abbrev='BL')
-        assert str(lib) == lib.library
+        lib = Collection(library='British Library', lib_abbrev='BL')
+        assert str(lib) == lib.lib_abbrev
 
         # library + collection
         cul_ts = Collection(
             library='Cambridge UL', name='Taylor-Schechter',
             lib_abbrev='CUL', abbrev='T-S')
-        assert str(cul_ts) == '%s, %s' % (cul_ts.name, cul_ts.library)
+        assert str(cul_ts) == '%s, %s' % (cul_ts.lib_abbrev, cul_ts.abbrev)
 
-        # collection only
+        # collection only, no abbreviation
         chapira = Collection(name='Chapira')
         assert str(chapira) == 'Chapira'
+        # collection abbreviation only
+        chapira.abbrev = 'chp'
+        assert str(chapira) == 'chp'
 
     def test_natural_key(self):
         lib = Collection(library='British Library', abbrev='BL')
