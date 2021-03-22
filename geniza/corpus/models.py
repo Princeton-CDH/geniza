@@ -21,6 +21,7 @@ class Collection(models.Model):
     abbrev = models.CharField(
         'Collection Abbreviation', max_length=255, blank=True)
     name = models.CharField(
+        'Collection Name',
         max_length=255, blank=True,
         help_text='Collection name, if different than Library')
     location = models.CharField(
