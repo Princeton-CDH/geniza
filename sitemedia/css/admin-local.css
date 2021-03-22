@@ -9,3 +9,8 @@ th.column-documents, th.column-probable_documents {
 .model-languagescript.change-list #changelist table thead .text {
 	white-space: break-spaces;
 }
+
+#content-related {
+	clear: right;
+}
+
