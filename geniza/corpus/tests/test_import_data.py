@@ -328,18 +328,20 @@ def test_add_document_language():
     import_data_cmd.stdout = StringIO()
 
     # simulate language lookup already populated
-    arabic = LanguageScript.objects.create(language='Arabic', script='Arabic')
-    hebrew = LanguageScript.objects.create(language='Hebrew', script='Hebrew')
+    arabic = LanguageScript.objects.create(
+        language='Arabic', script='Arabic', display_name='Arabic')
+    hebrew = LanguageScript.objects.create(
+        language='Hebrew', script='Hebrew', display_name='Hebrew')
     import_data_cmd.language_lookup = {
-        'Arabic': arabic,
-        'Hebrew': hebrew
+        'arabic': arabic,
+        'hebrew': hebrew
     }
 
     doc = Document.objects.create()
 
     row = AttrMap({
         'pgpid': '3550',
-        'language': 'Hebrew? (Tiberian vocalisation); Arabic'
+        'language': 'Hebrew? (Tiberian vocalisation); arabic'
     })
 
     import_data_cmd.add_document_language(doc, row)

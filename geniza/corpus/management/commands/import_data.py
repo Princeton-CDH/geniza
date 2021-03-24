@@ -50,7 +50,7 @@ class Command(BaseCommand):
     content_types = {}
     collection_lookup = {}
     document_type = {}
-    language_lookup = {}  # this is provisional, assumes one language -> script mapping
+    language_lookup = {}
     max_documents = None
 
     def add_arguments(self, parser):
@@ -151,9 +151,9 @@ class Command(BaseCommand):
 
         # create log entries
         self.log_creation(*languages)
-        # create lookup for associating documents & languages
-        # NOTE: this lookup is provisional
-        self.language_lookup = {lang.language: lang
+        # create lookup for associating documents & languages;
+        # use lower case version of display name
+        self.language_lookup = {lang.display_name.lower(): lang
                                 for lang in languages}
         self.stdout.write('Imported %d languages' % len(languages))
 
@@ -173,7 +173,7 @@ class Command(BaseCommand):
             # remove parentheticals, question marks, "some"
             lang = re.sub(r'\(.+\)', '', lang).replace('some', '').strip('? ')
 
-            lang_model = self.language_lookup.get(lang)
+            lang_model = self.language_lookup.get(lang.lower())
             if not lang_model:
                 self.stdout.write(
                     f'ERROR language not found. PGPID: {row.pgpid}, Language: {lang}')
