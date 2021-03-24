@@ -1,8 +1,10 @@
 from django.db import models
+from django.db.models.functions import Concat
 from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
 from taggit_selectize.managers import TaggableManager
+
 
 from geniza.common.models import TrackChangesModel
 
@@ -32,6 +34,8 @@ class Collection(models.Model):
 
     class Meta:
         ordering = ['lib_abbrev', 'abbrev', 'name', 'library']
+        ordering = [Concat(models.F('lib_abbrev'), models.F('abbrev'),
+                    models.F('name'), models.F('library'))]
         constraints = [
             # require at least one of library OR name
             models.CheckConstraint(
