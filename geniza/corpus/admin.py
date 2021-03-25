@@ -96,7 +96,7 @@ class DocumentAdmin(admin.ModelAdmin):
     readonly_fields = ('old_input_by', 'old_input_date',
                        'created', 'last_modified', 'shelfmark', 'id')
     search_fields = ('fragments__shelfmark', 'tags__name', 'description',
-                     'old_input_by')
+                     'old_input_by', 'notes', 'needs_review')
     # TODO include search on edition once we add footnotes
     save_as = True
 
@@ -162,7 +162,7 @@ class DocumentTypeAdmin(admin.ModelAdmin):
 class FragmentAdmin(admin.ModelAdmin):
     list_display = ('shelfmark', 'collection', 'url',
                     'is_multifragment')
-    search_fields = ('shelfmark', 'old_shelfmarks', 'notes')
+    search_fields = ('shelfmark', 'old_shelfmarks', 'notes', 'needs_review')
     readonly_fields = ('old_shelfmarks', 'created', 'last_modified')
     list_filter = (
         ('collection', admin.RelatedOnlyFieldListFilter),
