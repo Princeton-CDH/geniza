@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'pucas',
     'geniza.common',
     'geniza.corpus',
+    'geniza.people',
 ]
 
 MIDDLEWARE = [
