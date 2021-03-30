@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'geniza.common',
     'geniza.corpus',
     'geniza.people',
+    'geniza.footnotes',
+    'multiselectfield',
 ]
 
 MIDDLEWARE = [
