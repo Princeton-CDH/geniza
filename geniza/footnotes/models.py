@@ -1,12 +1,11 @@
 from django.db import models
-from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 from multiselectfield import MultiSelectField
 # https://pypi.org/project/django-multiselectfield/
 
 from geniza.people.models import Person
-from geniza.corpus.models import LanguageScript
 
 class SourceType(models.Model):
     type = models.CharField(max_length=255)
@@ -29,7 +28,7 @@ class Source(models.Model):
     source_type = models.ForeignKey(SourceType, on_delete=models.CASCADE)
     # TODO: (RR) Null? 
     # TODO: (RR) Should there be a default language?
-    language = models.ForeignKey(LanguageScript, on_delete=models.SET_NULL,
+    language = models.ForeignKey('corpus.LanguageScript', on_delete=models.SET_NULL,
         help_text='In what language was the source published?', null=True)
 
     class Meta:
