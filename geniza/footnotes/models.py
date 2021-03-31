@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 from multiselectfield import MultiSelectField
 # https://pypi.org/project/django-multiselectfield/
@@ -14,39 +16,55 @@ class SourceType(models.Model):
 
 
 class Source(models.Model):
-    # TODO: Confirm that "delete all footnotes when person is deleted"
-    #  is the expected behavior
+    # TODO: Multiple authors
     author = models.ForeignKey(Person, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    # TODO: Presumably they'll want just month and year? Should we handle that?
-    publish_date = models.DateField(blank=True, null=True)
+    year = models.PositiveIntegerField(blank=True, null=True)
+    # TODO: `edition_number` isn't a number. Can we call it `edition` ?
     edition_number = models.CharField(max_length=255, blank=True)
     # TODO: What kind of values would volume contain? Would they just be an int?
     volume = models.CharField(max_length=255, blank=True)
-    # TODO: Should this formatting be enforced by the `clean` method? or is the 
-    #  help text sufficient?
     page_range = models.CharField(max_length=255, blank=True,
-        help_text='The range of pages being cited. Please do not include "p", "pg", etc. and follow the format # or #-#')
-    # TODO: Is cascade appropriate? We want this field to be required.
-    source_type = models.ForeignKey(SourceType, on_delete=models.SET_NULL, null=True)
-    # TODO: Should there be a default language?
+        help_text='The range of pages being cited. Do not include "p", "pg", etc. and follow the format # or #-#')
+    source_type = models.ForeignKey(SourceType, on_delete=models.CASCADE)
+    # TODO: (RR) Null? 
+    # TODO: (RR) Should there be a default language?
     language = models.ForeignKey(LanguageScript, on_delete=models.SET_NULL,
         help_text='In what language was the source published?', null=True)
+
+    class Meta:
+        ordering = ['author__last_name']
+
+    def __str__(self):
+        # TODO: Generate citation
+        return self.title
+
+
+class Footnote(models.Model):
+    source = models.ForeignKey(Source, on_delete=models.CASCADE)
+
+    page_range = models.CharField(max_length=255, blank=True,
+        help_text='The range of pages being cited. Do not include "p", "pg", etc. and follow the format # or #-#')
 
     EDITION = 'E'
     TRANSLATION = 'T'
     DISCUSSION = 'D'
-    DOCUMENT_RELATIONS = (
+    DOCUMENT_RELATION_TYPES = (
         (EDITION, 'Edition'),
         (TRANSLATION, 'Translation'),
         (DISCUSSION, 'Discussion')
     )
     # TODO: Confirm default=EDITION is ok. As a required field this needs to 
     #  have a default value.
-    # TODO: `document_relation_types` ?
-    document_relations = MultiSelectField(choices=DOCUMENT_RELATIONS,  default=EDITION,
+    document_relation_types = MultiSelectField(choices=DOCUMENT_RELATION_TYPES,  default=EDITION,
         help_text='How does the document relate to a source?')
+    notes = models.TextField(blank=True)
 
-    class Meta:
-        ordering = ['author__last_name']
+    # Generic relationship
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey()
 
+    def __str__(self):
+        # TODO: Generate citation
+        return str(self.source)
