@@ -28,6 +28,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'modeltranslation', # this has to come before admin config
     'geniza.apps.GenizaAdminConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',

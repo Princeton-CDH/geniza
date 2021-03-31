@@ -8,3 +8,4 @@ django-taggit
 git+https://github.com/princeton-cdh/piffle.git@develop#egg=piffle
 taggit-selectize
 django-multiselectfield
+django-modeltranslation
