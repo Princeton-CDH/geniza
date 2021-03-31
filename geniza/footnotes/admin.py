@@ -1,12 +1,12 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
-
-from geniza.footnotes.models import Source, SourceType, Footnote
+from geniza.footnotes.models import Footnote, Source, SourceType
+from modeltranslation.admin import TabbedTranslationAdmin
 
 
 @admin.register(Source)
-class SourceAdmin(admin.ModelAdmin):
+class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = (
         'author', 'title', 
         'year',
