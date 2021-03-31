@@ -145,7 +145,7 @@ class Command(BaseCommand):
         languages = LanguageScript.objects.bulk_create([
             LanguageScript(language=row.language,
                            script=row.script,
-                           display_name=row.display_name)
+                           display_name=row.display_name or None)
             for row in language_data if row.language and row.script
         ])
 
@@ -154,7 +154,7 @@ class Command(BaseCommand):
         # create lookup for associating documents & languages;
         # use lower case version of display name
         self.language_lookup = {lang.display_name.lower(): lang
-                                for lang in languages}
+                                for lang in languages if lang.display_name}
         self.stdout.write('Imported %d languages' % len(languages))
 
     def add_document_language(self, doc, row):
