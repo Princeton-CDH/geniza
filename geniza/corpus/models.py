@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.functions import Concat
+
 from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
@@ -219,8 +220,10 @@ class Document(models.Model):
         max_length=2, choices=STATUS_CHOICES, default=PUBLIC,
         help_text='Decide whether a document should be publicly visible')
 
-    class Meta:
-        ordering = ['fragments__shelfmark']
+    # NOTE: default ordering disabled for now because it results in duplicates
+    # in django admin; see admin for ArrayAgg sorting solution
+    # class Meta:
+        # ordering = [Least('textblock__fragment__shelfmark')]
 
     def __str__(self):
         return f"{self.shelfmark or '??'} (PGPID {self.id or '??'})"
