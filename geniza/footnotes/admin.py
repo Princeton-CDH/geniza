@@ -1,9 +1,34 @@
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
+from django.contrib.contenttypes.admin import GenericTabularInline
 
 from geniza.footnotes.models import Source, SourceType, Footnote
-from django.contrib.admin import SimpleListFilter
 
-class DocumentRelationsFilter(SimpleListFilter):
+
+@admin.register(Source)
+class SourceAdmin(admin.ModelAdmin):
+    list_display = (
+        'author', 'title', 
+        'year',
+        'edition_number',
+    )
+
+    search_fields = (
+        'title', 'author__last_name', 'author__first_name', 'year'
+    )
+
+    fields = (
+        'source_type', 'author', 'title', 'year',
+        'edition_number', 'volume', 'page_range', 
+        'language'
+    )
+
+@admin.register(SourceType)
+class SourceTypeAdmin(admin.ModelAdmin):
+    pass
+
+
+class DocumentRelationTypesFilter(SimpleListFilter):
     '''A custom filter that allows us to filter sources if any of a source's
      document relations match the given facet'''
 
@@ -11,52 +36,44 @@ class DocumentRelationsFilter(SimpleListFilter):
     parameter_name = 'Document relation'
 
     def lookups(self, request, model_admin):
-        return model_admin.model.DOCUMENT_RELATIONS
+        return model_admin.model.DOCUMENT_RELATION_TYPES
 
     def queryset(self, request, queryset):
         if self.value():
             return queryset.filter(document_relations__contains=self.value())
 
-@admin.register(Source)
-class SourceAdmin(admin.ModelAdmin):
-    list_display = (
-        'author', 'title', 
-        'get_publish_date_year',
-        'edition_number', 
-        'join_document_relations'
-    )
 
-    search_fields = (
-        # TODO: They specifically asked to search on year, is publish_date sufficient?
-        'title', 'author__last_name', 'author__first_name', 'publish_date'
-    )
-
-    fields = (
-        'source_type', 'author', 'title', 'publish_date',
-        'edition_number', 'volume', 'page_range', 'document_relations',
-        'language'
-    )
-
+@admin.register(Footnote)
+class FootnoteAdmin(admin.ModelAdmin):
     list_filter = (
-        DocumentRelationsFilter,
+        DocumentRelationTypesFilter,
     )
 
-    def join_document_relations(self, obj):
+    def join_document_relation_types(self, obj):
         # Casting the multichoice object as a string will return a reader-friendly
         #  comma-delimited list.
-        return str(obj.document_relations)
-        # TODO: Check get_[field]_display()
-        # def get_document_relations_display():
-        #       return str(obj.document_relations)
-    join_document_relations.short_description = 'Document Relations'
+        return str(obj.document_relation_types)
+    join_document_relation_types.short_description = 'Document Relation Types'
 
-    def get_publish_date_year(self, obj):
-        return obj.publish_date.year if obj.publish_date else None
-    get_publish_date_year.short_description = 'Year Published'
+    # Add help text to the combination content_type and object_id
+    CONTENT_LOOKUP_HELP = '''Select the kind of record you want to attach
+    a footnote to, and then use the object id search button to select an item.'''
+    fieldsets = [
+        (None, {
+            'fields': ('content_type', 'object_id'),
+            'description': f'<div class="help">{CONTENT_LOOKUP_HELP}</div>'
+        }),
+        (None, {
+            'fields': (
+                'source', 'page_range', 'document_relation_types', 
+                'notes'
+            )
+        })
+    ]
 
 
-@admin.register(SourceType)
-class SourceTypeAdmin(admin.ModelAdmin):
-    pass
-
-
+class FootnoteInline(GenericTabularInline):
+    model = Footnote
+    autocomplete_fields = ['source']
+    fields = ('source', 'page_range', 'document_relation_types', 'notes',)
+    extra = 1

@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
+from geniza.footnotes.admin import FootnoteInline
 
 
 @admin.register(Collection)
@@ -130,6 +131,7 @@ class DocumentAdmin(admin.ModelAdmin):
     # NOTE: autocomplete does not honor limit_choices_to in model
     inlines = [
         TextBlockInline,
+        FootnoteInline
     ]
 
     def get_queryset(self, request):

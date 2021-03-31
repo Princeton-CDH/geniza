@@ -4,14 +4,14 @@ from django.contrib import admin
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
 
-from geniza.footnotes.admin import SourceAdmin, DocumentRelationsFilter
+from geniza.footnotes.admin import SourceAdmin, DocumentRelationTypesFilter
 from geniza.footnotes.models import Source
 from geniza.people.models import Person
 from geniza.footnotes.models import SourceType, Source
 from geniza.corpus.models import LanguageScript
 
 @pytest.mark.skip('Waiting to move document relations filter to footnotes')
-class TestDocumentRelationsFilter:
+class TestDocumentRelationTypesFilter:
     def test_lookups(self):
         # including params is not currently necessary for the overwritten function
         params = {}
@@ -23,7 +23,7 @@ class TestDocumentRelationsFilter:
         request = request_factory.get(url, params=params)
 
         source_admin = SourceAdmin(model=Source, admin_site=admin.site)
-        dr_filter = DocumentRelationsFilter(request, params, Source, source_admin)
+        dr_filter = DocumentRelationTypesFilter(request, params, Source, source_admin)
         options_list = dr_filter.lookups(request, source_admin)
         
         assert len(options_list) == 3
@@ -55,7 +55,7 @@ class TestDocumentRelationsFilter:
         request = request_factory.get(url, params=params)
 
         source_admin = SourceAdmin(model=Source, admin_site=admin.site)
-        dr_filter = DocumentRelationsFilter(request, params, Source, source_admin)
+        dr_filter = DocumentRelationTypesFilter(request, params, Source, source_admin)
 
         queryset = Source.objects.all()
         filtered_queryset = dr_filter.queryset(request, queryset)
