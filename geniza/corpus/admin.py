@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.exceptions import ValidationError
 from django.db.models import Count
 
@@ -133,7 +134,9 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request) \
-            .prefetch_related('tags', 'languages', 'textblock_set')
+            .prefetch_related('tags', 'languages', 'textblock_set')  \
+            .annotate(shelfmk_all=ArrayAgg('textblock__fragment__shelfmark')) \
+            .order_by('shelfmk_all')
 
     def save_model(self, request, obj, form, change):
         '''Customize this model's save_model function and then execute the
