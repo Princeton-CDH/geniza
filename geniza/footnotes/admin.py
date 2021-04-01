@@ -45,15 +45,13 @@ class DocumentRelationTypesFilter(SimpleListFilter):
 
 @admin.register(Footnote)
 class FootnoteAdmin(admin.ModelAdmin):
+    list_display = (
+        'source', 'page_range', 'get_document_relation_types', 'content_object'
+    )
+
     list_filter = (
         DocumentRelationTypesFilter,
     )
-
-    def join_document_relation_types(self, obj):
-        # Casting the multichoice object as a string will return a reader-friendly
-        #  comma-delimited list.
-        return str(obj.document_relation_types)
-    join_document_relation_types.short_description = 'Document Relation Types'
 
     # Add help text to the combination content_type and object_id
     CONTENT_LOOKUP_HELP = '''Select the kind of record you want to attach
@@ -71,6 +69,11 @@ class FootnoteAdmin(admin.ModelAdmin):
         })
     ]
 
+    def get_document_relation_types(self, obj):
+        # Casting the multichoice object as a string will return a reader-friendly
+        #  comma-delimited list.
+        return str(obj.document_relation_types)
+    get_document_relation_types.short_description = 'Document Relation Types'
 
 class FootnoteInline(GenericTabularInline):
     model = Footnote
