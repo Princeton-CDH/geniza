@@ -28,4 +28,4 @@ class TestFootnote:
             source_type=essay, language=english)
 
         footnote = Footnote(source=cup_of_tea)
-        assert str(footnote) == cup_of_tea.title
+        assert str(footnote) == f'{orwell}, "{cup_of_tea.title}"'

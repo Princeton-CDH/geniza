@@ -25,8 +25,6 @@ class Source(models.Model):
     page_range = models.CharField(max_length=255, blank=True,
         help_text='The range of pages being cited. Do not include "p", "pg", etc. and follow the format # or #-#')
     source_type = models.ForeignKey(SourceType, on_delete=models.CASCADE)
-    # TODO: (RR) Null? 
-    # TODO: (RR) Should there be a default language?
     language = models.ForeignKey('corpus.LanguageScript', on_delete=models.SET_NULL,
         help_text='In what language was the source published?', null=True)
 
@@ -34,8 +32,7 @@ class Source(models.Model):
         ordering = ['author__sort_name']
 
     def __str__(self):
-        # TODO: Generate citation
-        return self.title
+        return f'{self.author}, "{self.title}"'
 
 
 class Footnote(models.Model):
@@ -63,5 +60,4 @@ class Footnote(models.Model):
     content_object = GenericForeignKey()
 
     def __str__(self):
-        # TODO: Generate citation
         return str(self.source)
