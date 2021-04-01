@@ -32,15 +32,15 @@ class DocumentRelationTypesFilter(SimpleListFilter):
     '''A custom filter that allows us to filter sources if any of a source's
      document relations match the given facet'''
 
-    title = 'document relations'
-    parameter_name = 'Document relation'
+    title = 'document relation types'
+    parameter_name = 'Document relation types'
 
     def lookups(self, request, model_admin):
         return model_admin.model.DOCUMENT_RELATION_TYPES
 
     def queryset(self, request, queryset):
         if self.value():
-            return queryset.filter(document_relations__contains=self.value())
+            return queryset.filter(document_relation_types__contains=self.value())
 
 
 @admin.register(Footnote)
