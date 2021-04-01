@@ -140,8 +140,8 @@ def test_import_languages(mockrequests):
     mockrequests.codes = requests.codes   # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
-        b'Language,Script,Vocalization,Number,Display name,',
-        b'Polish,Latin,,,,',
+        b'Language,Script,Vocalization,Number,Display name,spreadsheet_name',
+        b'Polish,Latin,,,,pol',
         b'Portuguese,Latin,,,Romance,',
         b',,,,note,'  # should ignore empty row
     ])
@@ -157,6 +157,11 @@ def test_import_languages(mockrequests):
 
     # existing LanguageScript records removed
     assert not LanguageScript.objects.filter(script='Wingdings').exists()
+
+    # check that language lookup was populated
+    assert 'pol' in import_data_cmd.language_lookup
+    assert 'romance' in import_data_cmd.language_lookup
+    assert import_data_cmd.language_lookup['romance'].script == 'Latin'
 
 
 @pytest.mark.django_db
@@ -328,18 +333,20 @@ def test_add_document_language():
     import_data_cmd.stdout = StringIO()
 
     # simulate language lookup already populated
-    arabic = LanguageScript.objects.create(language='Arabic', script='Arabic')
-    hebrew = LanguageScript.objects.create(language='Hebrew', script='Hebrew')
+    arabic = LanguageScript.objects.create(
+        language='Arabic', script='Arabic', display_name='Arabic')
+    hebrew = LanguageScript.objects.create(
+        language='Hebrew', script='Hebrew', display_name='Hebrew')
     import_data_cmd.language_lookup = {
-        'Arabic': arabic,
-        'Hebrew': hebrew
+        'arabic': arabic,
+        'hebrew': hebrew
     }
 
     doc = Document.objects.create()
 
     row = AttrMap({
         'pgpid': '3550',
-        'language': 'Hebrew? (Tiberian vocalisation); Arabic'
+        'language': 'Hebrew? (Tiberian vocalisation); arabic'
     })
 
     import_data_cmd.add_document_language(doc, row)
