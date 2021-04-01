@@ -15,7 +15,7 @@ def load_existing_sourcetypes(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('footnotes', '0003_remove_default_value'),
+        ('footnotes', '0001_initial'),
     ]
 
     operations = [
