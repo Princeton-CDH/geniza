@@ -32,7 +32,7 @@ class Source(models.Model):
         help_text='In what language was the source published?', null=True)
 
     class Meta:
-        ordering = ['author__last_name']
+        ordering = ['author__sort_name']
 
     def __str__(self):
         # TODO: Generate citation

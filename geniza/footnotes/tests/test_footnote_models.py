@@ -11,7 +11,7 @@ class TestSourceType:
 
 class TestSource:
     def test_str(self):
-        orwell = Person(first_name='George', last_name='Orwell')
+        orwell = Person(sort_name='Orwell, George')
         essay = SourceType(type='Essay')
         english = LanguageScript(language='English', script='English')
         cup_of_tea = Source(author=orwell, title='A Nice Cup of Tea', 
@@ -21,7 +21,7 @@ class TestSource:
 
 class TestFootnote:
     def test_str(self):
-        orwell = Person(first_name='George', last_name='Orwell')
+        orwell = Person(sort_name='Orwell, George')
         essay = SourceType(type='Essay')
         english = LanguageScript(language='English', script='English')
         cup_of_tea = Source(author=orwell, title='A Nice Cup of Tea', 
