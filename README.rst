@@ -57,7 +57,7 @@ Internationalization & Translation
 
 This application has internationalization and translation enabled.
 
-- If you create any new translatable content, you should run [makemessages](https://docs.djangoproject.com/en/3.1/ref/django-admin/#makemessages) to create or update message files.
+- If you create any new translatable content, you should run `makemessages <https://docs.djangoproject.com/en/3.1/ref/django-admin/#makemessages>`_ to create or update message files.
 
 	cd geniza && django-admin makemessages
 
