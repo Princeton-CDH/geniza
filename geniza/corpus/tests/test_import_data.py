@@ -140,8 +140,8 @@ def test_import_languages(mockrequests):
     mockrequests.codes = requests.codes   # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
-        b'Language,Script,Vocalization,Number,Display name,',
-        b'Polish,Latin,,,,',
+        b'Language,Script,Vocalization,Number,Display name,spreadsheet_name',
+        b'Polish,Latin,,,,pol',
         b'Portuguese,Latin,,,Romance,',
         b',,,,note,'  # should ignore empty row
     ])
@@ -157,6 +157,11 @@ def test_import_languages(mockrequests):
 
     # existing LanguageScript records removed
     assert not LanguageScript.objects.filter(script='Wingdings').exists()
+
+    # check that language lookup was populated
+    assert 'pol' in import_data_cmd.language_lookup
+    assert 'romance' in import_data_cmd.language_lookup
+    assert import_data_cmd.language_lookup['romance'].script == 'Latin'
 
 
 @pytest.mark.django_db

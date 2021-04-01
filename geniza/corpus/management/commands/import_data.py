@@ -91,8 +91,10 @@ class Command(BaseCommand):
         # Create a namedtuple based on headers in the csv
         # and local mapping of csv names to access names
         CsvRow = namedtuple('%sCSVRow' % name, (
-            csv_fields[name].get(col, slugify(col).replace('-', '_') or 'empty')
-            for col in header
+            csv_fields[name].get(
+                col,
+                slugify(col).replace('-', '_') or 'empty_%d' % i)
+            for i, col in enumerate(header)
             # NOTE: allows one empty header; more will cause an error
         ))
 
@@ -142,19 +144,26 @@ class Command(BaseCommand):
     def import_languages(self):
         LanguageScript.objects.all().delete()
         language_data = self.get_csv('languages')
-        languages = LanguageScript.objects.bulk_create([
-            LanguageScript(language=row.language,
-                           script=row.script,
-                           display_name=row.display_name or None)
-            for row in language_data if row.language and row.script
-        ])
+        languages = []
+        for row in language_data:
+            # skip empty rows
+            if not row.language and not row.script:
+                continue
+
+            lang = LanguageScript.objects.create(
+                language=row.language,
+                script=row.script,
+                display_name=row.display_name or None)
+
+            # populate lookup for associating documents & languages;
+            # use lower case spreadsheet name if set, or display name
+            if row.display_name or row.spreadsheet_name:
+                self.language_lookup[(row.spreadsheet_name or
+                                      row.display_name).lower()] = lang
+            languages.append(lang)
 
         # create log entries
         self.log_creation(*languages)
-        # create lookup for associating documents & languages;
-        # use lower case version of display name
-        self.language_lookup = {lang.display_name.lower(): lang
-                                for lang in languages if lang.display_name}
         self.stdout.write('Imported %d languages' % len(languages))
 
     def add_document_language(self, doc, row):
