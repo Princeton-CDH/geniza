@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('corpus', '0008_update_shelfmark_helptext'),
-        ('people', '0001_initial'),
         ('contenttypes', '0002_remove_content_type_name'),
     ]
 
@@ -32,7 +31,6 @@ class Migration(migrations.Migration):
                 ('edition_number', models.CharField(blank=True, max_length=255)),
                 ('volume', models.CharField(blank=True, max_length=255)),
                 ('page_range', models.CharField(blank=True, help_text='The range of pages being cited. Do not include "p", "pg", etc. and follow the format # or #-#', max_length=255)),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='people.person')),
                 ('language', models.ForeignKey(help_text='In what language was the source published?', null=True, on_delete=django.db.models.deletion.SET_NULL, to='corpus.languagescript')),
                 ('source_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='footnotes.sourcetype')),
             ],

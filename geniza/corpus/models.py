@@ -62,7 +62,6 @@ class Collection(models.Model):
 
 
 class LanguageScriptManager(models.Manager):
-
     def get_by_natural_key(self, language, script):
         return self.get(language=language, script=script)
 

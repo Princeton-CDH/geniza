@@ -1,7 +1,6 @@
 from django.test import TestCase
 
-from geniza.people.models import Person
-from geniza.footnotes.models import SourceType, Source, Footnote
+from geniza.footnotes.models import SourceType, Source, Footnote, Creator
 from geniza.corpus.models import LanguageScript
 
 class TestSourceType:
@@ -11,7 +10,7 @@ class TestSourceType:
 
 class TestSource:
     def test_str(self):
-        orwell = Person(sort_name='Orwell, George')
+        orwell = Creator(last_name='Orwell', first_name='George')
         essay = SourceType(type='Essay')
         english = LanguageScript(language='English', script='English')
         cup_of_tea = Source(author=orwell, title='A Nice Cup of Tea', 
@@ -21,7 +20,7 @@ class TestSource:
 
 class TestFootnote:
     def test_str(self):
-        orwell = Person(sort_name='Orwell, George')
+        orwell = Creator(last_name='Orwell', first_name='George')
         essay = SourceType(type='Essay')
         english = LanguageScript(language='English', script='English')
         cup_of_tea = Source(author=orwell, title='A Nice Cup of Tea', 
@@ -29,3 +28,8 @@ class TestFootnote:
 
         footnote = Footnote(source=cup_of_tea)
         assert str(footnote) == f'{orwell}, "{cup_of_tea.title}"'
+
+class TestCreator:
+    def test_str(self):
+        creator = Creator(last_name='Angelou', first_name='Maya')
+        str(creator) == 'Angelou, Maya'

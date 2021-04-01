@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from geniza.footnotes.admin import FootnoteAdmin, SourceAdmin, DocumentRelationTypesFilter
 from geniza.footnotes.models import Source
-from geniza.people.models import Person
+from geniza.people.models import Creator
 from geniza.footnotes.models import SourceType, Source, Footnote
 from geniza.corpus.models import LanguageScript
 
@@ -33,7 +33,7 @@ class TestDocumentRelationTypesFilter:
     @pytest.mark.django_db
     def test_queryset(self):
         # Create many sources
-        orwell = Person.objects.create(sort_name='Orwell, George')
+        orwell = Creator.objects.create(last_name='Orwell', first_name='George')
         essay = SourceType.objects.create(type='Essay')
         english = LanguageScript.objects.create(language='English', script='English')
         source = Source.objects.create(author=orwell, title='A Nice Cup of Tea', source_type=essay,

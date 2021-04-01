@@ -22,6 +22,7 @@ from django.db import migrations
 CONTENT_EDITOR = 'Content Editor'
 # new permissions for content editor
 content_editor_perms = [
+    'view_creator', 'add_creator', 'change_creator',
     'view_sourcetype', 'add_sourcetype', 'change_sourcetype',
     'view_source', 'add_source', 'change_source',
     'view_footnote', 'add_footnote', 'change_footnote',
@@ -34,6 +35,7 @@ content_admin_perms = [
     'delete_sourcetype',
     'delete_source',
     'delete_footnote',
+    'delete_creator',
 ]
 
 
@@ -67,8 +69,7 @@ def create_content_editor_groups(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('footnotes', '0004_load_sourcetypes'),
-        ('common', '0004_document_fragment_permissions')
+        ('footnotes', '0007_make_creator_model')
     ]
 
     operations = [

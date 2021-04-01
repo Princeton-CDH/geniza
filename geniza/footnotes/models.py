@@ -5,8 +5,6 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from multiselectfield import MultiSelectField
 # https://pypi.org/project/django-multiselectfield/
 
-from geniza.people.models import Person
-
 class SourceType(models.Model):
     type = models.CharField(max_length=255)
 
@@ -14,9 +12,17 @@ class SourceType(models.Model):
         return self.type
 
 
+class Creator(models.Model):
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f'{self.last_name}, {self.first_name}'
+
+
 class Source(models.Model):
     # TODO: Multiple authors
-    author = models.ForeignKey(Person, on_delete=models.CASCADE)
+    author = models.ForeignKey(Creator, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     year = models.PositiveIntegerField(blank=True, null=True)
     edition = models.CharField(max_length=255, blank=True)
@@ -28,7 +34,7 @@ class Source(models.Model):
         help_text='In what language was the source published?', null=True)
 
     class Meta:
-        ordering = ['author__sort_name']
+        ordering = ['author']
 
     def __str__(self):
         return f'{self.author}, "{self.title}"'
@@ -60,3 +66,4 @@ class Footnote(models.Model):
 
     def __str__(self):
         return str(self.source)
+

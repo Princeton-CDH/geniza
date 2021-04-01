@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('footnotes', '0005_add_permissions_source_sourcetype_footnotes'),
+        ('footnotes', '0004_load_sourcetypes'),
     ]
 
     operations = [

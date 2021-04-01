@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
-from geniza.footnotes.models import Footnote, Source, SourceType
+from geniza.footnotes.models import Footnote, Source, SourceType, Creator
 from modeltranslation.admin import TabbedTranslationAdmin
 
 
@@ -80,3 +80,8 @@ class FootnoteInline(GenericTabularInline):
     autocomplete_fields = ['source']
     fields = ('source', 'page_range', 'document_relation_types', 'notes',)
     extra = 1
+
+@admin.register(Creator)
+class CreatorAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+    list_display = ('first_name', 'last_name')
+    search_fields = ('first_name', 'last_name')
