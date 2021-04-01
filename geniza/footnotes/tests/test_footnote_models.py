@@ -1,3 +1,4 @@
+import pytest
 from django.test import TestCase
 
 from geniza.footnotes.models import SourceType, Source, Footnote, Creator
@@ -9,25 +10,32 @@ class TestSourceType:
         assert str(st) == st.type
 
 class TestSource:
+    @pytest.mark.django_db
     def test_str(self):
-        orwell = Creator(last_name='Orwell', first_name='George')
-        essay = SourceType(type='Essay')
-        english = LanguageScript(language='English', script='English')
-        cup_of_tea = Source(author=orwell, title='A Nice Cup of Tea', 
+        orwell = Creator.objects.create(last_name='Orwell', first_name='George')
+        essay = SourceType.objects.create(type='Essay')
+        english = LanguageScript.objects.create(language='English', script='English')
+        cup_of_tea = Source.objects.create(title='A Nice Cup of Tea', 
             source_type=essay, language=english)
+        cup_of_tea.authors.add(orwell)
 
-        assert str(cup_of_tea) == cup_of_tea.title
+        assert str(cup_of_tea) == f'{orwell}. "{cup_of_tea.title}"'
+
+    def test_all_authors(self):
+        pass
 
 class TestFootnote:
+    @pytest.mark.django_db
     def test_str(self):
-        orwell = Creator(last_name='Orwell', first_name='George')
-        essay = SourceType(type='Essay')
-        english = LanguageScript(language='English', script='English')
-        cup_of_tea = Source(author=orwell, title='A Nice Cup of Tea', 
+        orwell = Creator.objects.create(last_name='Orwell', first_name='George')
+        essay = SourceType.objects.create(type='Essay')
+        english = LanguageScript.objects.create(language='English', script='English')
+        cup_of_tea = Source.objects.create(title='A Nice Cup of Tea', 
             source_type=essay, language=english)
+        cup_of_tea.authors.add(orwell)
 
         footnote = Footnote(source=cup_of_tea)
-        assert str(footnote) == f'{orwell}, "{cup_of_tea.title}"'
+        assert str(footnote) == str(cup_of_tea)
 
 class TestCreator:
     def test_str(self):

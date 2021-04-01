@@ -8,20 +8,21 @@ from modeltranslation.admin import TabbedTranslationAdmin
 @admin.register(Source)
 class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = (
-        'author', 'title', 
+        'all_authors', 'title', 
         'year',
         'edition',
     )
 
     search_fields = (
-        'title', 'author__last_name', 'author__first_name', 'year'
+        'title', 'all_authors', 'year'
     )
 
     fields = (
-        'source_type', 'author', 'title', 'year',
+        'source_type', 'authors', 'title', 'year',
         'edition', 'volume', 'page_range', 
         'language'
     )
+
 
 @admin.register(SourceType)
 class SourceTypeAdmin(admin.ModelAdmin):

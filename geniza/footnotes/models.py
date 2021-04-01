@@ -4,6 +4,8 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 
 from multiselectfield import MultiSelectField
 # https://pypi.org/project/django-multiselectfield/
+from sortedm2m.fields import SortedManyToManyField
+# https://github.com/jazzband/django-sortedm2m
 
 class SourceType(models.Model):
     type = models.CharField(max_length=255)
@@ -19,10 +21,11 @@ class Creator(models.Model):
     def __str__(self):
         return f'{self.last_name}, {self.first_name}'
 
+    class Meta:
+        ordering = ['last_name']
 
 class Source(models.Model):
-    # TODO: Multiple authors
-    author = models.ForeignKey(Creator, on_delete=models.CASCADE)
+    authors = SortedManyToManyField(Creator)
     title = models.CharField(max_length=255)
     year = models.PositiveIntegerField(blank=True, null=True)
     edition = models.CharField(max_length=255, blank=True)
@@ -33,11 +36,15 @@ class Source(models.Model):
     language = models.ForeignKey('corpus.LanguageScript', on_delete=models.SET_NULL,
         help_text='In what language was the source published?', null=True)
 
-    class Meta:
-        ordering = ['author']
+    # class Meta:
+    #     ordering = ['all_authors']
 
     def __str__(self):
-        return f'{self.author}, "{self.title}"'
+        return self.all_authors + '. ' + f'"{self.title}"'
+
+    @property
+    def all_authors(self):
+        return '; '.join([str(author) for author in self.authors.all()])
 
 
 class Footnote(models.Model):

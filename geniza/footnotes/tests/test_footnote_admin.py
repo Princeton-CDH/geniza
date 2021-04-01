@@ -7,8 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from geniza.footnotes.admin import FootnoteAdmin, SourceAdmin, DocumentRelationTypesFilter
 from geniza.footnotes.models import Source
-from geniza.people.models import Creator
-from geniza.footnotes.models import SourceType, Source, Footnote
+from geniza.footnotes.models import SourceType, Source, Footnote, Creator
 from geniza.corpus.models import LanguageScript
 
 class TestDocumentRelationTypesFilter:
@@ -36,8 +35,9 @@ class TestDocumentRelationTypesFilter:
         orwell = Creator.objects.create(last_name='Orwell', first_name='George')
         essay = SourceType.objects.create(type='Essay')
         english = LanguageScript.objects.create(language='English', script='English')
-        source = Source.objects.create(author=orwell, title='A Nice Cup of Tea', source_type=essay,
+        source = Source.objects.create(title='A Nice Cup of Tea', source_type=essay,
             language=english)
+        source.authors.add(orwell)
         
         footnote_args = {
             'source': source,
