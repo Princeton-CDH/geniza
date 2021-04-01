@@ -10,7 +10,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = (
         'author', 'title', 
         'year',
-        'edition_number',
+        'edition',
     )
 
     search_fields = (
@@ -19,7 +19,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
     fields = (
         'source_type', 'author', 'title', 'year',
-        'edition_number', 'volume', 'page_range', 
+        'edition', 'volume', 'page_range', 
         'language'
     )
 
