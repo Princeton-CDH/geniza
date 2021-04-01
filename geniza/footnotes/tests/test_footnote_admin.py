@@ -3,59 +3,64 @@ import pytest
 from django.contrib import admin
 from django.test import TestCase, RequestFactory
 from django.urls import reverse
+from django.contrib.contenttypes.models import ContentType
 
-from geniza.footnotes.admin import SourceAdmin, DocumentRelationTypesFilter
+from geniza.footnotes.admin import FootnoteAdmin, SourceAdmin, DocumentRelationTypesFilter
 from geniza.footnotes.models import Source
 from geniza.people.models import Person
-from geniza.footnotes.models import SourceType, Source
+from geniza.footnotes.models import SourceType, Source, Footnote
 from geniza.corpus.models import LanguageScript
 
-@pytest.mark.skip('Waiting to move document relations filter to footnotes')
 class TestDocumentRelationTypesFilter:
     def test_lookups(self):
         # including params is not currently necessary for the overwritten function
         params = {}
 
-        # GET:<QueryDict: {'Document relation': ['T']}> 
-        # <WSGIRequest: GET '/admin/footnotes/source/?Document+relation=T'>
+        # GET:<QueryDict: {'Document relation types': ['T']}> 
+        # <WSGIRequest: GET '/admin/footnotes/footnote/?Document+relation+types=T'>
         request_factory = RequestFactory()
-        url = reverse('admin:footnotes_source_changelist')
+        url = reverse('admin:footnotes_footnote_changelist')
         request = request_factory.get(url, params=params)
 
-        source_admin = SourceAdmin(model=Source, admin_site=admin.site)
-        dr_filter = DocumentRelationTypesFilter(request, params, Source, source_admin)
-        options_list = dr_filter.lookups(request, source_admin)
+        footnote_admin = FootnoteAdmin(model=Footnote, admin_site=admin.site)
+        dr_filter = DocumentRelationTypesFilter(request, params, Footnote, footnote_admin)
+        options_list = dr_filter.lookups(request, footnote_admin)
         
         assert len(options_list) == 3
         assert all([len(opt) == 2 for opt in options_list])
         assert options_list[0][0] == 'E'
 
+    @pytes.mark.skip('Unable to replicate admin behavior.')
     @pytest.mark.django_db
     def test_queryset(self):
         # Create many sources
-        orwell = Person.objects.create(first_name='George', last_name='Orwell')
+        orwell = Person.objects.create(sort_name='Orwell, George')
         essay = SourceType.objects.create(type='Essay')
         english = LanguageScript.objects.create(language='English', script='English')
-        source_kwargs = {
-            'author': orwell, 'title': 'A Nice Cup of Tea', 
-            'source_type': essay, 'language': english
+        source = Source.objects.create(author=orwell, title='A Nice Cup of Tea', source_type=essay,
+            language=english)
+        
+        footnote_args = {
+            'source': source,
+            'content_type_id': ContentType.objects.get(model='document').id,
+            'object_id': 0
         }
-        Source.objects.bulk_create([
-            Source(document_relations=['E', 'T'], **source_kwargs),
-            Source(document_relations=['E'], **source_kwargs),
-            Source(document_relations=['D'], **source_kwargs),
-            Source(document_relations=['T', 'D'], **source_kwargs)
+
+        Footnote.objects.bulk_create([
+            Footnote(document_relation_types=['E', 'D'], **footnote_args),
+            Footnote(document_relation_types=['E'], **footnote_args),
+            Footnote(document_relation_types=['T', 'E'], **footnote_args),
         ])
 
         # Ensure that the querysets output is appropriate
         # See explanation above for details
-        params = {'Document relation': ['T']}
+        params = {'Document relation types': ['T']}
         request_factory = RequestFactory()
-        url = reverse('admin:footnotes_source_changelist')
+        url = reverse('admin:footnotes_footnote_changelist')
         request = request_factory.get(url, params=params)
 
-        source_admin = SourceAdmin(model=Source, admin_site=admin.site)
-        dr_filter = DocumentRelationTypesFilter(request, params, Source, source_admin)
+        footnote_admin = FootnoteAdmin(model=Footnote, admin_site=admin.site)
+        dr_filter = DocumentRelationTypesFilter(request, params, Footnote, footnote_admin)
 
         queryset = Source.objects.all()
         filtered_queryset = dr_filter.queryset(request, queryset)
@@ -63,7 +68,4 @@ class TestDocumentRelationTypesFilter:
 
 class TestSourceAdmin:
     def test_join_document_relations(self):
-        pass
-
-    def test_get_publish_date_year(self):
         pass
