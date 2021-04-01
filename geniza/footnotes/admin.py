@@ -33,7 +33,7 @@ class DocumentRelationTypesFilter(SimpleListFilter):
      document relations match the given facet'''
 
     title = 'document relation types'
-    parameter_name = 'Document relation types'
+    parameter_name = 'document_relation_types'
 
     def lookups(self, request, model_admin):
         return model_admin.model.DOCUMENT_RELATION_TYPES

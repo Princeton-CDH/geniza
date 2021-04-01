@@ -16,7 +16,7 @@ class TestDocumentRelationTypesFilter:
         # including params is not currently necessary for the overwritten function
         params = {}
 
-        # GET:<QueryDict: {'Document relation types': ['T']}> 
+        # GET:<QueryDict: {'Document relation types': ['T']}>
         # <WSGIRequest: GET '/admin/footnotes/footnote/?Document+relation+types=T'>
         request_factory = RequestFactory()
         url = reverse('admin:footnotes_footnote_changelist')
@@ -30,7 +30,6 @@ class TestDocumentRelationTypesFilter:
         assert all([len(opt) == 2 for opt in options_list])
         assert options_list[0][0] == 'E'
 
-    @pytest.mark.skip('Unable to replicate admin behavior.')
     @pytest.mark.django_db
     def test_queryset(self):
         # Create many sources
@@ -47,23 +46,25 @@ class TestDocumentRelationTypesFilter:
         }
 
         Footnote.objects.bulk_create([
-            Footnote(document_relation_types=['E', 'D'], **footnote_args),
             Footnote(document_relation_types=['E'], **footnote_args),
-            Footnote(document_relation_types=['T', 'E'], **footnote_args),
+            Footnote(document_relation_types=['E', 'T'], **footnote_args),
+            Footnote(document_relation_types=['E', 'D', 'T'], **footnote_args),
         ])
 
-        # Ensure that the querysets output is appropriate
-        # See explanation above for details
-        params = {'Document relation types': ['T']}
-        request_factory = RequestFactory()
-        url = reverse('admin:footnotes_footnote_changelist')
-        request = request_factory.get(url, params=params)
-
         footnote_admin = FootnoteAdmin(model=Footnote, admin_site=admin.site)
-        dr_filter = DocumentRelationTypesFilter(request, params, Footnote, footnote_admin)
+        queryset = Footnote.objects.all()
 
-        queryset = Source.objects.all()
-        filtered_queryset = dr_filter.queryset(request, queryset)
+        dr_filter = DocumentRelationTypesFilter(None, {'document_relation_types': 'T'}, Footnote, footnote_admin)
+        filtered_queryset = dr_filter.queryset(None, queryset)
+        assert filtered_queryset.count() == 2
+
+        dr_filter = DocumentRelationTypesFilter(None, {'document_relation_types': 'E'}, Footnote, footnote_admin)
+        filtered_queryset = dr_filter.queryset(None, queryset)
+        assert filtered_queryset.count() == 3
+
+        dr_filter = DocumentRelationTypesFilter(None, {'document_relation_types': 'D'}, Footnote, footnote_admin)
+        filtered_queryset = dr_filter.queryset(None, queryset)
+        assert filtered_queryset.count() == 1
 
 
 class TestSourceAdmin:
