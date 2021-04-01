@@ -30,7 +30,7 @@ class TestDocumentRelationTypesFilter:
         assert all([len(opt) == 2 for opt in options_list])
         assert options_list[0][0] == 'E'
 
-    @pytes.mark.skip('Unable to replicate admin behavior.')
+    @pytest.mark.skip('Unable to replicate admin behavior.')
     @pytest.mark.django_db
     def test_queryset(self):
         # Create many sources

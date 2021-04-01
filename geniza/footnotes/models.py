@@ -53,8 +53,7 @@ class Footnote(models.Model):
         (TRANSLATION, 'Translation'),
         (DISCUSSION, 'Discussion')
     )
-    # TODO: Confirm default=EDITION is ok. As a required field this needs to 
-    #  have a default value.
+    
     document_relation_types = MultiSelectField(choices=DOCUMENT_RELATION_TYPES,
         help_text='How does the document relate to a source?')
     notes = models.TextField(blank=True)
