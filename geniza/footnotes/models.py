@@ -21,7 +21,6 @@ class Source(models.Model):
     year = models.PositiveIntegerField(blank=True, null=True)
     # TODO: `edition_number` isn't a number. Can we call it `edition` ?
     edition_number = models.CharField(max_length=255, blank=True)
-    # TODO: What kind of values would volume contain? Would they just be an int?
     volume = models.CharField(max_length=255, blank=True)
     page_range = models.CharField(max_length=255, blank=True,
         help_text='The range of pages being cited. Do not include "p", "pg", etc. and follow the format # or #-#')
