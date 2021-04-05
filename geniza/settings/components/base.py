@@ -171,3 +171,7 @@ PUCAS_LDAP = {
 
 # username for logging scripted activity
 SCRIPT_USERNAME = 'script'
+
+# username for representing activity by entire team, or no specific user
+TEAM_USERNAME = 'pgl'
+
