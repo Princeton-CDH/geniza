@@ -182,8 +182,8 @@
     {
         "model": "auth.user",
         "fields": {
-            "first_name": "Olivia",
-            "last_name": "Remie Constable",
+            "first_name": "Olivia Remie",
+            "last_name": "Constable",
             "username": "oconstable",
 			"is_active": false
         }
