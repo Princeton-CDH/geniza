@@ -20,15 +20,6 @@
     {
         "model": "auth.user",
         "fields": {
-            "first_name": "Alan",
-            "last_name": "Elbaum",
-            "username": "aelbaum",
-			"is_active": false
-        }
-    },
-    {
-        "model": "auth.user",
-        "fields": {
             "first_name": "Amir",
             "last_name": "Ashur",
             "username": "aashur",
@@ -149,15 +140,6 @@
             "first_name": "Luke",
             "last_name": "Yarbrough",
             "username": "lyarbrough",
-			"is_active": false
-        }
-    },
-    {
-        "model": "auth.user",
-        "fields": {
-            "first_name": "Marina",
-            "last_name": "Rustow",
-            "username": "mrustow",
 			"is_active": false
         }
     },
