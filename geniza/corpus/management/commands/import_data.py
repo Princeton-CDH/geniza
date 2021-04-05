@@ -1,11 +1,14 @@
 import codecs
 import csv
+import logging
 import re
 from collections import defaultdict, namedtuple
-import dateutil
-import logging
+from datetime import datetime
+from operator import itemgetter
 from string import punctuation
 
+import requests
+from dateutil.parser import parse
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
@@ -14,10 +17,8 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.text import slugify
 
-import requests
-
-from geniza.corpus.models import Collection, Document, DocumentType, Fragment,\
-    LanguageScript, TextBlock
+from geniza.corpus.models import (Collection, Document, DocumentType, Fragment,
+                                  LanguageScript, TextBlock)
 
 # mapping for csv header fields and local name we want to use
 # if not specified, column will be lower-cased
@@ -72,7 +73,7 @@ class Command(BaseCommand):
         self.user_lookup["Geniza Lab team"] = self.team_user
 
         # load fixure containing known historic users (all non-active)
-        call_command("loaddata", "historic_users")
+        call_command("loaddata", "historic_users", app_label="corpus")
 
         self.content_types = {
             model: ContentType.objects.get_for_model(model)
@@ -364,7 +365,7 @@ class Command(BaseCommand):
     def get_user(self, name):
         """Find a user account based on a provided name, using a simple cache.
 
-        If not found, create a user account and return it instead. If all else
+        If not found, tries to use first/last initials for lookup. If all else
         fails, use the generic team account (TEAM_USERNAME).
         """
 
@@ -426,32 +427,42 @@ class Command(BaseCommand):
                     tuple(map(self.get_user, input_by.split(" and "))))
             users.append(self.get_user(input_by))
 
-        # convert every "date entered" listing to a datetime; for details see:
+        # convert every "date entered" listing to a datetime. if any parts of
+        # the date are missing, fill with default values below. for details:
         # https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse
-        dates = map(dateutil.parser.parse, all_dates)
+        dates = [parse(date, default=datetime(2020, 1, 1)) for date in all_dates]
+
+        # make sure we have same number of users/dates by padding with None
+        while len(users) < len(dates):
+            users.insert(0, None)
 
         # moving backwards in time, pair dates with users and event types
         events = []
-        for i, date in enumerate(reversed(dates)):
+        for i in range(len(dates) - 1, -1, -1):
+            date = dates[i]
 
             # final (earliest) date is creation; all others are revisions
-            event_type = "Created" if i == len(dates) - 1 else "Revised"
-            try:
-                user = users[i]
-
-                # if it was two users together, log two separate events because
-                # each event must have exactly one user
-                if type(user) == tuple:
-                    events.append(
-                        {"type": event_type, "user": user[0], "date": date})
-                    events.append(
-                        {"type": event_type, "user": user[1], "date": date})
-                    continue
+            event_type = "Created" if i == 0 else "Revised"
 
             # if we have a date without a user, assign to the whole team
-            except IndexError:
-                user = self.team_user
+            user = users[i] or self.team_user
+
+            # if it was two users together, log two separate events because
+            # each event must have exactly one user
+            if type(user) == tuple:
+                events.append(
+                    {"type": event_type, "user": user[0], "date": date})
+                events.append(
+                    {"type": event_type, "user": user[1], "date": date})
+                logging.debug(f"Found coauthored event: {events[-2:]}")
+                continue
+
+            # otherwise just create a single event for this user
             events.append({"type": event_type, "user": user, "date": date})
+            logging.debug(f"Found event: {events[-1]}")
+
+        # sort chronologically and return
+        events.sort(key=itemgetter("date"))
         return events
 
     def log_edit_history(self, doc, events):
