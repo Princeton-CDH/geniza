@@ -1,21 +1,22 @@
-from io import StringIO
-from unittest.mock import patch, DEFAULT
+import datetime
 import logging
+from io import StringIO
+from unittest.mock import DEFAULT, patch
 
+import pytest
+import requests
 from attrdict import AttrMap
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import override_settings
-import pytest
-import requests
 
 from geniza.corpus.management.commands import import_data
-from geniza.corpus.models import Collection, Document, DocumentType, \
-    Fragment, LanguageScript
+from geniza.corpus.models import (Collection, Document, DocumentType, Fragment,
+                                  LanguageScript)
 
 
 @pytest.mark.django_db
@@ -376,20 +377,19 @@ def test_add_document_language():
 
 
 @pytest.mark.django_db
-@override_settings(DATA_IMPORT_URLS={'metadata': 'pgp_meta.csv'})
+@override_settings(DATA_IMPORT_URLS={})
 def test_get_user(caplog):
     import_data_cmd = import_data.Command()
-    import_data_cmd.setup()
+    import_data_cmd.setup()     # loads historic users from fixture
     get_user = import_data_cmd.get_user
     User = get_user_model()
 
-    # create some user accounts using real data from the spreadsheet
+    # fetch/create some users for testing (mixture of active and historic)
     alan = User.objects.create_user(
         username="aelbaum", first_name="Alan", last_name="Elbaum")
-    orc = User.objects.create_user(
-        username="orc", first_name="Olivia Remie", last_name="Constable")
     marina = User.objects.create_user(
         username="mrustow", first_name="Marina", last_name="Rustow")
+    orc = User.objects.get(first_name="Olivia Remie", last_name="Constable")
 
     # try fetching some of them with no cache
     with caplog.at_level(logging.DEBUG):
@@ -423,6 +423,60 @@ def test_get_user(caplog):
     with caplog.at_level(logging.WARNING):
         assert get_user("asdf36") == import_data_cmd.team_user
         assert "Couldn't find user" in caplog.record_tuples[-1][2]
+
+
+@pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})
+def test_get_edit_history(caplog):
+    import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
+    get_edit_history = import_data_cmd.get_edit_history
+    User = get_user_model()
+
+    # simplest case: one user, one well-formed date -> creation event
+    history = get_edit_history("Sarah Nisenson", "3/16/2018")
+    assert history == [{
+        "type": "Created",
+        "user": User.objects.get(username="snisenson"),
+        "date": datetime.datetime(2018, 3, 16),
+    }]
+
+    # another simple case: two users & dates -> creation followed by revision
+    history = get_edit_history("Sarah Nisenson; Emily Silkaitis",
+                               "3/16/2018; 3/23/21")    # two-digit year
+    assert history == [{
+        "type": "Created",
+        "user": User.objects.get(username="snisenson"),
+        "date": datetime.datetime(2018, 3, 16),
+    }, {
+        "type": "Revised",
+        "user": User.objects.get(username="esilkaitis"),
+        "date": datetime.datetime(2021, 3, 23),
+    }]
+
+    # one user with two dates -> creation by unknown (team) followed by revision
+    history = get_edit_history("Emily Silkaitis", "3/16/2018; 03/2021")
+    assert history == [{
+        "type": "Created",
+        "user": import_data_cmd.team_user,
+        "date": datetime.datetime(2018, 3, 16),
+    }, {
+        "type": "Revised",
+        "user": User.objects.get(username="esilkaitis"),
+        "date": datetime.datetime(2021, 3, 1),  # auto-fill first day of month
+    }]
+
+    # coauthored creation -> simultaneous events
+    history = get_edit_history("Amir Ashur and Oded Zinger", "8/1/2017")
+    assert history == [{
+        "type": "Created",
+        "user": User.objects.get(username="aashur"),
+        "date": datetime.datetime(2017, 8, 1),
+    }, {
+        "type": "Created",  # two creation events
+        "user": User.objects.get(username="ozinger"),
+        "date": datetime.datetime(2017, 8, 1),
+    }]
 
 
 @pytest.mark.django_db
