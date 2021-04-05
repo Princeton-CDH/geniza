@@ -1,8 +1,10 @@
 from io import StringIO
 from unittest.mock import patch, DEFAULT
+import logging
 
 from attrdict import AttrMap
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
@@ -88,7 +90,8 @@ def test_get_csv_maximum():
 
 
 @pytest.mark.django_db
-@override_settings(DATA_IMPORT_URLS={'libraries': 'lib.csv'})  # must be set for command setup
+# must be set for command setup
+@override_settings(DATA_IMPORT_URLS={'libraries': 'lib.csv'})
 @patch('geniza.corpus.management.commands.import_data.requests')
 def test_import_collections(mockrequests):
     # create test collection to confirm it is removed
@@ -130,7 +133,8 @@ def test_import_collections(mockrequests):
 
 
 @pytest.mark.django_db
-@override_settings(DATA_IMPORT_URLS={'languages': 'mylangs.csv'})  # must be set for command setup
+# must be set for command setup
+@override_settings(DATA_IMPORT_URLS={'languages': 'mylangs.csv'})
 @patch('geniza.corpus.management.commands.import_data.requests')
 def test_import_languages(mockrequests):
     LanguageScript.objects.create(script='Wingdings', language='English')
@@ -311,7 +315,8 @@ def test_import_documents(mockrequests):
     assert set(['lease', 'synagogue', '11th c']) == tags
     # log entry should be created
     document_ctype = ContentType.objects.get_for_model(Document)
-    assert LogEntry.objects.get(action_flag=ADDITION, object_id=doc.pk,
+    assert LogEntry.objects.get(change_message=import_data_cmd.logentry_message,
+                                object_id=doc.pk,
                                 content_type_id=document_ctype.pk)
 
     doc2 = Document.objects.get(id=2292)
@@ -323,7 +328,8 @@ def test_import_documents(mockrequests):
     assert 'Imported 2 documents' in output
     assert '1 with joins' in output
     assert 'skipped 1' in output
-    assert LogEntry.objects.get(action_flag=ADDITION, object_id=doc2.pk,
+    assert LogEntry.objects.get(change_message=import_data_cmd.logentry_message,
+                                object_id=doc2.pk,
                                 content_type_id=document_ctype.pk)
 
 
@@ -367,6 +373,56 @@ def test_add_document_language():
     row.language = 'missing'
     import_data_cmd.add_document_language(doc, row)
     assert 'language not found' in import_data_cmd.stdout.getvalue()
+
+
+@pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={'metadata': 'pgp_meta.csv'})
+def test_get_user(caplog):
+    import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
+    get_user = import_data_cmd.get_user
+    User = get_user_model()
+
+    # create some user accounts using real data from the spreadsheet
+    alan = User.objects.create_user(
+        username="aelbaum", first_name="Alan", last_name="Elbaum")
+    orc = User.objects.create_user(
+        username="orc", first_name="Olivia Remie", last_name="Constable")
+    marina = User.objects.create_user(
+        username="mrustow", first_name="Marina", last_name="Rustow")
+
+    # try fetching some of them with no cache
+    with caplog.at_level(logging.DEBUG):
+        assert get_user("Alan Elbaum") == alan  # firstname lastname
+        assert "Found user" in caplog.record_tuples[-1][2]
+        assert get_user("Olivia Remie Constable") == orc    # multi names
+        assert "Found user" in caplog.record_tuples[-1][2]
+        get_user("Olivia Remie Constable")  # second call, should be cached
+        assert "Using cached user" in caplog.record_tuples[-1][2]
+
+    # reset & add a name to the cache; should notify when cache is hit
+    import_data_cmd.user_lookup = {"AE": alan}
+    with caplog.at_level(logging.DEBUG):
+        assert get_user("Alan Elbaum") == alan  # cache miss
+        assert "Found user" in caplog.record_tuples[-1][2]
+        assert get_user("AE") == alan           # cache hit
+        assert "Using cached user" in caplog.record_tuples[-1][2]
+
+    # test fetching users from database using initials only; should cache
+    with caplog.at_level(logging.DEBUG):
+        assert get_user("ORC") == orc   # three initials
+        assert "Found user" in caplog.record_tuples[-1][2]
+        assert import_data_cmd.user_lookup["ORC"] == orc    # cached initials
+        assert get_user("MR") == marina  # two initials
+        assert "Found user" in caplog.record_tuples[-1][2]
+        assert import_data_cmd.user_lookup["MR"] == marina
+        get_user("MR")  # test cache using initials
+        assert "Using cached user" in caplog.record_tuples[-1][2]
+
+    # cache/database miss should warn and use the team user
+    with caplog.at_level(logging.WARNING):
+        assert get_user("asdf36") == import_data_cmd.team_user
+        assert "Couldn't find user" in caplog.record_tuples[-1][2]
 
 
 @pytest.mark.django_db

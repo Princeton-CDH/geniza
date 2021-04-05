@@ -2,9 +2,12 @@ import codecs
 import csv
 import re
 from collections import defaultdict, namedtuple
+import dateutil
+import logging
+from string import punctuation
 
 from django.conf import settings
-from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
@@ -50,7 +53,8 @@ class Command(BaseCommand):
     content_types = {}
     collection_lookup = {}
     document_type = {}
-    language_lookup = {}
+    language_lookup = {}  # this is provisional, assumes one language -> script mapping
+    user_lookup = {}
     max_documents = None
 
     def add_arguments(self, parser):
@@ -58,9 +62,12 @@ class Command(BaseCommand):
 
     def setup(self):
         if not hasattr(settings, 'DATA_IMPORT_URLS'):
-            raise CommandError('Please configure DATA_IMPORT_URLS in local settings')
+            raise CommandError(
+                'Please configure DATA_IMPORT_URLS in local settings')
 
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
+        self.team_user = User.objects.get(username=settings.TEAM_USERNAME)
+        self.user_lookup["Geniza Lab team"] = self.team_user
         self.content_types = {
             model: ContentType.objects.get_for_model(model)
             for model in [Fragment, Collection, Document, LanguageScript]
@@ -86,7 +93,7 @@ class Command(BaseCommand):
                                (name, response))
 
         csvreader = csv.reader(codecs.iterdecode(response.iter_lines(),
-                               'utf-8'))
+                                                 'utf-8'))
         header = next(csvreader)
         # Create a namedtuple based on headers in the csv
         # and local mapping of csv names to access names
@@ -239,7 +246,7 @@ class Command(BaseCommand):
             self.add_document_language(doc, row)
             docstats['documents'] += 1
             # create log entries as we go
-            self.log_creation(doc)
+            self.log_edit_history(doc, [])
 
             # keep track of any joins to handle on a second pass
             if row.joins.strip():
@@ -253,10 +260,12 @@ class Command(BaseCommand):
                 if shelfmark == initial_shelfmark:
                     continue
                 # get the fragment if it already exists
-                join_fragment = Fragment.objects.filter(shelfmark=shelfmark).first()
+                join_fragment = Fragment.objects.filter(
+                    shelfmark=shelfmark).first()
                 # if not, create a stub fragment record
                 if not join_fragment:
-                    join_fragment = Fragment.objects.create(shelfmark=shelfmark)
+                    join_fragment = Fragment.objects.create(
+                        shelfmark=shelfmark)
                     self.log_creation(join_fragment)
                 # associate the fragment with the document
                 doc.fragments.add(join_fragment)
@@ -345,3 +354,131 @@ class Command(BaseCommand):
                 object_repr=str(obj),
                 change_message=self.logentry_message,
                 action_flag=ADDITION)
+
+    def get_user(self, name):
+        """Find a user account based on a provided name, using a simple cache.
+
+        If not found, create a user account and return it instead. If all else
+        fails, use the generic team account (TEAM_USERNAME).
+        """
+
+        # check the cache first
+        user = self.user_lookup.get(name)
+        if user:
+            logging.debug(f"Using cached user {user} for {name}")
+            return user
+
+        # person with given name(s) and last name – case-insensitive lookup
+        if " " in name:
+            given_names, last_name = [sname.strip(punctuation) for sname in
+                                      name.rsplit(" ", 1)]
+            try:
+                user = User.objects.get(first_name__iexact=given_names,
+                                        last_name__iexact=last_name)
+            except User.DoesNotExist:
+                pass
+
+        # initials; use first & last to do lookup
+        else:
+            first_i, last_i = name[0], name[-1]
+            try:
+                user = User.objects.get(first_name__startswith=first_i,
+                                        last_name__startswith=last_i)
+            except User.DoesNotExist:
+                pass
+
+        # if we didn't get anyone through either method, warn and use team user
+        if not user:
+            logging.warning(
+                f"Couldn't find user {name}; using {self.team_user}")
+            return self.team_user
+
+        # otherwise add to the cache using requested name and return the user
+        logging.debug(f"Found user {user} for {name}")
+        self.user_lookup[name] = user
+        return user
+
+    def get_edit_history(self, input_by, date_entered):
+        """Parse spreadsheet "input by" and "date entered" columns to
+        reconstruct the edit history of a single document.
+
+        Output is a list of dict to pass to log_edit_history. Each event has
+        a type (creation or revision), associated user, and timestamp.
+        """
+
+        # split both fields by semicolon delimiter & remove whitespace
+        all_input = map(str.strip, input_by.split(";"))
+        all_dates = map(str.strip, date_entered.split(";"))
+
+        # try to map every "input by" listing to a user account
+        users = []
+        for input_by in all_input:
+
+            # special case: two people together; add as a tuple
+            if "and" in input_by:
+                users.append(
+                    tuple(map(self.get_user, input_by.split(" and "))))
+            users.append(self.get_user(input_by))
+
+        # convert every "date entered" listing to a datetime; for details see:
+        # https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse
+        dates = map(dateutil.parser.parse, all_dates)
+
+        # moving backwards in time, pair dates with users and event types
+        events = []
+        for i, date in enumerate(reversed(dates)):
+
+            # final (earliest) date is creation; all others are revisions
+            event_type = "Created" if i == len(dates) - 1 else "Revised"
+            try:
+                user = users[i]
+
+                # if it was two users together, log two separate events because
+                # each event must have exactly one user
+                if type(user) == tuple:
+                    events.append(
+                        {"type": event_type, "user": user[0], "date": date})
+                    events.append(
+                        {"type": event_type, "user": user[1], "date": date})
+                    continue
+
+            # if we have a date without a user, assign to the whole team
+            except IndexError:
+                user = self.team_user
+            events.append({"type": event_type, "user": user, "date": date})
+        return events
+
+    def log_edit_history(self, doc, events):
+        """Given a Document and a sequence of events from get_edit_history,
+        create corresponding Django log entries to represent that history.
+
+        Always creates an entry by the script user (`SCRIPT_USERNAME`) with a
+        timestamp of now to mark the import event itself.
+
+        Optional `events` is list of dict from get_edit_history. Each event has
+        a type (creation or revision), associated user, and timestamp.
+        """
+
+        # for each historic event, create a corresponding django log entry.
+        # we use objects.create() instead of the log_action helper so that we
+        # can control the timestamp.
+        for event in events:
+            LogEntry.objects.create(
+                user=event["user"],                            # FK in django
+                content_type=self.content_types[Document],     # FK in django
+                object_id=str(doc.pk),         # TextField in django
+                object_repr=str(doc)[:200],    # CharField with limit in django
+                change_message=event["type"],
+                action_flag=ADDITION if event["type"] == "Created" else CHANGE,
+                action_time=event["date"],
+            )
+
+        # finally, log the actual import event.
+        LogEntry.objects.log_action(
+            user_id=self.script_user.id,
+            content_type_id=self.content_types[Document].pk,
+            object_id=doc.pk,
+            object_repr=str(doc),
+            change_message=self.logentry_message,
+            action_flag=CHANGE
+        )
