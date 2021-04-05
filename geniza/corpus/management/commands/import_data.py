@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.text import slugify
 
@@ -65,9 +66,14 @@ class Command(BaseCommand):
             raise CommandError(
                 'Please configure DATA_IMPORT_URLS in local settings')
 
+        # fetch users created through migrations & add to cache
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
         self.team_user = User.objects.get(username=settings.TEAM_USERNAME)
         self.user_lookup["Geniza Lab team"] = self.team_user
+
+        # load fixure containing known historic users (all non-active)
+        call_command("loaddata", "historic_users")
+
         self.content_types = {
             model: ContentType.objects.get_for_model(model)
             for model in [Fragment, Collection, Document, LanguageScript]
