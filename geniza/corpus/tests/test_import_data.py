@@ -467,33 +467,37 @@ def test_get_edit_history(caplog):
     }]
 
     # coauthored creation -> simultaneous events
-    history = get_edit_history("Amir Ashur and Oded Zinger", "8/1/2017")
-    assert history == [{
-        "type": "Created",
-        "user": User.objects.get(username="aashur"),
-        "date": datetime.datetime(2017, 8, 1),
-    }, {
-        "type": "Created",  # two creation events
-        "user": User.objects.get(username="ozinger"),
-        "date": datetime.datetime(2017, 8, 1),
-    }]
+    with caplog.at_level(logging.DEBUG):
+        history = get_edit_history("Amir Ashur and Oded Zinger", "8/1/2017")
+        assert "Found coauthored event" in caplog.record_tuples[-1][2]
+        assert history == [{
+            "type": "Created",
+            "user": User.objects.get(username="aashur"),
+            "date": datetime.datetime(2017, 8, 1),
+        }, {
+            "type": "Created",  # two creation events
+            "user": User.objects.get(username="ozinger"),
+            "date": datetime.datetime(2017, 8, 1),
+        }]
 
     # coauthored creation followed by revision
-    history = get_edit_history("Amir Ashur and Oded Zinger; Emily Silkaitis",
-                               "8/1/2017; November 2020")   # diff. month form
-    assert history == [{
-        "type": "Created",
-        "user": User.objects.get(username="aashur"),
-        "date": datetime.datetime(2017, 8, 1),
-    }, {
-        "type": "Created",
-        "user": User.objects.get(username="ozinger"),
-        "date": datetime.datetime(2017, 8, 1),
-    }, {
-        "type": "Revised",
-        "user": User.objects.get(username="esilkaitis"),
-        "date": datetime.datetime(2020, 11, 1),     # autofill first day
-    },]
+    with caplog.at_level(logging.DEBUG):
+        history = get_edit_history("Amir Ashur and Oded Zinger; Emily Silkaitis",
+                                   "8/1/2017; November 2020")   # literal month
+        assert "Found coauthored event" in caplog.record_tuples[-1][2]
+        assert history == [{
+            "type": "Created",
+            "user": User.objects.get(username="aashur"),
+            "date": datetime.datetime(2017, 8, 1),
+        }, {
+            "type": "Created",
+            "user": User.objects.get(username="ozinger"),
+            "date": datetime.datetime(2017, 8, 1),
+        }, {
+            "type": "Revised",
+            "user": User.objects.get(username="esilkaitis"),
+            "date": datetime.datetime(2020, 11, 1),     # autofill first day
+        }]
 
 
 @pytest.mark.django_db
