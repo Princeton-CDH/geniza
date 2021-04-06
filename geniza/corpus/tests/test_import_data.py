@@ -433,6 +433,22 @@ def test_get_edit_history(caplog):
     get_edit_history = import_data_cmd.get_edit_history
     User = get_user_model()
 
+    # empty dates returns empty list; nothing to do
+    history = get_edit_history("", "")
+    assert history == []
+
+    # users with no dates still does nothing; no way to log an event
+    history = get_edit_history("Sarah Nisenson", "")
+    assert history == []
+
+    # date with no user results in event assigned to whole team (TEAM_USER)
+    history = get_edit_history("", "5/4/2016")
+    assert history == [{
+        "type": "Created",
+        "user": import_data_cmd.team_user,
+        "date": datetime.datetime(2016, 5, 4),
+    }]
+
     # simplest case: one user, one well-formed date -> creation event
     history = get_edit_history("Sarah Nisenson", "3/16/2018")
     assert history == [{
@@ -499,6 +515,17 @@ def test_get_edit_history(caplog):
             "date": datetime.datetime(2020, 11, 1),     # autofill first day
         }]
 
+@pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})
+def test_log_edit_history():
+    import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
+    log_edit_history = import_data_cmd.log_edit_history
+    User = get_user_model()
+    doc = Document.objects.create()
+
+    # simplest case: no edit history, only import event as an ADDITION
+    log_edit_history(doc, [])
 
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={})

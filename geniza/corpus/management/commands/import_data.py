@@ -8,7 +8,7 @@ from operator import itemgetter
 from string import punctuation
 
 import requests
-from dateutil.parser import parse
+from dateutil.parser import ParserError, parse
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
@@ -46,6 +46,9 @@ csv_fields = {
     }
 }
 
+# events in document edit history with missing/malformed dates will replace
+# missing portions with values from this date
+DEFAULT_EVENT_DATE = datetime(2020, 1, 1)
 
 class Command(BaseCommand):
     'Import existing data from PGP spreadsheets into the database'
@@ -386,7 +389,7 @@ class Command(BaseCommand):
                 pass
 
         # initials; use first & last to do lookup
-        else:
+        elif name:
             first_i, last_i = name[0], name[-1]
             try:
                 user = User.objects.get(first_name__startswith=first_i,
@@ -431,7 +434,12 @@ class Command(BaseCommand):
         # convert every "date entered" listing to a datetime. if any parts of
         # the date are missing, fill with default values below. for details:
         # https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse
-        dates = [parse(date, default=datetime(2020, 1, 1)) for date in all_dates]
+        dates = []
+        for date in all_dates:
+            try:
+                dates.append(parse(date, default=DEFAULT_EVENT_DATE))
+            except ParserError:
+                continue
 
         # make sure we have same number of users/dates by padding with None
         while len(users) < len(dates):
@@ -491,12 +499,13 @@ class Command(BaseCommand):
                 action_time=event["date"],
             )
 
-        # finally, log the actual import event.
+        # finally, log the actual import event. if it's the only event, then
+        # it's an ADDITION – otherwise it's a CHANGE.
         LogEntry.objects.log_action(
             user_id=self.script_user.id,
             content_type_id=self.content_types[Document].pk,
             object_id=doc.pk,
             object_repr=str(doc),
             change_message=self.logentry_message,
-            action_flag=CHANGE
+            action_flag=CHANGE if events else ADDITION
         )
