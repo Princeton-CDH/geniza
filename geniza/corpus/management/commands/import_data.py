@@ -16,6 +16,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.text import slugify
+from django.utils.timezone import get_current_timezone, make_aware
 
 from geniza.corpus.models import (Collection, Document, DocumentType, Fragment,
                                   LanguageScript, TextBlock)
@@ -50,10 +51,19 @@ csv_fields = {
 # missing portions with values from this date
 DEFAULT_EVENT_DATE = datetime(2020, 1, 1)
 
+# log levels as integers for verbosity option
+LOG_LEVELS = {
+    0: logging.ERROR,
+    1: logging.WARNING,
+    2: logging.INFO,
+    3: logging.DEBUG
+}
+
+
 class Command(BaseCommand):
     'Import existing data from PGP spreadsheets into the database'
 
-    logentry_message = 'Created via data import script'
+    logentry_message = 'Imported via data import script'
 
     content_types = {}
     collection_lookup = {}
@@ -65,7 +75,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('-m', '--max_documents', type=int)
 
-    def setup(self):
+    def setup(self, *args, **kwargs):
         if not hasattr(settings, 'DATA_IMPORT_URLS'):
             raise CommandError(
                 'Please configure DATA_IMPORT_URLS in local settings')
@@ -78,13 +88,16 @@ class Command(BaseCommand):
         # load fixure containing known historic users (all non-active)
         call_command("loaddata", "historic_users", app_label="corpus")
 
+        # setup logging; default to WARNING level
+        logging.basicConfig(level=LOG_LEVELS[kwargs.get("verbosity", 1)])
+
         self.content_types = {
             model: ContentType.objects.get_for_model(model)
             for model in [Fragment, Collection, Document, LanguageScript]
         }
 
     def handle(self, max_documents=None, *args, **kwargs):
-        self.setup()
+        self.setup(*args, **kwargs)
         self.max_documents = max_documents
         self.import_collections()
         self.import_languages()
@@ -217,6 +230,8 @@ class Command(BaseCommand):
         metadata = self.get_csv('metadata')
         Document.objects.all().delete()
         Fragment.objects.all().delete()
+        LogEntry.objects.filter(
+            content_type_id=self.content_types[Document].id).delete()
 
         # create a reverse lookup for recto/verso labels used in the
         # spreadsheet to the codes used in the database
@@ -256,7 +271,8 @@ class Command(BaseCommand):
             self.add_document_language(doc, row)
             docstats['documents'] += 1
             # create log entries as we go
-            self.log_edit_history(doc, [])
+            self.log_edit_history(doc, self.get_edit_history(row.input_by,
+                                                             row.date_entered))
 
             # keep track of any joins to handle on a second pass
             if row.joins.strip():
@@ -365,7 +381,7 @@ class Command(BaseCommand):
                 change_message=self.logentry_message,
                 action_flag=ADDITION)
 
-    def get_user(self, name):
+    def get_user(self, name, pgpid=None):
         """Find a user account based on a provided name, using a simple cache.
 
         If not found, tries to use first/last initials for lookup. If all else
@@ -375,7 +391,8 @@ class Command(BaseCommand):
         # check the cache first
         user = self.user_lookup.get(name)
         if user:
-            logging.debug(f"Using cached user {user} for {name}")
+            logging.debug(
+                f"Using cached user {user} for {name} on PGPID {pgpid}")
             return user
 
         # person with given name(s) and last name – case-insensitive lookup
@@ -400,15 +417,15 @@ class Command(BaseCommand):
         # if we didn't get anyone through either method, warn and use team user
         if not user:
             logging.warning(
-                f"Couldn't find user {name}; using {self.team_user}")
+                f"Couldn't find user {name} on PGPID {pgpid}; using {self.team_user}")
             return self.team_user
 
         # otherwise add to the cache using requested name and return the user
-        logging.debug(f"Found user {user} for {name}")
+        logging.debug(f"Found user {user} for {name} on PGPID {pgpid}")
         self.user_lookup[name] = user
         return user
 
-    def get_edit_history(self, input_by, date_entered):
+    def get_edit_history(self, input_by, date_entered, pgpid=None):
         """Parse spreadsheet "input by" and "date entered" columns to
         reconstruct the edit history of a single document.
 
@@ -431,13 +448,13 @@ class Command(BaseCommand):
             else:
                 users.append(self.get_user(input_by))
 
-        # convert every "date entered" listing to a datetime. if any parts of
+        # convert every "date entered" listing to a date object. if any parts of
         # the date are missing, fill with default values below. for details:
         # https://dateutil.readthedocs.io/en/stable/parser.html#dateutil.parser.parse
         dates = []
         for date in all_dates:
             try:
-                dates.append(parse(date, default=DEFAULT_EVENT_DATE))
+                dates.append(parse(date, default=DEFAULT_EVENT_DATE).date())
             except ParserError:
                 continue
 
@@ -463,12 +480,13 @@ class Command(BaseCommand):
                     {"type": event_type, "user": user[0], "date": date})
                 events.append(
                     {"type": event_type, "user": user[1], "date": date})
-                logging.debug(f"Found coauthored event: {events[-2:]}")
+                logging.debug(
+                    f"Found coauthored event for PGPID {pgpid}: {events[-2:]}")
                 continue
 
             # otherwise just create a single event for this user
             events.append({"type": event_type, "user": user, "date": date})
-            logging.debug(f"Found event: {events[-1]}")
+            logging.debug(f"Found event for PGPID {pgpid}: {events[-1]}")
 
         # sort chronologically and return
         events.sort(key=itemgetter("date"))
@@ -489,6 +507,9 @@ class Command(BaseCommand):
         # we use objects.create() instead of the log_action helper so that we
         # can control the timestamp.
         for event in events:
+            dt = datetime(year=event["date"].year,
+                          month=event["date"].month,
+                          day=event["date"].day)
             LogEntry.objects.create(
                 user=event["user"],                            # FK in django
                 content_type=self.content_types[Document],     # FK in django
@@ -496,7 +517,7 @@ class Command(BaseCommand):
                 object_repr=str(doc)[:200],    # CharField with limit in django
                 change_message=event["type"],
                 action_flag=ADDITION if event["type"] == "Created" else CHANGE,
-                action_time=event["date"],
+                action_time=make_aware(dt, timezone=get_current_timezone()),
             )
 
         # finally, log the actual import event. if it's the only event, then
