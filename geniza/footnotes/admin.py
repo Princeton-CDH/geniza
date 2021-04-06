@@ -1,32 +1,50 @@
+from adminsortable2.admin import SortableInlineAdminMixin
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
-from geniza.footnotes.models import Footnote, Source, SourceType, Creator
 from modeltranslation.admin import TabbedTranslationAdmin
+
+from geniza.footnotes.models import Authorship, Creator, Footnote, Source, \
+    SourceLanguage, SourceType
+
+
+class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
+    model = Authorship
+    autocomplete_fields = ['creator']
+    fields = ('creator', 'sort_order')
+    extra = 1
 
 
 @admin.register(Source)
 class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = (
-        'all_authors', 'title', 
+        'title', 'all_creators',
         'year',
         'edition',
     )
 
     search_fields = (
-        'title', 'all_authors', 'year'
+        'title', 'creators__first_name', 'creators__last_name' 'year'
     )
 
     fields = (
-        'source_type', 'authors', 'title', 'year',
-        'edition', 'volume', 'page_range', 
+        'source_type',
+        'title', 'year',
+        'edition', 'volume', 'page_range',
         'language'
     )
+
+    inlines = [AuthorshipInline]
 
 
 @admin.register(SourceType)
 class SourceTypeAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(SourceLanguage)
+class SourceLanguageAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code')
 
 
 class DocumentRelationTypesFilter(SimpleListFilter):
@@ -64,7 +82,7 @@ class FootnoteAdmin(admin.ModelAdmin):
         }),
         (None, {
             'fields': (
-                'source', 'page_range', 'document_relation_types', 
+                'source', 'page_range', 'document_relation_types',
                 'notes'
             )
         })
@@ -76,11 +94,13 @@ class FootnoteAdmin(admin.ModelAdmin):
         return str(obj.document_relation_types)
     get_document_relation_types.short_description = 'Document Relation Types'
 
+
 class FootnoteInline(GenericTabularInline):
     model = Footnote
     autocomplete_fields = ['source']
     fields = ('source', 'page_range', 'document_relation_types', 'notes',)
     extra = 1
+
 
 @admin.register(Creator)
 class CreatorAdmin(TabbedTranslationAdmin, admin.ModelAdmin):

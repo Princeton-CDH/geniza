@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'geniza.corpus',
     'geniza.footnotes',
     'multiselectfield',
-    'sortedm2m'
+    'adminsortable2',
 ]
 
 MIDDLEWARE = [

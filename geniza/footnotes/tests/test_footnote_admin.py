@@ -6,11 +6,12 @@ from django.urls import reverse
 from django.contrib.contenttypes.models import ContentType
 
 from geniza.footnotes.admin import FootnoteAdmin, SourceAdmin, DocumentRelationTypesFilter
-from geniza.footnotes.models import Source
-from geniza.footnotes.models import SourceType, Source, Footnote, Creator
-from geniza.corpus.models import LanguageScript
+from geniza.footnotes.models import Creator, Footnote, Source, SourceLanguage,\
+    SourceType
+
 
 class TestDocumentRelationTypesFilter:
+
     def test_lookups(self):
         # including params is not currently necessary for the overwritten function
         params = {}
@@ -24,7 +25,7 @@ class TestDocumentRelationTypesFilter:
         footnote_admin = FootnoteAdmin(model=Footnote, admin_site=admin.site)
         dr_filter = DocumentRelationTypesFilter(request, params, Footnote, footnote_admin)
         options_list = dr_filter.lookups(request, footnote_admin)
-        
+
         assert len(options_list) == 3
         assert all([len(opt) == 2 for opt in options_list])
         assert options_list[0][0] == 'E'
@@ -32,13 +33,15 @@ class TestDocumentRelationTypesFilter:
     @pytest.mark.django_db
     def test_queryset(self):
         # Create many sources
-        orwell = Creator.objects.create(last_name='Orwell', first_name='George')
+        orwell = Creator.objects.create(
+            last_name='Orwell', first_name='George')
         essay = SourceType.objects.create(type='Essay')
-        english = LanguageScript.objects.create(language='English', script='English')
-        source = Source.objects.create(title='A Nice Cup of Tea', source_type=essay,
+        english = SourceLanguage.objects.get(name='English')
+        source = Source.objects.create(
+            title='A Nice Cup of Tea', source_type=essay,
             language=english)
-        source.authors.add(orwell)
-        
+        source.creators.add(orwell)
+
         footnote_args = {
             'source': source,
             'content_type_id': ContentType.objects.get(model='document').id,
@@ -54,15 +57,18 @@ class TestDocumentRelationTypesFilter:
         footnote_admin = FootnoteAdmin(model=Footnote, admin_site=admin.site)
         queryset = Footnote.objects.all()
 
-        dr_filter = DocumentRelationTypesFilter(None, {'document_relation_types': 'T'}, Footnote, footnote_admin)
+        dr_filter = DocumentRelationTypesFilter(
+            None, {'document_relation_types': 'T'}, Footnote, footnote_admin)
         filtered_queryset = dr_filter.queryset(None, queryset)
         assert filtered_queryset.count() == 2
 
-        dr_filter = DocumentRelationTypesFilter(None, {'document_relation_types': 'E'}, Footnote, footnote_admin)
+        dr_filter = DocumentRelationTypesFilter(
+            None, {'document_relation_types': 'E'}, Footnote, footnote_admin)
         filtered_queryset = dr_filter.queryset(None, queryset)
         assert filtered_queryset.count() == 3
 
-        dr_filter = DocumentRelationTypesFilter(None, {'document_relation_types': 'D'}, Footnote, footnote_admin)
+        dr_filter = DocumentRelationTypesFilter(
+            None, {'document_relation_types': 'D'}, Footnote, footnote_admin)
         filtered_queryset = dr_filter.queryset(None, queryset)
         assert filtered_queryset.count() == 1
 
