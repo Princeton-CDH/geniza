@@ -422,10 +422,11 @@ class Command(BaseCommand):
         for input_by in all_input:
 
             # special case: two people together; add as a tuple
-            if "and" in input_by:
+            if " and " in input_by:
                 users.append(
                     tuple(map(self.get_user, input_by.split(" and "))))
-            users.append(self.get_user(input_by))
+            else:
+                users.append(self.get_user(input_by))
 
         # convert every "date entered" listing to a datetime. if any parts of
         # the date are missing, fill with default values below. for details:
