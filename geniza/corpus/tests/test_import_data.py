@@ -448,7 +448,7 @@ def test_get_edit_history(caplog):
     assert history == [{
         "type": "Created",
         "user": import_data_cmd.team_user,
-        "date": datetime.datetime(2016, 5, 4),
+        "date": datetime.date(2016, 5, 4),
     }]
 
     # simplest case: one user, one well-formed date -> creation event
@@ -456,7 +456,7 @@ def test_get_edit_history(caplog):
     assert history == [{
         "type": "Created",
         "user": User.objects.get(username="snisenson"),
-        "date": datetime.datetime(2018, 3, 16),
+        "date": datetime.date(2018, 3, 16),
     }]
 
     # another simple case: two users & dates -> creation followed by revision
@@ -465,11 +465,11 @@ def test_get_edit_history(caplog):
     assert history == [{
         "type": "Created",
         "user": User.objects.get(username="snisenson"),
-        "date": datetime.datetime(2018, 3, 16),
+        "date": datetime.date(2018, 3, 16),
     }, {
         "type": "Revised",
         "user": User.objects.get(username="esilkaitis"),
-        "date": datetime.datetime(2021, 3, 23),
+        "date": datetime.date(2021, 3, 23),
     }]
 
     # one user with two dates -> creation by unknown (team) followed by revision
@@ -477,11 +477,11 @@ def test_get_edit_history(caplog):
     assert history == [{
         "type": "Created",
         "user": import_data_cmd.team_user,
-        "date": datetime.datetime(2018, 3, 16),
+        "date": datetime.date(2018, 3, 16),
     }, {
         "type": "Revised",
         "user": User.objects.get(username="esilkaitis"),
-        "date": datetime.datetime(2021, 3, 1),  # auto-fill first day of month
+        "date": datetime.date(2021, 3, 1),  # auto-fill first day of month
     }]
 
     # coauthored creation -> simultaneous events
@@ -491,11 +491,11 @@ def test_get_edit_history(caplog):
         assert history == [{
             "type": "Created",
             "user": User.objects.get(username="aashur"),
-            "date": datetime.datetime(2017, 8, 1),
+            "date": datetime.date(2017, 8, 1),
         }, {
             "type": "Created",  # two creation events
             "user": User.objects.get(username="ozinger"),
-            "date": datetime.datetime(2017, 8, 1),
+            "date": datetime.date(2017, 8, 1),
         }]
 
     # coauthored creation followed by revision
@@ -506,15 +506,15 @@ def test_get_edit_history(caplog):
         assert history == [{
             "type": "Created",
             "user": User.objects.get(username="aashur"),
-            "date": datetime.datetime(2017, 8, 1),
+            "date": datetime.date(2017, 8, 1),
         }, {
             "type": "Created",
             "user": User.objects.get(username="ozinger"),
-            "date": datetime.datetime(2017, 8, 1),
+            "date": datetime.date(2017, 8, 1),
         }, {
             "type": "Revised",
             "user": User.objects.get(username="esilkaitis"),
-            "date": datetime.datetime(2020, 11, 1),     # autofill first day
+            "date": datetime.date(2020, 11, 1),     # autofill first day
         }]
 
 
@@ -540,7 +540,7 @@ def test_log_edit_history():
     # edit history with only one creation event plus import
     doc2 = Document.objects.create()
     user = User.objects.get(username="esilkaitis")
-    date = datetime.datetime(2017, 5, 9)
+    date = datetime.date(2017, 5, 9)
     log_edit_history(doc2, [{"type": "Created", "user": user, "date": date}])
     entries = LogEntry.objects.filter(object_id=doc2.pk,
                                       content_type_id=dtype.pk)
@@ -550,15 +550,15 @@ def test_log_edit_history():
     assert entries[0].action_time.date() == datetime.date.today()
     assert entries[1].user == user
     assert entries[1].action_flag == ADDITION
-    assert entries[1].action_time.date() == date.date()
+    assert entries[1].action_time.date() == date
 
     # edit history with multiple events/coauthored event
     doc3 = Document.objects.create()
     user = User.objects.get(username="esilkaitis")
     user2 = User.objects.get(username="ozinger")
     user3 = User.objects.get(username="aashur")
-    date = datetime.datetime(2017, 5, 9)
-    date2 = datetime.datetime(2020, 11, 20)
+    date = datetime.date(2017, 5, 9)
+    date2 = datetime.date(2020, 11, 20)
     log_edit_history(doc3, [
         {"type": "Created", "user": user2, "date": date},
         {"type": "Created", "user": user3, "date": date},
@@ -572,13 +572,13 @@ def test_log_edit_history():
     assert entries[0].action_time.date() == datetime.date.today()
     assert entries[1].user == user
     assert entries[1].action_flag == CHANGE
-    assert entries[1].action_time.date() == date2.date()
+    assert entries[1].action_time.date() == date2
     assert entries[2].user == user2
     assert entries[2].action_flag == ADDITION
-    assert entries[2].action_time.date() == date.date()
+    assert entries[2].action_time.date() == date
     assert entries[3].user == user3
     assert entries[3].action_flag == ADDITION
-    assert entries[3].action_time.date() == date.date()
+    assert entries[3].action_time.date() == date
 
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={})
