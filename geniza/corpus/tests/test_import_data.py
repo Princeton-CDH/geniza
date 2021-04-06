@@ -7,7 +7,7 @@ import pytest
 import requests
 from attrdict import AttrMap
 from django.conf import settings
-from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
@@ -423,6 +423,8 @@ def test_get_user(caplog):
     with caplog.at_level(logging.WARNING):
         assert get_user("asdf36") == import_data_cmd.team_user
         assert "Couldn't find user" in caplog.record_tuples[-1][2]
+        assert get_user("") == import_data_cmd.team_user
+        assert "Couldn't find user" in caplog.record_tuples[-1][2]
 
 
 @pytest.mark.django_db
@@ -515,17 +517,68 @@ def test_get_edit_history(caplog):
             "date": datetime.datetime(2020, 11, 1),     # autofill first day
         }]
 
+
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={})
 def test_log_edit_history():
     import_data_cmd = import_data.Command()
     import_data_cmd.setup()
     log_edit_history = import_data_cmd.log_edit_history
+    dtype = import_data_cmd.content_types[Document]
     User = get_user_model()
-    doc = Document.objects.create()
 
     # simplest case: no edit history, only import event as an ADDITION
-    log_edit_history(doc, [])
+    doc1 = Document.objects.create()
+    log_edit_history(doc1, [])
+    entries = LogEntry.objects.filter(object_id=doc1.pk,
+                                      content_type_id=dtype.pk)
+    assert entries.count() == 1
+    assert entries[0].user == import_data_cmd.script_user
+    assert entries[0].action_flag == ADDITION
+    assert entries[0].action_time.date() == datetime.date.today()
+
+    # edit history with only one creation event plus import
+    doc2 = Document.objects.create()
+    user = User.objects.get(username="esilkaitis")
+    date = datetime.datetime(2017, 5, 9)
+    log_edit_history(doc2, [{"type": "Created", "user": user, "date": date}])
+    entries = LogEntry.objects.filter(object_id=doc2.pk,
+                                      content_type_id=dtype.pk)
+    assert entries.count() == 2
+    assert entries[0].user == import_data_cmd.script_user
+    assert entries[0].action_flag == CHANGE
+    assert entries[0].action_time.date() == datetime.date.today()
+    assert entries[1].user == user
+    assert entries[1].action_flag == ADDITION
+    assert entries[1].action_time.date() == date.date()
+
+    # edit history with multiple events/coauthored event
+    doc3 = Document.objects.create()
+    user = User.objects.get(username="esilkaitis")
+    user2 = User.objects.get(username="ozinger")
+    user3 = User.objects.get(username="aashur")
+    date = datetime.datetime(2017, 5, 9)
+    date2 = datetime.datetime(2020, 11, 20)
+    log_edit_history(doc3, [
+        {"type": "Created", "user": user2, "date": date},
+        {"type": "Created", "user": user3, "date": date},
+        {"type": "Revised", "user": user, "date": date2},
+    ])
+    entries = LogEntry.objects.filter(object_id=doc3.pk,
+                                      content_type_id=dtype.pk)
+    assert entries.count() == 4
+    assert entries[0].user == import_data_cmd.script_user
+    assert entries[0].action_flag == CHANGE
+    assert entries[0].action_time.date() == datetime.date.today()
+    assert entries[1].user == user
+    assert entries[1].action_flag == CHANGE
+    assert entries[1].action_time.date() == date2.date()
+    assert entries[2].user == user2
+    assert entries[2].action_flag == ADDITION
+    assert entries[2].action_time.date() == date.date()
+    assert entries[3].user == user3
+    assert entries[3].action_flag == ADDITION
+    assert entries[3].action_time.date() == date.date()
 
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={})
