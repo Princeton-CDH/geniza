@@ -9,6 +9,7 @@ def create_staff_user(apps, schema_editor):
     events that don't belong to a specific person."""
     User = apps.get_model('auth', 'User')
     User.objects.get_or_create(username=settings.TEAM_USERNAME,
+                               first_name="Geniza Lab team",
                                is_staff=False, is_active=False)
 
 
