@@ -530,3 +530,11 @@ class Command(BaseCommand):
             change_message=self.logentry_message,
             action_flag=CHANGE if events else ADDITION
         )
+
+        # set the creation date for this doc to whichever date we used for the
+        # ADDITION; if there are multiple just use the first (will be same).
+        creation = LogEntry.objects.filter(object_id=doc.pk,
+            content_type_id=self.content_types[Document].pk,
+            action_flag=ADDITION).first()
+        doc.created = creation.action_time
+        doc.save()
