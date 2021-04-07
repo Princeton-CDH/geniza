@@ -2,6 +2,7 @@ import codecs
 import csv
 import logging
 import re
+import os
 from collections import defaultdict, namedtuple
 from datetime import datetime
 from operator import itemgetter
@@ -51,7 +52,9 @@ csv_fields = {
 # missing portions with values from this date
 DEFAULT_EVENT_DATE = datetime(2020, 1, 1)
 
-# log levels as integers for verbosity option
+# logging config: use levels as integers for verbosity option
+logger = logging.getLogger("import")
+logging.basicConfig()
 LOG_LEVELS = {
     0: logging.ERROR,
     1: logging.WARNING,
@@ -63,7 +66,7 @@ LOG_LEVELS = {
 class Command(BaseCommand):
     'Import existing data from PGP spreadsheets into the database'
 
-    logentry_message = 'Imported via data import script'
+    logentry_message = 'Imported via script'
 
     content_types = {}
     collection_lookup = {}
@@ -75,30 +78,42 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('-m', '--max_documents', type=int)
 
-    def setup(self, *args, **kwargs):
+    def setup(self, *args, **options):
         if not hasattr(settings, 'DATA_IMPORT_URLS'):
             raise CommandError(
                 'Please configure DATA_IMPORT_URLS in local settings')
 
-        # fetch users created through migrations & add to cache
-        self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
-        self.team_user = User.objects.get(username=settings.TEAM_USERNAME)
-        self.user_lookup["Geniza Lab team"] = self.team_user
+        # setup logging; default to WARNING level
+        verbosity = options.get("verbosity", 1)
+        logger.setLevel(LOG_LEVELS[verbosity])
 
         # load fixure containing known historic users (all non-active)
-        call_command("loaddata", "historic_users", app_label="corpus")
+        call_command("loaddata", "historic_users",
+                     app_label="corpus", verbosity=0)
+        logger.info("loaded 30 historic users")
 
-        # setup logging; default to WARNING level
-        logging.basicConfig(level=LOG_LEVELS[kwargs.get("verbosity", 1)])
+        # ensure current active users are present, but don't try to create them
+        # in a test environment because it's slow and requires VPN access
+        for username in ["rrichman", "mrustow", "ae5677", "alg4"]:
+            if "PYTEST_CURRENT_TEST" not in os.environ:
+                call_command("createcasuser", username,
+                             staff=True, verbosity=verbosity)
+
+        # fetch users created through migrations for easy access later; add one
+        # known exception (accented character)
+        self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
+        self.team_user = User.objects.get(username=settings.TEAM_USERNAME)
+        self.user_lookup["Naim Vanthieghem"] = User.objects.get(
+            username="nvanthieghem")
 
         self.content_types = {
             model: ContentType.objects.get_for_model(model)
             for model in [Fragment, Collection, Document, LanguageScript]
         }
 
-    def handle(self, max_documents=None, *args, **kwargs):
-        self.setup(*args, **kwargs)
-        self.max_documents = max_documents
+    def handle(self, *args, **options):
+        self.setup(*args, **options)
+        self.max_documents = options.get("max_documents")
         self.import_collections()
         self.import_languages()
         self.import_documents()
@@ -169,7 +184,7 @@ class Command(BaseCommand):
 
         # create log entries to document when & how records were created
         self.log_creation(*collections)
-        self.stdout.write('Imported %d collections' % len(collections))
+        logger.info('Imported %d collections' % len(collections))
 
     def import_languages(self):
         LanguageScript.objects.all().delete()
@@ -194,7 +209,11 @@ class Command(BaseCommand):
 
         # create log entries
         self.log_creation(*languages)
-        self.stdout.write('Imported %d languages' % len(languages))
+        # create lookup for associating documents & languages
+        # NOTE: this lookup is provisional
+        self.language_lookup = {lang.language: lang
+                                for lang in languages}
+        logger.info('Imported %d languages' % len(languages))
 
     def add_document_language(self, doc, row):
         '''Parse languages and set probable_language and language_notes'''
@@ -214,8 +233,8 @@ class Command(BaseCommand):
 
             lang_model = self.language_lookup.get(lang.lower())
             if not lang_model:
-                self.stdout.write(
-                    f'ERROR language not found. PGPID: {row.pgpid}, Language: {lang}')
+                logger.error(
+                    f'language not found. PGPID: {row.pgpid}, Language: {lang}')
             else:
                 if is_probable:
                     doc.probable_languages.add(lang_model)
@@ -244,7 +263,7 @@ class Command(BaseCommand):
         docstats = defaultdict(int)
         for row in metadata:
             if ';' in row.type:
-                self.stdout.write('skipping PGPID %s (demerge)' % row.pgpid)
+                logger.warning('skipping PGPID %s (demerge)' % row.pgpid)
                 docstats['skipped'] += 1
                 continue
 
@@ -254,8 +273,6 @@ class Command(BaseCommand):
                 id=row.pgpid,
                 doctype=doctype,
                 description=row.description,
-                old_input_by=row.input_by,
-                old_input_date=row.date_entered
             )
             doc.tags.add(*[tag.strip() for tag in
                            row.tags.split('#') if tag.strip()])
@@ -272,7 +289,8 @@ class Command(BaseCommand):
             docstats['documents'] += 1
             # create log entries as we go
             self.log_edit_history(doc, self.get_edit_history(row.input_by,
-                                                             row.date_entered))
+                                                             row.date_entered,
+                                                             row.pgpid))
 
             # keep track of any joins to handle on a second pass
             if row.joins.strip():
@@ -296,7 +314,7 @@ class Command(BaseCommand):
                 # associate the fragment with the document
                 doc.fragments.add(join_fragment)
 
-        self.stdout.write(
+        logger.info(
             'Imported %d documents, %d with joins; skipped %d' %
             (docstats['documents'], len(joins), docstats['skipped']))
 
@@ -325,9 +343,9 @@ class Command(BaseCommand):
                     break
             # if code is still CUL, there is a problem
             if lib_code == 'CUL':
-                self.stdout.write(self.style.WARNING(
+                logger.warning(
                     'CUL collection not determined for %s'
-                    % data.shelfmark))
+                    % data.shelfmark)
         return self.collection_lookup.get(lib_code)
 
     def get_fragment(self, data):
@@ -391,8 +409,8 @@ class Command(BaseCommand):
         # check the cache first
         user = self.user_lookup.get(name)
         if user:
-            logging.debug(
-                f"Using cached user {user} for {name} on PGPID {pgpid}")
+            logger.debug(
+                f"using cached user {user} for {name} on PGPID {pgpid}")
             return user
 
         # person with given name(s) and last name – case-insensitive lookup
@@ -407,6 +425,7 @@ class Command(BaseCommand):
 
         # initials; use first & last to do lookup
         elif name:
+            name = name.strip(punctuation)
             first_i, last_i = name[0], name[-1]
             try:
                 user = User.objects.get(first_name__startswith=first_i,
@@ -416,12 +435,12 @@ class Command(BaseCommand):
 
         # if we didn't get anyone through either method, warn and use team user
         if not user:
-            logging.warning(
-                f"Couldn't find user {name} on PGPID {pgpid}; using {self.team_user}")
+            logger.warning(
+                f"couldn't find user {name} on PGPID {pgpid}; using {self.team_user}")
             return self.team_user
 
         # otherwise add to the cache using requested name and return the user
-        logging.debug(f"Found user {user} for {name} on PGPID {pgpid}")
+        logger.debug(f"found user {user} for {name} on PGPID {pgpid}")
         self.user_lookup[name] = user
         return user
 
@@ -430,7 +449,11 @@ class Command(BaseCommand):
         reconstruct the edit history of a single document.
 
         Output is a list of dict to pass to log_edit_history. Each event has
-        a type (creation or revision), associated user, and timestamp.
+        a type (django log entry action flag), associated user, and date.
+
+        This method is designed to output a list of events that matches the
+        logic of the spreadsheet and is easy to reason about (chronologically
+        ordered).
         """
 
         # split both fields by semicolon delimiter & remove whitespace
@@ -443,10 +466,11 @@ class Command(BaseCommand):
 
             # special case: two people together; add as a tuple
             if " and " in input_by:
-                users.append(
-                    tuple(map(self.get_user, input_by.split(" and "))))
+                first, second = input_by.split(" and ")
+                users.append((self.get_user(first, pgpid),
+                              self.get_user(second, pgpid)))
             else:
-                users.append(self.get_user(input_by))
+                users.append(self.get_user(input_by, pgpid))
 
         # convert every "date entered" listing to a date object. if any parts of
         # the date are missing, fill with default values below. for details:
@@ -456,19 +480,25 @@ class Command(BaseCommand):
             try:
                 dates.append(parse(date, default=DEFAULT_EVENT_DATE).date())
             except ParserError:
-                continue
+                logger.warning(f"failed to parse date {date} on PGPID {pgpid}")
+        dates.sort()
 
-        # make sure we have same number of users/dates by padding with None
+        # make sure we have same number of users/dates by padding with None;
+        # later we can assign missing users to the generic team user
         while len(users) < len(dates):
             users.insert(0, None)
 
-        # moving backwards in time, pair dates with users and event types
+        # moving backwards in time, pair dates with users and event types.
+        # when there is a mismatch between number of users and dates, we want
+        # to associate the more recent dates with users, since in general
+        # we have more information the closer to the present we are. if we run
+        # out of users to assign, we use the generic team user.
         events = []
-        for i in range(len(dates) - 1, -1, -1):
-            date = dates[i]
+        users.reverse()
+        for i, date in enumerate(reversed(dates)):
 
-            # final (earliest) date is creation; all others are revisions
-            event_type = "Created" if i == 0 else "Revised"
+            # earliest date is creation; all others are revisions
+            event_type = CHANGE if i < len(dates) - 1 else ADDITION
 
             # if we have a date without a user, assign to the whole team
             user = users[i] or self.team_user
@@ -480,17 +510,20 @@ class Command(BaseCommand):
                     {"type": event_type, "user": user[0], "date": date})
                 events.append(
                     {"type": event_type, "user": user[1], "date": date})
-                logging.debug(
-                    f"Found coauthored event for PGPID {pgpid}: {events[-2:]}")
+                logger.debug(
+                    f"found coauthored event for PGPID {pgpid}: {events[-2:]}")
                 continue
 
             # otherwise just create a single event for this user
             events.append({"type": event_type, "user": user, "date": date})
-            logging.debug(f"Found event for PGPID {pgpid}: {events[-1]}")
+            logger.debug(f"found event for PGPID {pgpid}: {events[-1]}")
 
         # sort chronologically and return
         events.sort(key=itemgetter("date"))
         return events
+
+    sheet_add_msg = "Initial data entry (spreadsheet)"
+    sheet_chg_msg = "Major revision (spreadsheet)"
 
     def log_edit_history(self, doc, events):
         """Given a Document and a sequence of events from get_edit_history,
@@ -510,31 +543,31 @@ class Command(BaseCommand):
             dt = datetime(year=event["date"].year,
                           month=event["date"].month,
                           day=event["date"].day)
+            msg = self.sheet_add_msg if event["type"] == ADDITION else self.sheet_chg_msg
             LogEntry.objects.create(
                 user=event["user"],                            # FK in django
                 content_type=self.content_types[Document],     # FK in django
                 object_id=str(doc.pk),         # TextField in django
                 object_repr=str(doc)[:200],    # CharField with limit in django
-                change_message=event["type"],
-                action_flag=ADDITION if event["type"] == "Created" else CHANGE,
+                change_message=msg,
+                action_flag=event["type"],
                 action_time=make_aware(dt, timezone=get_current_timezone()),
             )
 
-        # finally, log the actual import event. if it's the only event, then
-        # it's an ADDITION – otherwise it's a CHANGE.
+        # log the actual import event as an ADDITION, since it marks the point
+        # at which the object entered this database.
         LogEntry.objects.log_action(
             user_id=self.script_user.id,
             content_type_id=self.content_types[Document].pk,
             object_id=doc.pk,
             object_repr=str(doc),
             change_message=self.logentry_message,
-            action_flag=CHANGE if events else ADDITION
+            action_flag=ADDITION
         )
 
-        # set the creation date for this doc to whichever date we used for the
-        # ADDITION; if there are multiple just use the first (will be same).
+        # set the creation date for this doc to the earliest date of any of the
+        # log entries we just created.
         creation = LogEntry.objects.filter(object_id=doc.pk,
-            content_type_id=self.content_types[Document].pk,
-            action_flag=ADDITION).first()
+                                           content_type_id=self.content_types[Document].pk).first()
         doc.created = creation.action_time
         doc.save()
