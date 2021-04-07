@@ -4,12 +4,12 @@ from django.conf import settings
 from django.db import migrations
 
 
-def create_staff_user(apps, schema_editor):
+def create_team_user(apps, schema_editor):
     """Creates a generic Geniza Lab user account for associating with data and
     events that don't belong to a specific person."""
     User = apps.get_model('auth', 'User')
     User.objects.get_or_create(username=settings.TEAM_USERNAME,
-                               first_name="Geniza Lab team",
+                               first_name="Geniza Lab", last_name="team",
                                is_staff=False, is_active=False)
 
 
@@ -20,6 +20,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(create_staff_user,
+        migrations.RunPython(create_team_user,
                              reverse_code=migrations.RunPython.noop),
     ]
