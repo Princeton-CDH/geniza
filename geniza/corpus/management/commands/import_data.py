@@ -464,13 +464,14 @@ class Command(BaseCommand):
         users = []
         for input_by in all_input:
 
-            # special case: two people together; add as a tuple
+            # for coauthored events, add both users to a tuple – otherwise
+            # it's a one-element tuple with the single user
             if " and " in input_by:
                 first, second = input_by.split(" and ")
                 users.append((self.get_user(first, pgpid),
                               self.get_user(second, pgpid)))
             else:
-                users.append(self.get_user(input_by, pgpid))
+                users.append((self.get_user(input_by, pgpid),))
 
         # convert every "date entered" listing to a date object. if any parts of
         # the date are missing, fill with default values below. for details:
@@ -501,22 +502,18 @@ class Command(BaseCommand):
             event_type = CHANGE if i < len(dates) - 1 else ADDITION
 
             # if we have a date without a user, assign to the whole team
-            user = users[i] or self.team_user
+            user = users[i] or (self.team_user,)
 
-            # if it was two users together, log two separate events because
-            # each event must have exactly one user
-            if type(user) == tuple:
-                events.append(
-                    {"type": event_type, "user": user[0], "date": date})
-                events.append(
-                    {"type": event_type, "user": user[1], "date": date})
+            # create events with this date and type for all the matching users.
+            # if there was more than one user (coauthor), use the same type and
+            # date to represent the coauthorship
+            for u in user:
+                events.append({"type": event_type, "user": u, "date": date})
+            if len(user) > 1:
                 logger.debug(
                     f"found coauthored event for PGPID {pgpid}: {events[-2:]}")
-                continue
-
-            # otherwise just create a single event for this user
-            events.append({"type": event_type, "user": user, "date": date})
-            logger.debug(f"found event for PGPID {pgpid}: {events[-1]}")
+            else:
+                logger.debug(f"found event for PGPID {pgpid}: {events[-1]}")
 
         # sort chronologically and return
         events.sort(key=itemgetter("date"))
