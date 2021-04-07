@@ -28,6 +28,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'modeltranslation', # this has to come before admin config
     'geniza.apps.GenizaAdminConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,6 +42,9 @@ INSTALLED_APPS = [
     'pucas',
     'geniza.common',
     'geniza.corpus',
+    'geniza.footnotes',
+    'multiselectfield',
+    'adminsortable2',
 ]
 
 MIDDLEWARE = [

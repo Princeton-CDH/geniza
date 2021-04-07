@@ -2,11 +2,12 @@ from django.db import models
 from django.db.models.functions import Concat
 
 from django.utils.safestring import mark_safe
+from django.contrib.contenttypes.fields import GenericRelation
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
 from taggit_selectize.managers import TaggableManager
 
-
+from geniza.footnotes.models import Footnote
 from geniza.common.models import TrackChangesModel
 
 
@@ -61,7 +62,6 @@ class Collection(models.Model):
 
 
 class LanguageScriptManager(models.Manager):
-
     def get_by_natural_key(self, language, script):
         return self.get(language=language, script=script)
 
@@ -219,6 +219,8 @@ class Document(models.Model):
     status = models.CharField(
         max_length=2, choices=STATUS_CHOICES, default=PUBLIC,
         help_text='Decide whether a document should be publicly visible')
+
+    footnotes = GenericRelation(Footnote)
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution

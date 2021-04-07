@@ -7,3 +7,6 @@ django-taggit
 #next version of piffle
 git+https://github.com/princeton-cdh/piffle.git@develop#egg=piffle
 taggit-selectize
+django-multiselectfield
+django-modeltranslation
+django-admin-sortable2
