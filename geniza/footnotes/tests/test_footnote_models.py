@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-from geniza.footnotes.models import Authorship, Creator, Footnote, Source, \
-    SourceLanguage, SourceType
+from geniza.footnotes.models import Creator, Footnote, SourceLanguage, \
+    SourceType
 
 
 class TestSourceType:
@@ -58,12 +58,8 @@ class TestCreator:
 class TestAuthorship:
 
     @pytest.mark.django_db
-    def test_str(self):
-        creator = Creator.objects.create(last_name='Angelou', first_name='Maya')
-        essay = SourceType.objects.create(type='Essay')
-        cup_of_tea = Source.objects.create(
-            title='A Nice Cup of Tea',
-            source_type=essay)
-        creation = Authorship.objects.create(
-            creator=creator, source=cup_of_tea)
-        assert str(creation) == '%s 1 on "A Nice Cup of Tea"' % creator
+    def test_str(self, source):
+        author = source.authors.first()
+        authorship = source.authorship_set.first()
+        str(authorship) == \
+            '%s, first author on "%s"' % (author, source.title)

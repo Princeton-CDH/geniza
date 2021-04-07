@@ -6,8 +6,7 @@ import pytest
 
 from geniza.footnotes.admin import DocumentRelationTypesFilter, FootnoteAdmin,\
     SourceAdmin
-from geniza.footnotes.models import Authorship, Creator, Footnote, Source, \
-    SourceLanguage, SourceType
+from geniza.footnotes.models import Footnote, Source, SourceType
 
 
 class TestDocumentRelationTypesFilter:

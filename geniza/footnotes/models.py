@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.humanize.templatetags.humanize import ordinal
 
 from multiselectfield import MultiSelectField
 
@@ -48,8 +49,8 @@ class Authorship(models.Model):
         ordering = ('sort_order',)
 
     def __str__(self) -> str:
-        return '%s %d on "%s"' % (self.creator, self.sort_order,
-                                  self.source.title)
+        return '%s, %s author on "%s"' % \
+            (self.creator, ordinal(self.sort_order), self.source.title)
 
 
 class Source(models.Model):
