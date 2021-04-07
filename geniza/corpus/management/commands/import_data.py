@@ -71,7 +71,7 @@ class Command(BaseCommand):
     content_types = {}
     collection_lookup = {}
     document_type = {}
-    language_lookup = {}  # this is provisional, assumes one language -> script mapping
+    language_lookup = {}
     user_lookup = {}
     max_documents = None
 
@@ -209,10 +209,6 @@ class Command(BaseCommand):
 
         # create log entries
         self.log_creation(*languages)
-        # create lookup for associating documents & languages
-        # NOTE: this lookup is provisional
-        self.language_lookup = {lang.language: lang
-                                for lang in languages}
         logger.info('Imported %d languages' % len(languages))
 
     def add_document_language(self, doc, row):
