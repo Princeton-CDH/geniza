@@ -14,3 +14,10 @@ th.column-documents, th.column-probable_documents {
 	clear: right;
 }
 
+/* tweak footnote document relation display for better use of space */
+.field-doc_relation ul {
+	margin-left: 0;
+}
+.field-doc_relation li {
+	list-style-type: none;
+}

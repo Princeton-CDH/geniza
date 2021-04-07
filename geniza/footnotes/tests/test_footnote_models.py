@@ -28,7 +28,8 @@ class TestSource:
         english = SourceLanguage.objects.get(name='English')
         cup_of_tea = Source.objects.create(
             title='A Nice Cup of Tea',
-            source_type=essay, language=english)
+            source_type=essay)
+        cup_of_tea.languages.add(english)
         cup_of_tea.creators.add(orwell)
 
         assert str(cup_of_tea) == f'{orwell}. "{cup_of_tea.title}"'
@@ -46,7 +47,8 @@ class TestFootnote:
         english = SourceLanguage.objects.get(name='English')
         cup_of_tea = Source.objects.create(
             title='A Nice Cup of Tea',
-            source_type=essay, language=english)
+            source_type=essay)
+        cup_of_tea.languages.add(english)
         cup_of_tea.creators.add(orwell)
 
         footnote = Footnote(source=cup_of_tea)

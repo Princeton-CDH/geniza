@@ -38,8 +38,8 @@ class TestDocumentRelationTypesFilter:
         essay = SourceType.objects.create(type='Essay')
         english = SourceLanguage.objects.get(name='English')
         source = Source.objects.create(
-            title='A Nice Cup of Tea', source_type=essay,
-            language=english)
+            title='A Nice Cup of Tea', source_type=essay)
+        source.languages.add(english)
         source.creators.add(orwell)
 
         footnote_args = {
@@ -49,26 +49,26 @@ class TestDocumentRelationTypesFilter:
         }
 
         Footnote.objects.bulk_create([
-            Footnote(document_relation_types=['E'], **footnote_args),
-            Footnote(document_relation_types=['E', 'T'], **footnote_args),
-            Footnote(document_relation_types=['E', 'D', 'T'], **footnote_args),
+            Footnote(doc_relation=['E'], **footnote_args),
+            Footnote(doc_relation=['E', 'T'], **footnote_args),
+            Footnote(doc_relation=['E', 'D', 'T'], **footnote_args),
         ])
 
         footnote_admin = FootnoteAdmin(model=Footnote, admin_site=admin.site)
         queryset = Footnote.objects.all()
 
         dr_filter = DocumentRelationTypesFilter(
-            None, {'document_relation_types': 'T'}, Footnote, footnote_admin)
+            None, {'doc_relation': 'T'}, Footnote, footnote_admin)
         filtered_queryset = dr_filter.queryset(None, queryset)
         assert filtered_queryset.count() == 2
 
         dr_filter = DocumentRelationTypesFilter(
-            None, {'document_relation_types': 'E'}, Footnote, footnote_admin)
+            None, {'doc_relation': 'E'}, Footnote, footnote_admin)
         filtered_queryset = dr_filter.queryset(None, queryset)
         assert filtered_queryset.count() == 3
 
         dr_filter = DocumentRelationTypesFilter(
-            None, {'document_relation_types': 'D'}, Footnote, footnote_admin)
+            None, {'doc_relation': 'D'}, Footnote, footnote_admin)
         filtered_queryset = dr_filter.queryset(None, queryset)
         assert filtered_queryset.count() == 1
 

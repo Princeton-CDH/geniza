@@ -48,7 +48,8 @@ class Authorship(models.Model):
         ordering = ('sort_order',)
 
     def __str__(self) -> str:
-        return "%s %d on %s" % (self.creator, self.sort_order, self.source)
+        return '%s %d on "%s"' % (self.creator, self.sort_order,
+                                  self.source.title)
 
 
 class Source(models.Model):
@@ -63,12 +64,14 @@ class Source(models.Model):
         help_text='The range of pages being cited. Do not include ' +
                   '"p", "pg", etc. and follow the format # or #-#')
     source_type = models.ForeignKey(SourceType, on_delete=models.CASCADE)
-    language = models.ForeignKey(
-        SourceLanguage, on_delete=models.SET_NULL, null=True, blank=True,
-        help_text='The primary language the source is written in')
+    languages = models.ManyToManyField(
+        SourceLanguage,
+        help_text='The language(s) the source is written in')
 
-    # class Meta:
-    #     ordering = [Q(authorship__sort_order=0, 'authorship_creator__lastname')]
+    class Meta:
+        # set default order to title, year for now since first-author order
+        # requires queryset annotation
+        ordering = ['title', 'year']
 
     def __str__(self):
         return self.all_creators() + '. ' + f'"{self.title}"'
@@ -76,7 +79,7 @@ class Source(models.Model):
     def all_creators(self):
         return '; '.join([str(c.creator) for c in self.authorship_set.all()])
     all_creators.short_description = 'Creators'
-    # hero_count.admin_order_field = '_hero_count'
+    all_creators.admin_order_field = 'first_author'  # set in admin queryset
 
 
 class Footnote(models.Model):
@@ -84,7 +87,8 @@ class Footnote(models.Model):
 
     page_range = models.CharField(
         max_length=255, blank=True,
-        help_text='The range of pages being cited. Do not include "p", "pg", etc. and follow the format # or #-#')
+        help_text='The range of pages being cited. Do not include "p", ' +
+                  '"pg", etc. and follow the format # or #-#')
 
     EDITION = 'E'
     TRANSLATION = 'T'
@@ -95,8 +99,10 @@ class Footnote(models.Model):
         (DISCUSSION, 'Discussion')
     )
 
-    document_relation_types = MultiSelectField(choices=DOCUMENT_RELATION_TYPES,
-        help_text='How does the document relate to a source?')
+    doc_relation = MultiSelectField(
+        'Document relation',
+        choices=DOCUMENT_RELATION_TYPES,
+        help_text='How does the source relate to this document?')
     notes = models.TextField(blank=True)
 
     # Generic relationship
@@ -106,4 +112,3 @@ class Footnote(models.Model):
 
     def __str__(self):
         return str(self.source)
-

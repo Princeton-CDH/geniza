@@ -2,6 +2,9 @@ from adminsortable2.admin import SortableInlineAdminMixin
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db import models
+from django.db.models.functions import Concat
 from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.footnotes.models import Authorship, Creator, Footnote, Source, \
@@ -36,6 +39,13 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
     inlines = [AuthorshipInline]
 
+    def get_queryset(self, request):
+        return super().get_queryset(request) \
+            .filter(models.Q(authorship__isnull=True) |
+                    models.Q(authorship__sort_order=1)) \
+            .annotate(first_author=Concat('authorship__creator__last_name',
+                                          'authorship__creator__first_name'))
+
 
 @admin.register(SourceType)
 class SourceTypeAdmin(admin.ModelAdmin):
@@ -48,24 +58,24 @@ class SourceLanguageAdmin(admin.ModelAdmin):
 
 
 class DocumentRelationTypesFilter(SimpleListFilter):
-    '''A custom filter that allows us to filter sources if any of a source's
-     document relations match the given facet'''
+    '''A custom filter to allow filter footnotes based on
+     document relation, no matter how they are used in combination'''
 
-    title = 'document relation types'
-    parameter_name = 'document_relation_types'
+    title = 'document relationship'
+    parameter_name = 'doc_relation'
 
     def lookups(self, request, model_admin):
         return model_admin.model.DOCUMENT_RELATION_TYPES
 
     def queryset(self, request, queryset):
         if self.value():
-            return queryset.filter(document_relation_types__contains=self.value())
+            return queryset.filter(doc_relation__contains=self.value())
 
 
 @admin.register(Footnote)
 class FootnoteAdmin(admin.ModelAdmin):
     list_display = (
-        'source', 'page_range', 'get_document_relation_types', 'content_object'
+        'source', 'page_range', 'doc_relation_list', 'content_object'
     )
 
     list_filter = (
@@ -82,27 +92,29 @@ class FootnoteAdmin(admin.ModelAdmin):
         }),
         (None, {
             'fields': (
-                'source', 'page_range', 'document_relation_types',
+                'source', 'page_range', 'doc_relation',
                 'notes'
             )
         })
     ]
 
-    def get_document_relation_types(self, obj):
-        # Casting the multichoice object as a string will return a reader-friendly
+    def doc_relation_list(self, obj):
+        # Casting the multichoice object as string to return a reader-friendly
         #  comma-delimited list.
-        return str(obj.document_relation_types)
-    get_document_relation_types.short_description = 'Document Relation Types'
+        return str(obj.doc_relation)
+    doc_relation_list.short_description = 'Document Relation'
+    doc_relation_list.admin_order_field = 'doc_relation'
 
 
 class FootnoteInline(GenericTabularInline):
     model = Footnote
     autocomplete_fields = ['source']
-    fields = ('source', 'page_range', 'document_relation_types', 'notes',)
+    fields = ('source', 'page_range', 'doc_relation', 'notes',)
     extra = 1
 
 
 @admin.register(Creator)
-class CreatorAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
-    list_display = ('first_name', 'last_name')
+class CreatorAdmin(TabbedTranslationAdmin):
+    list_display = ('last_name', 'first_name')
     search_fields = ('first_name', 'last_name')
+    fields = ('last_name', 'first_name')

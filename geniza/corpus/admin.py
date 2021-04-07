@@ -134,6 +134,11 @@ class DocumentAdmin(admin.ModelAdmin):
         FootnoteInline
     ]
 
+    class Media:
+        css = {
+            'all': ('css/admin-local.css', )
+        }
+
     def get_queryset(self, request):
         return super().get_queryset(request) \
             .prefetch_related('tags', 'languages', 'textblock_set')  \

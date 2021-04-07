@@ -13,8 +13,11 @@ def load_initial_sourcetypes(apps, schema_editor):
     for sourcetype in SOURCE_TYPES:
         SourceType.objects.get_or_create(type=sourcetype)
 
+
 SOURCE_LANGUAGES = [
-    ('English', 'en')
+    ('English', 'en'),
+    ('German', 'de'),
+    ('Hebrew', 'he'),
 ]
 
 
