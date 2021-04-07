@@ -197,12 +197,6 @@ class Document(models.Model):
         blank=True, help_text='Notes on diacritics, vocalisation, etc.')
     # TODO footnotes for edition/translation
     notes = models.TextField(blank=True)
-    old_input_by = models.CharField(
-        'Legacy input by', max_length=255,
-        help_text='Legacy input information from Google Sheets')
-    old_input_date = models.CharField(
-        'Legacy input date', max_length=255,
-        help_text='Legacy input date from Google Sheets')
     created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
     needs_review = models.TextField(

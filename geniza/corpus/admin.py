@@ -95,10 +95,9 @@ class DocumentAdmin(admin.ModelAdmin):
         'last_modified',
         'is_public'
     )
-    readonly_fields = ('old_input_by', 'old_input_date',
-                       'created', 'last_modified', 'shelfmark', 'id')
+    readonly_fields = ('created', 'last_modified', 'shelfmark', 'id')
     search_fields = ('fragments__shelfmark', 'tags__name', 'description',
-                     'old_input_by', 'notes', 'needs_review')
+                     'notes', 'needs_review')
     # TODO include search on edition once we add footnotes
     save_as = True
 
@@ -124,7 +123,6 @@ class DocumentAdmin(admin.ModelAdmin):
         # edition, translation
         'notes',
         # text block
-        ('old_input_by', 'old_input_date'),
         ('created', 'last_modified')
     )
     autocomplete_fields = ['languages', 'probable_languages']
