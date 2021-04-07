@@ -27,7 +27,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     )
 
     search_fields = (
-        'title', 'creators__first_name', 'creators__last_name' 'year'
+        'title', 'creators__first_name', 'creators__last_name', 'year'
     )
 
     fields = (
