@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='Authorship',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('sort_order', models.PositiveSmallIntegerField(default=0)),
+                ('sort_order', models.PositiveSmallIntegerField(default=1)),
             ],
             options={
                 'ordering': ('sort_order',),

@@ -1,8 +1,8 @@
 import pytest
 from django.test import TestCase
 
-from geniza.footnotes.models import Creator, Footnote, Source, SourceLanguage,\
-    SourceType
+from geniza.footnotes.models import Authorship, Creator, Footnote, Source, \
+    SourceLanguage, SourceType
 
 
 class TestSourceType:
@@ -60,3 +60,17 @@ class TestCreator:
     def test_str(self):
         creator = Creator(last_name='Angelou', first_name='Maya')
         str(creator) == 'Angelou, Maya'
+
+
+class TestAuthorship:
+
+    @pytest.mark.django_db
+    def test_str(self):
+        creator = Creator.objects.create(last_name='Angelou', first_name='Maya')
+        essay = SourceType.objects.create(type='Essay')
+        cup_of_tea = Source.objects.create(
+            title='A Nice Cup of Tea',
+            source_type=essay)
+        creation = Authorship.objects.create(
+            creator=creator, source=cup_of_tea)
+        assert str(creation) == '%s 1 on "A Nice Cup of Tea"' % creator

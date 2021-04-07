@@ -1,13 +1,13 @@
+from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
+from django.test import RequestFactory
+from django.urls import reverse
 import pytest
 
-from django.contrib import admin
-from django.test import TestCase, RequestFactory
-from django.urls import reverse
-from django.contrib.contenttypes.models import ContentType
-
-from geniza.footnotes.admin import FootnoteAdmin, SourceAdmin, DocumentRelationTypesFilter
-from geniza.footnotes.models import Creator, Footnote, Source, SourceLanguage,\
-    SourceType
+from geniza.footnotes.admin import DocumentRelationTypesFilter, FootnoteAdmin,\
+    SourceAdmin
+from geniza.footnotes.models import Authorship, Creator, Footnote, Source, \
+    SourceLanguage, SourceType
 
 
 class TestDocumentRelationTypesFilter:
@@ -74,5 +74,41 @@ class TestDocumentRelationTypesFilter:
 
 
 class TestSourceAdmin:
-    def test_join_document_relations(self):
-        pass
+
+    @pytest.mark.django_db
+    def test_get_queryset(self):
+        kernighan = Creator.objects.create(last_name='Kernighan', first_name='Brian')
+        ritchie = Creator.objects.create(last_name='Ritchie', first_name='Dennis')
+        book = SourceType.objects.get(type='Book')
+        cprog = Source.objects.create(
+            title='The C Programming Language',
+            source_type=book)
+        Authorship.objects.create(creator=kernighan, source=cprog)
+        Authorship.objects.create(creator=ritchie, source=cprog, sort_order=2)
+
+        # source with no author
+        Source.objects.create(title='Unknown', source_type=book)
+
+        # confirm that first author is set correctly on annotated queryset
+        qs = SourceAdmin(Source, admin.site).get_queryset('rqst')
+        # should return both sources, with or without creator
+        assert qs.count() == 2
+        # default sort is title; check first author for first source
+        assert hasattr(qs.first(), 'first_author')
+        assert qs.first().first_author == \
+            kernighan.last_name + kernighan.first_name
+        # second source has no author
+        assert not qs.last().first_author
+
+
+class TestFootnoteAdmin:
+
+    @pytest.mark.django_db
+    def test_doc_relation_list(self):
+        fnoteadmin = FootnoteAdmin(Footnote, admin.site)
+        book = SourceType.objects.get(type='Book')
+        source = Source.objects.create(title='Reader', source_type=book)
+
+        footnote = Footnote(source=source, doc_relation=['E', 'D'])
+        assert fnoteadmin.doc_relation_list(footnote) == \
+            str(footnote.doc_relation)

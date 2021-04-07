@@ -42,7 +42,7 @@ class Authorship(models.Model):
     """Ordered relationship between :class:`Creator` and :class:`Source`."""
     creator = models.ForeignKey(Creator, on_delete=models.CASCADE)
     source = models.ForeignKey('Source', on_delete=models.CASCADE)
-    sort_order = models.PositiveSmallIntegerField(default=0)
+    sort_order = models.PositiveSmallIntegerField(default=1)
 
     class Meta:
         ordering = ('sort_order',)
