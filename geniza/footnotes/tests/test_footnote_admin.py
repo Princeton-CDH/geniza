@@ -31,17 +31,7 @@ class TestDocumentRelationTypesFilter:
         assert options_list[0][0] == 'E'
 
     @pytest.mark.django_db
-    def test_queryset(self):
-        # Create many sources
-        orwell = Creator.objects.create(
-            last_name='Orwell', first_name='George')
-        essay = SourceType.objects.create(type='Essay')
-        english = SourceLanguage.objects.get(name='English')
-        source = Source.objects.create(
-            title='A Nice Cup of Tea', source_type=essay)
-        source.languages.add(english)
-        source.creators.add(orwell)
-
+    def test_queryset(self, source):
         footnote_args = {
             'source': source,
             'content_type_id': ContentType.objects.get(model='document').id,
@@ -76,17 +66,9 @@ class TestDocumentRelationTypesFilter:
 class TestSourceAdmin:
 
     @pytest.mark.django_db
-    def test_get_queryset(self):
-        kernighan = Creator.objects.create(last_name='Kernighan', first_name='Brian')
-        ritchie = Creator.objects.create(last_name='Ritchie', first_name='Dennis')
-        book = SourceType.objects.get(type='Book')
-        cprog = Source.objects.create(
-            title='The C Programming Language',
-            source_type=book)
-        Authorship.objects.create(creator=kernighan, source=cprog)
-        Authorship.objects.create(creator=ritchie, source=cprog, sort_order=2)
-
+    def test_get_queryset(self, twoauthor_source):
         # source with no author
+        book = SourceType.objects.get(type='Book')
         Source.objects.create(title='Unknown', source_type=book)
 
         # confirm that first author is set correctly on annotated queryset
@@ -95,8 +77,9 @@ class TestSourceAdmin:
         assert qs.count() == 2
         # default sort is title; check first author for first source
         assert hasattr(qs.first(), 'first_author')
+        first_author = twoauthor_source.authorship_set.first().creator
         assert qs.first().first_author == \
-            kernighan.last_name + kernighan.first_name
+            first_author.last_name + first_author.first_name
         # second source has no author
         assert not qs.last().first_author
 

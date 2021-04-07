@@ -21,13 +21,13 @@ class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
 @admin.register(Source)
 class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = (
-        'title', 'all_creators',
+        'title', 'all_authors',
         'year',
         'edition',
     )
 
     search_fields = (
-        'title', 'creators__first_name', 'creators__last_name', 'year'
+        'title', 'authors__first_name', 'authors__last_name', 'year'
     )
 
     fields = (

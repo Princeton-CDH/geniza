@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
                 ('edition', models.CharField(blank=True, max_length=255)),
                 ('volume', models.CharField(blank=True, max_length=255)),
                 ('page_range', models.CharField(blank=True, help_text='The range of pages being cited. Do not include "p", "pg", etc. and follow the format # or #-#', max_length=255)),
-                ('creators', models.ManyToManyField(through='footnotes.Authorship', to='footnotes.Creator')),
+                ('author', models.ManyToManyField(through='footnotes.Authorship', to='footnotes.Creator')),
                 ('languages', models.ManyToManyField(help_text='The language(s) the source is written in', to='footnotes.SourceLanguage')),
                 ('source_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='footnotes.sourcetype')),
             ],
