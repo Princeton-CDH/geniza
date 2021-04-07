@@ -273,13 +273,12 @@ def test_get_fragment():
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={'metadata': 'pgp_meta.csv'})
 @patch('geniza.corpus.management.commands.import_data.requests')
-def test_import_documents(mockrequests):
+def test_import_documents(mockrequests, caplog):
     # create test fragments & documents to confirm they are removed
     Fragment.objects.create(shelfmark='foo 1')
     Document.objects.create(notes='test doc')
 
     import_data_cmd = import_data.Command()
-    import_data_cmd.stdout = StringIO()
     # simulate collection lookup already populated
     import_data_cmd.collection_lookup = {
         'CUL_Add.': Collection.objects.create(library='CUL', abbrev='Add.')
@@ -293,7 +292,8 @@ def test_import_documents(mockrequests):
         b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA',
         b'2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,'
     ])
-    import_data_cmd.import_documents()
+    with caplog.at_level(logging.INFO, logger="import"):
+        import_data_cmd.import_documents()
     assert Document.objects.count() == 2
     assert Fragment.objects.count() == 3
     doc = Document.objects.get(id=2291)
@@ -310,8 +310,6 @@ def test_import_documents(mockrequests):
 
     assert doc.description == \
         'Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.'
-    assert doc.old_input_by == 'Sarah Nisenson'
-    assert doc.old_input_date == '2017'
     tags = set([t.name for t in doc.tags.all()])
     assert set(['lease', 'synagogue', '11th c']) == tags
     # log entry should be created
@@ -325,7 +323,7 @@ def test_import_documents(mockrequests):
     assert Fragment.objects.get(shelfmark='NA')
 
     # check script summary output
-    output = import_data_cmd.stdout.getvalue()
+    output = caplog.text
     assert 'Imported 2 documents' in output
     assert '1 with joins' in output
     assert 'skipped 1' in output
@@ -335,7 +333,7 @@ def test_import_documents(mockrequests):
 
 
 @pytest.mark.django_db
-def test_add_document_language():
+def test_add_document_language(caplog):
     import_data_cmd = import_data.Command()
     import_data_cmd.stdout = StringIO()
 
@@ -373,7 +371,7 @@ def test_add_document_language():
 
     row.language = 'missing'
     import_data_cmd.add_document_language(doc, row)
-    assert 'language not found' in import_data_cmd.stdout.getvalue()
+    assert 'language not found' in caplog.record_tuples[-1][2]
 
 
 @pytest.mark.django_db
@@ -384,47 +382,45 @@ def test_get_user(caplog):
     get_user = import_data_cmd.get_user
     User = get_user_model()
 
-    # fetch/create some users for testing (mixture of active and historic)
-    alan = User.objects.create_user(
-        username="aelbaum", first_name="Alan", last_name="Elbaum")
-    marina = User.objects.create_user(
-        username="mrustow", first_name="Marina", last_name="Rustow")
+    # fetch some users for testing (mixture of active and historic)
+    akiva = User.objects.get(first_name="Akiva", last_name="Jackson")
+    oded = User.objects.get(first_name="Oded", last_name="Zinger")
     orc = User.objects.get(first_name="Olivia Remie", last_name="Constable")
 
     # try fetching some of them with no cache
-    with caplog.at_level(logging.DEBUG):
-        assert get_user("Alan Elbaum") == alan  # firstname lastname
-        assert "Found user" in caplog.record_tuples[-1][2]
+    with caplog.at_level(logging.DEBUG, logger="import"):
+        assert get_user("Akiva Jackson") == akiva  # firstname lastname
+        assert "found user" in caplog.record_tuples[-1][2]
         assert get_user("Olivia Remie Constable") == orc    # multi names
-        assert "Found user" in caplog.record_tuples[-1][2]
+        assert "found user" in caplog.record_tuples[-1][2]
         get_user("Olivia Remie Constable")  # second call, should be cached
-        assert "Using cached user" in caplog.record_tuples[-1][2]
+        assert "using cached user" in caplog.record_tuples[-1][2]
 
     # reset & add a name to the cache; should notify when cache is hit
-    import_data_cmd.user_lookup = {"AE": alan}
-    with caplog.at_level(logging.DEBUG):
-        assert get_user("Alan Elbaum") == alan  # cache miss
-        assert "Found user" in caplog.record_tuples[-1][2]
-        assert get_user("AE") == alan           # cache hit
-        assert "Using cached user" in caplog.record_tuples[-1][2]
+    import_data_cmd.user_lookup = {"AJ": akiva}
+    with caplog.at_level(logging.DEBUG, logger="import"):
+        assert get_user("Akiva Jackson") == akiva  # cache miss
+        assert "found user" in caplog.record_tuples[-1][2]
+        assert get_user("AJ") == akiva           # cache hit
+        assert "using cached user" in caplog.record_tuples[-1][2]
 
     # test fetching users from database using initials only; should cache
-    with caplog.at_level(logging.DEBUG):
+    with caplog.at_level(logging.DEBUG, logger="import"):
         assert get_user("ORC") == orc   # three initials
-        assert "Found user" in caplog.record_tuples[-1][2]
+        assert "found user" in caplog.record_tuples[-1][2]
         assert import_data_cmd.user_lookup["ORC"] == orc    # cached initials
-        assert get_user("MR") == marina  # two initials
-        assert "Found user" in caplog.record_tuples[-1][2]
-        assert import_data_cmd.user_lookup["MR"] == marina
-        get_user("MR")  # test cache using initials
-        assert "Using cached user" in caplog.record_tuples[-1][2]
+        assert get_user("OZ") == oded  # two initials
+        assert "found user" in caplog.record_tuples[-1][2]
+        assert import_data_cmd.user_lookup["OZ"] == oded
+        get_user("OZ")  # test cache using initials
+        assert "using cached user" in caplog.record_tuples[-1][2]
 
     # cache/database miss should warn and use the team user
-    with caplog.at_level(logging.WARNING):
+    with caplog.at_level(logging.WARNING, logger="import"):
         assert get_user("asdf36") == import_data_cmd.team_user
-        assert "Couldn't find user" in caplog.record_tuples[-1][2]
+        assert "couldn't find user" in caplog.record_tuples[-1][2]
         assert get_user("") == import_data_cmd.team_user
-        assert "Couldn't find user" in caplog.record_tuples[-1][2]
+        assert "couldn't find user" in caplog.record_tuples[-1][2]
 
 
 @pytest.mark.django_db
@@ -433,7 +429,6 @@ def test_get_edit_history(caplog):
     import_data_cmd = import_data.Command()
     import_data_cmd.setup()
     get_edit_history = import_data_cmd.get_edit_history
-    User = get_user_model()
 
     # empty dates returns empty list; nothing to do
     history = get_edit_history("", "")
@@ -445,77 +440,61 @@ def test_get_edit_history(caplog):
 
     # date with no user results in event assigned to whole team (TEAM_USER)
     history = get_edit_history("", "5/4/2016")
-    assert history == [{
-        "type": "Created",
-        "user": import_data_cmd.team_user,
-        "date": datetime.date(2016, 5, 4),
-    }]
+    assert history[0]["type"] == ADDITION
+    assert history[0]["user"].username == import_data_cmd.team_user.username
+    assert history[0]["date"] == datetime.date(2016, 5, 4)
 
     # simplest case: one user, one well-formed date -> creation event
     history = get_edit_history("Sarah Nisenson", "3/16/2018")
-    assert history == [{
-        "type": "Created",
-        "user": User.objects.get(username="snisenson"),
-        "date": datetime.date(2018, 3, 16),
-    }]
+    assert history[0]["type"] == ADDITION
+    assert history[0]["user"].username == "snisenson"
+    assert history[0]["date"] == datetime.date(2018, 3, 16)
 
     # another simple case: two users & dates -> creation followed by revision
     history = get_edit_history("Sarah Nisenson; Emily Silkaitis",
                                "3/16/2018; 3/23/21")    # two-digit year
-    assert history == [{
-        "type": "Created",
-        "user": User.objects.get(username="snisenson"),
-        "date": datetime.date(2018, 3, 16),
-    }, {
-        "type": "Revised",
-        "user": User.objects.get(username="esilkaitis"),
-        "date": datetime.date(2021, 3, 23),
-    }]
+    assert history[0]["type"] == ADDITION
+    assert history[0]["user"].username == "snisenson"
+    assert history[0]["date"] == datetime.date(2018, 3, 16)
+    assert history[1]["type"] == CHANGE
+    assert history[1]["user"].username == "esilkaitis"
+    assert history[1]["date"] == datetime.date(2021, 3, 23)
 
     # one user with two dates -> creation by unknown (team) followed by revision
-    history = get_edit_history("Emily Silkaitis", "3/16/2018; 03/2021")
-    assert history == [{
-        "type": "Created",
-        "user": import_data_cmd.team_user,
-        "date": datetime.date(2018, 3, 16),
-    }, {
-        "type": "Revised",
-        "user": User.objects.get(username="esilkaitis"),
-        "date": datetime.date(2021, 3, 1),  # auto-fill first day of month
-    }]
+    history = get_edit_history("Emily Silkaitis",
+                               "3/16/2018; 03/2021")  # missing day value
+    assert history[0]["type"] == ADDITION
+    assert history[0]["user"].username == import_data_cmd.team_user.username
+    assert history[0]["date"] == datetime.date(2018, 3, 16)
+    assert history[1]["type"] == CHANGE
+    assert history[1]["user"].username == "esilkaitis"
+    assert history[1]["date"] == datetime.date(2021, 3, 1)
 
     # coauthored creation -> simultaneous events
-    with caplog.at_level(logging.DEBUG):
+    with caplog.at_level(logging.DEBUG, logger="import"):
         history = get_edit_history("Amir Ashur and Oded Zinger", "8/1/2017")
-        assert "Found coauthored event" in caplog.record_tuples[-1][2]
-        assert history == [{
-            "type": "Created",
-            "user": User.objects.get(username="aashur"),
-            "date": datetime.date(2017, 8, 1),
-        }, {
-            "type": "Created",  # two creation events
-            "user": User.objects.get(username="ozinger"),
-            "date": datetime.date(2017, 8, 1),
-        }]
+        assert "found coauthored event" in caplog.record_tuples[-1][2]
+        assert history[0]["type"] == ADDITION
+        assert history[0]["user"].username == "aashur"
+        assert history[0]["date"] == datetime.date(2017, 8, 1)
+        assert history[1]["type"] == ADDITION   # two creation events
+        assert history[1]["user"].username == "ozinger"
+        assert history[1]["date"] == datetime.date(2017, 8, 1)
 
     # coauthored creation followed by revision
-    with caplog.at_level(logging.DEBUG):
+    with caplog.at_level(logging.DEBUG, logger="import"):
         history = get_edit_history("Amir Ashur and Oded Zinger; Emily Silkaitis",
                                    "8/1/2017; November 2020")   # literal month
-        assert "Found coauthored event" in caplog.record_tuples[-1][2]
-        assert history == [{
-            "type": "Created",
-            "user": User.objects.get(username="aashur"),
-            "date": datetime.date(2017, 8, 1),
-        }, {
-            "type": "Created",
-            "user": User.objects.get(username="ozinger"),
-            "date": datetime.date(2017, 8, 1),
-        }, {
-            "type": "Revised",
-            "user": User.objects.get(username="esilkaitis"),
-            "date": datetime.date(2020, 11, 1),     # autofill first day
-        }]
+        assert "found coauthored event" in caplog.record_tuples[-1][2]
+        assert history[0]["type"] == ADDITION
+        assert history[0]["user"].username == "aashur"
+        assert history[0]["date"] == datetime.date(2017, 8, 1)
+        assert history[1]["type"] == ADDITION   # two creation events
+        assert history[1]["user"].username == "ozinger"
+        assert history[1]["date"] == datetime.date(2017, 8, 1)
+        assert history[2]["type"] == CHANGE
+        assert history[2]["user"].username == "esilkaitis"
+        assert history[2]["date"] == datetime.date(2020, 11, 1)
 
 
 @pytest.mark.django_db
@@ -541,12 +520,12 @@ def test_log_edit_history():
     doc2 = Document.objects.create()
     user = User.objects.get(username="esilkaitis")
     date = datetime.date(2017, 5, 9)
-    log_edit_history(doc2, [{"type": "Created", "user": user, "date": date}])
+    log_edit_history(doc2, [{"type": ADDITION, "user": user, "date": date}])
     entries = LogEntry.objects.filter(object_id=doc2.pk,
                                       content_type_id=dtype.pk)
     assert entries.count() == 2
     assert entries[0].user == import_data_cmd.script_user
-    assert entries[0].action_flag == CHANGE
+    assert entries[0].action_flag == ADDITION
     assert entries[0].action_time.date() == datetime.date.today()
     assert entries[1].user == user
     assert entries[1].action_flag == ADDITION
@@ -560,15 +539,15 @@ def test_log_edit_history():
     date = datetime.date(2017, 5, 9)
     date2 = datetime.date(2020, 11, 20)
     log_edit_history(doc3, [
-        {"type": "Created", "user": user2, "date": date},
-        {"type": "Created", "user": user3, "date": date},
-        {"type": "Revised", "user": user, "date": date2},
+        {"type": ADDITION, "user": user2, "date": date},
+        {"type": ADDITION, "user": user3, "date": date},
+        {"type": CHANGE, "user": user, "date": date2},
     ])
     entries = LogEntry.objects.filter(object_id=doc3.pk,
                                       content_type_id=dtype.pk)
     assert entries.count() == 4
     assert entries[0].user == import_data_cmd.script_user
-    assert entries[0].action_flag == CHANGE
+    assert entries[0].action_flag == ADDITION
     assert entries[0].action_time.date() == datetime.date.today()
     assert entries[1].user == user
     assert entries[1].action_flag == CHANGE
@@ -579,6 +558,7 @@ def test_log_edit_history():
     assert entries[3].user == user3
     assert entries[3].action_flag == ADDITION
     assert entries[3].action_time.date() == date
+
 
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={})
