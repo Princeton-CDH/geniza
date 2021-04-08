@@ -552,10 +552,3 @@ class Command(BaseCommand):
             change_message=self.logentry_message,
             action_flag=ADDITION
         )
-
-        # set the creation date for this doc to the earliest date of any of the
-        # log entries we just created.
-        creation = LogEntry.objects.filter(object_id=doc.pk,
-                                           content_type_id=self.content_types[Document].pk).first()
-        doc.created = creation.action_time
-        doc.save()
