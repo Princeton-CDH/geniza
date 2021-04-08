@@ -1,8 +1,8 @@
 from django.db import models
 from django.db.models.functions import Concat
 
-from django.utils.safestring import mark_safe
 from django.contrib.contenttypes.fields import GenericRelation
+from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
 from taggit_selectize.managers import TaggableManager

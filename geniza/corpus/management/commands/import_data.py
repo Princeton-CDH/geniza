@@ -16,6 +16,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
+from django.db import connection
 from django.utils.text import slugify
 from django.utils.timezone import get_current_timezone, make_aware
 
@@ -313,6 +314,8 @@ class Command(BaseCommand):
                 # associate the fragment with the document
                 doc.fragments.add(join_fragment)
 
+        # update id sequence based on highest imported pgpid
+        self.update_document_id_sequence()
         logger.info(
             'Imported %d documents, %d with joins; skipped %d' %
             (docstats['documents'], len(joins), docstats['skipped']))
@@ -560,3 +563,10 @@ class Command(BaseCommand):
             change_message=self.logentry_message,
             action_flag=ADDITION
         )
+
+    def update_document_id_sequence(self):
+        # set postgres document id sequence to maximum imported pgpid
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT setval('corpus_document_id_seq', max(id)) FROM corpus_document;")
+

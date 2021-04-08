@@ -12,6 +12,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 from django.core.management.base import CommandError
+from django.db import connection
 from django.test import override_settings
 
 from geniza.corpus.management.commands import import_data
@@ -583,3 +584,19 @@ def test_command_line():
         mock['import_collections'].assert_called_with()
         mock['import_languages'].assert_called_with()
         mock['import_documents'].assert_called_with()
+
+
+@pytest.mark.django_db
+def test_update_document_id_sequence():
+    import_data_cmd = import_data.Command()
+    import_data_cmd.stdout = StringIO()
+
+    # create document with pgpid specified
+    doc = Document.objects.create(id=3000)
+    # update id sequence
+    import_data_cmd.update_document_id_sequence()
+    # retrieve the next value
+    cursor = connection.cursor()
+    cursor.execute("select nextval('corpus_document_id_seq')")
+    result = cursor.fetchone()
+    assert result == (doc.id + 1, )
