@@ -34,7 +34,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         'source_type',
         'title', 'year',
         'edition', 'volume', 'page_range',
-        'language'
+        'languages'
     )
 
     inlines = [AuthorshipInline]
