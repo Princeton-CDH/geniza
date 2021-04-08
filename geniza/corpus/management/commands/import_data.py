@@ -456,18 +456,13 @@ class Command(BaseCommand):
         all_input = map(str.strip, input_by.split(";"))
         all_dates = map(str.strip, date_entered.split(";"))
 
-        # try to map every "input by" listing to a user account
+        # try to map every "input by" listing to a user account. for coauthored
+        # events, add both users to a list – otherwise it's a one-element list
+        # with the single user
         users = []
         for input_by in all_input:
-
-            # for coauthored events, add both users to a tuple – otherwise
-            # it's a one-element tuple with the single user
-            if " and " in input_by:
-                first, second = input_by.split(" and ")
-                users.append((self.get_user(first, pgpid),
-                              self.get_user(second, pgpid)))
-            else:
-                users.append((self.get_user(input_by, pgpid),))
+            users.append([self.get_user(u, pgpid)
+                          for u in input_by.split(" and ")])
 
         # convert every "date entered" listing to a date object. if any parts of
         # the date are missing, fill with default values below. for details:
