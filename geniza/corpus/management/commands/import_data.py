@@ -456,8 +456,8 @@ class Command(BaseCommand):
         """
 
         # split both fields by semicolon delimiter & remove whitespace
-        all_input = map(str.strip, input_by.split(";"))
-        all_dates = map(str.strip, date_entered.split(";"))
+        all_input = [i.strip() for i in input_by.split(";")]
+        all_dates = [d.strip() for d in date_entered.split(";")]
 
         # try to map every "input by" listing to a user account. for coauthored
         # events, add both users to a list – otherwise it's a one-element list
@@ -476,7 +476,6 @@ class Command(BaseCommand):
                 dates.append(parse(date, default=DEFAULT_EVENT_DATE).date())
             except ParserError:
                 logger.warning(f"failed to parse date {date} on PGPID {pgpid}")
-        dates.sort()
 
         # make sure we have same number of users/dates by padding with None;
         # later we can assign missing users to the generic team user
@@ -490,6 +489,7 @@ class Command(BaseCommand):
         # out of users to assign, we use the generic team user.
         events = []
         users.reverse()
+        all_dates.reverse()
         for i, date in enumerate(reversed(dates)):
 
             # earliest date is creation; all others are revisions
@@ -502,7 +502,12 @@ class Command(BaseCommand):
             # if there was more than one user (coauthor), use the same type and
             # date to represent the coauthorship
             for u in user:
-                events.append({"type": event_type, "user": u, "date": date})
+                events.append({
+                    "type": event_type,
+                    "user": u,
+                    "date": date,
+                    "orig_date": all_dates[i],
+                })
             if len(user) > 1:
                 logger.debug(
                     f"found coauthored event for PGPID {pgpid}: {events[-2:]}")
@@ -540,7 +545,7 @@ class Command(BaseCommand):
                 content_type=self.content_types[Document],     # FK in django
                 object_id=str(doc.pk),         # TextField in django
                 object_repr=str(doc)[:200],    # CharField with limit in django
-                change_message=msg,
+                change_message=f"{msg}, dated {event['orig_date']}",
                 action_flag=event["type"],
                 action_time=make_aware(dt, timezone=get_current_timezone()),
             )

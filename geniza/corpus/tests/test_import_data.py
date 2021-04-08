@@ -515,21 +515,27 @@ def test_log_edit_history():
     assert entries[0].user == import_data_cmd.script_user
     assert entries[0].action_flag == ADDITION
     assert entries[0].action_time.date() == datetime.date.today()
+    assert entries[0].get_change_message() == "Imported via script"
 
     # edit history with only one creation event plus import
     doc2 = Document.objects.create()
     user = User.objects.get(username="esilkaitis")
     date = datetime.date(2017, 5, 9)
-    log_edit_history(doc2, [{"type": ADDITION, "user": user, "date": date}])
+    log_edit_history(doc2, [{
+        "type": ADDITION, "user": user, "date": date, "orig_date": "test"
+    }])
     entries = LogEntry.objects.filter(object_id=doc2.pk,
                                       content_type_id=dtype.pk)
     assert entries.count() == 2
     assert entries[0].user == import_data_cmd.script_user
     assert entries[0].action_flag == ADDITION
     assert entries[0].action_time.date() == datetime.date.today()
+    assert entries[0].get_change_message() == "Imported via script"
     assert entries[1].user == user
     assert entries[1].action_flag == ADDITION
     assert entries[1].action_time.date() == date
+    assert entries[1].get_change_message() == "Initial data entry (spreadsheet), dated test"
+
 
     # edit history with multiple events/coauthored event
     doc3 = Document.objects.create()
@@ -539,9 +545,9 @@ def test_log_edit_history():
     date = datetime.date(2017, 5, 9)
     date2 = datetime.date(2020, 11, 20)
     log_edit_history(doc3, [
-        {"type": ADDITION, "user": user2, "date": date},
-        {"type": ADDITION, "user": user3, "date": date},
-        {"type": CHANGE, "user": user, "date": date2},
+        {"type": ADDITION, "user": user2, "date": date, "orig_date": "test"},
+        {"type": ADDITION, "user": user3, "date": date, "orig_date": "test"},
+        {"type": CHANGE, "user": user, "date": date2, "orig_date": "test2"},
     ])
     entries = LogEntry.objects.filter(object_id=doc3.pk,
                                       content_type_id=dtype.pk)
@@ -549,15 +555,20 @@ def test_log_edit_history():
     assert entries[0].user == import_data_cmd.script_user
     assert entries[0].action_flag == ADDITION
     assert entries[0].action_time.date() == datetime.date.today()
+    assert entries[0].get_change_message() == "Imported via script"
     assert entries[1].user == user
     assert entries[1].action_flag == CHANGE
     assert entries[1].action_time.date() == date2
+    assert entries[1].get_change_message() == "Major revision (spreadsheet), dated test2"
     assert entries[2].user == user2
     assert entries[2].action_flag == ADDITION
     assert entries[2].action_time.date() == date
+    assert entries[2].get_change_message() == "Initial data entry (spreadsheet), dated test"
     assert entries[3].user == user3
     assert entries[3].action_flag == ADDITION
     assert entries[3].action_time.date() == date
+    assert entries[3].get_change_message() == "Initial data entry (spreadsheet), dated test"
+
 
 
 @pytest.mark.django_db
