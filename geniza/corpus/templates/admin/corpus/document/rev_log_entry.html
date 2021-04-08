@@ -1,0 +1,4 @@
+<div class="readonly">
+<time>{% if log_entry.legacy_date %}{{ log_entry.legacy_date }}{% else %}{{ log_entry.action_time|date:"DATETIME_FORMAT" }}{% endif %}</time>
+<span class="author">by {% if log_entry.user.get_full_name %}{{ log_entry.user.get_full_name }}{% else %}{{ log_entry.user.get_username }}{% endif %}</span>
+</div>

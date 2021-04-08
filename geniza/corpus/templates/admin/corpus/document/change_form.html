@@ -1,0 +1,15 @@
+{% extends "admin/change_form.html" %}
+{% block after_field_sets %}
+<fieldset class="module aligned">
+    <div class="form-row">
+        <div class="fieldBox">
+            <label>First input:</label>
+            {% include "admin/corpus/document/rev_log_entry.html" with log_entry=first_input %}
+        </div>
+        <div class="fieldBox">
+            <label>Last revision:</label>
+            {% include "admin/corpus/document/rev_log_entry.html" with log_entry=last_revision %}
+        </div>
+    </div>
+</fieldset>
+{% endblock %}

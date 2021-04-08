@@ -21,3 +21,8 @@ th.column-documents, th.column-probable_documents {
 .field-doc_relation li {
 	list-style-type: none;
 }
+
+/* make first/last revision dates look like actual fields */
+.module + .module {
+	margin-top: -30px;
+}
