@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.humanize.templatetags.humanize import ordinal
 
 from multiselectfield import MultiSelectField
 
@@ -48,13 +49,13 @@ class Authorship(models.Model):
         ordering = ('sort_order',)
 
     def __str__(self) -> str:
-        return '%s %d on "%s"' % (self.creator, self.sort_order,
-                                  self.source.title)
+        return '%s, %s author on "%s"' % \
+            (self.creator, ordinal(self.sort_order), self.source.title)
 
 
 class Source(models.Model):
     '''a published or unpublished work related to geniza materials'''
-    creators = models.ManyToManyField(Creator, through=Authorship)
+    authors = models.ManyToManyField(Creator, through=Authorship)
     title = models.CharField(max_length=255)
     year = models.PositiveIntegerField(blank=True, null=True)
     edition = models.CharField(max_length=255, blank=True)
@@ -74,12 +75,20 @@ class Source(models.Model):
         ordering = ['title', 'year']
 
     def __str__(self):
-        return self.all_creators() + '. ' + f'"{self.title}"'
+        # generate simple string representation:
+        # title, author or title (year), author
+        parts = [self.title]
+        if self.year:
+            parts.append(' (%d)' % self.year)
+        if self.authorship_set.exists():
+            parts.append(', %s' % self.all_authors())
+        return ''.join(parts)
 
-    def all_creators(self):
+    def all_authors(self):
+        '''semi-colon delimited list of authors in order'''
         return '; '.join([str(c.creator) for c in self.authorship_set.all()])
-    all_creators.short_description = 'Creators'
-    all_creators.admin_order_field = 'first_author'  # set in admin queryset
+    all_authors.short_description = 'Authors'
+    all_authors.admin_order_field = 'first_author'  # set in admin queryset
 
 
 class Footnote(models.Model):
@@ -111,4 +120,5 @@ class Footnote(models.Model):
     content_object = GenericForeignKey()
 
     def __str__(self):
-        return str(self.source)
+        return 'Footnote on %s (%s)' % \
+            (self.content_object, self.source)

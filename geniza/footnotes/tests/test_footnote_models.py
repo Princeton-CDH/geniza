@@ -1,8 +1,9 @@
-import pytest
-from django.test import TestCase
+from unittest.mock import patch
 
-from geniza.footnotes.models import Authorship, Creator, Footnote, Source, \
-    SourceLanguage, SourceType
+import pytest
+
+from geniza.footnotes.models import Creator, Footnote, SourceLanguage, \
+    SourceType
 
 
 class TestSourceType:
@@ -22,37 +23,29 @@ class TestSourceLanguage:
 class TestSource:
 
     @pytest.mark.django_db
-    def test_str(self):
-        orwell = Creator.objects.create(last_name='Orwell', first_name='George')
-        essay = SourceType.objects.create(type='Essay')
-        english = SourceLanguage.objects.get(name='English')
-        cup_of_tea = Source.objects.create(
-            title='A Nice Cup of Tea',
-            source_type=essay)
-        cup_of_tea.languages.add(english)
-        cup_of_tea.creators.add(orwell)
+    def test_str(self, source):
+        # source has no year; str should be title, creators
+        assert str(source) == \
+            '%s, %s' % (source.title, source.authors.first())
+        # set a year
+        source.year = 1984
+        assert str(source) == \
+            '%s (1984), %s' % (source.title, source.authors.first())
 
-        assert str(cup_of_tea) == f'{orwell}. "{cup_of_tea.title}"'
-
-    def test_all_creators(self):
-        pass
+    def test_all_authors(self, twoauthor_source):
+        author1, author2 = twoauthor_source.authorship_set.all()
+        assert twoauthor_source.all_authors() == \
+            '%s; %s' % (author1.creator, author2.creator)
 
 
 class TestFootnote:
 
     @pytest.mark.django_db
-    def test_str(self):
-        orwell = Creator.objects.create(last_name='Orwell', first_name='George')
-        essay = SourceType.objects.create(type='Essay')
-        english = SourceLanguage.objects.get(name='English')
-        cup_of_tea = Source.objects.create(
-            title='A Nice Cup of Tea',
-            source_type=essay)
-        cup_of_tea.languages.add(english)
-        cup_of_tea.creators.add(orwell)
-
-        footnote = Footnote(source=cup_of_tea)
-        assert str(footnote) == str(cup_of_tea)
+    def test_str(self, source):
+        footnote = Footnote(source=source)
+        # patch in a mock content object for testing
+        with patch.object(Footnote, 'content_object', new='foo'):
+            assert str(footnote) == 'Footnote on foo (%s)' % source
 
 
 class TestCreator:
@@ -65,12 +58,8 @@ class TestCreator:
 class TestAuthorship:
 
     @pytest.mark.django_db
-    def test_str(self):
-        creator = Creator.objects.create(last_name='Angelou', first_name='Maya')
-        essay = SourceType.objects.create(type='Essay')
-        cup_of_tea = Source.objects.create(
-            title='A Nice Cup of Tea',
-            source_type=essay)
-        creation = Authorship.objects.create(
-            creator=creator, source=cup_of_tea)
-        assert str(creation) == '%s 1 on "A Nice Cup of Tea"' % creator
+    def test_str(self, source):
+        author = source.authors.first()
+        authorship = source.authorship_set.first()
+        str(authorship) == \
+            '%s, first author on "%s"' % (author, source.title)
