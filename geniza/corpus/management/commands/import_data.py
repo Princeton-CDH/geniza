@@ -94,10 +94,13 @@ class Command(BaseCommand):
 
         # ensure current active users are present, but don't try to create them
         # in a test environment because it's slow and requires VPN access
-        for username in ["rrichman", "mrustow", "ae5677", "alg4"]:
-            if "PYTEST_CURRENT_TEST" not in os.environ:
-                call_command("createcasuser", username,
-                             staff=True, verbosity=verbosity)
+        active_users = ["rrichman", "mrustow", "ae5677", "alg4"]
+        if "PYTEST_CURRENT_TEST" not in os.environ:
+            present = User.objects.filter(username__in=active_users) \
+                                  .values_list("username", flat=True)
+            for username in set(active_users) - set(present):
+                call_command("createcasuser", username, staff=True,
+                             verbosity=verbosity)
 
         # fetch users created through migrations for easy access later; add one
         # known exception (accented character)
