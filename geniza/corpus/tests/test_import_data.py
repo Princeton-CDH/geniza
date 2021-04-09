@@ -571,7 +571,6 @@ def test_log_edit_history():
     assert entries[3].get_change_message() == "Initial data entry (spreadsheet), dated test"
 
 
-
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={})
 def test_command_line():
@@ -589,7 +588,6 @@ def test_command_line():
 @pytest.mark.django_db
 def test_update_document_id_sequence():
     import_data_cmd = import_data.Command()
-    import_data_cmd.stdout = StringIO()
 
     # create document with pgpid specified
     doc = Document.objects.create(id=3000)
@@ -600,3 +598,66 @@ def test_update_document_id_sequence():
     cursor.execute("select nextval('corpus_document_id_seq')")
     result = cursor.fetchone()
     assert result == (doc.id + 1, )
+
+
+# editor input string and expected result
+editors_parsed = [
+    ('Ed. Gil, Palestine, vol. 2, #177',
+     [{'author': 'Gil', 'title': 'Palestine', 'vol': '2', 'notes': '#177'}]),
+    ('Ed. Friedman, Jewish Marriage, vol. 2, 384 (Doc. #51)',
+     [{'author': 'Friedman', 'title': 'Jewish Marriage',
+      'vol': '2', 'notes': '384 (Doc. #51)'}]),
+    ('Ed. M. Cohen',
+     [{'author': 'M. Cohen'}]),
+    ("Ed. S. D. Goitein, 'Documents from Damascus and Tyre concerning buildings belonging to Jews', Eretz Israel, 8 (1967), Sefer Suqeniq, pp.293-294.",
+     [{'author': 'S. D. Goitein',
+       'title': "'Documents from Damascus and Tyre concerning buildings belonging to Jews'",
+       'notes': 'Eretz Israel, 8 (1967), Sefer Suqeniq, pp.293-294.'}]),
+    # two authors
+    ("Marina Rustow and Anna Bailey",
+     [{'author': 'Marina Rustow', 'author2': 'Anna Bailey'}]),
+    # volume info
+    ('Ed. Mann, Jews, vol. 2, p. 202',
+     [{'author': 'Mann', 'title': 'Jews', 'vol': '2', 'notes': 'p. 202'}]),
+    # dissertation
+    ('Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza" (PhD diss., Tel Aviv University, 1992), doc. 28',
+     [{'author': 'Ṣabīḥ ʿAodeh',
+       'title': 'Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza',
+       'institution': 'Tel Aviv University', 'year': '1992',
+       'notes': 'doc. 28'}]),
+    # dissertation with language
+    # TODO: print character in one entry! ask for cleanup? or remove unwanted characters before parsing?
+    # ("Ed. Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-7, pp. 291-293.",
+    ("Ed. Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-7, pp. 291-293.",
+     [{'author': 'Amir Ashur',
+       'title': 'Engagement and Betrothal Documents from the Cairo Geniza',
+       'institution': 'Tel Aviv University',
+       'year': '2006', 'lang': 'Hebrew', 'notes': 'Doc. H-7, pp. 291-293.'}]),
+    # two editions
+    ('Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters ..." (PhD diss., Tel Aviv University, 1992), doc. 58; also ed. Goitein, India Book 6 (unpublished), ו14',
+     [{'author': 'Ṣabīḥ ʿAodeh',
+       'title': 'Eleventh Century Arabic Letters ...',
+       'institution': 'Tel Aviv University', 'year': '1992',
+       'notes': "doc. 58"},
+      {'author': 'Goitein', 'title': 'India Book 6 (unpublished)',
+      'notes': 'ו14'}])
+]
+
+
+@pytest.mark.parametrize("test_input,expected", editors_parsed)
+def test_parse_editor(test_input, expected):
+    result = import_data.Command().parse_editor(test_input)
+    for i, expected_val in enumerate(expected):
+        assert expected_val == result[i]
+
+# def test_parse_editor():
+#     import_data_cmd = import_data.Command()
+#     parsed = import_data_cmd.parse_editor('Ed. Gil, Palestine, vol. 2, #177')
+#     assert parsed['author'] == 'Gil'
+#     assert parsed['title'] == 'Palestine'
+#     assert parsed['notes'] == 'vol. 2, #177'
+
+# Ed. Gil, Palestine, vol. 2, #177
+# Ed. Gil, Palestine, vol. 2, #181
+# Ed. Friedman, Jewish Marriage, vol. 2, 384 (Doc. #51)
+# Ed. Ashtor, Mamluks, vol. 3, pp. 125-126 (Doc. #70)

@@ -570,3 +570,64 @@ class Command(BaseCommand):
         cursor.execute(
             "SELECT setval('corpus_document_id_seq', max(id)) FROM corpus_document;")
 
+    re_book = re.compile(
+        r'^(?:[Ee]d\. )?(?P<author>[^,]+)(?:, (?P<title>[^,]+)' +
+        r'(?:, vol. (?P<vol>\d+))?(?:, (?P<notes>.*)))?')
+
+    re_diss = re.compile(
+        r'(?:[Ee]d\. )?(?P<author>[^,]+), ["\'](?P<title>[^"\']+)["\']' +
+        r'(?:\s+\((?P<lang>Hebrew)\))? \(PhD (?:diss.|dissertation), ' +
+        r'(?P<institution>[^,]+), (?P<year>\d{4})\), (?P<notes>.*)')
+
+    def parse_editor(self, editor):
+        # multiple editions are indicated by "; also ed."  or ". also ed."
+        editions = re.split(r'[;.] also (?=ed.)', editor)
+
+        # for now, return dict of parsed info for testing
+        # _probably_ should return source and note for creating the footnote?
+        # footnote needs to be created & linked to the document somewhere
+
+        # - determine source type
+        # - parse based on source type
+        # - get or create creator (may need lookup table for variants)
+        # - if there is no title information,
+        #   associate creator directly with document as editor
+        #   (m2m still to be added)
+        # - otherwise, get or create source record
+        #   (will variants be a problem here also?)
+        # - create footnote linking source and document with appropriate
+        #   doc relation type (edition, optionally more based on key)
+
+        # determine type first?
+        # SOURCE_TYPES = ['Book', 'Article', 'Unpublished', 'Dissertation', 'Blog']
+
+        info = []
+        for edition in editions:
+            print(edition)
+            # dissertation
+            if "diss" in edition:
+                src_type = 'Dissertation'
+                match = self.re_diss.match(edition)
+                ed_info = match.groupdict()
+                print(ed_info)
+                # filter out unset values to simplify testing
+                ed_info = {k: v for k, v in ed_info.items() if v}
+                info.append(ed_info)
+
+            else:
+                match = self.re_book.match(edition)
+                if match:
+                    ed_info = match.groupdict()
+                    # split out multiple authors via string compare rather than
+                    # complicating the regex further
+                    if ' and ' in ed_info['author']:
+                        ed_info['author'], ed_info['author2'] = ed_info['author'].split(' and ')
+                    print(ed_info)
+
+                    # filter out unset values to simplify testing
+                    ed_info = {k: v for k, v in ed_info.items() if v}
+
+                    info.append(ed_info)
+                else:
+                    print('no match for "%s"' % edition)
+        return info
