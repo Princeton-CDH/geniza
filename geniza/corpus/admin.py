@@ -90,6 +90,7 @@ class DocumentForm(forms.ModelForm):
 class DocumentAdmin(admin.ModelAdmin):
     form = DocumentForm
     list_display = (
+        'id',
         'shelfmark', 'description', 'doctype',
         'tag_list', 'all_languages', 'is_textblock',
         'last_modified',
@@ -97,7 +98,7 @@ class DocumentAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created', 'last_modified', 'shelfmark', 'id')
     search_fields = ('fragments__shelfmark', 'tags__name', 'description',
-                     'notes', 'needs_review')
+                     'notes', 'needs_review', 'id')
     # TODO include search on edition once we add footnotes
     save_as = True
 
