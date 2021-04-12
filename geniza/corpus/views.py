@@ -10,11 +10,10 @@ class DocumentDetailView(DetailView):
 
     context_object_name = 'document'
 
-    def get(self, *args, **kwargs):
+    def get_queryset(self, *args, **kwargs):
         '''Don't show document if it isn't public'''
-        if self.get_object().status != Document.PUBLIC:
-            raise Http404("Document does not exist")
-        return super().get(*args, **kwargs)
+        queryset = super().get_queryset(*args, **kwargs)
+        return queryset.filter(status=Document.PUBLIC)
 
     def get_context_data(self, **kwargs):
         '''Find all variables listed in the template'''
