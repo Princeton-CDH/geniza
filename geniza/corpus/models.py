@@ -160,6 +160,27 @@ class Fragment(TrackChangesModel):
             for i, img in enumerate(images)
         ))
 
+    def iiif_inline(self):
+        # if there is no iiif for this fragment, bail out
+        if not self.iiif_url:
+            return ''
+
+        images = []
+        labels = []
+        manifest = IIIFPresentation.from_url(self.iiif_url)
+        for canvas in manifest.sequences[0].canvases:
+            image_id = canvas.images[0].resource.id
+            images.append(IIIFImageClient(*image_id.rsplit('/', 1)))
+            # label provides library's recto/verso designation
+            labels.append(canvas.label)
+
+        return mark_safe(' '.join(
+            # include label as title for now
+            '<img src="%s" loading="lazy" width="500px" title="%s">' %
+            (img.size(width=500), labels[i])
+            for i, img in enumerate(images)
+        ))
+
     def save(self, *args, **kwargs):
         '''Remember how shelfmarks have changed by keeping a semi-colon list
         in the old_shelfmarks field'''

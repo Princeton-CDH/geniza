@@ -11,11 +11,16 @@
     {% endfor %}
 
 
-    <h2>Fragment(s)</h2>
-    <ul>
-        {% for fragment in document.fragments.all %}
-        <li>{{ fragment }}</li>
-        {% endfor %}
-    </ul>
+    <h2>Fragment{{ document.fragments.count|pluralize }}</h2>
+    {% for fragment in document.fragments.all %}
+    <div>
+        <b>{{ fragment }}</b>
+        {% if fragment.iiif_url %}
+        <div>
+            {{ fragment.iiif_inline }}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
 
 </div>
