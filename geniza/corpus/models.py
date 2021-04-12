@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.db.models.functions import Concat
 from django.contrib.admin.models import LogEntry
 
@@ -263,6 +264,9 @@ class Document(models.Model):
     is_public.short_description = 'Public'
     is_public.boolean = True
     is_public.admin_order_field = 'status'
+
+    def get_absolute_url(self):
+        return reverse('corpus:document_detail', args=[str(self.id)])
 
 
 class TextBlock(models.Model):
