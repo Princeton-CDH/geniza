@@ -1,2 +1,21 @@
-<h1>PGPID: {{ document.id }}</h1>
+<div style="max-width: 500px; margin: 10px auto;">
 
+    <h1>PGPID: {{ document.id }}</h1>
+
+    {% for key, value in document_dict.items %}
+    <ul>
+        <li>
+            <b>{{ key }}</b>: {{ value }}
+        </li>
+    </ul>
+    {% endfor %}
+
+
+    <h2>Fragment(s)</h2>
+    <ul>
+        {% for fragment in document.fragments.all %}
+        <li>{{ fragment }}</li>
+        {% endfor %}
+    </ul>
+
+</div>
