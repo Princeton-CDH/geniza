@@ -4,14 +4,23 @@
 
     <h1>PGPID: {{ document.id }}</h1>
 
-    {% for key, value in document_dict.items %}
-    <ul>
-        <li>
-            <b>{{ key }}</b>: {{ value }}
-        </li>
-    </ul>
-    {% endfor %}
+    <div><b>Shelfmark</b>: {{ document.shelfmark }}</div>
 
+    {% if document.doctype %}
+    <div><b>Document Type</b>: {{ document.doctype }}</div>
+    {% endif %}
+    
+    {% if document %} {# complete this boolean #}
+    <div><b>Date</b>: [date]</div>
+    {% endif %}
+
+    {% if document.last_modified %}
+    <div><b>Last modified</b>: {{ document.last_modified }}</div>
+    {% endif %}
+
+    <div><b>Editor</b>: [editor]</div>
+
+    <div><b>Tags</b>: {{ tags }}</div>
 
     <h2>Fragment{{ document.fragments.count|pluralize }}</h2>
     {% for fragment in document.fragments.all %}
@@ -52,5 +61,8 @@
         {% endif %}
     </div>
     {% endfor %}
+
+    <h2>Description</h2>
+    <p>{{ document.description }}</p>
 
 </div>
