@@ -239,7 +239,7 @@ class Document(models.Model):
     def collection(self):
         '''collection (abbreviation) for associated fragments'''
         # use set to ensure unique; sort for reliable output order
-        return ', '.join(sorted(set([str(block.fragment.collection) for
+        return ', '.join(sorted(set([block.fragment.collection.abbrev for
                                 block in self.textblock_set.all()
                                 if block.fragment.collection])))
 

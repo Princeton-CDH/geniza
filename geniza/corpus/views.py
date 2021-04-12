@@ -22,7 +22,7 @@ class DocumentDetailView(DetailView):
         
         this_document = self.get_object()
         property_list = ['description', 'doctype',
-            'tag_list', 'all_languages', 'collection', 'shelfmark',
+            'tag_list', 'all_languages', 'shelfmark',
             'last_modified', 'language_note']
 
         context['document_dict'] = {

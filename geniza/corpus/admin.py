@@ -90,7 +90,7 @@ class DocumentForm(forms.ModelForm):
 class DocumentAdmin(admin.ModelAdmin):
     form = DocumentForm
     list_display = (
-        'id', 'collection',
+        'id',
         'shelfmark', 'description', 'doctype',
         'tag_list', 'all_languages', 'is_textblock',
         'last_modified',
