@@ -21,6 +21,6 @@ class DocumentDetailView(DetailView):
         this_document = self.get_object()
 
         # concatenate all tags
-        context['tags'] = ' '.join(['#' + str(tag) for tag in this_document.tags.all()])
+        context['tags'] = ['#' + str(tag) for tag in this_document.tags.all()]
         
         return context

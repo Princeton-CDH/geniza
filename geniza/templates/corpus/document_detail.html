@@ -19,7 +19,11 @@
     <div><b>Editor</b>: [editor]</div>
     <div><b>Cluster Name</b>: [cluster name]</div>
 
-    <div><b>Tags</b>: {{ tags }}</div>
+    <div><b>Tags</b>: 
+        {% for tag in tags %}
+            <span>{{ tag }} </span>
+        {% endfor %}
+    </div>
 
     <h2>Fragment{{ document.fragments.count|pluralize }}</h2>
     {% for fragment in document.fragments.all %}
