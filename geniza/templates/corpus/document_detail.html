@@ -10,15 +10,14 @@
     <div><b>Document Type</b>: {{ document.doctype }}</div>
     {% endif %}
     
-    {% if document %} {# complete this boolean #}
-    <div><b>Date</b>: [date]</div>
-    {% endif %}
+    <div><b>First input</b>: {{ document.log_entries.last.action_time.year }}</div>
 
     {% if document.last_modified %}
     <div><b>Last modified</b>: {{ document.last_modified }}</div>
     {% endif %}
 
     <div><b>Editor</b>: [editor]</div>
+    <div><b>Cluster Name</b>: [cluster name]</div>
 
     <div><b>Tags</b>: {{ tags }}</div>
 
