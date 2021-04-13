@@ -283,9 +283,8 @@ class TestDocument:
         assert not doc.is_public()
 
     def test_get_absolute_url(self):
-        doc = Document.objects.create()
-        assert doc.get_absolute_url() == \
-            reverse('corpus:document_detail', args=[doc.id])
+        doc = Document.objects.create(id=1)
+        assert doc.get_absolute_url() == "/documents/1/"
 
 @pytest.mark.django_db
 class TestTextBlock:
