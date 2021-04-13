@@ -3,6 +3,7 @@ from unittest.mock import patch
 from attrdict import AttrDict
 from django.db import IntegrityError
 from django.utils.safestring import SafeString
+from django.urls import reverse
 import pytest
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
@@ -281,6 +282,10 @@ class TestDocument:
         doc.status = 'S'
         assert not doc.is_public()
 
+    def test_get_absolute_url(self):
+        doc = Document.objects.create()
+        assert doc.get_absolute_url() == \
+            reverse('corpus:document_detail', args=[doc.id])
 
 @pytest.mark.django_db
 class TestTextBlock:
