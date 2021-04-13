@@ -7,6 +7,7 @@ from django.db.models import Count
 from django.urls import reverse, resolve
 from django.utils.html import format_html
 from django.utils import timezone
+from tabular_export.admin import export_to_csv_action, export_to_excel_action
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
@@ -132,6 +133,8 @@ class DocumentAdmin(admin.ModelAdmin):
         TextBlockInline,
         FootnoteInline
     ]
+
+    actions = [export_to_csv_action, export_to_excel_action]
 
     class Media:
         css = {
