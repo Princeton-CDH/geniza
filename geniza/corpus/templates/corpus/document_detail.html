@@ -1,18 +1,20 @@
+{% load i18n %}
 <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
 
 <div style="max-width: 500px; margin: 10px auto;">
 
     <h1>PGPID: {{ document.id }}</h1>
 
-    <div><dt>Shelfmark:</dt> <dd>{{ document.shelfmark }}</dd></div>
+    <div><dt>{% translate 'Shelfmark:' %}</dt> <dd>{{ document.shelfmark }}</dd></div>
 
     {% if document.doctype %}
-    <div><dt>Document Type:</dt> <dd>{{ document.doctype }}</dd></div>
+    <div><dt>{% translate 'Document Type:' %}</dt> <dd>{{ document.doctype }}</dd></div>
     {% endif %}
     
-    <div><dt>First input:</dt> <dd>{{ document.log_entries.last.action_time.year }}</dd></div>
+    {% comment %}Translators: Date document was first added to the PGP{% endcomment %}
+    <div><dt>{% translate 'First input:' %}</dt> <dd>{{ document.log_entries.last.action_time.year }}</dd></div>
 
-    <div><dt>Tags:</dt> 
+    <div><dt>{% translate 'Tags:' %}</dt> 
         {% for tag in document.tags.all %}
             <dd>#{{ tag }}</dd>
         {% endfor %}
