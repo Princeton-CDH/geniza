@@ -266,7 +266,7 @@ class Document(models.Model):
     is_public.admin_order_field = 'status'
 
     def get_absolute_url(self):
-        return reverse('corpus:document_detail', args=[str(self.id)])
+        return reverse('corpus:document', args=[str(self.id)])
 
 
 class TextBlock(models.Model):
