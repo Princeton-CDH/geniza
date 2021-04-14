@@ -269,11 +269,11 @@ class TestDocument:
     def test_all_tags(self):
         doc = Document.objects.create()
         doc.tags.add('marriage', 'women')
-        tag_list = doc.tag_list()
+        all_tags = doc.all_tags()
         # tag order is not reliable, so just check all the pieces
-        assert 'women' in tag_list
-        assert 'marriage' in tag_list
-        assert ', ' in tag_list
+        assert 'women' in all_tags
+        assert 'marriage' in all_tags
+        assert ', ' in all_tags
 
     def test_is_public(self):
         doc = Document.objects.create()
