@@ -136,6 +136,8 @@ class DocumentAdmin(admin.ModelAdmin):
         FootnoteInline
     ]
 
+
+
     class Media:
         css = {
             'all': ('css/admin-local.css', )
@@ -170,21 +172,17 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def tabulate_queryset(self, queryset):
         '''Generator for data in tabular form, including custom fields'''
-        prefetched = queryset.\
-            prefetch_related('account_set', 'creator_set',
-                             'account_set__event_set', 'account_set__event_set__subscription').\
-            select_related('profession')
-        for person in prefetched:
+        for document in queryset:
             # retrieve values for configured export fields; if the attribute
             # is a callable (i.e., a custom property method), call it
             yield [value() if callable(value) else value
-                   for value in (getattr(person, field) for field in self.export_fields)]
+                   for value in (getattr(document, field) for field in self.list_display)]
 
     def export_to_csv(self, request, queryset=None):
         '''Stream tabular data as a CSV file'''
         queryset = self.get_queryset(request) if queryset is None else queryset
         headers = self.list_display
-        return export_to_csv_response(self.csv_filename(), headers, rows)
+        return export_to_csv_response(self.csv_filename(), headers, self.tabulate_queryset(queryset))
     export_to_csv.short_description = 'Export selected documents to CSV'
 
     def get_urls(self):
@@ -195,6 +193,8 @@ class DocumentAdmin(admin.ModelAdmin):
                 name='corpus_document_csv')
         ]
         return urls + super(DocumentAdmin, self).get_urls()
+
+    actions = (export_to_csv, )
 
 
 @admin.register(DocumentType)
