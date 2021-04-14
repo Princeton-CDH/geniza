@@ -3,11 +3,13 @@ from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.exceptions import ValidationError
 from django.db.models import Count
+from django.conf.urls import url
+from django.utils.timezone import now
 
 from django.urls import reverse, resolve
 from django.utils.html import format_html
 from django.utils import timezone
-from tabular_export.admin import export_to_csv_action, export_to_excel_action
+from tabular_export.admin import export_to_csv_response
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
@@ -134,8 +136,6 @@ class DocumentAdmin(admin.ModelAdmin):
         FootnoteInline
     ]
 
-    actions = [export_to_csv_action, export_to_excel_action]
-
     class Media:
         css = {
             'all': ('css/admin-local.css', )
@@ -163,6 +163,38 @@ class DocumentAdmin(admin.ModelAdmin):
             obj.created = timezone.now()
             obj.last_modified = None
         super().save_model(request, obj, form, change)
+
+    def csv_filename(self):
+        '''Generate filename for CSV download'''
+        return f'geniza-documents-{now().strftime("%Y%m%dT%H%M%S")}.csv'
+
+    def tabulate_queryset(self, queryset):
+        '''Generator for data in tabular form, including custom fields'''
+        prefetched = queryset.\
+            prefetch_related('account_set', 'creator_set',
+                             'account_set__event_set', 'account_set__event_set__subscription').\
+            select_related('profession')
+        for person in prefetched:
+            # retrieve values for configured export fields; if the attribute
+            # is a callable (i.e., a custom property method), call it
+            yield [value() if callable(value) else value
+                   for value in (getattr(person, field) for field in self.export_fields)]
+
+    def export_to_csv(self, request, queryset=None):
+        '''Stream tabular data as a CSV file'''
+        queryset = self.get_queryset(request) if queryset is None else queryset
+        headers = self.list_display
+        return export_to_csv_response(self.csv_filename(), headers, rows)
+    export_to_csv.short_description = 'Export selected documents to CSV'
+
+    def get_urls(self):
+        '''Return admin urls; adds a custom URL for exporting all people
+        as CSV'''
+        urls = [
+            url(r'^csv/$', self.admin_site.admin_view(self.export_to_csv),
+                name='corpus_document_csv')
+        ]
+        return urls + super(DocumentAdmin, self).get_urls()
 
 
 @admin.register(DocumentType)
