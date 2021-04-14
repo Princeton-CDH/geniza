@@ -95,7 +95,7 @@ class DocumentAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'shelfmark', 'description', 'doctype',
-        'tag_list', 'all_languages', 'is_textblock',
+        'all_tags', 'all_languages', 'is_textblock',
         'last_modified',
         'is_public'
     )
@@ -166,6 +166,14 @@ class DocumentAdmin(admin.ModelAdmin):
             obj.last_modified = None
         super().save_model(request, obj, form, change)
 
+    ## CSV EXPORT -------------------------------------------------------------
+
+    export_fields = [
+        'id', 'shelfmark', 'description', 'doctype',
+        'all_tags', 'all_languages', 'all_probable_languages', 'is_textblock',
+        'last_modified', 'is_public'
+    ]
+
     def csv_filename(self):
         '''Generate filename for CSV download'''
         return f'geniza-documents-{now().strftime("%Y%m%dT%H%M%S")}.csv'
@@ -176,13 +184,13 @@ class DocumentAdmin(admin.ModelAdmin):
             # retrieve values for configured export fields; if the attribute
             # is a callable (i.e., a custom property method), call it
             yield [value() if callable(value) else value
-                   for value in (getattr(document, field) for field in self.list_display)]
+                   for value in (getattr(document, field) for field in self.export_fields)]
 
     def export_to_csv(self, request, queryset=None):
         '''Stream tabular data as a CSV file'''
         queryset = self.get_queryset(request) if queryset is None else queryset
-        headers = self.list_display
-        return export_to_csv_response(self.csv_filename(), headers, self.tabulate_queryset(queryset))
+        return export_to_csv_response(self.csv_filename(), 
+            self.export_fields, self.tabulate_queryset(queryset))
     export_to_csv.short_description = 'Export selected documents to CSV'
 
     def get_urls(self):
@@ -193,6 +201,8 @@ class DocumentAdmin(admin.ModelAdmin):
                 name='corpus_document_csv')
         ]
         return urls + super(DocumentAdmin, self).get_urls()
+
+    # -------------------------------------------------------------------------
 
     actions = (export_to_csv, )
 

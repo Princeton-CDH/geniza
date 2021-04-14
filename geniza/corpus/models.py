@@ -251,9 +251,13 @@ class Document(models.Model):
         return ','.join([str(lang) for lang in self.languages.all()])
     all_languages.short_description = 'Language'
 
-    def tag_list(self):
+    def all_probable_languages(self):
+        return ','.join([str(lang) for lang in self.probable_languages.all()])
+    all_probable_languages.short_description = 'Probable Language'
+
+    def all_tags(self):
         return ", ".join(t.name for t in self.tags.all())
-    tag_list.short_description = 'tags'
+    all_tags.short_description = 'tags'
 
     def is_public(self):
         '''admin display field indicating if doc is public or suppressed'''

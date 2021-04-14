@@ -266,7 +266,7 @@ class TestDocument:
         doc.languages.add(arabic)
         assert doc.all_languages() == '%s,%s' % (arabic, lang)
 
-    def test_tag_list(self):
+    def test_all_tags(self):
         doc = Document.objects.create()
         doc.tags.add('marriage', 'women')
         tag_list = doc.tag_list()
