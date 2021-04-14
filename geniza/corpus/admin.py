@@ -170,8 +170,8 @@ class DocumentAdmin(admin.ModelAdmin):
 
     export_fields = [
         'id', 'shelfmark', 'description', 'doctype',
-        'all_tags', 'all_languages', 'all_probable_languages', 'is_textblock',
-        'last_modified', 'is_public'
+        'all_tags', 'all_languages', 'all_probable_languages',
+        'last_modified', 'notes', 'needs_review', 'status'
     ]
 
     def csv_filename(self):
