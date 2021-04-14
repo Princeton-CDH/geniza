@@ -604,6 +604,11 @@ class Command(BaseCommand):
         info = []
         for edition in editions:
             print(edition)
+
+            # if "typed texts" or "unpublished" source type = unpublished
+
+            # if "and trans" set translation flag
+
             # dissertation
             if "diss" in edition:
                 src_type = 'Dissertation'
