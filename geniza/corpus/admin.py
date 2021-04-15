@@ -143,34 +143,6 @@ class DocumentAdmin(admin.ModelAdmin):
             .annotate(shelfmk_all=ArrayAgg('textblock__fragment__shelfmark')) \
             .order_by('shelfmk_all')
 
-    def change_view(self, request, **kwargs):
-        """Add this document's first and last log entries to context.
-        
-        If there was a legacy date included in the log entry, show that info
-        instead of the timestamp of the entry itself.
-        """
-
-        # get first/last log entries; we want the reverse of their default
-        # ordering which is chronological descending
-        obj = Document.objects.get(pk=kwargs["object_id"])
-        first_input = obj.log_entries.last()
-        last_revision = obj.log_entries.first()
-
-        # check for "dated " message in the log entry and add legacy date.
-        # template will use the actual timestamp as a fallback if no legacy date
-        for log in first_input, last_revision:
-            try:
-                log.legacy_date = log.get_change_message().split("dated ")[1]
-            except IndexError:
-                continue
-
-        # add to context & return
-        kwargs["extra_context"] = {
-            "first_input": first_input,  
-            "last_revision": last_revision
-        }
-        return super().change_view(request, **kwargs)
-
     def save_model(self, request, obj, form, change):
         '''Customize this model's save_model function and then execute the
          existing admin.ModelAdmin save_model function'''
