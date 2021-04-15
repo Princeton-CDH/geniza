@@ -3,12 +3,15 @@
 <fieldset class="module aligned">
     <div class="form-row">
         <div class="fieldBox">
-            <label>First input:</label>
-            {% include "admin/corpus/document/rev_log_entry.html" with log_entry=first_input %}
+            <label>Initial entry</label>
+            {% include "admin/corpus/document/log_entry.html" with log_entry=original.log_entries.last %}
+            <a href="{% url "admin:corpus_document_history" object_id=original.pk %}">view full history</a>
         </div>
+    </div>
+    <div class="form-row">
         <div class="fieldBox">
-            <label>Last revision:</label>
-            {% include "admin/corpus/document/rev_log_entry.html" with log_entry=last_revision %}
+            <label>Latest revision</label>
+            {% include "admin/corpus/document/log_entry.html" with log_entry=original.log_entries.first %}
         </div>
     </div>
 </fieldset>
