@@ -124,7 +124,6 @@ class DocumentAdmin(admin.ModelAdmin):
         # edition, translation
         'notes',
         # text block
-        ('created', 'last_modified')
     )
     autocomplete_fields = ['languages', 'probable_languages']
     # NOTE: autocomplete does not honor limit_choices_to in model

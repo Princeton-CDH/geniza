@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.functions import Concat
+from django.contrib.admin.models import LogEntry
 
 from django.contrib.contenttypes.fields import GenericRelation
 from django.utils.safestring import mark_safe
@@ -215,6 +216,7 @@ class Document(models.Model):
         help_text='Decide whether a document should be publicly visible')
 
     footnotes = GenericRelation(Footnote)
+    log_entries = GenericRelation(LogEntry, related_query_name="document")
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution
