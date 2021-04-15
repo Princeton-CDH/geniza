@@ -1,16 +1,22 @@
-from datetime import timedelta
-import pytest
+from datetime import timedelta, datetime
 
+import pytest
+from django.conf import settings
 from django.contrib import admin
+from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.forms import modelform_factory
 from django.forms.models import model_to_dict
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
+from pytest_django.asserts import assertContains
 
-from geniza.corpus.models import LanguageScript, Document, Fragment
-from geniza.corpus.admin import LanguageScriptAdmin, DocumentAdmin, DocumentForm
+from geniza.corpus.admin import (DocumentAdmin, DocumentForm,
+                                 LanguageScriptAdmin)
+from geniza.corpus.models import Document, Fragment, LanguageScript
 
 
 @pytest.mark.django_db
@@ -18,16 +24,20 @@ class TestLanguageScriptAdmin:
 
     def test_documents(self):
         '''Language script admin should report document usage of script with link'''
-        arabic = LanguageScript.objects.create(language='Arabic', script='Arabic')
-        french = LanguageScript.objects.create(language='French', script='Latin')
-        english = LanguageScript.objects.create(language='English', script='Latin')
+        arabic = LanguageScript.objects.create(
+            language='Arabic', script='Arabic')
+        french = LanguageScript.objects.create(
+            language='French', script='Latin')
+        english = LanguageScript.objects.create(
+            language='English', script='Latin')
 
         arabic_doc = Document.objects.create()
         arabic_doc.languages.add(arabic)
         french_arabic_doc = Document.objects.create()
         french_arabic_doc.languages.add(arabic, french)
 
-        lang_admin = LanguageScriptAdmin(model=LanguageScript, admin_site=admin.site)
+        lang_admin = LanguageScriptAdmin(
+            model=LanguageScript, admin_site=admin.site)
         # retrieve via admin queryset to ensure we have count annotated
         qs = lang_admin.get_queryset(request=None)
 
@@ -45,20 +55,65 @@ class TestLanguageScriptAdmin:
 
         # test probable documents
         arabic = qs.get(language='Arabic')
-        arabic_probable_link = lang_admin.probable_documents(qs.get(language='Arabic'))
+        arabic_probable_link = lang_admin.probable_documents(
+            qs.get(language='Arabic'))
         assert f'?probable_languages__id__exact={arabic.pk}' in arabic_probable_link
         assert '0</a>' in arabic_probable_link
 
         # add a probable language to our arabic document
         arabic_doc.probable_languages.add(french)
-        french_probable_link = lang_admin.probable_documents(qs.get(language='French'))
+        french_probable_link = lang_admin.probable_documents(
+            qs.get(language='French'))
         assert f'?probable_languages__id__exact={french.pk}' in french_probable_link
         assert '1</a>' in french_probable_link
 
 
-class TestDocumentAdmin(TestCase):
+class TestDocumentAdmin:
 
-    def test_save_model(self):
+    def test_rev_dates(self, db, admin_client):
+        """Document change form should display first entry/last revision date"""
+        # create a testing doc, user, and some log entries
+        doc = Document.objects.create()
+        doc_ctype = ContentType.objects.get_for_model(doc)
+        tj = User.objects.create(username="tj", first_name="Tom",
+                                 last_name="Jones", is_superuser=True)
+        script = User.objects.get(username=settings.SCRIPT_USERNAME)
+        opts = {"object_id": str(doc.pk), "content_type": doc_ctype,
+            "object_repr": str(doc)}
+        LogEntry.objects.create(**opts,
+            user=tj,
+            action_flag=ADDITION,
+            change_message="Initial data entry",
+            action_time=datetime(1995, 3, 11)
+        )
+        LogEntry.objects.create(**opts,
+            user=tj,
+            action_flag=CHANGE,
+            change_message="Major revision",
+            action_time=datetime.today() - timedelta(weeks=1),
+        )
+        LogEntry.objects.create(**opts,
+            user=script,
+            action_flag=ADDITION,
+            change_message="Imported via script",
+            action_time=datetime.today()
+        )
+
+        # first and latest revision should be displayed in change form
+        response = admin_client.get(reverse("admin:corpus_document_change",
+                                      args=(doc.pk,)))
+        assertContains(response, '<span class="action-time">March 11, 1995</span>', html=True)
+        assertContains(response, '<span class="action-user">Tom Jones</span>', html=True)
+        assertContains(response, '<span class="action-msg">Initial data entry</span>', html=True)
+        assertContains(response, '<span class="action-time">today</span>', html=True)
+        assertContains(response, '<span class="action-user">script</span>', html=True)
+        assertContains(response, '<span class="action-msg">Imported via script</span>', html=True)
+
+        # link to view full history should be displayed in change form
+        assertContains(response, '<a href="%s">view full history</a>' % \
+            reverse("admin:corpus_document_history", args=(doc.pk,)), html=True)
+
+    def test_save_model(self, db):
         '''Ensure that save_as creates a new document and appends a note'''
         fragment = Fragment.objects.create(shelfmark='CUL 123')
         doc = Document.objects.create()
