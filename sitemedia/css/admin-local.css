@@ -26,3 +26,8 @@ th.column-documents, th.column-probable_documents {
 .module + .module {
 	margin-top: -30px;
 }
+
+/* customize display of first/last revision info */
+.action-time::after { content: ", by "}
+.action-user::after { content: " — "}
+.action-msg { font-style: italic; }
