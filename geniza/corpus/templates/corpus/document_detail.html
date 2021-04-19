@@ -1,65 +1,63 @@
+{% extends 'base.html' %}
 {% load i18n %}
+
+{% block extrahead %}
 <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
+{% endblock extrahead %}
 
-<div style="max-width: 500px; margin: 10px auto;">
-
+{% block main %}
+<div class="container">
     <h1>PGPID: {{ document.id }}</h1>
-
-    <div><dt>{% translate 'Shelfmark:' %}</dt> <dd>{{ document.shelfmark }}</dd></div>
-
-    {% if document.doctype %}
-    <div><dt>{% translate 'Document Type:' %}</dt> <dd>{{ document.doctype }}</dd></div>
-    {% endif %}
-    
-    {% comment %}Translators: Date document was first added to the PGP{% endcomment %}
-    <div><dt>{% translate 'First input:' %}</dt> <dd>{{ document.log_entries.last.action_time.year }}</dd></div>
-
-    <div><dt>{% translate 'Tags:' %}</dt> 
-        {% for tag in document.tags.all %}
-            <dd>#{{ tag }}</dd>
-        {% endfor %}
-    </div>
-
-    <p>{{ document.description }}</p>
-
-    {% for fragment in document.fragments.all %}
-    <div>
-        {% if fragment.iiif_url %}
-            <div class="wrapper">
-                <div id="iiif_viewer" class="image-viewer" style="position: relative; height:375px;"></div>
-                <script type="text/javascript">
-                  Mirador.viewer({
-                    id: "iiif_viewer",
-                    window: {
-                      allowClose: false, // Prevent the user from closing this window
-                      allowMaximize: false,
-                      defaultSideBarPanel: 'info',
-                      sideBarOpenByDefault: false,
-                      views: [ // Only allow the user to select single and gallery view
-                        { key: 'single' },
-                        { key: 'gallery' },
-                      ],
-                    defaultView: 'single',
-                    },
-                    galleryView: {
-                        height: 250
-                    },
-                    thumbnailNavigation: {
-                        defaultPosition: 'far-right'
-                    },
-                    windows: [{
-                        loadedManifest: '{{ fragment.iiif_url }}',
-                    }],
-                    workspaceControlPanel: {
-                        enabled: false, // Remove extra workspace settings,
-                    }
-                  });
-                </script>
-            </div>
+    <dl>
+        <dt class="sr-only">{% translate 'Shelfmark' %}</dt>
+        <dd>{{ document.shelfmark }}</dd>
+        {% if document.doctype %}
+        <dt class="sr-only">{% translate 'Document Type' %}</dt>
+        <dd>{{ document.doctype }}</dd>
         {% endif %}
+        {% comment %}Translators: Date document was first added to the PGP{% endcomment %}
+        <dt class="sr-only">{% translate 'First input' %}</dt>
+        <dd>{{ document.log_entries.last.action_time.year }}</dd>
+        <dt class="sr-only">{% translate 'Tags' %}</dt>
+        {% for tag in document.tags.all %}
+        <dd class="tag">#{{ tag }}</dd>
+        {% endfor %}
+    </dl>
+    <p>{{ document.description }}</p>
+    {% for fragment in document.fragments.all %}
+    {% if fragment.iiif_url %}
+    <div class="wrapper">
+        <div id="iiif_viewer" class="image-viewer" style="position: relative; height:375px;"></div>
+        <script type="text/javascript">
+            Mirador.viewer({
+            id: "iiif_viewer",
+            window: {
+                allowClose: false, // Prevent the user from closing this window
+                allowMaximize: false,
+                defaultSideBarPanel: 'info',
+                sideBarOpenByDefault: false,
+                views: [ // Only allow the user to select single and gallery view
+                { key: 'single' },
+                { key: 'gallery' },
+                ],
+            defaultView: 'single',
+            },
+            galleryView: {
+                height: 250
+            },
+            thumbnailNavigation: {
+                defaultPosition: 'far-right'
+            },
+            windows: [{
+                loadedManifest: '{{ fragment.iiif_url }}',
+            }],
+            workspaceControlPanel: {
+                enabled: false, // Remove extra workspace settings,
+            }
+            });
+        </script>
     </div>
+    {% endif %}
     {% endfor %}
-
-    
-
 </div>
+{% endblock main %}

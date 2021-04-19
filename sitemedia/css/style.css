@@ -1,0 +1,35 @@
+/* global */
+* { font-family: sans-serif; }
+
+/* layout */
+body {
+    margin: 0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
+}
+main {
+    display: flex;
+    place-content: center;
+}
+dt, dd { margin: 0; }
+dd ~ dd { margin-top: 5px; }
+
+/* visual */
+.tag {
+    display: inline-block;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/* utility */
+.container { width: clamp(30ch, 75%, 60ch); }
+.sr-only:not(:focus):not(:active) {
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+}
