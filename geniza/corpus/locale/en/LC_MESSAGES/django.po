@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) YEAR The Trustees of Princeton University
+# This file is distributed under the same license as the geniza package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-13 16:33-0400\n"
+"Project-Id-Version: geniza 0.3.0-dev\n"
+"Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
+"POT-Creation-Date: 2021-04-19 17:18-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,23 +17,23 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-#: corpus/templates/admin/corpus/app_index.html:9
+#: geniza/corpus/templates/admin/corpus/app_index.html:9
 msgid "Home"
 msgstr ""
 
-#: corpus/templates/corpus/document_detail.html:8
-msgid "Shelfmark:"
+#: geniza/corpus/templates/corpus/document_detail.html:12
+msgid "Shelfmark"
 msgstr ""
 
-#: corpus/templates/corpus/document_detail.html:11
-msgid "Document Type:"
+#: geniza/corpus/templates/corpus/document_detail.html:15
+msgid "Document Type"
 msgstr ""
 
 #. Translators: Date document was first added to the PGP
-#: corpus/templates/corpus/document_detail.html:15
-msgid "First input:"
+#: geniza/corpus/templates/corpus/document_detail.html:19
+msgid "First input"
 msgstr ""
 
-#: corpus/templates/corpus/document_detail.html:17
-msgid "Tags:"
+#: geniza/corpus/templates/corpus/document_detail.html:21
+msgid "Tags"
 msgstr ""
