@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.humanize.templatetags.humanize import ordinal
+from django.contrib.postgres.fields import JSONField
 
 from multiselectfield import MultiSelectField
 
@@ -23,6 +24,12 @@ class SourceLanguage(models.Model):
         return self.name
 
 
+class CollectionManager(models.Manager):
+
+    def get_by_natural_key(self, last_name, first_name):
+        return self.get(last_name=last_name, first_name=first_name)
+
+
 class Creator(models.Model):
     '''author or other contributor to a source'''
     first_name = models.CharField(max_length=255)
@@ -37,6 +44,9 @@ class Creator(models.Model):
             models.UniqueConstraint(fields=['first_name', 'last_name'],
                                     name='creator_unique_name')
         ]
+
+    def natural_key(self):
+        return (self.last_name, self.first_name)
 
 
 class Authorship(models.Model):
@@ -56,7 +66,7 @@ class Authorship(models.Model):
 class Source(models.Model):
     '''a published or unpublished work related to geniza materials'''
     authors = models.ManyToManyField(Creator, through=Authorship)
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True, null=True)
     year = models.PositiveIntegerField(blank=True, null=True)
     edition = models.CharField(max_length=255, blank=True)
     volume = models.CharField(max_length=255, blank=True)
@@ -68,6 +78,12 @@ class Source(models.Model):
     languages = models.ManyToManyField(
         SourceLanguage,
         help_text='The language(s) the source is written in')
+    url = models.URLField(blank=True)
+    # preliminary place to store transcription text; should not be editable
+    notes = models.TextField(blank=True)
+    content = models.JSONField(
+        blank=True, null=True,
+        help_text='Transcription content (preliminary)')
 
     class Meta:
         # set default order to title, year for now since first-author order
@@ -93,11 +109,10 @@ class Source(models.Model):
 
 class Footnote(models.Model):
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
-
-    page_range = models.CharField(
+    location = models.CharField(
         max_length=255, blank=True,
-        help_text='The range of pages being cited. Do not include "p", ' +
-                  '"pg", etc. and follow the format # or #-#')
+        help_text='Location within the source ' +
+                  '(e.g., document number or page range)')
 
     EDITION = 'E'
     TRANSLATION = 'T'

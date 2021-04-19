@@ -33,8 +33,8 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     fields = (
         'source_type',
         'title', 'year',
-        'edition', 'volume', 'page_range',
-        'language'
+        'edition', 'volume', 'location',
+        'languages'
     )
 
     inlines = [AuthorshipInline]
@@ -75,7 +75,7 @@ class DocumentRelationTypesFilter(SimpleListFilter):
 @admin.register(Footnote)
 class FootnoteAdmin(admin.ModelAdmin):
     list_display = (
-        'source', 'page_range', 'doc_relation_list', 'content_object'
+        'source', 'location', 'doc_relation_list', 'content_object'
     )
 
     list_filter = (
@@ -92,7 +92,7 @@ class FootnoteAdmin(admin.ModelAdmin):
         }),
         (None, {
             'fields': (
-                'source', 'page_range', 'doc_relation',
+                'source', 'location', 'doc_relation',
                 'notes'
             )
         })
@@ -109,7 +109,7 @@ class FootnoteAdmin(admin.ModelAdmin):
 class FootnoteInline(GenericTabularInline):
     model = Footnote
     autocomplete_fields = ['source']
-    fields = ('source', 'page_range', 'doc_relation', 'notes',)
+    fields = ('source', 'location', 'doc_relation', 'notes',)
     extra = 1
 
 
