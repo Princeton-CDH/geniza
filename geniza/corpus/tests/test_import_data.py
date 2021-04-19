@@ -602,60 +602,110 @@ def test_update_document_id_sequence():
 
 # editor input string and expected result
 editors_parsed = [
-    ('Ed. Gil, Palestine, vol. 2, #177',
-     [{'author': 'Gil', 'title': 'Palestine', 'vol': '2', 'notes': '#177'}]),
-    ('Ed. Friedman, Jewish Marriage, vol. 2, 384 (Doc. #51)',
-     [{'author': 'Friedman', 'title': 'Jewish Marriage',
-      'vol': '2', 'notes': '384 (Doc. #51)'}]),
+    # ('Ed. Gil, Palestine, vol. 2, #177',
+    #  [{'author': 'Gil', 'title': 'Palestine', 'vol': '2', 'notes': '#177'}]),
+    # ('Ed. Friedman, Jewish Marriage, vol. 2, 384 (Doc. #51)',
+    #  [{'author': 'Friedman', 'title': 'Jewish Marriage',
+    #   'vol': '2', 'notes': '384 (Doc. #51)'}]),
     ('Ed. M. Cohen',
      [{'author': 'M. Cohen'}]),
-    ("Ed. S. D. Goitein, 'Documents from Damascus and Tyre concerning buildings belonging to Jews', Eretz Israel, 8 (1967), Sefer Suqeniq, pp.293-294.",
-     [{'author': 'S. D. Goitein',
-       'title': "'Documents from Damascus and Tyre concerning buildings belonging to Jews'",
-       'notes': 'Eretz Israel, 8 (1967), Sefer Suqeniq, pp.293-294.'}]),
+    # ("Ed. S. D. Goitein, 'Documents from Damascus and Tyre concerning buildings belonging to Jews', Eretz Israel, 8 (1967), Sefer Suqeniq, pp.293-294.",
+    #  [{'author': 'S. D. Goitein',
+    #    'title': "'Documents from Damascus and Tyre concerning buildings belonging to Jews'",
+    #    'notes': 'Eretz Israel, 8 (1967), Sefer Suqeniq, pp.293-294.'}]),
     # two authors
     ("Marina Rustow and Anna Bailey",
      [{'author': 'Marina Rustow', 'author2': 'Anna Bailey'}]),
-    # volume info
-    ('Ed. Mann, Jews, vol. 2, p. 202',
-     [{'author': 'Mann', 'title': 'Jews', 'vol': '2', 'notes': 'p. 202'}]),
-    # dissertation
-    ('Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza" (PhD diss., Tel Aviv University, 1992), doc. 28',
-     [{'author': 'Ṣabīḥ ʿAodeh',
-       'title': 'Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza',
-       'institution': 'Tel Aviv University', 'year': '1992',
-       'notes': 'doc. 28'}]),
+    # # volume info
+    # ('Ed. Mann, Jews, vol. 2, p. 202',
+    #  [{'author': 'Mann', 'title': 'Jews', 'vol': '2', 'notes': 'p. 202'}]),
+    # # dissertation
+    # ('Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza" (PhD diss., Tel Aviv University, 1992), doc. 28',
+    #  [{'author': 'Ṣabīḥ ʿAodeh',
+    #    'title': 'Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza',
+    #    'institution': 'Tel Aviv University', 'year': '1992',
+    #    'notes': 'doc. 28'}]),
     # dissertation with language
     # TODO: print character in one entry! ask for cleanup? or remove unwanted characters before parsing?
     # ("Ed. Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-7, pp. 291-293.",
-    ("Ed. Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-7, pp. 291-293.",
-     [{'author': 'Amir Ashur',
-       'title': 'Engagement and Betrothal Documents from the Cairo Geniza',
-       'institution': 'Tel Aviv University',
-       'year': '2006', 'lang': 'Hebrew', 'notes': 'Doc. H-7, pp. 291-293.'}]),
-    # two editions
-    ('Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters ..." (PhD diss., Tel Aviv University, 1992), doc. 58; also ed. Goitein, India Book 6 (unpublished), ו14',
-     [{'author': 'Ṣabīḥ ʿAodeh',
-       'title': 'Eleventh Century Arabic Letters ...',
-       'institution': 'Tel Aviv University', 'year': '1992',
-       'notes': "doc. 58"},
-      {'author': 'Goitein', 'title': 'India Book 6 (unpublished)',
-      'notes': 'ו14'}])
+    # ("Ed. Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-7, pp. 291-293.",
+    #  [{'author': 'Amir Ashur',
+    #    'title': 'Engagement and Betrothal Documents from the Cairo Geniza',
+    #    'institution': 'Tel Aviv University',
+    #    'year': '2006', 'lang': 'Hebrew', 'notes': 'Doc. H-7, pp. 291-293.'}]),
+    # # two editions
+    # ('Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters ..." (PhD diss., Tel Aviv University, 1992), doc. 58; also ed. Goitein, India Book 6 (unpublished), ו14',
+    #  [{'author': 'Ṣabīḥ ʿAodeh',
+    #    'title': 'Eleventh Century Arabic Letters ...',
+    #    'institution': 'Tel Aviv University', 'year': '1992',
+    #    'notes': "doc. 58"},
+    #   {'author': 'Goitein', 'title': 'India Book 6 (unpublished)',
+    #   'notes': 'ו14'}])
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", editors_parsed)
-def test_parse_editor(test_input, expected):
-    result = import_data.Command().parse_editor(test_input)
-    for i, expected_val in enumerate(expected):
-        assert expected_val == result[i]
-
-# def test_parse_editor():
+# @pytest.mark.django_db
+# @pytest.mark.parametrize("test_input,expected", editors_parsed)
+# def test_parse_editor(test_input, expected):
 #     import_data_cmd = import_data.Command()
-#     parsed = import_data_cmd.parse_editor('Ed. Gil, Palestine, vol. 2, #177')
-#     assert parsed['author'] == 'Gil'
-#     assert parsed['title'] == 'Palestine'
-#     assert parsed['notes'] == 'vol. 2, #177'
+#     import_data_cmd.source_setup()
+#     result = import_data_cmd.parse_editor(test_input)
+#     for i, expected_val in enumerate(expected):
+#         assert expected_val == result[i]
+
+
+# expected name variants for source author lookup
+source_creator_input = [
+    # input string; first name, last name for creator retrieved
+    ('M. Cohen', ('Mark', 'Cohen')),
+    ('Cohen', ('Mark', 'Cohen')),
+    ('Mark Cohen', ('Mark', 'Cohen')),
+]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("test_input,expected", source_creator_input)
+def test_get_source_creator(test_input, expected):
+    import_data_cmd = import_data.Command()
+    import_data_cmd.source_setup()
+    creator = import_data_cmd.get_source_creator(test_input)
+    assert expected == (creator.first_name, creator.last_name)
+
+# test error for not found?
+
+source_input = [
+    # untitled items == PGP editions
+    # single author, no title
+    ('Ed. M. Cohen',
+     {'type': 'Unpublished', 'authors': ['Cohen, Mark']}),
+    # two authors with a url
+    ("Marina Rustow and Anna Bailey https://example.co",
+     {'type': 'Unpublished', 'authors': ['Rustow, Marina', 'Bailey, Anna'],
+      'url': 'https://example.co'}),
+    # TODO: more than two authors!
+    # Ed. Khan, el-Leithy, Rustow and Vanthieghem https://docs
+
+    # unpublished items with titles
+    # ed. Goitein, India Book 6 (unpublished), ו14
+    # typed texts
+
+]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("test_input,expected", source_input)
+def test_get_source(test_input, expected):
+    import_data_cmd = import_data.Command()
+    import_data_cmd.source_setup()
+    source = import_data_cmd.get_source(test_input)
+    # check type
+    assert expected['type'] == source.source_type.type
+    # check all authors added, in expected order
+    for i, author in enumerate(expected['authors']):
+        assert author == str(source.authorship_set.all()[i].creator)
+    # url should match when present, be unset otherwise
+    assert expected.get('url', '') == source.url
+
 
 # Ed. Gil, Palestine, vol. 2, #177
 # Ed. Gil, Palestine, vol. 2, #181

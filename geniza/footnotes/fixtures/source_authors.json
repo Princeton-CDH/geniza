@@ -1,0 +1,65 @@
+[
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Ṣabīḥ",
+    "first_name_en": "Ṣabīḥ",
+    "last_name": "ʿAodeh",
+    "last_name_en": "ʿAodeh"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Mark",
+    "first_name_en": "Mark",
+    "last_name": "Cohen",
+    "last_name_en": "Cohen"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "A. L.",
+    "first_name_en": "A. L.",
+    "last_name": "Udovitch",
+    "last_name_en": "Udovitch"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Alan",
+    "first_name_en": "Alan",
+    "last_name": "Elbaum",
+    "last_name_en": "Elbaum"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Arnold",
+    "first_name_en": "Arnold",
+    "last_name": "Franklin",
+    "last_name_en": "Franklin"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Marina",
+    "first_name_en": "Marina",
+    "last_name": "Rustow",
+    "last_name_en": "Rustow"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Anna",
+    "first_name_en": "Anna",
+    "last_name": "Bailey",
+    "last_name_en": "Bailey"
+  }
+}
+]

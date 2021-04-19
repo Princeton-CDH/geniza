@@ -22,6 +22,7 @@ from django.utils.timezone import get_current_timezone, make_aware
 
 from geniza.corpus.models import (Collection, Document, DocumentType, Fragment,
                                   LanguageScript, TextBlock)
+from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 # mapping for csv header fields and local name we want to use
 # if not specified, column will be lower-cased
@@ -93,6 +94,7 @@ class Command(BaseCommand):
                      app_label="corpus", verbosity=0)
         logger.info("loaded 30 historic users")
 
+
         # ensure current active users are present, but don't try to create them
         # in a test environment because it's slow and requires VPN access
         active_users = ["rrichman", "mrustow", "ae5677", "alg4"]
@@ -113,6 +115,26 @@ class Command(BaseCommand):
         self.content_types = {
             model: ContentType.objects.get_for_model(model)
             for model in [Fragment, Collection, Document, LanguageScript]
+        }
+
+        self.source_setup()
+
+    def source_setup(self):
+        # setup for importing editions & transcriptions
+
+        # load fixure with source creators referenced in the spreadsheet
+        call_command("loaddata", "source_authors",
+                     app_label="footnotes", verbosity=0)
+        # total TODO
+        # logger.info("loaded ## source creators")
+
+        # create source type lookup keyed on type
+        self.source_types = {
+            s.type: s for s in SourceType.objects.all()
+        }
+        # create source creator lookup keyed on last name
+        self.source_creators = {
+            c.last_name: c for c in Creator.objects.all()
         }
 
     def handle(self, *args, **options):
@@ -570,6 +592,8 @@ class Command(BaseCommand):
         cursor.execute(
             "SELECT setval('corpus_document_id_seq', max(id)) FROM corpus_document;")
 
+    re_url = re.compile(r'(?P<url>https://[^ ]+)')
+
     re_book = re.compile(
         r'^(?:[Ee]d\. )?(?P<author>[^,]+)(?:, (?P<title>[^,]+)' +
         r'(?:, vol. (?P<vol>\d+))?(?:, (?P<notes>.*)))?')
@@ -579,7 +603,7 @@ class Command(BaseCommand):
         r'(?:\s+\((?P<lang>Hebrew)\))? \(PhD (?:diss.|dissertation), ' +
         r'(?P<institution>[^,]+), (?P<year>\d{4})\), (?P<notes>.*)')
 
-    def parse_editor(self, editor):
+    def parse_editor(self, document, editor):
         # multiple editions are indicated by "; also ed."  or ". also ed."
         editions = re.split(r'[;.] also (?=ed.)', editor)
 
@@ -590,49 +614,111 @@ class Command(BaseCommand):
         # - determine source type
         # - parse based on source type
         # - get or create creator (may need lookup table for variants)
-        # - if there is no title information,
-        #   associate creator directly with document as editor
-        #   (m2m still to be added)
+
         # - otherwise, get or create source record
         #   (will variants be a problem here also?)
         # - create footnote linking source and document with appropriate
         #   doc relation type (edition, optionally more based on key)
 
         # determine type first?
+
         # SOURCE_TYPES = ['Book', 'Article', 'Unpublished', 'Dissertation', 'Blog']
 
         info = []
         for edition in editions:
             print(edition)
-
-            # if "typed texts" or "unpublished" source type = unpublished
-
+            # get or create source for this edition
+            source = self.get_source(edition)
+            # create footnote with edition flag
             # if "and trans" set translation flag
 
-            # dissertation
-            if "diss" in edition:
-                src_type = 'Dissertation'
-                match = self.re_diss.match(edition)
+    def get_source_creator(self, name):
+        # last name is always present, and last names are unique
+        lastname = name.rsplit(' ')[-1]
+        return self.source_creators[lastname]
+
+    def get_source(self, edition):
+        # parse the edition information and get the source for this scholarly
+        # record if it already exists; if it doesn't, create it
+
+        # check for url and store if present
+        url_match = self.re_url.search(edition)
+        url = ''
+        if url_match:
+            # save the url, and remove from edition text, to simplify parsing
+            url = url_match.group('url')
+            edition = self.re_url.sub('', edition).strip()
+
+        # dissertation
+        if "diss" in edition:
+            src_type = self.source_types['Dissertation']
+            match = self.re_diss.match(edition)
+            ed_info = match.groupdict()
+
+        else:
+            match = self.re_book.match(edition)
+            if match:
+                # if match but no title, PGP edition (unpublished)
                 ed_info = match.groupdict()
-                print(ed_info)
-                # filter out unset values to simplify testing
-                ed_info = {k: v for k, v in ed_info.items() if v}
-                info.append(ed_info)
+                # split out multiple authors via string compare rather than
+                # complicating the regex further
+                if ' and ' in ed_info['author']:
+                    ed_info['author'], ed_info['author2'] = \
+                        ed_info['author'].split(' and ')
 
             else:
-                match = self.re_book.match(edition)
-                if match:
-                    ed_info = match.groupdict()
-                    # split out multiple authors via string compare rather than
-                    # complicating the regex further
-                    if ' and ' in ed_info['author']:
-                        ed_info['author'], ed_info['author2'] = ed_info['author'].split(' and ')
-                    print(ed_info)
+                print('no match for "%s"' % edition)
+                return
 
-                    # filter out unset values to simplify testing
-                    ed_info = {k: v for k, v in ed_info.items() if v}
+        # use info to create source, creator, etc.
+        print(ed_info)
+        # get creator references for author names
+        authors = []
+        for author in [ed_info.get('author'), ed_info.get('author2')]:
+            if author:
+                authors.append(self.get_source_creator(author))
 
-                    info.append(ed_info)
-                else:
-                    print('no match for "%s"' % edition)
-        return info
+        # if there is no title, then this edition only occurs once and is
+        # specific to the corresponding document; create a new source
+        # TODO: consolidate logic so we only create new source record once
+        # (skip lookup if no title)
+        if not ed_info.get('title'):
+            src_type = self.source_types['Unpublished']
+            source = Source.objects.create(source_type=src_type, url=url)
+            # TODO: notes
+            self.add_source_authors(source, authors)
+            # TODO: create log entry
+
+            return source
+
+        # if "typed texts" or "unpublished" source type = unpublished
+
+        # unpublished editions: typed texts, unpublished, or no title
+        if "typed texts" in edition or "unpublished" in edition:
+            src_type = self.source_types['Unpublished']
+            print(src_type)
+            authors = []
+
+        # TODO: determine book / article based on formatting
+
+        # get the source if it already exists
+        author_lastnames = [a.last_name for a in authors]
+        source = Source.objects.filter(
+            title=ed_info['title'],
+            creator__last_name__in=author_lastnames,
+            source_type=src_type)
+        if source.exists():
+            print('found existing source! %s' % source.first())
+            # TODO: error if we get more than one match
+        else:
+            # create the source!
+            source = Source.objects.create(
+                source_type=src_type, title=ed_info['title'],
+                url=ed_info['url'])  # more fields todo
+            # add authors
+            self.add_source_authors(source, authors)
+
+    def add_source_authors(self, source, authors):
+        # add authors, in order
+        for i, author in enumerate(authors, 1):
+            source.authorship_set.create(creator=author, sort_order=i)
