@@ -10,10 +10,21 @@ body {
 }
 main {
     display: flex;
-    place-content: center;
+    flex-direction: column;
+    align-items: center;
 }
 dt, dd { margin: 0; }
 dd ~ dd { margin-top: 5px; }
+
+/* viewer */
+.wrapper {
+    display: block;
+    width: clamp(300px, 75vw, 90vw)
+}
+#iiif_viewer {
+    position: relative;
+    height: clamp(200px, 75vh, 75vh);
+}
 
 /* visual */
 .tag {

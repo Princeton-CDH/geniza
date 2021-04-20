@@ -268,6 +268,11 @@ class Document(models.Model):
     def get_absolute_url(self):
         return reverse('corpus:document', args=[str(self.id)])
 
+    def iiif_urls(self):
+        """List of IIIF urls for images of the Document's Fragments."""
+        return list(filter(None, self.fragments.values_list("iiif_url",
+                                                            flat=True)))
+
 
 class TextBlock(models.Model):
     '''The portion of a document that appears on a particular fragment.'''
