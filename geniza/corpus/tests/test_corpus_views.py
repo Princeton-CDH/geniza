@@ -1,4 +1,3 @@
-
 from geniza.corpus.models import Document
 from pytest_django.asserts import assertContains
 
