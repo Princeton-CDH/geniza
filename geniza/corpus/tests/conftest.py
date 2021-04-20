@@ -75,6 +75,6 @@ def join(db, fragment, multifragment):
         description="testing description",
         doctype=DocumentType.objects.get_or_create(name="Letter")[0]
     )
-    TextBlock.objects.create(document=doc, fragment=fragment)
-    TextBlock.objects.create(document=doc, fragment=multifragment)
+    TextBlock.objects.create(document=doc, fragment=fragment, order=1)
+    TextBlock.objects.create(document=doc, fragment=multifragment, order=2)
     return doc

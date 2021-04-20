@@ -185,7 +185,8 @@ class Document(models.Model):
     '''A unified document such as a letter or legal document that
     appears on one or more fragments.'''
     id = models.AutoField('PGPID', primary_key=True)
-    fragments = models.ManyToManyField(Fragment, through='TextBlock')
+    fragments = models.ManyToManyField(Fragment, through='TextBlock',
+        related_name="documents")
     description = models.TextField(blank=True)
     doctype = models.ForeignKey(
         DocumentType, blank=True, on_delete=models.SET_NULL, null=True,
@@ -270,8 +271,8 @@ class Document(models.Model):
 
     def iiif_urls(self):
         """List of IIIF urls for images of the Document's Fragments."""
-        return list(filter(None, self.fragments.values_list("iiif_url",
-                                                            flat=True)))
+        return list(dict.fromkeys(filter(None,
+            [b.fragment.iiif_url for b in self.textblock_set.all()])))
 
     @property
     def title(self):

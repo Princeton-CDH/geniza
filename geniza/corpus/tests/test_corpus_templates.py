@@ -50,6 +50,6 @@ class TestDocumentDetailTemplate:
     def test_multi_viewer(self, client, join):
         """Document with many IIIF urls should add all to viewer in template"""
         response = client.get(join.get_absolute_url())
-        first_url = join.fragments.first().iiif_url
-        second_url = join.fragments.last().iiif_url
+        first_url = join.textblock_set.first().fragment.iiif_url
+        second_url = join.textblock_set.last().fragment.iiif_url
         assertContains(response, f'data-iiif-urls="{first_url} {second_url}"')

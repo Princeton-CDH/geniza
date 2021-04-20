@@ -293,8 +293,8 @@ class TestDocument:
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark='s1', iiif_url="foo")
         frag2 = Fragment.objects.create(shelfmark='s2', iiif_url="bar")
-        TextBlock.objects.create(document=doc, fragment=frag)
-        TextBlock.objects.create(document=doc, fragment=frag2)
+        TextBlock.objects.create(document=doc, fragment=frag, order=1)
+        TextBlock.objects.create(document=doc, fragment=frag2, order=2)
         assert doc.iiif_urls() == ["foo", "bar"]
         # only one URL
         frag2.iiif_url = ""
