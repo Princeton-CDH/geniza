@@ -324,7 +324,8 @@ class Command(BaseCommand):
 
     def get_doctype(self, dtype):
         # don't create an empty doctype
-        if not dtype.strip():
+        dtype = dtype.strip()
+        if not dtype:
             return
 
         doctype = self.doctype_lookup.get(dtype)
