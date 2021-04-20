@@ -3,6 +3,7 @@ from unittest.mock import patch
 from attrdict import AttrDict
 from django.db import IntegrityError
 from django.utils.safestring import SafeString
+from django.urls import reverse
 import pytest
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
@@ -58,7 +59,8 @@ class TestCollection:
         # collection only
         Collection.objects.create(name='Chapira')
         # library + collection
-        Collection.objects.create(library='Cambridge UL', name='Taylor-Schechter')
+        Collection.objects.create(
+            library='Cambridge UL', name='Taylor-Schechter')
 
         # one of library or name is required
         with pytest.raises(IntegrityError):
@@ -156,7 +158,7 @@ class TestFragment:
         assert frag.shelfmark == 'TS 3'
         assert 'TS 1' in frag.old_shelfmarks and 'TS 2' in frag.old_shelfmarks
 
-        # Ensure no old shelfmarks are equal to shelfmark 
+        # Ensure no old shelfmarks are equal to shelfmark
         # (this also makes duplicates impossible)
         frag.shelfmark = 'TS 1'
         frag.save()
@@ -165,7 +167,8 @@ class TestFragment:
         # double check uniqueness, though the above test is equivalent
         frag.shelfmark = 'TS 4'
         frag.save()
-        assert len(set(frag.old_shelfmarks.split(';'))) == len(frag.old_shelfmarks.split(';'))
+        assert len(set(frag.old_shelfmarks.split(';'))) == len(
+            frag.old_shelfmarks.split(';'))
 
 
 class TestDocumentType:
@@ -280,6 +283,39 @@ class TestDocument:
         assert doc.is_public()
         doc.status = 'S'
         assert not doc.is_public()
+
+    def test_get_absolute_url(self):
+        doc = Document.objects.create(id=1)
+        assert doc.get_absolute_url() == "/documents/1/"
+
+    def test_iiif_urls(self):
+        # create example doc with two fragments with URLs
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark='s1', iiif_url="foo")
+        frag2 = Fragment.objects.create(shelfmark='s2', iiif_url="bar")
+        TextBlock.objects.create(document=doc, fragment=frag, order=1)
+        TextBlock.objects.create(document=doc, fragment=frag2, order=2)
+        assert doc.iiif_urls() == ["foo", "bar"]
+        # only one URL
+        frag2.iiif_url = ""
+        frag2.save()
+        assert doc.iiif_urls() == ["foo"]
+        # no URLs
+        frag.iiif_url = ""
+        frag.save()
+        assert doc.iiif_urls() == []
+        # no fragments
+        frag.delete()
+        frag2.delete()
+        assert doc.iiif_urls() == []
+
+    def test_title(self):
+        doc = Document.objects.create(id=42)
+        assert doc.title == "Unknown (42)"
+        legal = DocumentType.objects.get_or_create(name="Legal")[0]
+        doc.doctype = legal
+        doc.save()
+        assert doc.title == "Legal (42)"
 
 
 @pytest.mark.django_db
