@@ -273,6 +273,12 @@ class Document(models.Model):
         return list(filter(None, self.fragments.values_list("iiif_url",
                                                             flat=True)))
 
+    @property
+    def title(self):
+        """Short title for identifying the document, e.g. via search."""
+        # NOTE preliminary, pending more discussion
+        return f"{self.doctype or 'Unknown'} ({self.id})"
+
 
 class TextBlock(models.Model):
     '''The portion of a document that appears on a particular fragment.'''

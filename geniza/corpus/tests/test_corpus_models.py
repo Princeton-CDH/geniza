@@ -309,6 +309,14 @@ class TestDocument:
         frag2.delete()
         assert doc.iiif_urls() == []
 
+    def test_title(self):
+        doc = Document.objects.create(id=42)
+        assert doc.title == "Unknown (42)"
+        legal = DocumentType.objects.get_or_create(name="Legal")[0]
+        doc.doctype = legal
+        doc.save()
+        assert doc.title == "Legal (42)"
+
 
 @pytest.mark.django_db
 class TestTextBlock:
