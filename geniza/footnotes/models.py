@@ -81,9 +81,6 @@ class Source(models.Model):
     url = models.URLField(blank=True)
     # preliminary place to store transcription text; should not be editable
     notes = models.TextField(blank=True)
-    content = models.JSONField(
-        blank=True, null=True,
-        help_text='Transcription content (preliminary)')
 
     class Meta:
         # set default order to title, year for now since first-author order
@@ -128,6 +125,9 @@ class Footnote(models.Model):
         choices=DOCUMENT_RELATION_TYPES,
         help_text='How does the source relate to this document?')
     notes = models.TextField(blank=True)
+    content = models.JSONField(
+        blank=True, null=True,
+        help_text='Transcription content (preliminary)')
 
     # Generic relationship
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
