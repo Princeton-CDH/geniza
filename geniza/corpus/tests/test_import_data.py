@@ -686,8 +686,19 @@ source_input = [
     # Ed. Khan, el-Leithy, Rustow and Vanthieghem https://docs
 
     # unpublished items with titles
-    # ed. Goitein, India Book 6 (unpublished), ו14
+    ('ed. Goitein, India Book 6 (unpublished), ו14',
+     {'type': 'Unpublished', 'authors': ['Goitein, S. D.'],
+      'title': 'India Book 6 (unpublished)'}),  # notes/location?
     # typed texts
+    ('Ed. Goitein, typed texts',
+     {'type': 'Unpublished', 'authors': ['Goitein, S. D.'],
+      'title': 'typed texts'}),
+    # book with volume information
+    ('Ed. Gil, Palestine, vol. 2, #177',
+     {'type': 'Book', 'authors': ['Gil, Moshe'],
+      'title': 'Palestine', 'volume': '2'})
+
+
 
 ]
 
@@ -705,6 +716,13 @@ def test_get_source(test_input, expected):
         assert author == str(source.authorship_set.all()[i].creator)
     # url should match when present, be unset otherwise
     assert expected.get('url', '') == source.url
+    # title should match when present; unset otherwise
+    assert expected.get('title') == source.title
+    # volume should match when present; unset otherwise
+    assert expected.get('volume', '') == source.volume
+
+
+# test get existing source
 
 
 # Ed. Gil, Palestine, vol. 2, #177

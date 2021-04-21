@@ -596,7 +596,7 @@ class Command(BaseCommand):
 
     re_book = re.compile(
         r'^(?:[Ee]d\. )?(?P<author>[^,]+)(?:, (?P<title>[^,]+)' +
-        r'(?:, vol. (?P<vol>\d+))?(?:, (?P<notes>.*)))?')
+        r'(?:, vol. (?P<vol>\d+))?)?(?:, (?P<notes>.*))?$')
 
     re_diss = re.compile(
         r'(?:[Ee]d\. )?(?P<author>[^,]+), ["\'](?P<title>[^"\']+)["\']' +
@@ -649,12 +649,13 @@ class Command(BaseCommand):
             url = url_match.group('url')
             edition = self.re_url.sub('', edition).strip()
 
-        # dissertation
+        src_type = None
+        # check for dissertation, since it requires a different regex
         if "diss" in edition:
             src_type = self.source_types['Dissertation']
             match = self.re_diss.match(edition)
             ed_info = match.groupdict()
-
+        # otherwise use the general/non-dissertation regex
         else:
             match = self.re_book.match(edition)
             if match:
@@ -667,7 +668,7 @@ class Command(BaseCommand):
                         ed_info['author'].split(' and ')
 
             else:
-                print('no match for "%s"' % edition)
+                print('regex did not match "%s"' % edition)
                 return
 
         # use info to create source, creator, etc.
@@ -678,47 +679,45 @@ class Command(BaseCommand):
             if author:
                 authors.append(self.get_source_creator(author))
 
-        # if there is no title, then this edition only occurs once and is
-        # specific to the corresponding document; create a new source
-        # TODO: consolidate logic so we only create new source record once
-        # (skip lookup if no title)
+        # determine src type if we haven't already (i.e., dissertation)
+        if not src_type:
+            # unpublished editions: typed texts, unpublished, or no title
+            # (no title indicates pgp-only edition)
+            if not ed_info.get('title') or \
+               "typed texts" in edition or "unpublished" in edition:
+                src_type = self.source_types['Unpublished']
+
+            # TODO: determine book / article based on formatting
+            else:
+                src_type = self.source_types['Book']
+
+        # if there is a title, look to see if this source already exists
+        # (no title indicates pgp-only edition, so this source cannot exist)
         if not ed_info.get('title'):
-            src_type = self.source_types['Unpublished']
-            source = Source.objects.create(source_type=src_type, url=url)
-            # TODO: notes
-            self.add_source_authors(source, authors)
-            # TODO: create log entry
+            author_lastnames = [a.last_name for a in authors]
 
-            return source
-
-        # if "typed texts" or "unpublished" source type = unpublished
-
-        # unpublished editions: typed texts, unpublished, or no title
-        if "typed texts" in edition or "unpublished" in edition:
-            src_type = self.source_types['Unpublished']
-            print(src_type)
-            authors = []
-
-        # TODO: determine book / article based on formatting
-
-        # get the source if it already exists
-        author_lastnames = [a.last_name for a in authors]
-        source = Source.objects.filter(
-            title=ed_info['title'],
-            creator__last_name__in=author_lastnames,
-            source_type=src_type)
-        if source.exists():
-            print('found existing source! %s' % source.first())
+            source = Source.objects.filter(
+                title=ed_info['title'],
+                authors__last_name__in=author_lastnames,
+                source_type=src_type)
+            if source.exists():
+                print('found existing source! %s' % source.first())
+                # if we found an existing source, return it
+                return source
             # TODO: error if we get more than one match
-        else:
-            # create the source!
-            source = Source.objects.create(
-                source_type=src_type, title=ed_info['title'],
-                url=ed_info['url'])  # more fields todo
-            # add authors
-            self.add_source_authors(source, authors)
+
+        # existing source not found;create a new one!
+        source = Source.objects.create(
+            source_type=src_type, title=ed_info['title'],
+            url=url, volume=ed_info.get('vol') or '')
+            # more fields todo: year, edition, language
+        # associate authors
+        self.add_source_authors(source, authors)
+
+        # todo: return notes for footnote location?
+        return source
 
     def add_source_authors(self, source, authors):
-        # add authors, in order
+        # add authors, preserving listed order
         for i, author in enumerate(authors, 1):
             source.authorship_set.create(creator=author, sort_order=i)

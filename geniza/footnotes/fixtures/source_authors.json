@@ -61,5 +61,23 @@
     "last_name": "Bailey",
     "last_name_en": "Bailey"
   }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "S. D.",
+    "first_name_en": "S. D.",
+    "last_name": "Goitein",
+    "last_name_en": "Goitein"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Moshe",
+    "first_name_en": "Moshe",
+    "last_name": "Gil",
+    "last_name_en": "Gil"
+  }
 }
 ]
