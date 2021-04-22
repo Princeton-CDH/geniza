@@ -88,14 +88,37 @@ class Source(models.Model):
         ordering = ['title', 'year']
 
     def __str__(self):
-        # generate simple string representation:
-        # title, author or title (year), author
-        parts = [self.title]
-        if self.year:
-            parts.append(' (%d)' % self.year)
+        # generate simple string representation similar to
+        # how records were listed in the metadata spreadsheet
+        # author lastname, title (year)
+
+        # author
+        # author, title
+        # author, title (year)
+        # author (year)
+
+        text = ''
         if self.authorship_set.exists():
-            parts.append(', %s' % self.all_authors())
-        return ''.join(parts)
+            author_lastnames = [a.creator.last_name
+                                for a in self.authorship_set.all()]
+            # combine the last pair with and; combine all others with comma
+            # thanks to https://stackoverflow.com/a/30084022
+            if len(author_lastnames) > 1:
+                text = " and ".join([", ".join(author_lastnames[:-1]),
+                                     author_lastnames[-1]])
+            else:
+                text = author_lastnames[0]
+
+        if self.title:
+            # delimit with comma if there is an author
+            if text:
+                text = ', '.join([text, self.title])
+            else:
+                text = self.title
+
+        if self.year:
+            text = '%s (%d)' % (text, self.year)
+        return text
 
     def all_authors(self):
         '''semi-colon delimited list of authors in order'''

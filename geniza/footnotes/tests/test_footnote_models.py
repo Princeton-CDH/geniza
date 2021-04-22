@@ -23,14 +23,28 @@ class TestSourceLanguage:
 class TestSource:
 
     @pytest.mark.django_db
-    def test_str(self, source):
-        # source has no year; str should be title, creators
+    def test_str(self, source, twoauthor_source, multiauthor_untitledsource):
+        # source has no year; str should be creator lastname, title,
         assert str(source) == \
-            '%s, %s' % (source.title, source.authors.first())
+            '%s, %s' % (source.authors.first().last_name, source.title)
         # set a year
         source.year = 1984
         assert str(source) == \
-            '%s (1984), %s' % (source.title, source.authors.first())
+            '%s, %s (1984)' % (source.authors.first().last_name, source.title)
+
+        # two authors
+        assert str(twoauthor_source) == \
+            '%s and %s, %s' % (
+                twoauthor_source.authors.first().last_name,
+                twoauthor_source.authors.all()[1].last_name,
+                twoauthor_source.title)
+
+        # four authors, no title
+        lastnames = [a.creator.last_name for
+                     a in multiauthor_untitledsource.authorship_set.all()]
+        print(lastnames)
+        assert str(multiauthor_untitledsource) == \
+            '%s, %s, %s and %s' % tuple(lastnames)
 
     def test_all_authors(self, twoauthor_source):
         author1, author2 = twoauthor_source.authorship_set.all()
