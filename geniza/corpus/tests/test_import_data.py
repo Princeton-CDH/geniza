@@ -688,7 +688,7 @@ source_input = [
     # unpublished items with titles
     ('ed. Goitein, India Book 6 (unpublished), ו14',
      {'type': 'Unpublished', 'authors': ['Goitein, S. D.'],
-      'title': 'India Book 6 (unpublished)'}),  # notes/location?
+      'title': 'India Book 6'}),  # notes/location?
     # typed texts
     ('Ed. Goitein, typed texts',
      {'type': 'Unpublished', 'authors': ['Goitein, S. D.'],
@@ -696,9 +696,19 @@ source_input = [
     # book with volume information
     ('Ed. Gil, Palestine, vol. 2, #177',
      {'type': 'Book', 'authors': ['Gil, Moshe'],
-      'title': 'Palestine', 'volume': '2'})
-
-
+      'title': 'Palestine', 'volume': '2'}),
+    # dissertation
+    ("Ed. Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-25, pp. 325-28",
+     {'type': 'Dissertation', 'authors': ['Ashur, Amir'], 'year': '2006',
+      'title': 'Engagement and Betrothal Documents from the Cairo Geniza',
+      'language': 'Hebrew'}),
+    # article
+    ('Ed. Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz 2015, 135–61, at 156f. Awaiting digitization on PGP.',
+     {'type': 'Article', 'authors': ['Friedman, Mordechai Akiva'],
+      'title': 'Maimonides Appoints R. Anatoly Muqaddam of Alexandria',
+      'language': 'Hebrew', 'year': '2015'})
+    # Tarbiz 2015, 135–61, }
+    # year, language
 
 ]
 
@@ -714,13 +724,16 @@ def test_get_source(test_input, expected):
     # check all authors added, in expected order
     for i, author in enumerate(expected['authors']):
         assert author == str(source.authorship_set.all()[i].creator)
-    # url should match when present, be unset otherwise
-    assert expected.get('url', '') == source.url
-    # title should match when present; unset otherwise
-    assert expected.get('title') == source.title
-    # volume should match when present; unset otherwise
-    assert expected.get('volume', '') == source.volume
 
+    # fields that should match when present or be unset
+    assert expected.get('url', '') == source.url
+    assert expected.get('title', '') == source.title
+    assert expected.get('volume', '') == source.volume
+    assert expected.get('year') == source.year
+    # check that language was associated if specified
+
+    assert expected.get('language', '') ==  \
+        ', '.join(lang.name for lang in source.languages.all())
 
 # test get existing source
 

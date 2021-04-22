@@ -79,5 +79,23 @@
     "last_name": "Gil",
     "last_name_en": "Gil"
   }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Amir",
+    "first_name_en": "Amir",
+    "last_name": "Ashur",
+    "last_name_en": "Ashur"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Mordechai Akiva",
+    "first_name_en": "Mordechai Akiva",
+    "last_name": "Friedman",
+    "last_name_en": "Friedman"
+  }
 }
 ]

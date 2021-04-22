@@ -22,7 +22,8 @@ from django.utils.timezone import get_current_timezone, make_aware
 
 from geniza.corpus.models import (Collection, Document, DocumentType, Fragment,
                                   LanguageScript, TextBlock)
-from geniza.footnotes.models import Creator, Footnote, Source, SourceType
+from geniza.footnotes.models import Creator, Footnote, Source, SourceLanguage,\
+    SourceType
 
 # mapping for csv header fields and local name we want to use
 # if not specified, column will be lower-cased
@@ -594,15 +595,6 @@ class Command(BaseCommand):
 
     re_url = re.compile(r'(?P<url>https://[^ ]+)')
 
-    re_book = re.compile(
-        r'^(?:[Ee]d\. )?(?P<author>[^,]+)(?:, (?P<title>[^,]+)' +
-        r'(?:, vol. (?P<vol>\d+))?)?(?:, (?P<notes>.*))?$')
-
-    re_diss = re.compile(
-        r'(?:[Ee]d\. )?(?P<author>[^,]+), ["\'](?P<title>[^"\']+)["\']' +
-        r'(?:\s+\((?P<lang>Hebrew)\))? \(PhD (?:diss.|dissertation), ' +
-        r'(?P<institution>[^,]+), (?P<year>\d{4})\), (?P<notes>.*)')
-
     def parse_editor(self, document, editor):
         # multiple editions are indicated by "; also ed."  or ". also ed."
         editions = re.split(r'[;.] also (?=ed.)', editor)
@@ -647,59 +639,73 @@ class Command(BaseCommand):
         if url_match:
             # save the url, and remove from edition text, to simplify parsing
             url = url_match.group('url')
-            edition = self.re_url.sub('', edition).strip()
+            edition = edition.replace(url, '').strip()
+            # edition = self.re_url.sub('', edition).strip()
 
-        src_type = None
-        # check for dissertation, since it requires a different regex
-        if "diss" in edition:
-            src_type = self.source_types['Dissertation']
-            match = self.re_diss.match(edition)
-            ed_info = match.groupdict()
-        # otherwise use the general/non-dissertation regex
-        else:
-            match = self.re_book.match(edition)
-            if match:
-                # if match but no title, PGP edition (unpublished)
-                ed_info = match.groupdict()
-                # split out multiple authors via string compare rather than
-                # complicating the regex further
-                if ' and ' in ed_info['author']:
-                    ed_info['author'], ed_info['author2'] = \
-                        ed_info['author'].split(' and ')
+        # check for 4-digit year and store it if present
+        year = None
+        year_match = re.search(r'\b(?P<year>\d{4})\b', edition)
+        if year_match:
+            year = year_match.group('year')
+            edition = edition.replace(year, '')
 
-            else:
-                print('regex did not match "%s"' % edition)
-                return
+        # remove Ed./ed. at the beginning (also trans.?)
+        edition = re.sub(r'[Ee]d\. ', '', edition)
 
-        # use info to create source, creator, etc.
-        print(ed_info)
-        # get creator references for author names
+        # split into chunks on commas, parentheses, brackets
+        ed_parts = [p.strip() for p in re.split(r'[,()[\]]', edition)]
+
+        # author or authors always listed first
+        author_names = re.split(r', | and ', ed_parts.pop(0))
         authors = []
-        for author in [ed_info.get('author'), ed_info.get('author2')]:
-            if author:
-                authors.append(self.get_source_creator(author))
+        for author in author_names:
+            authors.append(self.get_source_creator(author))
 
-        # determine src type if we haven't already (i.e., dissertation)
-        if not src_type:
-            # unpublished editions: typed texts, unpublished, or no title
-            # (no title indicates pgp-only edition)
-            if not ed_info.get('title') or \
-               "typed texts" in edition or "unpublished" in edition:
-                src_type = self.source_types['Unpublished']
+        # set defaults for information that may not be present
+        title = volume = language = location = ''
+        # if there are more parts, the second is the title
+        if ed_parts:
+            title = ed_parts.pop(0)
 
-            # TODO: determine book / article based on formatting
+        # determine source type
+        if "diss" in edition:
+            src_type = 'Dissertation'
+        elif not title:
+            src_type = 'Unpublished'
+        elif "typed texts" in edition or "unpublished" in edition:
+            src_type = 'Unpublished'
+        # title with quotes indicates Article
+        elif title[0] in ["'", '"']:
+            src_type = 'Article'
+        # if it isn't anything else, it's a book
+        else:
+            src_type = 'Book'
+
+        # strip any quotes from beginning and end of title
+        title = title.strip('"\'')
+
+        # figure out what the rest of the pieces are, if any
+        note_lines = []   # notes probably apply to footnote, not source
+        for part in ed_parts:
+            # vol. indicates volume
+            if 'vol.' in part:
+                volume = part.replace('vol.', '').strip()
+            elif any([val in part for val in ['Doc', 'pp.', '#', ' at ']]):
+                location = part
+            elif any([val in part for val in ['Hebrew', 'German']]):
+                language = part
+            # otherwise, stick it in the notes
             else:
-                src_type = self.source_types['Book']
+                note_lines.append(part)
 
         # if there is a title, look to see if this source already exists
         # (no title indicates pgp-only edition, so this source cannot exist)
-        if not ed_info.get('title'):
+        if title:
             author_lastnames = [a.last_name for a in authors]
-
             source = Source.objects.filter(
-                title=ed_info['title'],
+                title=title,
                 authors__last_name__in=author_lastnames,
-                source_type=src_type)
+                source_type__type=src_type)
             if source.exists():
                 print('found existing source! %s' % source.first())
                 # if we found an existing source, return it
@@ -708,9 +714,15 @@ class Command(BaseCommand):
 
         # existing source not found;create a new one!
         source = Source.objects.create(
-            source_type=src_type, title=ed_info['title'],
-            url=url, volume=ed_info.get('vol') or '')
-            # more fields todo: year, edition, language
+            source_type=self.source_types[src_type],
+            title=title,
+            url=url, volume=volume,
+            year=year)
+        # TODO: more fields todo: edition
+        # associate language if specified
+        if language:
+            lang = SourceLanguage.objects.get(name=language)
+            source.languages.add(lang)
         # associate authors
         self.add_source_authors(source, authors)
 
