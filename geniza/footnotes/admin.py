@@ -33,9 +33,11 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     fields = (
         'source_type',
         'title', 'year',
-        'edition', 'volume', 'location',
-        'languages'
+        'edition', 'volume',
+        'languages',
+        'notes'
     )
+    list_filter = ('source_type', 'authors')
 
     inlines = [AuthorshipInline]
 
