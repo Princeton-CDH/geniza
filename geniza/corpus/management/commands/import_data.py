@@ -48,6 +48,8 @@ csv_fields = {
         'Shelfmark - Historical (optional)': 'shelfmark_historic',
         'Multifragment (optional)': 'multifragment',
         'Link to image': 'image_link',
+        'Editor(s)': 'editor',
+        'Translator (optional)': 'translator'
     }
 }
 
@@ -95,7 +97,6 @@ class Command(BaseCommand):
                      app_label="corpus", verbosity=0)
         logger.info("loaded 30 historic users")
 
-
         # ensure current active users are present, but don't try to create them
         # in a test environment because it's slow and requires VPN access
         active_users = ["rrichman", "mrustow", "ae5677", "alg4"]
@@ -122,6 +123,10 @@ class Command(BaseCommand):
 
     def source_setup(self):
         # setup for importing editions & transcriptions
+
+        # delete source records created on a previous run
+        Creator.objects.all().delete()
+        Source.objects.all().delete()  # should cascade to footnotes
 
         # load fixure with source creators referenced in the spreadsheet
         call_command("loaddata", "source_authors",
@@ -314,6 +319,12 @@ class Command(BaseCommand):
             self.log_edit_history(doc, self.get_edit_history(row.input_by,
                                                              row.date_entered,
                                                              row.pgpid))
+            # parse editor & translator information to create sources
+            # and associate with footnotes
+            editor = row.editor.strip('.')
+            if editor and editor not in self.editor_ignore:
+                self.parse_editor(doc, editor)
+            # todo: translator also
 
             # keep track of any joins to handle on a second pass
             if row.joins.strip():
@@ -595,43 +606,66 @@ class Command(BaseCommand):
 
     re_url = re.compile(r'(?P<url>https://[^ ]+)')
 
+    # ignore these entries in the editor field:
+    editor_ignore = [
+        'Awaiting transcription',
+        'Transcription listed on FGP',
+        'Transcription listed in FGP, awaiting digitization on PGP',
+        'Source of transcription not noted in original PGP database',
+        'yes',
+        'Partial transcription listed in FGP, awaiting digitization on PGP',
+        'Partial transcription listed in FGP, awaiting digitization on PGP.',
+        'Transcription (recto only) listed in FGP, awaiting digitization on PGP',
+    ]
+
     def parse_editor(self, document, editor):
         # multiple editions are indicated by "; also ed."  or ". also ed."
-        editions = re.split(r'[;.] also (?=ed.)', editor)
-
-        # for now, return dict of parsed info for testing
-        # _probably_ should return source and note for creating the footnote?
-        # footnote needs to be created & linked to the document somewhere
-
-        # - determine source type
-        # - parse based on source type
-        # - get or create creator (may need lookup table for variants)
-
-        # - otherwise, get or create source record
-        #   (will variants be a problem here also?)
-        # - create footnote linking source and document with appropriate
-        #   doc relation type (edition, optionally more based on key)
-
-        # determine type first?
-
-        # SOURCE_TYPES = ['Book', 'Article', 'Unpublished', 'Dissertation', 'Blog']
+        # split so we can parse each edition separately and add a footnote
+        editions = re.split(r'[;.] [Aa]lso (?:ed.)?', editor)
 
         info = []
         for edition in editions:
-            print(edition)
+            if edition in self.editor_ignore:
+                continue
+            # print(edition)
             # get or create source for this edition
-            source = self.get_source(edition)
-            # create footnote with edition flag
-            # if "and trans" set translation flag
+            # TODO: strip off known notes and location before handoff?
+            # ? or request cleanup work to indicate notes?
+            # ; with minor
+            # , with minor
+            # . With minor
+            # . minor
+            # Transcription listed in
+            try:
+                source = self.get_source(edition, document)
+                # create footnote with edition flag
+                doc_relation = set(Footnote.EDITION)
+                # if "and trans" set translation flag
+                if "and trans" in edition:
+                    doc_relation.add(Footnote.TRANSLATION)
+                # TODO: location, notes
+                fn = Footnote(source=source, content_object=document,
+                              doc_relation=doc_relation)
+                fn.save()
+            except KeyError as err:
+                logger.error('Error parsing PGDID %d editor %s: %s' %
+                             (document.id, edition, err))
 
     def get_source_creator(self, name):
         # last name is always present, and last names are unique
         lastname = name.rsplit(' ')[-1]
-        return self.source_creators[lastname]
+        try:
+            return self.source_creators[lastname]
+        except Exception:
+            logger.error('Source creator not found for %s' % name)
+            raise
 
-    def get_source(self, edition):
+    def get_source(self, edition, document):
         # parse the edition information and get the source for this scholarly
         # record if it already exists; if it doesn't, create it
+
+        # create a list of text to add to notes
+        note_lines = []   # notes probably apply to footnote, not source
 
         # check for url and store if present
         url_match = self.re_url.search(edition)
@@ -644,18 +678,28 @@ class Command(BaseCommand):
 
         # check for 4-digit year and store it if present
         year = None
-        year_match = re.search(r'\b(?P<year>\d{4})\b', edition)
+        # one record has a date range; others have a month
+        year_match = re.search(r'\b(?P<match>(\d{4}–|\d{2}/)?(?P<year>\d{4}))\b',
+                               edition)
         if year_match:
+            # store the year
             year = year_match.group('year')
-            edition = edition.replace(year, '')
+            # check full match against year; if they defer, add to notes
+            full_match = year_match.group('match')
+            if full_match != year:
+                note_lines.append(full_match)
+            edition = edition.replace(full_match, '').strip(' .')
 
         # remove Ed./ed. at the beginning (also trans.?)
         edition = re.sub(r'[Ee]d\. ', '', edition)
 
-        # split into chunks on commas, parentheses, brackets
-        ed_parts = [p.strip() for p in re.split(r'[,()[\]]', edition)]
+        # TODO: need to handle more than one author
+        # (maybe as a special case?)
 
-        # author or authors always listed first
+        # split into chunks on commas, parentheses, brackets, semicolons
+        ed_parts = [p.strip() for p in re.split(r'[,()[\];]', edition)]
+
+        # authors always listed first
         author_names = re.split(r', | and ', ed_parts.pop(0))
         authors = []
         for author in author_names:
@@ -672,7 +716,8 @@ class Command(BaseCommand):
             src_type = 'Dissertation'
         elif not title:
             src_type = 'Unpublished'
-        elif "typed texts" in edition or "unpublished" in edition:
+        elif any([term in edition for term in
+                 ["typed texts", "unpublished", "handwritten texts"]]):
             src_type = 'Unpublished'
         # title with quotes indicates Article
         elif title[0] in ["'", '"']:
@@ -685,14 +730,13 @@ class Command(BaseCommand):
         title = title.strip('"\'')
 
         # figure out what the rest of the pieces are, if any
-        note_lines = []   # notes probably apply to footnote, not source
         for part in ed_parts:
             # vol. indicates volume
             if 'vol.' in part:
                 volume = part.replace('vol.', '').strip()
             elif any([val in part for val in ['Doc', 'pp.', '#', ' at ']]):
                 location = part
-            elif any([val in part for val in ['Hebrew', 'German']]):
+            elif part in ['Hebrew', 'German']:
                 language = part
             # otherwise, stick it in the notes
             else:
@@ -702,13 +746,18 @@ class Command(BaseCommand):
         # (no title indicates pgp-only edition, so this source cannot exist)
         if title:
             author_lastnames = [a.last_name for a in authors]
-            source = Source.objects.filter(
-                title=title,
+            sources = Source.objects.filter(
+                title=title, volume=volume,
                 authors__last_name__in=author_lastnames,
                 source_type__type=src_type)
-            if source.exists():
-                print('found existing source! %s' % source.first())
-                # if we found an existing source, return it
+            if sources.exists():
+                source = sources.first()
+                # print('found existing source! %s' % source)
+                # set year if available and not already set
+                if not source.year and year:
+                    source.year = year
+                    source.save()
+                # return the existing source for creating a footnote
                 return source
             # TODO: error if we get more than one match
 
@@ -717,8 +766,9 @@ class Command(BaseCommand):
             source_type=self.source_types[src_type],
             title=title,
             url=url, volume=volume,
-            year=year)
-        # TODO: more fields todo: edition
+            year=year,
+            notes='Created from PGPID %s' % document.id)
+        # TODO: more fields todo: edition?
         # associate language if specified
         if language:
             lang = SourceLanguage.objects.get(name=language)

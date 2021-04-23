@@ -1,7 +1,7 @@
 import datetime
 import logging
 from io import StringIO
-from unittest.mock import DEFAULT, patch
+from unittest.mock import DEFAULT, Mock, patch
 
 import pytest
 import requests
@@ -288,10 +288,10 @@ def test_import_documents(mockrequests, caplog):
     mockrequests.codes = requests.codes   # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
-        b'PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins',
-        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,',
-        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA',
-        b'2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,'
+        b'PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s)',
+        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,',
+        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,',
+        b'2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,'
     ])
     with caplog.at_level(logging.INFO, logger="import"):
         import_data_cmd.import_documents()
@@ -683,8 +683,14 @@ source_input = [
      {'type': 'Unpublished', 'authors': ['Rustow, Marina', 'Bailey, Anna'],
       'url': 'https://example.co'}),
     # TODO: more than two authors!
-    # Ed. Khan, el-Leithy, Rustow and Vanthieghem https://docs
-
+    # FIXME: not working
+    ('Ed. Lorenzo Bondioli, Tamer el-Leithy, Joshua Picard, Marina Rustow and Zain Shirazi, 2016–2018. https://example.co/doc',
+     {'type': 'Unpublished',
+      'authors': ['Bondioli, Lorenzo', 'el-Leithy, Tamer', 'Picard, Joshua',
+                  'Rustow, Marina', 'Shirazi, Zain'],
+      'url': 'https://example.co/doc'}
+     # year??
+     ),
     # unpublished items with titles
     ('ed. Goitein, India Book 6 (unpublished), ו14',
      {'type': 'Unpublished', 'authors': ['Goitein, S. D.'],
@@ -716,9 +722,10 @@ source_input = [
 @pytest.mark.django_db
 @pytest.mark.parametrize("test_input,expected", source_input)
 def test_get_source(test_input, expected):
+    doc = Mock(id=345)
     import_data_cmd = import_data.Command()
     import_data_cmd.source_setup()
-    source = import_data_cmd.get_source(test_input)
+    source = import_data_cmd.get_source(test_input, doc)
     # check type
     assert expected['type'] == source.source_type.type
     # check all authors added, in expected order
