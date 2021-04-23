@@ -3,99 +3,529 @@
   "model": "footnotes.creator",
   "fields": {
     "first_name": "Ṣabīḥ",
-    "first_name_en": "Ṣabīḥ",
-    "last_name": "ʿAodeh",
-    "last_name_en": "ʿAodeh"
+    "last_name": "ʿAodeh"
   }
 },
 {
   "model": "footnotes.creator",
   "fields": {
     "first_name": "Mark",
-    "first_name_en": "Mark",
-    "last_name": "Cohen",
-    "last_name_en": "Cohen"
+    "last_name": "Cohen"
   }
 },
 {
   "model": "footnotes.creator",
   "fields": {
     "first_name": "A. L.",
-    "first_name_en": "A. L.",
-    "last_name": "Udovitch",
-    "last_name_en": "Udovitch"
+    "last_name": "Udovitch"
   }
 },
 {
   "model": "footnotes.creator",
   "fields": {
     "first_name": "Alan",
-    "first_name_en": "Alan",
-    "last_name": "Elbaum",
-    "last_name_en": "Elbaum"
+    "last_name": "Elbaum"
   }
 },
 {
   "model": "footnotes.creator",
   "fields": {
     "first_name": "Arnold",
-    "first_name_en": "Arnold",
-    "last_name": "Franklin",
-    "last_name_en": "Franklin"
+    "last_name": "Franklin"
   }
 },
 {
   "model": "footnotes.creator",
   "fields": {
     "first_name": "Marina",
-    "first_name_en": "Marina",
-    "last_name": "Rustow",
-    "last_name_en": "Rustow"
+    "last_name": "Rustow"
   }
 },
 {
   "model": "footnotes.creator",
   "fields": {
     "first_name": "Anna",
-    "first_name_en": "Anna",
-    "last_name": "Bailey",
-    "last_name_en": "Bailey"
+    "last_name": "Bailey"
   }
 },
 {
   "model": "footnotes.creator",
   "fields": {
     "first_name": "S. D.",
-    "first_name_en": "S. D.",
-    "last_name": "Goitein",
-    "last_name_en": "Goitein"
+    "last_name": "Goitein"
   }
 },
 {
   "model": "footnotes.creator",
   "fields": {
     "first_name": "Moshe",
-    "first_name_en": "Moshe",
-    "last_name": "Gil",
-    "last_name_en": "Gil"
+    "last_name": "Gil"
   }
 },
 {
   "model": "footnotes.creator",
   "fields": {
     "first_name": "Amir",
-    "first_name_en": "Amir",
-    "last_name": "Ashur",
-    "last_name_en": "Ashur"
+    "last_name": "Ashur"
   }
 },
 {
   "model": "footnotes.creator",
   "fields": {
     "first_name": "Mordechai Akiva",
-    "first_name_en": "Mordechai Akiva",
-    "last_name": "Friedman",
-    "last_name_en": "Friedman"
+    "last_name": "Friedman"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Olszowy-Schlanger"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Avraham",
+    "last_name": "David"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Lorenzo",
+    "last_name": "Bondioli"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Tamer",
+    "last_name": "el-Leithy"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Joshua",
+    "last_name": "Picard"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Zain",
+    "last_name": "Shirazi"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Naïm",
+    "last_name": "Vanthieghem"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Miriam",
+    "last_name": "Frenkel"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Yaara",
+    "last_name": "Perlman"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "O.",
+    "last_name": "Zinger"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Rivlin"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Chaim",
+    "last_name": "Milikowsky"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "P.",
+    "last_name": "Lieberman"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Geoffrey",
+    "last_name": "Khan"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Baneth"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Oded",
+    "last_name": "Zinger"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Motzkin"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Gottheil"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Worrell"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Dietrich"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Simonsohn"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Scheiber"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "S. M.",
+    "last_name": "Stern"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "M.",
+    "last_name": "Mikhael"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Marmonstein"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Nicholas de",
+    "last_name": "Lange"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Idan",
+    "last_name": "Perez"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Stephanie",
+    "last_name": "Luescher"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Alexander",
+    "last_name": "Scheiber"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Meri",
+    "last_name": "Weiss"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Jennifer",
+    "last_name": "Grayson"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Schechter"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Elinoar",
+    "last_name": "Bareket"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "B.",
+    "last_name": "Goldstein"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "G.",
+    "last_name": "Weiss"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Shmuel",
+    "last_name": "Glick"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Ashtor"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Breslavsky"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Ayala Meyer",
+    "last_name": "Eliyahu"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Paul",
+    "last_name": "Cobb"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Avraham",
+    "last_name": "Maimonides"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "J.",
+    "last_name": "Kraemer"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Marmorstein"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "R. E.",
+    "last_name": "Margariti"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Dotan",
+    "last_name": "Arad"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Aodeh"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Mann"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Dan",
+    "last_name": "Greenberger"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "J.",
+    "last_name": "Marglin"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Esther-Miriam",
+    "last_name": "Wagner"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Golb"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Allony"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "L. B.",
+    "last_name": "Yarbrough"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Shaul",
+    "last_name": "Shaked"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "O.",
+    "last_name": "Kahl"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Thamar",
+    "last_name": "Gindlin"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "O.",
+    "last_name": "Vaza"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Grace",
+    "last_name": "Masback"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Friedländer"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Schafer"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Menahem",
+    "last_name": "Ben-Sasson"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Outhwaite"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "S.",
+    "last_name": "Assaf"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Melammed"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "S.",
+    "last_name": "Abramson"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Me'ir",
+    "last_name": "Benayahu"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Fleischer"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Pritsak"
   }
 }
 ]
