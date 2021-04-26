@@ -22,8 +22,7 @@ class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
 class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = (
         'title', 'all_authors',
-        'year',
-        'edition',
+        'year', 'edition', 'footnote_count'
     )
 
     search_fields = (
@@ -46,6 +45,9 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
             .annotate(first_author=Concat('authorship__creator__last_name',
                                           'authorship__creator__first_name'))
 
+    def footnote_count(self, obj):
+        '''How many footnotes each source used in?'''
+        return obj.footnote_set.count()
 
 @admin.register(SourceType)
 class SourceTypeAdmin(admin.ModelAdmin):
