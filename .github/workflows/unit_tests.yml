@@ -65,6 +65,9 @@ jobs:
       - name: Upload test coverage to Codecov
         uses: codecov/codecov-action@v1
 
+      - name: Ensure all migrations have been created
+        run: python manage.py makemigrations --check --no-input
+
       # Set the color of the slack message used in the next step based on the
       # status of the build: "danger" for failure, "good" for success,
       # "warning" for error
