@@ -41,11 +41,12 @@ INSTALLED_APPS = [
     'taggit',
     'taggit_selectize',
     'pucas',
+    'multiselectfield',
+    'adminsortable2',
+    'parasolr',
     'geniza.common',
     'geniza.corpus',
     'geniza.footnotes',
-    'multiselectfield',
-    'adminsortable2',
 ]
 
 MIDDLEWARE = [

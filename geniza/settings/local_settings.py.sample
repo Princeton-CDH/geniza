@@ -34,3 +34,14 @@ DATA_IMPORT_URLS = {
     'libraries': '',
     'languages': ''
 }
+
+SOLR_CONNECTIONS = {
+    'default': {
+    'URL': 'http://localhost:8983/solr/',
+    'COLLECTION': 'geniza',
+    # Any configSet in SOLR_ROOT/server/solr/configsets.
+    #   The default configset name is "_default" as of Solr 7.
+    #   For Solr 6, "basic_configs" is the default.
+    'CONFIGSET': '_default'
+    }
+}
