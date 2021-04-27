@@ -207,6 +207,13 @@ class TestDocument:
         assert doc2.shelfmark == '%s + %s' % \
             (frag2.shelfmark, frag.shelfmark)
 
+        frag3 = Fragment.objects.create(shelfmark='T-S NS J195')
+        TextBlock.objects.create(document=doc2, fragment=frag3, order=3, certain=False)
+        # ensure that uncertain shelfmarks are not included in str
+        assert doc2.shelfmark == '%s + %s' % \
+            (frag2.shelfmark, frag.shelfmark)
+
+
     def test_str(self):
         frag = Fragment.objects.create(shelfmark='Or.1081 2.25')
         doc = Document.objects.create()
@@ -332,6 +339,11 @@ class TestTextBlock:
         block.extent_label = 'a'
         block.save()
         assert str(block) == '%s recto a' % frag.shelfmark
+
+        # with uncertainty label
+        block2 = TextBlock.objects.create(document=doc, fragment=frag,
+                                         side='r', certain=False)
+        assert str(block2) == '%s(?) recto' % frag.shelfmark
 
     def test_thumbnail(self):
         doc = Document.objects.create()

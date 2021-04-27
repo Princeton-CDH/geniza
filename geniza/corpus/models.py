@@ -234,7 +234,8 @@ class Document(models.Model):
         # access via textblock so we follow specified order,
         # use dict keys to ensure unique
         return ' + '.join(dict.fromkeys(block.fragment.shelfmark
-                          for block in self.textblock_set.all()))
+                          for block in self.textblock_set.all()
+                          if block.certain))
 
     @property
     def collection(self):
@@ -285,6 +286,7 @@ class TextBlock(models.Model):
     '''The portion of a document that appears on a particular fragment.'''
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
+    certain = models.BooleanField(default=True)
     RECTO = 'r'
     VERSO = 'v'
     RECTO_VERSO = 'rv'
@@ -311,7 +313,8 @@ class TextBlock(models.Model):
 
     def __str__(self):
         # combine shelfmark, side, and optionally text block
-        parts = [self.fragment.shelfmark, self.get_side_display(),
+        certainty_str = '(?)' if not self.certain else ''
+        parts = [self.fragment.shelfmark + certainty_str, self.get_side_display(),
                  self.extent_label]
         return ' '.join(p for p in parts if p)
 
