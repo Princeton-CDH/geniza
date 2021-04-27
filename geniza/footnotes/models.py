@@ -36,7 +36,7 @@ class Creator(models.Model):
     last_name = models.CharField(max_length=255)
 
     def __str__(self):
-        return f'{self.last_name}, {self.first_name}'
+        return ', '.join([n for n in [self.last_name, self.first_name] if n])
 
     class Meta:
         ordering = ['last_name', 'first_name']

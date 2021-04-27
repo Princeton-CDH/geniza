@@ -68,6 +68,9 @@ class TestCreator:
         creator = Creator(last_name='Angelou', first_name='Maya')
         str(creator) == 'Angelou, Maya'
 
+        # no firstname
+        assert str(Creator(last_name='Goitein')) == 'Goitein'
+
 
 class TestAuthorship:
 
