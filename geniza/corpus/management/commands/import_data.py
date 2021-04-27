@@ -615,6 +615,7 @@ class Command(BaseCommand):
         'Transcription listed in FGP, awaiting digitization on PGP',
         'Source of transcription not noted in original PGP database',
         'yes',
+        'Partial transcription listed in FGP, awaiting digitization on PGP.',
         'Partial transcription listed in FGP, awaiting digitization on PGP',
         'Transcription (recto only) listed in FGP, awaiting digitization on PGP',
     ]
@@ -631,17 +632,20 @@ class Command(BaseCommand):
         r'[.;] (?P<note>(' +
         r'(full )?transcription (listed|awaiting).*$|' +
         r'(with )?minor|with corrections).*$|' +
-        r'(\(\w+ \w+ [\w ]+\)$))',
+        r'(\(\w+ [\w ]+\) ?$))',
         flags=re.I)
 
     # regexes to pull out page or document location
     re_page_location = re.compile(
-        r', (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+))\.?',
+        r'[,.] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+))\.?',
         flags=re.I)
     re_doc_location = re.compile(
         r'(, )?\(?(?P<doc>(Doc. #?|#)([A-Z]-)?\d+)\)?\.?',
         flags=re.I)
-    # TODO: handle goitein refs like ב55 א33 ג48 ז4א
+    # \u0590-\u05fe = range for hebrew characters
+    re_goitein_section = re.compile(
+        r' (?P<p>(\d+?[\u0590-\u05fe]|[\u0590-\u05fe]\d+)[\u0590-\u05fe]?)',
+        flags=re.I)
 
     def parse_editor(self, document, editor):
         # multiple editions are indicated by "; also ed."  or ". also ed."
@@ -650,10 +654,8 @@ class Command(BaseCommand):
                             editor, flags=re.I)
 
         for edition in editions:
-            if edition.strip('.') in self.editor_ignore:
+            if edition.rstrip('.') in self.editor_ignore:
                 continue
-            print('parsing edition')
-            print(edition)
 
             # footnotes for these records are always editions
             doc_relation = {Footnote.EDITION}
@@ -691,9 +693,14 @@ class Command(BaseCommand):
             if page_match:
                 location.append(page_match.groupdict()['pages'])
                 edition_text = self.re_page_location.sub('', edition_text)
+            gsection_match = self.re_goitein_section.search(edition_text)
+            if gsection_match:
+                location.append(gsection_match.groupdict()['p'])
+                edition_text = self.re_goitein_section.sub('', edition_text)
 
             # remove any whitespace left after pulling out notes and location
-            edition_text = edition_text.strip()
+            # and strip any trailing punctuation
+            edition_text = edition_text.strip(' .,;')
             try:
                 source = self.get_source(edition_text, document)
                 fn = Footnote(source=source, content_object=document,
@@ -728,7 +735,6 @@ class Command(BaseCommand):
             # save the url, and remove from edition text, to simplify parsing
             url = url_match.group('url')
             edition = edition.replace(url, '').strip()
-            # edition = self.re_url.sub('', edition).strip()
 
         # check for 4-digit year and store it if present
         year = None
@@ -772,7 +778,7 @@ class Command(BaseCommand):
         title = volume = language = location = ''
         # if there are more parts, the second is the title
         if ed_parts:
-            title = ed_parts.pop(0)
+            title = ed_parts.pop(0).strip()
 
         # determine source type
         if "diss" in edition:
@@ -790,7 +796,7 @@ class Command(BaseCommand):
             src_type = 'Book'
 
         # strip any quotes from beginning and end of title
-        title = title.strip('"\'')
+        title = title.strip('"\'').strip()
 
         # figure out what the rest of the pieces are, if any
         for part in ed_parts:
@@ -805,37 +811,58 @@ class Command(BaseCommand):
             else:
                 note_lines.append(part)
 
-        # if there is a title, look to see if this source already exists
-        # (no title indicates pgp-only edition, so this source cannot exist)
-        if title:
-            author_lastnames = [a.last_name for a in authors]
-            sources = Source.objects.filter(
-                title=title, volume=volume,
-                authors__last_name__in=author_lastnames,
-                source_type__type=src_type)
+        # look to see if this source already exists
+        # (no title indicates pgp-only edition)
+        extra_opts = {}
+        # if there is no title but there is a year, include in filter
+        if not title and year:
+            extra_opts['year'] = year
 
-            if sources.count() > 1:
-                logger.warn(
-                    'Found multiple sources for %s, %title (%s)' %
-                    (author_lastnames, title, src_type))
+        author_lastnames = [a.last_name for a in authors]
+        sources = Source.objects.filter(
+            title=title, volume=volume,
+            authors__last_name__in=author_lastnames,
+            source_type__type=src_type, **extra_opts)
 
-            source = sources.first()
-            if source:
-                # set year if available and not already set
-                if not source.year and year:
-                    source.year = year
-                    source.save()
-                # return the existing source for creating a footnote
-                return source
+        if sources.count() > 1:
+            # FIXME: is empty volume not filtering?
+            logger.warn(
+                'Found multiple sources for %s, %s (%s)' %
+                (author_lastnames, title, src_type))
+            print(sources)
 
-        # existing source not found; create a new one!
+        source = sources.first()
+        if source:
+            updated = False
+            # set year if available and not already set
+            if title and not source.year and year:
+                source.year = year
+                updated = True
+
+            # if there is any note information, add to existing notes
+            if note_lines:
+                if source.notes:
+                    note_lines.insert(0, source.notes)
+                source.notes = '\n'.join(note_lines)
+                updated = True
+
+            # save changes if any were made
+            if updated:
+                source.save()
+
+            # return the existing source for creating a footnote
+            return source
+
+        # existing source not found;create a new one!
         source = Source.objects.create(
             source_type=self.source_types[src_type],
             title=title,
             url=url, volume=volume,
             year=year,
-            notes='Created from PGPID %s' % document.id)
-        # TODO: more fields todo: edition?
+            notes='\n'.join(
+                ['Created from PGPID %s' % document.id] +
+                note_lines))
+
         # associate language if specified
         if language:
             lang = SourceLanguage.objects.get(name=language)

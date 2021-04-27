@@ -606,7 +606,8 @@ editors_parsed = [
     ('Ed. M. Cohen',
      [{'get_source_arg': 'M. Cohen'}]),
     ('Ed. Goitein, India Book 5 (unpublished), ה25; ed. and trans. Phil Lieberman, Business of Identity, 263–70.',
-     [{'get_source_arg': 'Goitein, India Book 5 (unpublished), ה25'},
+     [{'get_source_arg': 'Goitein, India Book 5 (unpublished)',
+       'f_location': 'ה25'},
       {'get_source_arg': 'Phil Lieberman, Business of Identity',
        'translation': True, 'f_location': '263–70'}
       ]),
@@ -623,6 +624,11 @@ editors_parsed = [
     ('Ed. Friedman, Jewish Marriage, vol. 2, 384 (Doc. #51)',
      [{'get_source_arg': 'Friedman, Jewish Marriage, vol. 2, 384',
        'f_location': 'Doc. #51'}]),
+    # FIXME: failing
+    # actual record has url at end, which we don't handle properly
+    # ('Ed. Rustow and Vanthieghem (with suggestions from Khan and Shirazi)',
+    #  [{'get_source_arg': 'Rustow and Vanthieghem',
+    #    'f_notes': 'with suggestions from Khan and Shirazi'}])
 ]
 
 
