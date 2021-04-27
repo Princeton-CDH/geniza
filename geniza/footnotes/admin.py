@@ -31,14 +31,8 @@ class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
 
 class SourceFootnoteInline(admin.TabularInline):
     model = Footnote
-    autocomplete_fields = ['source']
     fields = ('page_range', 'doc_relation', 'notes',)
     extra = 1
-
-    def get_queryset(self, request):
-        source_id = request.path.split('/')[-3]
-        return Footnote.objects.filter(source=source_id)
-
 
 class DocumentFootnoteInline(GenericTabularInline):
     model = Footnote
