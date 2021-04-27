@@ -4,7 +4,10 @@ from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
+from django.db.models import Count
 from django.db.models.functions import Concat
+from django.urls import reverse, resolve
+from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.footnotes.models import Authorship, Creator, Footnote, Source, \
@@ -20,9 +23,11 @@ class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
 
 @admin.register(Source)
 class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+    footnote_admin_url = 'admin:footnotes_footnote_changelist'
+
     list_display = (
         'title', 'all_authors',
-        'year', 'edition', 'footnote_count'
+        'year', 'edition', 'footnotes'
     )
 
     search_fields = (
@@ -42,12 +47,17 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         return super().get_queryset(request) \
             .filter(models.Q(authorship__isnull=True) |
                     models.Q(authorship__sort_order=1)) \
-            .annotate(first_author=Concat('authorship__creator__last_name',
-                                          'authorship__creator__first_name'))
+            .annotate(Count('footnote', distinct=True),
+                        first_author=Concat('authorship__creator__last_name',
+                                          'authorship__creator__first_name'),
+            )
 
-    def footnote_count(self, obj):
-        '''How many footnotes each source used in?'''
-        return obj.footnote_set.count()
+    def footnotes(self, obj):
+        return format_html(
+            '<a href="{0}?source__id__exact={1!s}">{2}</a>',
+            reverse(self.footnote_admin_url), str(obj.id),
+            obj.footnote__count
+        )
 
 @admin.register(SourceType)
 class SourceTypeAdmin(admin.ModelAdmin):
