@@ -610,66 +610,54 @@ class Command(BaseCommand):
     editor_ignore = [
         'Awaiting transcription',
         'Transcription listed on FGP',
+        'Transcription listed on FGP, awaiting digitization on PGP',
         'Transcription listed in FGP, awaiting digitization on PGP',
         'Source of transcription not noted in original PGP database',
         'yes',
         'Partial transcription listed in FGP, awaiting digitization on PGP',
-        'Partial transcription listed in FGP, awaiting digitization on PGP.',
         'Transcription (recto only) listed in FGP, awaiting digitization on PGP',
     ]
 
     re_docrelation = re.compile(r'(. Also )?Ed. (and transl?.)? ?', flags=re.I)
 
     # notes that may occur with an edition
+    # - full transcription listed/awaiting ...
+    # - with (minor) ..
+    # - with corrections
+    # - multiword parenthetical at the end of the edition
+
     re_ed_notes = re.compile(
-        r'[.;] (?P<note>((full )?transcription (listed|awaiting)|(with )?minor).*$)',
+        r'[.;] (?P<note>(' +
+        r'(full )?transcription (listed|awaiting).*$|' +
+        r'(with )?minor|with corrections).*$|' +
+        r'(\(\w+ \w+ [\w ]+\)$))',
         flags=re.I)
 
-    # page or document location
-    # , pp. 95-96 (Doc. #56).
-    # , #046
-    # , 263–70.
-    # , p. 194
-    # , ב55 א33 ג48 ז4א
-    # , 141-5 (Doc. #12)
-    # , pp.127-137 (Doc. #2)
+    # regexes to pull out page or document location
     re_page_location = re.compile(
-        r', (?<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+))'
+        r', (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+))\.?',
         flags=re.I)
     re_doc_location = re.compile(
-        r'(, )?\(?(?P<doc>(Doc. #?|#)([A-Z]-)?\d+\)?)',
+        r'(, )?\(?(?P<doc>(Doc. #?|#)([A-Z]-)?\d+)\)?\.?',
         flags=re.I)
-    # TODO: section for goitein refs like ב55 א33 ג48 ז4א
+    # TODO: handle goitein refs like ב55 א33 ג48 ז4א
 
     def parse_editor(self, document, editor):
         # multiple editions are indicated by "; also ed."  or ". also ed."
         # split so we can parse each edition separately and add a footnote
         editions = re.split(r'[;.] (?=also ed.|ed.|also)',
                             editor, flags=re.I)
-        print(editions)
 
-        info = []
         for edition in editions:
-            if edition in self.editor_ignore:
+            if edition.strip('.') in self.editor_ignore:
                 continue
-
-            print('**parsing edition')
+            print('parsing edition')
             print(edition)
 
             # footnotes for these records are always editions
             doc_relation = {Footnote.EDITION}
             notes = []
-
-            # print(edition)
-            # get or create source for this edition
-            # TODO: strip off known notes and location before handoff?
-            # ? or request cleanup work to indicate notes?
-            # ; with minor
-            # , with minor
-            # . With minor
-            # . minor
-            # Transcription listed in
-
+            location = []
             # copy the edition text before removing any notes or
             # other information
             edition_text = edition
@@ -687,21 +675,29 @@ class Command(BaseCommand):
 
             ed_notes_match = self.re_ed_notes.search(edition_text)
             if ed_notes_match:
-                print('ed notes match')
-                print(ed_notes_match)
                 # save the notes to add to the footnote
                 # remove from the edition before parsing
                 edition_text = self.re_ed_notes.sub('', edition_text)
-                print('edition text')
-                print(edition_text)
                 notes.append(ed_notes_match.groupdict()['note'])
 
+            # if reference includes document or page location,
+            # remove and store for footnote location
+            doc_match = self.re_doc_location.search(edition_text)
+            if doc_match:
+                location.append(doc_match.groupdict()['doc'])
+                edition_text = self.re_doc_location.sub('', edition_text)
+            page_match = self.re_page_location.search(edition_text)
+            if page_match:
+                location.append(page_match.groupdict()['pages'])
+                edition_text = self.re_page_location.sub('', edition_text)
+
+            # remove any whitespace left after pulling out notes and location
+            edition_text = edition_text.strip()
             try:
                 source = self.get_source(edition_text, document)
-                # TODO: location, notes
-                print(notes)
                 fn = Footnote(source=source, content_object=document,
                               doc_relation=doc_relation,
+                              location=', '.join(location),
                               notes='\n'.join(notes))
                 fn.save()
             except KeyError as err:

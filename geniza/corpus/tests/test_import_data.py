@@ -603,57 +603,26 @@ def test_update_document_id_sequence():
 
 # editor input string and expected result
 editors_parsed = [
-    # ('Ed. Gil, Palestine, vol. 2, #177',
-    #  [{'author': 'Gil', 'title': 'Palestine', 'vol': '2', 'notes': '#177'}]),
-    # ('Ed. Friedman, Jewish Marriage, vol. 2, 384 (Doc. #51)',
-    #  [{'author': 'Friedman', 'title': 'Jewish Marriage',
-    #   'vol': '2', 'notes': '384 (Doc. #51)'}]),
     ('Ed. M. Cohen',
      [{'get_source_arg': 'M. Cohen'}]),
     ('Ed. Goitein, India Book 5 (unpublished), ה25; ed. and trans. Phil Lieberman, Business of Identity, 263–70.',
      [{'get_source_arg': 'Goitein, India Book 5 (unpublished), ה25'},
-      {'get_source_arg': 'Phil Lieberman, Business of Identity, 263–70.',
-       'translation': True}
+      {'get_source_arg': 'Phil Lieberman, Business of Identity',
+       'translation': True, 'f_location': '263–70'}
       ]),
     ('Ed. Ashtor, Mamluks, vol. 3, pp. 95-96 (Doc. #56). With minor emendations by Alan Elbaum (2020).',
-     [{'get_source_arg': 'Ashtor, Mamluks, vol. 3, pp. 95-96 (Doc. #56)',
-       'footnote_notes': 'With minor emendations by Alan Elbaum (2020).'}]),
+     [{'get_source_arg': 'Ashtor, Mamluks, vol. 3',
+       'f_notes': 'With minor emendations by Alan Elbaum (2020).',
+       'f_location': 'Doc. #56, pp. 95-96'}]),
     ('Ed. Avraham David. Transcription listed in FGP, awaiting digitization on PGP.',
      [{'get_source_arg': 'Avraham David',
-       'footnote_notes': 'Transcription listed in FGP, awaiting digitization on PGP.'}])
-
-    # ("Ed. S. D. Goitein, 'Documents from Damascus and Tyre concerning buildings belonging to Jews', Eretz Israel, 8 (1967), Sefer Suqeniq, pp.293-294.",
-    #  [{'author': 'S. D. Goitein',
-    #    'title': "'Documents from Damascus and Tyre concerning buildings belonging to Jews'",
-    #    'notes': 'Eretz Israel, 8 (1967), Sefer Suqeniq, pp.293-294.'}]),
-    # two authors
-    # ("Marina Rustow and Anna Bailey",
-    #  [{'author': 'Marina Rustow', 'author2': 'Anna Bailey'}]),
-    # # # volume info
-    # ('Ed. Mann, Jews, vol. 2, p. 202',
-    #  [{'author': 'Mann', 'title': 'Jews', 'vol': '2', 'notes': 'p. 202'}]),
-    # # dissertation
-    # ('Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza" (PhD diss., Tel Aviv University, 1992), doc. 28',
-    #  [{'author': 'Ṣabīḥ ʿAodeh',
-    #    'title': 'Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza',
-    #    'institution': 'Tel Aviv University', 'year': '1992',
-    #    'notes': 'doc. 28'}]),
-    # dissertation with language
-    # TODO: print character in one entry! ask for cleanup? or remove unwanted characters before parsing?
-    # ("Ed. Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-7, pp. 291-293.",
-    # ("Ed. Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-7, pp. 291-293.",
-    #  [{'author': 'Amir Ashur',
-    #    'title': 'Engagement and Betrothal Documents from the Cairo Geniza',
-    #    'institution': 'Tel Aviv University',
-    #    'year': '2006', 'lang': 'Hebrew', 'notes': 'Doc. H-7, pp. 291-293.'}]),
-    # # two editions
-    # ('Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters ..." (PhD diss., Tel Aviv University, 1992), doc. 58; also ed. Goitein, India Book 6 (unpublished), ו14',
-    #  [{'author': 'Ṣabīḥ ʿAodeh',
-    #    'title': 'Eleventh Century Arabic Letters ...',
-    #    'institution': 'Tel Aviv University', 'year': '1992',
-    #    'notes': "doc. 58"},
-    #   {'author': 'Goitein', 'title': 'India Book 6 (unpublished)',
-    #   'notes': 'ו14'}])
+       'f_notes': 'Transcription listed in FGP, awaiting digitization on PGP.'}]),
+    ('Ed. Gil, Palestine, vol. 2, #177',
+     [{'get_source_arg': 'Gil, Palestine, vol. 2',
+       'f_location': '#177'}]),
+    ('Ed. Friedman, Jewish Marriage, vol. 2, 384 (Doc. #51)',
+     [{'get_source_arg': 'Friedman, Jewish Marriage, vol. 2, 384',
+       'f_location': 'Doc. #51'}]),
 ]
 
 
@@ -665,21 +634,27 @@ def test_parse_editor(mock_footnote, mock_get_source, test_input, expected):
     import_data_cmd = import_data.Command()
     import_data_cmd.source_setup()
     doc = Mock()
-    # set real flags
+    # copy real footnote flags to mock footnote
     mock_footnote.EDITION = Footnote.EDITION
     mock_footnote.TRANSLATION = Footnote.TRANSLATION
 
+    # parse the input
+    import_data_cmd.parse_editor(doc, test_input)
+    # check the results
     for result in expected:
-        import_data_cmd.parse_editor(doc, test_input)
         # call source with cleaned edition info
         mock_get_source.assert_any_call(result['get_source_arg'], doc)
         # create footnote with expected type; everything is an edition
         doc_relation = {Footnote.EDITION}
-        if result.get('translation'):   # some also provide translation
+        # some editions also provide translation
+        if result.get('translation'):
             doc_relation.add(Footnote.TRANSLATION)
+
         mock_footnote.assert_any_call(
             source=mock_get_source.return_value, content_object=doc,
-            doc_relation=doc_relation, notes=result.get('footnote_notes', ''))
+            doc_relation=doc_relation,
+            location=result.get('f_location', ''),
+            notes=result.get('f_notes', ''))
 
 
 # expected name variants for source author lookup
