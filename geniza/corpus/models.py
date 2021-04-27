@@ -182,7 +182,7 @@ class DocumentType(models.Model):
         return self.name
 
 
-class Document(models.Model): # ModelIndexable
+class Document(models.Model, ModelIndexable):
     '''A unified document such as a letter or legal document that
     appears on one or more fragments.'''
     id = models.AutoField('PGPID', primary_key=True)
@@ -302,9 +302,6 @@ class Document(models.Model): # ModelIndexable
             del index_data['item_type']
             return index_data
 
-        # get account membership dates
-        account = self.account_set.first()
-
         index_data.update({
             # TODO: multi-valued
             # 'shelfmark_tm': self.fragments__shelfmark,
@@ -314,6 +311,8 @@ class Document(models.Model): # ModelIndexable
             'needs_review_t': self.needs_review,
             'pgpid_i': self.id
         })
+
+        return index_data
 
 
 
