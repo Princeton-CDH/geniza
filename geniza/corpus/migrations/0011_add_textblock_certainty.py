@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='textblock',
             name='certain',
-            field=models.BooleanField(default=True),
+            field=models.BooleanField(default=True, help_text='Are you certain that this fragment belongs to this document? Uncheck this box if you are uncertain of a potential join.'),
         ),
         migrations.AlterField(
             model_name='document',

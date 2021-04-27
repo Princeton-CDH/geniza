@@ -286,7 +286,9 @@ class TextBlock(models.Model):
     '''The portion of a document that appears on a particular fragment.'''
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
-    certain = models.BooleanField(default=True)
+    certain = models.BooleanField(default=True, 
+        help_text=("Are you certain that this fragment belongs to this document? " +
+            "Uncheck this box if you are uncertain of a potential join."))
     RECTO = 'r'
     VERSO = 'v'
     RECTO_VERSO = 'rv'
