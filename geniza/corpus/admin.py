@@ -17,7 +17,7 @@ from geniza.corpus.models import (
     TextBlock,
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
-from geniza.footnotes.admin import FootnoteInline
+from geniza.footnotes.admin import DocumentFootnoteInline
 
 
 class FragmentTextBlockInline(admin.TabularInline):
@@ -188,7 +188,10 @@ class DocumentAdmin(admin.ModelAdmin):
     )
     autocomplete_fields = ["languages", "probable_languages"]
     # NOTE: autocomplete does not honor limit_choices_to in model
-    inlines = [DocumentTextBlockInline, FootnoteInline]
+    inlines = [
+        DocumentTextBlockInline,
+        DocumentFootnoteInline
+    ]
 
     class Media:
         css = {"all": ("css/admin-local.css",)}

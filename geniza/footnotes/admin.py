@@ -19,12 +19,31 @@ from geniza.footnotes.models import (
     SourceLanguage,
     SourceType,
 )
+from geniza.corpus.models import Document
 
 
 class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
     model = Authorship
     autocomplete_fields = ["creator"]
     fields = ("creator", "sort_order")
+    extra = 1
+
+
+class SourceFootnoteInline(admin.TabularInline):
+    model = Footnote
+    autocomplete_fields = ['source']
+    fields = ('page_range', 'doc_relation', 'notes',)
+    extra = 1
+
+    def get_queryset(self, request):
+        source_id = request.path.split('/')[-3]
+        return Footnote.objects.filter(source=source_id)
+
+
+class DocumentFootnoteInline(GenericTabularInline):
+    model = Footnote
+    autocomplete_fields = ['source']
+    fields = ('source', 'page_range', 'doc_relation', 'notes',)
     extra = 1
 
 
@@ -39,7 +58,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     fields = ("source_type", "title", "year", "edition", "volume", "languages", "notes")
     list_filter = ("source_type", "authors")
 
-    inlines = [AuthorshipInline]
+    inlines = [AuthorshipInline, SourceFootnoteInline]
 
     def get_queryset(self, request):
         return (
