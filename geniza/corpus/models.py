@@ -8,6 +8,7 @@ from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
 from taggit_selectize.managers import TaggableManager
+from parasolr.django.indexing import ModelIndexable
 
 from geniza.footnotes.models import Footnote
 from geniza.common.models import TrackChangesModel
@@ -181,7 +182,7 @@ class DocumentType(models.Model):
         return self.name
 
 
-class Document(models.Model):
+class Document(models.Model): # ModelIndexable
     '''A unified document such as a letter or legal document that
     appears on one or more fragments.'''
     id = models.AutoField('PGPID', primary_key=True)
@@ -222,7 +223,9 @@ class Document(models.Model):
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution
-    # class Meta:
+    class Meta:
+        pass
+        # abstract = False
         # ordering = [Least('textblock__fragment__shelfmark')]
 
     def __str__(self):
@@ -279,6 +282,39 @@ class Document(models.Model):
         """Short title for identifying the document, e.g. via search."""
         # NOTE preliminary, pending more discussion
         return f"{self.doctype or 'Unknown'} ({self.id})"
+
+    @classmethod
+    def items_to_index(cls):
+        '''Custom logic for finding items to be indexed when indexing in
+        bulk; only include public docs.'''
+        return cls.objects.filter(status=Document.PUBLIC)
+
+    def index_data(self):
+        '''data for indexing in Solr'''
+
+        index_data = super().index_data()
+        # only library members are indexed; if person has no
+        # account, return id only.
+        # This will blank out any previously indexed values, and item
+        # will not be findable by any public searchable fields.
+
+        if not self.is_public():
+            del index_data['item_type']
+            return index_data
+
+        # get account membership dates
+        account = self.account_set.first()
+
+        index_data.update({
+            # TODO: multi-valued
+            # 'shelfmark_tm': self.fragments__shelfmark,
+            # 'tags_tm': self.tags__name,
+            'description_t': self.description,
+            'notes_t': self.notes,
+            'needs_review_t': self.needs_review,
+            'pgpid_i': self.id
+        })
+
 
 
 class TextBlock(models.Model):
