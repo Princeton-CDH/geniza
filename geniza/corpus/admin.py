@@ -63,7 +63,7 @@ class TextBlockInline(admin.TabularInline):
     autocomplete_fields = ['fragment']
     readonly_fields = ('thumbnail', )
     fields = ('fragment', 'side', 'extent_label', 'multifragment',
-              'order', 'thumbnail')
+              'order', 'certain', 'thumbnail')
 
 
 class DocumentForm(forms.ModelForm):
