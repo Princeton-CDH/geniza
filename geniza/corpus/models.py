@@ -1,5 +1,7 @@
 from django.db import models
+from django.urls import reverse
 from django.db.models.functions import Concat
+from django.contrib.admin.models import LogEntry
 
 from django.contrib.contenttypes.fields import GenericRelation
 from django.utils.safestring import mark_safe
@@ -183,7 +185,8 @@ class Document(models.Model):
     '''A unified document such as a letter or legal document that
     appears on one or more fragments.'''
     id = models.AutoField('PGPID', primary_key=True)
-    fragments = models.ManyToManyField(Fragment, through='TextBlock')
+    fragments = models.ManyToManyField(Fragment, through='TextBlock',
+        related_name="documents")
     description = models.TextField(blank=True)
     doctype = models.ForeignKey(
         DocumentType, blank=True, on_delete=models.SET_NULL, null=True,
@@ -215,6 +218,7 @@ class Document(models.Model):
         help_text='Decide whether a document should be publicly visible')
 
     footnotes = GenericRelation(Footnote)
+    log_entries = GenericRelation(LogEntry, related_query_name="document")
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution
@@ -230,7 +234,7 @@ class Document(models.Model):
         # access via textblock so we follow specified order,
         # use dict keys to ensure unique
         return ' + '.join(dict.fromkeys(block.fragment.shelfmark
-                          for block in self.textblock_set.all()))
+                          for block in self.textblock_set.filter(certain=True)))
 
     @property
     def collection(self):
@@ -262,11 +266,28 @@ class Document(models.Model):
     is_public.boolean = True
     is_public.admin_order_field = 'status'
 
+    def get_absolute_url(self):
+        return reverse('corpus:document', args=[str(self.id)])
+
+    def iiif_urls(self):
+        """List of IIIF urls for images of the Document's Fragments."""
+        return list(dict.fromkeys(filter(None,
+            [b.fragment.iiif_url for b in self.textblock_set.all()])))
+
+    @property
+    def title(self):
+        """Short title for identifying the document, e.g. via search."""
+        # NOTE preliminary, pending more discussion
+        return f"{self.doctype or 'Unknown'} ({self.id})"
+
 
 class TextBlock(models.Model):
     '''The portion of a document that appears on a particular fragment.'''
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
+    certain = models.BooleanField(default=True, 
+        help_text=("Are you certain that this fragment belongs to this document? " +
+            "Uncheck this box if you are uncertain of a potential join."))
     RECTO = 'r'
     VERSO = 'v'
     RECTO_VERSO = 'rv'
@@ -293,7 +314,8 @@ class TextBlock(models.Model):
 
     def __str__(self):
         # combine shelfmark, side, and optionally text block
-        parts = [self.fragment.shelfmark, self.get_side_display(),
+        certainty_str = '(?)' if not self.certain else ''
+        parts = [self.fragment.shelfmark + certainty_str, self.get_side_display(),
                  self.extent_label]
         return ' '.join(p for p in parts if p)
 

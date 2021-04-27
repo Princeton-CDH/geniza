@@ -33,7 +33,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     fields = (
         'source_type',
         'title', 'year',
-        'edition', 'volume',
+        'edition', 'volume', 'location',
         'languages',
         'notes'
     )

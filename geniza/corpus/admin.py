@@ -63,7 +63,7 @@ class TextBlockInline(admin.TabularInline):
     autocomplete_fields = ['fragment']
     readonly_fields = ('thumbnail', )
     fields = ('fragment', 'side', 'extent_label', 'multifragment',
-              'order', 'thumbnail')
+              'order', 'certain', 'thumbnail')
 
 
 class DocumentForm(forms.ModelForm):
@@ -90,6 +90,7 @@ class DocumentForm(forms.ModelForm):
 class DocumentAdmin(admin.ModelAdmin):
     form = DocumentForm
     list_display = (
+        'id',
         'shelfmark', 'description', 'doctype',
         'tag_list', 'all_languages', 'is_textblock',
         'last_modified',
@@ -97,7 +98,7 @@ class DocumentAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created', 'last_modified', 'shelfmark', 'id')
     search_fields = ('fragments__shelfmark', 'tags__name', 'description',
-                     'notes', 'needs_review')
+                     'notes', 'needs_review', 'id')
     # TODO include search on edition once we add footnotes
     save_as = True
 
@@ -123,7 +124,6 @@ class DocumentAdmin(admin.ModelAdmin):
         # edition, translation
         'notes',
         # text block
-        ('created', 'last_modified')
     )
     autocomplete_fields = ['languages', 'probable_languages']
     # NOTE: autocomplete does not honor limit_choices_to in model
