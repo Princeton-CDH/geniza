@@ -234,8 +234,7 @@ class Document(models.Model):
         # access via textblock so we follow specified order,
         # use dict keys to ensure unique
         return ' + '.join(dict.fromkeys(block.fragment.shelfmark
-                          for block in self.textblock_set.all()
-                          if block.certain))
+                          for block in self.textblock_set.filter(certain=True)))
 
     @property
     def collection(self):
