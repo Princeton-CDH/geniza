@@ -733,25 +733,34 @@ class Command(BaseCommand):
         # check for 4-digit year and store it if present
         year = None
         # one record has a date range; others have a month
-        year_match = re.search(r'\b(?P<match>(\d{4}–|\d{2}/)?(?P<year>\d{4}))\b',
+        year_match = re.search(r'\b(?P<match>(\d{4}[––]|\d{2}/)?(?P<year>\d{4}))\b',
                                edition)
         if year_match:
             # store the year
             year = year_match.group('year')
-            # check full match against year; if they defer, add to notes
+            # check full match against year; if they differ, add to notes
             full_match = year_match.group('match')
             if full_match != year:
                 note_lines.append(full_match)
-            edition = edition.replace(full_match, '').strip(' .')
+                edition = edition.replace(full_match, '').strip(' .,')
 
-        # remove Ed./ed. at the beginning (also trans.?)
-        edition = re.sub(r'[Ee]d\. ', '', edition)
+        # no easy way to recognize more than two authors,
+        # but there are only three instances
+        special_cases = [
+            'Lorenzo Bondioli, Tamer el-Leithy, Joshua Picard, Marina Rustow and Zain Shirazi',
+            'Khan, el-Leithy, Rustow and Vanthieghem',
+            'Oded Zinger, Naim Vanthieghem and Marina Rustow',
+        ]
+        ed_parts = None
+        for special_case in special_cases:
+            if edition.startswith(special_case):
+                ed_parts = [edition[:len(special_case)],
+                            edition[len(special_case):]]
 
-        # TODO: need to handle more than one author
-        # (maybe as a special case?)
-
-        # split into chunks on commas, parentheses, brackets, semicolons
-        ed_parts = [p.strip() for p in re.split(r'[,()[\];]', edition)]
+        # if not a special case, split normally
+        if not ed_parts:
+            # split into chunks on commas, parentheses, brackets, semicolons
+            ed_parts = [p.strip() for p in re.split(r'[,()[\];]', edition)]
 
         # authors always listed first
         author_names = re.split(r', | and ', ed_parts.pop(0))
@@ -804,18 +813,22 @@ class Command(BaseCommand):
                 title=title, volume=volume,
                 authors__last_name__in=author_lastnames,
                 source_type__type=src_type)
-            if sources.exists():
-                source = sources.first()
-                # print('found existing source! %s' % source)
+
+            if sources.count() > 1:
+                logger.warn(
+                    'Found multiple sources for %s, %title (%s)' %
+                    (author_lastnames, title, src_type))
+
+            source = sources.first()
+            if source:
                 # set year if available and not already set
                 if not source.year and year:
                     source.year = year
                     source.save()
                 # return the existing source for creating a footnote
                 return source
-            # TODO: error if we get more than one match
 
-        # existing source not found;create a new one!
+        # existing source not found; create a new one!
         source = Source.objects.create(
             source_type=self.source_types[src_type],
             title=title,

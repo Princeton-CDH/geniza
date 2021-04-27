@@ -679,40 +679,38 @@ def test_get_source_creator(test_input, expected):
 source_input = [
     # untitled items == PGP editions
     # single author, no title
-    ('Ed. M. Cohen',
+    ('M. Cohen',
      {'type': 'Unpublished', 'authors': ['Cohen, Mark']}),
     # two authors with a url
     ("Marina Rustow and Anna Bailey https://example.co",
      {'type': 'Unpublished', 'authors': ['Rustow, Marina', 'Bailey, Anna'],
       'url': 'https://example.co'}),
-    # TODO: more than two authors!
-    # FIXME: not working
-    ('Ed. Lorenzo Bondioli, Tamer el-Leithy, Joshua Picard, Marina Rustow and Zain Shirazi, 2016–2018. https://example.co/doc',
+    # more than two authors!
+    ('Lorenzo Bondioli, Tamer el-Leithy, Joshua Picard, Marina Rustow and Zain Shirazi, 2016–2018. https://example.co/doc',
      {'type': 'Unpublished',
       'authors': ['Bondioli, Lorenzo', 'el-Leithy, Tamer', 'Picard, Joshua',
                   'Rustow, Marina', 'Shirazi, Zain'],
-      'url': 'https://example.co/doc'}
-     # year??
+      'url': 'https://example.co/doc', 'year': '2018'}
      ),
     # unpublished items with titles
-    ('ed. Goitein, India Book 6 (unpublished), ו14',
+    ('Goitein, India Book 6 (unpublished), ו14',
      {'type': 'Unpublished', 'authors': ['Goitein, S. D.'],
       'title': 'India Book 6'}),  # notes/location?
     # typed texts
-    ('Ed. Goitein, typed texts',
+    ('Goitein, typed texts',
      {'type': 'Unpublished', 'authors': ['Goitein, S. D.'],
       'title': 'typed texts'}),
     # book with volume information
-    ('Ed. Gil, Palestine, vol. 2, #177',
+    ('Gil, Palestine, vol. 2, #177',
      {'type': 'Book', 'authors': ['Gil, Moshe'],
       'title': 'Palestine', 'volume': '2'}),
     # dissertation
-    ("Ed. Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-25, pp. 325-28",
+    ("Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-25, pp. 325-28",
      {'type': 'Dissertation', 'authors': ['Ashur, Amir'], 'year': '2006',
       'title': 'Engagement and Betrothal Documents from the Cairo Geniza',
       'language': 'Hebrew'}),
     # article
-    ('Ed. Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz 2015, 135–61, at 156f. Awaiting digitization on PGP.',
+    ('Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz 2015, 135–61, at 156f. Awaiting digitization on PGP.',
      {'type': 'Article', 'authors': ['Friedman, Mordechai Akiva'],
       'title': 'Maimonides Appoints R. Anatoly Muqaddam of Alexandria',
       'language': 'Hebrew', 'year': '2015'})
