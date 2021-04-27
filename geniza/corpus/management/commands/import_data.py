@@ -618,15 +618,48 @@ class Command(BaseCommand):
         'Transcription (recto only) listed in FGP, awaiting digitization on PGP',
     ]
 
+    re_docrelation = re.compile(r'(. Also )?Ed. (and transl?.)? ?', flags=re.I)
+
+    # notes that may occur with an edition
+    re_ed_notes = re.compile(
+        r'[.;] (?P<note>((full )?transcription (listed|awaiting)|(with )?minor).*$)',
+        flags=re.I)
+
+    # page or document location
+    # , pp. 95-96 (Doc. #56).
+    # , #046
+    # , 263–70.
+    # , p. 194
+    # , ב55 א33 ג48 ז4א
+    # , 141-5 (Doc. #12)
+    # , pp.127-137 (Doc. #2)
+    re_page_location = re.compile(
+        r', (?<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+))'
+        flags=re.I)
+    re_doc_location = re.compile(
+        r'(, )?\(?(?P<doc>(Doc. #?|#)([A-Z]-)?\d+\)?)',
+        flags=re.I)
+    # TODO: section for goitein refs like ב55 א33 ג48 ז4א
+
     def parse_editor(self, document, editor):
         # multiple editions are indicated by "; also ed."  or ". also ed."
         # split so we can parse each edition separately and add a footnote
-        editions = re.split(r'[;.] [Aa]lso (?:ed.)?', editor)
+        editions = re.split(r'[;.] (?=also ed.|ed.|also)',
+                            editor, flags=re.I)
+        print(editions)
 
         info = []
         for edition in editions:
             if edition in self.editor_ignore:
                 continue
+
+            print('**parsing edition')
+            print(edition)
+
+            # footnotes for these records are always editions
+            doc_relation = {Footnote.EDITION}
+            notes = []
+
             # print(edition)
             # get or create source for this edition
             # TODO: strip off known notes and location before handoff?
@@ -636,16 +669,40 @@ class Command(BaseCommand):
             # . With minor
             # . minor
             # Transcription listed in
-            try:
-                source = self.get_source(edition, document)
-                # create footnote with edition flag
-                doc_relation = set(Footnote.EDITION)
-                # if "and trans" set translation flag
-                if "and trans" in edition:
+
+            # copy the edition text before removing any notes or
+            # other information
+            edition_text = edition
+
+            # beginning usually includes indicator if edition or edition
+            # or translation
+            edit_transl_match = self.re_docrelation.match(edition)
+            if edit_transl_match:
+                # if doc relation text includes translation, set flag
+                if "and trans" in edit_transl_match.group(0):
                     doc_relation.add(Footnote.TRANSLATION)
+
+                # remove ed/trans from edition text
+                edition_text = self.re_docrelation.sub('', edition_text)
+
+            ed_notes_match = self.re_ed_notes.search(edition_text)
+            if ed_notes_match:
+                print('ed notes match')
+                print(ed_notes_match)
+                # save the notes to add to the footnote
+                # remove from the edition before parsing
+                edition_text = self.re_ed_notes.sub('', edition_text)
+                print('edition text')
+                print(edition_text)
+                notes.append(ed_notes_match.groupdict()['note'])
+
+            try:
+                source = self.get_source(edition_text, document)
                 # TODO: location, notes
+                print(notes)
                 fn = Footnote(source=source, content_object=document,
-                              doc_relation=doc_relation)
+                              doc_relation=doc_relation,
+                              notes='\n'.join(notes))
                 fn.save()
             except KeyError as err:
                 logger.error('Error parsing PGDID %d editor %s: %s' %

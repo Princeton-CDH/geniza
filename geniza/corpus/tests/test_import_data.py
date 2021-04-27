@@ -18,6 +18,7 @@ from django.test import override_settings
 from geniza.corpus.management.commands import import_data
 from geniza.corpus.models import (Collection, Document, DocumentType, Fragment,
                                   LanguageScript)
+from geniza.footnotes.models import Footnote
 
 
 @pytest.mark.django_db
@@ -608,15 +609,27 @@ editors_parsed = [
     #  [{'author': 'Friedman', 'title': 'Jewish Marriage',
     #   'vol': '2', 'notes': '384 (Doc. #51)'}]),
     ('Ed. M. Cohen',
-     [{'author': 'M. Cohen'}]),
+     [{'get_source_arg': 'M. Cohen'}]),
+    ('Ed. Goitein, India Book 5 (unpublished), ה25; ed. and trans. Phil Lieberman, Business of Identity, 263–70.',
+     [{'get_source_arg': 'Goitein, India Book 5 (unpublished), ה25'},
+      {'get_source_arg': 'Phil Lieberman, Business of Identity, 263–70.',
+       'translation': True}
+      ]),
+    ('Ed. Ashtor, Mamluks, vol. 3, pp. 95-96 (Doc. #56). With minor emendations by Alan Elbaum (2020).',
+     [{'get_source_arg': 'Ashtor, Mamluks, vol. 3, pp. 95-96 (Doc. #56)',
+       'footnote_notes': 'With minor emendations by Alan Elbaum (2020).'}]),
+    ('Ed. Avraham David. Transcription listed in FGP, awaiting digitization on PGP.',
+     [{'get_source_arg': 'Avraham David',
+       'footnote_notes': 'Transcription listed in FGP, awaiting digitization on PGP.'}])
+
     # ("Ed. S. D. Goitein, 'Documents from Damascus and Tyre concerning buildings belonging to Jews', Eretz Israel, 8 (1967), Sefer Suqeniq, pp.293-294.",
     #  [{'author': 'S. D. Goitein',
     #    'title': "'Documents from Damascus and Tyre concerning buildings belonging to Jews'",
     #    'notes': 'Eretz Israel, 8 (1967), Sefer Suqeniq, pp.293-294.'}]),
     # two authors
-    ("Marina Rustow and Anna Bailey",
-     [{'author': 'Marina Rustow', 'author2': 'Anna Bailey'}]),
-    # # volume info
+    # ("Marina Rustow and Anna Bailey",
+    #  [{'author': 'Marina Rustow', 'author2': 'Anna Bailey'}]),
+    # # # volume info
     # ('Ed. Mann, Jews, vol. 2, p. 202',
     #  [{'author': 'Mann', 'title': 'Jews', 'vol': '2', 'notes': 'p. 202'}]),
     # # dissertation
@@ -644,14 +657,29 @@ editors_parsed = [
 ]
 
 
-# @pytest.mark.django_db
-# @pytest.mark.parametrize("test_input,expected", editors_parsed)
-# def test_parse_editor(test_input, expected):
-#     import_data_cmd = import_data.Command()
-#     import_data_cmd.source_setup()
-#     result = import_data_cmd.parse_editor(test_input)
-#     for i, expected_val in enumerate(expected):
-#         assert expected_val == result[i]
+@pytest.mark.django_db
+@pytest.mark.parametrize("test_input,expected", editors_parsed)
+@patch('geniza.corpus.management.commands.import_data.Command.get_source')
+@patch('geniza.corpus.management.commands.import_data.Footnote')
+def test_parse_editor(mock_footnote, mock_get_source, test_input, expected):
+    import_data_cmd = import_data.Command()
+    import_data_cmd.source_setup()
+    doc = Mock()
+    # set real flags
+    mock_footnote.EDITION = Footnote.EDITION
+    mock_footnote.TRANSLATION = Footnote.TRANSLATION
+
+    for result in expected:
+        import_data_cmd.parse_editor(doc, test_input)
+        # call source with cleaned edition info
+        mock_get_source.assert_any_call(result['get_source_arg'], doc)
+        # create footnote with expected type; everything is an edition
+        doc_relation = {Footnote.EDITION}
+        if result.get('translation'):   # some also provide translation
+            doc_relation.add(Footnote.TRANSLATION)
+        mock_footnote.assert_any_call(
+            source=mock_get_source.return_value, content_object=doc,
+            doc_relation=doc_relation, notes=result.get('footnote_notes', ''))
 
 
 # expected name variants for source author lookup
