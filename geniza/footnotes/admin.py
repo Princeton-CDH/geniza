@@ -58,6 +58,9 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
             reverse(self.footnote_admin_url), str(obj.id),
             obj.footnote__count
         )
+    footnotes.short_description = "# footnotes on which this source appears"
+    footnotes.admin_order_field = 'footnote__count'
+
 
 @admin.register(SourceType)
 class SourceTypeAdmin(admin.ModelAdmin):
