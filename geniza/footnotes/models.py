@@ -66,7 +66,7 @@ class Authorship(models.Model):
 class Source(models.Model):
     '''a published or unpublished work related to geniza materials'''
     authors = models.ManyToManyField(Creator, through=Authorship)
-    title = models.CharField(max_length=255, blank=True)
+    title = models.CharField(max_length=255, blank=True, null=True)
     year = models.PositiveIntegerField(blank=True, null=True)
     edition = models.CharField(max_length=255, blank=True)
     volume = models.CharField(max_length=255, blank=True)
