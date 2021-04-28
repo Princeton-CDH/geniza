@@ -712,7 +712,7 @@ source_input = [
      {'type': 'Unpublished',
       'authors': ['Bondioli, Lorenzo', 'el-Leithy, Tamer', 'Picard, Joshua',
                   'Rustow, Marina', 'Shirazi, Zain'],
-      'url': 'https://example.co/doc', 'year': '2018'}
+      'url': 'https://example.co/doc', 'year': 2018}
      ),
     # unpublished items with titles
     ('Goitein, India Book 6 (unpublished), ו14',
@@ -728,14 +728,14 @@ source_input = [
       'title': 'Palestine', 'volume': '2'}),
     # dissertation
     ("Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-25, pp. 325-28",
-     {'type': 'Dissertation', 'authors': ['Ashur, Amir'], 'year': '2006',
+     {'type': 'Dissertation', 'authors': ['Ashur, Amir'], 'year': 2006,
       'title': 'Engagement and Betrothal Documents from the Cairo Geniza',
       'language': 'Hebrew'}),
     # article
     ('Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz 2015, 135–61, at 156f. Awaiting digitization on PGP.',
      {'type': 'Article', 'authors': ['Friedman, Mordechai Akiva'],
       'title': 'Maimonides Appoints R. Anatoly Muqaddam of Alexandria',
-      'language': 'Hebrew', 'year': '2015'})
+      'language': 'Hebrew', 'year': 2015})
     # Tarbiz 2015, 135–61, }
 
     # also ed. and trans.Golb and Pritsak, Khazarian Hebrew Documents of the 10th Century, pp. 1-71
@@ -751,6 +751,7 @@ source_input = [
 def test_get_source(test_input, expected):
     doc = Mock(id=345)
     import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
     import_data_cmd.source_setup()
     source = import_data_cmd.get_source(test_input, doc)
     # check type

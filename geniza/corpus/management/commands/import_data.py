@@ -642,7 +642,7 @@ class Command(BaseCommand):
         r'(with )?minor|with corrections).*$|' +
         r'awaiting digitization.*$|' +
         r'; edited (here )?in comparison with.*$|' +
-        r'[.(] ?see .*$|' +
+        r'[(]?see .*$|' +
         r'(\(\w+ [\w ]+\) ?$))',
         flags=re.I)
 
@@ -733,6 +733,7 @@ class Command(BaseCommand):
         try:
             return self.source_creators[lastname]
         except Exception:
+
             logger.error('Source creator not found for %s' % name)
             raise
 
@@ -758,7 +759,7 @@ class Command(BaseCommand):
                                edition)
         if year_match:
             # store the year
-            year = year_match.group('year')
+            year = int(year_match.group('year'))
             # check full match against year; if they differ, add to notes
             full_match = year_match.group('match')
             if full_match != year:
