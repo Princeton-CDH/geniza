@@ -627,11 +627,20 @@ editors_parsed = [
     # two authors
     ('Ed. Jennifer Grayson and Marina Rustow',
      [{'get_source_arg': 'Jennifer Grayson and Marina Rustow'}]),
-    # TODO
+    ('Ed. Marina Rustow https://docs.google.com/doc/1 ',
+     [{'get_source_arg': 'Marina Rustow https://docs.google.com/doc/1'}]),
+    ('Ed. Goitein, typed texts; also ed.Gil, Kingdom, vol. 2, #154; also ed. Gil, The Tustaris, pp. 67-8.',
+     [{'get_source_arg': 'Goitein, typed texts'},
+      {'get_source_arg': 'Gil, Kingdom, vol. 2', 'f_location': '#154'},
+      {'get_source_arg': 'Gil, The Tustaris', 'f_location': 'pp. 67-8'}]),
+    # notes
+    ('Ed. Motzkin. See attachments',
+     [{'get_source_arg': 'Motzkin', 'f_notes': 'See attachments'}]),
+    # TODO — partial not yet handled
     # ('Partially ed. Weiss. Transciption awaiting digitization.',
     #  [{'get_source_arg': 'Weiss',
     #   'f_notes': 'Partial.\nTranscription awaiting digitization.'}]),
-    # FIXME: failing
+
     # actual record has url at end, which we don't handle properly
     # ('Ed. Rustow and Vanthieghem (with suggestions from Khan and Shirazi)',
     #  [{'get_source_arg': 'Rustow and Vanthieghem',
@@ -728,7 +737,11 @@ source_input = [
       'title': 'Maimonides Appoints R. Anatoly Muqaddam of Alexandria',
       'language': 'Hebrew', 'year': '2015'})
     # Tarbiz 2015, 135–61, }
-    # year, language
+
+    # also ed. and trans.Golb and Pritsak, Khazarian Hebrew Documents of the 10th Century, pp. 1-71
+    # translation language
+    # 'Trans. into English, Cohen. Voice of the Poor in the Middle Ages, no. 92. Trans. into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984), 67–104.'
+
 
 ]
 

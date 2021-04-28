@@ -116,7 +116,8 @@ class Command(BaseCommand):
 
         self.content_types = {
             model: ContentType.objects.get_for_model(model)
-            for model in [Fragment, Collection, Document, LanguageScript]
+            for model in [Fragment, Collection, Document, LanguageScript,
+                          Source]
         }
 
         self.source_setup()
@@ -620,9 +621,13 @@ class Command(BaseCommand):
         'partial transcription listed in fgp, awaiting digitization on pgp.',
         'partial transcription listed in fgp, awaiting digitization on pgp',
         'transcription (recto only) listed in fgp, awaiting digitization on pgp',
+        'transcription in progress',
+        'awaiting transcription (htr)',
+        'transcription (verso only) listed in fgp, awaiting digitization on pgp',
     ]
 
-    re_docrelation = re.compile(r'^(. Also )?Ed. (and transl?.)? ?',
+    # re_docrelation = re.compile(r'^(. Also )?Ed. (and transl?.)? ?',
+    re_docrelation = re.compile(r'^(also )?ed. ?(and transl?. ?)?',
                                 flags=re.I)
 
     # notes that may occur with an edition
@@ -633,11 +638,11 @@ class Command(BaseCommand):
 
     re_ed_notes = re.compile(
         r'[.;] (?P<note>(' +
-        r'(full )?transcription (listed|awaiting).*$|' +
+        r'(full )?transcription (listed|awaiting|available).*$|' +
         r'(with )?minor|with corrections).*$|' +
         r'awaiting digitization.*$|' +
         r'; edited (here )?in comparison with.*$|' +
-        r'\. see .*$|' +
+        r'[.(] ?see .*$|' +
         r'(\(\w+ [\w ]+\) ?$))',
         flags=re.I)
 
@@ -769,6 +774,7 @@ class Command(BaseCommand):
         ]
         ed_parts = None
         for special_case in special_cases:
+            # if special case matches, split manually on known names
             if edition.startswith(special_case):
                 ed_parts = [edition[:len(special_case)],
                             edition[len(special_case):]]
@@ -779,10 +785,14 @@ class Command(BaseCommand):
             ed_parts = [p.strip() for p in re.split(r'[,()[\];]', edition)]
 
         # authors always listed first
-        author_names = re.split(r', | and ', ed_parts.pop(0))
+        author_names = re.split(r', | and | & ', ed_parts.pop(0))
         authors = []
         for author in author_names:
-            authors.append(self.get_source_creator(author))
+            # remove any trailing whitespace or periods
+            author = author.strip(' .')
+            if author:
+                authors.append(self.get_source_creator(author))
+            # warn if no authors? (likely an error)
 
         # set defaults for information that may not be present
         title = volume = language = location = ''
@@ -847,15 +857,10 @@ class Command(BaseCommand):
             .distinct()
 
         if sources.count() > 1:
-            # FIXME: is empty volume not filtering?
-            print([s for s in sources])
-            print([s.author_count for s in sources])
-            print('author count %d' % author_count)
             logger.warn(
                 'Found multiple sources for %s, %s (%s)' %
                 ('; '.join([a.last_name for a in authors]),
                  title, src_type))
-            print(sources)
 
         source = sources.first()
         if source:
@@ -888,6 +893,8 @@ class Command(BaseCommand):
             notes='\n'.join(
                 ['Created from PGPID %s' % document.id] +
                 note_lines))
+        # log source record creation
+        self.log_creation(source)
 
         # associate language if specified
         if language:
@@ -896,7 +903,7 @@ class Command(BaseCommand):
         # associate authors
         self.add_source_authors(source, authors)
 
-        # todo: return notes for footnote location?
+        # return for footnote creation
         return source
 
     def add_source_authors(self, source, authors):

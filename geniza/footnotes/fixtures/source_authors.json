@@ -527,5 +527,19 @@
   "fields": {
     "last_name": "Pritsak"
   }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Craig",
+    "last_name": "Perry"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "W. H. Z.",
+    "last_name": "Hirschberg"
+  }
 }
 ]
