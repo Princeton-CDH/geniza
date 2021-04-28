@@ -16,7 +16,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
-from django.db import connection
+from django.db import connection, models
 from django.utils.text import slugify
 from django.utils.timezone import get_current_timezone, make_aware
 
@@ -324,7 +324,9 @@ class Command(BaseCommand):
             editor = row.editor.strip('.')
             if editor and editor not in self.editor_ignore:
                 self.parse_editor(doc, editor)
-            # todo: translator also
+            # treat translator like editor, but set translation flag
+            if row.translator:
+                self.parse_editor(doc, row.translator, translation=True)
 
             # keep track of any joins to handle on a second pass
             if row.joins.strip():
@@ -609,18 +611,19 @@ class Command(BaseCommand):
 
     # ignore these entries in the editor field:
     editor_ignore = [
-        'Awaiting transcription',
-        'Transcription listed on FGP',
-        'Transcription listed on FGP, awaiting digitization on PGP',
-        'Transcription listed in FGP, awaiting digitization on PGP',
-        'Source of transcription not noted in original PGP database',
+        'awaiting transcription',
+        'transcription listed on fgp',
+        'transcription listed on fgp, awaiting digitization on pgp',
+        'transcription listed in fgp, awaiting digitization on pgp',
+        'source of transcription not noted in original pgp database',
         'yes',
-        'Partial transcription listed in FGP, awaiting digitization on PGP.',
-        'Partial transcription listed in FGP, awaiting digitization on PGP',
-        'Transcription (recto only) listed in FGP, awaiting digitization on PGP',
+        'partial transcription listed in fgp, awaiting digitization on pgp.',
+        'partial transcription listed in fgp, awaiting digitization on pgp',
+        'transcription (recto only) listed in fgp, awaiting digitization on pgp',
     ]
 
-    re_docrelation = re.compile(r'(. Also )?Ed. (and transl?.)? ?', flags=re.I)
+    re_docrelation = re.compile(r'^(. Also )?Ed. (and transl?.)? ?',
+                                flags=re.I)
 
     # notes that may occur with an edition
     # - full transcription listed/awaiting ...
@@ -632,6 +635,9 @@ class Command(BaseCommand):
         r'[.;] (?P<note>(' +
         r'(full )?transcription (listed|awaiting).*$|' +
         r'(with )?minor|with corrections).*$|' +
+        r'awaiting digitization.*$|' +
+        r'; edited (here )?in comparison with.*$|' +
+        r'\. see .*$|' +
         r'(\(\w+ [\w ]+\) ?$))',
         flags=re.I)
 
@@ -647,18 +653,22 @@ class Command(BaseCommand):
         r' (?P<p>(\d+?[\u0590-\u05fe]|[\u0590-\u05fe]\d+)[\u0590-\u05fe]?)',
         flags=re.I)
 
-    def parse_editor(self, document, editor):
+    def parse_editor(self, document, editor, translation=False):
         # multiple editions are indicated by "; also ed."  or ". also ed."
         # split so we can parse each edition separately and add a footnote
-        editions = re.split(r'[;.] (?=also ed.|ed.|also)',
+        editions = re.split(r'[;.] (?=also ed\.|ed\.|also)',
                             editor, flags=re.I)
 
         for edition in editions:
-            if edition.rstrip('.') in self.editor_ignore:
+            # strip whitespace and periods before checking ignore list
+            if edition.rstrip(' .').lower() in self.editor_ignore:
                 continue
 
             # footnotes for these records are always editions
             doc_relation = {Footnote.EDITION}
+            # if importing from translator column, also set translation
+            if translation:
+                doc_relation.add(Footnote.TRANSLATION)
             notes = []
             location = []
             # copy the edition text before removing any notes or
@@ -818,17 +828,33 @@ class Command(BaseCommand):
         if not title and year:
             extra_opts['year'] = year
 
-        author_lastnames = [a.last_name for a in authors]
-        sources = Source.objects.filter(
-            title=title, volume=volume,
-            authors__last_name__in=author_lastnames,
-            source_type__type=src_type, **extra_opts)
+        # when multiple authors are present, we want to match *all* of them
+        # filter on combination of last names AND total count
+        author_filter = models.Q()
+        author_count = len(authors)
+        for a in authors:
+            author_filter = author_filter & \
+                models.Q(authors__last_name=a.last_name)
+
+        sources = Source.objects \
+            .annotate(author_count=models.Count('authorship')) \
+            .filter(
+                title=title, volume=volume,
+                source_type__type=src_type,
+                author_count=author_count,
+                **extra_opts) \
+            .filter(author_filter) \
+            .distinct()
 
         if sources.count() > 1:
             # FIXME: is empty volume not filtering?
+            print([s for s in sources])
+            print([s.author_count for s in sources])
+            print('author count %d' % author_count)
             logger.warn(
                 'Found multiple sources for %s, %s (%s)' %
-                (author_lastnames, title, src_type))
+                ('; '.join([a.last_name for a in authors]),
+                 title, src_type))
             print(sources)
 
         source = sources.first()

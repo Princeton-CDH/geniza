@@ -289,10 +289,10 @@ def test_import_documents(mockrequests, caplog):
     mockrequests.codes = requests.codes   # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
-        b'PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s)',
-        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,',
-        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,',
-        b'2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,'
+        b'PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional)',
+        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,,',
+        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,,',
+        b'2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,'
     ])
     with caplog.at_level(logging.INFO, logger="import"):
         import_data_cmd.import_documents()
@@ -624,6 +624,13 @@ editors_parsed = [
     ('Ed. Friedman, Jewish Marriage, vol. 2, 384 (Doc. #51)',
      [{'get_source_arg': 'Friedman, Jewish Marriage, vol. 2, 384',
        'f_location': 'Doc. #51'}]),
+    # two authors
+    ('Ed. Jennifer Grayson and Marina Rustow',
+     [{'get_source_arg': 'Jennifer Grayson and Marina Rustow'}]),
+    # TODO
+    # ('Partially ed. Weiss. Transciption awaiting digitization.',
+    #  [{'get_source_arg': 'Weiss',
+    #   'f_notes': 'Partial.\nTranscription awaiting digitization.'}]),
     # FIXME: failing
     # actual record has url at end, which we don't handle properly
     # ('Ed. Rustow and Vanthieghem (with suggestions from Khan and Shirazi)',
