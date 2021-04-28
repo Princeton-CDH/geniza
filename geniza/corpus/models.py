@@ -266,7 +266,6 @@ class Document(models.Model):
     is_public.boolean = True
     is_public.admin_order_field = 'status'
 
-
 class TextBlock(models.Model):
     '''The portion of a document that appears on a particular fragment.'''
     document = models.ForeignKey(Document, on_delete=models.CASCADE)

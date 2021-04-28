@@ -169,9 +169,31 @@ class DocumentAdmin(admin.ModelAdmin):
     ## CSV EXPORT -------------------------------------------------------------
 
     export_fields = [
-        'id', 'shelfmark', 'description', 'doctype',
-        'all_tags', 'all_languages', 'all_probable_languages',
-        'last_modified', 'notes', 'needs_review', 'status'
+        'id', 
+        # link to public site
+        'iiif_urls',
+        # library link*
+        'shelfmark', 
+        # multifragment*
+        # side*
+        # extent_label*
+        'doctype',
+        'all_tags',
+        'description',
+        # footnotes
+        # historic_shelfmarks*
+        'all_languages',
+        'all_probable_languages',
+        # language_note
+        'notes',
+        'needs_review',
+        # admin_change_view
+        # input_by*
+        # date_entered (first log entry date)
+        'last_modified', 
+        'status',
+        # library abbreviation
+        # collection abbreviation
     ]
 
     def csv_filename(self):
