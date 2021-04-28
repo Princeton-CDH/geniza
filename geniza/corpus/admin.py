@@ -16,14 +16,14 @@ from geniza.footnotes.admin import FootnoteInline
 class FragmentTextBlockInline(admin.TabularInline):
     '''The TextBlockInline class for the Fragment admin'''
     model = TextBlock
-    fields = ('document', 'side', 'extent_label') # document_link
-    readonly_fields = ('document', )  # 'document__description')
+    fields = ('document', 'side', 'extent_label', 'document_link') # document_link
+    readonly_fields = ('document', 'document_link')  # 'document__description')
     extra = 0
 
     def document_link(self, obj):
-        document_path = reverse('admin:corpus_document_change', args=[obj.id])
+        document_path = reverse('admin:corpus_document_change', args=[obj.document])
         return format_html(
-            f'<a href="{document_path}">{str(obj)}</a>'
+            f'<a href="{document_path}">{str(obj.document)}</a>'
         )
 
 
