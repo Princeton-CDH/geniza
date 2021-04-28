@@ -61,14 +61,13 @@ class TestDocumentRelationTypesFilter:
         filtered_queryset = dr_filter.queryset(None, queryset)
         assert filtered_queryset.count() == 1
 
-
 class TestSourceAdmin:
 
     @pytest.mark.django_db
     def test_get_queryset(self, twoauthor_source):
         # source with no author
         book = SourceType.objects.get(type='Book')
-        Source.objects.create(title='Unknown', source_type=book)
+        source = Source.objects.create(title='Unknown', source_type=book)
 
         # confirm that first author is set correctly on annotated queryset
         qs = SourceAdmin(Source, admin.site).get_queryset('rqst')
@@ -76,11 +75,34 @@ class TestSourceAdmin:
         assert qs.count() == 2
         # default sort is title; check first author for first source
         assert hasattr(qs.first(), 'first_author')
+        
         first_author = twoauthor_source.authorship_set.first().creator
         assert qs.first().first_author == \
             first_author.last_name + first_author.first_name
         # second source has no author
         assert not qs.last().first_author
+
+        Footnote.objects.create(
+            doc_relation=['E'], source=source, 
+            content_type_id=ContentType.objects.get(model='document').id,
+            object_id=0
+        )
+
+        qs = SourceAdmin(Source, admin.site).get_queryset('rqst')
+        assert hasattr(qs.first(), 'footnote__count')
+
+    @pytest.mark.django_db
+    def test_footnotes(self):
+        book = SourceType.objects.get(type='Book')
+        source = Source.objects.create(title='Unknown', source_type=book)
+
+        source_admin = SourceAdmin(Source, admin.site)
+        # manually set footnote__count since it would usually be set in
+        #   get_queryset, which is tested above
+        source.footnote__count = 1
+        html = source_admin.footnotes(source)
+        assert f'={source.id}' in html
+        assert '>1<' in html
 
 
 class TestFootnoteAdmin:
