@@ -747,6 +747,7 @@ source_input = [
 
 
 @pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})
 @pytest.mark.parametrize("test_input,expected", source_input)
 def test_get_source(test_input, expected):
     doc = Mock(id=345)
