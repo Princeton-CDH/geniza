@@ -32,7 +32,7 @@ class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
 class SourceFootnoteInline(admin.TabularInline):
     '''Footnote inline for the Source admin'''
     model = Footnote
-    fields = ('document_link', 'page_range', 'doc_relation', 'notes',)
+    fields = ('document_link', 'location', 'doc_relation', 'notes',)
     readonly_fields = ('document_link', 'notes',)
     extra = 0
 
@@ -44,11 +44,12 @@ class SourceFootnoteInline(admin.TabularInline):
         )
     document_link.short_description = 'document'
 
+
 class DocumentFootnoteInline(GenericTabularInline):
     '''Footnote inline for the Document admin'''
     model = Footnote
     autocomplete_fields = ['source']
-    fields = ('source', 'page_range', 'doc_relation', 'notes',)
+    fields = ('source', 'location', 'doc_relation', 'notes',)
     extra = 1
 
 
