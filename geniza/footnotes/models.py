@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.contrib.postgres.fields import JSONField
+from gfklookupwidget.fields import GfkLookupField
 
 from modeltranslation.manager import MultilingualManager
 from multiselectfield import MultiSelectField
@@ -157,7 +158,7 @@ class Footnote(models.Model):
 
     # Generic relationship
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    object_id = GfkLookupField('content_type')
     content_object = GenericForeignKey()
 
     def __str__(self):

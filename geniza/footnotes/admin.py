@@ -9,6 +9,7 @@ from django.db.models.functions import Concat
 from django.urls import reverse, resolve
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
+import gfklookupwidget
 
 from geniza.footnotes.models import Authorship, Creator, Footnote, Source, \
     SourceLanguage, SourceType
