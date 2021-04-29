@@ -18,7 +18,7 @@ from django.test import override_settings
 from geniza.corpus.management.commands import import_data
 from geniza.corpus.models import (Collection, Document, DocumentType, Fragment,
                                   LanguageScript)
-from geniza.footnotes.models import Footnote
+from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 
 @pytest.mark.django_db
@@ -754,8 +754,6 @@ source_input = [
     # also ed. and trans.Golb and Pritsak, Khazarian Hebrew Documents of the 10th Century, pp. 1-71
     # translation language
     # 'Trans. into English, Cohen. Voice of the Poor in the Middle Ages, no. 92. Trans. into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984), 67–104.'
-
-
 ]
 
 
@@ -784,7 +782,37 @@ def test_get_source(test_input, expected):
     assert expected.get('language', '') ==  \
         ', '.join(lang.name for lang in source.languages.all())
 
-# test get existing source
+
+@pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})
+def test_get_source_existing(source):
+    doc = Mock(id=345)
+    import_data_cmd = import_data.Command()
+    # source setup removes our fixture data, so run only the steps
+    # needed for this command
+    import_data_cmd.source_types = {
+        s.type: s for s in SourceType.objects.all()
+    }
+    # create source creator lookup keyed on last name
+    import_data_cmd.source_creators = {
+        c.last_name: c for c in Creator.objects.all()
+    }
+    import_data_cmd.content_types = {
+        Source: ContentType.objects.get_for_model(Source)
+    }
+    import_data_cmd.script_user = get_user_model() \
+        .objects.get(username=settings.SCRIPT_USERNAME)
+
+    # update source with source type to match import script logic
+    source.source_type = import_data_cmd.source_types['Book']
+    source.save()
+    updated_source = import_data_cmd.get_source(
+        'Orwell, A Nice Cup of Tea (1984). See related information', doc)
+    # should be the same object
+    assert updated_source.pk == source.pk
+    # should have year and notes added
+    assert updated_source.year == 1984
+    assert 'See related' in updated_source.notes
 
 
 # Ed. Gil, Palestine, vol. 2, #177

@@ -847,6 +847,7 @@ class Command(BaseCommand):
             author_filter = author_filter & \
                 models.Q(authors__last_name=a.last_name)
 
+        print('src type %s' % src_type)
         sources = Source.objects \
             .annotate(author_count=models.Count('authorship')) \
             .filter(
