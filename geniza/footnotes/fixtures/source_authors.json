@@ -218,12 +218,6 @@
 {
   "model": "footnotes.creator",
   "fields": {
-    "last_name": "Scheiber"
-  }
-},
-{
-  "model": "footnotes.creator",
-  "fields": {
     "first_name": "S. M.",
     "last_name": "Stern"
   }
