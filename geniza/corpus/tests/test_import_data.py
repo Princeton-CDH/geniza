@@ -709,7 +709,14 @@ def test_get_source_creator(test_input, expected):
     creator = import_data_cmd.get_source_creator(test_input)
     assert expected == (creator.first_name, creator.last_name)
 
-# test error for not found?
+
+def test_get_source_creator_not_found():
+    # test error for creator not found
+    import_data_cmd = import_data.Command()
+    import_data_cmd.source_creators = {}
+    with pytest.raises(Exception):
+        import_data_cmd.get_source_creator('Foo')
+
 
 source_input = [
     # untitled items == PGP editions
