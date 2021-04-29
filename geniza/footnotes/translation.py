@@ -6,7 +6,7 @@ from geniza.footnotes.models import Source, Creator
 @register(Source)
 class SourceTranslationOption(TranslationOptions):
     fields = ("title",)
-    required_languages = ("en",)
+    required_languages = ()
 
 
 @register(Creator)
