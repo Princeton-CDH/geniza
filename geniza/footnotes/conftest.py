@@ -31,3 +31,14 @@ def twoauthor_source(db):
     Authorship.objects.create(creator=kernighan, source=cprog)
     Authorship.objects.create(creator=ritchie, source=cprog, sort_order=2)
     return cprog
+
+
+@pytest.fixture
+def multiauthor_untitledsource(db):
+    # fixture to create and return a source with mutiple authors, no title
+    unpub = SourceType.objects.get(type='Unpublished')
+    source = Source.objects.create(source_type=unpub)
+    for i, name in enumerate(['Khan', 'el-Leithy', 'Rustow', 'Vanthieghem']):
+        author = Creator.objects.create(last_name=name)
+        Authorship.objects.create(creator=author, source=source, sort_order=i)
+    return source

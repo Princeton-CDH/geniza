@@ -18,7 +18,6 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic.base import RedirectView
 
-
 urlpatterns = [
     # redirect homepage to admin site for now
     path('', RedirectView.as_view(url='admin/')),
@@ -26,6 +25,7 @@ urlpatterns = [
     path("accounts/", include("pucas.cas_urls")),
     path("i18n/", include("django.conf.urls.i18n")),
     path("taggit/", include('taggit_selectize.urls')),
+    path('', include('geniza.corpus.urls', namespace='corpus')),
 ]
 
 
