@@ -13,6 +13,25 @@ from geniza.corpus.models import Collection, Document, DocumentType, \
 from geniza.footnotes.admin import FootnoteInline
 
 
+class FragmentTextBlockInline(admin.TabularInline):
+    '''The TextBlockInline class for the Fragment admin'''
+    model = TextBlock
+    fields = ('document_link',  'document_description', 'side', 'extent_label',)
+    readonly_fields = ('document_link', 'document_description')
+    extra = 0
+
+    def document_link(self, obj):
+        document_path = reverse('admin:corpus_document_change', args=[obj.document.id])
+        return format_html(
+            f'<a href="{document_path}">{str(obj.document)}</a>'
+        )
+    document_link.short_description = 'Document'
+
+    def document_description(self, obj):
+        return obj.document.description
+    
+
+
 @admin.register(Collection)
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ('library', 'name', 'lib_abbrev', 'abbrev', 'location')
@@ -58,7 +77,8 @@ class LanguageScriptAdmin(admin.ModelAdmin):
     probable_documents.admin_order_field = 'probable_document__count'
 
 
-class TextBlockInline(admin.TabularInline):
+class DocumentTextBlockInline(admin.TabularInline):
+    '''The TextBlockInline class for the Document admin'''
     model = TextBlock
     autocomplete_fields = ['fragment']
     readonly_fields = ('thumbnail', )
@@ -128,7 +148,7 @@ class DocumentAdmin(admin.ModelAdmin):
     autocomplete_fields = ['languages', 'probable_languages']
     # NOTE: autocomplete does not honor limit_choices_to in model
     inlines = [
-        TextBlockInline,
+        DocumentTextBlockInline,
         FootnoteInline
     ]
 
@@ -178,6 +198,7 @@ class FragmentAdmin(admin.ModelAdmin):
         ('url', admin.EmptyFieldListFilter),
         ('needs_review', admin.EmptyFieldListFilter)
     )
+    inlines = [FragmentTextBlockInline]
     list_editable = ('url',)
     fields = (
         ('shelfmark', 'old_shelfmarks'),
