@@ -4,6 +4,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.contrib.postgres.fields import JSONField
 
+from modeltranslation.manager import MultilingualManager
 from multiselectfield import MultiSelectField
 
 
@@ -24,7 +25,7 @@ class SourceLanguage(models.Model):
         return self.name
 
 
-class CollectionManager(models.Manager):
+class CreatorManager(MultilingualManager):
 
     def get_by_natural_key(self, last_name, first_name):
         return self.get(last_name=last_name, first_name=first_name)
@@ -34,6 +35,8 @@ class Creator(models.Model):
     '''author or other contributor to a source'''
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
+
+    objects = CreatorManager()
 
     def __str__(self):
         return ', '.join([n for n in [self.last_name, self.first_name] if n])

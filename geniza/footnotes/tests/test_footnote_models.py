@@ -71,6 +71,17 @@ class TestCreator:
         # no firstname
         assert str(Creator(last_name='Goitein')) == 'Goitein'
 
+    def test_natural_key(self):
+        creator = Creator(last_name='Angelou', first_name='Maya')
+        assert creator.natural_key() == ('Angelou', 'Maya')
+
+    @pytest.mark.django_db
+    def test_get_by_natural_key(self):
+        creator = Creator.objects \
+            .create(last_name='Angelou', first_name='Maya')
+        assert Creator.objects.get_by_natural_key('Angelou', 'Maya') == \
+            creator
+
 
 class TestAuthorship:
 
