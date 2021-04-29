@@ -290,8 +290,8 @@ def test_import_documents(mockrequests, caplog):
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
         b'PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional)',
-        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,,',
-        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,,',
+        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,Ed. M. Cohen,',
+        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,awaiting transcription,"Trans. Goitein, typed texts (attached)"',
         b'2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,'
     ])
     with caplog.at_level(logging.INFO, logger="import"):
@@ -309,6 +309,12 @@ def test_import_documents(mockrequests, caplog):
     assert textblock.side == 'v'
     assert textblock.extent_label == 'a'
     assert textblock.multifragment == 'middle'
+    # check footnote & source
+    assert doc.footnotes.count() == 1
+    fnote = doc.footnotes.first()
+    assert fnote.source.authors.first().last_name == 'Cohen'
+    assert fnote.source.title == ''
+    assert Footnote.EDITION in fnote.doc_relation
 
     assert doc.description == \
         'Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.'
@@ -323,6 +329,13 @@ def test_import_documents(mockrequests, caplog):
     doc2 = Document.objects.get(id=2292)
     assert doc2.fragments.count() == 3
     assert Fragment.objects.get(shelfmark='NA')
+    # check footnote; should only be one
+    assert doc2.footnotes.count() == 1
+    fnote = doc2.footnotes.first()
+    assert fnote.source.authors.first().last_name == 'Goitein'
+    assert fnote.source.title == 'typed texts'
+    assert Footnote.EDITION in fnote.doc_relation
+    assert Footnote.TRANSLATION in fnote.doc_relation
 
     # check script summary output
     output = caplog.text
