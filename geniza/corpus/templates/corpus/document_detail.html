@@ -19,7 +19,7 @@
         <dd>{{ document.doctype }}</dd>
         {% endif %}
         {% comment %}Translators: Date document was first added to the PGP{% endcomment %}
-        <dt class="sr-only">{% translate 'First input' %}</dt>
+        <dt class="inline">{% translate 'Input date' %}</dt>
         <dd>{{ document.log_entries.last.action_time.year }}</dd>
 
         {% if document.editions %}
@@ -30,7 +30,8 @@
         {# link ? #}
         {% endfor %}
         {% endif %}
-
+    </dl>
+    <dl class="tags">
         <dt class="sr-only">{% translate 'Tags' %}</dt>
         {% for tag in document.tags.all %}
         <dd class="tag">#{{ tag }}</dd>
