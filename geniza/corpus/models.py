@@ -198,7 +198,6 @@ class Document(models.Model):
         limit_choices_to=~models.Q(language__exact='Unknown'))
     language_note = models.TextField(
         blank=True, help_text='Notes on diacritics, vocalisation, etc.')
-    # TODO footnotes for edition/translation
     notes = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
@@ -271,7 +270,8 @@ class Document(models.Model):
 
     def iiif_urls(self):
         """List of IIIF urls for images of the Document's Fragments."""
-        return list(dict.fromkeys(filter(None,
+        return list(dict.fromkeys(filter(
+            None,
             [b.fragment.iiif_url for b in self.textblock_set.all()])))
 
     @property
@@ -280,12 +280,16 @@ class Document(models.Model):
         # NOTE preliminary, pending more discussion
         return f"{self.doctype or 'Unknown'} ({self.id})"
 
+    def editions(self):
+        # return all footnotes that include type edition
+        return self.footnotes.filter(doc_relation__contains=Footnote.EDITION)
+
 
 class TextBlock(models.Model):
     '''The portion of a document that appears on a particular fragment.'''
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
-    certain = models.BooleanField(default=True, 
+    certain = models.BooleanField(default=True,
         help_text=("Are you certain that this fragment belongs to this document? " +
             "Uncheck this box if you are uncertain of a potential join."))
     RECTO = 'r'

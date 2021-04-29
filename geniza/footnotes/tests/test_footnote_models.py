@@ -23,14 +23,28 @@ class TestSourceLanguage:
 class TestSource:
 
     @pytest.mark.django_db
-    def test_str(self, source):
-        # source has no year; str should be title, creators
+    def test_str(self, source, twoauthor_source, multiauthor_untitledsource):
+        # source has no year; str should be creator lastname, title,
         assert str(source) == \
-            '%s, %s' % (source.title, source.authors.first())
+            '%s, %s' % (source.authors.first().last_name, source.title)
         # set a year
         source.year = 1984
         assert str(source) == \
-            '%s (1984), %s' % (source.title, source.authors.first())
+            '%s, %s (1984)' % (source.authors.first().last_name, source.title)
+
+        # two authors
+        assert str(twoauthor_source) == \
+            '%s and %s, %s' % (
+                twoauthor_source.authors.first().last_name,
+                twoauthor_source.authors.all()[1].last_name,
+                twoauthor_source.title)
+
+        # four authors, no title
+        lastnames = [a.creator.last_name for
+                     a in multiauthor_untitledsource.authorship_set.all()]
+        print(lastnames)
+        assert str(multiauthor_untitledsource) == \
+            '%s, %s, %s and %s' % tuple(lastnames)
 
     def test_all_authors(self, twoauthor_source):
         author1, author2 = twoauthor_source.authorship_set.all()
@@ -53,6 +67,20 @@ class TestCreator:
     def test_str(self):
         creator = Creator(last_name='Angelou', first_name='Maya')
         str(creator) == 'Angelou, Maya'
+
+        # no firstname
+        assert str(Creator(last_name='Goitein')) == 'Goitein'
+
+    def test_natural_key(self):
+        creator = Creator(last_name='Angelou', first_name='Maya')
+        assert creator.natural_key() == ('Angelou', 'Maya')
+
+    @pytest.mark.django_db
+    def test_get_by_natural_key(self):
+        creator = Creator.objects \
+            .create(last_name='Angelou', first_name='Maya')
+        assert Creator.objects.get_by_natural_key('Angelou', 'Maya') == \
+            creator
 
 
 class TestAuthorship:

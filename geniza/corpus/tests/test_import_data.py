@@ -1,7 +1,7 @@
 import datetime
 import logging
 from io import StringIO
-from unittest.mock import DEFAULT, patch
+from unittest.mock import DEFAULT, Mock, patch
 
 import pytest
 import requests
@@ -18,6 +18,7 @@ from django.test import override_settings
 from geniza.corpus.management.commands import import_data
 from geniza.corpus.models import (Collection, Document, DocumentType, Fragment,
                                   LanguageScript)
+from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 
 @pytest.mark.django_db
@@ -288,10 +289,10 @@ def test_import_documents(mockrequests, caplog):
     mockrequests.codes = requests.codes   # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = iter([
-        b'PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins',
-        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,',
-        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA',
-        b'2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,'
+        b'PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional)',
+        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,Ed. M. Cohen,',
+        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,awaiting transcription,"Trans. Goitein, typed texts (attached)"',
+        b'2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,'
     ])
     with caplog.at_level(logging.INFO, logger="import"):
         import_data_cmd.import_documents()
@@ -308,6 +309,12 @@ def test_import_documents(mockrequests, caplog):
     assert textblock.side == 'v'
     assert textblock.extent_label == 'a'
     assert textblock.multifragment == 'middle'
+    # check footnote & source
+    assert doc.footnotes.count() == 1
+    fnote = doc.footnotes.first()
+    assert fnote.source.authors.first().last_name == 'Cohen'
+    assert fnote.source.title == ''
+    assert Footnote.EDITION in fnote.doc_relation
 
     assert doc.description == \
         'Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.'
@@ -322,6 +329,13 @@ def test_import_documents(mockrequests, caplog):
     doc2 = Document.objects.get(id=2292)
     assert doc2.fragments.count() == 3
     assert Fragment.objects.get(shelfmark='NA')
+    # check footnote; should only be one
+    assert doc2.footnotes.count() == 1
+    fnote = doc2.footnotes.first()
+    assert fnote.source.authors.first().last_name == 'Goitein'
+    assert fnote.source.title == 'typed texts'
+    assert Footnote.EDITION in fnote.doc_relation
+    assert Footnote.TRANSLATION in fnote.doc_relation
 
     # check script summary output
     output = caplog.text
@@ -571,7 +585,6 @@ def test_log_edit_history():
     assert entries[3].get_change_message() == "Initial data entry (spreadsheet), dated test"
 
 
-
 @pytest.mark.django_db
 @override_settings(DATA_IMPORT_URLS={})
 def test_command_line():
@@ -589,7 +602,6 @@ def test_command_line():
 @pytest.mark.django_db
 def test_update_document_id_sequence():
     import_data_cmd = import_data.Command()
-    import_data_cmd.stdout = StringIO()
 
     # create document with pgpid specified
     doc = Document.objects.create(id=3000)
@@ -600,3 +612,217 @@ def test_update_document_id_sequence():
     cursor.execute("select nextval('corpus_document_id_seq')")
     result = cursor.fetchone()
     assert result == (doc.id + 1, )
+
+
+# editor input string and expected result
+editors_parsed = [
+    ('Ed. M. Cohen',
+     [{'get_source_arg': 'M. Cohen'}]),
+    ('Ed. Goitein, India Book 5 (unpublished), ה25; ed. and trans. Phil Lieberman, Business of Identity, 263–70.',
+     [{'get_source_arg': 'Goitein, India Book 5 (unpublished)',
+       'f_location': 'ה25'},
+      {'get_source_arg': 'Phil Lieberman, Business of Identity',
+       'translation': True, 'f_location': '263–70'}
+      ]),
+    ('Ed. Ashtor, Mamluks, vol. 3, pp. 95-96 (Doc. #56). With minor emendations by Alan Elbaum (2020).',
+     [{'get_source_arg': 'Ashtor, Mamluks, vol. 3',
+       'f_notes': 'With minor emendations by Alan Elbaum (2020).',
+       'f_location': 'Doc. #56, pp. 95-96'}]),
+    ('Ed. Avraham David. Transcription listed in FGP, awaiting digitization on PGP.',
+     [{'get_source_arg': 'Avraham David',
+       'f_notes': 'Transcription listed in FGP, awaiting digitization on PGP.'}]),
+    ('Ed. Gil, Palestine, vol. 2, #177',
+     [{'get_source_arg': 'Gil, Palestine, vol. 2',
+       'f_location': '#177'}]),
+    ('Ed. Friedman, Jewish Marriage, vol. 2, 384 (Doc. #51)',
+     [{'get_source_arg': 'Friedman, Jewish Marriage, vol. 2, 384',
+       'f_location': 'Doc. #51'}]),
+    # two authors
+    ('Ed. Jennifer Grayson and Marina Rustow',
+     [{'get_source_arg': 'Jennifer Grayson and Marina Rustow'}]),
+    ('Ed. Marina Rustow https://docs.google.com/doc/1 ',
+     [{'get_source_arg': 'Marina Rustow https://docs.google.com/doc/1'}]),
+    ('Ed. Goitein, typed texts; also ed.Gil, Kingdom, vol. 2, #154; also ed. Gil, The Tustaris, pp. 67-8.',
+     [{'get_source_arg': 'Goitein, typed texts'},
+      {'get_source_arg': 'Gil, Kingdom, vol. 2', 'f_location': '#154'},
+      {'get_source_arg': 'Gil, The Tustaris', 'f_location': 'pp. 67-8'}]),
+    # notes
+    ('Ed. Motzkin. See attachments',
+     [{'get_source_arg': 'Motzkin', 'f_notes': 'See attachments'}]),
+    # TODO — partial not yet handled
+    # ('Partially ed. Weiss. Transciption awaiting digitization.',
+    #  [{'get_source_arg': 'Weiss',
+    #   'f_notes': 'Partial.\nTranscription awaiting digitization.'}]),
+
+    # actual record has url at end, which we don't handle properly
+    # ('Ed. Rustow and Vanthieghem (with suggestions from Khan and Shirazi)',
+    #  [{'get_source_arg': 'Rustow and Vanthieghem',
+    #    'f_notes': 'with suggestions from Khan and Shirazi'}])
+]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("test_input,expected", editors_parsed)
+@patch('geniza.corpus.management.commands.import_data.Command.get_source')
+@patch('geniza.corpus.management.commands.import_data.Footnote')
+def test_parse_editor(mock_footnote, mock_get_source, test_input, expected):
+    import_data_cmd = import_data.Command()
+    import_data_cmd.source_setup()
+    doc = Mock()
+    # copy real footnote flags to mock footnote
+    mock_footnote.EDITION = Footnote.EDITION
+    mock_footnote.TRANSLATION = Footnote.TRANSLATION
+
+    # parse the input
+    import_data_cmd.parse_editor(doc, test_input)
+    # check the results
+    for result in expected:
+        # call source with cleaned edition info
+        mock_get_source.assert_any_call(result['get_source_arg'], doc)
+        # create footnote with expected type; everything is an edition
+        doc_relation = {Footnote.EDITION}
+        # some editions also provide translation
+        if result.get('translation'):
+            doc_relation.add(Footnote.TRANSLATION)
+
+        mock_footnote.assert_any_call(
+            source=mock_get_source.return_value, content_object=doc,
+            doc_relation=doc_relation,
+            location=result.get('f_location', ''),
+            notes=result.get('f_notes', ''))
+
+
+# expected name variants for source author lookup
+source_creator_input = [
+    # input string; first name, last name for creator retrieved
+    ('M. Cohen', ('Mark', 'Cohen')),
+    ('Cohen', ('Mark', 'Cohen')),
+    ('Mark Cohen', ('Mark', 'Cohen')),
+]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("test_input,expected", source_creator_input)
+def test_get_source_creator(test_input, expected):
+    import_data_cmd = import_data.Command()
+    import_data_cmd.source_setup()
+    creator = import_data_cmd.get_source_creator(test_input)
+    assert expected == (creator.first_name, creator.last_name)
+
+
+def test_get_source_creator_not_found():
+    # test error for creator not found
+    import_data_cmd = import_data.Command()
+    import_data_cmd.source_creators = {}
+    with pytest.raises(Exception):
+        import_data_cmd.get_source_creator('Foo')
+
+
+source_input = [
+    # untitled items == PGP editions
+    # single author, no title
+    ('M. Cohen',
+     {'type': 'Unpublished', 'authors': ['Cohen, Mark']}),
+    # two authors with a url
+    ("Marina Rustow and Anna Bailey https://example.co",
+     {'type': 'Unpublished', 'authors': ['Rustow, Marina', 'Bailey, Anna'],
+      'url': 'https://example.co'}),
+    # more than two authors!
+    ('Lorenzo Bondioli, Tamer el-Leithy, Joshua Picard, Marina Rustow and Zain Shirazi, 2016–2018. https://example.co/doc',
+     {'type': 'Unpublished',
+      'authors': ['Bondioli, Lorenzo', 'el-Leithy, Tamer', 'Picard, Joshua',
+                  'Rustow, Marina', 'Shirazi, Zain'],
+      'url': 'https://example.co/doc', 'year': 2018}
+     ),
+    # unpublished items with titles
+    ('Goitein, India Book 6 (unpublished), ו14',
+     {'type': 'Unpublished', 'authors': ['Goitein, S. D.'],
+      'title': 'India Book 6'}),  # notes/location?
+    # typed texts
+    ('Goitein, typed texts',
+     {'type': 'Unpublished', 'authors': ['Goitein, S. D.'],
+      'title': 'typed texts'}),
+    # book with volume information
+    ('Gil, Palestine, vol. 2, #177',
+     {'type': 'Book', 'authors': ['Gil, Moshe'],
+      'title': 'Palestine', 'volume': '2'}),
+    # dissertation
+    ("Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-25, pp. 325-28",
+     {'type': 'Dissertation', 'authors': ['Ashur, Amir'], 'year': 2006,
+      'title': 'Engagement and Betrothal Documents from the Cairo Geniza',
+      'language': 'Hebrew'}),
+    # article
+    ('Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz 2015, 135–61, at 156f. Awaiting digitization on PGP.',
+     {'type': 'Article', 'authors': ['Friedman, Mordechai Akiva'],
+      'title': 'Maimonides Appoints R. Anatoly Muqaddam of Alexandria',
+      'language': 'Hebrew', 'year': 2015})
+    # Tarbiz 2015, 135–61, }
+
+    # also ed. and trans.Golb and Pritsak, Khazarian Hebrew Documents of the 10th Century, pp. 1-71
+    # translation language
+    # 'Trans. into English, Cohen. Voice of the Poor in the Middle Ages, no. 92. Trans. into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984), 67–104.'
+]
+
+
+@pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})
+@pytest.mark.parametrize("test_input,expected", source_input)
+def test_get_source(test_input, expected):
+    doc = Mock(id=345)
+    import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
+    import_data_cmd.source_setup()
+    source = import_data_cmd.get_source(test_input, doc)
+    # check type
+    assert expected['type'] == source.source_type.type
+    # check all authors added, in expected order
+    for i, author in enumerate(expected['authors']):
+        assert author == str(source.authorship_set.all()[i].creator)
+
+    # fields that should match when present or be unset
+    assert expected.get('url', '') == source.url
+    assert expected.get('title', '') == source.title
+    assert expected.get('volume', '') == source.volume
+    assert expected.get('year') == source.year
+    # check that language was associated if specified
+
+    assert expected.get('language', '') ==  \
+        ', '.join(lang.name for lang in source.languages.all())
+
+
+@pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})
+def test_get_source_existing(source):
+    doc = Mock(id=345)
+    import_data_cmd = import_data.Command()
+    # source setup removes our fixture data, so run only the steps
+    # needed for this command
+    import_data_cmd.source_types = {
+        s.type: s for s in SourceType.objects.all()
+    }
+    # create source creator lookup keyed on last name
+    import_data_cmd.source_creators = {
+        c.last_name: c for c in Creator.objects.all()
+    }
+    import_data_cmd.content_types = {
+        Source: ContentType.objects.get_for_model(Source)
+    }
+    import_data_cmd.script_user = get_user_model() \
+        .objects.get(username=settings.SCRIPT_USERNAME)
+
+    # update source with source type to match import script logic
+    source.source_type = import_data_cmd.source_types['Book']
+    source.save()
+    updated_source = import_data_cmd.get_source(
+        'Orwell, A Nice Cup of Tea (1984). See related information', doc)
+    # should be the same object
+    assert updated_source.pk == source.pk
+    # should have year and notes added
+    assert updated_source.year == 1984
+    assert 'See related' in updated_source.notes
+
+
+# Ed. Gil, Palestine, vol. 2, #177
+# Ed. Gil, Palestine, vol. 2, #181
+# Ed. Friedman, Jewish Marriage, vol. 2, 384 (Doc. #51)
+# Ed. Ashtor, Mamluks, vol. 3, pp. 125-126 (Doc. #70)
