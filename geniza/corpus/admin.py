@@ -145,7 +145,8 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request) \
-            .prefetch_related('tags', 'languages', 'textblock_set')  \
+            .select_related('doctype',) \
+            .prefetch_related('tags', 'languages', 'textblock_set', 'textblock_set__fragment')  \
             .annotate(shelfmk_all=ArrayAgg('textblock__fragment__shelfmark')) \
             .order_by('shelfmk_all')
 
@@ -211,6 +212,7 @@ class DocumentAdmin(admin.ModelAdmin):
     def export_to_csv(self, request, queryset=None):
         '''Stream tabular data as a CSV file'''
         queryset = self.get_queryset(request) if queryset is None else queryset
+        queryset = queryset.order_by('id')
         return export_to_csv_response(self.csv_filename(), 
             self.export_fields, self.tabulate_queryset(queryset))
     export_to_csv.short_description = 'Export selected documents to CSV'
