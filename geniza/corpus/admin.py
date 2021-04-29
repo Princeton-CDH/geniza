@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from django.db.models import Count
 from django.conf.urls import url
 from django.utils.timezone import now
-
 from django.urls import reverse, resolve
 from django.utils.html import format_html
 from django.utils import timezone
@@ -168,34 +167,14 @@ class DocumentAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     ## CSV EXPORT -------------------------------------------------------------
-
-    export_fields = [
-        'id', 
-        # link to public site
-        'iiif_urls',
-        # library link*
-        'shelfmark', 
-        # multifragment*
-        # side*
-        # extent_label*
-        'doctype',
-        'all_tags',
-        'description',
-        # footnotes
-        # historic_shelfmarks*
-        'all_languages',
-        'all_probable_languages',
-        # language_note
-        'notes',
-        'needs_review',
-        # admin_change_view
-        # input_by*
-        # date_entered (first log entry date)
-        'last_modified', 
-        'status',
-        # library abbreviation
-        # collection abbreviation
-    ]
+    '''
+    TODO:
+     - link to public site (column name: url_public; or just url?)
+     - footnotes (i.e editions & translations; include source, location, notes, and document relationship; pending data import)
+     - input_by* (list all unique names of people who edited the record)
+     - link to admin change view (column name: url_admin)
+     - date_entered (first log entry date)
+    '''
 
     def csv_filename(self):
         '''Generate filename for CSV download'''
@@ -203,18 +182,53 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def tabulate_queryset(self, queryset):
         '''Generator for data in tabular form, including custom fields'''
-        for document in queryset:
-            # retrieve values for configured export fields; if the attribute
-            # is a callable (i.e., a custom property method), call it
-            yield [value() if callable(value) else value
-                   for value in (getattr(document, field) for field in self.export_fields)]
+        rows = []
+        for doc in queryset:
+            all_fragments = doc.fragments.all()
+            all_textblocks = doc.textblock_set.all()
+            all_footnotes = doc.footnotes.all()
+
+            row = {
+                'pgpid': doc.id,
+                # 'url': # site link
+                'iiif_urls': ';'.join([fragment.iiif_url for fragment in all_fragments]),
+                'fragment_url': ';'.join([fragment.url for fragment in all_fragments]),
+                'shelfmark': doc.shelfmark,
+                'multifragment': ';'.join([tb.multifragment for tb in all_textblocks]),
+                'side': ';'.join([tb.side for tb in all_textblocks]),
+                'extent_label': ';'.join([tb.extent_label for tb in all_textblocks]),
+                'type': doc.doctype,
+                'tags': doc.all_tags(),
+                'description': doc.description,
+                # 'footnotes': ';'.join([str(fn) for fn in all_footnotes]),
+                'shelfmarks_historic': ';'.join([fragment.old_shelfmarks for fragment in all_fragments]),
+                'languages': doc.all_languages(),
+                'languages_probable': doc.all_probable_languages(),
+                'language_note': doc.language_note,
+                'notes': doc.notes,
+                'needs_review': doc.needs_review,
+                # 'url_admin': '',#reverse('admin:corpus_document_change', args=[doc.id]),
+                # input_by*
+                # date_entered (first log entry date)
+                'last_modified': doc.last_modified,
+                'status': 'Public' if doc.status == Document.PUBLIC else 'Suppressed',
+                'library': ';'.join([fragment.collection.lib_abbrev for fragment in all_fragments]),
+                'collection': doc.collection
+            }
+
+            rows.append(row.values())
+            columns = row.keys()
+
+        return columns, rows
 
     def export_to_csv(self, request, queryset=None):
         '''Stream tabular data as a CSV file'''
         queryset = self.get_queryset(request) if queryset is None else queryset
         queryset = queryset.order_by('id')
-        return export_to_csv_response(self.csv_filename(), 
-            self.export_fields, self.tabulate_queryset(queryset))
+
+        columns, rows = self.tabulate_queryset(queryset)
+
+        return export_to_csv_response(self.csv_filename(), columns, rows)
     export_to_csv.short_description = 'Export selected documents to CSV'
 
     def get_urls(self):
