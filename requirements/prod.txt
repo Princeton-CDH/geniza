@@ -11,3 +11,4 @@ django-multiselectfield
 django-modeltranslation
 django-admin-sortable2
 python-dateutil>=2.8
+django-gfklookupwidget
