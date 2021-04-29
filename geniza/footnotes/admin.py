@@ -103,7 +103,7 @@ class FootnoteAdmin(admin.ModelAdmin):
         "notes",
     )
     list_filter = (DocumentRelationTypesFilter,)
-    readonly_fields = ["content_object"]
+    readonly_fields = ["content_object", "content_blocks"]
 
     # Add help text to the combination content_type and object_id
     CONTENT_LOOKUP_HELP = """Select the kind of record you want to attach
@@ -116,8 +116,30 @@ class FootnoteAdmin(admin.ModelAdmin):
                 "description": f'<div class="help">{CONTENT_LOOKUP_HELP}</div>',
             },
         ),
-        (None, {"fields": ("source", "location", "doc_relation", "notes")}),
+        (
+            None,
+            {
+                "fields": (
+                    "source",
+                    "location",
+                    "doc_relation",
+                    "content_blocks",
+                    "notes",
+                )
+            },
+        ),
     ]
+
+    def content_blocks(self, obj):
+        output = ""
+        for block in obj.content["blocks"]:
+            if block["label"]:
+                output += f"{block['label']}\n"
+            for line in block["lines"]:
+                output += f"{line}\n"
+        return output
+
+    content_blocks.short_description = "Content"
 
     def doc_relation_list(self, obj):
         # Casting the multichoice object as string to return a reader-friendly

@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.exceptions import ValidationError
 from django.db.models import Count
+from django.db.models.expressions import Exists, Q
 
 from django.urls import reverse, resolve
 from django.utils.html import format_html
@@ -148,6 +149,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "all_languages",
         "is_textblock",
         "last_modified",
+        "has_transcription"
         "is_public",
     )
     readonly_fields = ("created", "last_modified", "shelfmark", "id")
@@ -167,6 +169,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "languages",
         "probable_languages",
         "status",
+        ("footnotes__content", admin.EmptyFieldListFilter),
         ("textblock__extent_label", admin.EmptyFieldListFilter),
         ("textblock__multifragment", admin.EmptyFieldListFilter),
         ("needs_review", admin.EmptyFieldListFilter),
@@ -192,6 +195,11 @@ class DocumentAdmin(admin.ModelAdmin):
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
+
+    def has_transcription(self, obj):
+        return any([obj.footnotes.values_list("content", flat=True)])
+    has_transcription.short_description = "transcription"
+    has_transcription.boolean = True
 
     def get_queryset(self, request):
         return (
