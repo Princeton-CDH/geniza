@@ -15,8 +15,8 @@ from django.utils import timezone
 from pytest_django.asserts import assertContains
 
 from geniza.corpus.admin import (DocumentAdmin, DocumentForm,
-                                 LanguageScriptAdmin)
-from geniza.corpus.models import Document, Fragment, LanguageScript
+                                 LanguageScriptAdmin, FragmentTextBlockInline)
+from geniza.corpus.models import Document, Fragment, LanguageScript, TextBlock
 
 
 @pytest.mark.django_db
@@ -177,3 +177,26 @@ class TestDocumentForm:
             docform.clean()
 
         assert '"Unknown" is not allowed for probable language' in str(err)
+
+@pytest.mark.django_db
+class TestFragmentTextBlockInline:
+
+    def test_document_link(self):
+        fragment = Fragment.objects.create(shelfmark='CUL 123')
+        doc = Document.objects.create()
+        textblock = TextBlock.objects.create(fragment=fragment, document=doc)
+        inline = FragmentTextBlockInline(Fragment, admin_site=admin.site)
+
+        doc_link = inline.document_link(textblock)
+
+        assert str(doc.id) in doc_link
+        assert str(doc) in doc_link
+
+    def test_document_description(self):
+        fragment = Fragment.objects.create(shelfmark='CUL 123')
+        test_description = 'A medieval poem'
+        doc = Document.objects.create(description=test_description)
+        textblock = TextBlock.objects.create(fragment=fragment, document=doc)
+        inline = FragmentTextBlockInline(Fragment, admin_site=admin.site)
+
+        assert test_description == inline.document_description(textblock)
