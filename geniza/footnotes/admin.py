@@ -105,6 +105,13 @@ class FootnoteAdmin(admin.ModelAdmin):
     list_filter = (DocumentRelationTypesFilter,)
     readonly_fields = ["content_object", "content_blocks"]
 
+    search_fields = (
+        'source__title', 'source__authors__first_name',
+        'source__authors__last_name',
+        'content', 'notes',
+        'document__id', 'document__fragments__shelfmark',
+    )
+
     # Add help text to the combination content_type and object_id
     CONTENT_LOOKUP_HELP = """Select the kind of record you want to attach
     a footnote to, and then use the object id search button to select an item."""

@@ -309,7 +309,7 @@ class Document(ModelIndexable):
         help_text="Decide whether a document should be publicly visible",
     )
 
-    footnotes = GenericRelation(Footnote)
+    footnotes = GenericRelation(Footnote, related_query_name='document')
     log_entries = GenericRelation(LogEntry, related_query_name="document")
 
     # NOTE: default ordering disabled for now because it results in duplicates
