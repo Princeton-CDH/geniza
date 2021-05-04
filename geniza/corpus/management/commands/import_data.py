@@ -860,7 +860,7 @@ class Command(BaseCommand):
         sources = Source.objects \
             .annotate(author_count=models.Count('authorship')) \
             .filter(
-                title=title, volume=volume,
+                title__iexact=title, volume=volume,
                 source_type__type=src_type,
                 author_count=author_count,
                 **extra_opts) \
