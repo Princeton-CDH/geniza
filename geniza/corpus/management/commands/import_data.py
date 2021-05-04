@@ -638,10 +638,10 @@ class Command(BaseCommand):
 
     re_ed_notes = re.compile(
         r'[.;] (?P<note>(' +
-        r'(full )?transcription (listed|awaiting|available).*$|' +
+        r'(full )?transcription (listed|awaiting|available|only).*$|' +
         r'(with )?minor|with corrections).*$|' +
         r'awaiting digitization.*$|' +
-        r'; edited (here )?in comparison with.*$|' +
+        r'edited (here )?in comparison with.*$|' +
         r'[(]?see .*$|' +
         r'(\(\w+ [\w ]+\) ?$))',
         flags=re.I)
@@ -651,7 +651,7 @@ class Command(BaseCommand):
         r'[,.] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+))\.?',
         flags=re.I)
     re_doc_location = re.compile(
-        r'(, )?\(?(?P<doc>(Doc. #?|#)([A-Z]-)?\d+)\)?\.?',
+        r'(, )?\(?(?P<doc>(Doc\.? ?#?|#) ?([A-Z]-)?\d+)\)?\.?',
         flags=re.I)
     # \u0590-\u05fe = range for hebrew characters
     re_goitein_section = re.compile(
@@ -832,6 +832,8 @@ class Command(BaseCommand):
 
         # figure out what the rest of the pieces are, if any
         for part in ed_parts:
+            # FIXME: locations should get picked up in parse_editor,
+            # probably an error if we're getting them here
             if any([val in part for val in ['Doc', 'pp.', '#', ' at ']]):
                 location = part
             elif part in ['Hebrew', 'German']:
