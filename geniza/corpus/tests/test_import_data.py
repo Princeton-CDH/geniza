@@ -746,6 +746,10 @@ source_input = [
     ('Gil, Palestine, vol. 2, #177',
      {'type': 'Book', 'authors': ['Gil, Moshe'],
       'title': 'Palestine', 'volume': '2'}),
+    # volume information variation
+    ('Gil, Kingdom Vol 3',
+     {'type': 'Book', 'authors': ['Gil, Moshe'],
+      'title': 'Kingdom', 'volume': '3'}),
     # dissertation
     ("Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-25, pp. 325-28",
      {'type': 'Dissertation', 'authors': ['Ashur, Amir'], 'year': 2006,

@@ -737,12 +737,18 @@ class Command(BaseCommand):
             logger.error('Source creator not found for %s' % name)
             raise
 
+    # upper or lower case volume, with or without period or space
+    re_volume = re.compile(r'(, )?\bvol.? ?(?P<volume>\d+)', flags=re.I)
+
     def get_source(self, edition, document):
         # parse the edition information and get the source for this scholarly
         # record if it already exists; if it doesn't, create it
 
         # create a list of text to add to notes
         note_lines = []   # notes probably apply to footnote, not source
+
+        # set defaults for information that may not be present
+        title = volume = language = location = ''
 
         # check for url and store if present
         url_match = self.re_url.search(edition)
@@ -754,8 +760,8 @@ class Command(BaseCommand):
 
         # check for 4-digit year and store it if present
         year = None
-        # one record has a date range; others have a month
-        year_match = re.search(r'\b(?P<match>(\d{4}[––]|\d{2}/)?(?P<year>\d{4}))\b',
+        # one record has a date range; others have a one or two digit month
+        year_match = re.search(r'\b(?P<match>(\d{4}[––]|\d{1,2}/)?(?P<year>\d{4}))\b',
                                edition)
         if year_match:
             # store the year
@@ -765,6 +771,13 @@ class Command(BaseCommand):
             if full_match != year:
                 note_lines.append(full_match)
                 edition = edition.replace(full_match, '').strip(' .,')
+
+        # check for volume information
+        vol_match = self.re_volume.search(edition)
+        # if found, store volume and remove from edition text
+        if vol_match:
+            volume = vol_match.group('volume')
+            edition = self.re_volume.sub('', edition)
 
         # no easy way to recognize more than two authors,
         # but there are only three instances
@@ -795,8 +808,6 @@ class Command(BaseCommand):
                 authors.append(self.get_source_creator(author))
             # warn if no authors? (likely an error)
 
-        # set defaults for information that may not be present
-        title = volume = language = location = ''
         # if there are more parts, the second is the title
         if ed_parts:
             title = ed_parts.pop(0).strip()
@@ -821,10 +832,7 @@ class Command(BaseCommand):
 
         # figure out what the rest of the pieces are, if any
         for part in ed_parts:
-            # vol. indicates volume
-            if 'vol.' in part:
-                volume = part.replace('vol.', '').strip()
-            elif any([val in part for val in ['Doc', 'pp.', '#', ' at ']]):
+            if any([val in part for val in ['Doc', 'pp.', '#', ' at ']]):
                 location = part
             elif part in ['Hebrew', 'German']:
                 language = part
