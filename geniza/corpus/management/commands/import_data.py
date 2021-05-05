@@ -326,8 +326,8 @@ class Command(BaseCommand):
                 fragment=fragment,
                 # convert recto/verso value to code
                 side=recto_verso_lookup.get(row.recto_verso, ""),
-                extent_label=row.text_block,
-                multifragment=row.multifragment,
+                region=row.text_block,
+                subfragment=row.multifragment
             )
             self.add_document_language(doc, row)
             docstats["documents"] += 1
@@ -376,7 +376,7 @@ class Command(BaseCommand):
     def get_doctype(self, dtype):
         # don't create an empty doctype
         dtype = dtype.strip()
-        if not dtype:
+        if not dtype or dtype == "Unknown":
             return
 
         doctype = self.doctype_lookup.get(dtype)
