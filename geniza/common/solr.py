@@ -13,4 +13,7 @@ class SolrSchema(schema.SolrSchema):
     # methods and solr queryset aliases for specifics
 
     #: copy fields for facets and variant search options
-    copy_fields = {}
+    copy_fields = {
+        'shelfmark_txt': 'shelfmark_ss',
+        'tag_txt': 'tag_ss',
+    }

@@ -182,11 +182,12 @@ class DocumentType(models.Model):
         return self.name
 
 
-class Document(models.Model, ModelIndexable):
+class Document(ModelIndexable):
     '''A unified document such as a letter or legal document that
     appears on one or more fragments.'''
     id = models.AutoField('PGPID', primary_key=True)
-    fragments = models.ManyToManyField(Fragment, through='TextBlock',
+    fragments = models.ManyToManyField(
+        Fragment, through='TextBlock',
         related_name="documents")
     description = models.TextField(blank=True)
     doctype = models.ForeignKey(
@@ -275,7 +276,7 @@ class Document(models.Model, ModelIndexable):
     def iiif_urls(self):
         """List of IIIF urls for images of the Document's Fragments."""
         return list(dict.fromkeys(filter(None,
-            [b.fragment.iiif_url for b in self.textblock_set.all()])))
+                    [b.fragment.iiif_url for b in self.textblock_set.all()])))
 
     @property
     def title(self):
@@ -303,9 +304,11 @@ class Document(models.Model, ModelIndexable):
             return index_data
 
         index_data.update({
-            # TODO: multi-valued
-            # 'shelfmark_tm': self.fragments__shelfmark,
-            # 'tags_tm': self.tags__name,
+            'type_s': self.doctype.name if self.doctype else 'Unknown',
+            'shelfmark_txt': [f.shelfmark for f in self.fragments.all()],
+            'shelfmark_ss': [f.shelfmark for f in self.fragments.all()],
+            'tag_txt': [t.name for t in self.tags.all()],
+            'tag_ss': [t.name for t in self.tags.all()],
             'description_t': self.description,
             'notes_t': self.notes,
             'needs_review_t': self.needs_review,
@@ -313,7 +316,6 @@ class Document(models.Model, ModelIndexable):
         })
 
         return index_data
-
 
 
 class TextBlock(models.Model):
