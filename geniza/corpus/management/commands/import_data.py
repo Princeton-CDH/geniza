@@ -626,7 +626,7 @@ class Command(BaseCommand):
     ]
 
     # re_docrelation = re.compile(r'^(. Also )?Ed. (and transl?.)? ?',
-    re_docrelation = re.compile(r'^(also )?ed. ?(and transl?. ?)?',
+    re_docrelation = re.compile(r'^(also )?ed. ?(and trans(\.|l\.|lated) ?)?(by )?',
                                 flags=re.I)
 
     # notes that may occur with an edition
@@ -637,18 +637,18 @@ class Command(BaseCommand):
     re_ed_notes = re.compile(
         r'[.;,]["\'’”]? (?P<note>(' +
         r'(full )?transcription (listed|awaiting|available|only).*$|' +
-        r'(retyped )?(with )?minor|with corrections).*$|' +
+        r'(retyped )?(with )?minor|with corrections|with emendations).*$|' +
         r'compared with.*$|' +
         r'partial.*$|' +
-        r'awaiting digitization.*$|' +
+        r'await.*$|' +
         r'edited (here )?in comparison with.*$|' +
         r'[(]?see .*$|' +
-        r'(\(\w+ [\w ]+\) ?$))',
+        r'(\(\w+ [\w\d., ]+\) ?$))',
         flags=re.I)
 
     # regexes to pull out page or document location
     re_page_location = re.compile(
-        r'[,.] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+)f?)\.?',
+        r'[,.] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+)[a-z]?)\.?',
         flags=re.I)
     # Doc, Doc., Document, # with numbers and or alpha-number
     re_doc_location = re.compile(
@@ -763,7 +763,9 @@ class Command(BaseCommand):
         # check for 4-digit year and store it if present
         year = None
         # one record has a date range; others have a one or two digit month
-        year_match = re.search(r'\b(?P<match>(\d{4}[––]|\d{1,2}/)?(?P<year>\d{4}))\b',
+        # match: #/#### or ##/### ; (####); , ####, ; ####-####
+        # (exclude 4-digit years that occur in titles)
+        year_match = re.search(r'\b(?P<match>(\d{4}[––]|\d{1,2}\/| ?\(|, ))(?P<year>\d{4})[) ,]',
                                edition)
         if year_match:
             # store the year

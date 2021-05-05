@@ -652,6 +652,10 @@ editors_parsed = [
     ('Ed. Goitein, typed texts, compared with G. Weiss, Legal Documents Written by the Court Clerk Ḥalfon Ben Manasse, Ph.D. Dissertation, 1970.',
      [{'get_source_arg': 'Goitein, typed texts',
       'f_notes': 'compared with G. Weiss, Legal Documents Written by the Court Clerk Ḥalfon Ben Manasse, Ph.D. Dissertation, 1970.'}]),
+    ('Ed. and transl. by M. Cohen, The Voice of the Poor in the Middle Ages, no.76. (Information from Mediterranean Society, II, p. 499, App. C 87)',
+     [{'get_source_arg': 'M. Cohen, The Voice of the Poor in the Middle Ages, no.76',
+       'translation': True,
+      'f_notes': '(Information from Mediterranean Society, II, p. 499, App. C 87)'}]),
     # TODO — partial not yet handled
     # ('Partially ed. Weiss. Transciption awaiting digitization.',
     #  [{'get_source_arg': 'Weiss',
