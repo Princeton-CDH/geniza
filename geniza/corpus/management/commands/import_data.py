@@ -635,9 +635,8 @@ class Command(BaseCommand):
     # - with (minor) ..
     # - with corrections
     # - multiword parenthetical at the end of the edition
-
     re_ed_notes = re.compile(
-        r'[.;] (?P<note>(' +
+        r'[.;]["\'’”]? (?P<note>(' +
         r'(full )?transcription (listed|awaiting|available|only).*$|' +
         r'(with )?minor|with corrections).*$|' +
         r'awaiting digitization.*$|' +
@@ -650,8 +649,9 @@ class Command(BaseCommand):
     re_page_location = re.compile(
         r'[,.] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+))\.?',
         flags=re.I)
+    # Doc, Doc., Document, # with numbers and or alpha-number
     re_doc_location = re.compile(
-        r'(, )?\(?(?P<doc>(Doc\.? ?#?|#) ?([A-Z]-)?\d+)\)?\.?',
+        r'(, )?\(?(?P<doc>(Doc(ument|\.)? ?#?|#) ?([A-Z]-)?\d+)\)?\.?',
         flags=re.I)
     # \u0590-\u05fe = range for hebrew characters
     re_goitein_section = re.compile(
@@ -820,15 +820,16 @@ class Command(BaseCommand):
         elif any([term in edition for term in
                  ["typed texts", "unpublished", "handwritten texts"]]):
             src_type = 'Unpublished'
-        # title with quotes indicates Article
-        elif title[0] in ["'", '"']:
+        # title with quotes indicates Article; straight or curly quotes
+        elif title[0] in ["'", '"', '“', '‘']:
             src_type = 'Article'
         # if it isn't anything else, it's a book
         else:
             src_type = 'Book'
 
         # strip any quotes from beginning and end of title
-        title = title.strip('"\'').strip()
+        # also strip periods at end and any whitespace
+        title = title.strip('"\'”“‘’').rstrip('.').strip()
 
         # figure out what the rest of the pieces are, if any
         for part in ed_parts:
