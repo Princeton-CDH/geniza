@@ -276,7 +276,7 @@ class TestDocument:
         block = TextBlock.objects.create(document=doc, fragment=frag)
         assert not doc.is_textblock()
 
-        block.region = 'a'
+        block.region = "a"
         block.save()
         assert doc.is_textblock()
 
@@ -372,7 +372,7 @@ class TestTextBlock:
         assert str(block) == "%s recto" % frag.shelfmark
 
         # with labeled region
-        block.region = 'a'
+        block.region = "a"
         block.save()
         assert str(block) == "%s recto a" % frag.shelfmark
 

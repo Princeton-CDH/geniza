@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from django.contrib.admin.filters import RelatedOnlyFieldListFilter
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.exceptions import ValidationError
 from django.db.models import Count
@@ -18,6 +19,7 @@ from geniza.corpus.models import (
     TextBlock,
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
+from geniza.common.admin import custom_empty_field_list_filter
 from geniza.footnotes.admin import FootnoteInline
 
 
@@ -28,8 +30,9 @@ class FragmentTextBlockInline(admin.TabularInline):
     fields = (
         "document_link",
         "document_description",
+        "subfragment",
         "side",
-        "extent_label",
+        "region",
     )
     readonly_fields = ("document_link", "document_description")
     extra = 0
@@ -110,9 +113,9 @@ class DocumentTextBlockInline(admin.TabularInline):
     readonly_fields = ("thumbnail",)
     fields = (
         "fragment",
+        "subfragment",
         "side",
-        "extent_label",
-        "multifragment",
+        "region",
         "order",
         "certain",
         "thumbnail",
@@ -147,10 +150,9 @@ class DocumentAdmin(admin.ModelAdmin):
         "doctype",
         "tag_list",
         "all_languages",
-        "is_textblock",
         "last_modified",
-        "has_transcription"
-        "is_public",
+        "has_transcription",
+        "has_image" "is_public",
     )
     readonly_fields = ("created", "last_modified", "shelfmark", "id")
     search_fields = (
@@ -163,16 +165,27 @@ class DocumentAdmin(admin.ModelAdmin):
     )
     # TODO include search on edition once we add footnotes
     save_as = True
+    empty_value_display = "Unknown"
 
     list_filter = (
         "doctype",
-        "languages",
-        "probable_languages",
+        (
+            "footnotes__content",
+            custom_empty_field_list_filter(
+                "transcription", "Has transcription", "No transcription"
+            ),
+        ),
+        (
+            "textblock__fragment__iiif_url",
+            custom_empty_field_list_filter("IIIF image", "Has image", "No image"),
+        ),
+        (
+            "needs_review",
+            custom_empty_field_list_filter("review status", "Needs review", "OK"),
+        ),
         "status",
-        ("footnotes__content", admin.EmptyFieldListFilter),
-        ("textblock__extent_label", admin.EmptyFieldListFilter),
-        ("textblock__multifragment", admin.EmptyFieldListFilter),
-        ("needs_review", admin.EmptyFieldListFilter),
+        ("languages", admin.RelatedOnlyFieldListFilter),
+        ("probable_languages", admin.RelatedOnlyFieldListFilter),
     )
 
     fields = (
@@ -195,11 +208,6 @@ class DocumentAdmin(admin.ModelAdmin):
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
-
-    def has_transcription(self, obj):
-        return any([obj.footnotes.values_list("content", flat=True)])
-    has_transcription.short_description = "transcription"
-    has_transcription.boolean = True
 
     def get_queryset(self, request):
         return (
@@ -264,10 +272,13 @@ class FragmentAdmin(admin.ModelAdmin):
     search_fields = ("shelfmark", "old_shelfmarks", "notes", "needs_review")
     readonly_fields = ("old_shelfmarks", "created", "last_modified")
     list_filter = (
-        ("collection", admin.RelatedOnlyFieldListFilter),
+        ("url", custom_empty_field_list_filter("IIIF image", "Has image", "No image")),
+        (
+            "needs_review",
+            custom_empty_field_list_filter("review status", "Needs review", "OK"),
+        ),
         "is_multifragment",
-        ("url", admin.EmptyFieldListFilter),
-        ("needs_review", admin.EmptyFieldListFilter),
+        ("collection", admin.RelatedOnlyFieldListFilter),
     )
     inlines = [FragmentTextBlockInline]
     list_editable = ("url",)

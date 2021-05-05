@@ -22,5 +22,22 @@ class LocalUserAdmin(UserAdmin):
     group_names.short_description = "groups"
 
 
+
+def custom_empty_field_list_filter(title, non_empty_label=None, empty_label=None):
+    class CustomEmptyFieldListFilter(admin.EmptyFieldListFilter):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.title = title
+
+        def choices(self, changelist):
+            choices = list(super().choices(changelist))
+            if empty_label:
+                choices[1]["display"] = empty_label
+            if non_empty_label:
+                choices[2]["display"] = non_empty_label
+            return choices
+    
+    return CustomEmptyFieldListFilter
+
 admin.site.unregister(User)
 admin.site.register(User, LocalUserAdmin)

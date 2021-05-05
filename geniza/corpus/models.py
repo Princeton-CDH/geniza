@@ -350,16 +350,8 @@ class Document(ModelIndexable):
             )
         )
 
-    def is_textblock(self):
-        """Is this document part of a notated text block?"""
-        return any(bool(block.extent_label) for block in self.textblock_set.all())
-
-    is_textblock.short_description = "Text Block?"
-    is_textblock.boolean = True
-
     def all_languages(self):
-        return ",".join([str(lang) for lang in self.languages.all()])
-
+        return ", ".join([str(lang) for lang in self.languages.all()])
     all_languages.short_description = "Language"
 
     def tag_list(self):
@@ -385,6 +377,20 @@ class Document(ModelIndexable):
                 filter(None, [b.fragment.iiif_url for b in self.textblock_set.all()])
             )
         )
+
+    def has_transcription(self):
+        """Admin display field indicating if document has a transcription."""
+        return any(note.has_transcription() for note in self.footnotes.all())
+    has_transcription.short_description = "Transcription"
+    has_transcription.boolean = True
+    has_transcription.admin_order_field = "footnotes__content"
+
+    def has_image(self):
+        """Admin display field indicating if document has a IIIF image."""
+        return any(self.iiif_urls())
+    has_image.short_description = "Image"
+    has_image.boolean = True
+    has_image.admin_order_field = "textblock__fragment__iiif_url"
 
     @property
     def title(self):
@@ -462,35 +468,30 @@ class TextBlock(models.Model):
         (VERSO, "verso"),
         (RECTO_VERSO, "recto and verso"),
     ]
-    side = models.CharField(blank=True, max_length=5, choices=RECTO_VERSO_CHOICES)
-    extent_label = models.CharField(
-        blank=True,
-        max_length=255,
-        help_text="Text block label, for fragments with multiple text blocks",
-    )
-    multifragment = models.CharField(
-        max_length=255,
-        blank=True,
-        help_text="Where to find this document, if part of a multifragment",
-    )
+    side = models.CharField(blank=True, max_length=5,
+                            choices=RECTO_VERSO_CHOICES)
+    region = models.CharField(
+        blank=True, max_length=255,
+        help_text='Label for region of fragment that document text occupies')
+    subfragment = models.CharField(
+        max_length=255, blank=True,
+        help_text='Identifier for subfragment, if part of a multifragment')
     order = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        help_text="Order if there are multiple fragments. "
-        + "Top to bottom or right to left.",
-    )
+        null=True, blank=True,
+        help_text='Order with respect to other text blocks in this document, ' +
+                  'top to bottom or right to left')
 
     class Meta:
         ordering = ["order"]
 
     def __str__(self):
-        # combine shelfmark, side, and optionally text block
+        # combine shelfmark, subfragment, side, region, and certainty
         certainty_str = "(?)" if not self.certain else ""
-        parts = [
-            self.fragment.shelfmark + certainty_str,
-            self.get_side_display(),
-            self.extent_label,
-        ]
+        parts = [self.fragment.shelfmark,
+                 self.subfragment,
+                 self.get_side_display(),
+                 self.region,
+                 certainty_str]
         return " ".join(p for p in parts if p)
 
     def thumbnail(self):

@@ -6,10 +6,9 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 from django.db.models import Count
 from django.db.models.functions import Concat
-from django.urls import reverse, resolve
+from django.urls import resolve, reverse
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
-import gfklookupwidget
 
 from geniza.footnotes.models import (
     Authorship,
@@ -19,6 +18,7 @@ from geniza.footnotes.models import (
     SourceLanguage,
     SourceType,
 )
+from geniza.common.admin import custom_empty_field_list_filter
 
 
 class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
@@ -96,20 +96,20 @@ class DocumentRelationTypesFilter(SimpleListFilter):
 @admin.register(Footnote)
 class FootnoteAdmin(admin.ModelAdmin):
     list_display = (
-        "source",
-        "content_object",
-        "doc_relation_list",
-        "location",
-        "notes",
+        "source", "content_object", "doc_relation_list", "location", "notes",
+        "has_transcription"
     )
-    list_filter = (DocumentRelationTypesFilter,)
+    list_filter = (
+        DocumentRelationTypesFilter,
+        ("content", custom_empty_field_list_filter("transcription", "Has transcription", "No transcription")),
+    )
     readonly_fields = ["content_object", "content_blocks"]
 
     search_fields = (
-        'source__title', 'source__authors__first_name',
-        'source__authors__last_name',
-        'content', 'notes',
-        'document__id', 'document__fragments__shelfmark',
+        "source__title", "source__authors__first_name",
+        "source__authors__last_name",
+        "content", "notes",
+        "document__id", "document__fragments__shelfmark",
     )
 
     # Add help text to the combination content_type and object_id

@@ -177,3 +177,10 @@ class Footnote(models.Model):
 
     def __str__(self):
         return "Footnote on %s (%s)" % (self.content_object, self.source)
+
+    def has_transcription(self):
+        """Admin display field indicating if footnote has a transcription."""
+        return bool(self.content)
+    has_transcription.short_description = "Transcription"
+    has_transcription.boolean = True
+    has_transcription.admin_order_field = "content"
