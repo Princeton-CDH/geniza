@@ -28,7 +28,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
     list_display = (
         'all_authors', 'title',
-        'year', 'volume', 'edition', 'footnotes'
+        'volume', 'year', 'footnotes'
     )
 
     search_fields = (

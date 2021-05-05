@@ -649,6 +649,13 @@ editors_parsed = [
     # notes
     ('Ed. Motzkin. See attachments',
      [{'get_source_arg': 'Motzkin', 'f_notes': 'See attachments'}]),
+    ('Ed. Goitein, typed texts, compared with G. Weiss, Legal Documents Written by the Court Clerk Ḥalfon Ben Manasse, Ph.D. Dissertation, 1970.',
+     [{'get_source_arg': 'Goitein, typed texts',
+      'f_notes': 'compared with G. Weiss, Legal Documents Written by the Court Clerk Ḥalfon Ben Manasse, Ph.D. Dissertation, 1970.'}]),
+    ('Ed. and transl. by M. Cohen, The Voice of the Poor in the Middle Ages, no.76. (Information from Mediterranean Society, II, p. 499, App. C 87)',
+     [{'get_source_arg': 'M. Cohen, The Voice of the Poor in the Middle Ages, no.76',
+       'translation': True,
+      'f_notes': '(Information from Mediterranean Society, II, p. 499, App. C 87)'}]),
     # TODO — partial not yet handled
     # ('Partially ed. Weiss. Transciption awaiting digitization.',
     #  [{'get_source_arg': 'Weiss',
@@ -658,6 +665,12 @@ editors_parsed = [
     # ('Ed. Rustow and Vanthieghem (with suggestions from Khan and Shirazi)',
     #  [{'get_source_arg': 'Rustow and Vanthieghem',
     #    'f_notes': 'with suggestions from Khan and Shirazi'}])
+
+    # ignore
+    ('Partial transcription listed in FGP, awaiting digitization on PGP',
+     []),
+    ('Transcription listed in FGP, awaiting digitization on PGP', []),
+
 ]
 
 
@@ -691,6 +704,9 @@ def test_parse_editor(mock_footnote, mock_get_source, test_input, expected):
             location=result.get('f_location', ''),
             notes=result.get('f_notes', ''))
 
+    if not expected:
+        assert mock_get_source.call_count == 0
+
 
 # expected name variants for source author lookup
 source_creator_input = [
@@ -723,6 +739,8 @@ source_input = [
     # single author, no title
     ('M. Cohen',
      {'type': 'Unpublished', 'authors': ['Cohen, Mark']}),
+    ('Ed. Alan Elbaum, 09/2020.',
+     {'type': 'Unpublished', 'authors': ['Elbaum, Alan'], 'year': 2020}),
     # two authors with a url
     ("Marina Rustow and Anna Bailey https://example.co",
      {'type': 'Unpublished', 'authors': ['Rustow, Marina', 'Bailey, Anna'],
@@ -746,13 +764,17 @@ source_input = [
     ('Gil, Palestine, vol. 2, #177',
      {'type': 'Book', 'authors': ['Gil, Moshe'],
       'title': 'Palestine', 'volume': '2'}),
+    # volume information variation
+    ('Gil, Kingdom Vol 3',
+     {'type': 'Book', 'authors': ['Gil, Moshe'],
+      'title': 'Kingdom', 'volume': '3'}),
     # dissertation
     ("Amir Ashur, 'Engagement and Betrothal Documents from the Cairo Geniza' (Hebrew) (PhD dissertation, Tel Aviv University, 2006), Doc. H-25, pp. 325-28",
      {'type': 'Dissertation', 'authors': ['Ashur, Amir'], 'year': 2006,
       'title': 'Engagement and Betrothal Documents from the Cairo Geniza',
       'language': 'Hebrew'}),
     # article
-    ('Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz 2015, 135–61, at 156f. Awaiting digitization on PGP.',
+    ('Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz, 2015, 135–61, at 156f. Awaiting digitization on PGP.',
      {'type': 'Article', 'authors': ['Friedman, Mordechai Akiva'],
       'title': 'Maimonides Appoints R. Anatoly Muqaddam of Alexandria',
       'language': 'Hebrew', 'year': 2015})
@@ -814,12 +836,12 @@ def test_get_source_existing(source):
     source.source_type = import_data_cmd.source_types['Book']
     source.save()
     updated_source = import_data_cmd.get_source(
-        'Orwell, A Nice Cup of Tea (1984). See related information', doc)
+        'Orwell, A Nice Cup of Tea (1984).', doc)
     # should be the same object
     assert updated_source.pk == source.pk
-    # should have year and notes added
+    # should have year added
     assert updated_source.year == 1984
-    assert 'See related' in updated_source.notes
+    # skipping notes — need to be be added to footnotes, not source
 
 
 # Ed. Gil, Palestine, vol. 2, #177

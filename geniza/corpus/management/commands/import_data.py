@@ -618,7 +618,6 @@ class Command(BaseCommand):
         'transcription listed in fgp, awaiting digitization on pgp',
         'source of transcription not noted in original pgp database',
         'yes',
-        'partial transcription listed in fgp, awaiting digitization on pgp.',
         'partial transcription listed in fgp, awaiting digitization on pgp',
         'transcription (recto only) listed in fgp, awaiting digitization on pgp',
         'transcription in progress',
@@ -627,7 +626,7 @@ class Command(BaseCommand):
     ]
 
     # re_docrelation = re.compile(r'^(. Also )?Ed. (and transl?.)? ?',
-    re_docrelation = re.compile(r'^(also )?ed. ?(and transl?. ?)?',
+    re_docrelation = re.compile(r'^(also )?ed. ?(and trans(\.|l\.|lated) ?)?(by )?',
                                 flags=re.I)
 
     # notes that may occur with an edition
@@ -635,23 +634,26 @@ class Command(BaseCommand):
     # - with (minor) ..
     # - with corrections
     # - multiword parenthetical at the end of the edition
-
     re_ed_notes = re.compile(
-        r'[.;] (?P<note>(' +
-        r'(full )?transcription (listed|awaiting|available).*$|' +
-        r'(with )?minor|with corrections).*$|' +
-        r'awaiting digitization.*$|' +
-        r'; edited (here )?in comparison with.*$|' +
+        r'[.;,]["\'’”]? (?P<note>(' +
+        r'(full )?transcription (listed|awaiting|available|only).*$|' +
+        r'(retyped )?(with )?minor|with corrections|with emendations).*$|' +
+        r'compared with.*$|' +
+        r'partial.*$|' +
+        r'await.*$|' +
+        r'corrected.*$|' +
+        r'edited (here )?in comparison with.*$|' +
         r'[(]?see .*$|' +
-        r'(\(\w+ [\w ]+\) ?$))',
+        r'(\([\w\d]+ [\w\d., ]+\) ?$))',
         flags=re.I)
 
     # regexes to pull out page or document location
     re_page_location = re.compile(
-        r'[,.] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+))\.?',
+        r'[,.] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+)[a-z]?)\.?',
         flags=re.I)
+    # Doc, Doc., Document, # with numbers and or alpha-number
     re_doc_location = re.compile(
-        r'(, )?\(?(?P<doc>(Doc. #?|#)([A-Z]-)?\d+)\)?\.?',
+        r'(, )?\(?(?P<doc>(Doc(ument|\.)? ?#?|#) ?([A-Z]-)?\d+)\)?\.?',
         flags=re.I)
     # \u0590-\u05fe = range for hebrew characters
     re_goitein_section = re.compile(
@@ -737,12 +739,19 @@ class Command(BaseCommand):
             logger.error('Source creator not found for %s' % name)
             raise
 
+    # upper or lower case volume, with or without period or space
+    re_volume = re.compile(r'(, )?\bvol.? ?(?P<volume>\d+)', flags=re.I)
+
     def get_source(self, edition, document):
         # parse the edition information and get the source for this scholarly
         # record if it already exists; if it doesn't, create it
 
         # create a list of text to add to notes
         note_lines = []   # notes probably apply to footnote, not source
+        ed_orig = edition
+
+        # set defaults for information that may not be present
+        title = volume = language = location = ''
 
         # check for url and store if present
         url_match = self.re_url.search(edition)
@@ -754,8 +763,10 @@ class Command(BaseCommand):
 
         # check for 4-digit year and store it if present
         year = None
-        # one record has a date range; others have a month
-        year_match = re.search(r'\b(?P<match>(\d{4}[––]|\d{2}/)?(?P<year>\d{4}))\b',
+        # one record has a date range; others have a one or two digit month
+        # match: #/#### or ##/### ; (####); , ####, ; ####-####
+        # (exclude 4-digit years that occur in titles)
+        year_match = re.search(r'\b(?P<match>(\d{4}[––]|\d{1,2}\/| ?\(|(?:, ))(?P<year>\d{4})([) ,.]|$))',
                                edition)
         if year_match:
             # store the year
@@ -765,6 +776,13 @@ class Command(BaseCommand):
             if full_match != year:
                 note_lines.append(full_match)
                 edition = edition.replace(full_match, '').strip(' .,')
+
+        # check for volume information
+        vol_match = self.re_volume.search(edition)
+        # if found, store volume and remove from edition text
+        if vol_match:
+            volume = vol_match.group('volume')
+            edition = self.re_volume.sub('', edition)
 
         # no easy way to recognize more than two authors,
         # but there are only three instances
@@ -795,8 +813,6 @@ class Command(BaseCommand):
                 authors.append(self.get_source_creator(author))
             # warn if no authors? (likely an error)
 
-        # set defaults for information that may not be present
-        title = volume = language = location = ''
         # if there are more parts, the second is the title
         if ed_parts:
             title = ed_parts.pop(0).strip()
@@ -809,23 +825,24 @@ class Command(BaseCommand):
         elif any([term in edition for term in
                  ["typed texts", "unpublished", "handwritten texts"]]):
             src_type = 'Unpublished'
-        # title with quotes indicates Article
-        elif title[0] in ["'", '"']:
+        # title with quotes indicates Article; straight or curly quotes
+        elif title[0] in ["'", '"', '“', '‘']:
             src_type = 'Article'
         # if it isn't anything else, it's a book
         else:
             src_type = 'Book'
 
         # strip any quotes from beginning and end of title
-        title = title.strip('"\'').strip()
+        # also strip periods and any whitespace
+        title = title.strip('"\'”“‘’ .')
 
         # figure out what the rest of the pieces are, if any
         for part in ed_parts:
-            # vol. indicates volume
-            if 'vol.' in part:
-                volume = part.replace('vol.', '').strip()
-            elif any([val in part for val in ['Doc', 'pp.', '#', ' at ']]):
+            # FIXME: locations should get picked up in parse_editor,
+            # probably an error if we're getting them here
+            if any([val in part for val in ['Doc', 'pp.', '#', ' at ']]):
                 location = part
+                print('pgpid: %s — %s' % (document.id, ed_orig))
             elif part in ['Hebrew', 'German']:
                 language = part
             # otherwise, stick it in the notes
@@ -850,7 +867,7 @@ class Command(BaseCommand):
         sources = Source.objects \
             .annotate(author_count=models.Count('authorship')) \
             .filter(
-                title=title, volume=volume,
+                title__iexact=title, volume=volume,
                 source_type__type=src_type,
                 author_count=author_count,
                 **extra_opts) \
