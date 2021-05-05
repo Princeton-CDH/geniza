@@ -641,9 +641,10 @@ class Command(BaseCommand):
         r'compared with.*$|' +
         r'partial.*$|' +
         r'await.*$|' +
+        r'corrected.*$|' +
         r'edited (here )?in comparison with.*$|' +
         r'[(]?see .*$|' +
-        r'(\(\w+ [\w\d., ]+\) ?$))',
+        r'(\([\w\d]+ [\w\d., ]+\) ?$))',
         flags=re.I)
 
     # regexes to pull out page or document location
@@ -765,7 +766,7 @@ class Command(BaseCommand):
         # one record has a date range; others have a one or two digit month
         # match: #/#### or ##/### ; (####); , ####, ; ####-####
         # (exclude 4-digit years that occur in titles)
-        year_match = re.search(r'\b(?P<match>(\d{4}[––]|\d{1,2}\/| ?\(|, ))(?P<year>\d{4})[) ,]',
+        year_match = re.search(r'\b(?P<match>(\d{4}[––]|\d{1,2}\/| ?\(|(?:, ))(?P<year>\d{4})([) ,.]|$))',
                                edition)
         if year_match:
             # store the year
@@ -832,8 +833,8 @@ class Command(BaseCommand):
             src_type = 'Book'
 
         # strip any quotes from beginning and end of title
-        # also strip periods at end and any whitespace
-        title = title.strip('"\'”“‘’').rstrip('.').strip()
+        # also strip periods and any whitespace
+        title = title.strip('"\'”“‘’ .')
 
         # figure out what the rest of the pieces are, if any
         for part in ed_parts:

@@ -739,6 +739,8 @@ source_input = [
     # single author, no title
     ('M. Cohen',
      {'type': 'Unpublished', 'authors': ['Cohen, Mark']}),
+    ('Ed. Alan Elbaum, 09/2020.',
+     {'type': 'Unpublished', 'authors': ['Elbaum, Alan'], 'year': 2020}),
     # two authors with a url
     ("Marina Rustow and Anna Bailey https://example.co",
      {'type': 'Unpublished', 'authors': ['Rustow, Marina', 'Bailey, Anna'],
@@ -772,7 +774,7 @@ source_input = [
       'title': 'Engagement and Betrothal Documents from the Cairo Geniza',
       'language': 'Hebrew'}),
     # article
-    ('Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz 2015, 135–61, at 156f. Awaiting digitization on PGP.',
+    ('Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz, 2015, 135–61, at 156f. Awaiting digitization on PGP.',
      {'type': 'Article', 'authors': ['Friedman, Mordechai Akiva'],
       'title': 'Maimonides Appoints R. Anatoly Muqaddam of Alexandria',
       'language': 'Hebrew', 'year': 2015})
@@ -834,12 +836,12 @@ def test_get_source_existing(source):
     source.source_type = import_data_cmd.source_types['Book']
     source.save()
     updated_source = import_data_cmd.get_source(
-        'Orwell, A Nice Cup of Tea (1984). See related information', doc)
+        'Orwell, A Nice Cup of Tea (1984).', doc)
     # should be the same object
     assert updated_source.pk == source.pk
-    # should have year and notes added
+    # should have year added
     assert updated_source.year == 1984
-    assert 'See related' in updated_source.notes
+    # skipping notes — need to be be added to footnotes, not source
 
 
 # Ed. Gil, Palestine, vol. 2, #177
