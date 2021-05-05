@@ -152,8 +152,7 @@ class DocumentAdmin(admin.ModelAdmin):
             # - use AND instead of OR to get smaller result sets, more
             #  similar to default admin search behavior
             # - return pks for all matching records
-            # sqs = DocumentSolrQuerySet().admin_search(search_term) \
-            sqs = DocumentSolrQuerySet().search(search_term) \
+            sqs = DocumentSolrQuerySet().admin_search(search_term) \
                 .raw_query_parameters(**{'q.op': 'AND'}) \
                 .only('pgpid') \
                 .get_results(rows=100000)

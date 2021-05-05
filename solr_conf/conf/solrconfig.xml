@@ -757,6 +757,26 @@
         transcription_txt
       </str>
 
+       <!-- admin search field for Document model (no boosting because no relevance sort) -->
+      <str name="admin_doc_qf">
+        type_s
+        shelfmark_txt
+        tag_txt
+        description_t
+        notes_t
+        needs_review_t
+        pgpid_i
+      </str>
+      <str name="admin_doc_pf">
+        type_s
+        shelfmark_txt
+        tag_txt
+        description_t
+        notes_t
+        needs_review_t
+        pgpid_i
+      </str>
+
     </lst>
 
 

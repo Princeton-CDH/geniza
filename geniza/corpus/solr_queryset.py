@@ -19,10 +19,10 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         'pgpid': 'pgpid_i'
     }
 
-    # copied from mep; needed?
-    # # edismax alias for searching on admin work pseudo-field
-    # admin_work_qf = '{!qf=$admin_work_qf pf=$admin_work_pf v=$work_query}'
+    # (adapted from mep)
+    # edismax alias for searching on admin document pseudo-field
+    admin_doc_qf = '{!edismax qf=$admin_doc_qf pf=$admin_doc_pf v=$doc_query}'
 
-    # def search_admin_work(self, search_term):
-    #     return self.search(self.admin_work_qf) \
-    #         .raw_query_parameters(work_query=search_term)
+    def admin_search(self, search_term):
+        return self.search(self.admin_doc_qf) \
+            .raw_query_parameters(doc_query=search_term)
