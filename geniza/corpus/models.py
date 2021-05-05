@@ -306,9 +306,7 @@ class Document(ModelIndexable):
         index_data.update({
             'type_s': self.doctype.name if self.doctype else 'Unknown',
             'shelfmark_txt': [f.shelfmark for f in self.fragments.all()],
-            'shelfmark_ss': [f.shelfmark for f in self.fragments.all()],
             'tag_txt': [t.name for t in self.tags.all()],
-            'tag_ss': [t.name for t in self.tags.all()],
             'description_t': self.description,
             'notes_t': self.notes,
             'needs_review_t': self.needs_review,

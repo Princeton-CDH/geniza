@@ -10,6 +10,7 @@ from django.utils import timezone
 
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
+from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.admin import FootnoteInline
 
 
@@ -142,6 +143,30 @@ class DocumentAdmin(admin.ModelAdmin):
             .prefetch_related('tags', 'languages', 'textblock_set')  \
             .annotate(shelfmk_all=ArrayAgg('textblock__fragment__shelfmark')) \
             .order_by('shelfmk_all')
+
+    def get_search_results(self, request, queryset, search_term):
+        '''Override admin search to use Solr.'''
+
+        # if search term is not blank, filter the queryset via solr search
+        if search_term:
+            # - use AND instead of OR to get smaller result sets, more
+            #  similar to default admin search behavior
+            # - return pks for all matching records
+            # sqs = DocumentSolrQuerySet().admin_search(search_term) \
+            sqs = DocumentSolrQuerySet().search(search_term) \
+                .raw_query_parameters(**{'q.op': 'AND'}) \
+                .only('pgpid') \
+                .get_results(rows=100000)
+
+            pks = [r['pgpid'] for r in sqs]
+            # filter queryset by id if there are results
+            if sqs:
+                queryset = queryset.filter(pk__in=pks)
+            else:
+                queryset = queryset.none()
+
+        # return queryset, use distinct not needed
+        return queryset, False
 
     def save_model(self, request, obj, form, change):
         '''Customize this model's save_model function and then execute the
