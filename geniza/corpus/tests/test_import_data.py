@@ -649,6 +649,9 @@ editors_parsed = [
     # notes
     ('Ed. Motzkin. See attachments',
      [{'get_source_arg': 'Motzkin', 'f_notes': 'See attachments'}]),
+    ('Ed. Goitein, typed texts, compared with G. Weiss, Legal Documents Written by the Court Clerk Ḥalfon Ben Manasse, Ph.D. Dissertation, 1970.',
+     [{'get_source_arg': 'Goitein, typed texts',
+      'f_notes': 'compared with G. Weiss, Legal Documents Written by the Court Clerk Ḥalfon Ben Manasse, Ph.D. Dissertation, 1970.'}]),
     # TODO — partial not yet handled
     # ('Partially ed. Weiss. Transciption awaiting digitization.',
     #  [{'get_source_arg': 'Weiss',
@@ -658,6 +661,12 @@ editors_parsed = [
     # ('Ed. Rustow and Vanthieghem (with suggestions from Khan and Shirazi)',
     #  [{'get_source_arg': 'Rustow and Vanthieghem',
     #    'f_notes': 'with suggestions from Khan and Shirazi'}])
+
+    # ignore
+    ('Partial transcription listed in FGP, awaiting digitization on PGP',
+     []),
+    ('Transcription listed in FGP, awaiting digitization on PGP', []),
+
 ]
 
 
@@ -690,6 +699,9 @@ def test_parse_editor(mock_footnote, mock_get_source, test_input, expected):
             doc_relation=doc_relation,
             location=result.get('f_location', ''),
             notes=result.get('f_notes', ''))
+
+    if not expected:
+        assert mock_get_source.call_count == 0
 
 
 # expected name variants for source author lookup

@@ -535,5 +535,12 @@
     "first_name": "W. H. Z.",
     "last_name": "Hirschberg"
   }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Werner",
+    "last_name": "Diem"
+  }
 }
 ]

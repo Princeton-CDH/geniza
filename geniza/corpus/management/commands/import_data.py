@@ -618,7 +618,6 @@ class Command(BaseCommand):
         'transcription listed in fgp, awaiting digitization on pgp',
         'source of transcription not noted in original pgp database',
         'yes',
-        'partial transcription listed in fgp, awaiting digitization on pgp.',
         'partial transcription listed in fgp, awaiting digitization on pgp',
         'transcription (recto only) listed in fgp, awaiting digitization on pgp',
         'transcription in progress',
@@ -636,9 +635,11 @@ class Command(BaseCommand):
     # - with corrections
     # - multiword parenthetical at the end of the edition
     re_ed_notes = re.compile(
-        r'[.;]["\'’”]? (?P<note>(' +
+        r'[.;,]["\'’”]? (?P<note>(' +
         r'(full )?transcription (listed|awaiting|available|only).*$|' +
-        r'(with )?minor|with corrections).*$|' +
+        r'(retyped )?(with )?minor|with corrections).*$|' +
+        r'compared with.*$|' +
+        r'partial.*$|' +
         r'awaiting digitization.*$|' +
         r'edited (here )?in comparison with.*$|' +
         r'[(]?see .*$|' +
@@ -647,7 +648,7 @@ class Command(BaseCommand):
 
     # regexes to pull out page or document location
     re_page_location = re.compile(
-        r'[,.] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+))\.?',
+        r'[,.] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+)f?)\.?',
         flags=re.I)
     # Doc, Doc., Document, # with numbers and or alpha-number
     re_doc_location = re.compile(
@@ -746,6 +747,7 @@ class Command(BaseCommand):
 
         # create a list of text to add to notes
         note_lines = []   # notes probably apply to footnote, not source
+        ed_orig = edition
 
         # set defaults for information that may not be present
         title = volume = language = location = ''
@@ -837,6 +839,7 @@ class Command(BaseCommand):
             # probably an error if we're getting them here
             if any([val in part for val in ['Doc', 'pp.', '#', ' at ']]):
                 location = part
+                print('pgpid: %s — %s' % (document.id, ed_orig))
             elif part in ['Hebrew', 'German']:
                 language = part
             # otherwise, stick it in the notes
