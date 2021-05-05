@@ -75,4 +75,4 @@ DATA_IMPORT_URLS = {
 # }
 
 # path to preliminary JSON transcription data
-TRANSCRIPTIONS_JSON_FILE = STATIC_ROOT / "transcriptions.json"
+TRANSCRIPTIONS_JSON_FILE = BASE_DIR.parent / "data" / "transcriptions.json"
