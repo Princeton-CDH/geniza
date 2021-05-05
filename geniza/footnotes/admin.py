@@ -96,20 +96,32 @@ class DocumentRelationTypesFilter(SimpleListFilter):
 @admin.register(Footnote)
 class FootnoteAdmin(admin.ModelAdmin):
     list_display = (
-        "source", "content_object", "doc_relation_list", "location", "notes",
-        "has_transcription"
+        "source",
+        "content_object",
+        "doc_relation_list",
+        "location",
+        "notes",
+        "has_transcription",
     )
     list_filter = (
         DocumentRelationTypesFilter,
-        ("content", custom_empty_field_list_filter("transcription", "Has transcription", "No transcription")),
+        (
+            "content",
+            custom_empty_field_list_filter(
+                "transcription", "Has transcription", "No transcription"
+            ),
+        ),
     )
-    readonly_fields = ["content_object", "content_blocks"]
+    readonly_fields = ["content_object"]
 
     search_fields = (
-        "source__title", "source__authors__first_name",
+        "source__title",
+        "source__authors__first_name",
         "source__authors__last_name",
-        "content", "notes",
-        "document__id", "document__fragments__shelfmark",
+        "content",
+        "notes",
+        "document__id",
+        "document__fragments__shelfmark",
     )
 
     # Add help text to the combination content_type and object_id
@@ -130,23 +142,11 @@ class FootnoteAdmin(admin.ModelAdmin):
                     "source",
                     "location",
                     "doc_relation",
-                    "content_blocks",
                     "notes",
                 )
             },
         ),
     ]
-
-    def content_blocks(self, obj):
-        output = ""
-        for block in obj.content["blocks"]:
-            if block["label"]:
-                output += f"{block['label']}\n"
-            for line in block["lines"]:
-                output += f"{line}\n"
-        return output
-
-    content_blocks.short_description = "Content"
 
     def doc_relation_list(self, obj):
         # Casting the multichoice object as string to return a reader-friendly
