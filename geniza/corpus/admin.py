@@ -1,10 +1,9 @@
 from django import forms
 from django.contrib import admin
-from django.contrib.admin.filters import RelatedOnlyFieldListFilter
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.exceptions import ValidationError
 from django.db.models import Count
-from django.db.models.expressions import Exists, Q
+from django.db.models.query import Prefetch
 
 from django.urls import reverse, resolve
 from django.utils.html import format_html
@@ -213,7 +212,16 @@ class DocumentAdmin(admin.ModelAdmin):
         return (
             super()
             .get_queryset(request)
-            .prefetch_related("tags", "languages", "textblock_set")
+            .select_related("doctype")
+            .prefetch_related(
+                "tags",
+                "languages",
+                Prefetch(
+                    "textblock_set",
+                    queryset=TextBlock.objects.select_related("fragment"),
+                ),
+                "footnotes__content__isnull",
+            )
             .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
             .order_by("shelfmk_all")
         )
