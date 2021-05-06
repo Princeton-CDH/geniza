@@ -324,6 +324,26 @@ class TestDocument:
         doc.save()
         assert doc.title == "Legal (42)"
 
+    def test_index_data(self, document):
+        index_data = document.index_data()
+        assert index_data['id'] == document.index_id()
+        assert index_data['item_type'] == 'document'
+        assert index_data['pgpid_i'] == document.pk
+        assert index_data['type_s'] == str(document.doctype)
+        assert index_data['description_t'] == document.description
+        assert index_data['notes_t'] == document.notes
+        assert index_data['needs_review_t'] == document.needs_review
+        for frag in document.fragments.all():
+            assert frag.shelfmark in index_data['shelfmark_txt']
+        for tag in document.tags.all():
+            assert tag.name in index_data['tag_txt']
+
+        # suppressed
+        document.status = Document.SUPPRESSED
+        index_data = document.index_data()
+        assert index_data['id'] == document.index_id()
+        assert 'item_type' not in index_data
+
 
 @pytest.mark.django_db
 class TestTextBlock:

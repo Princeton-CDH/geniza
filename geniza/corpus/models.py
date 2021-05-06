@@ -370,13 +370,13 @@ class Document(ModelIndexable):
             return index_data
 
         index_data.update({
+            'pgpid_i': self.id,
             'type_s': self.doctype.name if self.doctype else 'Unknown',
-            'shelfmark_txt': [f.shelfmark for f in self.fragments.all()],
-            'tag_txt': [t.name for t in self.tags.all()],
             'description_t': self.description,
             'notes_t': self.notes,
             'needs_review_t': self.needs_review,
-            'pgpid_i': self.id
+            'shelfmark_txt': [f.shelfmark for f in self.fragments.all()],
+            'tag_txt': [t.name for t in self.tags.all()],
             # TODO: editors/translators/sources
         })
 
