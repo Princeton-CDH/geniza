@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'adminsortable2',
     'parasolr',
     'geniza.common',
-    'geniza.corpus',
+    'geniza.corpus.apps.CorpusAppConfig',  # ensure signal handler is connected
     'geniza.footnotes',
 ]
 

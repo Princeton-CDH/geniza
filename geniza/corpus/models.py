@@ -1,3 +1,5 @@
+import logging
+
 from django.db import models
 from django.urls import reverse
 from django.db.models.functions import Concat
@@ -12,6 +14,9 @@ from parasolr.django.indexing import ModelIndexable
 
 from geniza.footnotes.models import Footnote
 from geniza.common.models import TrackChangesModel
+
+
+logger = logging.getLogger(__name__)
 
 
 class CollectionManager(models.Manager):
@@ -182,6 +187,91 @@ class DocumentType(models.Model):
         return self.name
 
 
+class DocumentSignalHandlers:
+    '''Signal handlers for indexing :class:`Document` records when
+    related records are saved or deleted.'''
+
+    @staticmethod
+    def fragment_save(sender, instance=None, raw=False, **_kwargs):
+        '''reindex all associated document when a fragment is changed'''
+        # raw = saved as presented; don't query the database
+        print(instance.__class__)
+        print(instance.documents.all())
+        if raw or not instance.pk:
+            return
+        # if any unsuppressed documents are associated
+        docs = Document.objects.filter(fragments__pk=instance.pk,
+                                       status=Document.PUBLIC)
+        if docs.exists():
+            logger.debug('fragment save, reindexing %d related document(s)',
+                         docs.count())
+            ModelIndexable.index_items(docs)
+
+    @staticmethod
+    def fragment_delete(sender, instance, **_kwargs):
+        '''reindex all associated documentswhen a fragment is deleted'''
+        doc_ids = Document.objects.filter(fragments__pk=instance.pk) \
+                          .values_list('id', flat=True)
+        if doc_ids:
+            logger.debug('fragment delete, reindexing %d related document(s)',
+                         len(doc_ids))
+            # find the items based on the list of ids to reindex
+            docs = Document.objects.filter(id__in=list(doc_ids))
+            ModelIndexable.index_items(docs)
+
+    @staticmethod
+    def tag_save(sender, instance=None, raw=False, **_kwargs):
+        '''reindex all associated document when a tag is changed'''
+        # raw = saved as presented; don't query the database
+        if raw or not instance.pk:
+            return
+        # if any unsuppressed documents are associated
+        docs = Document.objects.filter(tags__pk=instance.pk,
+                                       status=Document.PUBLIC)
+        if docs.exists():
+            logger.debug('tag save, reindexing %d related document(s)',
+                         docs.count())
+            ModelIndexable.index_items(docs)
+
+    @staticmethod
+    def tag_delete(sender, instance, **_kwargs):
+        '''reindex all associated documents when a tag is deleted'''
+        doc_ids = Document.objects.filter(tags__pk=instance.pk) \
+                          .values_list('id', flat=True)
+        if doc_ids:
+            logger.debug('tag delete, reindexing %d related document(s)',
+                         len(doc_ids))
+            # find the items based on the list of ids to reindex
+            docs = Document.objects.filter(id__in=list(doc_ids))
+            ModelIndexable.index_items(docs)
+
+    @staticmethod
+    def doctype_save(sender, instance=None, raw=False, **_kwargs):
+        '''reindex all associated document when a tag is changed'''
+        # raw = saved as presented; don't query the database
+        if raw or not instance.pk:
+            return
+        # if any unsuppressed documents are associated
+        docs = Document.objects.filter(doctype__pk=instance.pk,
+                                       status=Document.PUBLIC)
+        if docs.exists():
+            logger.debug('doctype save, reindexing %d related document(s)',
+                         docs.count())
+            ModelIndexable.index_items(docs)
+
+    @staticmethod
+    def doctype_delete(sender, instance, **_kwargs):
+        '''reindex all associated documents when a tag is deleted'''
+        doc_ids = Document.objects.filter(doctype__pk=instance.pk) \
+                          .values_list('id', flat=True)
+        if doc_ids:
+            logger.debug('doctype delete, reindexing %d related document(s)',
+                         len(doc_ids))
+            # find the items based on the list of ids to reindex
+            docs = Document.objects.filter(id__in=list(doc_ids))
+            ModelIndexable.index_items(docs)
+
+
 class Document(ModelIndexable):
     '''A unified document such as a letter or legal document that
     appears on one or more fragments.'''
@@ -311,9 +401,29 @@ class Document(ModelIndexable):
             'notes_t': self.notes,
             'needs_review_t': self.needs_review,
             'pgpid_i': self.id
+            # TODO: editors/translators/sources
         })
 
         return index_data
+
+    # define signal handlers to update the index based on changes
+    # to other models
+    index_depends_on = {
+        'fragments': {
+            'post_save': DocumentSignalHandlers.fragment_save,
+            'pre_delete': DocumentSignalHandlers.fragment_delete
+        },
+        'tags': {
+            'post_save': DocumentSignalHandlers.tag_save,
+            'pre_delete': DocumentSignalHandlers.tag_delete,
+        },
+        'doctype': {
+            'post_save': DocumentSignalHandlers.doctype_save,
+            'pre_delete': DocumentSignalHandlers.doctype_delete,
+        }
+        # footnotes and sources, when we include editors/translators
+        # script+language when/if included in index data
+    }
 
 
 class TextBlock(models.Model):
