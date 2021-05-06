@@ -119,7 +119,7 @@ class Fragment(TrackChangesModel):
         'Historical Shelfmarks',
         blank=True, max_length=500,
         help_text='Semicolon-delimited list of previously used shelfmarks; ' +
-                  'automatically updated on shelfmark is change.')
+                  'automatically updated on shelfmark change.')
     collection = models.ForeignKey(Collection, blank=True,
                                    on_delete=models.SET_NULL, null=True)
     url = models.URLField(
