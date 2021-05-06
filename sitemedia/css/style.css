@@ -14,7 +14,14 @@ main {
     align-items: center;
 }
 dt, dd { margin: 0; }
+dt {margin-top: 20px;}
 dd ~ dd { margin-top: 5px; }
+
+dt.inline { display: inline; }
+dt.inline + dd { display: inline; }
+dt.inline::after { content: ':'; }
+
+dl.tags { text-align: right; }
 
 /* viewer */
 .wrapper {

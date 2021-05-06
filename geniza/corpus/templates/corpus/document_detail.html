@@ -19,8 +19,19 @@
         <dd>{{ document.doctype }}</dd>
         {% endif %}
         {% comment %}Translators: Date document was first added to the PGP{% endcomment %}
-        <dt class="sr-only">{% translate 'First input' %}</dt>
+        <dt class="inline">{% translate 'Input date' %}</dt>
         <dd>{{ document.log_entries.last.action_time.year }}</dd>
+
+        {% if document.editions %}
+        {% comment %}Translators: Editor label{% endcomment %}
+        <dt>{% translate 'Editor' %}</dt>  {# optionally pluralize? #}
+        {% for ed in document.editions %}
+        <dd>{{ ed.source }}{% if ed.location %}, {{ ed.location }}{% endif %}{% if ed.notes %}. {{ ed.notes }}{% endif %}</dd>
+        {# link ? #}
+        {% endfor %}
+        {% endif %}
+    </dl>
+    <dl class="tags">
         <dt class="sr-only">{% translate 'Tags' %}</dt>
         {% for tag in document.tags.all %}
         <dd class="tag">#{{ tag }}</dd>

@@ -4,8 +4,12 @@ from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
+from django.db.models import Count
 from django.db.models.functions import Concat
+from django.urls import reverse, resolve
+from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
+import gfklookupwidget
 
 from geniza.footnotes.models import Authorship, Creator, Footnote, Source, \
     SourceLanguage, SourceType
@@ -20,10 +24,11 @@ class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
 
 @admin.register(Source)
 class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+    footnote_admin_url = 'admin:footnotes_footnote_changelist'
+
     list_display = (
-        'title', 'all_authors',
-        'year',
-        'edition',
+        'all_authors', 'title',
+        'volume', 'year', 'footnotes'
     )
 
     search_fields = (
@@ -33,9 +38,11 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     fields = (
         'source_type',
         'title', 'year',
-        'edition', 'volume', 'page_range',
-        'languages'
+        'edition', 'volume',
+        'languages',
+        'notes'
     )
+    list_filter = ('source_type', 'authors')
 
     inlines = [AuthorshipInline]
 
@@ -43,8 +50,19 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         return super().get_queryset(request) \
             .filter(models.Q(authorship__isnull=True) |
                     models.Q(authorship__sort_order=1)) \
-            .annotate(first_author=Concat('authorship__creator__last_name',
-                                          'authorship__creator__first_name'))
+            .annotate(Count('footnote', distinct=True),
+                      first_author=Concat('authorship__creator__last_name',
+                                          'authorship__creator__first_name'),
+                      )
+
+    def footnotes(self, obj):
+        return format_html(
+            '<a href="{0}?source__id__exact={1!s}">{2}</a>',
+            reverse(self.footnote_admin_url), str(obj.id),
+            obj.footnote__count
+        )
+    footnotes.short_description = "# footnotes"
+    footnotes.admin_order_field = 'footnote__count'
 
 
 @admin.register(SourceType)
@@ -75,24 +93,24 @@ class DocumentRelationTypesFilter(SimpleListFilter):
 @admin.register(Footnote)
 class FootnoteAdmin(admin.ModelAdmin):
     list_display = (
-        'source', 'page_range', 'doc_relation_list', 'content_object'
+        'source', 'content_object', 'doc_relation_list', 'location', 'notes'
     )
-
     list_filter = (
         DocumentRelationTypesFilter,
     )
+    readonly_fields = ['content_object']
 
     # Add help text to the combination content_type and object_id
     CONTENT_LOOKUP_HELP = '''Select the kind of record you want to attach
     a footnote to, and then use the object id search button to select an item.'''
     fieldsets = [
         (None, {
-            'fields': ('content_type', 'object_id'),
+            'fields': ('content_type', 'object_id', 'content_object'),
             'description': f'<div class="help">{CONTENT_LOOKUP_HELP}</div>'
         }),
         (None, {
             'fields': (
-                'source', 'page_range', 'doc_relation',
+                'source', 'location', 'doc_relation',
                 'notes'
             )
         })
@@ -109,7 +127,7 @@ class FootnoteAdmin(admin.ModelAdmin):
 class FootnoteInline(GenericTabularInline):
     model = Footnote
     autocomplete_fields = ['source']
-    fields = ('source', 'page_range', 'doc_relation', 'notes',)
+    fields = ('source', 'location', 'doc_relation', 'notes',)
     extra = 1
 
 

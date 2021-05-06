@@ -15,8 +15,8 @@ from django.utils import timezone
 from pytest_django.asserts import assertContains
 
 from geniza.corpus.admin import (DocumentAdmin, DocumentForm,
-                                 LanguageScriptAdmin)
-from geniza.corpus.models import Document, Fragment, LanguageScript
+                                 LanguageScriptAdmin, FragmentTextBlockInline)
+from geniza.corpus.models import Document, Fragment, LanguageScript, TextBlock
 
 
 @pytest.mark.django_db
@@ -78,30 +78,34 @@ class TestDocumentAdmin:
         tj = User.objects.create(username="tj", first_name="Tom",
                                  last_name="Jones", is_superuser=True)
         script = User.objects.get(username=settings.SCRIPT_USERNAME)
-        opts = {"object_id": str(doc.pk), "content_type": doc_ctype,
+        opts = {
+            "object_id": str(doc.pk), "content_type": doc_ctype,
             "object_repr": str(doc)}
-        LogEntry.objects.create(**opts,
+        LogEntry.objects.create(
+            **opts,
             user=tj,
             action_flag=ADDITION,
             change_message="Initial data entry",
-            action_time=datetime(1995, 3, 11)
+            action_time=timezone.make_aware(datetime(1995, 3, 11))
         )
-        LogEntry.objects.create(**opts,
+        LogEntry.objects.create(
+            **opts,
             user=tj,
             action_flag=CHANGE,
             change_message="Major revision",
-            action_time=datetime.today() - timedelta(weeks=1),
+            action_time=timezone.now() - timedelta(weeks=1),
         )
-        LogEntry.objects.create(**opts,
+        LogEntry.objects.create(
+            **opts,
             user=script,
             action_flag=ADDITION,
             change_message="Imported via script",
-            action_time=datetime.today()
+            action_time=timezone.now()
         )
 
         # first and latest revision should be displayed in change form
         response = admin_client.get(reverse("admin:corpus_document_change",
-                                      args=(doc.pk,)))
+                                    args=(doc.pk,)))
         assertContains(response, '<span class="action-time">March 11, 1995</span>', html=True)
         assertContains(response, '<span class="action-user">Tom Jones</span>', html=True)
         assertContains(response, '<span class="action-msg">Initial data entry</span>', html=True)
@@ -177,3 +181,26 @@ class TestDocumentForm:
             docform.clean()
 
         assert '"Unknown" is not allowed for probable language' in str(err)
+
+@pytest.mark.django_db
+class TestFragmentTextBlockInline:
+
+    def test_document_link(self):
+        fragment = Fragment.objects.create(shelfmark='CUL 123')
+        doc = Document.objects.create()
+        textblock = TextBlock.objects.create(fragment=fragment, document=doc)
+        inline = FragmentTextBlockInline(Fragment, admin_site=admin.site)
+
+        doc_link = inline.document_link(textblock)
+
+        assert str(doc.id) in doc_link
+        assert str(doc) in doc_link
+
+    def test_document_description(self):
+        fragment = Fragment.objects.create(shelfmark='CUL 123')
+        test_description = 'A medieval poem'
+        doc = Document.objects.create(description=test_description)
+        textblock = TextBlock.objects.create(fragment=fragment, document=doc)
+        inline = FragmentTextBlockInline(Fragment, admin_site=admin.site)
+
+        assert test_description == inline.document_description(textblock)
