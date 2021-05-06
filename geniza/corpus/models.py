@@ -4,7 +4,6 @@ from django.db import models
 from django.urls import reverse
 from django.db.models.functions import Concat
 from django.contrib.admin.models import LogEntry
-
 from django.contrib.contenttypes.fields import GenericRelation
 from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
@@ -320,7 +319,7 @@ class Document(ModelIndexable):
         # ordering = [Least('textblock__fragment__shelfmark')]
 
     def __str__(self):
-        return f"{self.shelfmark or '??'} (PGPID {self.id or '??'})"
+        return f"{self.shelfmark_display or '??'} (PGPID {self.id or '??'})"
 
     @property
     def shelfmark(self):
@@ -333,6 +332,12 @@ class Document(ModelIndexable):
                 for block in self.textblock_set.filter(certain=True)
             )
         )
+
+    @property
+    def shelfmark_display(self):
+        """First shelfmark plus join indicator for shorter display."""
+        join = " + …" if self.fragments.count() > 1 else ""
+        return self.textblock_set.first().fragment.shelfmark + join
 
     @property
     def collection(self):
@@ -395,8 +400,7 @@ class Document(ModelIndexable):
     @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
-        # NOTE preliminary, pending more discussion
-        return f"{self.doctype or 'Unknown'} ({self.id})"
+        return f"{self.doctype or 'Unknown'}: {self.shelfmark_display or '??'}"
 
     def editions(self):
         # return all footnotes that include type edition

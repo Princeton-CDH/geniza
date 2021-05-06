@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.humanize.templatetags.humanize import ordinal
-from django.contrib.postgres.fields import JSONField
 from gfklookupwidget.fields import GfkLookupField
 
 from modeltranslation.manager import MultilingualManager
@@ -175,12 +174,15 @@ class Footnote(models.Model):
     object_id = GfkLookupField("content_type")
     content_object = GenericForeignKey()
 
+    class Meta:
+        ordering = ["source", "location"]
+
     def __str__(self):
-        return "Footnote on %s (%s)" % (self.content_object, self.source)
+        return "%s of %s" % (self.doc_relation, self.content_object.title)
 
     def has_transcription(self):
-        """Admin display field indicating if footnote has a transcription."""
+        """Admin display field indicating presence of digitized transcription."""
         return bool(self.content)
-    has_transcription.short_description = "Transcription"
+    has_transcription.short_description = "Digitized Transcription"
     has_transcription.boolean = True
     has_transcription.admin_order_field = "content"
