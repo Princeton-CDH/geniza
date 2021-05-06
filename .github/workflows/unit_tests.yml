@@ -43,9 +43,9 @@ jobs:
 
       # use docker cp to copy solr configset, then bash to set ownership to solr
       - name: Copy Solr configset to solr service
-      run: |
-        docker cp solr_conf ${{ job.services.solr.id }}:/opt/solr/server/solr/configsets/geniza
-        docker exec --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /opt/solr/server/solr/configsets/geniza"
+        run: |
+          docker cp solr_conf ${{ job.services.solr.id }}:/opt/solr/server/solr/configsets/geniza
+          docker exec --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /opt/solr/server/solr/configsets/geniza"
 
       # Python version to use is stored in the .python-version file, which is the
       # convention for pyenv: https://github.com/pyenv/pyenv
