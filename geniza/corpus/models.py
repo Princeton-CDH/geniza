@@ -204,8 +204,9 @@ class DocumentSignalHandlers:
     }
 
     @staticmethod
-    def related_save(sender, instance=None, raw=False, **_kwargs):
-        '''reindex all associated documents when a m2m relation is changed'''
+    def related_change(instance, raw, mode):
+        '''reindex all associated documents when related data is changed'''
+        # common logic for save and delete
         # raw = saved as presented; don't query the database
         if raw or not instance.pk:
             return
@@ -219,29 +220,19 @@ class DocumentSignalHandlers:
         doc_filter = {'%s__pk' % doc_attr: instance.pk}
         docs = Document.items_to_index().filter(**doc_filter)
         if docs.exists():
-            logger.debug('%s save, reindexing %d related document(s)',
-                         model_name, docs.count())
+            logger.debug('%s %s, reindexing %d related document(s)',
+                         model_name, mode, docs.count())
             ModelIndexable.index_items(docs)
 
     @staticmethod
-    def related_delete(sender, instance, **_kwargs):
-        '''reindex all associated documentswhen a fragment is deleted'''
+    def related_save(sender, instance=None, raw=False, **_kwargs):
+        # delegate to common method
+        DocumentSignalHandlers.related_change(instance, raw, 'save')
 
-        # get related lookup for document filter
-        model_name = instance._meta.verbose_name
-        doc_attr = DocumentSignalHandlers.model_filter.get(model_name)
-        # if handler fired on an model we don't care about, ignore
-        if not doc_attr:
-            return
-        doc_filter = {'%s__pk' % doc_attr: instance.pk}
-        doc_ids = Document.objects.filter(**doc_filter) \
-                          .values_list('id', flat=True)
-        if doc_ids:
-            logger.debug('fragment delete, reindexing %d related document(s)',
-                         len(doc_ids))
-            # find the items based on the list of ids to reindex
-            docs = Document.objects.filter(id__in=list(doc_ids))
-            ModelIndexable.index_items(docs)
+    @staticmethod
+    def related_delete(sender, instance=None, raw=False, **_kwargs):
+        # delegate to common method
+        DocumentSignalHandlers.related_change(instance, raw, 'delete')
 
 
 class Document(ModelIndexable):
@@ -376,6 +367,7 @@ class Document(ModelIndexable):
             'notes_t': self.notes,
             'needs_review_t': self.needs_review,
             'shelfmark_txt': [f.shelfmark for f in self.fragments.all()],
+
             'tag_txt': [t.name for t in self.tags.all()],
             # TODO: editors/translators/sources
         })
