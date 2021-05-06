@@ -2,11 +2,6 @@
 {% block after_field_sets %}
 {% if original.content %}
 <h2>Transcription</h2>
-<div style="direction: rtl; margin-right: auto; display: inline-block;">
-{% for block in original.content.blocks %}
-{% if block.label %}<h3>{{ block.label }}</h3>{% endif %}
-<p>{% for line in block.lines %}<span>{{ line }}</span><br/>{% endfor %}</p>
-{% endfor %}
-</div>
+{% include "footnotes/transcription.html" with transcription=original.content %}
 {% endif %}
 {% endblock after_field_sets %}
