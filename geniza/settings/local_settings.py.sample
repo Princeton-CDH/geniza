@@ -1,6 +1,7 @@
 # local settings for configuration that should not be checked into git
 
-from geniza.settings.components.base import DATABASES, PUCAS_LDAP
+from geniza.settings.components.base import DATABASES, PUCAS_LDAP, \
+    SOLR_CONNECTIONS
 
 DEBUG = True
 
@@ -17,6 +18,12 @@ SECRET_KEY = ""
 # configure & override database setting as needed
 DATABASES['default']['PASSWORD'] = ""
 
+# override default solr configuration as needed
+# SOLR_CONNECTIONS['default']['URL'] = ''      # default http://localhost:8983/solr/
+# SOLR_CONNECTIONS['default']['COLLECTION'] = ''  # default geniza
+# SOLR_CONNECTIONS['default']['CONFIGSET'] = ''   # default geniza
+
+
 # CAS login configuration
 CAS_SERVER_URL = ''
 
@@ -32,18 +39,8 @@ PUCAS_LDAP.update({
 # urls to google sheets data published as csv for import
 DATA_IMPORT_URLS = {
     'libraries': '',
-    'languages': ''
-}
-
-SOLR_CONNECTIONS = {
-    'default': {
-    'URL': 'http://localhost:8983/solr/',
-    'COLLECTION': 'geniza',
-    # Any configSet in SOLR_ROOT/server/solr/configsets.
-    #   The default configset name is "_default" as of Solr 7.
-    #   For Solr 6, "basic_configs" is the default.
-    'CONFIGSET': '_default'
-    }
+    'languages': '',
+    'metadata': ''
 }
 
 # LOGGING = {

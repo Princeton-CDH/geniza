@@ -97,6 +97,15 @@ DATABASES = {
     }
 }
 
+SOLR_CONNECTIONS = {
+    'default': {
+        'URL': 'http://localhost:8983/solr/',
+        'COLLECTION': 'geniza',
+        'CONFIGSET': 'geniza'
+    }
+}
+
+
 # Authentication backends
 # https://docs.djangoproject.com/en/3.1/topics/auth/customizing/#specifying-authentication-backends
 
