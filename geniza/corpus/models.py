@@ -366,9 +366,9 @@ class Document(ModelIndexable):
             'description_t': self.description,
             'notes_t': self.notes,
             'needs_review_t': self.needs_review,
-            'shelfmark_txt': [f.shelfmark for f in self.fragments.all()],
+            'shelfmark_t': [f.shelfmark for f in self.fragments.all()],
 
-            'tag_txt': [t.name for t in self.tags.all()],
+            'tag_t': [t.name for t in self.tags.all()],
             # TODO: editors/translators/sources
         })
 

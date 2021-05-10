@@ -11,8 +11,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     #: map readable field names to actual solr fields
     field_aliases = {
         'type': 'type_s',
-        'shelfmark': 'shelfmark_txt',
-        'tag': 'tag_txt',
+        'shelfmark': 'shelfmark_t',
+        'tag': 'tag_t',
         'description': 'description_t',
         'notes': 'notes_t',
         'needs_review': 'needs_review_t',

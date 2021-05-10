@@ -334,9 +334,9 @@ class TestDocument:
         assert index_data['notes_t'] == document.notes
         assert index_data['needs_review_t'] == document.needs_review
         for frag in document.fragments.all():
-            assert frag.shelfmark in index_data['shelfmark_txt']
+            assert frag.shelfmark in index_data['shelfmark_t']
         for tag in document.tags.all():
-            assert tag.name in index_data['tag_txt']
+            assert tag.name in index_data['tag_t']
 
         # suppressed
         document.status = Document.SUPPRESSED
