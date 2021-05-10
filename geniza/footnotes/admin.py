@@ -164,8 +164,10 @@ class FootnoteInline(GenericTabularInline):
         "source",
         "location",
         "doc_relation",
+        "has_transcription",
         "notes",
     )
+    readonly_fields = ("has_transcription",)
     extra = 1
 
 
