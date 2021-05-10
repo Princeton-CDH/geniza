@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 
 class LocalUserAdmin(UserAdmin):
-    """Extends :class:`django.contribut.auth.admin.UserAdmin`
+    """Extends :class:`django.contrib.auth.admin.UserAdmin`
     to provide additional detail for user administration."""
 
     list_display = UserAdmin.list_display + (
@@ -22,8 +22,10 @@ class LocalUserAdmin(UserAdmin):
     group_names.short_description = "groups"
 
 
-
 def custom_empty_field_list_filter(title, non_empty_label=None, empty_label=None):
+    """Generates a :class:`django.contrib.admin.EmptyFieldListFilter` with a
+    custom title and empty/non-empty option labels."""
+
     class CustomEmptyFieldListFilter(admin.EmptyFieldListFilter):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
@@ -36,8 +38,9 @@ def custom_empty_field_list_filter(title, non_empty_label=None, empty_label=None
             if non_empty_label:
                 choices[2]["display"] = non_empty_label
             return choices
-    
+
     return CustomEmptyFieldListFilter
+
 
 admin.site.unregister(User)
 admin.site.register(User, LocalUserAdmin)
