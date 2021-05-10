@@ -2,8 +2,9 @@ from django import forms
 from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.exceptions import ValidationError
-from django.db.models import Count
+from django.db.models import Count, CharField
 from django.db.models.query import Prefetch
+from django.forms.widgets import TextInput, Textarea
 
 from django.urls import reverse, resolve
 from django.utils.html import format_html
@@ -119,12 +120,19 @@ class DocumentTextBlockInline(admin.TabularInline):
         "certain",
         "thumbnail",
     )
+    extra = 0
+    formfield_overrides = {CharField: {"widget": TextInput(attrs={"size": "10"})}}
 
 
 class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         exclude = ()
+        widgets = {
+            "language_note": Textarea(attrs={"rows": 1}),
+            "needs_review": Textarea(attrs={"rows": 3}),
+            "notes": Textarea(attrs={"rows": 3}),
+        }
 
     def clean(self):
         # error if there is any overlap between language and probable lang
