@@ -3,5 +3,6 @@
 -r test.txt
 
 django-debug-toolbar
+black
 #sphinx
 #pytest-ordering
