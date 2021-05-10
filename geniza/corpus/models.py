@@ -351,11 +351,10 @@ class Document(ModelIndexable):
         '''data for indexing in Solr'''
 
         index_data = super().index_data()
-        # only library members are indexed; if person has no
-        # account, return id only.
+        # only public records are indexed; if a document is suppressed,
+        # return id only.
         # This will blank out any previously indexed values, and item
         # will not be findable by any public searchable fields.
-
         if not self.is_public():
             del index_data['item_type']
             return index_data
