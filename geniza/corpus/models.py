@@ -351,14 +351,6 @@ class Document(ModelIndexable):
         '''data for indexing in Solr'''
 
         index_data = super().index_data()
-        # only public records are indexed; if a document is suppressed,
-        # return id only.
-        # This will blank out any previously indexed values, and item
-        # will not be findable by any public searchable fields.
-        if not self.is_public():
-            del index_data['item_type']
-            return index_data
-
         index_data.update({
             'pgpid_i': self.id,
             'type_s': self.doctype.name if self.doctype else 'Unknown',
@@ -366,8 +358,8 @@ class Document(ModelIndexable):
             'notes_t': self.notes,
             'needs_review_t': self.needs_review,
             'shelfmark_t': [f.shelfmark for f in self.fragments.all()],
-
             'tag_t': [t.name for t in self.tags.all()],
+            'status_s': self.get_status_display()
             # TODO: editors/translators/sources
         })
 

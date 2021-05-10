@@ -337,12 +337,15 @@ class TestDocument:
             assert frag.shelfmark in index_data['shelfmark_t']
         for tag in document.tags.all():
             assert tag.name in index_data['tag_t']
+        assert index_data['status_s'] == 'Public'
 
-        # suppressed
+        # suppressed documents are still indexed,
+        # since they need to be searchable in admin
         document.status = Document.SUPPRESSED
         index_data = document.index_data()
         assert index_data['id'] == document.index_id()
-        assert 'item_type' not in index_data
+        assert 'item_type' in index_data
+        assert index_data['status_s'] == 'Suppressed'
 
 
 @pytest.mark.django_db
