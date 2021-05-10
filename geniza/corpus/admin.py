@@ -14,6 +14,7 @@ from tabular_export.admin import export_to_csv_response
 from geniza.corpus.models import Collection, Document, DocumentType, \
     Fragment, LanguageScript, TextBlock
 from geniza.footnotes.admin import FootnoteInline
+from geniza.common.utils import absolutize_url
 
 
 class FragmentTextBlockInline(admin.TabularInline):
@@ -219,7 +220,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
             row = self.DocumentRow(**{
                 'pgpid': doc.id,
-                'url': doc.get_absolute_url(),
+                'url': absolutize_url(doc.get_absolute_url()),
                 'iiif_urls': ';'.join([fragment.iiif_url for fragment in all_fragments]),
                 'fragment_urls': ';'.join([fragment.url for fragment in all_fragments]),
                 'shelfmark': doc.shelfmark,
@@ -236,7 +237,7 @@ class DocumentAdmin(admin.ModelAdmin):
                 'language_note': doc.language_note,
                 'notes': doc.notes,
                 'needs_review': doc.needs_review,
-                'url_admin': reverse('admin:corpus_document_change', args=[doc.id]),
+                'url_admin': absolutize_url(reverse('admin:corpus_document_change', args=[doc.id])),
                 'initial_entry': f"{initial_entry.action_time}, {initial_entry.user.get_full_name() or initial_entry.user.get_username()}",
                 'latest_revision': f"{latest_revision.action_time}, {latest_revision.user.get_full_name() or latest_revision.user.get_username()}",
                 'status': 'Public' if doc.status == Document.PUBLIC else 'Suppressed',
