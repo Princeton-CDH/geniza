@@ -1,3 +1,4 @@
+from collections import namedtuple
 from django import forms
 from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -199,6 +200,12 @@ class DocumentAdmin(admin.ModelAdmin):
         '''Generate filename for CSV download'''
         return f'geniza-documents-{now().strftime("%Y%m%dT%H%M%S")}.csv'
 
+    DocumentRow = namedtuple('DocumentRow', ['pgpid', 'url', 'iiif_urls', 'fragment_urls', 'shelfmark', 
+        'multifragment', 'side', 'extent_label', 'type', 'tags', 'description', 'footnotes',
+        'shelfmarks_historic', 'languages', 'languages_probable', 'language_note', 'notes',
+        'needs_review', 'url_admin', 'initial_entry', 'latest_revision', 'status',
+        'library', 'collection'])
+
     def tabulate_queryset(self, queryset):
         '''Generator for data in tabular form, including custom fields'''
         rows = []
@@ -207,11 +214,14 @@ class DocumentAdmin(admin.ModelAdmin):
             all_textblocks = doc.textblock_set.all()
             all_footnotes = doc.footnotes.all()
 
-            row = {
+            initial_entry = doc.log_entries.first()
+            latest_revision = doc.log_entries.last()
+
+            row = self.DocumentRow(**{
                 'pgpid': doc.id,
-                # 'url': # site link
+                'url': doc.get_absolute_url(),
                 'iiif_urls': ';'.join([fragment.iiif_url for fragment in all_fragments]),
-                'fragment_url': ';'.join([fragment.url for fragment in all_fragments]),
+                'fragment_urls': ';'.join([fragment.url for fragment in all_fragments]),
                 'shelfmark': doc.shelfmark,
                 'multifragment': ';'.join([tb.multifragment for tb in all_textblocks]),
                 'side': ';'.join([tb.side for tb in all_textblocks]),
@@ -219,35 +229,30 @@ class DocumentAdmin(admin.ModelAdmin):
                 'type': doc.doctype,
                 'tags': doc.all_tags(),
                 'description': doc.description,
-                # 'footnotes': ';'.join([str(fn) for fn in all_footnotes]),
+                'footnotes': ';'.join([str(fn) for fn in all_footnotes]),
                 'shelfmarks_historic': ';'.join([fragment.old_shelfmarks for fragment in all_fragments]),
                 'languages': doc.all_languages(),
                 'languages_probable': doc.all_probable_languages(),
                 'language_note': doc.language_note,
                 'notes': doc.notes,
                 'needs_review': doc.needs_review,
-                # 'url_admin': '',#reverse('admin:corpus_document_change', args=[doc.id]),
-                # input_by*
-                # date_entered (first log entry date)
-                'last_modified': doc.last_modified,
+                'url_admin': reverse('admin:corpus_document_change', args=[doc.id]),
+                'initial_entry': f"{initial_entry.action_time}, {initial_entry.user.get_full_name() or initial_entry.user.get_username()}",
+                'latest_revision': f"{latest_revision.action_time}, {latest_revision.user.get_full_name() or latest_revision.user.get_username()}",
                 'status': 'Public' if doc.status == Document.PUBLIC else 'Suppressed',
                 'library': ';'.join([fragment.collection.lib_abbrev for fragment in all_fragments]),
                 'collection': doc.collection
-            }
+            })
 
-            rows.append(row.values())
-            columns = row.keys()
+            yield row
 
-        return columns, rows
 
     def export_to_csv(self, request, queryset=None):
         '''Stream tabular data as a CSV file'''
         queryset = self.get_queryset(request) if queryset is None else queryset
         queryset = queryset.order_by('id')
 
-        columns, rows = self.tabulate_queryset(queryset)
-
-        return export_to_csv_response(self.csv_filename(), columns, rows)
+        return export_to_csv_response(self.csv_filename(), self.DocumentRow._fields, self.tabulate_queryset(queryset))
     export_to_csv.short_description = 'Export selected documents to CSV'
 
     def get_urls(self):
