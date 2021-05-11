@@ -55,8 +55,8 @@ Remember to add a ``SECRET_KEY`` setting!
 
 - Copy Solr configset into your solr server configset directory. For a local install::
 
-    cp -r solr_conf /path/to/solr/server/solr/configsets/sandco
-    chown solr:solr -R /path/to/solr/server/solr/configsets/sandco
+    cp -r solr_conf /path/to/solr/server/solr/configsets/geniza
+    chown solr:solr -R /path/to/solr/server/solr/configsets/geniza
 
 - Create Solr collection with configured configset, and index content ::
 
