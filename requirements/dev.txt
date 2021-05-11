@@ -3,6 +3,6 @@
 -r test.txt
 
 django-debug-toolbar
-black
+pre-commit
 #sphinx
 #pytest-ordering

@@ -73,11 +73,19 @@ and should be run with `pytest`.
 Setup Black
 -----------
 
-If you plan to contribute to this repository (i.e., you're a member of the CDH dev team editing our playbooks), please copy the following in your local instance:
+If you plan to contribute to this repository (i.e., you're a member of the CDH dev team), please run the following command:
 
-    cp hooks/pre-commit .git/hooks/
+    pre-commit install
 
 This will add a simple pre-commit hook that will automatically style your python code. Read more about `black <https://github.com/psf/black>`_.
+
+Black styling was instituted after development had begun on this project. Consequently, ``git blame`` may not reflect the true author of a given line. In order to see a more accurate ``git blame`` execute the following command:
+
+    git blame <FILE> --ignore-revs-file .git-blame-ignore-revs
+
+Or configure your git to always ignore the black revision commit:
+
+    git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 
 License
