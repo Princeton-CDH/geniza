@@ -188,14 +188,6 @@ class DocumentAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     ## CSV EXPORT -------------------------------------------------------------
-    '''
-    TODO:
-     - link to public site (column name: url_public; or just url?)
-     - footnotes (i.e editions & translations; include source, location, notes, and document relationship; pending data import)
-     - input_by* (list all unique names of people who edited the record)
-     - link to admin change view (column name: url_admin)
-     - date_entered (first log entry date)
-    '''
 
     def csv_filename(self):
         '''Generate filename for CSV download'''
