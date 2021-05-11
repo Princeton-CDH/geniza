@@ -1,7 +1,10 @@
 from django.contrib.auth.models import Group, User
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from django.contrib.sites.models import Site
+from unittest.mock import Mock
 import pytest
 
+from geniza.common.utils import absolutize_url
 from geniza.common.admin import LocalUserAdmin
 
 
@@ -23,3 +26,38 @@ class TestLocalUserAdmin(TestCase):
         assert grp1.name in group_names
         assert grp2.name in group_names
         assert grp3.name not in group_names
+
+
+class TestCommonUtils(TestCase):
+    
+    @pytest.mark.django_db
+    def test_absolutize_url(self):
+        # Borrowed from https://github.com/Princeton-CDH/mep-django/blob/main/mep/common/tests.py
+        https_url = 'https://example.com/some/path/'
+        # https url is returned unchanged
+        assert absolutize_url(https_url) == https_url
+        # testing with default site domain
+        current_site = Site.objects.get_current()
+
+        # test site domain without https
+        current_site.domain = 'example.org'
+        current_site.save()
+        local_path = '/foo/bar/'
+        assert absolutize_url(local_path) == 'https://example.org/foo/bar/'
+        # trailing slash in domain doesn't result in double slash
+        current_site.domain = 'example.org/'
+        current_site.save()
+        assert absolutize_url(local_path) == 'https://example.org/foo/bar/'
+        # site at subdomain should work too
+        current_site.domain = 'example.org/sub/'
+        current_site.save()
+        assert absolutize_url(local_path) == 'https://example.org/sub/foo/bar/'
+        # site with https:// included
+        current_site.domain = 'https://example.org'
+        assert absolutize_url(local_path) == 'https://example.org/sub/foo/bar/'
+
+        with override_settings(DEBUG=True):
+            assert absolutize_url(local_path) == 'https://example.org/sub/foo/bar/'
+            mockrqst = Mock(scheme='http')
+            assert absolutize_url(local_path, mockrqst) == \
+                'http://example.org/sub/foo/bar/'
