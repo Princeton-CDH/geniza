@@ -198,16 +198,13 @@ class DocumentAdmin(admin.ModelAdmin):
     fields = (
         ("shelfmark", "id"),
         "doctype",
-        "languages",
-        "probable_languages",
+        ("languages", "probable_languages"),
         "language_note",
         "description",
         "tags",
         "status",
-        "needs_review",
+        ("needs_review", "notes"),
         # edition, translation
-        "notes",
-        # text block
     )
     autocomplete_fields = ["languages", "probable_languages"]
     # NOTE: autocomplete does not honor limit_choices_to in model
