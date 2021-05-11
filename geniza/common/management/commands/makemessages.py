@@ -2,6 +2,7 @@ from django.core.management.commands import makemessages
 
 from geniza import __version__
 
+
 class Command(makemessages.Command):
     """Overrides `makemessages` to add metadata to .po files and exclude virtual
     environments from being automatically translated.

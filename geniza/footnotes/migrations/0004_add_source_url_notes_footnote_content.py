@@ -6,61 +6,67 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('footnotes', '0003_add_footnotes_permissions'),
+        ("footnotes", "0003_add_footnotes_permissions"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='source',
-            options={'ordering': ['title', 'year']},
+            name="source",
+            options={"ordering": ["title", "year"]},
         ),
         migrations.RenameField(
-            model_name='source',
-            old_name='author',
-            new_name='authors',
+            model_name="source",
+            old_name="author",
+            new_name="authors",
         ),
         migrations.RemoveField(
-            model_name='footnote',
-            name='page_range',
+            model_name="footnote",
+            name="page_range",
         ),
         migrations.AddField(
-            model_name='footnote',
-            name='content',
-            field=models.JSONField(blank=True, help_text='Transcription content (preliminary)', null=True),
+            model_name="footnote",
+            name="content",
+            field=models.JSONField(
+                blank=True, help_text="Transcription content (preliminary)", null=True
+            ),
         ),
         migrations.AddField(
-            model_name='footnote',
-            name='location',
-            field=models.CharField(blank=True, help_text='Location within the source (e.g., document number or page range)', max_length=255),
+            model_name="footnote",
+            name="location",
+            field=models.CharField(
+                blank=True,
+                help_text="Location within the source (e.g., document number or page range)",
+                max_length=255,
+            ),
         ),
         migrations.AddField(
-            model_name='source',
-            name='notes',
+            model_name="source",
+            name="notes",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='source',
-            name='url',
+            model_name="source",
+            name="url",
             field=models.URLField(blank=True),
         ),
         migrations.AlterField(
-            model_name='source',
-            name='title',
+            model_name="source",
+            name="title",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='source',
-            name='title_ar',
+            model_name="source",
+            name="title_ar",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='source',
-            name='title_en',
+            model_name="source",
+            name="title_en",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='source',
-            name='title_he',
+            model_name="source",
+            name="title_he",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]

@@ -6,40 +6,51 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corpus', '0002_create_document_fragment'),
+        ("corpus", "0002_create_document_fragment"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='collection',
-            name='unique_library_collection',
+            model_name="collection",
+            name="unique_library_collection",
         ),
         migrations.RenameField(
-            model_name='collection',
-            old_name='collection',
-            new_name='name',
+            model_name="collection",
+            old_name="collection",
+            new_name="name",
         ),
         migrations.AddField(
-            model_name='collection',
-            name='lib_abbrev',
-            field=models.CharField(blank=True, max_length=255, verbose_name='Library Abbreviation'),
+            model_name="collection",
+            name="lib_abbrev",
+            field=models.CharField(
+                blank=True, max_length=255, verbose_name="Library Abbreviation"
+            ),
         ),
         migrations.AlterField(
-            model_name='collection',
-            name='abbrev',
-            field=models.CharField(blank=True, max_length=255, verbose_name='Collection Abbreviation'),
+            model_name="collection",
+            name="abbrev",
+            field=models.CharField(
+                blank=True, max_length=255, verbose_name="Collection Abbreviation"
+            ),
         ),
         migrations.AlterField(
-            model_name='collection',
-            name='library',
+            model_name="collection",
+            name="library",
             field=models.CharField(blank=True, max_length=255),
         ),
         migrations.AddConstraint(
-            model_name='collection',
-            constraint=models.CheckConstraint(check=models.Q(('library__regex', '.+'), ('name__regex', '.+'), _connector='OR'), name='req_library_or_name'),
+            model_name="collection",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("library__regex", ".+"), ("name__regex", ".+"), _connector="OR"
+                ),
+                name="req_library_or_name",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='collection',
-            constraint=models.UniqueConstraint(fields=('library', 'name'), name='unique_library_name'),
+            model_name="collection",
+            constraint=models.UniqueConstraint(
+                fields=("library", "name"), name="unique_library_name"
+            ),
         ),
     ]

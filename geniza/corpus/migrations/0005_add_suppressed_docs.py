@@ -7,29 +7,48 @@ import taggit_selectize.managers
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('taggit', '0003_taggeditem_add_unique_index'),
-        ('corpus', '0004_adjust_multifragment'),
+        ("taggit", "0003_taggeditem_add_unique_index"),
+        ("corpus", "0004_adjust_multifragment"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='document',
-            name='status',
-            field=models.CharField(choices=[('P', 'Public'), ('S', 'Suppressed')], default='P', help_text='Decide whether a document should be publicly visible', max_length=2),
+            model_name="document",
+            name="status",
+            field=models.CharField(
+                choices=[("P", "Public"), ("S", "Suppressed")],
+                default="P",
+                help_text="Decide whether a document should be publicly visible",
+                max_length=2,
+            ),
         ),
         migrations.AlterField(
-            model_name='collection',
-            name='location',
-            field=models.CharField(blank=True, help_text='Current location of the collection', max_length=255),
+            model_name="collection",
+            name="location",
+            field=models.CharField(
+                blank=True,
+                help_text="Current location of the collection",
+                max_length=255,
+            ),
         ),
         migrations.AlterField(
-            model_name='document',
-            name='tags',
-            field=taggit_selectize.managers.TaggableManager(blank=True, help_text='A comma-separated list of tags.', through='taggit.TaggedItem', to='taggit.Tag', verbose_name='Tags'),
+            model_name="document",
+            name="tags",
+            field=taggit_selectize.managers.TaggableManager(
+                blank=True,
+                help_text="A comma-separated list of tags.",
+                through="taggit.TaggedItem",
+                to="taggit.Tag",
+                verbose_name="Tags",
+            ),
         ),
         migrations.AlterField(
-            model_name='fragment',
-            name='is_multifragment',
-            field=models.BooleanField(default=False, help_text='True if there are multiple fragments in one shelfmark', verbose_name='Multifragment'),
+            model_name="fragment",
+            name="is_multifragment",
+            field=models.BooleanField(
+                default=False,
+                help_text="True if there are multiple fragments in one shelfmark",
+                verbose_name="Multifragment",
+            ),
         ),
     ]

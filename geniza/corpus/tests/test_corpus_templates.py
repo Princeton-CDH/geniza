@@ -2,7 +2,6 @@ from pytest_django.asserts import assertContains, assertNotContains
 
 
 class TestDocumentDetailTemplate:
-
     def test_shelfmark(self, client, document):
         """Document detail template should include shelfmark"""
         response = client.get(document.get_absolute_url())
@@ -21,10 +20,8 @@ class TestDocumentDetailTemplate:
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""
         response = client.get(document.get_absolute_url())
-        assertContains(
-            response, '<dd class="tag">#bill of sale</dd>', html=True)
-        assertContains(
-            response, '<dd class="tag">#real estate</dd>', html=True)
+        assertContains(response, '<dd class="tag">#bill of sale</dd>', html=True)
+        assertContains(response, '<dd class="tag">#real estate</dd>', html=True)
 
     def test_description(self, client, document):
         """Document detail template should include document description"""
@@ -34,9 +31,11 @@ class TestDocumentDetailTemplate:
     def test_viewer(self, client, document):
         """Document detail template should include viewer for IIIF content"""
         response = client.get(document.get_absolute_url())
-        assertContains(response,
-                       f'<div id="iiif_viewer" data-iiif-urls="https://cudl.lib.cam.ac.uk/iiif/MS-ADD-02586"></div>',
-                       html=True)
+        assertContains(
+            response,
+            f'<div id="iiif_viewer" data-iiif-urls="https://cudl.lib.cam.ac.uk/iiif/MS-ADD-02586"></div>',
+            html=True,
+        )
 
     def test_no_viewer(self, client, document):
         """Document with no IIIF shouldn't include viewer in template"""
