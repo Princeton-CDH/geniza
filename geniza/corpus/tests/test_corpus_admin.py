@@ -1,4 +1,6 @@
 from datetime import timedelta, datetime
+import time
+from unittest.mock import Mock
 
 import pytest
 from django.conf import settings
@@ -7,6 +9,7 @@ from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.db.models.query import EmptyQuerySet
 from django.forms import modelform_factory
 from django.forms.models import model_to_dict
 from django.test import RequestFactory
@@ -150,6 +153,28 @@ class TestDocumentAdmin:
         assert 'Test note' in new_doc.notes
         assert new_doc.created != lastweek
         assert new_doc.last_modified != lastweek
+
+    def test_get_search_results(self, document, join):
+        # index fixture data in solr
+        Document.index_items([document, join])
+        time.sleep(1)
+
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        queryset, needs_distinct = doc_admin.get_search_results(
+            Mock(), Document.objects.all(), "bogus")
+        assert not queryset.count()
+        assert not needs_distinct
+        assert isinstance(queryset, EmptyQuerySet)
+
+        queryset, needs_distinct = doc_admin.get_search_results(
+            Mock(), Document.objects.all(), "deed of sale")
+        assert queryset.count() == 1
+        assert isinstance(queryset.first(), Document)
+
+        # empty search term should return all records
+        queryset, needs_distinct = doc_admin.get_search_results(
+            Mock(), Document.objects.all(), "")
+        assert queryset.count() == Document.objects.all().count()
 
 
 @pytest.mark.django_db
