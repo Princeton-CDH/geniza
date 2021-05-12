@@ -8,21 +8,35 @@ import django.db.models.functions.text
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corpus', '0008_update_shelfmark_helptext'),
+        ("corpus", "0008_update_shelfmark_helptext"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='collection',
-            options={'ordering': [django.db.models.functions.text.Concat(django.db.models.expressions.F('lib_abbrev'), django.db.models.expressions.F('abbrev'), django.db.models.expressions.F('name'), django.db.models.expressions.F('library'))]},
+            name="collection",
+            options={
+                "ordering": [
+                    django.db.models.functions.text.Concat(
+                        django.db.models.expressions.F("lib_abbrev"),
+                        django.db.models.expressions.F("abbrev"),
+                        django.db.models.expressions.F("name"),
+                        django.db.models.expressions.F("library"),
+                    )
+                ]
+            },
         ),
         migrations.AlterModelOptions(
-            name='document',
+            name="document",
             options={},
         ),
         migrations.AlterField(
-            model_name='collection',
-            name='name',
-            field=models.CharField(blank=True, help_text='Collection name, if different than Library', max_length=255, verbose_name='Collection Name'),
+            model_name="collection",
+            name="name",
+            field=models.CharField(
+                blank=True,
+                help_text="Collection name, if different than Library",
+                max_length=255,
+                verbose_name="Collection Name",
+            ),
         ),
     ]

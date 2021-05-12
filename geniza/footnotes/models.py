@@ -10,7 +10,8 @@ from multiselectfield import MultiSelectField
 
 
 class SourceType(models.Model):
-    '''type of source'''
+    """type of source"""
+
     type = models.CharField(max_length=255)
 
     def __str__(self):
@@ -18,35 +19,37 @@ class SourceType(models.Model):
 
 
 class SourceLanguage(models.Model):
-    '''language of a source document'''
+    """language of a source document"""
+
     name = models.CharField(max_length=255)
-    code = models.CharField(max_length=10, help_text='ISO language code')
+    code = models.CharField(max_length=10, help_text="ISO language code")
 
     def __str__(self):
         return self.name
 
 
 class CreatorManager(MultilingualManager):
-
     def get_by_natural_key(self, last_name, first_name):
         return self.get(last_name=last_name, first_name=first_name)
 
 
 class Creator(models.Model):
-    '''author or other contributor to a source'''
+    """author or other contributor to a source"""
+
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
 
     objects = CreatorManager()
 
     def __str__(self):
-        return ', '.join([n for n in [self.last_name, self.first_name] if n])
+        return ", ".join([n for n in [self.last_name, self.first_name] if n])
 
     class Meta:
-        ordering = ['last_name', 'first_name']
+        ordering = ["last_name", "first_name"]
         constraints = [
-            models.UniqueConstraint(fields=['first_name', 'last_name'],
-                                    name='creator_unique_name')
+            models.UniqueConstraint(
+                fields=["first_name", "last_name"], name="creator_unique_name"
+            )
         ]
 
     def natural_key(self):
@@ -55,33 +58,40 @@ class Creator(models.Model):
 
 class Authorship(models.Model):
     """Ordered relationship between :class:`Creator` and :class:`Source`."""
+
     creator = models.ForeignKey(Creator, on_delete=models.CASCADE)
-    source = models.ForeignKey('Source', on_delete=models.CASCADE)
+    source = models.ForeignKey("Source", on_delete=models.CASCADE)
     sort_order = models.PositiveSmallIntegerField(default=1)
 
     class Meta:
-        ordering = ('sort_order',)
+        ordering = ("sort_order",)
 
     def __str__(self) -> str:
-        return '%s, %s author on "%s"' % \
-            (self.creator, ordinal(self.sort_order), self.source.title)
+        return '%s, %s author on "%s"' % (
+            self.creator,
+            ordinal(self.sort_order),
+            self.source.title,
+        )
 
 
 class Source(models.Model):
-    '''a published or unpublished work related to geniza materials'''
+    """a published or unpublished work related to geniza materials"""
+
     authors = models.ManyToManyField(Creator, through=Authorship)
     title = models.CharField(max_length=255, blank=True, null=True)
     year = models.PositiveIntegerField(blank=True, null=True)
     edition = models.CharField(max_length=255, blank=True)
     volume = models.CharField(max_length=255, blank=True)
     page_range = models.CharField(
-        max_length=255, blank=True,
-        help_text='The range of pages being cited. Do not include ' +
-                  '"p", "pg", etc. and follow the format # or #-#')
+        max_length=255,
+        blank=True,
+        help_text="The range of pages being cited. Do not include "
+        + '"p", "pg", etc. and follow the format # or #-#',
+    )
     source_type = models.ForeignKey(SourceType, on_delete=models.CASCADE)
     languages = models.ManyToManyField(
-        SourceLanguage,
-        help_text='The language(s) the source is written in')
+        SourceLanguage, help_text="The language(s) the source is written in"
+    )
     url = models.URLField(blank=True)
     # preliminary place to store transcription text; should not be editable
     notes = models.TextField(blank=True)
@@ -89,7 +99,7 @@ class Source(models.Model):
     class Meta:
         # set default order to title, year for now since first-author order
         # requires queryset annotation
-        ordering = ['title', 'year']
+        ordering = ["title", "year"]
 
     def __str__(self):
         # generate simple string representation similar to
@@ -101,66 +111,69 @@ class Source(models.Model):
         # author, title (year)
         # author (year)
 
-        text = ''
+        text = ""
         if self.authorship_set.exists():
-            author_lastnames = [a.creator.last_name
-                                for a in self.authorship_set.all()]
+            author_lastnames = [a.creator.last_name for a in self.authorship_set.all()]
             # combine the last pair with and; combine all others with comma
             # thanks to https://stackoverflow.com/a/30084022
             if len(author_lastnames) > 1:
-                text = " and ".join([", ".join(author_lastnames[:-1]),
-                                     author_lastnames[-1]])
+                text = " and ".join(
+                    [", ".join(author_lastnames[:-1]), author_lastnames[-1]]
+                )
             else:
                 text = author_lastnames[0]
 
         if self.title:
             # delimit with comma if there is an author
             if text:
-                text = ', '.join([text, self.title])
+                text = ", ".join([text, self.title])
             else:
                 text = self.title
 
         if self.year:
-            text = '%s (%d)' % (text, self.year)
+            text = "%s (%d)" % (text, self.year)
         return text
 
     def all_authors(self):
-        '''semi-colon delimited list of authors in order'''
-        return '; '.join([str(c.creator) for c in self.authorship_set.all()])
-    all_authors.short_description = 'Authors'
-    all_authors.admin_order_field = 'first_author'  # set in admin queryset
+        """semi-colon delimited list of authors in order"""
+        return "; ".join([str(c.creator) for c in self.authorship_set.all()])
+
+    all_authors.short_description = "Authors"
+    all_authors.admin_order_field = "first_author"  # set in admin queryset
 
 
 class Footnote(models.Model):
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
     location = models.CharField(
-        max_length=255, blank=True,
-        help_text='Location within the source ' +
-                  '(e.g., document number or page range)')
+        max_length=255,
+        blank=True,
+        help_text="Location within the source "
+        + "(e.g., document number or page range)",
+    )
 
-    EDITION = 'E'
-    TRANSLATION = 'T'
-    DISCUSSION = 'D'
+    EDITION = "E"
+    TRANSLATION = "T"
+    DISCUSSION = "D"
     DOCUMENT_RELATION_TYPES = (
-        (EDITION, 'Edition'),
-        (TRANSLATION, 'Translation'),
-        (DISCUSSION, 'Discussion')
+        (EDITION, "Edition"),
+        (TRANSLATION, "Translation"),
+        (DISCUSSION, "Discussion"),
     )
 
     doc_relation = MultiSelectField(
-        'Document relation',
+        "Document relation",
         choices=DOCUMENT_RELATION_TYPES,
-        help_text='How does the source relate to this document?')
+        help_text="How does the source relate to this document?",
+    )
     notes = models.TextField(blank=True)
     content = models.JSONField(
-        blank=True, null=True,
-        help_text='Transcription content (preliminary)')
+        blank=True, null=True, help_text="Transcription content (preliminary)"
+    )
 
     # Generic relationship
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = GfkLookupField('content_type')
+    object_id = GfkLookupField("content_type")
     content_object = GenericForeignKey()
 
     def __str__(self):
-        return 'Footnote on %s (%s)' % \
-            (self.content_object, self.source)
+        return "Footnote on %s (%s)" % (self.content_object, self.source)

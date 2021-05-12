@@ -20,20 +20,21 @@ from django.views.generic.base import RedirectView
 
 urlpatterns = [
     # redirect homepage to admin site for now
-    path('', RedirectView.as_view(url='admin/')),
-    path('admin/', admin.site.urls),
+    path("", RedirectView.as_view(url="admin/")),
+    path("admin/", admin.site.urls),
     path("accounts/", include("pucas.cas_urls")),
     path("i18n/", include("django.conf.urls.i18n")),
-    path("taggit/", include('taggit_selectize.urls')),
-    path('', include('geniza.corpus.urls', namespace='corpus')),
+    path("taggit/", include("taggit_selectize.urls")),
+    path("", include("geniza.corpus.urls", namespace="corpus")),
 ]
 
 
 if settings.DEBUG:
     try:
         import debug_toolbar
+
         urlpatterns.append(
-            path('__debug__/', include(debug_toolbar.urls)),
+            path("__debug__/", include(debug_toolbar.urls)),
         )
     except ImportError:
         pass

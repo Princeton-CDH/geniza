@@ -3,26 +3,39 @@
 from django.contrib.auth.management import create_permissions
 from django.db import migrations
 
-CONTENT_EDITOR = 'Content Editor'
+CONTENT_EDITOR = "Content Editor"
 # new permissions for content editor
 content_editor_perms = [
-    'view_creator', 'add_creator', 'change_creator',
-    'view_authorship', 'add_authorship', 'change_authorship', 'delete_authorship',
-    'view_sourcetype', 'add_sourcetype', 'change_sourcetype',
-    'view_sourcelanguage', 'add_sourcelanguage', 'change_sourcelanguage',
-    'view_source', 'add_source', 'change_source',
-    'view_footnote', 'add_footnote', 'change_footnote',
+    "view_creator",
+    "add_creator",
+    "change_creator",
+    "view_authorship",
+    "add_authorship",
+    "change_authorship",
+    "delete_authorship",
+    "view_sourcetype",
+    "add_sourcetype",
+    "change_sourcetype",
+    "view_sourcelanguage",
+    "add_sourcelanguage",
+    "change_sourcelanguage",
+    "view_source",
+    "add_source",
+    "change_source",
+    "view_footnote",
+    "add_footnote",
+    "change_footnote",
 ]
 
 
-CONTENT_ADMIN = 'Content Admin'
+CONTENT_ADMIN = "Content Admin"
 # additional new permissions for content admin
 content_admin_perms = [
-    'delete_sourcelanguage',
-    'delete_sourcetype',
-    'delete_source',
-    'delete_footnote',
-    'delete_creator',
+    "delete_sourcelanguage",
+    "delete_sourcetype",
+    "delete_source",
+    "delete_footnote",
+    "delete_creator",
 ]
 
 
@@ -55,11 +68,10 @@ def create_content_editor_groups(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('footnotes', '0002_initial_source_types_langs')
-    ]
+    dependencies = [("footnotes", "0002_initial_source_types_langs")]
 
     operations = [
-        migrations.RunPython(create_content_editor_groups,
-                             reverse_code=migrations.RunPython.noop)
+        migrations.RunPython(
+            create_content_editor_groups, reverse_code=migrations.RunPython.noop
+        )
     ]

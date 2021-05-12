@@ -6,36 +6,53 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corpus', '0003_revise_collections'),
+        ("corpus", "0003_revise_collections"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='fragment',
-            options={'ordering': ['shelfmark']},
+            name="fragment",
+            options={"ordering": ["shelfmark"]},
         ),
         migrations.RemoveField(
-            model_name='fragment',
-            name='multifragment',
+            model_name="fragment",
+            name="multifragment",
         ),
         migrations.AddField(
-            model_name='fragment',
-            name='is_multifragment',
-            field=models.BooleanField(default=False, help_text='True if there are multiple fragments in one shelfmark', verbose_name='Multifragment?'),
+            model_name="fragment",
+            name="is_multifragment",
+            field=models.BooleanField(
+                default=False,
+                help_text="True if there are multiple fragments in one shelfmark",
+                verbose_name="Multifragment?",
+            ),
         ),
         migrations.AddField(
-            model_name='textblock',
-            name='multifragment',
-            field=models.CharField(blank=True, help_text='Where to find this document, if part of a multifragment', max_length=255),
+            model_name="textblock",
+            name="multifragment",
+            field=models.CharField(
+                blank=True,
+                help_text="Where to find this document, if part of a multifragment",
+                max_length=255,
+            ),
         ),
         migrations.AlterField(
-            model_name='document',
-            name='probable_languages',
-            field=models.ManyToManyField(blank=True, limit_choices_to=models.Q(_negated=True, language__exact='Unknown'), related_name='probable_document', to='corpus.LanguageScript'),
+            model_name="document",
+            name="probable_languages",
+            field=models.ManyToManyField(
+                blank=True,
+                limit_choices_to=models.Q(_negated=True, language__exact="Unknown"),
+                related_name="probable_document",
+                to="corpus.LanguageScript",
+            ),
         ),
         migrations.AlterField(
-            model_name='textblock',
-            name='extent_label',
-            field=models.CharField(blank=True, help_text='Text block label, for fragments with multiple text blocks', max_length=255),
+            model_name="textblock",
+            name="extent_label",
+            field=models.CharField(
+                blank=True,
+                help_text="Text block label, for fragments with multiple text blocks",
+                max_length=255,
+            ),
         ),
     ]

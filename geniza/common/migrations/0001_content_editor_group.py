@@ -3,20 +3,20 @@
 from django.contrib.auth.management import create_permissions
 from django.db import migrations
 
-CONTENT_EDITOR = 'Content Editor'
+CONTENT_EDITOR = "Content Editor"
 # permissions for content editor
-content_editor_perms = {
-    'corpus': [
-        'view_collection', 'view_languagescript'
-    ]
-}
+content_editor_perms = {"corpus": ["view_collection", "view_languagescript"]}
 
-CONTENT_ADMIN = 'Content Admin'
+CONTENT_ADMIN = "Content Admin"
 # additional permissions for content admin (also get content edit permissions)
 content_admin_perms = {
-    'corpus': [
-        'add_collection', 'change_collection', 'delete_collection',
-        'add_languagescript', 'change_languagescript', 'delete_languagescript',
+    "corpus": [
+        "add_collection",
+        "change_collection",
+        "delete_collection",
+        "add_languagescript",
+        "change_languagescript",
+        "delete_languagescript",
     ]
 }
 
@@ -52,17 +52,17 @@ def create_content_editor_groups(apps, schema_editor):
 
 def remove_content_editor_groups(apps, schema_editor):
     Group = apps.get_model("auth", "Group")
-    Group.objects.filter(name__in=[CONTENT_ADMIN, CONTENT_EDITOR]) \
-        .delete()
+    Group.objects.filter(name__in=[CONTENT_ADMIN, CONTENT_EDITOR]).delete()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corpus', '0001_create_collection_languagescript'),
+        ("corpus", "0001_create_collection_languagescript"),
     ]
 
     operations = [
-        migrations.RunPython(create_content_editor_groups,
-                             reverse_code=remove_content_editor_groups)
+        migrations.RunPython(
+            create_content_editor_groups, reverse_code=remove_content_editor_groups
+        )
     ]

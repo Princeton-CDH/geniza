@@ -3,27 +3,27 @@
 from django.db import migrations
 
 
-SOURCE_TYPES = ['Book', 'Article', 'Unpublished', 'Dissertation', 'Blog']
+SOURCE_TYPES = ["Book", "Article", "Unpublished", "Dissertation", "Blog"]
 
 
 def load_initial_sourcetypes(apps, schema_editor):
     # Load initial source types provided by the team
-    SourceType = apps.get_model('footnotes', 'SourceType')
+    SourceType = apps.get_model("footnotes", "SourceType")
 
     for sourcetype in SOURCE_TYPES:
         SourceType.objects.get_or_create(type=sourcetype)
 
 
 SOURCE_LANGUAGES = [
-    ('English', 'en'),
-    ('German', 'de'),
-    ('Hebrew', 'he'),
+    ("English", "en"),
+    ("German", "de"),
+    ("Hebrew", "he"),
 ]
 
 
 def load_initial_languages(apps, schema_editor):
     # Load initial source languages
-    SourceLanguage = apps.get_model('footnotes', 'SourceLanguage')
+    SourceLanguage = apps.get_model("footnotes", "SourceLanguage")
 
     for lang, code in SOURCE_LANGUAGES:
         SourceLanguage.objects.get_or_create(name=lang, code=code)
@@ -32,12 +32,14 @@ def load_initial_languages(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('footnotes', '0001_initial'),
+        ("footnotes", "0001_initial"),
     ]
 
     operations = [
-        migrations.RunPython(load_initial_sourcetypes,
-                             reverse_code=migrations.RunPython.noop),
-        migrations.RunPython(load_initial_languages,
-                             reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            load_initial_sourcetypes, reverse_code=migrations.RunPython.noop
+        ),
+        migrations.RunPython(
+            load_initial_languages, reverse_code=migrations.RunPython.noop
+        ),
     ]

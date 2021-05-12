@@ -12,4 +12,6 @@ django-modeltranslation
 django-admin-sortable2
 python-dateutil>=2.8
 django-tabular-export
+#next version of parasolr
+git+https://github.com/princeton-cdh/parasolr.git@develop#egg=parasolr
 django-gfklookupwidget
