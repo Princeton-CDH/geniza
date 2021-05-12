@@ -275,7 +275,7 @@ class TestDocument:
 
         arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
         doc.languages.add(arabic)
-        assert doc.all_languages() == "%s,%s" % (arabic, lang)
+        assert doc.all_languages() == "%s, %s" % (arabic, lang)
 
     def test_tag_list(self):
         doc = Document.objects.create()
@@ -319,11 +319,14 @@ class TestDocument:
 
     def test_title(self):
         doc = Document.objects.create()
-        assert doc.title == "Unknown (??)"
+        assert doc.title == "Unknown: ??"
         legal = DocumentType.objects.get_or_create(name="Legal")[0]
         doc.doctype = legal
         doc.save()
-        assert doc.title == "Legal (??)"
+        assert doc.title == "Legal: ??"
+        frag = Fragment.objects.create(shelfmark='s1')
+        TextBlock.objects.create(document=doc, fragment=frag, order=1)
+        assert doc.title == "Legal: s1"
 
     def test_index_data(self, document):
         index_data = document.index_data()

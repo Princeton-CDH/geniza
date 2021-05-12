@@ -320,8 +320,8 @@ def test_import_documents(mockrequests, caplog):
     # check text block side, region, subfragment
     textblock = doc.textblock_set.first()
     assert textblock.side == "v"
-    assert textblock.region == "middle"
-    assert textblock.subfragment == "a"
+    assert textblock.subfragment == "middle"
+    assert textblock.region == "a"
     # check footnote & source
     assert doc.footnotes.count() == 1
     fnote = doc.footnotes.first()

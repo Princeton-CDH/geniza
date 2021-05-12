@@ -336,8 +336,11 @@ class Document(ModelIndexable):
     @property
     def shelfmark_display(self):
         """First shelfmark plus join indicator for shorter display."""
+        certain = self.textblock_set.filter(certain=True)
+        if not certain.exists():
+            return None
         join = " + …" if self.fragments.count() > 1 else ""
-        return self.textblock_set.first().fragment.shelfmark + join
+        return certain.first().fragment.shelfmark + join
 
     @property
     def collection(self):

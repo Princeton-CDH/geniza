@@ -178,11 +178,14 @@ class Footnote(models.Model):
         ordering = ["source", "location"]
 
     def __str__(self):
-        return "%s of %s" % (self.doc_relation, self.content_object.title)
+        choices = dict(self.DOCUMENT_RELATION_TYPES)
+        rel = " and ".join([choices[c] for c in self.doc_relation]) or "Footnote"
+        return f"{rel} of {self.content_object}"
 
     def has_transcription(self):
         """Admin display field indicating presence of digitized transcription."""
         return bool(self.content)
+
     has_transcription.short_description = "Digitized Transcription"
     has_transcription.boolean = True
     has_transcription.admin_order_field = "content"
