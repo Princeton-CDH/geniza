@@ -144,7 +144,7 @@ class TestSourceFootnoteInline:
         doc.footnotes.add(footnote)
 
         inline = SourceFootnoteInline(Source, admin_site=admin.site)
-        doc_link = inline.document_link(footnote)
+        doc_link = inline.object_link(footnote)
 
         assert str(doc.id) in doc_link
         assert str(doc) in doc_link
