@@ -188,10 +188,7 @@ class DocumentAdmin(admin.ModelAdmin):
     )
     autocomplete_fields = ["languages", "probable_languages"]
     # NOTE: autocomplete does not honor limit_choices_to in model
-    inlines = [
-        DocumentTextBlockInline,
-        DocumentFootnoteInline
-    ]
+    inlines = [DocumentTextBlockInline, DocumentFootnoteInline]
 
     class Media:
         css = {"all": ("css/admin-local.css",)}

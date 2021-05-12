@@ -30,26 +30,49 @@ class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
 
 
 class SourceFootnoteInline(admin.TabularInline):
-    '''Footnote inline for the Source admin'''
-    model = Footnote
-    fields = ('document_link', 'location', 'doc_relation', 'notes',)
-    readonly_fields = ('document_link', 'notes',)
-    extra = 0
+    """Footnote inline for the Source admin"""
 
-    def document_link(self, obj):
-        document_path = reverse('admin:corpus_document_change', args=[obj.object_id])
-        doc = Document.objects.get(id=obj.object_id)
-        return format_html(
-            f'<a href="{document_path}">{doc}</a>'
+    model = Footnote
+    fields = (
+        "object_link",
+        "content_type",
+        "object_id",
+        "location",
+        "doc_relation",
+        "notes",
+    )
+    readonly_fields = ("object_link",)
+
+    def object_link(self, obj):
+        """edit link with string display method for associated content object"""
+        # return empty spring for unsaved footnote with no  content object
+        if not obj.content_object:
+            return ""
+        content_obj = obj.content_object
+        edit_url = "admin:%s_%s_change" % (
+            content_obj._meta.app_label,
+            content_obj._meta.model_name,
         )
-    document_link.short_description = 'document'
+        edit_path = reverse(edit_url, args=[obj.object_id])
+        return format_html(
+            f'<a href="{edit_path}">{content_obj} '
+            + '<img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>'
+        )
+
+    object_link.short_description = "object"
 
 
 class DocumentFootnoteInline(GenericTabularInline):
-    '''Footnote inline for the Document admin'''
+    """Footnote inline for the Document admin"""
+
     model = Footnote
-    autocomplete_fields = ['source']
-    fields = ('source', 'location', 'doc_relation', 'notes',)
+    autocomplete_fields = ["source"]
+    fields = (
+        "source",
+        "location",
+        "doc_relation",
+        "notes",
+    )
     extra = 1
 
 

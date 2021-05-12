@@ -130,15 +130,16 @@ class TestFootnoteAdmin:
 
 
 class TestSourceFootnoteInline:
-
     @pytest.mark.django_db
-    def test_document_link(self):
-        book = SourceType.objects.get(type='Book')
-        source = Source.objects.create(title='Unknown', source_type=book)
+    def test_object_link(self):
+        book = SourceType.objects.get(type="Book")
+        source = Source.objects.create(title="Unknown", source_type=book)
         footnote = Footnote.objects.create(
-            doc_relation=['E'], source=source,
-            content_type_id=ContentType.objects.get(model='document').id,
-            object_id=0)
+            doc_relation=["E"],
+            source=source,
+            content_type_id=ContentType.objects.get(model="document").id,
+            object_id=0,
+        )
         doc = Document.objects.create()
         doc.footnotes.add(footnote)
 
