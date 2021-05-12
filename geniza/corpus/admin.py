@@ -203,19 +203,22 @@ class DocumentAdmin(admin.ModelAdmin):
         )
 
     def get_search_results(self, request, queryset, search_term):
-        '''Override admin search to use Solr.'''
+        """Override admin search to use Solr."""
 
         # if search term is not blank, filter the queryset via solr search
         if search_term:
             # - use AND instead of OR to get smaller result sets, more
             #  similar to default admin search behavior
             # - return pks for all matching records
-            sqs = DocumentSolrQuerySet().admin_search(search_term) \
-                .raw_query_parameters(**{'q.op': 'AND'}) \
-                .only('pgpid') \
+            sqs = (
+                DocumentSolrQuerySet()
+                .admin_search(search_term)
+                .raw_query_parameters(**{"q.op": "AND"})
+                .only("pgpid")
                 .get_results(rows=100000)
+            )
 
-            pks = [r['pgpid'] for r in sqs]
+            pks = [r["pgpid"] for r in sqs]
             # filter queryset by id if there are results
             if sqs:
                 queryset = queryset.filter(pk__in=pks)

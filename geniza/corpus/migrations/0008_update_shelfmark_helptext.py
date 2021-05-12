@@ -14,10 +14,10 @@ class Migration(migrations.Migration):
             model_name="fragment",
             name="old_shelfmarks",
             field=models.CharField(
-              blank=True,
-              help_text="Semicolon-delimited list of previously used shelfmarks; automatically updated on shelfmark change.",
-              max_length=500,
-              verbose_name="Historical Shelfmarks",
+                blank=True,
+                help_text="Semicolon-delimited list of previously used shelfmarks; automatically updated on shelfmark change.",
+                max_length=500,
+                verbose_name="Historical Shelfmarks",
             ),
         ),
     ]

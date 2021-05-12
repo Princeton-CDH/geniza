@@ -172,19 +172,22 @@ class TestDocumentAdmin:
 
         doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
         queryset, needs_distinct = doc_admin.get_search_results(
-            Mock(), Document.objects.all(), "bogus")
+            Mock(), Document.objects.all(), "bogus"
+        )
         assert not queryset.count()
         assert not needs_distinct
         assert isinstance(queryset, EmptyQuerySet)
 
         queryset, needs_distinct = doc_admin.get_search_results(
-            Mock(), Document.objects.all(), "deed of sale")
+            Mock(), Document.objects.all(), "deed of sale"
+        )
         assert queryset.count() == 1
         assert isinstance(queryset.first(), Document)
 
         # empty search term should return all records
         queryset, needs_distinct = doc_admin.get_search_results(
-            Mock(), Document.objects.all(), "")
+            Mock(), Document.objects.all(), ""
+        )
         assert queryset.count() == Document.objects.all().count()
 
 

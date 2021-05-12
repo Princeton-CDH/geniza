@@ -131,8 +131,9 @@ class Fragment(TrackChangesModel):
         "Historical Shelfmarks",
         blank=True,
         max_length=500,
-        help_text="Semicolon-delimited list of previously used shelfmarks; " +
-                  "automatically updated on shelfmark change.")
+        help_text="Semicolon-delimited list of previously used shelfmarks; "
+        + "automatically updated on shelfmark change.",
+    )
     collection = models.ForeignKey(
         Collection, blank=True, on_delete=models.SET_NULL, null=True
     )
@@ -240,8 +241,12 @@ class DocumentSignalHandlers:
         doc_filter = {"%s__pk" % doc_attr: instance.pk}
         docs = Document.items_to_index().filter(**doc_filter)
         if docs.exists():
-            logger.debug("%s %s, reindexing %d related document(s)",
-                         model_name, mode, docs.count())
+            logger.debug(
+                "%s %s, reindexing %d related document(s)",
+                model_name,
+                mode,
+                docs.count(),
+            )
             ModelIndexable.index_items(docs)
 
     @staticmethod
@@ -258,10 +263,11 @@ class DocumentSignalHandlers:
 class Document(ModelIndexable):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
+
     id = models.AutoField("PGPID", primary_key=True)
     fragments = models.ManyToManyField(
-        Fragment, through="TextBlock",
-        related_name="documents")
+        Fragment, through="TextBlock", related_name="documents"
+    )
     description = models.TextField(blank=True)
     doctype = models.ForeignKey(
         DocumentType,
@@ -392,42 +398,44 @@ class Document(ModelIndexable):
 
     @classmethod
     def items_to_index(cls):
-        '''Custom logic for finding items to be indexed when indexing in
-        bulk; only include public docs.'''
+        """Custom logic for finding items to be indexed when indexing in
+        bulk; only include public docs."""
         return cls.objects.filter(status=Document.PUBLIC)
 
     def index_data(self):
-        '''data for indexing in Solr'''
+        """data for indexing in Solr"""
 
         index_data = super().index_data()
-        index_data.update({
-            'pgpid_i': self.id,
-            'type_s': self.doctype.name if self.doctype else 'Unknown',
-            'description_t': self.description,
-            'notes_t': self.notes,
-            'needs_review_t': self.needs_review,
-            'shelfmark_t': [f.shelfmark for f in self.fragments.all()],
-            'tag_t': [t.name for t in self.tags.all()],
-            'status_s': self.get_status_display()
-            # TODO: editors/translators/sources
-        })
+        index_data.update(
+            {
+                "pgpid_i": self.id,
+                "type_s": self.doctype.name if self.doctype else "Unknown",
+                "description_t": self.description,
+                "notes_t": self.notes,
+                "needs_review_t": self.needs_review,
+                "shelfmark_t": [f.shelfmark for f in self.fragments.all()],
+                "tag_t": [t.name for t in self.tags.all()],
+                "status_s": self.get_status_display()
+                # TODO: editors/translators/sources
+            }
+        )
 
         return index_data
 
     # define signal handlers to update the index based on changes
     # to other models
     index_depends_on = {
-        'fragments': {
-            'post_save': DocumentSignalHandlers.related_save,
-            'pre_delete': DocumentSignalHandlers.related_delete
+        "fragments": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
         },
-        'tags': {
-            'post_save': DocumentSignalHandlers.related_save,
-            'pre_delete': DocumentSignalHandlers.related_delete,
+        "tags": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
         },
-        'doctype': {
-            'post_save': DocumentSignalHandlers.related_save,
-            'pre_delete': DocumentSignalHandlers.related_delete,
+        "doctype": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
         }
         # footnotes and sources, when we include editors/translators
         # script+language when/if included in index data

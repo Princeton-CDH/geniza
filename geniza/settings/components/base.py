@@ -98,10 +98,10 @@ DATABASES = {
 }
 
 SOLR_CONNECTIONS = {
-    'default': {
-        'URL': 'http://localhost:8983/solr/',
-        'COLLECTION': 'geniza',
-        'CONFIGSET': 'geniza'
+    "default": {
+        "URL": "http://localhost:8983/solr/",
+        "COLLECTION": "geniza",
+        "CONFIGSET": "geniza",
     }
 }
 
