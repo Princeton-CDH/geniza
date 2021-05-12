@@ -266,20 +266,6 @@ class TestDocument:
         frag2.save()
         assert doc.collection == "CUL, JTS"
 
-    def test_is_textblock(self):
-        doc = Document.objects.create()
-        # no fragments
-        assert not doc.is_textblock()
-
-        # fragment but not text block
-        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-        block = TextBlock.objects.create(document=doc, fragment=frag)
-        assert not doc.is_textblock()
-
-        block.region = "a"
-        block.save()
-        assert doc.is_textblock()
-
     def test_all_languages(self):
         doc = Document.objects.create()
         lang = LanguageScript.objects.create(language="Judaeo-Arabic", script="Hebrew")
@@ -332,12 +318,12 @@ class TestDocument:
         assert doc.iiif_urls() == []
 
     def test_title(self):
-        doc = Document.objects.create(id=42)
-        assert doc.title == "Unknown (42)"
+        doc = Document.objects.create()
+        assert doc.title == "Unknown (??)"
         legal = DocumentType.objects.get_or_create(name="Legal")[0]
         doc.doctype = legal
         doc.save()
-        assert doc.title == "Legal (42)"
+        assert doc.title == "Legal (??)"
 
     def test_index_data(self, document):
         index_data = document.index_data()
@@ -380,7 +366,7 @@ class TestTextBlock:
         block2 = TextBlock.objects.create(
             document=doc, fragment=frag, side="r", certain=False
         )
-        assert str(block2) == "%s(?) recto" % frag.shelfmark
+        assert str(block2) == "%s recto (?)" % frag.shelfmark
 
     def test_thumbnail(self):
         doc = Document.objects.create()
