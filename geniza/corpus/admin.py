@@ -201,6 +201,9 @@ class DocumentAdmin(admin.ModelAdmin):
         return (
             super()
             .get_queryset(request)
+            .select_related(
+                "doctype",
+            )
             .prefetch_related(
                 "tags", "languages", "textblock_set", "textblock_set__fragment"
             )
