@@ -58,9 +58,11 @@ Remember to add a ``SECRET_KEY`` setting!
     cp -r solr_conf /path/to/solr/server/solr/configsets/geniza
     chown solr:solr -R /path/to/solr/server/solr/configsets/geniza
 
-- Create Solr collection with configured configset, and index content ::
+- Create Solr collection with the configured configset (use create_core with Solr standalone and create_collection with SolrCloud)::
 
-    python manage.py solr_schema
+    solr create_core -c geniza -n geniza
+- Index content in Solr::
+
     python manage.py index
 
 

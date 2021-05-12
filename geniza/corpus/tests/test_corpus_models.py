@@ -342,7 +342,7 @@ class TestDocument:
     def test_index_data(self, document):
         index_data = document.index_data()
         assert index_data["id"] == document.index_id()
-        assert index_data["item_type"] == "document"
+        assert index_data["item_type_s"] == "document"
         assert index_data["pgpid_i"] == document.pk
         assert index_data["type_s"] == str(document.doctype)
         assert index_data["description_t"] == document.description
@@ -359,7 +359,7 @@ class TestDocument:
         document.status = Document.SUPPRESSED
         index_data = document.index_data()
         assert index_data["id"] == document.index_id()
-        assert "item_type" in index_data
+        assert "item_type_s" in index_data
         assert index_data["status_s"] == "Suppressed"
 
 
