@@ -1,0 +1,1 @@
+black . --skip-string-normalization

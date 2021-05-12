@@ -28,59 +28,59 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'modeltranslation',  # this has to come before admin config
-    'geniza.apps.GenizaAdminConfig',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.humanize',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.postgres',
-    'django_cas_ng',
-    'taggit',
-    'taggit_selectize',
-    'pucas',
-    'multiselectfield',
-    'adminsortable2',
-    'parasolr',
-    'geniza.common',
-    'geniza.corpus.apps.CorpusAppConfig',  # ensure signal handler is connected
-    'geniza.footnotes',
+    "modeltranslation",  # this has to come before admin config
+    "geniza.apps.GenizaAdminConfig",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.humanize",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django.contrib.postgres",
+    "django_cas_ng",
+    "taggit",
+    "taggit_selectize",
+    "pucas",
+    "multiselectfield",
+    "adminsortable2",
+    "parasolr",
+    "geniza.common",
+    "geniza.corpus.apps.CorpusAppConfig",
+    "geniza.footnotes",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'geniza.urls'
+ROOT_URLCONF = "geniza.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'geniza' / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.i18n',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'geniza.context_extras',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "geniza" / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.i18n",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "geniza.context_extras",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'geniza.wsgi.application'
+WSGI_APPLICATION = "geniza.wsgi.application"
 
 
 # Database
@@ -120,16 +120,16 @@ AUTHENTICATION_BACKENDS = (
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -137,9 +137,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'America/New_York'
+TIME_ZONE = "America/New_York"
 
 USE_I18N = True
 
@@ -171,17 +171,16 @@ STATICFILES_DIRS = [
 # and does not reference local server configurations or fields
 PUCAS_LDAP = {
     # basic user profile attributes
-    'ATTRIBUTES': ['givenName', 'sn', 'mail'],
-    'ATTRIBUTE_MAP': {
-        'first_name': 'givenName',
-        'last_name': 'sn',
-        'email': 'mail',
-    }
+    "ATTRIBUTES": ["givenName", "sn", "mail"],
+    "ATTRIBUTE_MAP": {
+        "first_name": "givenName",
+        "last_name": "sn",
+        "email": "mail",
+    },
 }
 
 # username for logging scripted activity
-SCRIPT_USERNAME = 'script'
+SCRIPT_USERNAME = "script"
 
 # username for representing activity by entire team, or no specific user
-TEAM_USERNAME = 'pgl'
-
+TEAM_USERNAME = "pgl"

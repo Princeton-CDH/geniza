@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corpus', '0009_document_ordering_collection_meta'),
+        ("corpus", "0009_document_ordering_collection_meta"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='document',
-            name='old_input_by',
+            model_name="document",
+            name="old_input_by",
         ),
         migrations.RemoveField(
-            model_name='document',
-            name='old_input_date',
+            model_name="document",
+            name="old_input_date",
         ),
     ]

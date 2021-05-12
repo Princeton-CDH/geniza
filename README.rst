@@ -1,5 +1,7 @@
 # Princeton Geniza Project 
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
 
 Python/Django web application for a new version of the `Princeton Geniza Project
 <https://cdh.princeton.edu/projects/princeton-geniza-project/>`_.
@@ -76,6 +78,25 @@ Unit Tests
 
 Python unit tests are written with `py.test <http://doc.pytest.org/>`_
 and should be run with `pytest`.
+
+
+Setup Black
+-----------
+
+If you plan to contribute to this repository (i.e., you're a member of the CDH dev team), please run the following command:
+
+    pre-commit install
+
+This will add a simple pre-commit hook that will automatically style your python code. Read more about `black <https://github.com/psf/black>`_.
+
+Black styling was instituted after development had begun on this project. Consequently, ``git blame`` may not reflect the true author of a given line. In order to see a more accurate ``git blame`` execute the following command:
+
+    git blame <FILE> --ignore-revs-file .git-blame-ignore-revs
+
+Or configure your git to always ignore the black revision commit:
+
+    git config blame.ignoreRevsFile .git-blame-ignore-revs
+
 
 License
 -------

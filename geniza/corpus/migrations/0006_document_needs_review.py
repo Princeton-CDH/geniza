@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corpus', '0005_add_suppressed_docs'),
+        ("corpus", "0005_add_suppressed_docs"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='document',
-            name='needs_review',
-            field=models.TextField(blank=True, help_text='Enter text here if an administrator needs to review this document.'),
+            model_name="document",
+            name="needs_review",
+            field=models.TextField(
+                blank=True,
+                help_text="Enter text here if an administrator needs to review this document.",
+            ),
         ),
     ]

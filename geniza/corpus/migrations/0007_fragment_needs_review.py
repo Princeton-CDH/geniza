@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corpus', '0006_document_needs_review'),
+        ("corpus", "0006_document_needs_review"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='fragment',
-            name='needs_review',
-            field=models.TextField(blank=True, help_text='Enter text here if an administrator needs to review this fragment.'),
+            model_name="fragment",
+            name="needs_review",
+            field=models.TextField(
+                blank=True,
+                help_text="Enter text here if an administrator needs to review this fragment.",
+            ),
         ),
     ]

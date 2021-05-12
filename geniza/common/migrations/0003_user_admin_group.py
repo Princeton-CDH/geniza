@@ -3,12 +3,18 @@
 from django.contrib.auth.management import create_permissions
 from django.db import migrations
 
-USER_ADMIN = 'User Admin'
+USER_ADMIN = "User Admin"
 # permissions for content user admin
 user_admin_perms = {
-    'auth': [
-        'add_group', 'change_group', 'delete_group', 'view_group',
-        'add_user', 'change_user', 'delete_user', 'view_user',
+    "auth": [
+        "add_group",
+        "change_group",
+        "delete_group",
+        "view_group",
+        "add_user",
+        "change_user",
+        "delete_user",
+        "view_user",
     ]
 }
 
@@ -43,10 +49,11 @@ def remove_user_admin_group(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('common', '0002_create_script_user'),
+        ("common", "0002_create_script_user"),
     ]
 
     operations = [
-        migrations.RunPython(create_user_admin_group,
-                             reverse_code=remove_user_admin_group)
+        migrations.RunPython(
+            create_user_admin_group, reverse_code=remove_user_admin_group
+        )
     ]

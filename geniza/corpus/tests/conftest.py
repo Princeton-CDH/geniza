@@ -56,8 +56,9 @@ def document(db, fragment):
         content_type=dctype,
         change_message="Initial data entry (spreadsheet), dated 2004",
         action_flag=ADDITION,
-        action_time=make_aware(datetime(year=2004, month=1, day=1),
-                               timezone=get_current_timezone())
+        action_time=make_aware(
+            datetime(year=2004, month=1, day=1), timezone=get_current_timezone()
+        ),
     )
     LogEntry.objects.create(
         user=script_user,
@@ -66,8 +67,9 @@ def document(db, fragment):
         content_type=dctype,
         change_message="Imported via script",
         action_flag=ADDITION,
-        action_time=make_aware(datetime(year=2021, month=5, day=3),
-                               timezone=get_current_timezone())
+        action_time=make_aware(
+            datetime(year=2021, month=5, day=3), timezone=get_current_timezone()
+        ),
     )
     return doc
 
@@ -77,7 +79,7 @@ def join(db, fragment, multifragment):
     """A fake letter document that occurs on two different fragments."""
     doc = Document.objects.create(
         description="testing description",
-        doctype=DocumentType.objects.get_or_create(name="Letter")[0]
+        doctype=DocumentType.objects.get_or_create(name="Letter")[0],
     )
     TextBlock.objects.create(document=doc, fragment=fragment, order=1)
     TextBlock.objects.create(document=doc, fragment=multifragment, order=2)
