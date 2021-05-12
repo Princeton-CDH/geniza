@@ -363,11 +363,13 @@ class Document(ModelIndexable):
     all_languages.short_description = "Language"
 
     def all_probable_languages(self):
-        return ','.join([str(lang) for lang in self.probable_languages.all()])
-    all_probable_languages.short_description = 'Probable Language'
+        return ",".join([str(lang) for lang in self.probable_languages.all()])
+
+    all_probable_languages.short_description = "Probable Language"
 
     def all_tags(self):
         return ", ".join(t.name for t in self.tags.all())
+
     all_tags.short_description = "tags"
 
     def is_public(self):

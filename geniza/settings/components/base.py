@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.postgres",
-    'django.contrib.sites',
+    "django.contrib.sites",
     "django_cas_ng",
     "taggit",
     "taggit_selectize",
@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "parasolr",
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
-    "geniza.footnotes"
+    "geniza.footnotes",
 ]
 
 MIDDLEWARE = [
@@ -184,7 +184,7 @@ PUCAS_LDAP = {
 SCRIPT_USERNAME = "script"
 
 # username for representing activity by entire team, or no specific user
-TEAM_USERNAME = 'pgl'
+TEAM_USERNAME = "pgl"
 
 # use default Django site
 SITE_ID = 1

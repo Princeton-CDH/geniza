@@ -194,17 +194,16 @@ class DocumentAdmin(admin.ModelAdmin):
     # NOTE: autocomplete does not honor limit_choices_to in model
     inlines = [DocumentTextBlockInline, FootnoteInline]
 
-
-
     class Media:
         css = {"all": ("css/admin-local.css",)}
 
     def get_queryset(self, request):
         return (
             super()
-            .select_related("doctype",) \
             .get_queryset(request)
-            .prefetch_related("tags", "languages", "textblock_set", "textblock_set__fragment")
+            .prefetch_related(
+                "tags", "languages", "textblock_set", "textblock_set__fragment"
+            )
             .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
             .order_by("shelfmk_all")
         )
@@ -254,17 +253,41 @@ class DocumentAdmin(admin.ModelAdmin):
     ## CSV EXPORT -------------------------------------------------------------
 
     def csv_filename(self):
-        '''Generate filename for CSV download'''
+        """Generate filename for CSV download"""
         return f'geniza-documents-{now().strftime("%Y%m%dT%H%M%S")}.csv'
 
-    DocumentRow = namedtuple('DocumentRow', ['pgpid', 'url', 'iiif_urls', 'fragment_urls', 'shelfmark', 
-        'multifragment', 'side', 'extent_label', 'type', 'tags', 'description', 'footnotes',
-        'shelfmarks_historic', 'languages', 'languages_probable', 'language_note', 'notes',
-        'needs_review', 'url_admin', 'initial_entry', 'latest_revision', 'status',
-        'library', 'collection'])
+    DocumentRow = namedtuple(
+        "DocumentRow",
+        [
+            "pgpid",
+            "url",
+            "iiif_urls",
+            "fragment_urls",
+            "shelfmark",
+            "multifragment",
+            "side",
+            "extent_label",
+            "type",
+            "tags",
+            "description",
+            "footnotes",
+            "shelfmarks_historic",
+            "languages",
+            "languages_probable",
+            "language_note",
+            "notes",
+            "needs_review",
+            "url_admin",
+            "initial_entry",
+            "latest_revision",
+            "status",
+            "library",
+            "collection",
+        ],
+    )
 
     def tabulate_queryset(self, queryset):
-        '''Generator for data in tabular form, including custom fields'''
+        """Generator for data in tabular form, including custom fields"""
         rows = []
         for doc in queryset:
             all_fragments = doc.fragments.all()
@@ -274,56 +297,81 @@ class DocumentAdmin(admin.ModelAdmin):
             initial_entry = doc.log_entries.first()
             latest_revision = doc.log_entries.last()
 
-            row = self.DocumentRow(**{
-                'pgpid': doc.id,
-                'url': absolutize_url(doc.get_absolute_url()),
-                'iiif_urls': ';'.join([fragment.iiif_url for fragment in all_fragments]),
-                'fragment_urls': ';'.join([fragment.url for fragment in all_fragments]),
-                'shelfmark': doc.shelfmark,
-                'multifragment': ';'.join([tb.multifragment for tb in all_textblocks]),
-                'side': ';'.join([tb.side for tb in all_textblocks]),
-                'extent_label': ';'.join([tb.extent_label for tb in all_textblocks]),
-                'type': doc.doctype,
-                'tags': doc.all_tags(),
-                'description': doc.description,
-                'footnotes': ';'.join([str(fn) for fn in all_footnotes]),
-                'shelfmarks_historic': ';'.join([fragment.old_shelfmarks for fragment in all_fragments]),
-                'languages': doc.all_languages(),
-                'languages_probable': doc.all_probable_languages(),
-                'language_note': doc.language_note,
-                'notes': doc.notes,
-                'needs_review': doc.needs_review,
-                'url_admin': absolutize_url(reverse('admin:corpus_document_change', args=[doc.id])),
-                'initial_entry': f"{initial_entry.action_time}, {initial_entry.user.get_full_name() or initial_entry.user.get_username()}",
-                'latest_revision': f"{latest_revision.action_time}, {latest_revision.user.get_full_name() or latest_revision.user.get_username()}",
-                'status': 'Public' if doc.status == Document.PUBLIC else 'Suppressed',
-                'library': ';'.join([fragment.collection.lib_abbrev for fragment in all_fragments]),
-                'collection': doc.collection
-            })
+            row = self.DocumentRow(
+                **{
+                    "pgpid": doc.id,
+                    "url": absolutize_url(doc.get_absolute_url()),
+                    "iiif_urls": ";".join(
+                        [fragment.iiif_url for fragment in all_fragments]
+                    ),
+                    "fragment_urls": ";".join(
+                        [fragment.url for fragment in all_fragments]
+                    ),
+                    "shelfmark": doc.shelfmark,
+                    "multifragment": ";".join(
+                        [tb.multifragment for tb in all_textblocks]
+                    ),
+                    "side": ";".join([tb.side for tb in all_textblocks]),
+                    "extent_label": ";".join(
+                        [tb.extent_label for tb in all_textblocks]
+                    ),
+                    "type": doc.doctype,
+                    "tags": doc.all_tags(),
+                    "description": doc.description,
+                    "footnotes": ";".join([str(fn) for fn in all_footnotes]),
+                    "shelfmarks_historic": ";".join(
+                        [fragment.old_shelfmarks for fragment in all_fragments]
+                    ),
+                    "languages": doc.all_languages(),
+                    "languages_probable": doc.all_probable_languages(),
+                    "language_note": doc.language_note,
+                    "notes": doc.notes,
+                    "needs_review": doc.needs_review,
+                    "url_admin": absolutize_url(
+                        reverse("admin:corpus_document_change", args=[doc.id])
+                    ),
+                    "initial_entry": f"{initial_entry.action_time}, {initial_entry.user.get_full_name() or initial_entry.user.get_username()}",
+                    "latest_revision": f"{latest_revision.action_time}, {latest_revision.user.get_full_name() or latest_revision.user.get_username()}",
+                    "status": "Public"
+                    if doc.status == Document.PUBLIC
+                    else "Suppressed",
+                    "library": ";".join(
+                        [fragment.collection.lib_abbrev for fragment in all_fragments]
+                    ),
+                    "collection": doc.collection,
+                }
+            )
 
             yield row
 
-
     def export_to_csv(self, request, queryset=None):
-        '''Stream tabular data as a CSV file'''
+        """Stream tabular data as a CSV file"""
         queryset = self.get_queryset(request) if queryset is None else queryset
-        queryset = queryset.order_by('id')
+        queryset = queryset.order_by("id")
 
-        return export_to_csv_response(self.csv_filename(), self.DocumentRow._fields, self.tabulate_queryset(queryset))
-    export_to_csv.short_description = 'Export selected documents to CSV'
+        return export_to_csv_response(
+            self.csv_filename(),
+            self.DocumentRow._fields,
+            self.tabulate_queryset(queryset),
+        )
+
+    export_to_csv.short_description = "Export selected documents to CSV"
 
     def get_urls(self):
-        '''Return admin urls; adds a custom URL for exporting all people
-        as CSV'''
+        """Return admin urls; adds a custom URL for exporting all people
+        as CSV"""
         urls = [
-            url(r'^csv/$', self.admin_site.admin_view(self.export_to_csv),
-                name='corpus_document_csv')
+            url(
+                r"^csv/$",
+                self.admin_site.admin_view(self.export_to_csv),
+                name="corpus_document_csv",
+            )
         ]
         return urls + super(DocumentAdmin, self).get_urls()
 
     # -------------------------------------------------------------------------
 
-    actions = (export_to_csv, )
+    actions = (export_to_csv,)
 
 
 @admin.register(DocumentType)
