@@ -41,11 +41,12 @@ INSTALLED_APPS = [
     "taggit",
     "taggit_selectize",
     "pucas",
-    "geniza.common",
-    "geniza.corpus",
-    "geniza.footnotes",
     "multiselectfield",
     "adminsortable2",
+    "parasolr",
+    "geniza.common",
+    "geniza.corpus.apps.CorpusAppConfig",
+    "geniza.footnotes",
 ]
 
 MIDDLEWARE = [
@@ -95,6 +96,15 @@ DATABASES = {
         "PORT": "",  # empty string for default
     }
 }
+
+SOLR_CONNECTIONS = {
+    'default': {
+        'URL': 'http://localhost:8983/solr/',
+        'COLLECTION': 'geniza',
+        'CONFIGSET': 'geniza'
+    }
+}
+
 
 # Authentication backends
 # https://docs.djangoproject.com/en/3.1/topics/auth/customizing/#specifying-authentication-backends

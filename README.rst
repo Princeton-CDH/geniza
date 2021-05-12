@@ -1,4 +1,4 @@
-# Princeton Geniza Project Research Partnership
+# Princeton Geniza Project 
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
@@ -6,7 +6,7 @@
 Python/Django web application for a new version of the `Princeton Geniza Project
 <https://cdh.princeton.edu/projects/princeton-geniza-project/>`_.
 
-Python 3.8 / Django 3.1 / Postgresql
+Python 3.8 / Django 3.1 / Postgresql / Solr 8.6
 
 
 .. image:: https://github.com/Princeton-CDH/geniza/workflows/unit%20tests/badge.svg
@@ -52,6 +52,16 @@ Remember to add a ``SECRET_KEY`` setting!
 - Compile microcopy and translated content to make it available for the application:
 
 	cd geniza && django-admin compilemessages
+
+- Copy Solr configset into your solr server configset directory. For a local install::
+
+    cp -r solr_conf /path/to/solr/server/solr/configsets/sandco
+    chown solr:solr -R /path/to/solr/server/solr/configsets/sandco
+
+- Create Solr collection with configured configset, and index content ::
+
+    python manage.py solr_schema
+    python manage.py index
 
 
 Internationalization & Translation
