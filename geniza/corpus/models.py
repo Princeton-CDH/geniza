@@ -4,7 +4,6 @@ from django.db import models
 from django.urls import reverse
 from django.db.models.functions import Concat
 from django.contrib.admin.models import LogEntry
-
 from django.contrib.contenttypes.fields import GenericRelation
 from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
@@ -309,7 +308,7 @@ class Document(ModelIndexable):
         help_text="Decide whether a document should be publicly visible",
     )
 
-    footnotes = GenericRelation(Footnote)
+    footnotes = GenericRelation(Footnote, related_query_name='document')
     log_entries = GenericRelation(LogEntry, related_query_name="document")
 
     # NOTE: default ordering disabled for now because it results in duplicates
@@ -320,7 +319,7 @@ class Document(ModelIndexable):
         # ordering = [Least('textblock__fragment__shelfmark')]
 
     def __str__(self):
-        return f"{self.shelfmark or '??'} (PGPID {self.id or '??'})"
+        return f"{self.shelfmark_display or '??'} (PGPID {self.id or '??'})"
 
     @property
     def shelfmark(self):
@@ -333,6 +332,19 @@ class Document(ModelIndexable):
                 for block in self.textblock_set.filter(certain=True)
             )
         )
+
+    @property
+    def shelfmark_display(self):
+        """First shelfmark plus join indicator for shorter display."""
+        # NOTE preliminary pending more discussion and implementation of #154:
+        # https://github.com/Princeton-CDH/geniza/issues/154
+        certain = list(dict.fromkeys(
+            block.fragment.shelfmark
+            for block in self.textblock_set.filter(certain=True)
+        ).keys())
+        if not certain:
+            return None
+        return certain[0] + (" + …" if len(certain) > 1 else "")
 
     @property
     def collection(self):
@@ -350,16 +362,8 @@ class Document(ModelIndexable):
             )
         )
 
-    def is_textblock(self):
-        """Is this document part of a notated text block?"""
-        return any(bool(block.extent_label) for block in self.textblock_set.all())
-
-    is_textblock.short_description = "Text Block?"
-    is_textblock.boolean = True
-
     def all_languages(self):
-        return ",".join([str(lang) for lang in self.languages.all()])
-
+        return ", ".join([str(lang) for lang in self.languages.all()])
     all_languages.short_description = "Language"
 
     def tag_list(self):
@@ -386,11 +390,24 @@ class Document(ModelIndexable):
             )
         )
 
+    def has_transcription(self):
+        """Admin display field indicating if document has a transcription."""
+        return any(note.has_transcription() for note in self.footnotes.all())
+    has_transcription.short_description = "Transcription"
+    has_transcription.boolean = True
+    has_transcription.admin_order_field = "footnotes__content"
+
+    def has_image(self):
+        """Admin display field indicating if document has a IIIF image."""
+        return any(self.iiif_urls())
+    has_image.short_description = "Image"
+    has_image.boolean = True
+    has_image.admin_order_field = "textblock__fragment__iiif_url"
+
     @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
-        # NOTE preliminary, pending more discussion
-        return f"{self.doctype or 'Unknown'} ({self.id})"
+        return f"{self.doctype or 'Unknown'}: {self.shelfmark_display or '??'}"
 
     def editions(self):
         # return all footnotes that include type edition
@@ -462,35 +479,30 @@ class TextBlock(models.Model):
         (VERSO, "verso"),
         (RECTO_VERSO, "recto and verso"),
     ]
-    side = models.CharField(blank=True, max_length=5, choices=RECTO_VERSO_CHOICES)
-    extent_label = models.CharField(
-        blank=True,
-        max_length=255,
-        help_text="Text block label, for fragments with multiple text blocks",
-    )
-    multifragment = models.CharField(
-        max_length=255,
-        blank=True,
-        help_text="Where to find this document, if part of a multifragment",
-    )
+    side = models.CharField(blank=True, max_length=5,
+                            choices=RECTO_VERSO_CHOICES)
+    region = models.CharField(
+        blank=True, max_length=255,
+        help_text='Label for region of fragment that document text occupies')
+    subfragment = models.CharField(
+        max_length=255, blank=True,
+        help_text='Identifier for subfragment, if part of a multifragment')
     order = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        help_text="Order if there are multiple fragments. "
-        + "Top to bottom or right to left.",
-    )
+        null=True, blank=True,
+        help_text='Order with respect to other text blocks in this document, ' +
+                  'top to bottom or right to left')
 
     class Meta:
         ordering = ["order"]
 
     def __str__(self):
-        # combine shelfmark, side, and optionally text block
+        # combine shelfmark, subfragment, side, region, and certainty
         certainty_str = "(?)" if not self.certain else ""
-        parts = [
-            self.fragment.shelfmark + certainty_str,
-            self.get_side_display(),
-            self.extent_label,
-        ]
+        parts = [self.fragment.shelfmark,
+                 self.subfragment,
+                 self.get_side_display(),
+                 self.region,
+                 certainty_str]
         return " ".join(p for p in parts if p)
 
     def thumbnail(self):

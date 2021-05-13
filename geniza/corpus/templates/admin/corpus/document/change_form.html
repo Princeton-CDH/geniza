@@ -15,4 +15,12 @@
         </div>
     </div>
 </fieldset>
+{% if original.has_transcription %}
+<h2>Transcription</h2>
+{% for footnote in original.footnotes.all %}
+{% if footnote.content %}
+{% include "footnotes/transcription.html" with transcription=footnote.content %}
+{% endif %}
+{% endfor %}
+{% endif %}
 {% endblock %}
