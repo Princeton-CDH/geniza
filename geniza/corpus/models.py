@@ -336,6 +336,8 @@ class Document(ModelIndexable):
     @property
     def shelfmark_display(self):
         """First shelfmark plus join indicator for shorter display."""
+        # NOTE preliminary pending more discussion and implementation of #154:
+        # https://github.com/Princeton-CDH/geniza/issues/154
         certain = list(dict.fromkeys(
             block.fragment.shelfmark
             for block in self.textblock_set.filter(certain=True)
