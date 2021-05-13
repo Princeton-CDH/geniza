@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block title %}Documents{% endblock title %}
+
+{% block main %}
+<div class="container search">
+    <h1>Documents</h1>
+
+    <form>
+    {{ form }}
+    {% for field, errors in form.errors.items %}
+    {# no clean way to get field labels here, so we just collapse the error lists #}
+        {% for error in errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    {% endfor %}
+    </form>
+
+    <ol>
+    {% for document in documents %}
+        <li>
+
+            <dl class="tags">
+                <dt class="sr-only">{% translate 'Tags' %}</dt>
+                {% for tag in document.tags %}
+                <dd class="tag">#{{ tag }}</dd>
+                {% endfor %}
+            </dl>
+
+            <b>{{ document.type }};</b> {{ document.shelfmark|join:" + " }}
+            <p>{% translate 'Input date' %} {{ document.input_year|default:'unknown' }}
+            <p>{% translate 'PGP ID' %}{{ document.pgpid }}</p>
+            <p>{{ document.description.0|truncatechars:135 }}</p>
+
+            <a href="{% url 'corpus:document' document.pgpid %}">View document details ➡</a>
+        <hr/>
+        {{ document }}</li>
+        }
+    {% endfor %}
+    </ol>
+
+</div>
+{% endblock main %}

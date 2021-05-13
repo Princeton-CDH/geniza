@@ -166,6 +166,21 @@ class Fragment(TrackChangesModel):
     def natural_key(self):
         return (self.shelfmark,)
 
+    def iiif_images(self):
+        # if there is no iiif for this fragment, bail out
+        if not self.iiif_url:
+            return ""
+        images = []
+        labels = []
+        manifest = IIIFPresentation.from_url(self.iiif_url)
+        for canvas in manifest.sequences[0].canvases:
+            image_id = canvas.images[0].resource.id
+            images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
+            # label provides library's recto/verso designation
+            labels.append(canvas.label)
+
+        return images, labels
+
     def iiif_thumbnails(self):
         # if there is no iiif for this fragment, bail out
         if not self.iiif_url:
@@ -400,7 +415,13 @@ class Document(ModelIndexable):
     def items_to_index(cls):
         """Custom logic for finding items to be indexed when indexing in
         bulk; only include public docs."""
-        return cls.objects.filter(status=Document.PUBLIC)
+        return (
+            cls.objects.filter(status=Document.PUBLIC)
+            .select_related("doctype")
+            .prefetch_related(
+                "tags", "languages", "textblock_set", "textblock_set__fragment"
+            )
+        )
 
     def index_data(self):
         """data for indexing in Solr"""
@@ -414,11 +435,26 @@ class Document(ModelIndexable):
                 "notes_t": self.notes,
                 "needs_review_t": self.needs_review,
                 "shelfmark_t": [f.shelfmark for f in self.fragments.all()],
-                "tag_t": [t.name for t in self.tags.all()],
-                "status_s": self.get_status_display()
+                "tags_t": [t.name for t in self.tags.all()],
+                "status_s": self.get_status_display(),
                 # TODO: editors/translators/sources
+                # todo: index counts for: edition, translation, discussion
+                # (+ and total scholarship count for sorting?)
             }
         )
+
+        last_log_entry = self.log_entries.last()
+        if last_log_entry:
+            # TODO: index full date for sorting but only display year
+            index_data["input_year_i"] = last_log_entry.action_time.year
+        # images = img_labels = []
+        # for fragment in self.fragments.all():
+        #     imgs = fragment.iiif_images()
+        #     if imgs:
+        #         images.extend(imgs[0])
+        #         img_labels.extend(imgs[1])
+        # index_data['images_s'] = images
+        # index_data['img_labels_s'] = img_labels
 
         return index_data
 

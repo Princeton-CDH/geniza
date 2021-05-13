@@ -13,11 +13,12 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "type": "type_s",
         "status": "status_s",
         "shelfmark": "shelfmark_t",
-        "tag": "tag_t",
+        "tags": "tags_t",
         "description": "description_t",
         "notes": "notes_t",
         "needs_review": "needs_review_t",
         "pgpid": "pgpid_i",
+        "input_year": "input_year_i",
     }
 
     # (adapted from mep)
@@ -27,4 +28,11 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     def admin_search(self, search_term):
         return self.search(self.admin_doc_qf).raw_query_parameters(
             doc_query=search_term
+        )
+
+    keyword_search_qf = "{!type=edismax qf=$keyword_qf pf=$keyword_pf v=$keyword_query}"
+
+    def keyword_search(self, search_term):
+        return self.search(self.keyword_search_qf).raw_query_parameters(
+            keyword_query=search_term
         )
