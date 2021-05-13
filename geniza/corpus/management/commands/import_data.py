@@ -19,6 +19,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import connection, models
 from django.utils.text import slugify
 from django.utils.timezone import get_current_timezone, make_aware
+from parasolr.django.signals import IndexableSignalHandler
 
 from geniza.corpus.models import (
     Collection,
@@ -116,6 +117,9 @@ class Command(BaseCommand):
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
         self.team_user = User.objects.get(username=settings.TEAM_USERNAME)
         self.user_lookup["Naim Vanthieghem"] = User.objects.get(username="nvanthieghem")
+
+        # disconnect solr indexing signals
+        IndexableSignalHandler.disconnect()
 
         self.content_types = {
             model: ContentType.objects.get_for_model(model)
