@@ -1,6 +1,6 @@
 from datetime import timedelta, datetime
 import time
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from django.conf import settings
@@ -15,6 +15,7 @@ from django.forms.models import model_to_dict
 from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.timezone import now
 from pytest_django.asserts import assertContains
 
 from geniza.corpus.admin import (
@@ -253,6 +254,32 @@ class TestDocumentAdmin:
                 f"https://example.com/admin/corpus/document/{doc.id}/change/"
                 == doc_data.url_admin
             )
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.admin.export_to_csv_response")
+    def test_export_to_csv(self, mock_export_to_csv_response):
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        with patch.object(doc_admin, "tabulate_queryset") as tabulate_queryset:
+            # if no queryset provided, should use default queryset
+            docs = doc_admin.get_queryset(Mock())
+            doc_admin.export_to_csv(Mock())
+            assert tabulate_queryset.called_once_with(docs)
+            # otherwise should respect the provided queryset
+            first_person = Document.objects.first()
+            doc_admin.export_to_csv(Mock(), first_person)
+            assert tabulate_queryset.called_once_with(first_person)
+
+            export_args, export_kwargs = mock_export_to_csv_response.call_args
+            # first arg is filename
+            csvfilename = export_args[0]
+            assert csvfilename.endswith(".csv")
+            assert csvfilename.startswith("geniza-documents")
+            # should include current date
+            assert now().strftime("%Y%m%d") in csvfilename
+            headers = export_args[1]
+            assert "pgpid" in headers
+            assert "description" in headers
+            assert "needs_review" in headers
 
 
 @pytest.mark.django_db
