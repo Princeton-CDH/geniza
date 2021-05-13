@@ -159,7 +159,8 @@ class DocumentAdmin(admin.ModelAdmin):
         "all_languages",
         "last_modified",
         "has_transcription",
-        "has_image" "is_public",
+        "has_image",
+        "is_public",
     )
     readonly_fields = ("created", "last_modified", "shelfmark", "id")
     search_fields = (
