@@ -67,6 +67,15 @@ class TestFootnote:
             footnote.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
             assert str(footnote) == "Edition and Translation of foo"
 
+    @pytest.mark.django_db
+    def test_has_transcription(self, source):
+        footnote = Footnote(source=source)
+        # if there's content, that indicates a digitized transcription
+        with patch.object(Footnote, "content_object", new="foo"):
+            assert not footnote.has_transcription()
+            footnote.content = "The digitized transcription"
+            assert footnote.has_transcription()
+
 
 class TestCreator:
     def test_str(self):
