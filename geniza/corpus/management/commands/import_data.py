@@ -148,7 +148,7 @@ class Command(BaseCommand):
         try:
             with open(settings.TRANSCRIPTIONS_JSON_FILE) as json_file:
                 self.transcriptions = json.load(json_file)
-        except FileNotFoundError:
+        except (AttributeError, FileNotFoundError):
             logger.warning("No transcriptions provided")
             self.transcriptions = {}
 
