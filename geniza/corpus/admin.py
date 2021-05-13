@@ -35,7 +35,7 @@ class FragmentTextBlockInline(admin.TabularInline):
         "region",
     )
     readonly_fields = ("document_link", "document_description")
-    extra = 0
+    extra = 1
 
     def document_link(self, obj):
         document_path = reverse("admin:corpus_document_change", args=[obj.document.id])
@@ -120,7 +120,7 @@ class DocumentTextBlockInline(admin.TabularInline):
         "certain",
         "thumbnail",
     )
-    extra = 0
+    extra = 1
     formfield_overrides = {CharField: {"widget": TextInput(attrs={"size": "10"})}}
 
 
@@ -222,6 +222,17 @@ class DocumentAdmin(admin.ModelAdmin):
             .prefetch_related(
                 "tags",
                 "languages",
+                # Optimize lookup of fragments in two steps: prefetch_related on
+                # TextBlock, then select_related on Fragment.
+                #
+                # prefetch_related works on m2m and generic relationships and
+                # operates at the python level, while select_related only works
+                # on fk or one-to-one and operates at the database level. We
+                # can chain the latter onto the former because TextBlocks have 
+                # only one Fragment.
+                #
+                # For more, see:
+                # https://docs.djangoproject.com/en/3.2/ref/models/querysets/#prefetch-related
                 Prefetch(
                     "textblock_set",
                     queryset=TextBlock.objects.select_related("fragment"),
