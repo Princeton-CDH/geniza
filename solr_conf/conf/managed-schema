@@ -98,7 +98,7 @@
   <field name="last_modified" type="pdate" multiValued="false" indexed="true" required="true" stored="true" default="NOW"/>    
 
   <copyField source="shelfmark_t" dest="shelfmark_ss" maxChars="30000" />
-  <copyField source="tag_t" dest="tag_ss" maxChars="30000" />  
+  <copyField source="tags_t" dest="tags_ss" maxChars="30000" />  
 
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
