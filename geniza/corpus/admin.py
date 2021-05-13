@@ -283,6 +283,7 @@ class DocumentAdmin(admin.ModelAdmin):
             "url_admin",
             "initial_entry",
             "latest_revision",
+            "input_by",
             "status",
             "library",
             "collection",
@@ -333,8 +334,14 @@ class DocumentAdmin(admin.ModelAdmin):
                     "url_admin": absolutize_url(
                         reverse("admin:corpus_document_change", args=[doc.id])
                     ),
-                    "initial_entry": f"{initial_entry.action_time}, {initial_entry.user.get_full_name() or initial_entry.user.get_username()}",
-                    "latest_revision": f"{latest_revision.action_time}, {latest_revision.user.get_full_name() or latest_revision.user.get_username()}",
+                    "initial_entry": doc.log_entries.first(),
+                    "latest_revision": doc.log_entries.last(),
+                    "input_by": ";".join(
+                        [
+                            str(n)
+                            for n in set(doc.log_entries.values_list("user", flat=True))
+                        ]
+                    ),
                     "status": "Public"
                     if doc.status == Document.PUBLIC
                     else "Suppressed",

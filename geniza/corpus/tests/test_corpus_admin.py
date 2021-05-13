@@ -23,7 +23,16 @@ from geniza.corpus.admin import (
     LanguageScriptAdmin,
     FragmentTextBlockInline,
 )
-from geniza.corpus.models import Document, Fragment, LanguageScript, TextBlock
+from geniza.corpus.models import (
+    Document,
+    Fragment,
+    LanguageScript,
+    TextBlock,
+    Collection,
+    DocumentType,
+)
+from geniza.footnotes.models import Footnote, Creator, Source, SourceType
+from django.contrib.contenttypes.models import ContentType
 
 
 @pytest.mark.django_db
@@ -189,6 +198,61 @@ class TestDocumentAdmin:
             Mock(), Document.objects.all(), ""
         )
         assert queryset.count() == Document.objects.all().count()
+
+    @pytest.mark.django_db
+    def test_tabulate_queryset(self):
+        # Create all documents
+        cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21", collection=cul)
+
+        contract = DocumentType.objects.create(name="Contract")
+        doc = Document.objects.create(
+            description="Business contracts with tables",
+            doctype=contract,
+            notes="Goitein cards",
+            needs_review="demerged",
+            status=Document.PUBLIC,
+        )
+        doc.fragments.add(frag)
+        doc.tags.add("table")
+
+        arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
+        french = LanguageScript.objects.create(language="French", script="Latin")
+
+        doc.languages.add(arabic)
+        doc.probable_languages.add(french)
+
+        marina = Creator.objects.create(last_name="Rustow", first_name="Marina")
+        book = SourceType.objects.create(type="Book")
+        source = Source.objects.create(source_type=book)
+        source.authors.add(marina)
+        footnote = Footnote.objects.create(
+            doc_relation=["E"],
+            source=source,
+            content_type_id=ContentType.objects.get(model="document").id,
+            object_id=0,
+        )
+        doc.footnotes.add(footnote)
+
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        doc_qs = Document.objects.all()
+
+        for doc, doc_data in zip(doc_qs, doc_admin.tabulate_queryset(doc_qs)):
+            # test some properties
+            assert doc.id in doc_data
+            assert doc.shelfmark in doc_data
+            assert doc.collection in doc_data
+
+            # test callables
+            assert doc.all_tags() in doc_data
+
+            # test new functions
+            assert f"https://example.com/documents/{doc.id}/" == doc_data.url
+            assert "Public" == doc_data.status
+            assert (
+                f"https://example.com/admin/corpus/document/{doc.id}/change/"
+                == doc_data.url_admin
+            )
 
 
 @pytest.mark.django_db
