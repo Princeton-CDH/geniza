@@ -462,6 +462,7 @@ class Command(BaseCommand):
         # check the cache first
         user = self.user_lookup.get(name)
         if user:
+            logger.debug(f"using cached user {user} for {name} on PGPID {pgpid}")
             return user
 
         # person with given name(s) and last name – case-insensitive lookup
