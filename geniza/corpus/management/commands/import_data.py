@@ -495,6 +495,7 @@ class Command(BaseCommand):
             return self.team_user
 
         # otherwise add to the cache using requested name and return the user
+        logger.debug(f"found user {user} for {name} on PGPID {pgpid}")
         self.user_lookup[name] = user
         return user
 
