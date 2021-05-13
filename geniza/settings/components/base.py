@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "parasolr",
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
-    "geniza.footnotes",
+    "geniza.footnotes.apps.FootnotesConfig",
 ]
 
 MIDDLEWARE = [
