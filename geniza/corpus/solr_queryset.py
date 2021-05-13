@@ -13,7 +13,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "type": "type_s",
         "status": "status_s",
         "shelfmark": "shelfmark_t",
-        "tag": "tag_t",
+        "tags": "tags_t",
         "description": "description_t",
         "notes": "notes_t",
         "needs_review": "needs_review_t",

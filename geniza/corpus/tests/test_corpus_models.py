@@ -351,7 +351,7 @@ class TestDocument:
         for frag in document.fragments.all():
             assert frag.shelfmark in index_data["shelfmark_t"]
         for tag in document.tags.all():
-            assert tag.name in index_data["tag_t"]
+            assert tag.name in index_data["tags_t"]
         assert index_data["status_s"] == "Public"
 
         # suppressed documents are still indexed,
