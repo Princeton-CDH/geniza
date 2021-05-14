@@ -22,7 +22,7 @@ from geniza.corpus.models import (
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.common.admin import custom_empty_field_list_filter
-from geniza.footnotes.admin import FootnoteInline
+from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.common.utils import absolutize_url
 
 
@@ -212,7 +212,7 @@ class DocumentAdmin(admin.ModelAdmin):
     )
     autocomplete_fields = ["languages", "probable_languages"]
     # NOTE: autocomplete does not honor limit_choices_to in model
-    inlines = [DocumentTextBlockInline, FootnoteInline]
+    inlines = [DocumentTextBlockInline, DocumentFootnoteInline]
 
     class Media:
         css = {"all": ("css/admin-local.css",)}

@@ -18,12 +18,60 @@ from geniza.footnotes.models import (
     SourceType,
 )
 from geniza.common.admin import custom_empty_field_list_filter
+from geniza.corpus.models import Document
 
 
 class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
     model = Authorship
     autocomplete_fields = ["creator"]
     fields = ("creator", "sort_order")
+    extra = 1
+
+
+class SourceFootnoteInline(admin.TabularInline):
+    """Footnote inline for the Source admin"""
+
+    model = Footnote
+    fields = (
+        "object_link",
+        "content_type",
+        "object_id",
+        "location",
+        "doc_relation",
+        "notes",
+    )
+    readonly_fields = ("object_link",)
+
+    def object_link(self, obj):
+        """edit link with string display method for associated content object"""
+        # return empty spring for unsaved footnote with no  content object
+        if not obj.content_object:
+            return ""
+        content_obj = obj.content_object
+        edit_url = "admin:%s_%s_change" % (
+            content_obj._meta.app_label,
+            content_obj._meta.model_name,
+        )
+        edit_path = reverse(edit_url, args=[obj.object_id])
+        return format_html(
+            f'<a href="{edit_path}">{content_obj} '
+            + '<img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>'
+        )
+
+    object_link.short_description = "object"
+
+
+class DocumentFootnoteInline(GenericTabularInline):
+    """Footnote inline for the Document admin"""
+
+    model = Footnote
+    autocomplete_fields = ["source"]
+    fields = (
+        "source",
+        "location",
+        "doc_relation",
+        "notes",
+    )
     extra = 1
 
 
@@ -38,7 +86,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     fields = ("source_type", "title", "year", "edition", "volume", "languages", "notes")
     list_filter = ("source_type", "authors")
 
-    inlines = [AuthorshipInline]
+    inlines = [AuthorshipInline, SourceFootnoteInline]
 
     def get_queryset(self, request):
         return (
