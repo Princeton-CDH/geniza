@@ -1,10 +1,13 @@
 from adminsortable2.admin import SortableInlineAdminMixin
+from django import forms
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.db import models
 from django.db.models import Count
+from django.db.models.fields import CharField, TextField
 from django.db.models.functions import Concat
+from django.forms.widgets import TextInput, Textarea
 from django.urls import reverse
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
@@ -18,7 +21,6 @@ from geniza.footnotes.models import (
     SourceType,
 )
 from geniza.common.admin import custom_empty_field_list_filter
-from geniza.corpus.models import Document
 
 
 class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
@@ -38,9 +40,14 @@ class SourceFootnoteInline(admin.TabularInline):
         "object_id",
         "location",
         "doc_relation",
+        "has_transcription",
         "notes",
     )
-    readonly_fields = ("object_link",)
+    readonly_fields = ("object_link", "has_transcription")
+    formfield_overrides = {
+        CharField: {"widget": TextInput(attrs={"size": "10"})},
+        TextField: {"widget": Textarea(attrs={"rows": 3})},
+    }
 
     def object_link(self, obj):
         """edit link with string display method for associated content object"""
@@ -70,9 +77,15 @@ class DocumentFootnoteInline(GenericTabularInline):
         "source",
         "location",
         "doc_relation",
+        "has_transcription",
         "notes",
     )
+    readonly_fields = ("has_transcription",)
     extra = 1
+    formfield_overrides = {
+        CharField: {"widget": TextInput(attrs={"size": "10"})},
+        TextField: {"widget": Textarea(attrs={"rows": 3})},
+    }
 
 
 @admin.register(Source)
@@ -87,6 +100,9 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_filter = ("source_type", "authors")
 
     inlines = [AuthorshipInline, SourceFootnoteInline]
+
+    class Media:
+        css = {"all": ("css/admin-local.css",)}
 
     def get_queryset(self, request):
         return (
@@ -140,8 +156,18 @@ class DocumentRelationTypesFilter(SimpleListFilter):
             return queryset.filter(doc_relation__contains=self.value())
 
 
+class FootnoteForm(forms.ModelForm):
+
+    class Meta:
+        model = Footnote
+        exclude = ()
+        widgets = {
+            "location": TextInput(attrs={"size": "10"}),
+        }
+
 @admin.register(Footnote)
 class FootnoteAdmin(admin.ModelAdmin):
+    form = FootnoteForm
     list_display = ("__str__", "source", "location", "notes", "has_transcription")
     list_filter = (
         DocumentRelationTypesFilter,
@@ -203,21 +229,6 @@ class FootnoteAdmin(admin.ModelAdmin):
 
     doc_relation_list.short_description = "Document Relation"
     doc_relation_list.admin_order_field = "doc_relation"
-
-
-class FootnoteInline(GenericTabularInline):
-    model = Footnote
-    autocomplete_fields = ["source"]
-    fields = (
-        "source",
-        "location",
-        "doc_relation",
-        "has_transcription",
-        "notes",
-    )
-    readonly_fields = ("has_transcription",)
-    extra = 1
-
 
 @admin.register(Creator)
 class CreatorAdmin(TabbedTranslationAdmin):
