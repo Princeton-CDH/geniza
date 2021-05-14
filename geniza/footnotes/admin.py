@@ -2,14 +2,12 @@ from adminsortable2.admin import SortableInlineAdminMixin
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
-from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import models
 from django.db.models import Count
 from django.db.models.functions import Concat
-from django.urls import reverse, resolve
+from django.urls import reverse
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
-import gfklookupwidget
 
 from geniza.footnotes.models import (
     Authorship,
@@ -19,6 +17,7 @@ from geniza.footnotes.models import (
     SourceLanguage,
     SourceType,
 )
+from geniza.common.admin import custom_empty_field_list_filter
 from geniza.corpus.models import Document
 
 
@@ -143,15 +142,27 @@ class DocumentRelationTypesFilter(SimpleListFilter):
 
 @admin.register(Footnote)
 class FootnoteAdmin(admin.ModelAdmin):
-    list_display = (
-        "source",
-        "content_object",
-        "doc_relation_list",
-        "location",
-        "notes",
+    list_display = ("__str__", "source", "location", "notes", "has_transcription")
+    list_filter = (
+        DocumentRelationTypesFilter,
+        (
+            "content",
+            custom_empty_field_list_filter(
+                "transcription", "Digitized", "Not digitized"
+            ),
+        ),
     )
-    list_filter = (DocumentRelationTypesFilter,)
     readonly_fields = ["content_object"]
+
+    search_fields = (
+        "source__title",
+        "source__authors__first_name",
+        "source__authors__last_name",
+        "content",
+        "notes",
+        "document__id",
+        "document__fragments__shelfmark",
+    )
 
     # Add help text to the combination content_type and object_id
     CONTENT_LOOKUP_HELP = """Select the kind of record you want to attach
@@ -164,8 +175,26 @@ class FootnoteAdmin(admin.ModelAdmin):
                 "description": f'<div class="help">{CONTENT_LOOKUP_HELP}</div>',
             },
         ),
-        (None, {"fields": ("source", "location", "doc_relation", "notes")}),
+        (
+            None,
+            {
+                "fields": (
+                    "source",
+                    "location",
+                    "doc_relation",
+                    "notes",
+                )
+            },
+        ),
     ]
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("source")
+            .prefetch_related("content_object", "source__authors")
+        )
 
     def doc_relation_list(self, obj):
         # Casting the multichoice object as string to return a reader-friendly
@@ -183,8 +212,10 @@ class FootnoteInline(GenericTabularInline):
         "source",
         "location",
         "doc_relation",
+        "has_transcription",
         "notes",
     )
+    readonly_fields = ("has_transcription",)
     extra = 1
 
 

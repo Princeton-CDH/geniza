@@ -317,11 +317,11 @@ def test_import_documents(mockrequests, caplog):
     assert doc.fragments.first().collection.library == "CUL"
     assert doc.doctype.name == "Legal"
     assert doc.textblock_set.count()
-    # check text block side, extent label, multifragment
+    # check text block side, region, subfragment
     textblock = doc.textblock_set.first()
     assert textblock.side == "v"
-    assert textblock.extent_label == "a"
-    assert textblock.multifragment == "middle"
+    assert textblock.subfragment == "middle"
+    assert textblock.region == "a"
     # check footnote & source
     assert doc.footnotes.count() == 1
     fnote = doc.footnotes.first()

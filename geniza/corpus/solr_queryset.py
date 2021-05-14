@@ -6,14 +6,14 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     :class:`~geniza.corpus.models.Document`"""
 
     #: always filter to item records
-    filter_qs = ["item_type:document"]
+    filter_qs = ["item_type_s:document"]
 
     #: map readable field names to actual solr fields
     field_aliases = {
         "type": "type_s",
         "status": "status_s",
         "shelfmark": "shelfmark_t",
-        "tag": "tag_t",
+        "tags": "tags_t",
         "description": "description_t",
         "notes": "notes_t",
         "needs_review": "needs_review_t",
