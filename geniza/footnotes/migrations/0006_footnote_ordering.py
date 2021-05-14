@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('footnotes', '0005_footnote_object_id_gfklookupfield'),
+        ("footnotes", "0005_footnote_object_id_gfklookupfield"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='footnote',
-            options={'ordering': ['source', 'location']},
+            name="footnote",
+            options={"ordering": ["source", "location"]},
         ),
     ]
