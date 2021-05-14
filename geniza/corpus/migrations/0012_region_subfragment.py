@@ -6,33 +6,45 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corpus', '0011_add_textblock_certainty'),
+        ("corpus", "0011_add_textblock_certainty"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='textblock',
-            old_name='extent_label',
-            new_name='region',
+            model_name="textblock",
+            old_name="extent_label",
+            new_name="region",
         ),
         migrations.RenameField(
-            model_name='textblock',
-            old_name='multifragment',
-            new_name='subfragment',
+            model_name="textblock",
+            old_name="multifragment",
+            new_name="subfragment",
         ),
         migrations.AlterField(
-            model_name='textblock',
-            name='order',
-            field=models.PositiveIntegerField(blank=True, help_text='Order with respect to other text blocks in this document, top to bottom or right to left', null=True),
+            model_name="textblock",
+            name="order",
+            field=models.PositiveIntegerField(
+                blank=True,
+                help_text="Order with respect to other text blocks in this document, top to bottom or right to left",
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='textblock',
-            name='region',
-            field=models.CharField(blank=True, help_text='Label for region of fragment that document text occupies', max_length=255),
+            model_name="textblock",
+            name="region",
+            field=models.CharField(
+                blank=True,
+                help_text="Label for region of fragment that document text occupies",
+                max_length=255,
+            ),
         ),
         migrations.AlterField(
-            model_name='textblock',
-            name='subfragment',
-            field=models.CharField(blank=True, help_text='Identifier for subfragment, if part of a multifragment', max_length=255),
+            model_name="textblock",
+            name="subfragment",
+            field=models.CharField(
+                blank=True,
+                help_text="Identifier for subfragment, if part of a multifragment",
+                max_length=255,
+            ),
         ),
     ]

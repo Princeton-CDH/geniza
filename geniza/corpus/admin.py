@@ -1,12 +1,13 @@
 from collections import namedtuple
 from django import forms
+from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.exceptions import ValidationError
 from django.db.models import Count, CharField
 from django.db.models.query import Prefetch
 from django.forms.widgets import TextInput, Textarea
-from django.urls import reverse, resolve, url
+from django.urls import reverse, resolve
 from django.utils.html import format_html
 from django.utils import timezone
 from tabular_export.admin import export_to_csv_response
@@ -232,7 +233,7 @@ class DocumentAdmin(admin.ModelAdmin):
                 # prefetch_related works on m2m and generic relationships and
                 # operates at the python level, while select_related only works
                 # on fk or one-to-one and operates at the database level. We
-                # can chain the latter onto the former because TextBlocks have 
+                # can chain the latter onto the former because TextBlocks have
                 # only one Fragment.
                 #
                 # For more, see:
@@ -289,7 +290,7 @@ class DocumentAdmin(admin.ModelAdmin):
             obj.last_modified = None
         super().save_model(request, obj, form, change)
 
-    ## CSV EXPORT -------------------------------------------------------------
+    # CSV EXPORT -------------------------------------------------------------
 
     def csv_filename(self):
         """Generate filename for CSV download"""
@@ -303,9 +304,9 @@ class DocumentAdmin(admin.ModelAdmin):
             "iiif_urls",
             "fragment_urls",
             "shelfmark",
-            "multifragment",
+            "subfragment",
             "side",
-            "extent_label",
+            "region",
             "type",
             "tags",
             "description",
@@ -348,13 +349,9 @@ class DocumentAdmin(admin.ModelAdmin):
                         [fragment.url for fragment in all_fragments]
                     ),
                     "shelfmark": doc.shelfmark,
-                    "multifragment": ";".join(
-                        [tb.multifragment for tb in all_textblocks]
-                    ),
+                    "subfragment": ";".join([tb.subfragment for tb in all_textblocks]),
                     "side": ";".join([tb.side for tb in all_textblocks]),
-                    "extent_label": ";".join(
-                        [tb.extent_label for tb in all_textblocks]
-                    ),
+                    "region": ";".join([tb.region for tb in all_textblocks]),
                     "type": doc.doctype,
                     "tags": doc.all_tags(),
                     "description": doc.description,

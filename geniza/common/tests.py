@@ -30,7 +30,6 @@ class TestLocalUserAdmin(TestCase):
 
 
 class TestCommonUtils(TestCase):
-  
     @pytest.mark.django_db
     def test_absolutize_url(self):
         # Borrowed from https://github.com/Princeton-CDH/mep-django/blob/main/mep/common/tests.py
@@ -65,7 +64,7 @@ class TestCommonUtils(TestCase):
                 == "http://example.org/sub/foo/bar/"
             )
 
-            
+
 class TestCustomEmptyFieldListFilter:
     def test_title(self):
         """Accepts a custom title for the filter"""
