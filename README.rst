@@ -1,7 +1,7 @@
-# Princeton Geniza Project 
+Princeton Geniza Project 
+#########################
 
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://github.com/psf/black
+
 
 Python/Django web application for a new version of the `Princeton Geniza Project
 <https://cdh.princeton.edu/projects/princeton-geniza-project/>`_.
@@ -25,6 +25,9 @@ Python 3.8 / Django 3.1 / Postgresql / Solr 8.6
     :target: https://dbdocs.io/princetoncdh/geniza
     :alt: dbdocs build
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+    :alt: code style: blacm
 
 Development instructions
 ------------------------
