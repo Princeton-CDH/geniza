@@ -91,7 +91,7 @@ class Source(models.Model):
     languages = models.ManyToManyField(
         SourceLanguage, help_text="The language(s) the source is written in"
     )
-    url = models.URLField(blank=True)
+    url = models.URLField(blank=True, max_length=300)
     # preliminary place to store transcription text; should not be editable
     notes = models.TextField(blank=True)
 
