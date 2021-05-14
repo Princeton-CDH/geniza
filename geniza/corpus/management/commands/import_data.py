@@ -331,7 +331,7 @@ class Command(BaseCommand):
                 # convert recto/verso value to code
                 side=recto_verso_lookup.get(row.recto_verso, ""),
                 region=row.text_block,
-                subfragment=row.multifragment
+                subfragment=row.multifragment,
             )
             self.add_document_language(doc, row)
             docstats["documents"] += 1
@@ -764,9 +764,6 @@ class Command(BaseCommand):
                 logger.error(
                     "Error parsing PGDID %d editor %s: %s" % (document.id, edition, err)
                 )
-
-
-                
 
     def get_source_creator(self, name):
         # last name is always present, and last names are unique

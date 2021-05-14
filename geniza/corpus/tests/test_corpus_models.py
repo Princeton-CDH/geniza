@@ -278,10 +278,21 @@ class TestDocument:
         doc.languages.add(arabic)
         assert doc.all_languages() == "%s, %s" % (arabic, lang)
 
-    def test_tag_list(self):
+    def test_all_probable_languages(self):
+        doc = Document.objects.create()
+        lang = LanguageScript.objects.create(language="Judaeo-Arabic", script="Hebrew")
+        doc.probable_languages.add(lang)
+        # single language
+        assert doc.all_probable_languages() == str(lang)
+
+        arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
+        doc.probable_languages.add(arabic)
+        assert doc.all_probable_languages() == "%s,%s" % (arabic, lang)
+
+    def test_all_tags(self):
         doc = Document.objects.create()
         doc.tags.add("marriage", "women")
-        tag_list = doc.tag_list()
+        tag_list = doc.all_tags()
         # tag order is not reliable, so just check all the pieces
         assert "women" in tag_list
         assert "marriage" in tag_list
