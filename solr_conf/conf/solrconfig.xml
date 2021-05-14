@@ -733,25 +733,27 @@
 
       <!-- keyword search field for geniza prototype -->
       <str name="keyword_qf">
-        description_txt
-        id
+        description_t
+        pgpid_i
         type_s
         library_s
-        shelfmark_txt
-        shelfmark_s
-        tags_txt
-        editors_txt
-        translators_txt
-        transcription_txt
+        shelfmark_t
+        shelfmark_ss
+        tags_t
+        tags_ss        
+        editors_t
+        translators_t
+        transcription_t
       </str>
       <str name="keyword_pf">
-        description_txt
-        id
+        description_t
+        pgpid_i
         type_s
         library_s
-        shelfmark_txt
-        shelfmark_s
-        tags_txt
+        shelfmark_t
+        shelfmark_ss
+        tags_t
+        tags_ss        
         editors_txt
         translators_txt
         transcription_txt
@@ -760,8 +762,10 @@
        <!-- admin search field for Document model (no boosting because no relevance sort) -->
       <str name="admin_doc_qf">
         type_s
-        shelfmark_txt
-        tag_txt
+        shelfmark_t
+        shelfmark_ss   
+        tags_t
+        tags_ss        
         description_t
         notes_t
         needs_review_t
@@ -769,8 +773,10 @@
       </str>
       <str name="admin_doc_pf">
         type_s
-        shelfmark_txt
-        tag_txt
+        shelfmark_t
+        shelfmark_s        
+        tags_t
+        tags_ss      
         description_t
         notes_t
         needs_review_t

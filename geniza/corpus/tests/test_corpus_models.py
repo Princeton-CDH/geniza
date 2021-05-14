@@ -14,6 +14,7 @@ from geniza.corpus.models import (
     LanguageScript,
     TextBlock,
 )
+from geniza.footnotes.models import Footnote
 
 
 class TestCollection:
@@ -266,20 +267,6 @@ class TestDocument:
         frag2.save()
         assert doc.collection == "CUL, JTS"
 
-    def test_is_textblock(self):
-        doc = Document.objects.create()
-        # no fragments
-        assert not doc.is_textblock()
-
-        # fragment but not text block
-        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-        block = TextBlock.objects.create(document=doc, fragment=frag)
-        assert not doc.is_textblock()
-
-        block.extent_label = "a"
-        block.save()
-        assert doc.is_textblock()
-
     def test_all_languages(self):
         doc = Document.objects.create()
         lang = LanguageScript.objects.create(language="Judaeo-Arabic", script="Hebrew")
@@ -289,7 +276,7 @@ class TestDocument:
 
         arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
         doc.languages.add(arabic)
-        assert doc.all_languages() == "%s,%s" % (arabic, lang)
+        assert doc.all_languages() == "%s, %s" % (arabic, lang)
 
     def test_all_probable_languages(self):
         doc = Document.objects.create()
@@ -343,12 +330,71 @@ class TestDocument:
         assert doc.iiif_urls() == []
 
     def test_title(self):
-        doc = Document.objects.create(id=42)
-        assert doc.title == "Unknown (42)"
+        doc = Document.objects.create()
+        assert doc.title == "Unknown: ??"
         legal = DocumentType.objects.get_or_create(name="Legal")[0]
         doc.doctype = legal
         doc.save()
-        assert doc.title == "Legal (42)"
+        assert doc.title == "Legal: ??"
+        frag = Fragment.objects.create(shelfmark="s1")
+        TextBlock.objects.create(document=doc, fragment=frag, order=1)
+        assert doc.title == "Legal: s1"
+
+    def test_shelfmark_display(self):
+        # T-S 8J22.21 + T-S NS J193
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        doc = Document.objects.create()
+        TextBlock.objects.create(document=doc, fragment=frag, order=1)
+        # single fragment
+        assert doc.shelfmark_display == frag.shelfmark
+
+        # add a second text block with the same fragment
+        TextBlock.objects.create(document=doc, fragment=frag)
+        # shelfmark should not repeat
+        assert doc.shelfmark_display == frag.shelfmark
+
+        frag2 = Fragment.objects.create(shelfmark="T-S NS J193")
+        TextBlock.objects.create(document=doc, fragment=frag2, order=2)
+        # multiple fragments: show first shelfmark + join indicator
+        assert doc.shelfmark_display == "%s + …" % frag.shelfmark
+
+        # ensure shelfmark honors order
+        doc2 = Document.objects.create()
+        TextBlock.objects.create(document=doc2, fragment=frag2, order=1)
+        TextBlock.objects.create(document=doc2, fragment=frag, order=2)
+        assert doc2.shelfmark_display == "%s + …" % frag2.shelfmark
+
+        # if no certain shelfmarks, don't return anything
+        doc3 = Document.objects.create()
+        frag3 = Fragment.objects.create(shelfmark="T-S NS J195")
+        TextBlock.objects.create(document=doc3, fragment=frag3, certain=False, order=1)
+        assert doc3.shelfmark_display == None
+
+        # use only the first certain shelfmark
+        TextBlock.objects.create(document=doc3, fragment=frag2, order=2)
+        assert doc3.shelfmark_display == frag2.shelfmark
+
+    def test_has_transcription(self, document, source):
+        # doc with no footnotes doesn't have transcription
+        assert not document.has_transcription()
+
+        # doc with empty footnote doesn't have transcription
+        fn = Footnote.objects.create(content_object=document, source=source)
+        assert not document.has_transcription()
+
+        # doc with footnote with content does have a transcription
+        fn.content = "The transcription"
+        fn.save()
+        assert document.has_transcription
+
+    def test_has_image(self, document, fragment):
+        # doc with fragment with IIIF url has image
+        assert document.has_image()
+
+        # remove IIIF url from fragment; doc should no longer have image
+        fragment.iiif_url = ""
+        fragment.save()
+        assert not document.has_image()
 
     def test_index_data(self, document):
         index_data = document.index_data()
@@ -362,7 +408,7 @@ class TestDocument:
         for frag in document.fragments.all():
             assert frag.shelfmark in index_data["shelfmark_t"]
         for tag in document.tags.all():
-            assert tag.name in index_data["tag_t"]
+            assert tag.name in index_data["tags_t"]
         assert index_data["status_s"] == "Public"
 
         # suppressed documents are still indexed,
@@ -382,8 +428,8 @@ class TestTextBlock:
         block = TextBlock.objects.create(document=doc, fragment=frag, side="r")
         assert str(block) == "%s recto" % frag.shelfmark
 
-        # with labeled extent
-        block.extent_label = "a"
+        # with labeled region
+        block.region = "a"
         block.save()
         assert str(block) == "%s recto a" % frag.shelfmark
 
@@ -391,7 +437,7 @@ class TestTextBlock:
         block2 = TextBlock.objects.create(
             document=doc, fragment=frag, side="r", certain=False
         )
-        assert str(block2) == "%s(?) recto" % frag.shelfmark
+        assert str(block2) == "%s recto (?)" % frag.shelfmark
 
     def test_thumbnail(self):
         doc = Document.objects.create()

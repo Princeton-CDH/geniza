@@ -3,10 +3,10 @@ from django import forms
 from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.exceptions import ValidationError
-from django.db.models import Count
-from django.conf.urls import url
-from django.utils.timezone import now
-from django.urls import reverse, resolve
+from django.db.models import Count, CharField
+from django.db.models.query import Prefetch
+from django.forms.widgets import TextInput, Textarea
+from django.urls import reverse, resolve, url
 from django.utils.html import format_html
 from django.utils import timezone
 from tabular_export.admin import export_to_csv_response
@@ -20,6 +20,7 @@ from geniza.corpus.models import (
     TextBlock,
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
+from geniza.common.admin import custom_empty_field_list_filter
 from geniza.footnotes.admin import FootnoteInline
 from geniza.common.utils import absolutize_url
 
@@ -31,11 +32,12 @@ class FragmentTextBlockInline(admin.TabularInline):
     fields = (
         "document_link",
         "document_description",
+        "subfragment",
         "side",
-        "extent_label",
+        "region",
     )
     readonly_fields = ("document_link", "document_description")
-    extra = 0
+    extra = 1
 
     def document_link(self, obj):
         document_path = reverse("admin:corpus_document_change", args=[obj.document.id])
@@ -113,19 +115,26 @@ class DocumentTextBlockInline(admin.TabularInline):
     readonly_fields = ("thumbnail",)
     fields = (
         "fragment",
+        "subfragment",
         "side",
-        "extent_label",
-        "multifragment",
+        "region",
         "order",
         "certain",
         "thumbnail",
     )
+    extra = 1
+    formfield_overrides = {CharField: {"widget": TextInput(attrs={"size": "10"})}}
 
 
 class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         exclude = ()
+        widgets = {
+            "language_note": Textarea(attrs={"rows": 1}),
+            "needs_review": Textarea(attrs={"rows": 3}),
+            "notes": Textarea(attrs={"rows": 3}),
+        }
 
     def clean(self):
         # error if there is any overlap between language and probable lang
@@ -150,8 +159,9 @@ class DocumentAdmin(admin.ModelAdmin):
         "doctype",
         "all_tags",
         "all_languages",
-        "is_textblock",
         "last_modified",
+        "has_transcription",
+        "has_image",
         "is_public",
     )
     readonly_fields = ("created", "last_modified", "shelfmark", "id")
@@ -165,30 +175,39 @@ class DocumentAdmin(admin.ModelAdmin):
     )
     # TODO include search on edition once we add footnotes
     save_as = True
+    empty_value_display = "Unknown"
 
     list_filter = (
         "doctype",
-        "languages",
-        "probable_languages",
+        (
+            "footnotes__content",
+            custom_empty_field_list_filter(
+                "transcription", "Has transcription", "No transcription"
+            ),
+        ),
+        (
+            "textblock__fragment__iiif_url",
+            custom_empty_field_list_filter("IIIF image", "Has image", "No image"),
+        ),
+        (
+            "needs_review",
+            custom_empty_field_list_filter("review status", "Needs review", "OK"),
+        ),
         "status",
-        ("textblock__extent_label", admin.EmptyFieldListFilter),
-        ("textblock__multifragment", admin.EmptyFieldListFilter),
-        ("needs_review", admin.EmptyFieldListFilter),
+        ("languages", admin.RelatedOnlyFieldListFilter),
+        ("probable_languages", admin.RelatedOnlyFieldListFilter),
     )
 
     fields = (
         ("shelfmark", "id"),
         "doctype",
-        "languages",
-        "probable_languages",
+        ("languages", "probable_languages"),
         "language_note",
         "description",
         "tags",
         "status",
-        "needs_review",
+        ("needs_review", "notes"),
         # edition, translation
-        "notes",
-        # text block
     )
     autocomplete_fields = ["languages", "probable_languages"]
     # NOTE: autocomplete does not honor limit_choices_to in model
@@ -205,7 +224,24 @@ class DocumentAdmin(admin.ModelAdmin):
                 "doctype",
             )
             .prefetch_related(
-                "tags", "languages", "textblock_set", "textblock_set__fragment"
+                "tags",
+                "languages",
+                # Optimize lookup of fragments in two steps: prefetch_related on
+                # TextBlock, then select_related on Fragment.
+                #
+                # prefetch_related works on m2m and generic relationships and
+                # operates at the python level, while select_related only works
+                # on fk or one-to-one and operates at the database level. We
+                # can chain the latter onto the former because TextBlocks have 
+                # only one Fragment.
+                #
+                # For more, see:
+                # https://docs.djangoproject.com/en/3.2/ref/models/querysets/#prefetch-related
+                Prefetch(
+                    "textblock_set",
+                    queryset=TextBlock.objects.select_related("fragment"),
+                ),
+                "footnotes__content__isnull",
             )
             .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
             .order_by("shelfmk_all")
@@ -257,7 +293,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def csv_filename(self):
         """Generate filename for CSV download"""
-        return f'geniza-documents-{now().strftime("%Y%m%dT%H%M%S")}.csv'
+        return f'geniza-documents-{timezone.now().strftime("%Y%m%dT%H%M%S")}.csv'
 
     DocumentRow = namedtuple(
         "DocumentRow",
@@ -395,10 +431,13 @@ class FragmentAdmin(admin.ModelAdmin):
     search_fields = ("shelfmark", "old_shelfmarks", "notes", "needs_review")
     readonly_fields = ("old_shelfmarks", "created", "last_modified")
     list_filter = (
-        ("collection", admin.RelatedOnlyFieldListFilter),
+        ("url", custom_empty_field_list_filter("IIIF image", "Has image", "No image")),
+        (
+            "needs_review",
+            custom_empty_field_list_filter("review status", "Needs review", "OK"),
+        ),
         "is_multifragment",
-        ("url", admin.EmptyFieldListFilter),
-        ("needs_review", admin.EmptyFieldListFilter),
+        ("collection", admin.RelatedOnlyFieldListFilter),
     )
     inlines = [FragmentTextBlockInline]
     list_editable = ("url",)
