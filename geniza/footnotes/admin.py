@@ -157,13 +157,13 @@ class DocumentRelationTypesFilter(SimpleListFilter):
 
 
 class FootnoteForm(forms.ModelForm):
-
     class Meta:
         model = Footnote
         exclude = ()
         widgets = {
             "location": TextInput(attrs={"size": "10"}),
         }
+
 
 @admin.register(Footnote)
 class FootnoteAdmin(admin.ModelAdmin):
@@ -232,6 +232,7 @@ class FootnoteAdmin(admin.ModelAdmin):
 
     doc_relation_list.short_description = "Document Relation"
     doc_relation_list.admin_order_field = "doc_relation"
+
 
 @admin.register(Creator)
 class CreatorAdmin(TabbedTranslationAdmin):

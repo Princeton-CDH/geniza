@@ -294,7 +294,54 @@ class Command(BaseCommand):
             doc.language_note = "\n".join(notes_list)
             doc.save()
 
+    def import_document(self, row, joins, docstats, recto_verso_lookup):
+        """Import a single document given a row from a PGP spreadsheet"""
+        if ";" in row.type:
+            logger.warning("skipping PGPID %s (demerge)" % row.pgpid)
+            docstats["skipped"] += 1
+            return joins, docstats
+
+        doctype = self.get_doctype(row.type)
+        fragment = self.get_fragment(row)
+        doc = Document.objects.create(
+            id=row.pgpid,
+            doctype=doctype,
+            description=row.description,
+        )
+        doc.tags.add(*[tag.strip() for tag in row.tags.split("#") if tag.strip()])
+        # associate fragment via text block
+        TextBlock.objects.create(
+            document=doc,
+            fragment=fragment,
+            # convert recto/verso value to code
+            side=recto_verso_lookup.get(row.recto_verso, ""),
+            region=row.text_block,
+            subfragment=row.multifragment,
+        )
+        self.add_document_language(doc, row)
+        docstats["documents"] += 1
+        # create log entries as we go
+        self.log_edit_history(
+            doc, self.get_edit_history(row.input_by, row.date_entered, row.pgpid)
+        )
+        # parse editor & translator information to create sources
+        # and associate with footnotes
+        editor = row.editor.strip(".")
+        if editor and editor not in self.editor_ignore:
+            self.parse_editor(doc, editor)
+        # treat translator like editor, but set translation flag
+        if row.translator:
+            self.parse_editor(doc, row.translator, translation=True)
+
+        # keep track of any joins to handle on a second pass
+        if row.joins.strip():
+            joins.append((doc, row.joins.strip()))
+
+        return joins, docstats
+
     def import_documents(self):
+        """Import all document given the PGP spreadsheets"""
+
         metadata = self.get_csv("metadata")
         Document.objects.all().delete()
         Fragment.objects.all().delete()
@@ -311,46 +358,9 @@ class Command(BaseCommand):
         joins = []
         docstats = defaultdict(int)
         for row in metadata:
-            if ";" in row.type:
-                logger.warning("skipping PGPID %s (demerge)" % row.pgpid)
-                docstats["skipped"] += 1
-                continue
-
-            doctype = self.get_doctype(row.type)
-            fragment = self.get_fragment(row)
-            doc = Document.objects.create(
-                id=row.pgpid,
-                doctype=doctype,
-                description=row.description,
+            joins, docstats = self.import_document(
+                row, joins, docstats, recto_verso_lookup
             )
-            doc.tags.add(*[tag.strip() for tag in row.tags.split("#") if tag.strip()])
-            # associate fragment via text block
-            TextBlock.objects.create(
-                document=doc,
-                fragment=fragment,
-                # convert recto/verso value to code
-                side=recto_verso_lookup.get(row.recto_verso, ""),
-                region=row.text_block,
-                subfragment=row.multifragment,
-            )
-            self.add_document_language(doc, row)
-            docstats["documents"] += 1
-            # create log entries as we go
-            self.log_edit_history(
-                doc, self.get_edit_history(row.input_by, row.date_entered, row.pgpid)
-            )
-            # parse editor & translator information to create sources
-            # and associate with footnotes
-            editor = row.editor.strip(".")
-            if editor and editor not in self.editor_ignore:
-                self.parse_editor(doc, editor)
-            # treat translator like editor, but set translation flag
-            if row.translator:
-                self.parse_editor(doc, row.translator, translation=True)
-
-            # keep track of any joins to handle on a second pass
-            if row.joins.strip():
-                joins.append((doc, row.joins.strip()))
 
         # handle joins collected on the first pass
         for doc, join in joins:
