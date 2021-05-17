@@ -307,7 +307,7 @@ class Command(BaseCommand):
             doc.language_note = "\n".join(notes_list)
             doc.save()
 
-    def import_document(self, row, demerge=False):
+    def import_document(self, row):
         """Import a single document given a row from a PGP spreadsheet"""
         if ";" in row.type:
             logger.warning("skipping PGPID %s (demerge)" % row.pgpid)
@@ -332,8 +332,6 @@ class Command(BaseCommand):
             subfragment=row.multifragment,
         )
         self.add_document_language(doc, row)
-        if demerge:
-            self.docstats["demerged_documents"] += 1
         self.docstats["documents"] += 1
         # create log entries as we go
         self.log_edit_history(
@@ -374,6 +372,7 @@ class Command(BaseCommand):
 
         for row in metadata:
             self.import_document(row)
+        document_count_before_demerge = self.docstats["documents"]
 
         # update id sequence based on highest imported pgpid
         self.update_document_id_sequence()
@@ -383,7 +382,7 @@ class Command(BaseCommand):
             if row.pgpid and Document.objects.filter(id=row.pgpid).exists():
                 logger.warning(f"Overwriting PGPID with demerge {row.pgpid}")
                 Document.objects.filter(id=row.pgpid).delete()
-            self.import_document(row, demerge=True)
+            self.import_document(row)
 
         # handle joins collected on the first pass
         for doc, join in self.joins:
@@ -401,7 +400,10 @@ class Command(BaseCommand):
                 # associate the fragment with the document
                 doc.fragments.add(join_fragment)
 
-        self.docstats["skipped"] -= self.docstats["demerged_documents"]
+        demerged_document_count = (
+            self.docstats["documents"] - document_count_before_demerge
+        )
+        self.docstats["skipped"] -= demerged_document_count
         logger.info(
             "Imported %d documents, %d with joins; skipped %d"
             % (self.docstats["documents"], len(self.joins), self.docstats["skipped"])
