@@ -214,6 +214,9 @@ class FootnoteAdmin(admin.ModelAdmin):
         ),
     ]
 
+    class Media:
+        css = {"all": ("css/admin-local.css",)}
+
     def get_queryset(self, request):
         return (
             super()
