@@ -64,19 +64,6 @@ csv_fields = {
         "Editor(s)": "editor",
         "Translator (optional)": "translator",
     },
-    "demerged": {
-        "Shelfmark - Current": "shelfmark",
-        "Input by (optional)": "input_by",
-        "Date entered (optional)": "date_entered",
-        "Recto or verso (optional)": "recto_verso",
-        "Language (optional)": "language",
-        "Text-block (optional)": "text_block",
-        "Shelfmark - Historical (optional)": "shelfmark_historic",
-        "Multifragment (optional)": "multifragment",
-        "Link to image": "image_link",
-        "Editor(s)": "editor",
-        "Translator (optional)": "translator",
-    },
 }
 
 # events in document edit history with missing/malformed dates will replace
@@ -176,7 +163,7 @@ class Command(BaseCommand):
         self.import_languages()
         self.import_documents()
 
-    def get_csv(self, name):
+    def get_csv(self, name, schema=None):
         # given a name for a file in the configured data import urls,
         # load the data by url and initialize and return a generator
         # of namedtuple elements for each row
@@ -194,7 +181,7 @@ class Command(BaseCommand):
         CsvRow = namedtuple(
             "%sCSVRow" % name,
             (
-                csv_fields[name].get(
+                csv_fields[(schema or name)].get(
                     col, slugify(col).replace("-", "_") or "empty_%d" % i
                 )
                 for i, col in enumerate(header)
@@ -354,7 +341,7 @@ class Command(BaseCommand):
         """Import all document given the PGP spreadsheets"""
 
         metadata = self.get_csv("metadata")
-        demerged_metadata = self.get_csv("demerged")
+        demerged_metadata = self.get_csv("demerged", schema="metadata")
 
         Document.objects.all().delete()
         Fragment.objects.all().delete()
