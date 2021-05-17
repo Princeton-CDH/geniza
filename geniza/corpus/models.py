@@ -468,6 +468,12 @@ class Document(ModelIndexable):
         # script+language when/if included in index data
     }
 
+    def save(self, *args, **kwargs):
+        # Auto-increment pk when none is provided
+        if self.id is None:
+            self.id = self.__class__.objects.all().order_by("-id")[0].id + 1
+        super(self.__class__, self).save(*args, **kwargs)
+
 
 class TextBlock(models.Model):
     """The portion of a document that appears on a particular fragment."""

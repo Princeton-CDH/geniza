@@ -317,7 +317,7 @@ class Command(BaseCommand):
         doctype = self.get_doctype(row.type)
         fragment = self.get_fragment(row)
         doc = Document.objects.create(
-            id=row.pgpid,
+            id=row.pgpid if row.pgpid else None,
             doctype=doctype,
             description=row.description,
         )
@@ -380,11 +380,14 @@ class Command(BaseCommand):
         # update id sequence based on highest imported pgpid
         self.update_document_id_sequence()
 
+        # demerged_metadata = reversed(sorted(demerged_metadata, key=lambda x: x.pgpid))
         for row in demerged_metadata:
-            pass
-            # joins, docstats = self.import_document(
-            #     row, joins, docstats, recto_verso_lookup
-            # )
+            # overwrite document if it already exists
+            if row.pgpid:
+                Document.objects.filter(id=row.pgpid).delete()
+            joins, docstats = self.import_document(
+                row, joins, docstats, recto_verso_lookup
+            )
 
         # handle joins collected on the first pass
         for doc, join in joins:
