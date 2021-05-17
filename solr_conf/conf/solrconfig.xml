@@ -772,15 +772,11 @@
         pgpid_i
       </str>
       <str name="admin_doc_pf">
-        type_s
         shelfmark_t
-        shelfmark_ss
         tags_t
-        tags_ss
         description_t
         notes_t
         needs_review_t
-        pgpid_i
       </str>
 
     </lst>
