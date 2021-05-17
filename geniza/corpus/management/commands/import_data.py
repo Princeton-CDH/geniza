@@ -64,6 +64,19 @@ csv_fields = {
         "Editor(s)": "editor",
         "Translator (optional)": "translator",
     },
+    "demerged": {
+        "Shelfmark - Current": "shelfmark",
+        "Input by (optional)": "input_by",
+        "Date entered (optional)": "date_entered",
+        "Recto or verso (optional)": "recto_verso",
+        "Language (optional)": "language",
+        "Text-block (optional)": "text_block",
+        "Shelfmark - Historical (optional)": "shelfmark_historic",
+        "Multifragment (optional)": "multifragment",
+        "Link to image": "image_link",
+        "Editor(s)": "editor",
+        "Translator (optional)": "translator",
+    },
 }
 
 # events in document edit history with missing/malformed dates will replace
@@ -343,6 +356,8 @@ class Command(BaseCommand):
         """Import all document given the PGP spreadsheets"""
 
         metadata = self.get_csv("metadata")
+        demerged_metadata = self.get_csv("demerged")
+
         Document.objects.all().delete()
         Fragment.objects.all().delete()
         LogEntry.objects.filter(
@@ -362,6 +377,15 @@ class Command(BaseCommand):
                 row, joins, docstats, recto_verso_lookup
             )
 
+        # update id sequence based on highest imported pgpid
+        self.update_document_id_sequence()
+
+        for row in demerged_metadata:
+            pass
+            # joins, docstats = self.import_document(
+            #     row, joins, docstats, recto_verso_lookup
+            # )
+
         # handle joins collected on the first pass
         for doc, join in joins:
             initial_shelfmark = doc.shelfmark
@@ -378,8 +402,6 @@ class Command(BaseCommand):
                 # associate the fragment with the document
                 doc.fragments.add(join_fragment)
 
-        # update id sequence based on highest imported pgpid
-        self.update_document_id_sequence()
         logger.info(
             "Imported %d documents, %d with joins; skipped %d"
             % (docstats["documents"], len(joins), docstats["skipped"])
