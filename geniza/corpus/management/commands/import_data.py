@@ -317,7 +317,7 @@ class Command(BaseCommand):
         doctype = self.get_doctype(row.type)
         fragment = self.get_fragment(row)
         doc = Document.objects.create(
-            id=row.pgpid if row.pgpid else None,
+            id=row.pgpid or None,
             doctype=doctype,
             description=row.description,
         )
