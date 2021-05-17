@@ -763,9 +763,9 @@
       <str name="admin_doc_qf">
         type_s
         shelfmark_t
-        shelfmark_ss   
+        shelfmark_ss
         tags_t
-        tags_ss        
+        tags_ss
         description_t
         notes_t
         needs_review_t
@@ -774,9 +774,9 @@
       <str name="admin_doc_pf">
         type_s
         shelfmark_t
-        shelfmark_s        
+        shelfmark_ss
         tags_t
-        tags_ss      
+        tags_ss
         description_t
         notes_t
         needs_review_t
