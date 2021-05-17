@@ -307,12 +307,12 @@ class Command(BaseCommand):
             doc.language_note = "\n".join(notes_list)
             doc.save()
 
-    def import_document(self, row, joins, docstats, recto_verso_lookup):
+    def import_document(self, row):
         """Import a single document given a row from a PGP spreadsheet"""
         if ";" in row.type:
             logger.warning("skipping PGPID %s (demerge)" % row.pgpid)
-            docstats["skipped"] += 1
-            return joins, docstats
+            self.docstats["skipped"] += 1
+            return
 
         doctype = self.get_doctype(row.type)
         fragment = self.get_fragment(row)
@@ -327,12 +327,12 @@ class Command(BaseCommand):
             document=doc,
             fragment=fragment,
             # convert recto/verso value to code
-            side=recto_verso_lookup.get(row.recto_verso, ""),
+            side=self.recto_verso_lookup.get(row.recto_verso, ""),
             region=row.text_block,
             subfragment=row.multifragment,
         )
         self.add_document_language(doc, row)
-        docstats["documents"] += 1
+        self.docstats["documents"] += 1
         # create log entries as we go
         self.log_edit_history(
             doc, self.get_edit_history(row.input_by, row.date_entered, row.pgpid)
@@ -348,9 +348,7 @@ class Command(BaseCommand):
 
         # keep track of any joins to handle on a second pass
         if row.joins.strip():
-            joins.append((doc, row.joins.strip()))
-
-        return joins, docstats
+            self.joins.append((doc, row.joins.strip()))
 
     def import_documents(self):
         """Import all document given the PGP spreadsheets"""
@@ -366,31 +364,26 @@ class Command(BaseCommand):
 
         # create a reverse lookup for recto/verso labels used in the
         # spreadsheet to the codes used in the database
-        recto_verso_lookup = {
+        self.recto_verso_lookup = {
             label.lower(): code for code, label in TextBlock.RECTO_VERSO_CHOICES
         }
+        self.joins = []
+        self.docstats = defaultdict(int)
 
-        joins = []
-        docstats = defaultdict(int)
         for row in metadata:
-            joins, docstats = self.import_document(
-                row, joins, docstats, recto_verso_lookup
-            )
+            self.import_document(row)
 
         # update id sequence based on highest imported pgpid
         self.update_document_id_sequence()
 
-        # demerged_metadata = reversed(sorted(demerged_metadata, key=lambda x: x.pgpid))
         for row in demerged_metadata:
             # overwrite document if it already exists
             if row.pgpid:
                 Document.objects.filter(id=row.pgpid).delete()
-            joins, docstats = self.import_document(
-                row, joins, docstats, recto_verso_lookup
-            )
+            self.import_document(row)
 
         # handle joins collected on the first pass
-        for doc, join in joins:
+        for doc, join in self.joins:
             initial_shelfmark = doc.shelfmark
             for shelfmark in join.split(" + "):
                 # skip the initial shelfmark, already associated
@@ -407,7 +400,7 @@ class Command(BaseCommand):
 
         logger.info(
             "Imported %d documents, %d with joins; skipped %d"
-            % (docstats["documents"], len(joins), docstats["skipped"])
+            % (self.docstats["documents"], len(self.joins), self.docstats["skipped"])
         )
 
     doctype_lookup = {}
