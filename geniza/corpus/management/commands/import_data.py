@@ -307,7 +307,7 @@ class Command(BaseCommand):
             doc.language_note = "\n".join(notes_list)
             doc.save()
 
-    def import_document(self, row):
+    def import_document(self, row, demerge=False):
         """Import a single document given a row from a PGP spreadsheet"""
         if ";" in row.type:
             logger.warning("skipping PGPID %s (demerge)" % row.pgpid)
@@ -332,6 +332,8 @@ class Command(BaseCommand):
             subfragment=row.multifragment,
         )
         self.add_document_language(doc, row)
+        if demerge:
+            self.docstats["demerged_documents"] += 1
         self.docstats["documents"] += 1
         # create log entries as we go
         self.log_edit_history(
@@ -378,9 +380,10 @@ class Command(BaseCommand):
 
         for row in demerged_metadata:
             # overwrite document if it already exists
-            if row.pgpid:
+            if row.pgpid and Document.objects.filter(id=row.pgpid).exists():
+                logger.warning(f"Overwriting PGPID with demerge {row.pgpid}")
                 Document.objects.filter(id=row.pgpid).delete()
-            self.import_document(row)
+            self.import_document(row, demerge=True)
 
         # handle joins collected on the first pass
         for doc, join in self.joins:
@@ -398,10 +401,16 @@ class Command(BaseCommand):
                 # associate the fragment with the document
                 doc.fragments.add(join_fragment)
 
+        self.docstats["skipped"] -= self.docstats["demerged_documents"]
         logger.info(
             "Imported %d documents, %d with joins; skipped %d"
             % (self.docstats["documents"], len(self.joins), self.docstats["skipped"])
         )
+
+        if self.docstats["skipped"]:
+            logger.warning(
+                f"{self.docstats['demerged_documents']} were imported from the demerge spreadsheet, but {self.docstats['skipped']} documents remain."
+            )
 
     doctype_lookup = {}
 
@@ -545,8 +554,8 @@ class Command(BaseCommand):
         """
 
         # split both fields by semicolon delimiter & remove whitespace
-        all_input = [i.strip() for i in input_by.split(";")]
-        all_dates = [d.strip() for d in date_entered.split(";")]
+        all_input = [i.strip() for i in input_by.split(";") if i]
+        all_dates = [d.strip() for d in date_entered.split(";") if d]
 
         # try to map every "input by" listing to a user account. for coauthored
         # events, add both users to a list – otherwise it's a one-element list
