@@ -12,8 +12,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     field_aliases = {
         "type": "type_s",
         "status": "status_s",
-        "shelfmark": "shelfmark_t",
-        "tags": "tags_t",
+        "shelfmark": "shelfmark_ss",
+        "tags": "tags_ss",
         "description": "description_t",
         "notes": "notes_t",
         "needs_review": "needs_review_t",

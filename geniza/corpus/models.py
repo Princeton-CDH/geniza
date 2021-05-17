@@ -440,8 +440,8 @@ class Document(ModelIndexable):
                 "description_t": self.description,
                 "notes_t": self.notes,
                 "needs_review_t": self.needs_review,
-                "shelfmark_t": [f.shelfmark for f in self.fragments.all()],
-                "tags_t": [t.name for t in self.tags.all()],
+                "shelfmark_ss": [f.shelfmark for f in self.fragments.all()],
+                "tags_ss": [t.name for t in self.tags.all()],
                 "status_s": self.get_status_display()
                 # TODO: editors/translators/sources
             }
