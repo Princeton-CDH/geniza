@@ -80,12 +80,6 @@ class Command(BaseCommand):
     "Import existing data from PGP spreadsheets into the database"
 
     logentry_message = "Imported via script"
-
-    content_types = {}
-    collection_lookup = {}
-    document_type = {}
-    language_lookup = {}
-    user_lookup = {}
     max_documents = None
 
     def add_arguments(self, parser):
@@ -112,6 +106,14 @@ class Command(BaseCommand):
             )
             for username in set(active_users) - set(present):
                 call_command("createcasuser", username, staff=True, verbosity=verbosity)
+
+        # Set dicts on the instance so they're not shared across instances
+        self.doctype_lookup = {}
+        self.content_types = {}
+        self.collection_lookup = {}
+        self.document_type = {}
+        self.language_lookup = {}
+        self.user_lookup = {}
 
         # fetch users created through migrations for easy access later; add one
         # known exception (accented character)
@@ -402,8 +404,6 @@ class Command(BaseCommand):
             logger.warning(
                 f"{self.docstats['demerged_documents']} were imported from the demerge spreadsheet, but {self.docstats['skipped']} documents remain."
             )
-
-    doctype_lookup = {}
 
     def get_doctype(self, dtype):
         # don't create an empty doctype

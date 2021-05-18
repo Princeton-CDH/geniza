@@ -287,6 +287,7 @@ def test_get_fragment():
 @pytest.mark.django_db
 def test_import_document():
     import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
     import_data_cmd.joins = set()
     import_data_cmd.docstats = defaultdict(int)
 
@@ -316,8 +317,7 @@ def test_import_document():
 
     row = DocumentCSVRow(
         pgpid="135",
-        # this being set to "Legal" causes test_import_documents to error (?!)
-        type="Letter",
+        type="Legal",
         library="CUL",
         description="Poem",
         shelfmark="CUL Add.3375",
@@ -338,11 +338,11 @@ def test_import_documents(mockrequests, caplog):
     Document.objects.create(notes="test doc")
 
     import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
     # simulate collection lookup already populated
     import_data_cmd.collection_lookup = {
         "CUL_Add.": Collection.objects.create(library="CUL", abbrev="Add.")
     }
-    import_data_cmd.setup()
     mockrequests.codes = requests.codes  # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = [
