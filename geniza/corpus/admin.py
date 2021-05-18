@@ -24,6 +24,7 @@ from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.common.admin import custom_empty_field_list_filter
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.common.utils import absolutize_url
+from django.contrib.auth.models import User
 
 
 class FragmentTextBlockInline(admin.TabularInline):
@@ -334,6 +335,7 @@ class DocumentAdmin(admin.ModelAdmin):
             all_fragments = doc.fragments.all()
             all_textblocks = doc.textblock_set.all()
             all_footnotes = doc.footnotes.all()
+            all_user_ids = set(doc.log_entries.values_list("user", flat=True))
 
             initial_entry = doc.log_entries.first()
             latest_revision = doc.log_entries.last()
@@ -371,8 +373,8 @@ class DocumentAdmin(admin.ModelAdmin):
                     "latest_revision": doc.log_entries.last(),
                     "input_by": ";".join(
                         [
-                            str(n)
-                            for n in set(doc.log_entries.values_list("user", flat=True))
+                            user.get_full_name() or user.username
+                            for user in User.objects.filter(pk__in=all_user_ids)
                         ]
                     ),
                     "status": "Public"
