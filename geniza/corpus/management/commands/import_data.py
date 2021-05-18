@@ -301,6 +301,12 @@ class Command(BaseCommand):
             self.docstats["skipped"] += 1
             return
 
+        # create a reverse lookup for recto/verso labels used in the
+        # spreadsheet to the codes used in the database
+        recto_verso_lookup = {
+            label.lower(): code for code, label in TextBlock.RECTO_VERSO_CHOICES
+        }
+
         doctype = self.get_doctype(row.type)
         fragment = self.get_fragment(row)
         doc = Document.objects.create(
@@ -314,7 +320,7 @@ class Command(BaseCommand):
             document=doc,
             fragment=fragment,
             # convert recto/verso value to code
-            side=self.recto_verso_lookup.get(row.recto_verso, ""),
+            side=recto_verso_lookup.get(row.recto_verso, ""),
             region=row.text_block,
             subfragment=row.multifragment,
         )
@@ -349,11 +355,6 @@ class Command(BaseCommand):
             content_type_id=self.content_types[Document].id
         ).delete()
 
-        # create a reverse lookup for recto/verso labels used in the
-        # spreadsheet to the codes used in the database
-        self.recto_verso_lookup = {
-            label.lower(): code for code, label in TextBlock.RECTO_VERSO_CHOICES
-        }
         self.joins = set()
         self.docstats = defaultdict(int)
 
