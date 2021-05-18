@@ -324,9 +324,15 @@ def test_import_document():
         tags="#Arabic #synagogue",
     )
 
+    # test a single document created
     import_data_cmd.import_document(row)
-
     Document.objects.count() == 1
+
+    # test auto-increment
+    row = DocumentCSVRow(
+        type="Legal",
+        shelfmark="CUL Add.3375",
+    )
 
 
 @pytest.mark.django_db
