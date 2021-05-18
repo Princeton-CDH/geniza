@@ -335,7 +335,7 @@ class Command(BaseCommand):
 
         # keep track of any joins to handle on a second pass
         if row.joins.strip():
-            self.joins.append((doc, row.joins.strip()))
+            self.joins.add((doc, row.joins.strip()))
 
     def import_documents(self):
         """Import all document given the PGP spreadsheets"""
@@ -354,7 +354,7 @@ class Command(BaseCommand):
         self.recto_verso_lookup = {
             label.lower(): code for code, label in TextBlock.RECTO_VERSO_CHOICES
         }
-        self.joins = []
+        self.joins = set()
         self.docstats = defaultdict(int)
 
         for row in metadata:
@@ -369,6 +369,7 @@ class Command(BaseCommand):
             if row.pgpid and Document.objects.filter(id=row.pgpid).exists():
                 logger.warning(f"Overwriting PGPID with demerge {row.pgpid}")
                 Document.objects.filter(id=row.pgpid).delete()
+                self.docstats["documents"] -= 1
             self.import_document(row)
 
         # handle joins collected on the first pass

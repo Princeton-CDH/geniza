@@ -284,7 +284,7 @@ def test_get_fragment():
 
 
 @pytest.mark.django_db
-@override_settings(DATA_IMPORT_URLS={"metadata": "pgp_meta.csv"})
+@override_settings(DATA_IMPORT_URLS={"metadata": "pgp_meta.csv", "demerged": "foo.csv"})
 @patch("geniza.corpus.management.commands.import_data.requests")
 def test_import_documents(mockrequests, caplog):
     # create test fragments & documents to confirm they are removed
@@ -299,14 +299,12 @@ def test_import_documents(mockrequests, caplog):
     import_data_cmd.setup()
     mockrequests.codes = requests.codes  # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
-    mockrequests.get.return_value.iter_lines.return_value = iter(
-        [
-            b"PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional)",
-            b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,Ed. M. Cohen,',
-            b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,awaiting transcription,"Trans. Goitein, typed texts (attached)"',
-            b"2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,",
-        ]
-    )
+    mockrequests.get.return_value.iter_lines.return_value = [
+        b"PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional)",
+        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,Ed. M. Cohen,',
+        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,awaiting transcription,"Trans. Goitein, typed texts (attached)"',
+        b"2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,",
+    ]
     with caplog.at_level(logging.INFO, logger="import"):
         import_data_cmd.import_documents()
     assert Document.objects.count() == 2
@@ -358,7 +356,7 @@ def test_import_documents(mockrequests, caplog):
     output = caplog.text
     assert "Imported 2 documents" in output
     assert "1 with joins" in output
-    assert "skipped 1" in output
+    assert "skipped 2" in output
     assert LogEntry.objects.get(
         change_message=import_data_cmd.logentry_message,
         object_id=doc2.pk,
