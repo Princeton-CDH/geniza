@@ -345,21 +345,33 @@ class DocumentAdmin(admin.ModelAdmin):
                     "pgpid": doc.id,
                     "url": absolutize_url(doc.get_absolute_url()),
                     "iiif_urls": ";".join(
-                        [fragment.iiif_url for fragment in all_fragments]
+                        [
+                            fragment.iiif_url
+                            for fragment in all_fragments
+                            if fragment.iiif_url
+                        ]
                     ),
                     "fragment_urls": ";".join(
-                        [fragment.url for fragment in all_fragments]
+                        [fragment.url for fragment in all_fragments if fragment.url]
                     ),
                     "shelfmark": doc.shelfmark,
-                    "subfragment": ";".join([tb.subfragment for tb in all_textblocks]),
-                    "side": ";".join([tb.side for tb in all_textblocks]),
-                    "region": ";".join([tb.region for tb in all_textblocks]),
+                    "subfragment": ";".join(
+                        [tb.subfragment for tb in all_textblocks if tb.subfragment]
+                    ),
+                    "side": ";".join([tb.side for tb in all_textblocks if tb.side]),
+                    "region": ";".join(
+                        [tb.region for tb in all_textblocks if tb.region]
+                    ),
                     "type": doc.doctype,
                     "tags": doc.all_tags(),
                     "description": doc.description,
-                    "footnotes": ";".join([str(fn) for fn in all_footnotes]),
+                    "footnotes": ";".join([str(fn) for fn in all_footnotes if str(fn)]),
                     "shelfmarks_historic": ";".join(
-                        [fragment.old_shelfmarks for fragment in all_fragments]
+                        [
+                            fragment.old_shelfmarks
+                            for fragment in all_fragments
+                            if fragment.old_shelfmarks
+                        ]
                     ),
                     "languages": doc.all_languages(),
                     "languages_probable": doc.all_probable_languages(),
@@ -384,7 +396,7 @@ class DocumentAdmin(admin.ModelAdmin):
                         [
                             fragment.collection.lib_abbrev
                             for fragment in all_fragments
-                            if fragment.collection
+                            if fragment.collection and fragment.collection.lib_abbrev
                         ]
                     ),
                     "collection": doc.collection,
