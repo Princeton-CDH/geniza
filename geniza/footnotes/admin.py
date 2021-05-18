@@ -97,7 +97,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     search_fields = ("title", "authors__first_name", "authors__last_name", "year")
 
     fields = ("source_type", "title", "year", "edition", "volume", "languages", "notes")
-    list_filter = ("source_type", "authors")
+    list_filter = ("source_type", ("authors", admin.RelatedOnlyFieldListFilter))
 
     inlines = [AuthorshipInline, SourceFootnoteInline]
 

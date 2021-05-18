@@ -119,29 +119,41 @@ class Source(models.Model):
         # author, title
         # author, title (year)
         # author (year)
+        # author, "title" journal vol (year)
 
-        text = ""
+        author = ""
         if self.authorship_set.exists():
             author_lastnames = [a.creator.last_name for a in self.authorship_set.all()]
             # combine the last pair with and; combine all others with comma
             # thanks to https://stackoverflow.com/a/30084022
             if len(author_lastnames) > 1:
-                text = " and ".join(
+                author = " and ".join(
                     [", ".join(author_lastnames[:-1]), author_lastnames[-1]]
                 )
             else:
-                text = author_lastnames[0]
+                author = author_lastnames[0]
+
+        parts = []
 
         if self.title:
-            # delimit with comma if there is an author
-            if text:
-                text = ", ".join([text, self.title])
+            # if this is an article, wrap title in quotes
+            if self.source_type.type == "Article":
+                parts.append('"%s"' % self.title)
             else:
-                text = self.title
+                parts.append(self.title)
 
+        if self.journal:
+            parts.append(self.journal)
+        if self.volume:
+            parts.append(self.volume)
         if self.year:
-            text = "%s (%d)" % (text, self.year)
-        return text
+            parts.append("(%d)" % self.year)
+
+        # title, journal, etc should be joined by spaces only
+        ref = " ".join(parts)
+
+        # delimit with comma whichever values are set
+        return ", ".join([val for val in (author, ref) if val])
 
     def all_authors(self):
         """semi-colon delimited list of authors in order"""
