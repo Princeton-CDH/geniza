@@ -2,6 +2,7 @@ import datetime
 import logging
 from io import StringIO
 from unittest.mock import DEFAULT, Mock, patch
+from collections import defaultdict, namedtuple
 
 import pytest
 import requests
@@ -281,6 +282,51 @@ def test_get_fragment():
     newfrag = import_data_cmd.get_fragment(data)
     assert newfrag.old_shelfmarks == data.shelfmark_historic
     assert newfrag.is_multifragment
+
+
+@pytest.mark.django_db
+def test_import_document():
+    import_data_cmd = import_data.Command()
+    import_data_cmd.joins = set()
+    import_data_cmd.docstats = defaultdict(int)
+
+    DocumentCSVRow = namedtuple(
+        "DocumentCSVRow",
+        (
+            "pgpid",
+            "type",
+            "description",
+            "shelfmark",
+            "shelfmark_historic",
+            "image_link",
+            "library",
+            "tags",
+            "language",
+            "recto_verso",
+            "text_block",
+            "multifragment",
+            "input_by",
+            "date_entered",
+            "editor",
+            "translator",
+            "joins",
+        ),
+        defaults=[""] * 17,
+    )
+
+    row = DocumentCSVRow(
+        pgpid="135",
+        # this being set to "Legal" causes test_import_documents to error (?!)
+        type="Letter",
+        library="CUL",
+        description="Poem",
+        shelfmark="CUL Add.3375",
+        tags="#Arabic #synagogue",
+    )
+
+    import_data_cmd.import_document(row)
+
+    Document.objects.count() == 1
 
 
 @pytest.mark.django_db
