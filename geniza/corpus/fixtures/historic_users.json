@@ -268,5 +268,14 @@
             "username": "zfriedmann",
 			"is_active": false
         }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Cecilia",
+            "last_name": "Palombo",
+            "username": "cpalombo",
+            "is_active": false
+        }
     }
 ]

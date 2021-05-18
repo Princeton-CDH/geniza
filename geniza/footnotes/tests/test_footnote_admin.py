@@ -8,8 +8,10 @@ from geniza.footnotes.admin import (
     DocumentRelationTypesFilter,
     FootnoteAdmin,
     SourceAdmin,
+    SourceFootnoteInline,
 )
 from geniza.footnotes.models import Footnote, Source, SourceType
+from geniza.corpus.models import Document
 
 
 class TestDocumentRelationTypesFilter:
@@ -125,3 +127,24 @@ class TestFootnoteAdmin:
 
         footnote = Footnote(source=source, doc_relation=["E", "D"])
         assert fnoteadmin.doc_relation_list(footnote) == str(footnote.doc_relation)
+
+
+class TestSourceFootnoteInline:
+    @pytest.mark.django_db
+    def test_object_link(self):
+        book = SourceType.objects.get(type="Book")
+        source = Source.objects.create(title="Unknown", source_type=book)
+        footnote = Footnote.objects.create(
+            doc_relation=["E"],
+            source=source,
+            content_type_id=ContentType.objects.get(model="document").id,
+            object_id=0,
+        )
+        doc = Document.objects.create()
+        doc.footnotes.add(footnote)
+
+        inline = SourceFootnoteInline(Source, admin_site=admin.site)
+        doc_link = inline.object_link(footnote)
+
+        assert str(doc.id) in doc_link
+        assert str(doc) in doc_link

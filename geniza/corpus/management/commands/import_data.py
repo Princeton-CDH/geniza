@@ -1,8 +1,9 @@
 import codecs
 import csv
+import json
 import logging
-import re
 import os
+import re
 from collections import defaultdict, namedtuple
 from datetime import datetime
 from operator import itemgetter
@@ -19,6 +20,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import connection, models
 from django.utils.text import slugify
 from django.utils.timezone import get_current_timezone, make_aware
+from parasolr.django.signals import IndexableSignalHandler
 
 from geniza.corpus.models import (
     Collection,
@@ -117,6 +119,9 @@ class Command(BaseCommand):
         self.team_user = User.objects.get(username=settings.TEAM_USERNAME)
         self.user_lookup["Naim Vanthieghem"] = User.objects.get(username="nvanthieghem")
 
+        # disconnect solr indexing signals
+        IndexableSignalHandler.disconnect()
+
         self.content_types = {
             model: ContentType.objects.get_for_model(model)
             for model in [Fragment, Collection, Document, LanguageScript, Source]
@@ -129,7 +134,8 @@ class Command(BaseCommand):
 
         # delete source records created on a previous run
         Creator.objects.all().delete()
-        Source.objects.all().delete()  # should cascade to footnotes
+        Source.objects.all().delete()
+        Footnote.objects.all().delete()
 
         # load fixure with source creators referenced in the spreadsheet
         call_command("loaddata", "source_authors", app_label="footnotes", verbosity=0)
@@ -140,6 +146,15 @@ class Command(BaseCommand):
         self.source_types = {s.type: s for s in SourceType.objects.all()}
         # create source creator lookup keyed on last name
         self.source_creators = {c.last_name: c for c in Creator.objects.all()}
+
+        # load transcription data as JSON. if no file is provided, warn but
+        # don't error.
+        try:
+            with open(settings.TRANSCRIPTIONS_JSON_FILE) as json_file:
+                self.transcriptions = json.load(json_file)
+        except (AttributeError, FileNotFoundError):
+            logger.warning("No transcriptions provided")
+            self.transcriptions = {}
 
     def handle(self, *args, **options):
         self.setup(*args, **options)
@@ -315,8 +330,8 @@ class Command(BaseCommand):
                 fragment=fragment,
                 # convert recto/verso value to code
                 side=recto_verso_lookup.get(row.recto_verso, ""),
-                extent_label=row.text_block,
-                multifragment=row.multifragment,
+                region=row.text_block,
+                subfragment=row.multifragment,
             )
             self.add_document_language(doc, row)
             docstats["documents"] += 1
@@ -365,7 +380,7 @@ class Command(BaseCommand):
     def get_doctype(self, dtype):
         # don't create an empty doctype
         dtype = dtype.strip()
-        if not dtype:
+        if not dtype or dtype == "Unknown":
             return
 
         doctype = self.doctype_lookup.get(dtype)
@@ -678,7 +693,7 @@ class Command(BaseCommand):
         # split so we can parse each edition separately and add a footnote
         editions = re.split(r"[;.] (?=also ed\.|ed\.|also)", editor, flags=re.I)
 
-        for edition in editions:
+        for i, edition in enumerate(editions):
             # strip whitespace and periods before checking ignore list
             if edition.rstrip(" .").lower() in self.editor_ignore:
                 continue
@@ -739,7 +754,12 @@ class Command(BaseCommand):
                     location=", ".join(location),
                     notes="\n".join(notes),
                 )
+                # if this is the first edition, check for a transcription based
+                # on PGPID and attach it to the footnote
+                if i == 0:
+                    fn.content = self.transcriptions.get(str(document.pk))
                 fn.save()
+
             except KeyError as err:
                 logger.error(
                     "Error parsing PGDID %d editor %s: %s" % (document.id, edition, err)

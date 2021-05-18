@@ -22,6 +22,18 @@ th.column-documents, th.column-probable_documents {
 	list-style-type: none;
 }
 
+/* align gfklookup magnifying glass with footnote field */
+.field-object_id {
+	position: relative;
+	padding-left: 24px;
+}
+.gfklookup {
+	position: absolute;
+	bottom: 16px;
+	left: 0;
+	cursor: pointer;
+}
+
 /* make first/last revision dates look like actual fields */
 .module + .module {
 	margin-top: -30px;
@@ -31,3 +43,10 @@ th.column-documents, th.column-probable_documents {
 .action-time::after { content: ", by "}
 .action-user::after { content: " — "}
 .action-msg { font-style: italic; }
+
+/* left-aligned transcriptions; rtl is controlled thru html "dir=" attribute */
+.transcription {
+	display: inline-block;
+	margin-right: auto;
+}
+.transcription h3 { text-align: left; }

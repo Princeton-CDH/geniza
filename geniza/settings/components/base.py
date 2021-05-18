@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
@@ -37,6 +36,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.postgres",
+    "django.contrib.sites",
     "django_cas_ng",
     "taggit",
     "taggit_selectize",
@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     "parasolr",
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
-    "geniza.footnotes",
+    "geniza.footnotes.apps.FootnotesConfig",
 ]
 
 MIDDLEWARE = [
@@ -184,3 +184,6 @@ SCRIPT_USERNAME = "script"
 
 # username for representing activity by entire team, or no specific user
 TEAM_USERNAME = "pgl"
+
+# use default Django site
+SITE_ID = 1
