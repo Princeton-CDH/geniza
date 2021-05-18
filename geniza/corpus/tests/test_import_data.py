@@ -730,8 +730,9 @@ editors_parsed = [
         "Ed. and transl. by M. Cohen, The Voice of the Poor in the Middle Ages, no.76. (Information from Mediterranean Society, II, p. 499, App. C 87)",
         [
             {
-                "get_source_arg": "M. Cohen, The Voice of the Poor in the Middle Ages, no.76",
+                "get_source_arg": "M. Cohen, The Voice of the Poor in the Middle Ages",
                 "translation": True,
+                "f_location": "no.76",
                 "f_notes": "(Information from Mediterranean Society, II, p. 499, App. C 87)",
             }
         ],
@@ -883,16 +884,27 @@ source_input = [
     ),
     # article
     (
-        'Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz, 2015, 135–61, at 156f. Awaiting digitization on PGP.',
+        'Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz, 2015',
         {
             "type": "Article",
             "authors": ["Friedman, Mordechai Akiva"],
             "title": "Maimonides Appoints R. Anatoly Muqaddam of Alexandria",
             "language": "Hebrew",
             "year": 2015,
+            "journal": "Tarbiz",
         },
-    )
-    # Tarbiz 2015, 135–61, }
+    ),
+    # journal article with no title
+    (
+        "Goitein, Zion 27 (1962)",
+        {
+            "type": "Article",
+            "authors": ["Goitein, S. D."],
+            "year": 1962,
+            "journal": "Zion",
+            "volume": "27",
+        },
+    ),
     # also ed. and trans.Golb and Pritsak, Khazarian Hebrew Documents of the 10th Century, pp. 1-71
     # translation language
     # 'Trans. into English, Cohen. Voice of the Poor in the Middle Ages, no. 92. Trans. into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984), 67–104.'
@@ -918,6 +930,7 @@ def test_get_source(test_input, expected):
     assert expected.get("url", "") == source.url
     assert expected.get("title", "") == source.title
     assert expected.get("volume", "") == source.volume
+    assert expected.get("journal", "") == source.journal
     assert expected.get("year") == source.year
     # check that language was associated if specified
 
