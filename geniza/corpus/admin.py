@@ -379,7 +379,11 @@ class DocumentAdmin(admin.ModelAdmin):
                     if doc.status == Document.PUBLIC
                     else "Suppressed",
                     "library": ";".join(
-                        [fragment.collection.lib_abbrev for fragment in all_fragments]
+                        [
+                            fragment.collection.lib_abbrev
+                            for fragment in all_fragments
+                            if fragment.collection
+                        ]
                     ),
                     "collection": doc.collection,
                 }
