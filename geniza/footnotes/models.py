@@ -80,12 +80,22 @@ class Source(models.Model):
     title = models.CharField(max_length=255, blank=True, null=True)
     year = models.PositiveIntegerField(blank=True, null=True)
     edition = models.CharField(max_length=255, blank=True)
-    volume = models.CharField(max_length=255, blank=True)
+    volume = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Volume of a multivolume book, or journal volume for an article",
+    )
+    journal = models.CharField(
+        max_length=255, blank=True, help_text="Title of the journal, for an article"
+    )
     page_range = models.CharField(
         max_length=255,
         blank=True,
         help_text="The range of pages being cited. Do not include "
         + '"p", "pg", etc. and follow the format # or #-#',
+    )
+    other_info = models.TextField(
+        blank=True, help_text="Additional citation information, if any"
     )
     source_type = models.ForeignKey(SourceType, on_delete=models.CASCADE)
     languages = models.ManyToManyField(
