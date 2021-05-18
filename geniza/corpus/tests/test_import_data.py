@@ -189,6 +189,7 @@ def test_import_languages(mockrequests):
 @pytest.mark.django_db
 def test_get_doctype():
     import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
     letter = import_data_cmd.get_doctype("Letter")
     assert isinstance(letter, DocumentType)
     assert letter.name == "Letter"
@@ -285,6 +286,7 @@ def test_get_fragment():
 
 
 @pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})
 def test_import_document():
     import_data_cmd = import_data.Command()
     import_data_cmd.setup()
