@@ -192,7 +192,11 @@ class Footnote(models.Model):
     )
 
     # Generic relationship
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        limit_choices_to=models.Q(app_label="corpus"),
+    )
     object_id = GfkLookupField("content_type")
     content_object = GenericForeignKey()
 
