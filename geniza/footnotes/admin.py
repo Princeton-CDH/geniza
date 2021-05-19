@@ -92,12 +92,12 @@ class DocumentFootnoteInline(GenericTabularInline):
 class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     footnote_admin_url = "admin:footnotes_footnote_changelist"
 
-    list_display = ("all_authors", "title", "volume", "year", "footnotes")
+    list_display = ("all_authors", "title", "journal", "volume", "year", "footnotes")
 
     search_fields = ("title", "authors__first_name", "authors__last_name", "year")
 
     fields = ("source_type", "title", "year", "edition", "volume", "languages", "notes")
-    list_filter = ("source_type", "authors")
+    list_filter = ("source_type", ("authors", admin.RelatedOnlyFieldListFilter))
 
     inlines = [AuthorshipInline, SourceFootnoteInline]
 

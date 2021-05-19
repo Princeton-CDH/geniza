@@ -79,6 +79,7 @@
 {
   "model": "footnotes.creator",
   "fields": {
+    "first_name": "Judith",
     "last_name": "Olszowy-Schlanger"
   }
 },
@@ -541,6 +542,13 @@
   "fields": {
     "first_name": "Werner",
     "last_name": "Diem"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Friedrich",
+    "last_name": "Niessen"
   }
 }
 ]

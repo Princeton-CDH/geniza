@@ -687,23 +687,24 @@ class Command(BaseCommand):
         + r"(full )?transcription (listed|awaiting|available|only).*$|"
         + r"(retyped )?(with )?minor|with corrections|with emendations).*$|"
         + r"compared with.*$|"
-        + r"partial.*$|"
-        + r"await.*$|"
-        + r"corrected.*$|"
+        + r"partial.*$|remainder.*$|"
+        + r"(translation )?await.*$|"
+        + r"(as )?corrected.*$|"
         + r"edited (here )?in comparison with.*$|"
         + r"[(]?see .*$|"
-        + r"(\([\w\d]+ [\w\d., ]+\) ?$))",
-        flags=re.I,
+        + r"(\([\w\d]+ [\w\d.,-– \"']+\) ?$))",
+        flags=re.I | re.U,
     )
 
     # regexes to pull out page or document location
     re_page_location = re.compile(
-        r"[,.] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+)[a-z]?)\.?",
+        r"[,.:] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+)[a-z]?)"
+        + r"( \[\d+\])?\.?",  # pp. 215-236 [219]
         flags=re.I,
     )
     # Doc, Doc., Document, # with numbers and or alpha-number
     re_doc_location = re.compile(
-        r"(, )?\(?(?P<doc>(Doc(ument|\.)? ?#?|#) ?([A-Z]-)?\d+)\)?\.?", flags=re.I
+        r"(, )?\(?(?P<doc>(Doc(ument|\.)? ?#?|#|no\.) ?([A-Z]-)?\d+)\)?\.?", flags=re.I
     )
     # \u0590-\u05fe = range for hebrew characters
     re_goitein_section = re.compile(
@@ -800,6 +801,18 @@ class Command(BaseCommand):
     # upper or lower case volume, with or without period or space
     re_volume = re.compile(r"(, )?\bvol.? ?(?P<volume>\d+)", flags=re.I)
 
+    # known journal titles/variants with optional volume
+    # volume is usually numeric, but could also be ##.# or ##/##
+    re_journal = re.compile(
+        r"(?P<match>(?P<journal>Tarbiz|Zion|Genzei Qedem|Ginzei Qedem|"
+        + r"Kiryat Sefer|Qiryat Sefer|"
+        + r"(The )?Jewish Quarterly Review|JQR|Shalem|"
+        + r"Bulletin of the School of Oriental and African Studies|BSOAS|"
+        + r"Jewish History|Leshonenu|Eretz Israel|"
+        + r"Qoveṣ al Yad|Kovetz al Yad|Te’udah|Te’uda|Sefunot|Sfunoth)"
+        + r"(,? ?(Vol\.)? ?(?P<volume>\d[\d./]*))?)"
+    )
+
     def get_source(self, edition, document):
         # parse the edition information and get the source for this scholarly
         # record if it already exists; if it doesn't, create it
@@ -809,7 +822,7 @@ class Command(BaseCommand):
         ed_orig = edition
 
         # set defaults for information that may not be present
-        title = volume = language = location = ""
+        title = volume = language = location = journal = ""
 
         # check for url and store if present
         url_match = self.re_url.search(edition)
@@ -837,12 +850,21 @@ class Command(BaseCommand):
                 note_lines.append(full_match)
                 edition = edition.replace(full_match, "").strip(" .,")
 
-        # check for volume information
-        vol_match = self.re_volume.search(edition)
-        # if found, store volume and remove from edition text
-        if vol_match:
-            volume = vol_match.group("volume")
-            edition = self.re_volume.sub("", edition)
+        # check for known journal titles
+        journal_match = self.re_journal.search(edition)
+        if journal_match:
+            # set journal and volume if found
+            journal = journal_match.group("journal")
+            volume = journal_match.group("volume") or ""
+            # remove journal & volume from edition text
+            edition = edition.replace(journal_match.group("match"), "")
+
+        else:  # if no journal, check for separate volume number
+            vol_match = self.re_volume.search(edition)
+            # if found, store volume and remove from edition text
+            if vol_match:
+                volume = vol_match.group("volume")
+                edition = self.re_volume.sub("", edition)
 
         # no easy way to recognize more than two authors,
         # but there are only three instances
@@ -877,7 +899,9 @@ class Command(BaseCommand):
             title = ed_parts.pop(0).strip()
 
         # determine source type
-        if "diss" in edition:
+        if journal:  # if a journal title was found, type is article
+            src_type = "Article"
+        elif "diss" in edition.lower() or "thesis" in edition.lower():
             src_type = "Dissertation"
         elif not title:
             src_type = "Unpublished"
@@ -901,14 +925,11 @@ class Command(BaseCommand):
 
         # figure out what the rest of the pieces are, if any
         for part in ed_parts:
-            # FIXME: locations should get picked up in parse_editor,
-            # probably an error if we're getting them here
-            if any([val in part for val in ["Doc", "pp.", "#", " at "]]):
-                location = part
-                print("pgpid: %s — %s" % (document.id, ed_orig))
-            elif part in ["Hebrew", "German"]:
+            # TODO: handle more language variants
+            if part in ["Hebrew", "German"]:
                 language = part
             # otherwise, stick it in the notes
+            # TODO: put in other info instead of notes
             else:
                 note_lines.append(part)
 
@@ -933,6 +954,7 @@ class Command(BaseCommand):
                 volume=volume,
                 source_type__type=src_type,
                 author_count=author_count,
+                journal=journal,
                 **extra_opts,
             )
             .filter(author_filter)
@@ -973,6 +995,7 @@ class Command(BaseCommand):
             title=title,
             url=url,
             volume=volume,
+            journal=journal,
             year=year,
             notes="\n".join(["Created from PGPID %s" % document.id] + note_lines),
         )
