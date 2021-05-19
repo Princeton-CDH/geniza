@@ -918,8 +918,9 @@ class Command(BaseCommand):
         # look to see if this source already exists
         # (no title indicates pgp-only edition)
         extra_opts = {}
-        # if there is no title but there is a year, include in filter
-        if not title and year:
+        # if there is no title and year is set or type is unpublished,
+        # filter on year (whether set or not)
+        if not title and (year or src_type == "Unpublished"):
             extra_opts["year"] = year
 
         # when multiple authors are present, we want to match *all* of them
@@ -945,8 +946,15 @@ class Command(BaseCommand):
 
         if sources.count() > 1:
             logger.warn(
-                "Found multiple sources for %s, %s (%s)"
-                % ("; ".join([a.last_name for a in authors]), title, src_type)
+                "Found multiple sources for %s, title=%s journal=%s vol=%s year=%s (%s)"
+                % (
+                    "; ".join([a.last_name for a in authors]),
+                    title,
+                    journal,
+                    volume,
+                    year,
+                    src_type,
+                )
             )
 
         source = sources.first()
