@@ -734,14 +734,6 @@
       <!-- keyword search field for geniza prototype -->
       <str name="keyword_qf">
         description_t
-<<<<<<< HEAD
-        id
-        type_s
-        library_s
-        shelfmark_t
-        shelfmark_s
-        tags_t
-=======
         pgpid_i
         type_s
         library_s
@@ -749,7 +741,6 @@
         shelfmark_ss
         tags_t
         tags_ss        
->>>>>>> develop
         editors_t
         translators_t
         transcription_t
