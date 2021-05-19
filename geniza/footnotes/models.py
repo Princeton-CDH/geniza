@@ -190,6 +190,9 @@ class Footnote(models.Model):
     content = models.JSONField(
         blank=True, null=True, help_text="Transcription content (preliminary)"
     )
+    url = models.URLField(
+        blank=True, max_length=300, help_text="Link to the source (optional)"
+    )
 
     # Generic relationship
     content_type = models.ForeignKey(
