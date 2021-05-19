@@ -19,6 +19,10 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "needs_review": "needs_review_t",
         "pgpid": "pgpid_i",
         "input_year": "input_year_i",
+        "num_editions": "num_editions_i",
+        "num_translations": "num_translations_i",
+        "num_discussions": "num_discussions_i",
+        "scholarship_count": "scholarship_count_i",
     }
 
     # (adapted from mep)

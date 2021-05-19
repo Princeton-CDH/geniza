@@ -1,3 +1,4 @@
+from collections import defaultdict
 import logging
 
 from django.db import models
@@ -467,6 +468,21 @@ class Document(ModelIndexable):
                 # TODO: editors/translators/sources
                 # todo: index counts for: edition, translation, discussion
                 # (+ and total scholarship count for sorting?)
+            }
+        )
+
+        # count scholarship records by type
+        footnotes = self.footnotes.all()
+        counts = defaultdict(int)
+        for fn in footnotes:
+            for val in fn.doc_relation:
+                counts[val] += 1
+        index_data.update(
+            {
+                "num_editions_i": counts[Footnote.EDITION],
+                "num_translations_i": counts[Footnote.TRANSLATION],
+                "num_discussions_i": counts[Footnote.DISCUSSION],
+                "scholarship_count_i": sum(counts.values()),
             }
         )
 
