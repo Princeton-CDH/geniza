@@ -55,10 +55,12 @@ class DocumentSearchView(ListView, FormMixin):
                     "score"
                 )  # include relevance score in results
 
+            # sorting TODO
             # order based on solr name for search option
             # documents = documents.order_by(self.solr_sort[search_opts['sort'] ])
 
-        return documents
+        # return 50 documents for now; pagination TODO
+        return documents[:50]
 
 
 class DocumentDetailView(DetailView):

@@ -19,7 +19,7 @@
 
     <ol>
     {% for document in documents %}
-        <li>
+        <li class="result">
 
             <dl class="tags">
                 <dt class="sr-only">{% translate 'Tags' %}</dt>
@@ -28,15 +28,20 @@
                 {% endfor %}
             </dl>
 
-            <b>{{ document.type }};</b> {{ document.shelfmark|join:" + " }}
+            <h2><b>{{ document.type }},</b> {{ document.shelfmark|join:" + " }}</h2>
             <p>{% translate 'Input date' %} {{ document.input_year|default:'unknown' }}
-            <p>{% translate 'PGP ID' %}{{ document.pgpid }}</p>
+            <p>{% translate 'PGP ID' %} {{ document.pgpid }}</p>
             <p>{{ document.description.0|truncatechars:135 }}</p>
 
-            <a href="{% url 'corpus:document' document.pgpid %}">View document details ➡</a>
-        <hr/>
-        {{ document }}</li>
-        }
+            {% if document.scholarship_count %}
+            <p>✔️
+            {% if document.num_editions %}Transcription ({{ document.num_editions }}){% endif %}
+            {% if document.num_translations %}Translation ({{ document.num_translations }}){% endif %}
+            {% if document.num_discussions %}Discussion ({{ document.num_discussions }}){% endif %}
+            </p>
+            {% endif %}
+
+            <a class="view" href="{% url 'corpus:document' document.pgpid %}">View document details ➡</a>
     {% endfor %}
     </ol>
 
