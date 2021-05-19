@@ -1,5 +1,6 @@
 from collections import namedtuple
 from django import forms
+from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -394,12 +395,10 @@ class DocumentAdmin(admin.ModelAdmin):
                     "status": "Public"
                     if doc.status == Document.PUBLIC
                     else "Suppressed",
-                    "library": ";".join(
-                        [
-                            fragment.collection.lib_abbrev
-                            for fragment in all_fragments
-                            if fragment.collection and fragment.collection.lib_abbrev
-                        ]
+                    "library": semicolon_str(
+                        ";".join(
+                            [str(fragment.collection) for fragment in all_fragments]
+                        )
                     ),
                     "collection": doc.collection,
                 }
