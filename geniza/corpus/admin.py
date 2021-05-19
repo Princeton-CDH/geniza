@@ -330,6 +330,8 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def tabulate_queryset(self, queryset):
         """Generator for data in tabular form, including custom fields"""
+        semicolon_str = lambda x: "" if x == ";" else x
+
         rows = []
         for doc in queryset:
             all_fragments = doc.fragments.all()
@@ -344,34 +346,30 @@ class DocumentAdmin(admin.ModelAdmin):
                 **{
                     "pgpid": doc.id,
                     "url": absolutize_url(doc.get_absolute_url()),
-                    "iiif_urls": ";".join(
-                        [
-                            fragment.iiif_url
-                            for fragment in all_fragments
-                            if fragment.iiif_url
-                        ]
+                    "iiif_urls": semicolon_str(
+                        ";".join([fragment.iiif_url for fragment in all_fragments])
                     ),
-                    "fragment_urls": ";".join(
-                        [fragment.url for fragment in all_fragments if fragment.url]
+                    "fragment_urls": semicolon_str(
+                        ";".join([fragment.url for fragment in all_fragments])
                     ),
                     "shelfmark": doc.shelfmark,
-                    "subfragment": ";".join(
-                        [tb.subfragment for tb in all_textblocks if tb.subfragment]
+                    "subfragment": semicolon_str(
+                        ";".join([tb.subfragment for tb in all_textblocks])
                     ),
-                    "side": ";".join([tb.side for tb in all_textblocks if tb.side]),
-                    "region": ";".join(
-                        [tb.region for tb in all_textblocks if tb.region]
+                    "side": semicolon_str(";".join([tb.side for tb in all_textblocks])),
+                    "region": semicolon_str(
+                        ";".join([tb.region for tb in all_textblocks])
                     ),
                     "type": doc.doctype,
                     "tags": doc.all_tags(),
                     "description": doc.description,
-                    "footnotes": ";".join([str(fn) for fn in all_footnotes if str(fn)]),
-                    "shelfmarks_historic": ";".join(
-                        [
-                            fragment.old_shelfmarks
-                            for fragment in all_fragments
-                            if fragment.old_shelfmarks
-                        ]
+                    "footnotes": semicolon_str(
+                        ";".join([str(fn) for fn in all_footnotes])
+                    ),
+                    "shelfmarks_historic": semicolon_str(
+                        ";".join(
+                            [fragment.old_shelfmarks for fragment in all_fragments]
+                        )
                     ),
                     "languages": doc.all_languages(),
                     "languages_probable": doc.all_probable_languages(),
