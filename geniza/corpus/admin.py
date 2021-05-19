@@ -1,10 +1,11 @@
 from collections import namedtuple
 from django import forms
+from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.exceptions import ValidationError
-from django.db.models import Count, CharField
+from django.db.models import Count, CharField, Q
 from django.db.models.query import Prefetch
 from django.forms.widgets import TextInput, Textarea
 from django.urls import reverse, resolve
@@ -24,6 +25,7 @@ from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.common.admin import custom_empty_field_list_filter
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.common.utils import absolutize_url
+from django.contrib.auth.models import User
 
 
 class FragmentTextBlockInline(admin.TabularInline):
@@ -329,11 +331,16 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def tabulate_queryset(self, queryset):
         """Generator for data in tabular form, including custom fields"""
+        semicolon_str = lambda x: "" if x == ";" else x
+
         rows = []
         for doc in queryset:
             all_fragments = doc.fragments.all()
             all_textblocks = doc.textblock_set.all()
             all_footnotes = doc.footnotes.all()
+            all_log_entries = doc.log_entries.filter(
+                ~Q(user__username=settings.SCRIPT_USERNAME)
+            )
 
             initial_entry = doc.log_entries.first()
             latest_revision = doc.log_entries.last()
@@ -342,22 +349,30 @@ class DocumentAdmin(admin.ModelAdmin):
                 **{
                     "pgpid": doc.id,
                     "url": absolutize_url(doc.get_absolute_url()),
-                    "iiif_urls": ";".join(
-                        [fragment.iiif_url for fragment in all_fragments]
+                    "iiif_urls": semicolon_str(
+                        ";".join([fragment.iiif_url for fragment in all_fragments])
                     ),
-                    "fragment_urls": ";".join(
-                        [fragment.url for fragment in all_fragments]
+                    "fragment_urls": semicolon_str(
+                        ";".join([fragment.url for fragment in all_fragments])
                     ),
                     "shelfmark": doc.shelfmark,
-                    "subfragment": ";".join([tb.subfragment for tb in all_textblocks]),
-                    "side": ";".join([tb.side for tb in all_textblocks]),
-                    "region": ";".join([tb.region for tb in all_textblocks]),
+                    "subfragment": semicolon_str(
+                        ";".join([tb.subfragment for tb in all_textblocks])
+                    ),
+                    "side": semicolon_str(";".join([tb.side for tb in all_textblocks])),
+                    "region": semicolon_str(
+                        ";".join([tb.region for tb in all_textblocks])
+                    ),
                     "type": doc.doctype,
                     "tags": doc.all_tags(),
                     "description": doc.description,
-                    "footnotes": ";".join([str(fn) for fn in all_footnotes]),
-                    "shelfmarks_historic": ";".join(
-                        [fragment.old_shelfmarks for fragment in all_fragments]
+                    "footnotes": semicolon_str(
+                        ";".join([str(fn) for fn in all_footnotes])
+                    ),
+                    "shelfmarks_historic": semicolon_str(
+                        ";".join(
+                            [fragment.old_shelfmarks for fragment in all_fragments]
+                        )
                     ),
                     "languages": doc.all_languages(),
                     "languages_probable": doc.all_probable_languages(),
@@ -370,16 +385,20 @@ class DocumentAdmin(admin.ModelAdmin):
                     "initial_entry": doc.log_entries.first(),
                     "latest_revision": doc.log_entries.last(),
                     "input_by": ";".join(
-                        [
-                            str(n)
-                            for n in set(doc.log_entries.values_list("user", flat=True))
-                        ]
+                        set(
+                            [
+                                entry.user.get_full_name() or entry.user.username
+                                for entry in all_log_entries
+                            ]
+                        )
                     ),
                     "status": "Public"
                     if doc.status == Document.PUBLIC
                     else "Suppressed",
-                    "library": ";".join(
-                        [fragment.collection.lib_abbrev for fragment in all_fragments]
+                    "library": semicolon_str(
+                        ";".join(
+                            [str(fragment.collection) for fragment in all_fragments]
+                        )
                     ),
                     "collection": doc.collection,
                 }
