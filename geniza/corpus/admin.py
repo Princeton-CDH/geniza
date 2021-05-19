@@ -4,7 +4,7 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.exceptions import ValidationError
-from django.db.models import Count, CharField
+from django.db.models import Count, CharField, Q
 from django.db.models.query import Prefetch
 from django.forms.widgets import TextInput, Textarea
 from django.urls import reverse, resolve
@@ -337,7 +337,9 @@ class DocumentAdmin(admin.ModelAdmin):
             all_fragments = doc.fragments.all()
             all_textblocks = doc.textblock_set.all()
             all_footnotes = doc.footnotes.all()
-            all_user_ids = set(doc.log_entries.values_list("user", flat=True))
+            all_log_entries = doc.log_entries.filter(
+                ~Q(user__username=settings.SCRIPT_USERNAME)
+            )
 
             initial_entry = doc.log_entries.first()
             latest_revision = doc.log_entries.last()
@@ -382,10 +384,12 @@ class DocumentAdmin(admin.ModelAdmin):
                     "initial_entry": doc.log_entries.first(),
                     "latest_revision": doc.log_entries.last(),
                     "input_by": ";".join(
-                        [
-                            user.get_full_name() or user.username
-                            for user in User.objects.filter(pk__in=all_user_ids)
-                        ]
+                        set(
+                            [
+                                entry.user.get_full_name() or entry.user.username
+                                for entry in all_log_entries
+                            ]
+                        )
                     ),
                     "status": "Public"
                     if doc.status == Document.PUBLIC
