@@ -94,7 +94,13 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
     list_display = ("all_authors", "title", "journal", "volume", "year", "footnotes")
 
-    search_fields = ("title", "authors__first_name", "authors__last_name", "year")
+    search_fields = (
+        "title",
+        "authors__first_name",
+        "authors__last_name",
+        "year",
+        "journal",
+    )
 
     fields = ("source_type", "title", "year", "edition", "volume", "languages", "notes")
     list_filter = ("source_type", ("authors", admin.RelatedOnlyFieldListFilter))
