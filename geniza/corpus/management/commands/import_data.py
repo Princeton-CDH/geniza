@@ -80,12 +80,6 @@ class Command(BaseCommand):
     "Import existing data from PGP spreadsheets into the database"
 
     logentry_message = "Imported via script"
-
-    content_types = {}
-    collection_lookup = {}
-    document_type = {}
-    language_lookup = {}
-    user_lookup = {}
     max_documents = None
 
     def add_arguments(self, parser):
@@ -112,6 +106,14 @@ class Command(BaseCommand):
             )
             for username in set(active_users) - set(present):
                 call_command("createcasuser", username, staff=True, verbosity=verbosity)
+
+        # Set dicts on the instance so they're not shared across instances
+        self.doctype_lookup = {}
+        self.content_types = {}
+        self.collection_lookup = {}
+        self.document_type = {}
+        self.language_lookup = {}
+        self.user_lookup = {}
 
         # fetch users created through migrations for easy access later; add one
         # known exception (accented character)
@@ -163,7 +165,7 @@ class Command(BaseCommand):
         self.import_languages()
         self.import_documents()
 
-    def get_csv(self, name):
+    def get_csv(self, name, schema=None):
         # given a name for a file in the configured data import urls,
         # load the data by url and initialize and return a generator
         # of namedtuple elements for each row
@@ -181,7 +183,7 @@ class Command(BaseCommand):
         CsvRow = namedtuple(
             "%sCSVRow" % name,
             (
-                csv_fields[name].get(
+                csv_fields[(schema or name)].get(
                     col, slugify(col).replace("-", "_") or "empty_%d" % i
                 )
                 for i, col in enumerate(header)
@@ -294,13 +296,12 @@ class Command(BaseCommand):
             doc.language_note = "\n".join(notes_list)
             doc.save()
 
-    def import_documents(self):
-        metadata = self.get_csv("metadata")
-        Document.objects.all().delete()
-        Fragment.objects.all().delete()
-        LogEntry.objects.filter(
-            content_type_id=self.content_types[Document].id
-        ).delete()
+    def import_document(self, row):
+        """Import a single document given a row from a PGP spreadsheet"""
+        if ";" in row.type:
+            logger.warning("skipping PGPID %s (demerge)" % row.pgpid)
+            self.docstats["skipped"] += 1
+            return
 
         # create a reverse lookup for recto/verso labels used in the
         # spreadsheet to the codes used in the database
@@ -308,52 +309,74 @@ class Command(BaseCommand):
             label.lower(): code for code, label in TextBlock.RECTO_VERSO_CHOICES
         }
 
-        joins = []
-        docstats = defaultdict(int)
+        doctype = self.get_doctype(row.type)
+        fragment = self.get_fragment(row)
+        doc = Document.objects.create(
+            id=row.pgpid or None,
+            doctype=doctype,
+            description=row.description,
+        )
+        doc.tags.add(*[tag.strip() for tag in row.tags.split("#") if tag.strip()])
+        # associate fragment via text block
+        TextBlock.objects.create(
+            document=doc,
+            fragment=fragment,
+            # convert recto/verso value to code
+            side=recto_verso_lookup.get(row.recto_verso, ""),
+            region=row.text_block,
+            subfragment=row.multifragment,
+        )
+        self.add_document_language(doc, row)
+        self.docstats["documents"] += 1
+        # create log entries as we go
+        self.log_edit_history(
+            doc, self.get_edit_history(row.input_by, row.date_entered, row.pgpid)
+        )
+        # parse editor & translator information to create sources
+        # and associate with footnotes
+        editor = row.editor.strip(".")
+        if editor and editor not in self.editor_ignore:
+            self.parse_editor(doc, editor)
+        # treat translator like editor, but set translation flag
+        if row.translator:
+            self.parse_editor(doc, row.translator, translation=True)
+
+        # keep track of any joins to handle on a second pass
+        if row.joins.strip():
+            self.joins.add((doc, row.joins.strip()))
+
+    def import_documents(self):
+        """Import all document given the PGP spreadsheets"""
+
+        metadata = self.get_csv("metadata")
+        demerged_metadata = self.get_csv("demerged", schema="metadata")
+
+        Document.objects.all().delete()
+        Fragment.objects.all().delete()
+        LogEntry.objects.filter(
+            content_type_id=self.content_types[Document].id
+        ).delete()
+
+        self.joins = set()
+        self.docstats = defaultdict(int)
+
         for row in metadata:
-            if ";" in row.type:
-                logger.warning("skipping PGPID %s (demerge)" % row.pgpid)
-                docstats["skipped"] += 1
-                continue
+            self.import_document(row)
+        document_count_metadata = self.docstats["documents"]
 
-            doctype = self.get_doctype(row.type)
-            fragment = self.get_fragment(row)
-            doc = Document.objects.create(
-                id=row.pgpid,
-                doctype=doctype,
-                description=row.description,
-            )
-            doc.tags.add(*[tag.strip() for tag in row.tags.split("#") if tag.strip()])
-            # associate fragment via text block
-            TextBlock.objects.create(
-                document=doc,
-                fragment=fragment,
-                # convert recto/verso value to code
-                side=recto_verso_lookup.get(row.recto_verso, ""),
-                region=row.text_block,
-                subfragment=row.multifragment,
-            )
-            self.add_document_language(doc, row)
-            docstats["documents"] += 1
-            # create log entries as we go
-            self.log_edit_history(
-                doc, self.get_edit_history(row.input_by, row.date_entered, row.pgpid)
-            )
-            # parse editor & translator information to create sources
-            # and associate with footnotes
-            editor = row.editor.strip(".")
-            if editor and editor not in self.editor_ignore:
-                self.parse_editor(doc, editor)
-            # treat translator like editor, but set translation flag
-            if row.translator:
-                self.parse_editor(doc, row.translator, translation=True)
+        # update id sequence based on highest imported pgpid
+        self.update_document_id_sequence()
 
-            # keep track of any joins to handle on a second pass
-            if row.joins.strip():
-                joins.append((doc, row.joins.strip()))
+        for row in demerged_metadata:
+            # overwrite document if it already exists
+            if row.pgpid and Document.objects.filter(id=row.pgpid).exists():
+                logger.warning(f"Overwriting PGPID {row.pgpid} with demerge")
+                Document.objects.filter(id=row.pgpid).delete()
+                self.docstats["overwritten"] += 1
+            self.import_document(row)
 
         # handle joins collected on the first pass
-        for doc, join in joins:
+        for doc, join in self.joins:
             initial_shelfmark = doc.shelfmark
             for shelfmark in join.split(" + "):
                 # skip the initial shelfmark, already associated
@@ -367,15 +390,14 @@ class Command(BaseCommand):
                     self.log_creation(join_fragment)
                 # associate the fragment with the document
                 doc.fragments.add(join_fragment)
+        document_count_demerged = self.docstats["documents"] - document_count_metadata
 
-        # update id sequence based on highest imported pgpid
-        self.update_document_id_sequence()
         logger.info(
-            "Imported %d documents, %d with joins; skipped %d"
-            % (docstats["documents"], len(joins), docstats["skipped"])
+            f"Imported {document_count_metadata} documents from the metadata spreadsheet and skipped {self.docstats['skipped']}. "
+            f"Imported {document_count_demerged} documents from the demerged spreadsheet. "
+            f"Overwrote {self.docstats['overwritten']} documents. "
+            f"Parsed {len(self.joins)} joins. "
         )
-
-    doctype_lookup = {}
 
     def get_doctype(self, dtype):
         # don't create an empty doctype
@@ -517,8 +539,8 @@ class Command(BaseCommand):
         """
 
         # split both fields by semicolon delimiter & remove whitespace
-        all_input = [i.strip() for i in input_by.split(";")]
-        all_dates = [d.strip() for d in date_entered.split(";")]
+        all_input = [i.strip() for i in input_by.split(";") if i]
+        all_dates = [d.strip() for d in date_entered.split(";") if d]
 
         # try to map every "input by" listing to a user account. for coauthored
         # events, add both users to a list – otherwise it's a one-element list
