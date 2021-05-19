@@ -362,7 +362,7 @@ class Command(BaseCommand):
 
         for row in metadata:
             self.import_document(row)
-        document_count_before_demerge = self.docstats["documents"]
+        document_count_metadata = self.docstats["documents"]
 
         # update id sequence based on highest imported pgpid
         self.update_document_id_sequence()
@@ -370,9 +370,9 @@ class Command(BaseCommand):
         for row in demerged_metadata:
             # overwrite document if it already exists
             if row.pgpid and Document.objects.filter(id=row.pgpid).exists():
-                logger.warning(f"Overwriting PGPID with demerge {row.pgpid}")
+                logger.warning(f"Overwriting PGPID {row.pgpid} with demerge")
                 Document.objects.filter(id=row.pgpid).delete()
-                self.docstats["documents"] -= 1
+                self.docstats["overwritten"] += 1
             self.import_document(row)
 
         # handle joins collected on the first pass
@@ -390,20 +390,14 @@ class Command(BaseCommand):
                     self.log_creation(join_fragment)
                 # associate the fragment with the document
                 doc.fragments.add(join_fragment)
+        document_count_demerged = self.docstats["documents"] - document_count_metadata
 
-        demerged_document_count = (
-            self.docstats["documents"] - document_count_before_demerge
-        )
-        self.docstats["skipped"] -= demerged_document_count
         logger.info(
-            "Imported %d documents, %d with joins; skipped %d"
-            % (self.docstats["documents"], len(self.joins), self.docstats["skipped"])
+            f"Imported {document_count_metadata} documents from the metadata spreadsheet and skipped {self.docstats['skipped']}. "
+            f"Imported {document_count_demerged} documents from the demerged spreadsheet. "
+            f"Overwrote {self.docstats['overwritten']} documents. "
+            f"Parsed {len(self.joins)} joins. "
         )
-
-        if self.docstats["skipped"]:
-            logger.warning(
-                f"{self.docstats['demerged_documents']} were imported from the demerge spreadsheet, but {self.docstats['skipped']} documents remain."
-            )
 
     def get_doctype(self, dtype):
         # don't create an empty doctype

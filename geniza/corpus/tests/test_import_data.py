@@ -403,9 +403,8 @@ def test_import_documents(mockrequests, caplog):
 
     # check script summary output
     output = caplog.text
-    assert "Imported 2 documents" in output
-    assert "1 with joins" in output
-    assert "skipped 2" in output
+    assert "Imported 2 documents from the metadata spreadsheet and skipped 2" in output
+    assert "Parsed 1 joins" in output
 
     doc2 = Document.objects.get(id=2292)
     assert doc2.fragments.count() == 3
