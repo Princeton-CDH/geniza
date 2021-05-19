@@ -218,3 +218,10 @@ class Footnote(models.Model):
     has_transcription.short_description = "Digitized Transcription"
     has_transcription.boolean = True
     has_transcription.admin_order_field = "content"
+
+    def has_url(self):
+        """Admin display field indicating if footnote has a url."""
+        return bool(self.url)
+
+    has_url.boolean = True
+    has_url.admin_order_field = "url"
