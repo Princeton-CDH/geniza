@@ -102,6 +102,13 @@ class TestFootnote:
             footnote.content = "The digitized transcription"
             assert footnote.has_transcription()
 
+    @pytest.mark.django_db
+    def test_has_url(self, source):
+        footnote = Footnote(source=source)
+        assert not footnote.has_url()
+        footnote.url = "http://example.com/"
+        assert footnote.has_url()
+
 
 class TestCreator:
     def test_str(self):

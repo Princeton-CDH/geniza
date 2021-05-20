@@ -94,9 +94,25 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
     list_display = ("all_authors", "title", "journal", "volume", "year", "footnotes")
     list_display_links = ("all_authors", "title")
-    search_fields = ("title", "authors__first_name", "authors__last_name", "year")
+    search_fields = (
+        "title",
+        "authors__first_name",
+        "authors__last_name",
+        "year",
+        "journal",
+        "notes",
+    )
 
-    fields = ("source_type", "title", "year", "edition", "volume", "languages", "notes")
+    fields = (
+        "source_type",
+        "title",
+        "year",
+        "edition",
+        "journal",
+        "volume",
+        "languages",
+        "notes",
+    )
     list_filter = ("source_type", ("authors", admin.RelatedOnlyFieldListFilter))
 
     inlines = [AuthorshipInline, SourceFootnoteInline]
@@ -168,7 +184,14 @@ class FootnoteForm(forms.ModelForm):
 @admin.register(Footnote)
 class FootnoteAdmin(admin.ModelAdmin):
     form = FootnoteForm
-    list_display = ("__str__", "source", "location", "notes", "has_transcription")
+    list_display = (
+        "__str__",
+        "source",
+        "location",
+        "notes",
+        "has_transcription",
+        "has_url",
+    )
     list_filter = (
         DocumentRelationTypesFilter,
         (
@@ -176,6 +199,10 @@ class FootnoteAdmin(admin.ModelAdmin):
             custom_empty_field_list_filter(
                 "transcription", "Digitized", "Not digitized"
             ),
+        ),
+        (
+            "url",
+            custom_empty_field_list_filter("url", "Has URL", "No URL"),
         ),
     )
     readonly_fields = ["content_object"]
@@ -208,6 +235,7 @@ class FootnoteAdmin(admin.ModelAdmin):
                     "source",
                     "location",
                     "doc_relation",
+                    "url",
                     "notes",
                 )
             },

@@ -232,10 +232,10 @@ def test_get_collection():
     import_data_cmd.collection_lookup = {"BL": bl, "CUL_Or.": cul_or}
     # use attrdict to simulate namedtuple used for csv data
     # - simple library lookup
-    data = AttrMap({"library": "BL"})
+    data = AttrMap({"library": "BL", "pgpid": 13})
     assert import_data_cmd.get_collection(data) == bl
     # - library + collection lookup
-    data = AttrMap({"library": "CUL", "shelfmark": "CUL Or. 10G5.3"})
+    data = AttrMap({"library": "CUL", "shelfmark": "CUL Or. 10G5.3", "pgpid": 25})
     assert import_data_cmd.get_collection(data) == cul_or
 
     # - library + collection lookup mismatch
@@ -250,7 +250,7 @@ def test_get_fragment():
     myfrag = Fragment.objects.create(shelfmark="CUL Add.3350")
     import_data_cmd = import_data.Command()
     import_data_cmd.setup()
-    data = AttrMap({"shelfmark": "CUL Add.3350"})
+    data = AttrMap({"shelfmark": "CUL Add.3350", "pgpid": 13})
     assert import_data_cmd.get_fragment(data) == myfrag
 
     # create new fragment if there isn't
@@ -261,6 +261,7 @@ def test_get_fragment():
             "multifragment": "",
             "library": "CUL",
             "image_link": "https://cudl.lib.cam.ac.uk/view/MS-ADD-03430/1",
+            "pgpid": 12345,
         }
     )
     # simulate library lookup already populated
@@ -764,7 +765,7 @@ editors_parsed = [
     ),
     (
         "Ed. Marina Rustow https://docs.google.com/doc/1 ",
-        [{"get_source_arg": "Marina Rustow https://docs.google.com/doc/1"}],
+        [{"get_source_arg": "Marina Rustow", "f_url": "https://docs.google.com/doc/1"}],
     ),
     (
         "Ed. Goitein, typed texts; also ed.Gil, Kingdom, vol. 2, #154; also ed. Gil, The Tustaris, pp. 67-8.",
@@ -842,6 +843,7 @@ def test_parse_editor(mock_footnote, mock_get_source, test_input, expected):
             content_object=doc,
             doc_relation=doc_relation,
             location=result.get("f_location", ""),
+            url=result.get("f_url", ""),
             notes=result.get("f_notes", ""),
         )
 
@@ -883,18 +885,17 @@ source_input = [
         "Ed. Alan Elbaum, 09/2020.",
         {"type": "Unpublished", "authors": ["Elbaum, Alan"], "year": 2020},
     ),
-    # two authors with a url
+    # two authors
     (
-        "Marina Rustow and Anna Bailey https://example.co",
+        "Marina Rustow and Anna Bailey",
         {
             "type": "Unpublished",
             "authors": ["Rustow, Marina", "Bailey, Anna"],
-            "url": "https://example.co",
         },
     ),
     # more than two authors!
     (
-        "Lorenzo Bondioli, Tamer el-Leithy, Joshua Picard, Marina Rustow and Zain Shirazi, 2016–2018. https://example.co/doc",
+        "Lorenzo Bondioli, Tamer el-Leithy, Joshua Picard, Marina Rustow and Zain Shirazi, 2016–2018.",
         {
             "type": "Unpublished",
             "authors": [
@@ -904,7 +905,6 @@ source_input = [
                 "Rustow, Marina",
                 "Shirazi, Zain",
             ],
-            "url": "https://example.co/doc",
             "year": 2018,
         },
     ),
