@@ -693,7 +693,7 @@ class Command(BaseCommand):
         + r"(full )?transcription (listed|awaiting|available|only).*$|"
         + r"(retyped )?(with )?minor|with corrections|with emendations).*$|"
         + r"compared with.*$|incorporat.*$|"
-        + r"partial.*$|remainder.*$|revised .*$|"
+        + r"partial.*$|remainder.*$|(revised|rev\.) .*$|"
         + r"(translation )?await.*$|"
         + r"(as )?corrected.*$|"
         + r"edited (here )?in comparison with.*$|"
@@ -881,11 +881,14 @@ class Command(BaseCommand):
         if year_match:
             # store the year
             year = int(year_match.group("year"))
-            # check full match against year; if they differ, add to notes
+            # check full match against year; if they differ (i.e., includes month or year range)
+            # add to notes
             full_match = year_match.group("match")
-            if full_match != year:
+            edition = edition.replace(full_match, "").strip(" .,")
+            # cleanup for comparison and potentially adding to notes
+            full_match = full_match.strip("(), ")
+            if full_match != str(year):
                 note_lines.append(full_match)
-                edition = edition.replace(full_match, "").strip(" .,")
 
         # check for known journal titles
         journal_match = self.re_journal.search(edition)
@@ -1020,11 +1023,19 @@ class Command(BaseCommand):
                 source.year = year
                 updated = True
 
-            # if there is any note information, add to existing notes
+            # if there is any *NEW* note information, add to existing notes
+
             if note_lines:
+                new_notes = [
+                    n
+                    for n in note_lines
+                    if not (n in source.other_info or n in source.notes)
+                ]
+                new_note_text = " ".join(new_notes)
+                # if there are existing notes, combine
                 if source.notes:
-                    note_lines.insert(0, source.notes)
-                source.notes = "\n".join(note_lines)
+                    new_note_text = "\n".join([source.notes, new_note_text])
+                source.notes = new_note_text
                 updated = True
 
             # save changes if any were made
@@ -1041,6 +1052,7 @@ class Command(BaseCommand):
             volume=volume,
             journal=journal,
             year=year,
+            other_info=" ".join(note_lines),
             notes="\n".join(["Created from PGPID %s" % document.id] + note_lines),
         )
         # log source record creation

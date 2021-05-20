@@ -101,6 +101,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         "year",
         "journal",
         "notes",
+        "other_info",
     )
 
     fields = (
@@ -110,6 +111,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         "edition",
         "journal",
         "volume",
+        "other_info",
         "languages",
         "notes",
     )
