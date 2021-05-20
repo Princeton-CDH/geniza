@@ -1,7 +1,9 @@
 import csv
+from collections import namedtuple
 
 from django.shortcuts import render
 from django.http import Http404, StreamingHttpResponse
+from tabular_export.admin import export_to_csv_response
 from django.views.generic.detail import DetailView
 
 from geniza.corpus.models import Document
@@ -32,17 +34,70 @@ class Echo:
         return value
 
 
-class OldGenizaCsvSync:
-    def render(request):
-        """A view that streams a large CSV file."""
-        # Generate a sequence of rows. The range is based on the maximum number of
-        # rows that can be handled by a single sheet in most spreadsheet
-        # applications.
+# --------------- Publish CSV to sync with old PGP site --------------------- #
 
-        rows = (["Row {}".format(idx), str(idx)] for idx in range(65536))
-        writer = csv.writer(Echo())
-        response = StreamingHttpResponse(
-            (writer.writerow(row) for row in rows), content_type="text/csv"
+
+DocumentRow = namedtuple(
+    "DocumentRow",
+    [
+        "pgpid",
+        "library",
+        "shelfmark",
+        "shelfmark_alt",
+        "rectoverso",
+        "type",
+        "tags",
+        "joins",
+        "descr",
+        "editor",
+    ],
+)
+
+
+def tabulate_queryset(queryset):
+    # A function to empty a cell's values if none of a fragments properties
+    #  contained a value (e.g. ';'.join(['', '']))
+    semicolon_str = lambda x: "" if x == ";" else x
+
+    for doc in queryset:
+        all_fragments = doc.fragments.all()
+        all_textblocks = doc.textblock_set.all()
+
+        row = DocumentRow(
+            **{
+                "pgpid": doc.id,
+                "library": all_fragments.first().collection,
+                "shelfmark": all_fragments.first().shelfmark,
+                "shelfmark_alt": all_fragments.first().old_shelfmarks,
+                "rectoverso": semicolon_str(
+                    ";".join([tb.side for tb in all_textblocks])
+                ),
+                "type": doc.doctype,
+                "tags": doc.all_tags(),
+                "joins": doc.shelfmark if " + " in doc.shelfmark else "",
+                "descr": doc.description,
+                "editor": "",
+            }
         )
-        response["Content-Disposition"] = 'attachment; filename="somefilename.csv"'
-        return response
+
+        yield row
+
+
+def render_pgp_metadata_for_old_site(request):
+    """A view that streams a large CSV file."""
+
+    # queryset = Document.objects.filter(status=Document.PUBLIC)
+    foo = [33914, 33760, 33759]
+    queryset = Document.objects.filter(id__in=foo)
+
+    queryset = queryset.order_by("id")
+
+    # return response
+    return export_to_csv_response(
+        DocumentAdmin.csv_filename(DocumentAdmin),
+        DocumentRow._fields,
+        tabulate_queryset(queryset),
+    )
+
+
+# --------------------------------------------------------------------------- #
