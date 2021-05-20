@@ -63,6 +63,7 @@ csv_fields = {
         "Link to image": "image_link",
         "Editor(s)": "editor",
         "Translator (optional)": "translator",
+        "Notes2 (optional)": "notes",
     },
 }
 
@@ -298,7 +299,8 @@ class Command(BaseCommand):
 
     def import_document(self, row):
         """Import a single document given a row from a PGP spreadsheet"""
-        if ";" in row.type:
+        # skip any row with multiple types or flagged for demerge
+        if ";" in row.type or "DISAGGREGATE" in row.notes:
             logger.warning("skipping PGPID %s (demerge)" % row.pgpid)
             self.docstats["skipped"] += 1
             return
@@ -664,6 +666,7 @@ class Command(BaseCommand):
         "transcription listed on fgp, awaiting digitization on pgp",
         "transcription listed in fgp, awaiting digitization on pgp",
         "source of transcription not noted in original pgp database",
+        "source of transcription not noted in original pgp. complete transcription awaiting digitization",
         "yes",
         "partial transcription listed in fgp, awaiting digitization on pgp",
         "transcription (recto only) listed in fgp, awaiting digitization on pgp",
@@ -686,8 +689,8 @@ class Command(BaseCommand):
         r'[.;,]["\'’”]? (?P<note>('
         + r"(full )?transcription (listed|awaiting|available|only).*$|"
         + r"(retyped )?(with )?minor|with corrections|with emendations).*$|"
-        + r"compared with.*$|"
-        + r"partial.*$|remainder.*$|"
+        + r"compared with.*$|incorporat.*$|"
+        + r"partial.*$|remainder.*$|revised .*$|"
         + r"(translation )?await.*$|"
         + r"(as )?corrected.*$|"
         + r"edited (here )?in comparison with.*$|"
@@ -717,9 +720,19 @@ class Command(BaseCommand):
         editions = re.split(r"[;.] (?=also ed\.|ed\.|also)", editor, flags=re.I)
 
         for i, edition in enumerate(editions):
+
+            # check for transcription content
+            transcription = self.transcriptions.get(str(document.pk))
+            # check for and exclude empty content
+            if transcription and transcription["lines"] == [""]:
+                transcription = None
+
             # strip whitespace and periods before checking ignore list
             if edition.rstrip(" .").lower() in self.editor_ignore:
-                continue
+                # skip unless there is a transcription, in which case
+                # we want to import it
+                if not transcription:
+                    continue
 
             # footnotes for these records are always editions
             doc_relation = {Footnote.EDITION}
@@ -780,7 +793,7 @@ class Command(BaseCommand):
                 # if this is the first edition, check for a transcription based
                 # on PGPID and attach it to the footnote
                 if i == 0:
-                    fn.content = self.transcriptions.get(str(document.pk))
+                    fn.content = transcription
                 fn.save()
 
             except KeyError as err:
@@ -823,6 +836,16 @@ class Command(BaseCommand):
 
         # set defaults for information that may not be present
         title = volume = language = location = journal = ""
+
+        # if this is an ignored text, we are only here because there is
+        # a transcription; create or find an anonymous entry, so the
+        # footnote will be created and transcription can be attached
+        unknown_check = edition.lower().strip(" .")
+        if any([unknown_check.startswith(ignore) for ignore in self.editor_ignore]):
+            return Source.objects.get_or_create(
+                title="[unknown source]",
+                source_type=self.source_types["Unpublished"],
+            )[0]
 
         # check for url and store if present
         url_match = self.re_url.search(edition)

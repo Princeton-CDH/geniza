@@ -93,7 +93,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     footnote_admin_url = "admin:footnotes_footnote_changelist"
 
     list_display = ("all_authors", "title", "journal", "volume", "year", "footnotes")
-
+    list_display_links = ("all_authors", "title")
     search_fields = ("title", "authors__first_name", "authors__last_name", "year")
 
     fields = ("source_type", "title", "year", "edition", "volume", "languages", "notes")
