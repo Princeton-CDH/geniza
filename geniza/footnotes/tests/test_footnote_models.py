@@ -102,6 +102,9 @@ class TestFootnote:
             footnote.content = "The digitized transcription"
             assert footnote.has_transcription()
 
+    def test_display(self):
+        pass
+
 
 class TestCreator:
     def test_str(self):

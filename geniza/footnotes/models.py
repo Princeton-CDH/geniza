@@ -215,6 +215,19 @@ class Footnote(models.Model):
         """Admin display field indicating presence of digitized transcription."""
         return bool(self.content)
 
+    def display(self):
+        # TODO: Should source be a required field?
+        # source, location. notes
+        # source. notes
+        # source, location.
+        return_str = str(self.source)
+        if self.location:
+            return_str += f", {self.location}"
+        return_str += "."
+        if self.notes:
+            return_str += f" {self.notes}"
+        return return_str
+
     has_transcription.short_description = "Digitized Transcription"
     has_transcription.boolean = True
     has_transcription.admin_order_field = "content"

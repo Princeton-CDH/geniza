@@ -67,7 +67,7 @@ def tabulate_queryset(queryset):
                 "tags": doc.all_tags(),
                 "joins": doc.shelfmark if " + " in doc.shelfmark else "",
                 "descr": doc.description,
-                "editor": "",
+                "editor": ";".join([fn.display() for fn in doc.editions()]),
             }
         )
 
@@ -77,9 +77,7 @@ def tabulate_queryset(queryset):
 def render_pgp_metadata_for_old_site(request):
     """A view that streams a large CSV file."""
 
-    # queryset = Document.objects.filter(status=Document.PUBLIC)
-    foo = [33914, 33760, 33759]
-    queryset = Document.objects.filter(id__in=foo)
+    queryset = Document.objects.filter(status=Document.PUBLIC)
 
     queryset = queryset.order_by("id")
 

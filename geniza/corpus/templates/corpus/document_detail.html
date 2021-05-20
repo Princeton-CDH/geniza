@@ -26,7 +26,7 @@
         {% comment %}Translators: Editor label{% endcomment %}
         <dt>{% translate 'Editor' %}</dt>  {# optionally pluralize? #}
         {% for ed in document.editions %}
-        <dd>{{ ed.source }}{% if ed.location %}, {{ ed.location }}{% endif %}{% if ed.notes %}. {{ ed.notes }}{% endif %}</dd>
+        <dd>{{ ed.display }}</dd>
         {# link ? #}
         {% endfor %}
         {% endif %}
