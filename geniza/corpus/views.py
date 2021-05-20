@@ -6,6 +6,7 @@ from django.http import Http404, StreamingHttpResponse
 from tabular_export.admin import export_to_csv_response
 from django.views.generic.detail import DetailView
 
+from django.db.models import Q
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.admin import DocumentAdmin
 
@@ -51,6 +52,7 @@ def tabulate_queryset(queryset):
 
     for doc in queryset:
         all_fragments = doc.fragments.all()
+        rectoverso_q = doc.textblock_set.filter(~Q(side="")).first()
 
         row = DocumentRow(
             **{
@@ -59,7 +61,7 @@ def tabulate_queryset(queryset):
                 "shelfmark": all_fragments.first().shelfmark,
                 "shelfmark_alt": all_fragments.first().old_shelfmarks,
                 "rectoverso": reverse_recto_verso_lookup.get(
-                    doc.textblock_set.first().side
+                    rectoverso_q.side if rectoverso_q else ""
                 ),
                 "type": doc.doctype,
                 "tags": doc.all_tags(),
