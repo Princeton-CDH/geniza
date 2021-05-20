@@ -423,7 +423,10 @@ class Command(BaseCommand):
                     break
             # if code is still CUL, there is a problem
             if lib_code == "CUL":
-                logger.warning("CUL collection not determined for %s" % data.shelfmark)
+                logger.warning(
+                    "CUL collection not determined for %s (PGPID %s)"
+                    % (data.shelfmark, data.pgpid)
+                )
         return self.collection_lookup.get(lib_code)
 
     def get_fragment(self, data):
@@ -750,6 +753,14 @@ class Command(BaseCommand):
                 edition_text = self.re_ed_notes.sub("", edition_text)
                 notes.append(ed_notes_match.groupdict()["note"])
 
+            # check for url and store if present
+            url_match = self.re_url.search(edition)
+            url = ""
+            if url_match:
+                # save the url, and remove from edition text, to simplify parsing
+                url = url_match.group("url")
+                edition_text = edition_text.replace(url, "").strip()
+
             # if reference includes document or page location,
             # remove and store for footnote location
             doc_match = self.re_doc_location.search(edition_text)
@@ -775,6 +786,7 @@ class Command(BaseCommand):
                     content_object=document,
                     doc_relation=doc_relation,
                     location=", ".join(location),
+                    url=url,
                     notes="\n".join(notes),
                 )
                 # if this is the first edition, check for a transcription based
@@ -823,14 +835,6 @@ class Command(BaseCommand):
 
         # set defaults for information that may not be present
         title = volume = language = location = journal = ""
-
-        # check for url and store if present
-        url_match = self.re_url.search(edition)
-        url = ""
-        if url_match:
-            # save the url, and remove from edition text, to simplify parsing
-            url = url_match.group("url")
-            edition = edition.replace(url, "").strip()
 
         # check for 4-digit year and store it if present
         year = None
@@ -936,8 +940,9 @@ class Command(BaseCommand):
         # look to see if this source already exists
         # (no title indicates pgp-only edition)
         extra_opts = {}
-        # if there is no title but there is a year, include in filter
-        if not title and year:
+        # if there is no title and year is set or type is unpublished,
+        # filter on year (whether set or not)
+        if not title and (year or src_type == "Unpublished"):
             extra_opts["year"] = year
 
         # when multiple authors are present, we want to match *all* of them
@@ -963,8 +968,15 @@ class Command(BaseCommand):
 
         if sources.count() > 1:
             logger.warn(
-                "Found multiple sources for %s, %s (%s)"
-                % ("; ".join([a.last_name for a in authors]), title, src_type)
+                "Found multiple sources for %s, title=%s journal=%s vol=%s year=%s (%s)"
+                % (
+                    "; ".join([a.last_name for a in authors]),
+                    title,
+                    journal,
+                    volume,
+                    year,
+                    src_type,
+                )
             )
 
         source = sources.first()
@@ -993,7 +1005,6 @@ class Command(BaseCommand):
         source = Source.objects.create(
             source_type=self.source_types[src_type],
             title=title,
-            url=url,
             volume=volume,
             journal=journal,
             year=year,
