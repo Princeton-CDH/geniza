@@ -6,7 +6,7 @@ from django.http import Http404, StreamingHttpResponse
 from tabular_export.admin import export_to_csv_response
 from django.views.generic.detail import DetailView
 
-from geniza.corpus.models import Document
+from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.admin import DocumentAdmin
 
 from unittest.mock import Mock
@@ -22,16 +22,6 @@ class DocumentDetailView(DetailView):
         """Don't show document if it isn't public"""
         queryset = super().get_queryset(*args, **kwargs)
         return queryset.filter(status=Document.PUBLIC)
-
-
-class Echo:
-    """An object that implements just the write method of the file-like
-    interface.
-    """
-
-    def write(self, value):
-        """Write the value by returning it, instead of storing in a buffer."""
-        return value
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #
@@ -55,13 +45,12 @@ DocumentRow = namedtuple(
 
 
 def tabulate_queryset(queryset):
-    # A function to empty a cell's values if none of a fragments properties
-    #  contained a value (e.g. ';'.join(['', '']))
-    semicolon_str = lambda x: "" if x == ";" else x
+    reverse_recto_verso_lookup = {
+        code: label.lower() for code, label in TextBlock.RECTO_VERSO_CHOICES
+    }
 
     for doc in queryset:
         all_fragments = doc.fragments.all()
-        all_textblocks = doc.textblock_set.all()
 
         row = DocumentRow(
             **{
@@ -69,8 +58,8 @@ def tabulate_queryset(queryset):
                 "library": all_fragments.first().collection,
                 "shelfmark": all_fragments.first().shelfmark,
                 "shelfmark_alt": all_fragments.first().old_shelfmarks,
-                "rectoverso": semicolon_str(
-                    ";".join([tb.side for tb in all_textblocks])
+                "rectoverso": reverse_recto_verso_lookup.get(
+                    doc.textblock_set.first().side
                 ),
                 "type": doc.doctype,
                 "tags": doc.all_tags(),
