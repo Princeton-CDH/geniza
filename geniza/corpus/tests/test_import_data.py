@@ -967,6 +967,8 @@ source_input = [
             "volume": "27",
         },
     ),
+    # ignored text when handed to get_source should return anonmyous source
+    ("awaiting transcription", {"type": "Unpublished", "title": "[unknown source]"})
     # also ed. and trans.Golb and Pritsak, Khazarian Hebrew Documents of the 10th Century, pp. 1-71
     # translation language
     # 'Trans. into English, Cohen. Voice of the Poor in the Middle Ages, no. 92. Trans. into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984), 67–104.'
@@ -985,7 +987,7 @@ def test_get_source(test_input, expected):
     # check type
     assert expected["type"] == source.source_type.type
     # check all authors added, in expected order
-    for i, author in enumerate(expected["authors"]):
+    for i, author in enumerate(expected.get("authors", [])):
         assert author == str(source.authorship_set.all()[i].creator)
 
     # fields that should match when present or be unset
