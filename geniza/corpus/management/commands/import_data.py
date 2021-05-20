@@ -798,7 +798,8 @@ class Command(BaseCommand):
 
             except KeyError as err:
                 logger.error(
-                    "Error parsing PGDID %d editor %s: %s" % (document.id, edition, err)
+                    "Error parsing PGDID %d editor '%s': %s"
+                    % (document.id, edition, err)
                 )
 
     def get_source_creator(self, name):
@@ -840,11 +841,12 @@ class Command(BaseCommand):
         # if this is an ignored text, we are only here because there is
         # a transcription; create or find an anonymous entry, so the
         # footnote will be created and transcription can be attached
-        unknown_check = edition.lower().strip(" .")
+        unknown_check = edition.lower().strip().strip(".")
         if any([unknown_check.startswith(ignore) for ignore in self.editor_ignore]):
             return Source.objects.get_or_create(
                 title="[unknown source]",
                 source_type=self.source_types["Unpublished"],
+                notes="Source of transcription not noted in original PGP database (or similar)",
             )[0]
 
         # check for url and store if present
