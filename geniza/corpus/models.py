@@ -277,6 +277,7 @@ class Document(ModelIndexable):
     appears on one or more fragments."""
 
     id = models.AutoField("PGPID", primary_key=True)
+    old_pgpid = models.CharField(max_length=255, blank=True)
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
     )
