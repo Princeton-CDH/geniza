@@ -849,6 +849,12 @@ class Command(BaseCommand):
         flags=re.U,
     )
 
+    # check for language specified; languages are only Hebrew, German, and English
+    # Hebrew sometimes occurs as Heb and can be in quotes or brackets
+    re_language = re.compile(
+        r"(?P<match>(into)? [\[(]?(?P<lang>Heb(rew)?|German|English)[\])]?)[ ,$]"
+    )
+
     def get_source(self, edition, document):
         # parse the edition information and get the source for this scholarly
         # record if it already exists; if it doesn't, create it
@@ -919,12 +925,19 @@ class Command(BaseCommand):
         # check for known book titles
         book_match = self.re_book.search(edition)
         if book_match:
-            print("book match!")
-            print(book_match)
             # set book title if found
             book = book_match.group("book")
             # remove from edition text
             edition = edition.replace(book_match.group("match"), "")
+
+        # check for language
+        lang_match = self.re_language.search(edition)
+        if lang_match:
+            language = lang_match.group("lang")
+            if language == "Heb":
+                language = "Hebrew"
+            # remove from edition text
+            edition = edition.replace(lang_match.group("match"), "")
 
         # no easy way to recognize more than two authors,
         # but there are only three instances
@@ -985,15 +998,8 @@ class Command(BaseCommand):
         # also strip periods and any whitespace
         title = title.strip("\"'”“‘’ .")
 
-        # figure out what the rest of the pieces are, if any
-        for part in ed_parts:
-            # TODO: handle more language variants
-            if part in ["Hebrew", "German"]:
-                language = part
-            # otherwise, stick it in the notes
-            # TODO: put in other info instead of notes
-            else:
-                note_lines.append(part)
+        # add any leftover pieces of the edition text to notes
+        note_lines.extend(ed_parts)
 
         # look to see if this source already exists
         # (no title indicates pgp-only edition)

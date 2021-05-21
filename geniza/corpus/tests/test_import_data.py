@@ -977,7 +977,7 @@ source_input = [
             "title": "R. Yehiel b. Elyakim's Responsum Permitting the Reshut",
             "year": 1998,
             "journal": "Mas'at Moshe",
-            #            "language": "Hebrew",   # TODO
+            "language": "Hebrew",
         },
     ),
     # ignored text when handed to get_source should return anonmyous source

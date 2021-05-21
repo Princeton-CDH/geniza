@@ -102,6 +102,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         "journal",
         "notes",
         "other_info",
+        "languages__name",
     )
 
     fields = (
@@ -115,7 +116,11 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         "languages",
         "notes",
     )
-    list_filter = ("source_type", ("authors", admin.RelatedOnlyFieldListFilter))
+    list_filter = (
+        "source_type",
+        "languages",
+        ("authors", admin.RelatedOnlyFieldListFilter),
+    )
 
     inlines = [AuthorshipInline, SourceFootnoteInline]
 
