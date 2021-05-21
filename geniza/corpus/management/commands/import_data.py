@@ -840,7 +840,14 @@ class Command(BaseCommand):
         + r"(,? ?(Vol\.)? ?(?P<volume>\d[\d./]*))?)"
     )
 
-    # TODO: similar for known book titles
+    # known book titles for book sections
+    re_book = re.compile(
+        r"(?P<match>(?P<book>Otzar yehudey Sfarad|Yehoshua Finkel Festschrift|"
+        + r"Joshua Finkel Festschrift|Gratz College Anniversary volume|"
+        + r"Studies in Judaica, Karaitica and Islamica|Mas'at Moshe|"
+        + r"Studi Orientalistic in onore di Levi Della Vida))",
+        flags=re.U,
+    )
 
     def get_source(self, edition, document):
         # parse the edition information and get the source for this scholarly
@@ -851,7 +858,7 @@ class Command(BaseCommand):
         ed_orig = edition
 
         # set defaults for information that may not be present
-        title = volume = language = location = journal = ""
+        title = volume = language = location = journal = book = ""
 
         # if this is an ignored text, we are only here because there is
         # a transcription; create or find an anonymous entry, so the
@@ -909,6 +916,16 @@ class Command(BaseCommand):
                 volume = vol_match.group("volume")
                 edition = self.re_volume.sub("", edition)
 
+        # check for known book titles
+        book_match = self.re_book.search(edition)
+        if book_match:
+            print("book match!")
+            print(book_match)
+            # set book title if found
+            book = book_match.group("book")
+            # remove from edition text
+            edition = edition.replace(book_match.group("match"), "")
+
         # no easy way to recognize more than two authors,
         # but there are only three instances
         special_cases = [
@@ -944,6 +961,8 @@ class Command(BaseCommand):
         # determine source type
         if journal:  # if a journal title was found, type is article
             src_type = "Article"
+        elif book:  # if a book title was found, type is book section
+            src_type = "Book Section"
         elif "diss" in edition.lower() or "thesis" in edition.lower():
             src_type = "Dissertation"
         elif not title:
@@ -998,7 +1017,7 @@ class Command(BaseCommand):
                 volume=volume,
                 source_type__type=src_type,
                 author_count=author_count,
-                journal=journal,
+                journal=journal or book,
                 **extra_opts,
             )
             .filter(author_filter)
@@ -1053,7 +1072,7 @@ class Command(BaseCommand):
             source_type=self.source_types[src_type],
             title=title,
             volume=volume,
-            journal=journal,
+            journal=journal or book,
             year=year,
             other_info=" ".join(note_lines),
             notes="\n".join(["Created from PGPID %s" % document.id] + note_lines),

@@ -942,6 +942,7 @@ source_input = [
             "year": 2006,
             "title": "Engagement and Betrothal Documents from the Cairo Geniza",
             "language": "Hebrew",
+            "other_info": "(PhD dissertation, Tel Aviv University)",
         },
     ),
     # article
@@ -965,6 +966,18 @@ source_input = [
             "year": 1962,
             "journal": "Zion",
             "volume": "27",
+        },
+    ),
+    # book section
+    (
+        "Ed. Mordechai Akiva Friedman, \"R. Yehiel b. Elyakim's Responsum Permitting the Reshut [Heb],\" published in Mas'at Moshe, 1998.",
+        {
+            "type": "Book Section",
+            "authors": ["Friedman, Mordechai Akiva"],
+            "title": "R. Yehiel b. Elyakim's Responsum Permitting the Reshut",
+            "year": 1998,
+            "journal": "Mas'at Moshe",
+            #            "language": "Hebrew",   # TODO
         },
     ),
     # ignored text when handed to get_source should return anonmyous source
