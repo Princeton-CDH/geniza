@@ -834,10 +834,13 @@ class Command(BaseCommand):
         + r"Kiryat Sefer|Qiryat Sefer|"
         + r"(The )?Jewish Quarterly Review|JQR|Shalem|"
         + r"Bulletin of the School of Oriental and African Studies|BSOAS|"
-        + r"Jewish History|Leshonenu|Eretz Israel|"
+        + r"Jewish History|Leshonenu|Eretz Israel|Aretz Israel|Peamim|"
+        + r"AJS Review|Dine Israel|Journal of Semitic Studies|Sinai|"
         + r"Qoveṣ al Yad|Kovetz al Yad|Te’udah|Te’uda|Sefunot|Sfunoth)"
         + r"(,? ?(Vol\.)? ?(?P<volume>\d[\d./]*))?)"
     )
+
+    # TODO: similar for known book titles
 
     def get_source(self, edition, document):
         # parse the edition information and get the source for this scholarly
