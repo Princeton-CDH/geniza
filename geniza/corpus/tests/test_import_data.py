@@ -815,15 +815,7 @@ editors_parsed = [
             },
         ],
     ),
-    # TODO — partial not yet handled
-    # ('Partially ed. Weiss. Transciption awaiting digitization.',
-    #  [{'get_source_arg': 'Weiss',
-    #   'f_notes': 'Partial.\nTranscription awaiting digitization.'}]),
-    # actual record has url at end, which we don't handle properly
-    # ('Ed. Rustow and Vanthieghem (with suggestions from Khan and Shirazi)',
-    #  [{'get_source_arg': 'Rustow and Vanthieghem',
-    #    'f_notes': 'with suggestions from Khan and Shirazi'}])
-    # ignore
+    # ignored text
     ("Partial transcription listed in FGP, awaiting digitization on PGP", []),
     ("Transcription listed in FGP, awaiting digitization on PGP", []),
 ]
