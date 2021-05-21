@@ -850,9 +850,9 @@ class Command(BaseCommand):
     )
 
     # check for language specified; languages are only Hebrew, German, and English
-    # Hebrew sometimes occurs as Heb and can be in quotes or brackets
+    # Hebrew sometimes occurs as Heb; Hebrew appers in both quotes and brackets
     re_language = re.compile(
-        r"(?P<match>(into)? [\[(]?(?P<lang>Heb(rew)?|German|English)[\])]?)[ ,$]"
+        r"(?P<match>\(?(into)? [\[(]?(?P<lang>Heb(rew)?|German|English)[\])]?)([ ,.]|$)"
     )
 
     def get_source(self, edition, document):
@@ -939,12 +939,13 @@ class Command(BaseCommand):
             # remove from edition text
             edition = edition.replace(lang_match.group("match"), "")
 
-        # no easy way to recognize more than two authors,
-        # but there are only three instances
+        # no ea
+        # but there are only a few instances
         special_cases = [
             "Lorenzo Bondioli, Tamer el-Leithy, Joshua Picard, Marina Rustow and Zain Shirazi",
             "Khan, el-Leithy, Rustow and Vanthieghem",
             "Oded Zinger, Naim Vanthieghem and Marina Rustow",
+            "Allony, Ben-Shammai, Frenkel",
         ]
         ed_parts = None
         for special_case in special_cases:

@@ -980,6 +980,11 @@ source_input = [
             "language": "Hebrew",
         },
     ),
+    # translation into language
+    (
+        "Trans. Werner Diem (into German).",
+        {"type": "Unpublished", "authors": ["Diem, Werner"], "language": "German"},
+    ),
     # ignored text when handed to get_source should return anonmyous source
     ("awaiting transcription", {"type": "Unpublished", "title": "[unknown source]"}),
     (
