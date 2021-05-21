@@ -46,23 +46,17 @@ DocumentRow = namedtuple(
 
 
 def tabulate_queryset(queryset):
-    reverse_recto_verso_lookup = {
-        code: label.lower() for code, label in TextBlock.RECTO_VERSO_CHOICES
-    }
 
     for doc in queryset:
-        all_fragments = doc.fragments.all()
-        rectoverso_q = doc.textblock_set.filter(~Q(side="")).first()
+        primary_fragment = doc.fragments.first()
 
         row = DocumentRow(
             **{
                 "pgpid": doc.id,
-                "library": all_fragments.first().collection,
-                "shelfmark": all_fragments.first().shelfmark,
-                "shelfmark_alt": all_fragments.first().old_shelfmarks,
-                "rectoverso": reverse_recto_verso_lookup.get(
-                    rectoverso_q.side if rectoverso_q else ""
-                ),
+                "library": primary_fragment.collection,
+                "shelfmark": primary_fragment.shelfmark,
+                "shelfmark_alt": primary_fragment.old_shelfmarks,
+                "rectoverso": doc.textblock_set.first().get_side_display(),
                 "type": doc.doctype,
                 "tags": doc.all_tags(),
                 "joins": doc.shelfmark if " + " in doc.shelfmark else "",
@@ -78,6 +72,8 @@ def pgp_metadata_for_old_site(request):
     """A view that streams a large CSV file."""
 
     queryset = Document.objects.filter(status=Document.PUBLIC).order_by("id")
+    # pgpids = [33914, 33760, 33759]
+    # queryset = Document.objects.filter(id__in=pgpids)
 
     # return response
     return export_to_csv_response(
