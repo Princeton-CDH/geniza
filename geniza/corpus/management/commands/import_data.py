@@ -680,7 +680,7 @@ class Command(BaseCommand):
 
     # re_docrelation = re.compile(r'^(. Also )?Ed. (and transl?.)? ?',
     re_docrelation = re.compile(
-        r"^(also )?ed. ?(and trans(\.|l\.|lated) ?)?(by )?", flags=re.I
+        r"^((also )?ed. ?(and trans(\.|l\.|lated) ?)?(by )?|(also )?trans.)", flags=re.I
     )
 
     # notes that may occur with an edition
@@ -694,7 +694,7 @@ class Command(BaseCommand):
         + r"(retyped )?(with )?minor|with corrections|with emendations).*$|"
         + r"compared with.*$|incorporat.*$|"
         + r"partial.*$|remainder.*$|(revised|rev\.) .*$|"
-        + r"(translation )?await.*$|"
+        + r"(translation )?await.*$|additions .*$"
         + r"(as )?corrected.*$|"
         + r"edited (here )?in comparison with.*$|"
         + r"[(]?see .*$|"
@@ -753,7 +753,7 @@ class Command(BaseCommand):
             edit_transl_match = self.re_docrelation.match(edition)
             if edit_transl_match:
                 # if doc relation text includes translation, set flag
-                if "and trans" in edit_transl_match.group(0):
+                if "trans" in edit_transl_match.group(0).lower():
                     doc_relation.add(Footnote.TRANSLATION)
 
                 # remove ed/trans from edition text
@@ -831,10 +831,10 @@ class Command(BaseCommand):
     # volume is usually numeric, but could also be ##.# or ##/##
     re_journal = re.compile(
         r"(?P<match>(?P<journal>Tarbiz|Zion|Genzei Qedem|Ginzei Qedem|"
-        + r"Kiryat Sefer|Qiryat Sefer|"
+        + r"Kiryat Sefer|Qiryat Sefer|Peʿamim|Peamim|"
         + r"(The )?Jewish Quarterly Review|JQR|Shalem|"
         + r"Bulletin of the School of Oriental and African Studies|BSOAS|"
-        + r"Jewish History|Leshonenu|Eretz Israel|Aretz Israel|Peamim|"
+        + r"Jewish History|Leshonenu|Eretz Israel|Aretz Israel|"
         + r"AJS Review|Dine Israel|Journal of Semitic Studies|Sinai|"
         + r"Qoveṣ al Yad|Kovetz al Yad|Te’udah|Te’uda|Sefunot|Sfunoth)"
         + r"(,? ?(Vol\.)? ?(?P<volume>\d[\d./]*))?)"
@@ -946,6 +946,7 @@ class Command(BaseCommand):
             "Khan, el-Leithy, Rustow and Vanthieghem",
             "Oded Zinger, Naim Vanthieghem and Marina Rustow",
             "Allony, Ben-Shammai, Frenkel",
+            "Allony, Ben-Shammai, and Frenkel",
         ]
         ed_parts = None
         for special_case in special_cases:

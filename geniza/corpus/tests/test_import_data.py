@@ -800,6 +800,21 @@ editors_parsed = [
             }
         ],
     ),
+    (
+        'Trans. into English, Cohen, Voice of the Poor in the Middle Ages, no. 92. Also trans. into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984), 67–104.',
+        [
+            {
+                "get_source_arg": "into English, Cohen, Voice of the Poor in the Middle Ages",
+                "translation": True,
+                "f_location": "no. 92",
+            },
+            {
+                "get_source_arg": 'into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984)',
+                "translation": True,
+                "f_location": "67–104",
+            },
+        ],
+    ),
     # TODO — partial not yet handled
     # ('Partially ed. Weiss. Transciption awaiting digitization.',
     #  [{'get_source_arg': 'Weiss',
