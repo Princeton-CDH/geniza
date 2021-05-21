@@ -72,7 +72,7 @@ def tabulate_queryset(queryset):
 def pgp_metadata_for_old_site(request):
     """A view that streams a large CSV file."""
 
-    queryset = Document.objects.filter(status=Document.PUBLIC).order_by("id")[:500]
+    queryset = Document.objects.filter(status=Document.PUBLIC).order_by("id")
 
     # return response
     return export_to_csv_response(
