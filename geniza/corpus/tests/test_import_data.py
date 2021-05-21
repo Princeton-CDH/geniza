@@ -297,6 +297,7 @@ def test_import_document():
 
     DocumentCSVRow = namedtuple(
         "DocumentCSVRow",
+        # NOTE: could we use import_data.csv_fields['metadata'].values() ?
         (
             "pgpid",
             "type",
@@ -315,8 +316,9 @@ def test_import_document():
             "editor",
             "translator",
             "joins",
+            "notes",
         ),
-        defaults=[""] * 17,
+        defaults=[""] * 18,
     )
 
     row = DocumentCSVRow(
@@ -332,6 +334,7 @@ def test_import_document():
         input_by="Sarah Nisenson",
         date_entered="2017",
         editor="Ed. M. Cohen",
+        notes="",
     )
     import_data_cmd.import_document(row)
 
@@ -392,10 +395,10 @@ def test_import_documents(mockrequests, caplog):
     mockrequests.codes = requests.codes  # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = [
-        b"PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional)",
-        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,Ed. M. Cohen,',
-        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,awaiting transcription,"Trans. Goitein, typed texts (attached)"',
-        b"2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,",
+        b"PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional),Notes2 (optional)",
+        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,Ed. M. Cohen,,',
+        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,awaiting transcription,"Trans. Goitein, typed texts (attached)",',
+        b"2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,,",
     ]
     with caplog.at_level(logging.INFO, logger="import"):
         import_data_cmd.import_documents()
@@ -797,15 +800,22 @@ editors_parsed = [
             }
         ],
     ),
-    # TODO — partial not yet handled
-    # ('Partially ed. Weiss. Transciption awaiting digitization.',
-    #  [{'get_source_arg': 'Weiss',
-    #   'f_notes': 'Partial.\nTranscription awaiting digitization.'}]),
-    # actual record has url at end, which we don't handle properly
-    # ('Ed. Rustow and Vanthieghem (with suggestions from Khan and Shirazi)',
-    #  [{'get_source_arg': 'Rustow and Vanthieghem',
-    #    'f_notes': 'with suggestions from Khan and Shirazi'}])
-    # ignore
+    (
+        'Trans. into English, Cohen, Voice of the Poor in the Middle Ages, no. 92. Also trans. into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984), 67–104.',
+        [
+            {
+                "get_source_arg": "into English, Cohen, Voice of the Poor in the Middle Ages",
+                "translation": True,
+                "f_location": "no. 92",
+            },
+            {
+                "get_source_arg": 'into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984)',
+                "translation": True,
+                "f_location": "67–104",
+            },
+        ],
+    ),
+    # ignored text
     ("Partial transcription listed in FGP, awaiting digitization on PGP", []),
     ("Transcription listed in FGP, awaiting digitization on PGP", []),
 ]
@@ -939,6 +949,7 @@ source_input = [
             "year": 2006,
             "title": "Engagement and Betrothal Documents from the Cairo Geniza",
             "language": "Hebrew",
+            "other_info": "(PhD dissertation, Tel Aviv University)",
         },
     ),
     # article
@@ -964,6 +975,29 @@ source_input = [
             "volume": "27",
         },
     ),
+    # book section
+    (
+        "Ed. Mordechai Akiva Friedman, \"R. Yehiel b. Elyakim's Responsum Permitting the Reshut [Heb],\" published in Mas'at Moshe, 1998.",
+        {
+            "type": "Book Section",
+            "authors": ["Friedman, Mordechai Akiva"],
+            "title": "R. Yehiel b. Elyakim's Responsum Permitting the Reshut",
+            "year": 1998,
+            "journal": "Mas'at Moshe",
+            "language": "Hebrew",
+        },
+    ),
+    # translation into language
+    (
+        "Trans. Werner Diem (into German).",
+        {"type": "Unpublished", "authors": ["Diem, Werner"], "language": "German"},
+    ),
+    # ignored text when handed to get_source should return anonmyous source
+    ("awaiting transcription", {"type": "Unpublished", "title": "[unknown source]"}),
+    (
+        "Transcription listed in FGP, awaiting digitization on PGP",
+        {"type": "Unpublished", "title": "[unknown source]"},
+    )
     # also ed. and trans.Golb and Pritsak, Khazarian Hebrew Documents of the 10th Century, pp. 1-71
     # translation language
     # 'Trans. into English, Cohen. Voice of the Poor in the Middle Ages, no. 92. Trans. into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984), 67–104.'
@@ -982,7 +1016,7 @@ def test_get_source(test_input, expected):
     # check type
     assert expected["type"] == source.source_type.type
     # check all authors added, in expected order
-    for i, author in enumerate(expected["authors"]):
+    for i, author in enumerate(expected.get("authors", [])):
         assert author == str(source.authorship_set.all()[i].creator)
 
     # fields that should match when present or be unset

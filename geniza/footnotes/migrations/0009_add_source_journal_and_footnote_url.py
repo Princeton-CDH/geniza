@@ -21,8 +21,9 @@ class Migration(migrations.Migration):
             model_name="source",
             name="journal",
             field=models.CharField(
+                "Journal / Book",
                 blank=True,
-                help_text="Title of the journal, for an article",
+                help_text="Journal title (for an article) or book title (for a book section)",
                 max_length=255,
             ),
         ),

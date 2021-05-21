@@ -86,13 +86,13 @@ class Source(models.Model):
         help_text="Volume of a multivolume book, or journal volume for an article",
     )
     journal = models.CharField(
-        max_length=255, blank=True, help_text="Title of the journal, for an article"
-    )
-    page_range = models.CharField(
+        "Journal / Book",
         max_length=255,
         blank=True,
-        help_text="The range of pages being cited. Do not include "
-        + '"p", "pg", etc. and follow the format # or #-#',
+        help_text="Journal title (for an article) or book title (for a book section)",
+    )
+    page_range = models.CharField(
+        max_length=255, blank=True, help_text="Page range for article or book section."
     )
     other_info = models.TextField(
         blank=True, help_text="Additional citation information, if any"

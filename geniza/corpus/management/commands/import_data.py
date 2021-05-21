@@ -63,6 +63,7 @@ csv_fields = {
         "Link to image": "image_link",
         "Editor(s)": "editor",
         "Translator (optional)": "translator",
+        "Notes2 (optional)": "notes",
     },
 }
 
@@ -298,7 +299,8 @@ class Command(BaseCommand):
 
     def import_document(self, row):
         """Import a single document given a row from a PGP spreadsheet"""
-        if ";" in row.type:
+        # skip any row with multiple types or flagged for demerge
+        if ";" in row.type or "DISAGGREGATE" in row.notes:
             logger.warning("skipping PGPID %s (demerge)" % row.pgpid)
             self.docstats["skipped"] += 1
             return
@@ -667,6 +669,7 @@ class Command(BaseCommand):
         "transcription listed on fgp, awaiting digitization on pgp",
         "transcription listed in fgp, awaiting digitization on pgp",
         "source of transcription not noted in original pgp database",
+        "source of transcription not noted in original pgp. complete transcription awaiting digitization",
         "yes",
         "partial transcription listed in fgp, awaiting digitization on pgp",
         "transcription (recto only) listed in fgp, awaiting digitization on pgp",
@@ -677,7 +680,7 @@ class Command(BaseCommand):
 
     # re_docrelation = re.compile(r'^(. Also )?Ed. (and transl?.)? ?',
     re_docrelation = re.compile(
-        r"^(also )?ed. ?(and trans(\.|l\.|lated) ?)?(by )?", flags=re.I
+        r"^((also )?ed. ?(and trans(\.|l\.|lated) ?)?(by )?|(also )?trans.)", flags=re.I
     )
 
     # notes that may occur with an edition
@@ -689,9 +692,9 @@ class Command(BaseCommand):
         r'[.;,]["\'’”]? (?P<note>('
         + r"(full )?transcription (listed|awaiting|available|only).*$|"
         + r"(retyped )?(with )?minor|with corrections|with emendations).*$|"
-        + r"compared with.*$|"
-        + r"partial.*$|remainder.*$|"
-        + r"(translation )?await.*$|"
+        + r"compared with.*$|incorporat.*$|"
+        + r"partial.*$|remainder.*$|(revised|rev\.) .*$|"
+        + r"(translation )?await.*$|additions .*$"
         + r"(as )?corrected.*$|"
         + r"edited (here )?in comparison with.*$|"
         + r"[(]?see .*$|"
@@ -720,9 +723,19 @@ class Command(BaseCommand):
         editions = re.split(r"[;.] (?=also ed\.|ed\.|also)", editor, flags=re.I)
 
         for i, edition in enumerate(editions):
+
+            # check for transcription content
+            transcription = self.transcriptions.get(str(document.pk))
+            # check for and exclude empty content
+            if transcription and transcription["lines"] == [""]:
+                transcription = None
+
             # strip whitespace and periods before checking ignore list
             if edition.rstrip(" .").lower() in self.editor_ignore:
-                continue
+                # skip unless there is a transcription, in which case
+                # we want to import it
+                if not transcription:
+                    continue
 
             # footnotes for these records are always editions
             doc_relation = {Footnote.EDITION}
@@ -740,7 +753,7 @@ class Command(BaseCommand):
             edit_transl_match = self.re_docrelation.match(edition)
             if edit_transl_match:
                 # if doc relation text includes translation, set flag
-                if "and trans" in edit_transl_match.group(0):
+                if "trans" in edit_transl_match.group(0).lower():
                     doc_relation.add(Footnote.TRANSLATION)
 
                 # remove ed/trans from edition text
@@ -792,12 +805,13 @@ class Command(BaseCommand):
                 # if this is the first edition, check for a transcription based
                 # on PGPID and attach it to the footnote
                 if i == 0:
-                    fn.content = self.transcriptions.get(str(document.pk))
+                    fn.content = transcription
                 fn.save()
 
             except KeyError as err:
                 logger.error(
-                    "Error parsing PGDID %d editor %s: %s" % (document.id, edition, err)
+                    "Error parsing PGDID %d editor '%s': %s"
+                    % (document.id, edition, err)
                 )
 
     def get_source_creator(self, name):
@@ -817,12 +831,28 @@ class Command(BaseCommand):
     # volume is usually numeric, but could also be ##.# or ##/##
     re_journal = re.compile(
         r"(?P<match>(?P<journal>Tarbiz|Zion|Genzei Qedem|Ginzei Qedem|"
-        + r"Kiryat Sefer|Qiryat Sefer|"
+        + r"Kiryat Sefer|Qiryat Sefer|Peʿamim|Peamim|"
         + r"(The )?Jewish Quarterly Review|JQR|Shalem|"
         + r"Bulletin of the School of Oriental and African Studies|BSOAS|"
-        + r"Jewish History|Leshonenu|Eretz Israel|"
+        + r"Jewish History|Leshonenu|Eretz Israel|Aretz Israel|"
+        + r"AJS Review|Dine Israel|Journal of Semitic Studies|Sinai|"
         + r"Qoveṣ al Yad|Kovetz al Yad|Te’udah|Te’uda|Sefunot|Sfunoth)"
         + r"(,? ?(Vol\.)? ?(?P<volume>\d[\d./]*))?)"
+    )
+
+    # known book titles for book sections
+    re_book = re.compile(
+        r"(?P<match>(?P<book>Otzar yehudey Sfarad|Yehoshua Finkel Festschrift|"
+        + r"Joshua Finkel Festschrift|Gratz College Anniversary volume|"
+        + r"Studies in Judaica, Karaitica and Islamica|Mas'at Moshe|"
+        + r"Studi Orientalistic in onore di Levi Della Vida))",
+        flags=re.U,
+    )
+
+    # check for language specified; languages are only Hebrew, German, and English
+    # Hebrew sometimes occurs as Heb; Hebrew appers in both quotes and brackets
+    re_language = re.compile(
+        r"(?P<match>\(?(into)? [\[(]?(?P<lang>Heb(rew)?|German|English)[\])]?)([ ,.]|$)"
     )
 
     def get_source(self, edition, document):
@@ -834,7 +864,26 @@ class Command(BaseCommand):
         ed_orig = edition
 
         # set defaults for information that may not be present
-        title = volume = language = location = journal = ""
+        title = volume = language = location = journal = book = ""
+
+        # if this is an ignored text, we are only here because there is
+        # a transcription; create or find an anonymous entry, so the
+        # footnote will be created and transcription can be attached
+        unknown_check = edition.lower().strip().strip(".")
+        if any([unknown_check.startswith(ignore) for ignore in self.editor_ignore]):
+            return Source.objects.get_or_create(
+                title="[unknown source]",
+                source_type=self.source_types["Unpublished"],
+                notes="Source of transcription not noted in original PGP database (or similar)",
+            )[0]
+
+        # check for url and store if present
+        url_match = self.re_url.search(edition)
+        url = ""
+        if url_match:
+            # save the url, and remove from edition text, to simplify parsing
+            url = url_match.group("url")
+            edition = edition.replace(url, "").strip()
 
         # check for 4-digit year and store it if present
         year = None
@@ -848,11 +897,14 @@ class Command(BaseCommand):
         if year_match:
             # store the year
             year = int(year_match.group("year"))
-            # check full match against year; if they differ, add to notes
+            # check full match against year; if they differ (i.e., includes month or year range)
+            # add to notes
             full_match = year_match.group("match")
-            if full_match != year:
+            edition = edition.replace(full_match, "").strip(" .,")
+            # cleanup for comparison and potentially adding to notes
+            full_match = full_match.strip("(), ")
+            if full_match != str(year):
                 note_lines.append(full_match)
-                edition = edition.replace(full_match, "").strip(" .,")
 
         # check for known journal titles
         journal_match = self.re_journal.search(edition)
@@ -870,12 +922,31 @@ class Command(BaseCommand):
                 volume = vol_match.group("volume")
                 edition = self.re_volume.sub("", edition)
 
-        # no easy way to recognize more than two authors,
-        # but there are only three instances
+        # check for known book titles
+        book_match = self.re_book.search(edition)
+        if book_match:
+            # set book title if found
+            book = book_match.group("book")
+            # remove from edition text
+            edition = edition.replace(book_match.group("match"), "")
+
+        # check for language
+        lang_match = self.re_language.search(edition)
+        if lang_match:
+            language = lang_match.group("lang")
+            if language == "Heb":
+                language = "Hebrew"
+            # remove from edition text
+            edition = edition.replace(lang_match.group("match"), "")
+
+        # no ea
+        # but there are only a few instances
         special_cases = [
             "Lorenzo Bondioli, Tamer el-Leithy, Joshua Picard, Marina Rustow and Zain Shirazi",
             "Khan, el-Leithy, Rustow and Vanthieghem",
             "Oded Zinger, Naim Vanthieghem and Marina Rustow",
+            "Allony, Ben-Shammai, Frenkel",
+            "Allony, Ben-Shammai, and Frenkel",
         ]
         ed_parts = None
         for special_case in special_cases:
@@ -905,6 +976,8 @@ class Command(BaseCommand):
         # determine source type
         if journal:  # if a journal title was found, type is article
             src_type = "Article"
+        elif book:  # if a book title was found, type is book section
+            src_type = "Book Section"
         elif "diss" in edition.lower() or "thesis" in edition.lower():
             src_type = "Dissertation"
         elif not title:
@@ -927,15 +1000,8 @@ class Command(BaseCommand):
         # also strip periods and any whitespace
         title = title.strip("\"'”“‘’ .")
 
-        # figure out what the rest of the pieces are, if any
-        for part in ed_parts:
-            # TODO: handle more language variants
-            if part in ["Hebrew", "German"]:
-                language = part
-            # otherwise, stick it in the notes
-            # TODO: put in other info instead of notes
-            else:
-                note_lines.append(part)
+        # add any leftover pieces of the edition text to notes
+        note_lines.extend(ed_parts)
 
         # look to see if this source already exists
         # (no title indicates pgp-only edition)
@@ -959,7 +1025,7 @@ class Command(BaseCommand):
                 volume=volume,
                 source_type__type=src_type,
                 author_count=author_count,
-                journal=journal,
+                journal=journal or book,
                 **extra_opts,
             )
             .filter(author_filter)
@@ -987,11 +1053,19 @@ class Command(BaseCommand):
                 source.year = year
                 updated = True
 
-            # if there is any note information, add to existing notes
+            # if there is any *NEW* note information, add to existing notes
+
             if note_lines:
+                new_notes = [
+                    n
+                    for n in note_lines
+                    if not (n in source.other_info or n in source.notes)
+                ]
+                new_note_text = " ".join(new_notes)
+                # if there are existing notes, combine
                 if source.notes:
-                    note_lines.insert(0, source.notes)
-                source.notes = "\n".join(note_lines)
+                    new_note_text = "\n".join([source.notes, new_note_text])
+                source.notes = new_note_text
                 updated = True
 
             # save changes if any were made
@@ -1006,8 +1080,9 @@ class Command(BaseCommand):
             source_type=self.source_types[src_type],
             title=title,
             volume=volume,
-            journal=journal,
+            journal=journal or book,
             year=year,
+            other_info=" ".join(note_lines),
             notes="\n".join(["Created from PGPID %s" % document.id] + note_lines),
         )
         # log source record creation

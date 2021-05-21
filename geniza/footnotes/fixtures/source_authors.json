@@ -413,6 +413,18 @@
 {
   "model": "footnotes.creator",
   "fields": {
+    "last_name": "Ben-Shammai"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Rabie"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
     "first_name": "L. B.",
     "last_name": "Yarbrough"
   }
