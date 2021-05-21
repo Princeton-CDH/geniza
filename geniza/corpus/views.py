@@ -28,44 +28,23 @@ class DocumentDetailView(DetailView):
 # --------------- Publish CSV to sync with old PGP site --------------------- #
 
 
-DocumentRow = namedtuple(
-    "DocumentRow",
-    [
-        "pgpid",
-        "library",
-        "shelfmark",
-        "shelfmark_alt",
-        "rectoverso",
-        "type",
-        "tags",
-        "joins",
-        "descr",
-        "editor",
-    ],
-)
-
-
 def tabulate_queryset(queryset):
 
     for doc in queryset:
         primary_fragment = doc.textblock_set.first().fragment
 
-        row = DocumentRow(
-            **{
-                "pgpid": doc.id,
-                "library": primary_fragment.collection,
-                "shelfmark": primary_fragment.shelfmark,
-                "shelfmark_alt": primary_fragment.old_shelfmarks,
-                "rectoverso": doc.textblock_set.first().get_side_display(),
-                "type": doc.doctype,
-                "tags": doc.all_tags(),
-                "joins": doc.shelfmark if " + " in doc.shelfmark else "",
-                "descr": doc.description,
-                "editor": ";".join([fn.display() for fn in doc.editions()]),
-            }
-        )
-
-        yield row
+        yield [
+            doc.id,  # pgpid
+            primary_fragment.collection,  # library
+            primary_fragment.shelfmark,  # shelfmark
+            primary_fragment.old_shelfmarks,  # shelfmark_alt
+            doc.textblock_set.first().get_side_display(),  # rectoverso
+            doc.doctype,  # type
+            doc.all_tags(),  # tags
+            doc.shelfmark if " + " in doc.shelfmark else "",  # joins
+            doc.description,  # descr
+            ";".join([fn.display() for fn in doc.editions()]),  # editor
+        ]
 
 
 def pgp_metadata_for_old_site(request):
@@ -78,7 +57,18 @@ def pgp_metadata_for_old_site(request):
     # return response
     return export_to_csv_response(
         DocumentAdmin.csv_filename(DocumentAdmin),
-        DocumentRow._fields,
+        [
+            "pgpid",
+            "library",
+            "shelfmark",
+            "shelfmark_alt",
+            "rectoverso",
+            "type",
+            "tags",
+            "joins",
+            "descr",
+            "editor",
+        ],
         tabulate_queryset(queryset),
     )
 
