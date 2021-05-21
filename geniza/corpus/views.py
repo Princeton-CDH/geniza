@@ -48,7 +48,7 @@ DocumentRow = namedtuple(
 def tabulate_queryset(queryset):
 
     for doc in queryset:
-        primary_fragment = doc.fragments.first()
+        primary_fragment = doc.textblock_set.first().fragment
 
         row = DocumentRow(
             **{
