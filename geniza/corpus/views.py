@@ -9,6 +9,7 @@ from django.views.generic.detail import DetailView
 from django.db.models import Q
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.admin import DocumentAdmin
+from geniza.footnotes.models import Footnote
 
 from unittest.mock import Mock
 
@@ -28,6 +29,27 @@ class DocumentDetailView(DetailView):
 # --------------- Publish CSV to sync with old PGP site --------------------- #
 
 
+def parse_edition_string(editions):
+    if editions:
+        edition_list = [
+            "trans. " + fn.display().strip(".")
+            if Footnote.TRANSLATION in fn.doc_relation
+            else "ed. " + fn.display().strip(".")
+            for fn in editions
+        ]
+
+        edition_list = [
+            s + f" {fn.url}" if fn.url else s for s, fn in zip(edition_list, editions)
+        ]
+
+        return_str = "; also ".join(edition_list)
+
+        # TODO: omg there *has* to be a better way to just capitalize the first
+        #  letter of a string in python.
+        return return_str[0].upper() + return_str[1:] + "."
+    return ""
+
+
 def tabulate_queryset(queryset):
 
     for doc in queryset:
@@ -43,16 +65,14 @@ def tabulate_queryset(queryset):
             doc.all_tags(),  # tags
             doc.shelfmark if " + " in doc.shelfmark else "",  # joins
             doc.description,  # descr
-            ";".join([fn.display() for fn in doc.editions()]),  # editor
+            parse_edition_string(doc.editions()),  # editor
         ]
 
 
 def pgp_metadata_for_old_site(request):
     """A view that streams a large CSV file."""
 
-    queryset = Document.objects.filter(status=Document.PUBLIC).order_by("id")
-    # pgpids = [33914, 33760, 33759]
-    # queryset = Document.objects.filter(id__in=pgpids)
+    queryset = Document.objects.filter(status=Document.PUBLIC).order_by("id")[:500]
 
     # return response
     return export_to_csv_response(

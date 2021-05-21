@@ -33,7 +33,6 @@ from geniza.corpus.models import (
     DocumentType,
 )
 from geniza.footnotes.models import Footnote, Creator, Source, SourceType
-from django.contrib.contenttypes.models import ContentType
 
 
 @pytest.mark.django_db
