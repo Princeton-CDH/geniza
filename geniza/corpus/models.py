@@ -329,7 +329,8 @@ class Document(ModelIndexable):
         return " + ".join(
             dict.fromkeys(
                 block.fragment.shelfmark
-                for block in self.textblock_set.filter(certain=True)
+                for block in self.textblock_set.all()
+                if block.certain  # filter locally instead of in the db
             )
         )
 

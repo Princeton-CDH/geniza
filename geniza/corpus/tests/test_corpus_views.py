@@ -3,8 +3,8 @@ from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.footnotes.models import Footnote, Source, SourceType, Creator
 from pytest_django.asserts import assertContains
 from geniza.corpus.views import (
-    parse_edition_string,
-    tabulate_queryset,
+    old_pgp_edition,
+    old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
 )
 from django.contrib.contenttypes.models import ContentType
@@ -26,7 +26,7 @@ class TestDocumentDetailView:
 
 
 @pytest.mark.django_db
-def test_tabulate_queryset():
+def test_old_pgp_tabulate_data():
     legal_doc = DocumentType.objects.create(name="Legal")
     doc = Document.objects.create(id=36, doctype=legal_doc)
     frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
@@ -34,11 +34,11 @@ def test_tabulate_queryset():
     doc.fragments.add(frag)
     doc.tags.add("marriage")
 
-    table_iter = tabulate_queryset(Document.objects.all())
+    table_iter = old_pgp_tabulate_data(Document.objects.all())
     row = next(table_iter)
 
     assert "T-S 8J22.21" in row
-    assert "marriage" in row
+    assert "#marriage" in row
     assert "recto" in row
 
     # NOTE: strings are not parsed until after being fed into the csv plugin
@@ -47,7 +47,7 @@ def test_tabulate_queryset():
 
 
 @pytest.mark.django_db
-def test_parse_edition_string():
+def test_old_pgp_edition():
     # Expected behavior:
     # Ed. [fn].
     # Ed. [fn]; also ed. [fn].
@@ -55,7 +55,7 @@ def test_parse_edition_string():
     # Ed. [fn] [url]; also ed. [fn]; also trans. [fn].
 
     doc = Document.objects.create()
-    assert parse_edition_string(doc.editions()) == ""
+    assert old_pgp_edition(doc.editions()) == ""
 
     marina = Creator.objects.create(last_name="Rustow", first_name="Marina")
     book = SourceType.objects.create(type="Book")
@@ -69,7 +69,7 @@ def test_parse_edition_string():
     )
     doc.footnotes.add(fn)
 
-    edition_str = parse_edition_string(doc.editions())
+    edition_str = old_pgp_edition(doc.editions())
     assert edition_str == f"Ed. {fn.display()}"
 
     source2 = Source.objects.create(title="Arabic dictionary", source_type=book)
@@ -80,7 +80,7 @@ def test_parse_edition_string():
         object_id=0,
     )
     doc.footnotes.add(fn2)
-    edition_str = parse_edition_string(doc.editions())
+    edition_str = old_pgp_edition(doc.editions())
     assert edition_str == f"Ed. Arabic dictionary; also ed. Rustow."
 
     source3 = Source.objects.create(title="Geniza Encyclopedia", source_type=book)
@@ -91,18 +91,18 @@ def test_parse_edition_string():
         object_id=0,
     )
     doc.footnotes.add(fn_trans)
-    edition_str = parse_edition_string(doc.editions())
+    edition_str = old_pgp_edition(doc.editions())
     assert (
         edition_str
-        == "Ed. Arabic dictionary; also trans. Geniza Encyclopedia; also ed. Rustow."
+        == "Ed. Arabic dictionary; also ed. and trans. Geniza Encyclopedia; also ed. Rustow."
     )
 
     fn.url = "example.com"
     fn.save()
-    edition_str = parse_edition_string(doc.editions())
+    edition_str = old_pgp_edition(doc.editions())
     assert (
         edition_str
-        == "Ed. Arabic dictionary; also trans. Geniza Encyclopedia; also ed. Rustow example.com."
+        == "Ed. Arabic dictionary; also ed. and trans. Geniza Encyclopedia; also ed. Rustow example.com."
     )
 
 
