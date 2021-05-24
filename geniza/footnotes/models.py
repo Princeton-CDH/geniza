@@ -219,9 +219,25 @@ class Footnote(models.Model):
     has_transcription.boolean = True
     has_transcription.admin_order_field = "content"
 
+
+    def display(self):
+        # TODO: Should source be a required field?
+        # source, location. notes
+        # source. notes
+        # source, location.
+        return_str = str(self.source)
+        if self.location:
+            return_str += f", {self.location}"
+        return_str += "."
+        if self.notes:
+            return_str += f" {self.notes}"
+        return return_str
+
+      
     def has_url(self):
         """Admin display field indicating if footnote has a url."""
         return bool(self.url)
 
     has_url.boolean = True
     has_url.admin_order_field = "url"
+

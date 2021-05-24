@@ -331,6 +331,9 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def tabulate_queryset(self, queryset):
         """Generator for data in tabular form, including custom fields"""
+
+        # A function to empty a cell's values if none of a fragments properties
+        #  contained a value (e.g. ';'.join(['', '']))
         semicolon_str = lambda x: "" if x == ";" else x
 
         rows = []

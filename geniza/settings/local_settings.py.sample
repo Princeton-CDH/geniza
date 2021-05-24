@@ -41,7 +41,7 @@ DATA_IMPORT_URLS = {
     'libraries': '',
     'languages': '',
     'metadata': '',
-    'demerge': '',
+    'demerged': '',
 }
 
 # LOGGING = {
