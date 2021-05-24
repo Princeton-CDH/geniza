@@ -148,6 +148,8 @@ class Source(models.Model):
             parts.append(self.volume)
         if self.year:
             parts.append("(%d)" % self.year)
+        if self.other_info:
+            parts.append(self.other_info)
 
         # title, journal, etc should be joined by spaces only
         ref = " ".join(parts)
@@ -219,25 +221,23 @@ class Footnote(models.Model):
     has_transcription.boolean = True
     has_transcription.admin_order_field = "content"
 
-
     def display(self):
-        # TODO: Should source be a required field?
+        """format footnote for display; used on document detail page
+        and metdata export for old pgp site"""
         # source, location. notes
         # source. notes
         # source, location.
-        return_str = str(self.source)
+        parts = [str(self.source)]
         if self.location:
-            return_str += f", {self.location}"
-        return_str += "."
+            parts.extend([", ", self.location])
+        parts.append(".")
         if self.notes:
-            return_str += f" {self.notes}"
-        return return_str
+            parts.extend([" ", self.notes])
+        return "".join(parts)
 
-      
     def has_url(self):
         """Admin display field indicating if footnote has a url."""
         return bool(self.url)
 
     has_url.boolean = True
     has_url.admin_order_field = "url"
-
