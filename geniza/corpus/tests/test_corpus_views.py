@@ -36,7 +36,6 @@ def test_tabulate_queryset():
 
     table_iter = tabulate_queryset(Document.objects.all())
     row = next(table_iter)
-    print(row)
 
     assert "T-S 8J22.21" in row
     assert "marriage" in row
