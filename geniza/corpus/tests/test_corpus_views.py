@@ -2,8 +2,13 @@ import pytest
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.footnotes.models import Footnote, Source, SourceType, Creator
 from pytest_django.asserts import assertContains
-from geniza.corpus.views import parse_edition_string, tabulate_queryset
+from geniza.corpus.views import (
+    parse_edition_string,
+    tabulate_queryset,
+    pgp_metadata_for_old_site,
+)
 from django.contrib.contenttypes.models import ContentType
+from unittest.mock import Mock
 
 
 class TestDocumentDetailView:
@@ -100,3 +105,30 @@ def test_parse_edition_string():
         edition_str
         == "Ed. Arabic dictionary; also trans. Geniza Encyclopedia; also ed. Rustow example.com."
     )
+
+
+@pytest.mark.django_db
+def test_pgp_metadata_for_old_site():
+    legal_doc = DocumentType.objects.create(name="Legal")
+    doc = Document.objects.create(id=36, doctype=legal_doc)
+    frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+    TextBlock.objects.create(document=doc, fragment=frag, side="r")
+    doc.fragments.add(frag)
+    doc.tags.add("marriage")
+
+    doc2 = Document.objects.create(status=Document.SUPPRESSED)
+
+    response = pgp_metadata_for_old_site(Mock())
+    assert response.status_code == 200
+
+    streaming_content = response.streaming_content
+    header = next(streaming_content)
+    row1 = next(streaming_content)
+
+    # Ensure no suppressed documents are published
+    with pytest.raises(StopIteration):
+        row2 = next(streaming_content)
+
+    # Ensure objects have been correctly parsed as strings
+    assert b"36" in row1
+    assert b"Legal" in row1
