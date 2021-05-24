@@ -5,6 +5,7 @@ from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db.models import Count, CharField, Q
 from django.db.models.query import Prefetch
@@ -305,6 +306,12 @@ class DocumentAdmin(admin.ModelAdmin):
         """Generator for data in tabular form, including custom fields"""
 
         script_user = settings.SCRIPT_USERNAME
+        # generate absolute urls locally with a single db call,
+        # instead of calling out to absolutize_url method
+        site_domain = Site.objects.get_current().domain.rstrip("/")
+        # qa / prod always https
+        url_scheme = "https://"
+        site_baseurl = url_scheme + site_domain
 
         rows = []
         for doc in queryset:
@@ -333,7 +340,9 @@ class DocumentAdmin(admin.ModelAdmin):
                     else ""
                     for fragment in all_fragments
                 ]
-            )
+            ) - {
+                ""
+            }  # exclude empty string for any fragments with no library
             collections = set(
                 [
                     fragment.collection.abbrev or fragment.collection.name
@@ -341,12 +350,16 @@ class DocumentAdmin(admin.ModelAdmin):
                     else ""
                     for fragment in all_fragments
                 ]
-            )
+            ) - {
+                ""
+            }  # exclude empty string for any with no collection
             footnotes = [str(fn) for fn in all_footnotes]
 
             yield [
                 doc.id,  # pgpid
-                absolutize_url(doc.get_absolute_url()),  # public site url
+                # to make the download as efficient as possible, don't use
+                # absolutize_url, reverse, or get_absolute_url methods
+                f"{url_scheme}{site_domain}/documents/{doc.id}/",  # public site url
                 ";".join(iiif_urls) if any(iiif_urls) else "",
                 ";".join(view_urls) if any(view_urls) else "",
                 doc.shelfmark,  # shelfmark
@@ -364,7 +377,7 @@ class DocumentAdmin(admin.ModelAdmin):
                 doc.language_note,
                 doc.notes,
                 doc.needs_review,
-                absolutize_url(reverse("admin:corpus_document_change", args=[doc.id])),
+                f"{url_scheme}{site_domain}/admin/corpus/document/{doc.id}/change/",
                 all_log_entries[0].action_time if all_log_entries else "",
                 doc.last_modified,
                 ";".join(
