@@ -1,8 +1,8 @@
 import pytest
-from geniza.corpus.models import Document
+from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.footnotes.models import Footnote, Source, SourceType, Creator
 from pytest_django.asserts import assertContains
-from geniza.corpus.views import parse_edition_string
+from geniza.corpus.views import parse_edition_string, tabulate_queryset
 from django.contrib.contenttypes.models import ContentType
 
 
@@ -21,12 +21,34 @@ class TestDocumentDetailView:
 
 
 @pytest.mark.django_db
+def test_tabulate_queryset():
+    legal_doc = DocumentType.objects.create(name="Legal")
+    doc = Document.objects.create(id=36, doctype=legal_doc)
+    frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+    TextBlock.objects.create(document=doc, fragment=frag, side="r")
+    doc.fragments.add(frag)
+    doc.tags.add("marriage")
+
+    table_iter = tabulate_queryset(Document.objects.all())
+    row = next(table_iter)
+    print(row)
+
+    assert "T-S 8J22.21" in row
+    assert "marriage" in row
+    assert "recto" in row
+
+    # NOTE: strings are not parsed until after being fed into the csv plugin
+    assert legal_doc in row
+    assert 36 in row
+
+
+@pytest.mark.django_db
 def test_parse_edition_string():
     # Expected behavior:
-    # Ed. [fn]
+    # Ed. [fn].
     # Ed. [fn]; also ed. [fn].
-    # Ed. [fn]; also ed. [fn]; also trans. [fn]
-    # Ed. [fn] [url]; also ed. [fn]; also trans. [fn]
+    # Ed. [fn]; also ed. [fn]; also trans. [fn].
+    # Ed. [fn] [url]; also ed. [fn]; also trans. [fn].
 
     doc = Document.objects.create()
     assert parse_edition_string(doc.editions()) == ""

@@ -51,7 +51,7 @@ def parse_edition_string(editions):
 
 
 def tabulate_queryset(queryset):
-
+    # NOTE: This logic assumes that documents will always have a fragment
     for doc in queryset:
         primary_fragment = doc.textblock_set.first().fragment
 
