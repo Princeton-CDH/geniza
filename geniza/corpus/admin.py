@@ -242,7 +242,9 @@ class DocumentAdmin(admin.ModelAdmin):
                 # https://docs.djangoproject.com/en/3.2/ref/models/querysets/#prefetch-related
                 Prefetch(
                     "textblock_set",
-                    queryset=TextBlock.objects.select_related("fragment"),
+                    queryset=TextBlock.objects.select_related(
+                        "fragment", "fragment__collection"
+                    ),
                 ),
                 "footnotes__content__isnull",
             )
@@ -389,7 +391,15 @@ class DocumentAdmin(admin.ModelAdmin):
     def export_to_csv(self, request, queryset=None):
         """Stream tabular data as a CSV file"""
         queryset = self.get_queryset(request) if queryset is None else queryset
-        queryset = queryset.order_by("id")
+        # additional prefetching needed to optimize csv export but
+        # not needed for admin list view
+        queryset = queryset.order_by("id").prefetch_related(
+            "probable_languages",
+            "footnotes",
+            "footnotes__source",
+            "footnotes__source__authors",
+            "log_entries",
+        )
 
         return export_to_csv_response(
             self.csv_filename(),
