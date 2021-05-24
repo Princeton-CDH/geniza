@@ -1,4 +1,5 @@
 from collections import namedtuple
+
 from django import forms
 from django.conf import settings
 from django.conf.urls import url
@@ -303,40 +304,61 @@ class DocumentAdmin(admin.ModelAdmin):
     def tabulate_queryset(self, queryset):
         """Generator for data in tabular form, including custom fields"""
 
-        # A function to empty a cell's values if none of a fragments properties
-        #  contained a value (e.g. ';'.join(['', '']))
-        semicolon_str = lambda x: "" if x == ";" else x
+        script_user = settings.SCRIPT_USERNAME
 
         rows = []
         for doc in queryset:
-            all_fragments = doc.fragments.all()
-            all_textblocks = doc.textblock_set.all()
-            all_footnotes = doc.footnotes.all()
-            all_log_entries = doc.log_entries.filter(
-                ~Q(user__username=settings.SCRIPT_USERNAME)
-            )
 
-            initial_entry = doc.log_entries.first()
-            latest_revision = doc.log_entries.last()
+            all_textblocks = doc.textblock_set.all()
+            all_fragments = [tb.fragment for tb in all_textblocks]
+            all_footnotes = doc.footnotes.all()
+            all_log_entries = doc.log_entries.all()
+            input_users = set(
+                [
+                    log_entry.user
+                    for log_entry in all_log_entries
+                    if log_entry.user.username != script_user
+                ]
+            )
+            iiif_urls = [fr.iiif_url for fr in all_fragments]
+            view_urls = [fr.url for fr in all_fragments]
+            subfrag = [tb.subfragment for tb in all_textblocks]
+            side = [tb.side for tb in all_textblocks]
+            region = [tb.region for tb in all_textblocks]
+            old_shelfmarks = [fragment.old_shelfmarks for fragment in all_fragments]
+            libraries = set(
+                [
+                    fragment.collection.lib_abbrev or fragment.collection.library
+                    if fragment.collection
+                    else ""
+                    for fragment in all_fragments
+                ]
+            )
+            collections = set(
+                [
+                    fragment.collection.abbrev or fragment.collection.name
+                    if fragment.collection
+                    else ""
+                    for fragment in all_fragments
+                ]
+            )
+            footnotes = [str(fn) for fn in all_footnotes]
 
             yield [
                 doc.id,  # pgpid
                 absolutize_url(doc.get_absolute_url()),  # public site url
-                semicolon_str(
-                    ";".join([fragment.iiif_url for fragment in all_fragments])
-                ),
-                semicolon_str(";".join([fragment.url for fragment in all_fragments])),
+                ";".join(iiif_urls) if any(iiif_urls) else "",
+                ";".join(view_urls) if any(view_urls) else "",
                 doc.shelfmark,  # shelfmark
-                semicolon_str(";".join([tb.subfragment for tb in all_textblocks])),
-                semicolon_str(";".join([tb.side for tb in all_textblocks])),  # side
-                semicolon_str(";".join([tb.region for tb in all_textblocks])),  # region
+                ";".join([s for s in subfrag if s]),
+                ";".join([s for s in side if s]),  # side (recto/verso)
+                ";".join([r for r in region if r]),  # text block region
                 doc.doctype,
                 doc.all_tags(),
                 doc.description,
-                semicolon_str(";".join([str(fn) for fn in all_footnotes])),
-                semicolon_str(
-                    ";".join([fragment.old_shelfmarks for fragment in all_fragments])
-                ),
+                # FIXME: needs to be footnote display method (if included at all)
+                ";".join(footnotes) if any(footnotes) else "",
+                ";".join([os for os in old_shelfmarks if os]),
                 doc.all_languages(),
                 doc.all_probable_languages(),
                 doc.language_note,
@@ -346,18 +368,11 @@ class DocumentAdmin(admin.ModelAdmin):
                 all_log_entries[0].action_time if all_log_entries else "",
                 doc.last_modified,
                 ";".join(
-                    set(
-                        [
-                            entry.user.get_full_name() or entry.user.username
-                            for entry in all_log_entries
-                        ]
-                    )
+                    set([user.get_full_name() or user.username for user in input_users])
                 ),  # input by
                 doc.get_status_display(),
-                semicolon_str(
-                    ";".join([str(fragment.collection) for fragment in all_fragments])
-                ),  # library abbreviation
-                doc.collection,  # collection abreviation
+                ";".join(libraries) if any(libraries) else "",
+                ";".join(collections) if any(collections) else "",
             ]
 
     csv_fields = [
