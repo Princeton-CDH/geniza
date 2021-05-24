@@ -509,6 +509,7 @@ class TextBlock(models.Model):
 
     class Meta:
         ordering = ["order"]
+        verbose_name = "Related Fragment"  # for researcher legibility in admin
 
     def __str__(self):
         # combine shelfmark, subfragment, side, region, and certainty

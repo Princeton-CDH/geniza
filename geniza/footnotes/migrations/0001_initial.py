@@ -114,7 +114,7 @@ class Migration(migrations.Migration):
                     "page_range",
                     models.CharField(
                         blank=True,
-                        help_text='The range of pages being cited. Do not include "p", "pg", etc. and follow the format # or #-#',
+                        help_text="Page range for article or book section.",
                         max_length=255,
                     ),
                 ),

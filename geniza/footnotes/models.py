@@ -86,13 +86,13 @@ class Source(models.Model):
         help_text="Volume of a multivolume book, or journal volume for an article",
     )
     journal = models.CharField(
-        max_length=255, blank=True, help_text="Title of the journal, for an article"
-    )
-    page_range = models.CharField(
+        "Journal / Book",
         max_length=255,
         blank=True,
-        help_text="The range of pages being cited. Do not include "
-        + '"p", "pg", etc. and follow the format # or #-#',
+        help_text="Journal title (for an article) or book title (for a book section)",
+    )
+    page_range = models.CharField(
+        max_length=255, blank=True, help_text="Page range for article or book section."
     )
     other_info = models.TextField(
         blank=True, help_text="Additional citation information, if any"
@@ -219,6 +219,7 @@ class Footnote(models.Model):
     has_transcription.boolean = True
     has_transcription.admin_order_field = "content"
 
+
     def display(self):
         # TODO: Should source be a required field?
         # source, location. notes
@@ -231,3 +232,12 @@ class Footnote(models.Model):
         if self.notes:
             return_str += f" {self.notes}"
         return return_str
+
+      
+    def has_url(self):
+        """Admin display field indicating if footnote has a url."""
+        return bool(self.url)
+
+    has_url.boolean = True
+    has_url.admin_order_field = "url"
+

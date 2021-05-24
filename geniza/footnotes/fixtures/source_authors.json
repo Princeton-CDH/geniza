@@ -267,13 +267,6 @@
 {
   "model": "footnotes.creator",
   "fields": {
-    "first_name": "Meri",
-    "last_name": "Weiss"
-  }
-},
-{
-  "model": "footnotes.creator",
-  "fields": {
     "first_name": "Jennifer",
     "last_name": "Grayson"
   }
@@ -301,7 +294,7 @@
 {
   "model": "footnotes.creator",
   "fields": {
-    "first_name": "G.",
+    "first_name": "Gershon",
     "last_name": "Weiss"
   }
 },
@@ -415,6 +408,18 @@
   "model": "footnotes.creator",
   "fields": {
     "last_name": "Allony"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Ben-Shammai"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Rabie"
   }
 },
 {

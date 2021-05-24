@@ -171,6 +171,10 @@ class Migration(migrations.Migration):
                 "ordering": ["order"],
             },
         ),
+        migrations.AlterModelOptions(
+            name="textblock",
+            options={"ordering": ["order"], "verbose_name": "Related Fragment"},
+        ),
         migrations.AddField(
             model_name="document",
             name="doctype",
