@@ -102,8 +102,17 @@ class TestFootnote:
             footnote.content = "The digitized transcription"
             assert footnote.has_transcription()
 
-    def test_display(self):
-        pass
+    def test_display(self, source):
+        footnote = Footnote(source=source)
+        assert footnote.display() == "Orwell, A Nice Cup of Tea."
+
+        footnote.location = "Cambridge"
+        assert footnote.display() == "Orwell, A Nice Cup of Tea, Cambridge."
+
+        footnote.notes = "Please review."
+        assert (
+            footnote.display() == "Orwell, A Nice Cup of Tea, Cambridge. Please review."
+        )
 
 
 class TestCreator:
