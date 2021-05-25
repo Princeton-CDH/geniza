@@ -14,7 +14,10 @@ class Migration(migrations.Migration):
             model_name="footnote",
             name="url",
             field=models.URLField(
-                blank=True, help_text="Link to the source (optional)", max_length=300
+                "URL",
+                blank=True,
+                help_text="Link to the source (optional)",
+                max_length=300,
             ),
         ),
         migrations.AddField(
