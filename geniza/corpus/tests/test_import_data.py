@@ -826,36 +826,63 @@ editors_parsed = [
 def test_parse_notes():
     # Ensure old_pgpids are parsed correctly
     doc = Document.objects.create()
-    row = AttrMap({"notes": "Old PGPID: 6160"})
+    row = AttrMap({"notes": "Old PGPID: 6160", "tech_notes": ""})
     import_data.Command().parse_notes(doc, row)
     assert doc.old_pgpids == [6160]
 
     doc = Document.objects.create()
-    row = AttrMap({"notes": "Old PGPIDs: 6160, 3600"})
+    row = AttrMap({"notes": "Old PGPIDs: 6160, 3600", "tech_notes": ""})
     import_data.Command().parse_notes(doc, row)
     assert 6160 in doc.old_pgpids and 3600 in doc.old_pgpids
 
     doc = Document.objects.create()
-    row = AttrMap({"notes": "Old PGPIDs: 6160, 3600"})
+    row = AttrMap({"notes": "Old PGPIDs: 6160, 3600", "tech_notes": ""})
     import_data.Command().parse_notes(doc, row)
     assert 6160 in doc.old_pgpids and 3600 in doc.old_pgpids
 
     doc = Document.objects.create()
-    row = AttrMap({"notes": "India; Old PGPID: 9242"})
+    row = AttrMap({"notes": "India; Old PGPID: 9242", "tech_notes": ""})
     import_data.Command().parse_notes(doc, row)
     assert 9242 in doc.old_pgpids
 
     # Make sure ignored notes aren't included
     doc = Document.objects.create()
-    row = AttrMap({"notes": "DISAGGREGATE"})
+    row = AttrMap({"notes": "DISAGGREGATE", "tech_notes": ""})
     import_data.Command().parse_notes(doc, row)
     assert doc.notes == ""
 
     # Make sure notes are appended properly
     doc = Document.objects.create()
-    row = AttrMap({"notes": "See Goitein translation."})
+    row = AttrMap({"notes": "See Goitein translation.", "tech_notes": "not in Gil"})
     import_data.Command().parse_notes(doc, row)
-    assert doc.notes == "See Goitein translation."
+    assert doc.notes == "See Goitein translation.\nNot published by Gil, pace FGP."
+
+    # Test transcription / translation logic
+    doc = Document.objects.create()
+    row = AttrMap(
+        {
+            "notes": "See Goitein translation.",
+            "tech_notes": "scanned in drive (TRANSCRIPTION + TRANSLATION)",
+        }
+    )
+    import_data.Command().parse_notes(doc, row)
+    assert (
+        doc.notes
+        == "See Goitein translation.\nThere is a transcription and translation in Goitein's notes that should be digitized."
+    )
+
+    doc = Document.objects.create()
+    row = AttrMap(
+        {
+            "notes": "See Goitein translation.",
+            "tech_notes": "scanned in drive (TRANSLATION)",
+        }
+    )
+    import_data.Command().parse_notes(doc, row)
+    assert (
+        doc.notes
+        == "See Goitein translation.\nThere is a translation in Goitein's notes that should be digitized."
+    )
 
 
 @pytest.mark.django_db

@@ -301,7 +301,6 @@ class Command(BaseCommand):
     def parse_notes(self, doc, row):
         if "PGPIDs" in row.notes:
             old_pgpids = row.notes.split("PGPIDs: ")[-1]
-            print(old_pgpids)
             doc.old_pgpids = [int(old_pgpid) for old_pgpid in old_pgpids.split(", ")]
         elif "PGPID" in row.notes:
             old_pgpid = row.notes.split("PGPID: ")[-1]
@@ -315,14 +314,47 @@ class Command(BaseCommand):
             "DISAGGREGATE",
         ]
 
-        # NOTE: This assumes that this is the only (or at least first) time
-        #  the notes field is set.
+        notes_to_set = []
         if row.notes not in IGNORE:
-            doc.notes = row.notes
+            notes_to_set.append(row.notes)
 
         ## TECHNICAL NOTES
-        SCANNED_GOITEIN = "Look for Goitein scan in this folder: https://drive.google.com/drive/folders/1ZAWSK3ILoRyll0FafU61V5zdccx0CgaP?usp=sharing"
+        # Unique values:
+        """
+            FGP stub
+            scanned in drive
+            ?scanned in drive
+            Transcription needs to be uploaded*
+            Transcription needs to be uploaded
+            scanned in drive (TRANSCRIPTION)
+            scanned in drive (TRANSLATION)
+            not in Gil
+            Scanned in drive
+            scanned in drive 
+            scanned in drive (TRANSCRIPTION + TRANSLATION)
+            scanned in drive (TRANSCRIPTION & TRANSLATION)
+        """
 
+        if row.tech_notes == "not in Gil":
+            GIL_NOTE = "Not published by Gil, pace FGP."
+            notes_to_set.append(GIL_NOTE)
+
+        if "scanned in drive" == row.tech_notes.strip("?"):
+            SCANNED_GOITEIN_NOTE = "Look for Goitein scan in this folder: https://drive.google.com/drive/folders/1ZAWSK3ILoRyll0FafU61V5zdccx0CgaP?usp=sharing"
+            notes_to_set.append(SCANNED_GOITEIN_NOTE)
+        elif "scanned in drive" in row.tech_notes:
+            type_s = ["transcription", "translation"]
+            detail = " and ".join(
+                [form for form in type_s if form in row.tech_notes.lower()]
+            )
+            DETAIL_GOTEIN_SCAN_NOTE = (
+                f"There is a {detail} in Goitein's notes that should be digitized."
+            )
+            notes_to_set.append(DETAIL_GOTEIN_SCAN_NOTE)
+
+        # NOTE: This assumes that this is the only (or at least first) time
+        #  the notes field is set.
+        doc.notes = "\n".join(notes_to_set)
         doc.save()
         # ??: Should there be a doc.save() here?
         #  It's addition was necessary to get test_import_document passing.
