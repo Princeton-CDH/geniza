@@ -2,12 +2,12 @@ from adminsortable2.admin import SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
-from django.contrib.contenttypes.admin import GenericTabularInline
+from django.contrib.contenttypes.admin import GenericTabularInline, GenericStackedInline
 from django.db import models
 from django.db.models import Count
-from django.db.models.fields import CharField, TextField
+from django.db.models.fields import CharField, TextField, URLField
 from django.db.models.functions import Concat
-from django.forms.widgets import TextInput, Textarea
+from django.forms.widgets import TextInput, Textarea, URLInput
 from django.urls import reverse
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
@@ -38,15 +38,16 @@ class SourceFootnoteInline(admin.TabularInline):
         "object_link",
         "content_type",
         "object_id",
-        "location",
         "doc_relation",
+        "location",
         "has_transcription",
         "notes",
+        "url",
     )
     readonly_fields = ("object_link", "has_transcription")
     formfield_overrides = {
         CharField: {"widget": TextInput(attrs={"size": "10"})},
-        TextField: {"widget": Textarea(attrs={"rows": 3})},
+        TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
 
     def object_link(self, obj):
@@ -75,16 +76,17 @@ class DocumentFootnoteInline(GenericTabularInline):
     autocomplete_fields = ["source"]
     fields = (
         "source",
-        "location",
         "doc_relation",
-        "has_transcription",
+        "location",
         "notes",
+        "has_transcription",
+        "url",
     )
     readonly_fields = ("has_transcription",)
     extra = 1
     formfield_overrides = {
         CharField: {"widget": TextInput(attrs={"size": "10"})},
-        TextField: {"widget": Textarea(attrs={"rows": 3})},
+        TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
 
 
