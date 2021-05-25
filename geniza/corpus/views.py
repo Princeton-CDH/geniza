@@ -3,7 +3,6 @@ from django.views.generic.detail import DetailView
 from tabular_export.admin import export_to_csv_response
 
 from geniza.corpus.models import Document, TextBlock
-from geniza.corpus.admin import DocumentAdmin
 from geniza.footnotes.models import Footnote
 
 
@@ -98,7 +97,7 @@ def pgp_metadata_for_old_site(request):
     )
     # return response
     return export_to_csv_response(
-        DocumentAdmin.csv_filename(DocumentAdmin),
+        "pgp_metadata.csv",
         [
             "pgpid",
             "library",
