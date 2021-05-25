@@ -334,7 +334,7 @@ def test_import_document():
         input_by="Sarah Nisenson",
         date_entered="2017",
         editor="Ed. M. Cohen",
-        notes="",
+        notes="Old PGPIDs: 756, 659",
     )
     import_data_cmd.import_document(row)
 
@@ -369,6 +369,7 @@ def test_import_document():
         object_id=doc.pk,
         content_type_id=document_ctype.pk,
     )
+    assert 756 in doc.old_pgpids and 659 in doc.old_pgpids
 
     # test that auto-increment works properly when PGPID is not provided
     row = DocumentCSVRow(
@@ -819,6 +820,42 @@ editors_parsed = [
     ("Partial transcription listed in FGP, awaiting digitization on PGP", []),
     ("Transcription listed in FGP, awaiting digitization on PGP", []),
 ]
+
+
+@pytest.mark.django_db
+def test_parse_notes():
+    # Ensure old_pgpids are parsed correctly
+    doc = Document.objects.create()
+    row = AttrMap({"notes": "Old PGPID: 6160"})
+    import_data.Command().parse_notes(doc, row)
+    assert doc.old_pgpids == [6160]
+
+    doc = Document.objects.create()
+    row = AttrMap({"notes": "Old PGPIDs: 6160, 3600"})
+    import_data.Command().parse_notes(doc, row)
+    assert 6160 in doc.old_pgpids and 3600 in doc.old_pgpids
+
+    doc = Document.objects.create()
+    row = AttrMap({"notes": "Old PGPIDs: 6160, 3600"})
+    import_data.Command().parse_notes(doc, row)
+    assert 6160 in doc.old_pgpids and 3600 in doc.old_pgpids
+
+    doc = Document.objects.create()
+    row = AttrMap({"notes": "India; Old PGPID: 9242"})
+    import_data.Command().parse_notes(doc, row)
+    assert 9242 in doc.old_pgpids
+
+    # Make sure ignored notes aren't included
+    doc = Document.objects.create()
+    row = AttrMap({"notes": "DISAGGREGATE"})
+    import_data.Command().parse_notes(doc, row)
+    assert doc.notes == ""
+
+    # Make sure notes are appended properly
+    doc = Document.objects.create()
+    row = AttrMap({"notes": "See Goitein translation."})
+    import_data.Command().parse_notes(doc, row)
+    assert doc.notes == "See Goitein translation."
 
 
 @pytest.mark.django_db

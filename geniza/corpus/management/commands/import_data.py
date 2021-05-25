@@ -64,6 +64,7 @@ csv_fields = {
         "Editor(s)": "editor",
         "Translator (optional)": "translator",
         "Notes2 (optional)": "notes",
+        "Technical notes (optional)": "tech_notes",
     },
 }
 
@@ -297,6 +298,36 @@ class Command(BaseCommand):
             doc.language_note = "\n".join(notes_list)
             doc.save()
 
+    def parse_notes(self, doc, row):
+        if "PGPIDs" in row.notes:
+            old_pgpids = row.notes.split("PGPIDs: ")[-1]
+            print(old_pgpids)
+            doc.old_pgpids = [int(old_pgpid) for old_pgpid in old_pgpids.split(", ")]
+        elif "PGPID" in row.notes:
+            old_pgpid = row.notes.split("PGPID: ")[-1]
+            doc.old_pgpids = [int(old_pgpid)]
+
+        IGNORE = [
+            "India",
+            "India; unsure of date entered by Geniza Lab team (historical, before 2015)",
+            "India: addendum to IB IV",
+            "Rustow, Lost Archive",
+            "DISAGGREGATE",
+        ]
+
+        # NOTE: This assumes that this is the only (or at least first) time
+        #  the notes field is set.
+        if row.notes not in IGNORE:
+            doc.notes = row.notes
+
+        ## TECHNICAL NOTES
+        SCANNED_GOITEIN = "Look for Goitein scan in this folder: https://drive.google.com/drive/folders/1ZAWSK3ILoRyll0FafU61V5zdccx0CgaP?usp=sharing"
+
+        doc.save()
+        # ??: Should there be a doc.save() here?
+        #  It's addition was necessary to get test_import_document passing.
+        #  Should there be one at the end of the script?
+
     def import_document(self, row):
         """Import a single document given a row from a PGP spreadsheet"""
         # skip any row with multiple types or flagged for demerge
@@ -329,6 +360,7 @@ class Command(BaseCommand):
             subfragment=row.multifragment,
         )
         self.add_document_language(doc, row)
+        self.parse_notes(doc, row)
         self.docstats["documents"] += 1
         # create log entries as we go
         self.log_edit_history(
