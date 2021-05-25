@@ -312,9 +312,7 @@ class DocumentAdmin(admin.ModelAdmin):
         site_domain = Site.objects.get_current().domain.rstrip("/")
         # qa / prod always https
         url_scheme = "https://"
-        site_baseurl = url_scheme + site_domain
 
-        rows = []
         for doc in queryset:
 
             all_textblocks = doc.textblock_set.all()
