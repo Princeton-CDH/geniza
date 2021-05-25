@@ -744,7 +744,7 @@
         editors_t
         translators_t
         transcription_t
-        old_pgpid_is
+        old_pgpids_is
       </str>
       <str name="keyword_pf">
         description_t
@@ -770,7 +770,7 @@
         notes_t
         needs_review_t
         pgpid_i
-        old_pgpid_is
+        old_pgpids_is
       </str>
       <str name="admin_doc_pf">
         shelfmark_t
