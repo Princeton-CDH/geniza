@@ -50,7 +50,8 @@ def old_pgp_tabulate_data(queryset):
     # NOTE: This logic assumes that documents will always have a fragment
     for doc in queryset:
         primary_fragment = doc.textblock_set.first().fragment
-        num_fragments = len([tb for tb in doc.textblock_set.all() if tb.certain])
+        # combined shelfmark was included in the join column previously
+        join_shelfmark = doc.shelfmark
         # library abbreviation; use collection abbreviation as fallback
         library = ""
         if primary_fragment.collection:
@@ -67,7 +68,7 @@ def old_pgp_tabulate_data(queryset):
             doc.textblock_set.first().get_side_display(),  # recto_verso
             doc.doctype,  # document type
             " ".join("#" + t.name for t in doc.tags.all()),  # tags
-            doc.shelfmark if num_fragments > 1 else "",  # join
+            join_shelfmark if " + " in join_shelfmark else "",  # join
             doc.description,  # description
             old_pgp_edition(doc.editions()),  # editor
         ]
