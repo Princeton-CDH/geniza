@@ -58,7 +58,7 @@ class DocumentSearchForm(forms.Form):
     required_css_class = "required"
 
     sort = forms.ChoiceField(
-        choices=SORT_CHOICES, required=False, widget=SelectWithDisabled
+        label="Sort by", choices=SORT_CHOICES, required=False, widget=SelectWithDisabled
     )
 
     def __init__(self, data=None, *args, **kwargs):
