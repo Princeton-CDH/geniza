@@ -298,6 +298,13 @@ class Command(BaseCommand):
             doc.language_note = "\n".join(notes_list)
             doc.save()
 
+    def get_old_pgpids(self, notes):
+        if "PGPID" in notes:
+            old_pgpids = notes.split(": ")[-1]
+            return [int(old_pgpid) for old_pgpid in old_pgpids.split(", ")]
+        return None
+        # ?? Should this be []
+
     def parse_notes(self, doc, row):
         if "PGPID" in row.notes:
             old_pgpids = row.notes.split(": ")[-1]
@@ -380,6 +387,7 @@ class Command(BaseCommand):
             id=row.pgpid or None,
             doctype=doctype,
             description=row.description,
+            old_pgpids=self.get_old_pgpids(row.notes),
         )
         doc.tags.add(*[tag.strip() for tag in row.tags.split("#") if tag.strip()])
         # associate fragment via text block

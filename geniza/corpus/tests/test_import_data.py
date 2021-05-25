@@ -823,24 +823,21 @@ editors_parsed = [
 ]
 
 
+def test_get_old_pgpids():
+    notes = "Old PGPID: 6160"
+    assert import_data.Command().get_old_pgpids(notes) == [6160]
+
+    notes = "Old PGPIDs: 6160, 3600"
+    pgpid_list = import_data.Command().get_old_pgpids(notes)
+    assert 6160 in pgpid_list and 3600 in pgpid_list
+
+    notes = "India; Old PGPID: 9242"
+    import_data.Command().get_old_pgpids(notes)
+    assert import_data.Command().get_old_pgpids(notes) == [9242]
+
+
 @pytest.mark.django_db
 def test_parse_notes():
-    # Ensure old_pgpids are parsed correctly
-    doc = Document.objects.create()
-    row = AttrMap({"notes": "Old PGPID: 6160", "tech_notes": ""})
-    import_data.Command().parse_notes(doc, row)
-    assert doc.old_pgpids == [6160]
-
-    doc = Document.objects.create()
-    row = AttrMap({"notes": "Old PGPIDs: 6160, 3600", "tech_notes": ""})
-    import_data.Command().parse_notes(doc, row)
-    assert 6160 in doc.old_pgpids and 3600 in doc.old_pgpids
-
-    doc = Document.objects.create()
-    row = AttrMap({"notes": "India; Old PGPID: 9242", "tech_notes": ""})
-    import_data.Command().parse_notes(doc, row)
-    assert 9242 in doc.old_pgpids
-
     # Make sure ignored notes aren't included
     doc = Document.objects.create()
     row = AttrMap({"notes": "DISAGGREGATE", "tech_notes": ""})
