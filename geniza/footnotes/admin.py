@@ -356,6 +356,67 @@ class FootnoteAdmin(admin.ModelAdmin):
     doc_relation_list.short_description = "Document Relation"
     doc_relation_list.admin_order_field = "doc_relation"
 
+    csv_fields = [
+        "document",  # ~ content object
+        "source",
+        "location",
+        "doc_relation",
+        "notes",
+        "url",
+        "content",
+        "admin_url",
+    ]
+
+    def csv_filename(self):
+        """Generate filename for CSV download"""
+        return f'geniza-footnotes-{timezone.now().strftime("%Y%m%dT%H%M%S")}.csv'
+
+    def tabulate_queryset(self, queryset):
+        """Generator of source data for csv export"""
+
+        # generate absolute urls locally with a single db call,
+        # instead of calling out to absolutize_url method
+        site_domain = Site.objects.get_current().domain.rstrip("/")
+        # qa / prod always https
+        url_scheme = "https://"
+
+        for footnote in queryset:
+            yield [
+                footnote.content_object,
+                footnote.source,
+                footnote.location,
+                footnote.doc_relation,
+                footnote.notes,
+                footnote.url,
+                "\n".join(footnote.content["lines"]) if footnote.content else "",
+                f"{url_scheme}{site_domain}/admin/footnotes/footnote/{footnote.id}/change/",
+            ]
+
+    def export_to_csv(self, request, queryset=None):
+        """Stream source records as CSV"""
+        queryset = self.get_queryset(request) if queryset is None else queryset
+        return export_to_csv_response(
+            self.csv_filename(),
+            self.csv_fields,
+            self.tabulate_queryset(queryset),
+        )
+
+    export_to_csv.short_description = "Export selected sources to CSV"
+
+    def get_urls(self):
+        """Return admin urls; adds a custom URL for exporting all sources
+        as CSV"""
+        urls = [
+            url(
+                r"^csv/$",
+                self.admin_site.admin_view(self.export_to_csv),
+                name="footnotes_footnote_csv",
+            )
+        ]
+        return urls + super(FootnoteAdmin, self).get_urls()
+
+    actions = (export_to_csv,)
+
 
 @admin.register(Creator)
 class CreatorAdmin(TabbedTranslationAdmin):
