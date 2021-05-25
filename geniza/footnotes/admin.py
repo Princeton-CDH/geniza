@@ -7,7 +7,7 @@ from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models import Count
-from django.db.models.fields import CharField, TextField
+from django.db.models.fields import CharField, TextField, URLField
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.forms.widgets import TextInput, Textarea
@@ -43,15 +43,16 @@ class SourceFootnoteInline(admin.TabularInline):
         "object_link",
         "content_type",
         "object_id",
-        "location",
         "doc_relation",
+        "location",
         "has_transcription",
         "notes",
+        "url",
     )
     readonly_fields = ("object_link", "has_transcription")
     formfield_overrides = {
         CharField: {"widget": TextInput(attrs={"size": "10"})},
-        TextField: {"widget": Textarea(attrs={"rows": 3})},
+        TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
 
     def object_link(self, obj):
@@ -80,16 +81,17 @@ class DocumentFootnoteInline(GenericTabularInline):
     autocomplete_fields = ["source"]
     fields = (
         "source",
-        "location",
         "doc_relation",
-        "has_transcription",
+        "location",
         "notes",
+        "has_transcription",
+        "url",
     )
     readonly_fields = ("has_transcription",)
     extra = 1
     formfield_overrides = {
         CharField: {"widget": TextInput(attrs={"size": "10"})},
-        TextField: {"widget": Textarea(attrs={"rows": 3})},
+        TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
 
 

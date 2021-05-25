@@ -50,3 +50,9 @@ th.column-documents, th.column-probable_documents {
 	margin-right: auto;
 }
 .transcription h3 { text-align: left; }
+
+
+/* keep document relationship choices labels in line with checkboxes */
+.field-doc_relation {
+	white-space: nowrap;
+}

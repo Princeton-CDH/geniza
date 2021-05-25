@@ -193,7 +193,7 @@ class Footnote(models.Model):
         blank=True, null=True, help_text="Transcription content (preliminary)"
     )
     url = models.URLField(
-        blank=True, max_length=300, help_text="Link to the source (optional)"
+        "URL", blank=True, max_length=300, help_text="Link to the source (optional)"
     )
 
     # Generic relationship
