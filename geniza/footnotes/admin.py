@@ -9,6 +9,7 @@ from django.db import models
 from django.db.models import Count
 from django.db.models.fields import CharField, TextField
 from django.db.models.functions import Concat
+from django.db.models.query import Prefetch
 from django.forms.widgets import TextInput, Textarea
 from django.urls import reverse
 from django.utils import timezone
@@ -145,7 +146,12 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
                 ),
             )
             .select_related("source_type")
-            .prefetch_related("authorship_set", "authorship_set__creator")
+            .prefetch_related(
+                Prefetch(
+                    "authorship_set",
+                    queryset=Authorship.objects.select_related("creator"),
+                )
+            )
         )
 
     def footnotes(self, obj):
@@ -220,7 +226,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     export_to_csv.short_description = "Export selected sources to CSV"
 
     def get_urls(self):
-        """Return admin urls; adds a custom URL for exporting all people
+        """Return admin urls; adds a custom URL for exporting all sources
         as CSV"""
         urls = [
             url(
