@@ -318,7 +318,6 @@ class DocumentAdmin(admin.ModelAdmin):
 
             all_textblocks = doc.textblock_set.all()
             all_fragments = [tb.fragment for tb in all_textblocks]
-            all_footnotes = doc.footnotes.all()
             all_log_entries = doc.log_entries.all()
             input_users = set(
                 [
@@ -330,7 +329,7 @@ class DocumentAdmin(admin.ModelAdmin):
             iiif_urls = [fr.iiif_url for fr in all_fragments]
             view_urls = [fr.url for fr in all_fragments]
             subfrag = [tb.subfragment for tb in all_textblocks]
-            side = [tb.side for tb in all_textblocks]
+            side = [tb.get_side_display() for tb in all_textblocks]
             region = [tb.region for tb in all_textblocks]
             old_shelfmarks = [fragment.old_shelfmarks for fragment in all_fragments]
             libraries = set(
@@ -353,7 +352,6 @@ class DocumentAdmin(admin.ModelAdmin):
             ) - {
                 ""
             }  # exclude empty string for any with no collection
-            footnotes = [str(fn) for fn in all_footnotes]
 
             yield [
                 doc.id,  # pgpid
@@ -369,8 +367,6 @@ class DocumentAdmin(admin.ModelAdmin):
                 doc.doctype,
                 doc.all_tags(),
                 doc.description,
-                # FIXME: needs to be footnote display method (if included at all)
-                ";".join(footnotes) if any(footnotes) else "",
                 ";".join([os for os in old_shelfmarks if os]),
                 doc.all_languages(),
                 doc.all_probable_languages(),
@@ -400,7 +396,6 @@ class DocumentAdmin(admin.ModelAdmin):
         "type",
         "tags",
         "description",
-        "footnotes",
         "shelfmarks_historic",
         "languages",
         "languages_probable",
@@ -423,9 +418,6 @@ class DocumentAdmin(admin.ModelAdmin):
         # not needed for admin list view
         queryset = queryset.order_by("id").prefetch_related(
             "probable_languages",
-            "footnotes",
-            "footnotes__source",
-            "footnotes__source__authors",
             "log_entries",
         )
 
