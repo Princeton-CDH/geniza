@@ -218,7 +218,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
     def export_to_csv(self, request, queryset=None):
         """Stream source records as CSV"""
-        queryset = self.get_queryset(request) if queryset is None else queryset
+        queryset = queryset or self.get_queryset(request)
         return export_to_csv_response(
             self.csv_filename(),
             self.csv_fields,
@@ -372,7 +372,7 @@ class FootnoteAdmin(admin.ModelAdmin):
         return f'geniza-footnotes-{timezone.now().strftime("%Y%m%dT%H%M%S")}.csv'
 
     def tabulate_queryset(self, queryset):
-        """Generator of source data for csv export"""
+        """Generator of footnote data for csv export"""
 
         # generate absolute urls locally with a single db call,
         # instead of calling out to absolutize_url method
@@ -393,15 +393,15 @@ class FootnoteAdmin(admin.ModelAdmin):
             ]
 
     def export_to_csv(self, request, queryset=None):
-        """Stream source records as CSV"""
-        queryset = self.get_queryset(request) if queryset is None else queryset
+        """Stream footnote records as CSV"""
+        queryset = queryset or self.get_queryset(request)
         return export_to_csv_response(
             self.csv_filename(),
             self.csv_fields,
             self.tabulate_queryset(queryset),
         )
 
-    export_to_csv.short_description = "Export selected sources to CSV"
+    export_to_csv.short_description = "Export selected footnotes to CSV"
 
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all sources
