@@ -852,6 +852,11 @@ def test_parse_notes():
     import_data.Command().parse_notes(doc, row)
     assert doc.notes == ""
 
+    doc = Document.objects.create()
+    row = AttrMap({"notes": "Old PGPID: 6160", "tech_notes": ""})
+    import_data.Command().parse_notes(doc, row)
+    assert "6160" not in doc.notes
+
     # Make sure notes are appended properly
     doc = Document.objects.create()
     row = AttrMap({"notes": "See Goitein translation.", "tech_notes": "not in Gil"})

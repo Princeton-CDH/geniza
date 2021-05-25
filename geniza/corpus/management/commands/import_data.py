@@ -312,7 +312,7 @@ class Command(BaseCommand):
         ]
 
         notes_to_set = []
-        if row.notes not in IGNORE:
+        if row.notes not in IGNORE and "PGPID" not in row.notes:
             notes_to_set.append(row.notes)
 
         ## TECHNICAL NOTES
