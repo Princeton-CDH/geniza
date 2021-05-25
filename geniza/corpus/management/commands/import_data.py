@@ -862,7 +862,7 @@ class Command(BaseCommand):
                 )
                 # if this is the first edition, check for a transcription based
                 # on PGPID and attach it to the footnote
-                if i == 0:
+                if i == 0 and not translation:
                     fn.content = transcription
                 fn.save()
 
