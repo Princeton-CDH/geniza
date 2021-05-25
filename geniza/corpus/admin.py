@@ -412,7 +412,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def export_to_csv(self, request, queryset=None):
         """Stream tabular data as a CSV file"""
-        queryset = self.get_queryset(request) if queryset is None else queryset
+        queryset = queryset or self.get_queryset(request)
         # additional prefetching needed to optimize csv export but
         # not needed for admin list view
         queryset = queryset.order_by("id").prefetch_related(
