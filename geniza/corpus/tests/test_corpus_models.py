@@ -410,6 +410,7 @@ class TestDocument:
         for tag in document.tags.all():
             assert tag.name in index_data["tags_ss"]
         assert index_data["status_s"] == "Public"
+        assert not index_data["old_pgpids_is"]
 
         # suppressed documents are still indexed,
         # since they need to be searchable in admin
@@ -418,6 +419,11 @@ class TestDocument:
         assert index_data["id"] == document.index_id()
         assert "item_type_s" in index_data
         assert index_data["status_s"] == "Suppressed"
+
+        # add old pgpids
+        document.old_pgpids = [12345, 9876]
+        index_data = document.index_data()
+        assert index_data["old_pgpids_is"] == [12345, 9876]
 
 
 @pytest.mark.django_db

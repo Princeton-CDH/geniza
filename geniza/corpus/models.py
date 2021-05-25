@@ -445,7 +445,8 @@ class Document(ModelIndexable):
                 "needs_review_t": self.needs_review,
                 "shelfmark_ss": [f.shelfmark for f in self.fragments.all()],
                 "tags_ss": [t.name for t in self.tags.all()],
-                "status_s": self.get_status_display()
+                "status_s": self.get_status_display(),
+                "old_pgpids_is": self.old_pgpids,
                 # TODO: editors/translators/sources
             }
         )
