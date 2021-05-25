@@ -317,8 +317,9 @@ def test_import_document():
             "translator",
             "joins",
             "notes",
+            "tech_notes",
         ),
-        defaults=[""] * 18,
+        defaults=[""] * 19,
     )
 
     row = DocumentCSVRow(
@@ -396,10 +397,10 @@ def test_import_documents(mockrequests, caplog):
     mockrequests.codes = requests.codes  # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = [
-        b"PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional),Notes2 (optional)",
-        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,Ed. M. Cohen,,',
-        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,awaiting transcription,"Trans. Goitein, typed texts (attached)",',
-        b"2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,,",
+        b"PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional),Notes2 (optional),Technical notes (optional)",
+        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,Ed. M. Cohen,,,',
+        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,awaiting transcription,"Trans. Goitein, typed texts (attached)",,',
+        b"2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,,,",
     ]
     with caplog.at_level(logging.INFO, logger="import"):
         import_data_cmd.import_documents()
