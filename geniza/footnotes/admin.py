@@ -1,16 +1,21 @@
 from adminsortable2.admin import SortableInlineAdminMixin
 from django import forms
+from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
-from django.contrib.contenttypes.admin import GenericTabularInline, GenericStackedInline
+from django.contrib.contenttypes.admin import GenericTabularInline
+from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models import Count
 from django.db.models.fields import CharField, TextField, URLField
 from django.db.models.functions import Concat
-from django.forms.widgets import TextInput, Textarea, URLInput
+from django.db.models.query import Prefetch
+from django.forms.widgets import TextInput, Textarea
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
+from tabular_export.admin import export_to_csv_response
 
 from geniza.footnotes.models import (
     Authorship,
@@ -142,6 +147,13 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
                     "authorship__creator__last_name", "authorship__creator__first_name"
                 ),
             )
+            .select_related("source_type")
+            .prefetch_related(
+                Prefetch(
+                    "authorship_set",
+                    queryset=Authorship.objects.select_related("creator"),
+                )
+            )
         )
 
     def footnotes(self, obj):
@@ -154,6 +166,80 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
     footnotes.short_description = "# footnotes"
     footnotes.admin_order_field = "footnote__count"
+
+    csv_fields = [
+        "source_type",
+        "authors",
+        "title",
+        "journal_book",
+        "volume",
+        "year",
+        "edition",
+        "other_info",
+        "page_range",
+        "languages",
+        "url",
+        "notes",
+        "num_footnotes",
+        "admin_url",
+    ]
+
+    def csv_filename(self):
+        """Generate filename for CSV download"""
+        return f'geniza-sources-{timezone.now().strftime("%Y%m%dT%H%M%S")}.csv'
+
+    def tabulate_queryset(self, queryset):
+        """Generator of source data for csv export"""
+
+        # generate absolute urls locally with a single db call,
+        # instead of calling out to absolutize_url method
+        site_domain = Site.objects.get_current().domain.rstrip("/")
+        # qa / prod always https
+        url_scheme = "https://"
+
+        for source in queryset:
+            yield [
+                source.source_type,
+                # authors in order, lastname first
+                ";".join([str(a.creator) for a in source.authorship_set.all()]),
+                source.title,
+                source.journal,
+                source.volume,
+                source.year,
+                source.edition,
+                source.other_info,
+                source.page_range,
+                ";".join([lang.name for lang in source.languages.all()]),
+                source.url,
+                source.notes,
+                source.footnote__count,  # via annotated queryset
+                f"{url_scheme}{site_domain}/admin/footnotes/source/{source.id}/change/",
+            ]
+
+    def export_to_csv(self, request, queryset=None):
+        """Stream source records as CSV"""
+        queryset = self.get_queryset(request) if queryset is None else queryset
+        return export_to_csv_response(
+            self.csv_filename(),
+            self.csv_fields,
+            self.tabulate_queryset(queryset),
+        )
+
+    export_to_csv.short_description = "Export selected sources to CSV"
+
+    def get_urls(self):
+        """Return admin urls; adds a custom URL for exporting all sources
+        as CSV"""
+        urls = [
+            url(
+                r"^csv/$",
+                self.admin_site.admin_view(self.export_to_csv),
+                name="footnotes_source_csv",
+            )
+        ]
+        return urls + super(SourceAdmin, self).get_urls()
+
+    actions = (export_to_csv,)
 
 
 @admin.register(SourceType)

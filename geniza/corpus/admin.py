@@ -312,9 +312,7 @@ class DocumentAdmin(admin.ModelAdmin):
         site_domain = Site.objects.get_current().domain.rstrip("/")
         # qa / prod always https
         url_scheme = "https://"
-        site_baseurl = url_scheme + site_domain
 
-        rows = []
         for doc in queryset:
 
             all_textblocks = doc.textblock_set.all()
@@ -431,7 +429,7 @@ class DocumentAdmin(admin.ModelAdmin):
     export_to_csv.short_description = "Export selected documents to CSV"
 
     def get_urls(self):
-        """Return admin urls; adds a custom URL for exporting all people
+        """Return admin urls; adds a custom URL for exporting all documents
         as CSV"""
         urls = [
             url(
