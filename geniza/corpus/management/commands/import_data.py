@@ -299,12 +299,9 @@ class Command(BaseCommand):
             doc.save()
 
     def parse_notes(self, doc, row):
-        if "PGPIDs" in row.notes:
-            old_pgpids = row.notes.split("PGPIDs: ")[-1]
+        if "PGPID" in row.notes:
+            old_pgpids = row.notes.split(": ")[-1]
             doc.old_pgpids = [int(old_pgpid) for old_pgpid in old_pgpids.split(", ")]
-        elif "PGPID" in row.notes:
-            old_pgpid = row.notes.split("PGPID: ")[-1]
-            doc.old_pgpids = [int(old_pgpid)]
 
         IGNORE = [
             "India",
@@ -343,9 +340,12 @@ class Command(BaseCommand):
             SCANNED_GOITEIN_NOTE = "Look for Goitein scan in this folder: https://drive.google.com/drive/folders/1ZAWSK3ILoRyll0FafU61V5zdccx0CgaP?usp=sharing"
             notes_to_set.append(SCANNED_GOITEIN_NOTE)
         elif "scanned in drive" in row.tech_notes:
-            type_s = ["transcription", "translation"]
             detail = " and ".join(
-                [form for form in type_s if form in row.tech_notes.lower()]
+                [
+                    t
+                    for t in ["transcription", "translation"]
+                    if t in row.tech_notes.lower()
+                ]
             )
             DETAIL_GOTEIN_SCAN_NOTE = (
                 f"There is a {detail} in Goitein's notes that should be digitized."
