@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.db.models.functions import Concat
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.postgres.fields import ArrayField
 from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
@@ -293,6 +294,7 @@ class Document(ModelIndexable):
         blank=True,
         help_text="Enter text here if an administrator needs to review this document.",
     )
+    old_pgpids = ArrayField(models.IntegerField(), null=True)
 
     PUBLIC = "P"
     SUPPRESSED = "S"
