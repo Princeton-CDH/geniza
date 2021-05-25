@@ -247,11 +247,11 @@ class TestDocumentAdmin:
             assert doc.all_tags() in doc_data
 
             # test new functions
-            assert f"https://example.com/documents/{doc.id}/" == doc_data.url
-            assert "Public" == doc_data.status
+            assert f"https://example.com/documents/{doc.id}/" in doc_data
+            assert "Public" in doc_data
             assert (
                 f"https://example.com/admin/corpus/document/{doc.id}/change/"
-                == doc_data.url_admin
+                in doc_data
             )
 
     @pytest.mark.django_db
