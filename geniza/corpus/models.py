@@ -469,8 +469,6 @@ class Document(ModelIndexable):
                 "tags_ss": [t.name for t in self.tags.all()],
                 "status_s": self.get_status_display()
                 # TODO: editors/translators/sources
-                # todo: index counts for: edition, translation, discussion
-                # (+ and total scholarship count for sorting?)
             }
         )
 
@@ -493,6 +491,8 @@ class Document(ModelIndexable):
         if last_log_entry:
             # TODO: index full date for sorting but only display year
             index_data["input_year_i"] = last_log_entry.action_time.year
+        # image indexing was causing timeouts with cudl manifests,
+        # hold off on that for now
         # images = img_labels = []
         # for fragment in self.fragments.all():
         #     imgs = fragment.iiif_images()
