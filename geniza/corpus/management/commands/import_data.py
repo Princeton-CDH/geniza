@@ -64,6 +64,7 @@ csv_fields = {
         "Editor(s)": "editor",
         "Translator (optional)": "translator",
         "Notes2 (optional)": "notes",
+        "Technical notes (optional)": "tech_notes",
     },
 }
 
@@ -297,6 +298,61 @@ class Command(BaseCommand):
             doc.language_note = "\n".join(notes_list)
             doc.save()
 
+    def get_old_pgpids(self, notes):
+        if "PGPID" in notes:
+            old_pgpids = notes.split(": ")[-1]
+            return [int(old_pgpid) for old_pgpid in old_pgpids.split(", ")]
+        return None
+        # ?? Should this be []
+
+    def get_notes(self, notes, tech_notes):
+        IGNORE = [
+            "India",
+            "India; unsure of date entered by Geniza Lab team (historical, before 2015)",
+            "India: addendum to IB IV",
+            "Rustow, Lost Archive",
+            "DISAGGREGATE",
+        ]
+
+        notes_to_set = []
+        if notes not in IGNORE and "PGPID" not in notes:
+            notes_to_set.append(notes)
+
+        ## TECHNICAL NOTES
+        # Unique values:
+        """
+            FGP stub
+            scanned in drive
+            ?scanned in drive
+            Transcription needs to be uploaded*
+            Transcription needs to be uploaded
+            scanned in drive (TRANSCRIPTION)
+            scanned in drive (TRANSLATION)
+            not in Gil
+            Scanned in drive
+            scanned in drive 
+            scanned in drive (TRANSCRIPTION + TRANSLATION)
+            scanned in drive (TRANSCRIPTION & TRANSLATION)
+        """
+
+        if tech_notes == "not in Gil":
+            GIL_NOTE = "Not published by Gil, pace FGP."
+            notes_to_set.append(GIL_NOTE)
+
+        if "scanned in drive" == tech_notes.strip("?"):
+            SCANNED_GOITEIN_NOTE = "Look for Goitein scan in this folder: https://drive.google.com/drive/folders/1ZAWSK3ILoRyll0FafU61V5zdccx0CgaP?usp=sharing"
+            notes_to_set.append(SCANNED_GOITEIN_NOTE)
+        elif "scanned in drive" in tech_notes:
+            detail = " and ".join(
+                [t for t in ["transcription", "translation"] if t in tech_notes.lower()]
+            )
+            DETAIL_GOTEIN_SCAN_NOTE = (
+                f"There is a {detail} in Goitein's notes that should be digitized."
+            )
+            notes_to_set.append(DETAIL_GOTEIN_SCAN_NOTE)
+
+        return "\n".join(notes_to_set)
+
     def import_document(self, row):
         """Import a single document given a row from a PGP spreadsheet"""
         # skip any row with multiple types or flagged for demerge
@@ -317,6 +373,8 @@ class Command(BaseCommand):
             id=row.pgpid or None,
             doctype=doctype,
             description=row.description,
+            old_pgpids=self.get_old_pgpids(row.notes),
+            notes=self.get_notes(row.notes, row.tech_notes),
         )
         doc.tags.add(*[tag.strip() for tag in row.tags.split("#") if tag.strip()])
         # associate fragment via text block

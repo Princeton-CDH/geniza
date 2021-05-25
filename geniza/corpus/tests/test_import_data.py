@@ -317,8 +317,9 @@ def test_import_document():
             "translator",
             "joins",
             "notes",
+            "tech_notes",
         ),
-        defaults=[""] * 18,
+        defaults=[""] * 19,
     )
 
     row = DocumentCSVRow(
@@ -334,7 +335,7 @@ def test_import_document():
         input_by="Sarah Nisenson",
         date_entered="2017",
         editor="Ed. M. Cohen",
-        notes="",
+        notes="Old PGPIDs: 756, 659",
     )
     import_data_cmd.import_document(row)
 
@@ -369,6 +370,7 @@ def test_import_document():
         object_id=doc.pk,
         content_type_id=document_ctype.pk,
     )
+    assert 756 in doc.old_pgpids and 659 in doc.old_pgpids
 
     # test that auto-increment works properly when PGPID is not provided
     row = DocumentCSVRow(
@@ -395,10 +397,10 @@ def test_import_documents(mockrequests, caplog):
     mockrequests.codes = requests.codes  # patch in actual response codes
     mockrequests.get.return_value.status_code = 200
     mockrequests.get.return_value.iter_lines.return_value = [
-        b"PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional),Notes2 (optional)",
-        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,Ed. M. Cohen,,',
-        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,awaiting transcription,"Trans. Goitein, typed texts (attached)",',
-        b"2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,,",
+        b"PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional),Notes2 (optional),Technical notes (optional)",
+        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,Ed. M. Cohen,,,',
+        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,awaiting transcription,"Trans. Goitein, typed texts (attached)",,',
+        b"2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,,,",
     ]
     with caplog.at_level(logging.INFO, logger="import"):
         import_data_cmd.import_documents()
@@ -819,6 +821,56 @@ editors_parsed = [
     ("Partial transcription listed in FGP, awaiting digitization on PGP", []),
     ("Transcription listed in FGP, awaiting digitization on PGP", []),
 ]
+
+
+def test_get_old_pgpids():
+    notes = "Old PGPID: 6160"
+    assert import_data.Command().get_old_pgpids(notes) == [6160]
+
+    notes = "Old PGPIDs: 6160, 3600"
+    pgpid_list = import_data.Command().get_old_pgpids(notes)
+    assert 6160 in pgpid_list and 3600 in pgpid_list
+
+    notes = "India; Old PGPID: 9242"
+    import_data.Command().get_old_pgpids(notes)
+    assert import_data.Command().get_old_pgpids(notes) == [9242]
+
+
+@pytest.mark.django_db
+def test_get_notes():
+    # Make sure ignored notes aren't included
+    notes = "DISAGGREGATE"
+    tech_notes = ""
+    parsed_notes = import_data.Command().get_notes(notes, tech_notes)
+    assert parsed_notes == ""
+
+    notes = "Old PGPID: 6160"
+    tech_notes = ""
+    parsed_notes = import_data.Command().get_notes(notes, tech_notes)
+    assert "6160" not in parsed_notes
+
+    # Make sure notes are appended properly
+    notes = "See Goitein translation."
+    tech_notes = "not in Gil"
+    parsed_notes = import_data.Command().get_notes(notes, tech_notes)
+    assert parsed_notes == "See Goitein translation.\nNot published by Gil, pace FGP."
+
+    # Test transcription / translation logic
+    notes = "See Goitein translation."
+    tech_notes = "scanned in drive (TRANSCRIPTION + TRANSLATION)"
+    parsed_notes = import_data.Command().get_notes(notes, tech_notes)
+    assert (
+        parsed_notes
+        == "See Goitein translation.\nThere is a transcription and translation in Goitein's notes that should be digitized."
+    )
+
+    notes = "See Goitein translation."
+    tech_notes = "scanned in drive (TRANSLATION)"
+    parsed_notes = import_data.Command().get_notes(notes, tech_notes)
+    assert (
+        parsed_notes
+        == "See Goitein translation.\nThere is a translation in Goitein's notes that should be digitized."
+    )
 
 
 @pytest.mark.django_db

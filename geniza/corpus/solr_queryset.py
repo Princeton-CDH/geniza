@@ -18,6 +18,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "notes": "notes_t",
         "needs_review": "needs_review_t",
         "pgpid": "pgpid_i",
+        "old_pgpids": "old_pgpid_is",
         "input_year": "input_year_i",
         "num_editions": "num_editions_i",
         "num_translations": "num_translations_i",
