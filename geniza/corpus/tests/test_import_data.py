@@ -837,11 +837,6 @@ def test_parse_notes():
     assert 6160 in doc.old_pgpids and 3600 in doc.old_pgpids
 
     doc = Document.objects.create()
-    row = AttrMap({"notes": "Old PGPIDs: 6160, 3600", "tech_notes": ""})
-    import_data.Command().parse_notes(doc, row)
-    assert 6160 in doc.old_pgpids and 3600 in doc.old_pgpids
-
-    doc = Document.objects.create()
     row = AttrMap({"notes": "India; Old PGPID: 9242", "tech_notes": ""})
     import_data.Command().parse_notes(doc, row)
     assert 9242 in doc.old_pgpids
