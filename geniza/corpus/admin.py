@@ -167,7 +167,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "has_image",
         "is_public",
     )
-    readonly_fields = ("created", "last_modified", "shelfmark", "id")
+    readonly_fields = ("created", "last_modified", "shelfmark", "id", "old_pgpids")
     search_fields = (
         "fragments__shelfmark",
         "tags__name",
@@ -175,6 +175,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "notes",
         "needs_review",
         "id",
+        "old_pgpids",
     )
     # TODO include search on edition once we add footnotes
     save_as = True
@@ -202,7 +203,7 @@ class DocumentAdmin(admin.ModelAdmin):
     )
 
     fields = (
-        ("shelfmark", "id"),
+        ("shelfmark", "id", "old_pgpids"),
         "doctype",
         ("languages", "probable_languages"),
         "language_note",
