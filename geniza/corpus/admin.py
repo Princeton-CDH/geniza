@@ -1,10 +1,13 @@
 from collections import namedtuple
+
 from django import forms
+from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
-from django.db.models import Count, CharField
+from django.db.models import Count, CharField, Q
 from django.db.models.query import Prefetch
 from django.forms.widgets import TextInput, Textarea
 from django.urls import reverse, resolve
@@ -24,6 +27,7 @@ from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.common.admin import custom_empty_field_list_filter
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.common.utils import absolutize_url
+from django.contrib.auth.models import User
 
 
 class FragmentTextBlockInline(admin.TabularInline):
@@ -165,7 +169,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "has_image",
         "is_public",
     )
-    readonly_fields = ("created", "last_modified", "shelfmark", "id")
+    readonly_fields = ("created", "last_modified", "shelfmark", "id", "old_pgpids")
     search_fields = (
         "fragments__shelfmark",
         "tags__name",
@@ -173,6 +177,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "notes",
         "needs_review",
         "id",
+        "old_pgpids",
     )
     # TODO include search on edition once we add footnotes
     save_as = True
@@ -200,7 +205,7 @@ class DocumentAdmin(admin.ModelAdmin):
     )
 
     fields = (
-        ("shelfmark", "id"),
+        ("shelfmark", "id", "old_pgpids"),
         "doctype",
         ("languages", "probable_languages"),
         "language_note",
@@ -240,7 +245,9 @@ class DocumentAdmin(admin.ModelAdmin):
                 # https://docs.djangoproject.com/en/3.2/ref/models/querysets/#prefetch-related
                 Prefetch(
                     "textblock_set",
-                    queryset=TextBlock.objects.select_related("fragment"),
+                    queryset=TextBlock.objects.select_related(
+                        "fragment", "fragment__collection"
+                    ),
                 ),
                 "footnotes__content__isnull",
             )
@@ -296,112 +303,133 @@ class DocumentAdmin(admin.ModelAdmin):
         """Generate filename for CSV download"""
         return f'geniza-documents-{timezone.now().strftime("%Y%m%dT%H%M%S")}.csv'
 
-    DocumentRow = namedtuple(
-        "DocumentRow",
-        [
-            "pgpid",
-            "url",
-            "iiif_urls",
-            "fragment_urls",
-            "shelfmark",
-            "subfragment",
-            "side",
-            "region",
-            "type",
-            "tags",
-            "description",
-            "footnotes",
-            "shelfmarks_historic",
-            "languages",
-            "languages_probable",
-            "language_note",
-            "notes",
-            "needs_review",
-            "url_admin",
-            "initial_entry",
-            "latest_revision",
-            "input_by",
-            "status",
-            "library",
-            "collection",
-        ],
-    )
-
     def tabulate_queryset(self, queryset):
         """Generator for data in tabular form, including custom fields"""
-        rows = []
+
+        script_user = settings.SCRIPT_USERNAME
+        # generate absolute urls locally with a single db call,
+        # instead of calling out to absolutize_url method
+        site_domain = Site.objects.get_current().domain.rstrip("/")
+        # qa / prod always https
+        url_scheme = "https://"
+
         for doc in queryset:
-            all_fragments = doc.fragments.all()
+
             all_textblocks = doc.textblock_set.all()
-            all_footnotes = doc.footnotes.all()
-
-            initial_entry = doc.log_entries.first()
-            latest_revision = doc.log_entries.last()
-
-            row = self.DocumentRow(
-                **{
-                    "pgpid": doc.id,
-                    "url": absolutize_url(doc.get_absolute_url()),
-                    "iiif_urls": ";".join(
-                        [fragment.iiif_url for fragment in all_fragments]
-                    ),
-                    "fragment_urls": ";".join(
-                        [fragment.url for fragment in all_fragments]
-                    ),
-                    "shelfmark": doc.shelfmark,
-                    "subfragment": ";".join([tb.subfragment for tb in all_textblocks]),
-                    "side": ";".join([tb.side for tb in all_textblocks]),
-                    "region": ";".join([tb.region for tb in all_textblocks]),
-                    "type": doc.doctype,
-                    "tags": doc.all_tags(),
-                    "description": doc.description,
-                    "footnotes": ";".join([str(fn) for fn in all_footnotes]),
-                    "shelfmarks_historic": ";".join(
-                        [fragment.old_shelfmarks for fragment in all_fragments]
-                    ),
-                    "languages": doc.all_languages(),
-                    "languages_probable": doc.all_probable_languages(),
-                    "language_note": doc.language_note,
-                    "notes": doc.notes,
-                    "needs_review": doc.needs_review,
-                    "url_admin": absolutize_url(
-                        reverse("admin:corpus_document_change", args=[doc.id])
-                    ),
-                    "initial_entry": doc.log_entries.first(),
-                    "latest_revision": doc.log_entries.last(),
-                    "input_by": ";".join(
-                        [
-                            str(n)
-                            for n in set(doc.log_entries.values_list("user", flat=True))
-                        ]
-                    ),
-                    "status": "Public"
-                    if doc.status == Document.PUBLIC
-                    else "Suppressed",
-                    "library": ";".join(
-                        [fragment.collection.lib_abbrev for fragment in all_fragments]
-                    ),
-                    "collection": doc.collection,
-                }
+            all_fragments = [tb.fragment for tb in all_textblocks]
+            all_log_entries = doc.log_entries.all()
+            input_users = set(
+                [
+                    log_entry.user
+                    for log_entry in all_log_entries
+                    if log_entry.user.username != script_user
+                ]
             )
+            iiif_urls = [fr.iiif_url for fr in all_fragments]
+            view_urls = [fr.url for fr in all_fragments]
+            subfrag = [tb.subfragment for tb in all_textblocks]
+            side = [tb.get_side_display() for tb in all_textblocks]
+            region = [tb.region for tb in all_textblocks]
+            old_shelfmarks = [fragment.old_shelfmarks for fragment in all_fragments]
+            libraries = set(
+                [
+                    fragment.collection.lib_abbrev or fragment.collection.library
+                    if fragment.collection
+                    else ""
+                    for fragment in all_fragments
+                ]
+            ) - {
+                ""
+            }  # exclude empty string for any fragments with no library
+            collections = set(
+                [
+                    fragment.collection.abbrev or fragment.collection.name
+                    if fragment.collection
+                    else ""
+                    for fragment in all_fragments
+                ]
+            ) - {
+                ""
+            }  # exclude empty string for any with no collection
 
-            yield row
+            yield [
+                doc.id,  # pgpid
+                # to make the download as efficient as possible, don't use
+                # absolutize_url, reverse, or get_absolute_url methods
+                f"{url_scheme}{site_domain}/documents/{doc.id}/",  # public site url
+                ";".join(iiif_urls) if any(iiif_urls) else "",
+                ";".join(view_urls) if any(view_urls) else "",
+                doc.shelfmark,  # shelfmark
+                ";".join([s for s in subfrag if s]),
+                ";".join([s for s in side if s]),  # side (recto/verso)
+                ";".join([r for r in region if r]),  # text block region
+                doc.doctype,
+                doc.all_tags(),
+                doc.description,
+                ";".join([os for os in old_shelfmarks if os]),
+                doc.all_languages(),
+                doc.all_probable_languages(),
+                doc.language_note,
+                doc.notes,
+                doc.needs_review,
+                f"{url_scheme}{site_domain}/admin/corpus/document/{doc.id}/change/",
+                all_log_entries[0].action_time if all_log_entries else "",
+                doc.last_modified,
+                ";".join(
+                    set([user.get_full_name() or user.username for user in input_users])
+                ),  # input by
+                doc.get_status_display(),
+                ";".join(libraries) if any(libraries) else "",
+                ";".join(collections) if any(collections) else "",
+            ]
+
+    csv_fields = [
+        "pgpid",
+        "url",
+        "iiif_urls",
+        "fragment_urls",
+        "shelfmark",
+        "subfragment",
+        "side",
+        "region",
+        "type",
+        "tags",
+        "description",
+        "shelfmarks_historic",
+        "languages",
+        "languages_probable",
+        "language_note",
+        "notes",
+        "needs_review",
+        "url_admin",
+        "initial_entry",
+        "last_modified",
+        "input_by",
+        "status",
+        "library",
+        "collection",
+    ]
 
     def export_to_csv(self, request, queryset=None):
         """Stream tabular data as a CSV file"""
         queryset = self.get_queryset(request) if queryset is None else queryset
-        queryset = queryset.order_by("id")
+        # additional prefetching needed to optimize csv export but
+        # not needed for admin list view
+        queryset = queryset.order_by("id").prefetch_related(
+            "probable_languages",
+            "log_entries",
+        )
 
         return export_to_csv_response(
             self.csv_filename(),
-            self.DocumentRow._fields,
+            self.csv_fields,
             self.tabulate_queryset(queryset),
         )
 
     export_to_csv.short_description = "Export selected documents to CSV"
 
     def get_urls(self):
-        """Return admin urls; adds a custom URL for exporting all people
+        """Return admin urls; adds a custom URL for exporting all documents
         as CSV"""
         urls = [
             url(

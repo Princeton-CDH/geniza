@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.db.models.functions import Concat
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.postgres.fields import ArrayField
 from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
@@ -309,6 +310,7 @@ class Document(ModelIndexable):
         blank=True,
         help_text="Enter text here if an administrator needs to review this document.",
     )
+    old_pgpids = ArrayField(models.IntegerField(), null=True)
 
     PUBLIC = "P"
     SUPPRESSED = "S"
@@ -345,7 +347,8 @@ class Document(ModelIndexable):
         return " + ".join(
             dict.fromkeys(
                 block.fragment.shelfmark
-                for block in self.textblock_set.filter(certain=True)
+                for block in self.textblock_set.all()
+                if block.certain  # filter locally instead of in the db
             )
         )
 
@@ -561,6 +564,7 @@ class TextBlock(models.Model):
 
     class Meta:
         ordering = ["order"]
+        verbose_name = "Related Fragment"  # for researcher legibility in admin
 
     def __str__(self):
         # combine shelfmark, subfragment, side, region, and certainty

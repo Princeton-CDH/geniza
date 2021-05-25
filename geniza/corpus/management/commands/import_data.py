@@ -63,6 +63,7 @@ csv_fields = {
         "Link to image": "image_link",
         "Editor(s)": "editor",
         "Translator (optional)": "translator",
+        "Notes2 (optional)": "notes",
     },
 }
 
@@ -80,12 +81,6 @@ class Command(BaseCommand):
     "Import existing data from PGP spreadsheets into the database"
 
     logentry_message = "Imported via script"
-
-    content_types = {}
-    collection_lookup = {}
-    document_type = {}
-    language_lookup = {}
-    user_lookup = {}
     max_documents = None
 
     def add_arguments(self, parser):
@@ -112,6 +107,14 @@ class Command(BaseCommand):
             )
             for username in set(active_users) - set(present):
                 call_command("createcasuser", username, staff=True, verbosity=verbosity)
+
+        # Set dicts on the instance so they're not shared across instances
+        self.doctype_lookup = {}
+        self.content_types = {}
+        self.collection_lookup = {}
+        self.document_type = {}
+        self.language_lookup = {}
+        self.user_lookup = {}
 
         # fetch users created through migrations for easy access later; add one
         # known exception (accented character)
@@ -163,7 +166,7 @@ class Command(BaseCommand):
         self.import_languages()
         self.import_documents()
 
-    def get_csv(self, name):
+    def get_csv(self, name, schema=None):
         # given a name for a file in the configured data import urls,
         # load the data by url and initialize and return a generator
         # of namedtuple elements for each row
@@ -181,7 +184,7 @@ class Command(BaseCommand):
         CsvRow = namedtuple(
             "%sCSVRow" % name,
             (
-                csv_fields[name].get(
+                csv_fields[(schema or name)].get(
                     col, slugify(col).replace("-", "_") or "empty_%d" % i
                 )
                 for i, col in enumerate(header)
@@ -294,13 +297,13 @@ class Command(BaseCommand):
             doc.language_note = "\n".join(notes_list)
             doc.save()
 
-    def import_documents(self):
-        metadata = self.get_csv("metadata")
-        Document.objects.all().delete()
-        Fragment.objects.all().delete()
-        LogEntry.objects.filter(
-            content_type_id=self.content_types[Document].id
-        ).delete()
+    def import_document(self, row):
+        """Import a single document given a row from a PGP spreadsheet"""
+        # skip any row with multiple types or flagged for demerge
+        if ";" in row.type or "DISAGGREGATE" in row.notes:
+            logger.warning("skipping PGPID %s (demerge)" % row.pgpid)
+            self.docstats["skipped"] += 1
+            return
 
         # create a reverse lookup for recto/verso labels used in the
         # spreadsheet to the codes used in the database
@@ -308,52 +311,74 @@ class Command(BaseCommand):
             label.lower(): code for code, label in TextBlock.RECTO_VERSO_CHOICES
         }
 
-        joins = []
-        docstats = defaultdict(int)
+        doctype = self.get_doctype(row.type)
+        fragment = self.get_fragment(row)
+        doc = Document.objects.create(
+            id=row.pgpid or None,
+            doctype=doctype,
+            description=row.description,
+        )
+        doc.tags.add(*[tag.strip() for tag in row.tags.split("#") if tag.strip()])
+        # associate fragment via text block
+        TextBlock.objects.create(
+            document=doc,
+            fragment=fragment,
+            # convert recto/verso value to code
+            side=recto_verso_lookup.get(row.recto_verso, ""),
+            region=row.text_block,
+            subfragment=row.multifragment,
+        )
+        self.add_document_language(doc, row)
+        self.docstats["documents"] += 1
+        # create log entries as we go
+        self.log_edit_history(
+            doc, self.get_edit_history(row.input_by, row.date_entered, row.pgpid)
+        )
+        # parse editor & translator information to create sources
+        # and associate with footnotes
+        editor = row.editor.strip(".")
+        if editor and editor not in self.editor_ignore:
+            self.parse_editor(doc, editor)
+        # treat translator like editor, but set translation flag
+        if row.translator:
+            self.parse_editor(doc, row.translator, translation=True)
+
+        # keep track of any joins to handle on a second pass
+        if row.joins.strip():
+            self.joins.add((doc, row.joins.strip()))
+
+    def import_documents(self):
+        """Import all document given the PGP spreadsheets"""
+
+        metadata = self.get_csv("metadata")
+        demerged_metadata = self.get_csv("demerged", schema="metadata")
+
+        Document.objects.all().delete()
+        Fragment.objects.all().delete()
+        LogEntry.objects.filter(
+            content_type_id=self.content_types[Document].id
+        ).delete()
+
+        self.joins = set()
+        self.docstats = defaultdict(int)
+
         for row in metadata:
-            if ";" in row.type:
-                logger.warning("skipping PGPID %s (demerge)" % row.pgpid)
-                docstats["skipped"] += 1
-                continue
+            self.import_document(row)
+        document_count_metadata = self.docstats["documents"]
 
-            doctype = self.get_doctype(row.type)
-            fragment = self.get_fragment(row)
-            doc = Document.objects.create(
-                id=row.pgpid,
-                doctype=doctype,
-                description=row.description,
-            )
-            doc.tags.add(*[tag.strip() for tag in row.tags.split("#") if tag.strip()])
-            # associate fragment via text block
-            TextBlock.objects.create(
-                document=doc,
-                fragment=fragment,
-                # convert recto/verso value to code
-                side=recto_verso_lookup.get(row.recto_verso, ""),
-                region=row.text_block,
-                subfragment=row.multifragment,
-            )
-            self.add_document_language(doc, row)
-            docstats["documents"] += 1
-            # create log entries as we go
-            self.log_edit_history(
-                doc, self.get_edit_history(row.input_by, row.date_entered, row.pgpid)
-            )
-            # parse editor & translator information to create sources
-            # and associate with footnotes
-            editor = row.editor.strip(".")
-            if editor and editor not in self.editor_ignore:
-                self.parse_editor(doc, editor)
-            # treat translator like editor, but set translation flag
-            if row.translator:
-                self.parse_editor(doc, row.translator, translation=True)
+        # update id sequence based on highest imported pgpid
+        self.update_document_id_sequence()
 
-            # keep track of any joins to handle on a second pass
-            if row.joins.strip():
-                joins.append((doc, row.joins.strip()))
+        for row in demerged_metadata:
+            # overwrite document if it already exists
+            if row.pgpid and Document.objects.filter(id=row.pgpid).exists():
+                logger.warning(f"Overwriting PGPID {row.pgpid} with demerge")
+                Document.objects.filter(id=row.pgpid).delete()
+                self.docstats["overwritten"] += 1
+            self.import_document(row)
 
         # handle joins collected on the first pass
-        for doc, join in joins:
+        for doc, join in self.joins:
             initial_shelfmark = doc.shelfmark
             for shelfmark in join.split(" + "):
                 # skip the initial shelfmark, already associated
@@ -367,15 +392,14 @@ class Command(BaseCommand):
                     self.log_creation(join_fragment)
                 # associate the fragment with the document
                 doc.fragments.add(join_fragment)
+        document_count_demerged = self.docstats["documents"] - document_count_metadata
 
-        # update id sequence based on highest imported pgpid
-        self.update_document_id_sequence()
         logger.info(
-            "Imported %d documents, %d with joins; skipped %d"
-            % (docstats["documents"], len(joins), docstats["skipped"])
+            f"Imported {document_count_metadata} documents from the metadata spreadsheet and skipped {self.docstats['skipped']}. "
+            f"Imported {document_count_demerged} documents from the demerged spreadsheet. "
+            f"Overwrote {self.docstats['overwritten']} documents. "
+            f"Parsed {len(self.joins)} joins. "
         )
-
-    doctype_lookup = {}
 
     def get_doctype(self, dtype):
         # don't create an empty doctype
@@ -401,7 +425,10 @@ class Command(BaseCommand):
                     break
             # if code is still CUL, there is a problem
             if lib_code == "CUL":
-                logger.warning("CUL collection not determined for %s" % data.shelfmark)
+                logger.warning(
+                    "CUL collection not determined for %s (PGPID %s)"
+                    % (data.shelfmark, data.pgpid)
+                )
         return self.collection_lookup.get(lib_code)
 
     def get_fragment(self, data):
@@ -517,8 +544,8 @@ class Command(BaseCommand):
         """
 
         # split both fields by semicolon delimiter & remove whitespace
-        all_input = [i.strip() for i in input_by.split(";")]
-        all_dates = [d.strip() for d in date_entered.split(";")]
+        all_input = [i.strip() for i in input_by.split(";") if i]
+        all_dates = [d.strip() for d in date_entered.split(";") if d]
 
         # try to map every "input by" listing to a user account. for coauthored
         # events, add both users to a list – otherwise it's a one-element list
@@ -642,6 +669,7 @@ class Command(BaseCommand):
         "transcription listed on fgp, awaiting digitization on pgp",
         "transcription listed in fgp, awaiting digitization on pgp",
         "source of transcription not noted in original pgp database",
+        "source of transcription not noted in original pgp. complete transcription awaiting digitization",
         "yes",
         "partial transcription listed in fgp, awaiting digitization on pgp",
         "transcription (recto only) listed in fgp, awaiting digitization on pgp",
@@ -652,7 +680,7 @@ class Command(BaseCommand):
 
     # re_docrelation = re.compile(r'^(. Also )?Ed. (and transl?.)? ?',
     re_docrelation = re.compile(
-        r"^(also )?ed. ?(and trans(\.|l\.|lated) ?)?(by )?", flags=re.I
+        r"^((also )?ed. ?(and trans(\.|l\.|lated) ?)?(by )?|(also )?trans.)", flags=re.I
     )
 
     # notes that may occur with an edition
@@ -664,24 +692,25 @@ class Command(BaseCommand):
         r'[.;,]["\'’”]? (?P<note>('
         + r"(full )?transcription (listed|awaiting|available|only).*$|"
         + r"(retyped )?(with )?minor|with corrections|with emendations).*$|"
-        + r"compared with.*$|"
-        + r"partial.*$|"
-        + r"await.*$|"
-        + r"corrected.*$|"
+        + r"compared with.*$|incorporat.*$|"
+        + r"partial.*$|remainder.*$|(revised|rev\.) .*$|"
+        + r"(translation )?await.*$|additions .*$"
+        + r"(as )?corrected.*$|"
         + r"edited (here )?in comparison with.*$|"
         + r"[(]?see .*$|"
-        + r"(\([\w\d]+ [\w\d., ]+\) ?$))",
-        flags=re.I,
+        + r"(\([\w\d]+ [\w\d.,-– \"']+\) ?$))",
+        flags=re.I | re.U,
     )
 
     # regexes to pull out page or document location
     re_page_location = re.compile(
-        r"[,.] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+)[a-z]?)\.?",
+        r"[,.:] (?P<pages>((pp?|pgs)\. ?\d+([-–]\d+)?)|(\d+[-–]\d+)[a-z]?)"
+        + r"( \[\d+\])?\.?",  # pp. 215-236 [219]
         flags=re.I,
     )
     # Doc, Doc., Document, # with numbers and or alpha-number
     re_doc_location = re.compile(
-        r"(, )?\(?(?P<doc>(Doc(ument|\.)? ?#?|#) ?([A-Z]-)?\d+)\)?\.?", flags=re.I
+        r"(, )?\(?(?P<doc>(Doc(ument|\.)? ?#?|#|no\.) ?([A-Z]-)?\d+)\)?\.?", flags=re.I
     )
     # \u0590-\u05fe = range for hebrew characters
     re_goitein_section = re.compile(
@@ -694,9 +723,19 @@ class Command(BaseCommand):
         editions = re.split(r"[;.] (?=also ed\.|ed\.|also)", editor, flags=re.I)
 
         for i, edition in enumerate(editions):
+
+            # check for transcription content
+            transcription = self.transcriptions.get(str(document.pk))
+            # check for and exclude empty content
+            if transcription and transcription["lines"] == [""]:
+                transcription = None
+
             # strip whitespace and periods before checking ignore list
             if edition.rstrip(" .").lower() in self.editor_ignore:
-                continue
+                # skip unless there is a transcription, in which case
+                # we want to import it
+                if not transcription:
+                    continue
 
             # footnotes for these records are always editions
             doc_relation = {Footnote.EDITION}
@@ -714,7 +753,7 @@ class Command(BaseCommand):
             edit_transl_match = self.re_docrelation.match(edition)
             if edit_transl_match:
                 # if doc relation text includes translation, set flag
-                if "and trans" in edit_transl_match.group(0):
+                if "trans" in edit_transl_match.group(0).lower():
                     doc_relation.add(Footnote.TRANSLATION)
 
                 # remove ed/trans from edition text
@@ -726,6 +765,14 @@ class Command(BaseCommand):
                 # remove from the edition before parsing
                 edition_text = self.re_ed_notes.sub("", edition_text)
                 notes.append(ed_notes_match.groupdict()["note"])
+
+            # check for url and store if present
+            url_match = self.re_url.search(edition)
+            url = ""
+            if url_match:
+                # save the url, and remove from edition text, to simplify parsing
+                url = url_match.group("url")
+                edition_text = edition_text.replace(url, "").strip()
 
             # if reference includes document or page location,
             # remove and store for footnote location
@@ -752,17 +799,19 @@ class Command(BaseCommand):
                     content_object=document,
                     doc_relation=doc_relation,
                     location=", ".join(location),
+                    url=url,
                     notes="\n".join(notes),
                 )
                 # if this is the first edition, check for a transcription based
                 # on PGPID and attach it to the footnote
                 if i == 0:
-                    fn.content = self.transcriptions.get(str(document.pk))
+                    fn.content = transcription
                 fn.save()
 
             except KeyError as err:
                 logger.error(
-                    "Error parsing PGDID %d editor %s: %s" % (document.id, edition, err)
+                    "Error parsing PGDID %d editor '%s': %s"
+                    % (document.id, edition, err)
                 )
 
     def get_source_creator(self, name):
@@ -778,6 +827,34 @@ class Command(BaseCommand):
     # upper or lower case volume, with or without period or space
     re_volume = re.compile(r"(, )?\bvol.? ?(?P<volume>\d+)", flags=re.I)
 
+    # known journal titles/variants with optional volume
+    # volume is usually numeric, but could also be ##.# or ##/##
+    re_journal = re.compile(
+        r"(?P<match>(?P<journal>Tarbiz|Zion|Genzei Qedem|Ginzei Qedem|"
+        + r"Kiryat Sefer|Qiryat Sefer|Peʿamim|Peamim|"
+        + r"(The )?Jewish Quarterly Review|JQR|Shalem|"
+        + r"Bulletin of the School of Oriental and African Studies|BSOAS|"
+        + r"Jewish History|Leshonenu|Eretz Israel|Aretz Israel|"
+        + r"AJS Review|Dine Israel|Journal of Semitic Studies|Sinai|"
+        + r"Qoveṣ al Yad|Kovetz al Yad|Te’udah|Te’uda|Sefunot|Sfunoth)"
+        + r"(,? ?(Vol\.)? ?(?P<volume>\d[\d./]*))?)"
+    )
+
+    # known book titles for book sections
+    re_book = re.compile(
+        r"(?P<match>(?P<book>Otzar yehudey Sfarad|Yehoshua Finkel Festschrift|"
+        + r"Joshua Finkel Festschrift|Gratz College Anniversary volume|"
+        + r"Studies in Judaica, Karaitica and Islamica|Mas'at Moshe|"
+        + r"Studi Orientalistic in onore di Levi Della Vida))",
+        flags=re.U,
+    )
+
+    # check for language specified; languages are only Hebrew, German, and English
+    # Hebrew sometimes occurs as Heb; Hebrew appers in both quotes and brackets
+    re_language = re.compile(
+        r"(?P<match>\(?(into)? [\[(]?(?P<lang>Heb(rew)?|German|English)[\])]?)([ ,.]|$)"
+    )
+
     def get_source(self, edition, document):
         # parse the edition information and get the source for this scholarly
         # record if it already exists; if it doesn't, create it
@@ -787,7 +864,18 @@ class Command(BaseCommand):
         ed_orig = edition
 
         # set defaults for information that may not be present
-        title = volume = language = location = ""
+        title = volume = language = location = journal = book = ""
+
+        # if this is an ignored text, we are only here because there is
+        # a transcription; create or find an anonymous entry, so the
+        # footnote will be created and transcription can be attached
+        unknown_check = edition.lower().strip().strip(".")
+        if any([unknown_check.startswith(ignore) for ignore in self.editor_ignore]):
+            return Source.objects.get_or_create(
+                title="[unknown source]",
+                source_type=self.source_types["Unpublished"],
+                notes="Source of transcription not noted in original PGP database (or similar)",
+            )[0]
 
         # check for url and store if present
         url_match = self.re_url.search(edition)
@@ -809,25 +897,56 @@ class Command(BaseCommand):
         if year_match:
             # store the year
             year = int(year_match.group("year"))
-            # check full match against year; if they differ, add to notes
+            # check full match against year; if they differ (i.e., includes month or year range)
+            # add to notes
             full_match = year_match.group("match")
-            if full_match != year:
+            edition = edition.replace(full_match, "").strip(" .,")
+            # cleanup for comparison and potentially adding to notes
+            full_match = full_match.strip("(), ")
+            if full_match != str(year):
                 note_lines.append(full_match)
-                edition = edition.replace(full_match, "").strip(" .,")
 
-        # check for volume information
-        vol_match = self.re_volume.search(edition)
-        # if found, store volume and remove from edition text
-        if vol_match:
-            volume = vol_match.group("volume")
-            edition = self.re_volume.sub("", edition)
+        # check for known journal titles
+        journal_match = self.re_journal.search(edition)
+        if journal_match:
+            # set journal and volume if found
+            journal = journal_match.group("journal")
+            volume = journal_match.group("volume") or ""
+            # remove journal & volume from edition text
+            edition = edition.replace(journal_match.group("match"), "")
 
-        # no easy way to recognize more than two authors,
-        # but there are only three instances
+        else:  # if no journal, check for separate volume number
+            vol_match = self.re_volume.search(edition)
+            # if found, store volume and remove from edition text
+            if vol_match:
+                volume = vol_match.group("volume")
+                edition = self.re_volume.sub("", edition)
+
+        # check for known book titles
+        book_match = self.re_book.search(edition)
+        if book_match:
+            # set book title if found
+            book = book_match.group("book")
+            # remove from edition text
+            edition = edition.replace(book_match.group("match"), "")
+
+        # check for language
+        lang_match = self.re_language.search(edition)
+        if lang_match:
+            language = lang_match.group("lang")
+            if language == "Heb":
+                language = "Hebrew"
+            # remove from edition text
+            edition = edition.replace(lang_match.group("match"), "")
+
+        # no ea
+        # but there are only a few instances
         special_cases = [
             "Lorenzo Bondioli, Tamer el-Leithy, Joshua Picard, Marina Rustow and Zain Shirazi",
             "Khan, el-Leithy, Rustow and Vanthieghem",
             "Oded Zinger, Naim Vanthieghem and Marina Rustow",
+            "Allony, Ben-Shammai, Frenkel",
+            "Allony, Ben-Shammai, and Frenkel",
         ]
         ed_parts = None
         for special_case in special_cases:
@@ -855,7 +974,11 @@ class Command(BaseCommand):
             title = ed_parts.pop(0).strip()
 
         # determine source type
-        if "diss" in edition:
+        if journal:  # if a journal title was found, type is article
+            src_type = "Article"
+        elif book:  # if a book title was found, type is book section
+            src_type = "Book Section"
+        elif "diss" in edition.lower() or "thesis" in edition.lower():
             src_type = "Dissertation"
         elif not title:
             src_type = "Unpublished"
@@ -877,24 +1000,15 @@ class Command(BaseCommand):
         # also strip periods and any whitespace
         title = title.strip("\"'”“‘’ .")
 
-        # figure out what the rest of the pieces are, if any
-        for part in ed_parts:
-            # FIXME: locations should get picked up in parse_editor,
-            # probably an error if we're getting them here
-            if any([val in part for val in ["Doc", "pp.", "#", " at "]]):
-                location = part
-                print("pgpid: %s — %s" % (document.id, ed_orig))
-            elif part in ["Hebrew", "German"]:
-                language = part
-            # otherwise, stick it in the notes
-            else:
-                note_lines.append(part)
+        # add any leftover pieces of the edition text to notes
+        note_lines.extend(ed_parts)
 
         # look to see if this source already exists
         # (no title indicates pgp-only edition)
         extra_opts = {}
-        # if there is no title but there is a year, include in filter
-        if not title and year:
+        # if there is no title and year is set or type is unpublished,
+        # filter on year (whether set or not)
+        if not title and (year or src_type == "Unpublished"):
             extra_opts["year"] = year
 
         # when multiple authors are present, we want to match *all* of them
@@ -911,6 +1025,7 @@ class Command(BaseCommand):
                 volume=volume,
                 source_type__type=src_type,
                 author_count=author_count,
+                journal=journal or book,
                 **extra_opts,
             )
             .filter(author_filter)
@@ -919,8 +1034,15 @@ class Command(BaseCommand):
 
         if sources.count() > 1:
             logger.warn(
-                "Found multiple sources for %s, %s (%s)"
-                % ("; ".join([a.last_name for a in authors]), title, src_type)
+                "Found multiple sources for %s, title=%s journal=%s vol=%s year=%s (%s)"
+                % (
+                    "; ".join([a.last_name for a in authors]),
+                    title,
+                    journal,
+                    volume,
+                    year,
+                    src_type,
+                )
             )
 
         source = sources.first()
@@ -931,11 +1053,19 @@ class Command(BaseCommand):
                 source.year = year
                 updated = True
 
-            # if there is any note information, add to existing notes
+            # if there is any *NEW* note information, add to existing notes
+
             if note_lines:
+                new_notes = [
+                    n
+                    for n in note_lines
+                    if not (n in source.other_info or n in source.notes)
+                ]
+                new_note_text = " ".join(new_notes)
+                # if there are existing notes, combine
                 if source.notes:
-                    note_lines.insert(0, source.notes)
-                source.notes = "\n".join(note_lines)
+                    new_note_text = "\n".join([source.notes, new_note_text])
+                source.notes = new_note_text
                 updated = True
 
             # save changes if any were made
@@ -949,9 +1079,10 @@ class Command(BaseCommand):
         source = Source.objects.create(
             source_type=self.source_types[src_type],
             title=title,
-            url=url,
             volume=volume,
+            journal=journal or book,
             year=year,
+            other_info=" ".join(note_lines),
             notes="\n".join(["Created from PGPID %s" % document.id] + note_lines),
         )
         # log source record creation

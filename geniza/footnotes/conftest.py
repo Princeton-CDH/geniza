@@ -43,3 +43,19 @@ def multiauthor_untitledsource(db):
         author = Creator.objects.create(last_name=name)
         Authorship.objects.create(creator=author, source=source, sort_order=i)
     return source
+
+
+@pytest.fixture
+def article(db):
+    # fixture to create and return an article source
+    goitein = Creator.objects.create(last_name="Goitein", first_name="S. D.")
+    article = SourceType.objects.get(type="Article")
+    tarbiz = Source.objects.create(
+        title="Shemarya",
+        journal="Tarbiz",
+        source_type=article,
+        volume="32",
+        year=1963,
+    )
+    Authorship.objects.create(creator=goitein, source=tarbiz)
+    return tarbiz

@@ -80,12 +80,22 @@ class Source(models.Model):
     title = models.CharField(max_length=255, blank=True, null=True)
     year = models.PositiveIntegerField(blank=True, null=True)
     edition = models.CharField(max_length=255, blank=True)
-    volume = models.CharField(max_length=255, blank=True)
-    page_range = models.CharField(
+    volume = models.CharField(
         max_length=255,
         blank=True,
-        help_text="The range of pages being cited. Do not include "
-        + '"p", "pg", etc. and follow the format # or #-#',
+        help_text="Volume of a multivolume book, or journal volume for an article",
+    )
+    journal = models.CharField(
+        "Journal / Book",
+        max_length=255,
+        blank=True,
+        help_text="Journal title (for an article) or book title (for a book section)",
+    )
+    page_range = models.CharField(
+        max_length=255, blank=True, help_text="Page range for article or book section."
+    )
+    other_info = models.TextField(
+        blank=True, help_text="Additional citation information, if any"
     )
     source_type = models.ForeignKey(SourceType, on_delete=models.CASCADE)
     languages = models.ManyToManyField(
@@ -109,29 +119,43 @@ class Source(models.Model):
         # author, title
         # author, title (year)
         # author (year)
+        # author, "title" journal vol (year)
 
-        text = ""
+        author = ""
         if self.authorship_set.exists():
             author_lastnames = [a.creator.last_name for a in self.authorship_set.all()]
             # combine the last pair with and; combine all others with comma
             # thanks to https://stackoverflow.com/a/30084022
             if len(author_lastnames) > 1:
-                text = " and ".join(
+                author = " and ".join(
                     [", ".join(author_lastnames[:-1]), author_lastnames[-1]]
                 )
             else:
-                text = author_lastnames[0]
+                author = author_lastnames[0]
+
+        parts = []
 
         if self.title:
-            # delimit with comma if there is an author
-            if text:
-                text = ", ".join([text, self.title])
+            # if this is an article, wrap title in quotes
+            if self.source_type.type == "Article":
+                parts.append('"%s"' % self.title)
             else:
-                text = self.title
+                parts.append(self.title)
 
+        if self.journal:
+            parts.append(self.journal)
+        if self.volume:
+            parts.append(self.volume)
         if self.year:
-            text = "%s (%d)" % (text, self.year)
-        return text
+            parts.append("(%d)" % self.year)
+        if self.other_info:
+            parts.append(self.other_info)
+
+        # title, journal, etc should be joined by spaces only
+        ref = " ".join(parts)
+
+        # delimit with comma whichever values are set
+        return ", ".join([val for val in (author, ref) if val])
 
     def all_authors(self):
         """semi-colon delimited list of authors in order"""
@@ -168,9 +192,16 @@ class Footnote(models.Model):
     content = models.JSONField(
         blank=True, null=True, help_text="Transcription content (preliminary)"
     )
+    url = models.URLField(
+        "URL", blank=True, max_length=300, help_text="Link to the source (optional)"
+    )
 
     # Generic relationship
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        limit_choices_to=models.Q(app_label="corpus"),
+    )
     object_id = GfkLookupField("content_type")
     content_object = GenericForeignKey()
 
@@ -189,3 +220,24 @@ class Footnote(models.Model):
     has_transcription.short_description = "Digitized Transcription"
     has_transcription.boolean = True
     has_transcription.admin_order_field = "content"
+
+    def display(self):
+        """format footnote for display; used on document detail page
+        and metdata export for old pgp site"""
+        # source, location. notes
+        # source. notes
+        # source, location.
+        parts = [str(self.source)]
+        if self.location:
+            parts.extend([", ", self.location])
+        parts.append(".")
+        if self.notes:
+            parts.extend([" ", self.notes])
+        return "".join(parts)
+
+    def has_url(self):
+        """Admin display field indicating if footnote has a url."""
+        return bool(self.url)
+
+    has_url.boolean = True
+    has_url.admin_order_field = "url"

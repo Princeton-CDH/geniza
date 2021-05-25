@@ -40,7 +40,8 @@ PUCAS_LDAP.update({
 DATA_IMPORT_URLS = {
     'libraries': '',
     'languages': '',
-    'metadata': ''
+    'metadata': '',
+    'demerged': '',
 }
 
 # LOGGING = {

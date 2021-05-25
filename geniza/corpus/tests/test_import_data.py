@@ -2,6 +2,7 @@ import datetime
 import logging
 from io import StringIO
 from unittest.mock import DEFAULT, Mock, patch
+from collections import defaultdict, namedtuple
 
 import pytest
 import requests
@@ -186,8 +187,10 @@ def test_import_languages(mockrequests):
 
 
 @pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={})
 def test_get_doctype():
     import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
     letter = import_data_cmd.get_doctype("Letter")
     assert isinstance(letter, DocumentType)
     assert letter.name == "Letter"
@@ -229,10 +232,10 @@ def test_get_collection():
     import_data_cmd.collection_lookup = {"BL": bl, "CUL_Or.": cul_or}
     # use attrdict to simulate namedtuple used for csv data
     # - simple library lookup
-    data = AttrMap({"library": "BL"})
+    data = AttrMap({"library": "BL", "pgpid": 13})
     assert import_data_cmd.get_collection(data) == bl
     # - library + collection lookup
-    data = AttrMap({"library": "CUL", "shelfmark": "CUL Or. 10G5.3"})
+    data = AttrMap({"library": "CUL", "shelfmark": "CUL Or. 10G5.3", "pgpid": 25})
     assert import_data_cmd.get_collection(data) == cul_or
 
     # - library + collection lookup mismatch
@@ -247,7 +250,7 @@ def test_get_fragment():
     myfrag = Fragment.objects.create(shelfmark="CUL Add.3350")
     import_data_cmd = import_data.Command()
     import_data_cmd.setup()
-    data = AttrMap({"shelfmark": "CUL Add.3350"})
+    data = AttrMap({"shelfmark": "CUL Add.3350", "pgpid": 13})
     assert import_data_cmd.get_fragment(data) == myfrag
 
     # create new fragment if there isn't
@@ -258,6 +261,7 @@ def test_get_fragment():
             "multifragment": "",
             "library": "CUL",
             "image_link": "https://cudl.lib.cam.ac.uk/view/MS-ADD-03430/1",
+            "pgpid": 12345,
         }
     )
     # simulate library lookup already populated
@@ -284,37 +288,60 @@ def test_get_fragment():
 
 
 @pytest.mark.django_db
-@override_settings(DATA_IMPORT_URLS={"metadata": "pgp_meta.csv"})
-@patch("geniza.corpus.management.commands.import_data.requests")
-def test_import_documents(mockrequests, caplog):
-    # create test fragments & documents to confirm they are removed
-    Fragment.objects.create(shelfmark="foo 1")
-    Document.objects.create(notes="test doc")
-
+@override_settings(DATA_IMPORT_URLS={})
+def test_import_document():
     import_data_cmd = import_data.Command()
-    # simulate collection lookup already populated
-    import_data_cmd.collection_lookup = {
-        "CUL_Add.": Collection.objects.create(library="CUL", abbrev="Add.")
-    }
     import_data_cmd.setup()
-    mockrequests.codes = requests.codes  # patch in actual response codes
-    mockrequests.get.return_value.status_code = 200
-    mockrequests.get.return_value.iter_lines.return_value = iter(
-        [
-            b"PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional)",
-            b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,Ed. M. Cohen,',
-            b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,awaiting transcription,"Trans. Goitein, typed texts (attached)"',
-            b"2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,",
-        ]
+    import_data_cmd.joins = set()
+    import_data_cmd.docstats = defaultdict(int)
+
+    DocumentCSVRow = namedtuple(
+        "DocumentCSVRow",
+        # NOTE: could we use import_data.csv_fields['metadata'].values() ?
+        (
+            "pgpid",
+            "type",
+            "description",
+            "shelfmark",
+            "shelfmark_historic",
+            "image_link",
+            "library",
+            "tags",
+            "language",
+            "recto_verso",
+            "text_block",
+            "multifragment",
+            "input_by",
+            "date_entered",
+            "editor",
+            "translator",
+            "joins",
+            "notes",
+        ),
+        defaults=[""] * 18,
     )
-    with caplog.at_level(logging.INFO, logger="import"):
-        import_data_cmd.import_documents()
-    assert Document.objects.count() == 2
-    assert Fragment.objects.count() == 3
+
+    row = DocumentCSVRow(
+        pgpid="2291",
+        shelfmark="CUL Add.3358",
+        type="Legal",
+        library="CUL",
+        description="Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",
+        recto_verso="verso",
+        multifragment="middle",
+        text_block="a",
+        tags="#lease #synagogue #11th c",
+        input_by="Sarah Nisenson",
+        date_entered="2017",
+        editor="Ed. M. Cohen",
+        notes="",
+    )
+    import_data_cmd.import_document(row)
+
     doc = Document.objects.get(id=2291)
     assert doc.fragments.count() == 1
     assert doc.shelfmark == "CUL Add.3358"
-    assert doc.fragments.first().collection.library == "CUL"
+    # assert doc.fragments.first().collection.library == "CUL"
     assert doc.doctype.name == "Legal"
     assert doc.textblock_set.count()
     # check text block side, region, subfragment
@@ -343,6 +370,46 @@ def test_import_documents(mockrequests, caplog):
         content_type_id=document_ctype.pk,
     )
 
+    # test that auto-increment works properly when PGPID is not provided
+    row = DocumentCSVRow(
+        type="Legal",
+        shelfmark="CUL Add.3375",
+    )
+    import_data_cmd.import_document(row)
+
+
+@pytest.mark.django_db
+@override_settings(DATA_IMPORT_URLS={"metadata": "pgp_meta.csv", "demerged": "foo.csv"})
+@patch("geniza.corpus.management.commands.import_data.requests")
+def test_import_documents(mockrequests, caplog):
+    # create test fragments & documents to confirm they are removed
+    Fragment.objects.create(shelfmark="foo 1")
+    Document.objects.create(notes="test doc")
+
+    import_data_cmd = import_data.Command()
+    import_data_cmd.setup()
+    # simulate collection lookup already populated
+    import_data_cmd.collection_lookup = {
+        "CUL_Add.": Collection.objects.create(library="CUL", abbrev="Add.")
+    }
+    mockrequests.codes = requests.codes  # patch in actual response codes
+    mockrequests.get.return_value.status_code = 200
+    mockrequests.get.return_value.iter_lines.return_value = [
+        b"PGPID,Library,Shelfmark - Current,Recto or verso (optional),Type,Tags,Description,Input by (optional),Date entered (optional),Language (optional),Shelfmark - Historic,Multifragment (optional),Link to image,Text-block (optional),Joins,Editor(s),Translator (optional),Notes2 (optional)",
+        b'2291,CUL,CUL Add.3358,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,middle,,a,,Ed. M. Cohen,,',
+        b'2292,CUL,CUL Add.3359,verso,Legal,#lease #synagogue #11th c,"Lease of a ruin belonging to the Great Synagogue of Ramle, ca. 1038.",Sarah Nisenson,2017,,,,,,CUL Add.3358 + CUL Add.3359 + NA,awaiting transcription,"Trans. Goitein, typed texts (attached)",',
+        b"2293,CUL,CUL Add.3360,,Legal;Letter,,recto: one thing; verso: another,,,,,,,,,,,",
+    ]
+    with caplog.at_level(logging.INFO, logger="import"):
+        import_data_cmd.import_documents()
+    assert Document.objects.count() == 2
+    assert Fragment.objects.count() == 3
+
+    # check script summary output
+    output = caplog.text
+    assert "Imported 2 documents from the metadata spreadsheet and skipped 2" in output
+    assert "Parsed 1 joins" in output
+
     doc2 = Document.objects.get(id=2292)
     assert doc2.fragments.count() == 3
     assert Fragment.objects.get(shelfmark="NA")
@@ -354,11 +421,7 @@ def test_import_documents(mockrequests, caplog):
     assert Footnote.EDITION in fnote.doc_relation
     assert Footnote.TRANSLATION in fnote.doc_relation
 
-    # check script summary output
-    output = caplog.text
-    assert "Imported 2 documents" in output
-    assert "1 with joins" in output
-    assert "skipped 1" in output
+    document_ctype = ContentType.objects.get_for_model(Document)
     assert LogEntry.objects.get(
         change_message=import_data_cmd.logentry_message,
         object_id=doc2.pk,
@@ -702,7 +765,7 @@ editors_parsed = [
     ),
     (
         "Ed. Marina Rustow https://docs.google.com/doc/1 ",
-        [{"get_source_arg": "Marina Rustow https://docs.google.com/doc/1"}],
+        [{"get_source_arg": "Marina Rustow", "f_url": "https://docs.google.com/doc/1"}],
     ),
     (
         "Ed. Goitein, typed texts; also ed.Gil, Kingdom, vol. 2, #154; also ed. Gil, The Tustaris, pp. 67-8.",
@@ -730,21 +793,29 @@ editors_parsed = [
         "Ed. and transl. by M. Cohen, The Voice of the Poor in the Middle Ages, no.76. (Information from Mediterranean Society, II, p. 499, App. C 87)",
         [
             {
-                "get_source_arg": "M. Cohen, The Voice of the Poor in the Middle Ages, no.76",
+                "get_source_arg": "M. Cohen, The Voice of the Poor in the Middle Ages",
                 "translation": True,
+                "f_location": "no.76",
                 "f_notes": "(Information from Mediterranean Society, II, p. 499, App. C 87)",
             }
         ],
     ),
-    # TODO — partial not yet handled
-    # ('Partially ed. Weiss. Transciption awaiting digitization.',
-    #  [{'get_source_arg': 'Weiss',
-    #   'f_notes': 'Partial.\nTranscription awaiting digitization.'}]),
-    # actual record has url at end, which we don't handle properly
-    # ('Ed. Rustow and Vanthieghem (with suggestions from Khan and Shirazi)',
-    #  [{'get_source_arg': 'Rustow and Vanthieghem',
-    #    'f_notes': 'with suggestions from Khan and Shirazi'}])
-    # ignore
+    (
+        'Trans. into English, Cohen, Voice of the Poor in the Middle Ages, no. 92. Also trans. into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984), 67–104.',
+        [
+            {
+                "get_source_arg": "into English, Cohen, Voice of the Poor in the Middle Ages",
+                "translation": True,
+                "f_location": "no. 92",
+            },
+            {
+                "get_source_arg": 'into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984)',
+                "translation": True,
+                "f_location": "67–104",
+            },
+        ],
+    ),
+    # ignored text
     ("Partial transcription listed in FGP, awaiting digitization on PGP", []),
     ("Transcription listed in FGP, awaiting digitization on PGP", []),
 ]
@@ -779,6 +850,7 @@ def test_parse_editor(mock_footnote, mock_get_source, test_input, expected):
             content_object=doc,
             doc_relation=doc_relation,
             location=result.get("f_location", ""),
+            url=result.get("f_url", ""),
             notes=result.get("f_notes", ""),
         )
 
@@ -820,18 +892,17 @@ source_input = [
         "Ed. Alan Elbaum, 09/2020.",
         {"type": "Unpublished", "authors": ["Elbaum, Alan"], "year": 2020},
     ),
-    # two authors with a url
+    # two authors
     (
-        "Marina Rustow and Anna Bailey https://example.co",
+        "Marina Rustow and Anna Bailey",
         {
             "type": "Unpublished",
             "authors": ["Rustow, Marina", "Bailey, Anna"],
-            "url": "https://example.co",
         },
     ),
     # more than two authors!
     (
-        "Lorenzo Bondioli, Tamer el-Leithy, Joshua Picard, Marina Rustow and Zain Shirazi, 2016–2018. https://example.co/doc",
+        "Lorenzo Bondioli, Tamer el-Leithy, Joshua Picard, Marina Rustow and Zain Shirazi, 2016–2018.",
         {
             "type": "Unpublished",
             "authors": [
@@ -841,7 +912,6 @@ source_input = [
                 "Rustow, Marina",
                 "Shirazi, Zain",
             ],
-            "url": "https://example.co/doc",
             "year": 2018,
         },
     ),
@@ -879,20 +949,55 @@ source_input = [
             "year": 2006,
             "title": "Engagement and Betrothal Documents from the Cairo Geniza",
             "language": "Hebrew",
+            "other_info": "(PhD dissertation, Tel Aviv University)",
         },
     ),
     # article
     (
-        'Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz, 2015, 135–61, at 156f. Awaiting digitization on PGP.',
+        'Mordechai Akiva Friedman, "Maimonides Appoints R. Anatoly Muqaddam of Alexandria [Hebrew]," Tarbiz, 2015',
         {
             "type": "Article",
             "authors": ["Friedman, Mordechai Akiva"],
             "title": "Maimonides Appoints R. Anatoly Muqaddam of Alexandria",
             "language": "Hebrew",
             "year": 2015,
+            "journal": "Tarbiz",
         },
+    ),
+    # journal article with no title
+    (
+        "Goitein, Zion 27 (1962)",
+        {
+            "type": "Article",
+            "authors": ["Goitein, S. D."],
+            "year": 1962,
+            "journal": "Zion",
+            "volume": "27",
+        },
+    ),
+    # book section
+    (
+        "Ed. Mordechai Akiva Friedman, \"R. Yehiel b. Elyakim's Responsum Permitting the Reshut [Heb],\" published in Mas'at Moshe, 1998.",
+        {
+            "type": "Book Section",
+            "authors": ["Friedman, Mordechai Akiva"],
+            "title": "R. Yehiel b. Elyakim's Responsum Permitting the Reshut",
+            "year": 1998,
+            "journal": "Mas'at Moshe",
+            "language": "Hebrew",
+        },
+    ),
+    # translation into language
+    (
+        "Trans. Werner Diem (into German).",
+        {"type": "Unpublished", "authors": ["Diem, Werner"], "language": "German"},
+    ),
+    # ignored text when handed to get_source should return anonmyous source
+    ("awaiting transcription", {"type": "Unpublished", "title": "[unknown source]"}),
+    (
+        "Transcription listed in FGP, awaiting digitization on PGP",
+        {"type": "Unpublished", "title": "[unknown source]"},
     )
-    # Tarbiz 2015, 135–61, }
     # also ed. and trans.Golb and Pritsak, Khazarian Hebrew Documents of the 10th Century, pp. 1-71
     # translation language
     # 'Trans. into English, Cohen. Voice of the Poor in the Middle Ages, no. 92. Trans. into Hebrew, Goitein, "The Twilight of the House of Maimonides," Tarbiz 54 (1984), 67–104.'
@@ -911,13 +1016,14 @@ def test_get_source(test_input, expected):
     # check type
     assert expected["type"] == source.source_type.type
     # check all authors added, in expected order
-    for i, author in enumerate(expected["authors"]):
+    for i, author in enumerate(expected.get("authors", [])):
         assert author == str(source.authorship_set.all()[i].creator)
 
     # fields that should match when present or be unset
     assert expected.get("url", "") == source.url
     assert expected.get("title", "") == source.title
     assert expected.get("volume", "") == source.volume
+    assert expected.get("journal", "") == source.journal
     assert expected.get("year") == source.year
     # check that language was associated if specified
 

@@ -43,8 +43,34 @@ class TestSource:
         lastnames = [
             a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
         ]
-        print(lastnames)
         assert str(multiauthor_untitledsource) == "%s, %s, %s and %s" % tuple(lastnames)
+
+    @pytest.mark.django_db
+    def test_str_article(self, article):
+
+        # article with title, journal title, volume, year
+        assert str(article) == '%s, "%s" %s %s (%s)' % (
+            article.authors.first().last_name,
+            article.title,
+            article.journal,
+            article.volume,
+            article.year,
+        )
+        # article with no title
+        article.title = ""
+        assert str(article) == "%s, %s %s (%s)" % (
+            article.authors.first().last_name,
+            article.journal,
+            article.volume,
+            article.year,
+        )
+        # no volume
+        article.volume = ""
+        assert str(article) == "%s, %s (%s)" % (
+            article.authors.first().last_name,
+            article.journal,
+            article.year,
+        )
 
     def test_all_authors(self, twoauthor_source):
         author1, author2 = twoauthor_source.authorship_set.all()
@@ -75,6 +101,25 @@ class TestFootnote:
             assert not footnote.has_transcription()
             footnote.content = "The digitized transcription"
             assert footnote.has_transcription()
+
+    def test_display(self, source):
+        footnote = Footnote(source=source)
+        assert footnote.display() == "Orwell, A Nice Cup of Tea."
+
+        footnote.location = "p. 55"
+        assert footnote.display() == "Orwell, A Nice Cup of Tea, p. 55."
+
+        footnote.notes = "With minor edits."
+        assert (
+            footnote.display() == "Orwell, A Nice Cup of Tea, p. 55. With minor edits."
+        )
+
+    @pytest.mark.django_db
+    def test_has_url(self, source):
+        footnote = Footnote(source=source)
+        assert not footnote.has_url()
+        footnote.url = "http://example.com/"
+        assert footnote.has_url()
 
 
 class TestCreator:

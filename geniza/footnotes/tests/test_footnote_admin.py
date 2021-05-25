@@ -1,7 +1,10 @@
+from unittest.mock import patch, Mock
+
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.test import RequestFactory
 from django.urls import reverse
+from django.utils import timezone
 import pytest
 
 from geniza.footnotes.admin import (
@@ -116,6 +119,56 @@ class TestSourceAdmin:
         html = source_admin.footnotes(source)
         assert f"={source.id}" in html
         assert ">1<" in html
+
+    @pytest.mark.django_db
+    def test_tabulate_queryset(self, source, twoauthor_source, article):
+        source_admin = SourceAdmin(model=Source, admin_site=admin.site)
+        qs = source_admin.get_queryset("rqst")
+
+        for source, source_data in zip(qs, source_admin.tabulate_queryset(qs)):
+            # test some properties
+            assert source.title in source_data
+            assert source.journal in source_data
+            assert source.year in source_data
+
+            # test compiled data
+            for authorship in source.authorship_set.all():
+                assert str(authorship.creator) in source_data[1]
+            for lang in source.languages.all():
+                assert lang.name in source_data[9]
+
+            # none of the fixtures have footnotes, but count should be included
+            assert 0 in source_data
+            assert (
+                f"https://example.com/admin/footnotes/source/{source.id}/change/"
+                in source_data
+            )
+
+    @pytest.mark.django_db
+    @patch("geniza.footnotes.admin.export_to_csv_response")
+    def test_export_to_csv(self, mock_export_to_csv_response):
+        source_admin = SourceAdmin(model=Source, admin_site=admin.site)
+        with patch.object(source_admin, "tabulate_queryset") as tabulate_queryset:
+            # if no queryset provided, should use default queryset
+            sources = source_admin.get_queryset(Mock())
+            source_admin.export_to_csv(Mock())
+            assert tabulate_queryset.called_once_with(sources)
+            # otherwise should respect the provided queryset
+            first_source = Source.objects.first()
+            source_admin.export_to_csv(Mock(), first_source)
+            assert tabulate_queryset.called_once_with(first_source)
+
+            export_args, export_kwargs = mock_export_to_csv_response.call_args
+            # first arg is filename
+            csvfilename = export_args[0]
+            assert csvfilename.endswith(".csv")
+            assert csvfilename.startswith("geniza-sources")
+            # should include current date
+            assert timezone.now().strftime("%Y%m%d") in csvfilename
+            headers = export_args[1]
+            assert "source_type" in headers
+            assert "authors" in headers
+            assert "title" in headers
 
 
 class TestFootnoteAdmin:

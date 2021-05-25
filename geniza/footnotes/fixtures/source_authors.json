@@ -79,6 +79,7 @@
 {
   "model": "footnotes.creator",
   "fields": {
+    "first_name": "Judith",
     "last_name": "Olszowy-Schlanger"
   }
 },
@@ -266,13 +267,6 @@
 {
   "model": "footnotes.creator",
   "fields": {
-    "first_name": "Meri",
-    "last_name": "Weiss"
-  }
-},
-{
-  "model": "footnotes.creator",
-  "fields": {
     "first_name": "Jennifer",
     "last_name": "Grayson"
   }
@@ -300,7 +294,7 @@
 {
   "model": "footnotes.creator",
   "fields": {
-    "first_name": "G.",
+    "first_name": "Gershon",
     "last_name": "Weiss"
   }
 },
@@ -414,6 +408,18 @@
   "model": "footnotes.creator",
   "fields": {
     "last_name": "Allony"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Ben-Shammai"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "last_name": "Rabie"
   }
 },
 {
@@ -541,6 +547,13 @@
   "fields": {
     "first_name": "Werner",
     "last_name": "Diem"
+  }
+},
+{
+  "model": "footnotes.creator",
+  "fields": {
+    "first_name": "Friedrich",
+    "last_name": "Niessen"
   }
 }
 ]
