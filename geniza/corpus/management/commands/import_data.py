@@ -727,6 +727,7 @@ class Command(BaseCommand):
     # ignore these entries in the editor field:
     editor_ignore = [
         "awaiting transcription",
+        "pending transcription",
         "transcription listed on fgp",
         "transcription listed on fgp, awaiting digitization on pgp",
         "transcription listed in fgp, awaiting digitization on pgp",
