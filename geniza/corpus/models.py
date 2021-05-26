@@ -423,8 +423,11 @@ class Document(ModelIndexable):
         return f"{self.doctype or 'Unknown'}: {self.shelfmark_display or '??'}"
 
     def editions(self):
-        # return all footnotes that include type edition
-        return self.footnotes.filter(doc_relation__contains=Footnote.EDITION)
+        """All footnotes for this document where the document relation includes
+        edition; footnotes with content will be sorted first."""
+        return self.footnotes.filter(doc_relation__contains=Footnote.EDITION).order_by(
+            "content", "source"
+        )
 
     @classmethod
     def items_to_index(cls):

@@ -872,6 +872,9 @@ def test_get_notes():
         == "See Goitein translation.\nThere is a translation in Goitein's notes that should be digitized."
     )
 
+    tech_notes = "FGP stub"
+    assert import_data.Command().get_notes("", tech_notes) == "FGP stub"
+
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("test_input,expected", editors_parsed)
