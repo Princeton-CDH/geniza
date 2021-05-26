@@ -4,14 +4,12 @@ pucas>=0.6
 django-split-settings
 requests
 django-taggit
-#next version of piffle
-git+https://github.com/princeton-cdh/piffle.git@develop#egg=piffle
+piffle>=0.4
 taggit-selectize
 django-multiselectfield
 django-modeltranslation
 django-admin-sortable2
 python-dateutil>=2.8
 django-tabular-export
-#next version of parasolr
-git+https://github.com/princeton-cdh/parasolr.git@develop#egg=parasolr
+parasolr>=0.7
 django-gfklookupwidget
