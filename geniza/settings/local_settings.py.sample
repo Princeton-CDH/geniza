@@ -1,7 +1,7 @@
 # local settings for configuration that should not be checked into git
 
 from geniza.settings.components.base import DATABASES, PUCAS_LDAP, \
-    SOLR_CONNECTIONS
+    SOLR_CONNECTIONS, BASE_DIR
 
 DEBUG = True
 
