@@ -22,4 +22,5 @@
 * As a Content Editor I want to link a source to a document as a footnote, in order to show that the source is helpful for understanding the document.
 * As a Content Editor, I want a one time import of the translator and editor information so I know which scholars have transcribed or translated a document. (first pass)
 * As a Content Editor, I want to create and edit scholarship records so that I can keep track of relevant scholarship on documentary geniza fragments.
+* As a Content Editor, I want to filter documents by those with at least one fragment image, so that I can create useful visual datasets for download and producing teaching materials.
 * As a User, I want to view detailed information for a single Geniza document so that I can learn about that document.
