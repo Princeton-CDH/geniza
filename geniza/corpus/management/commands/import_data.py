@@ -315,7 +315,7 @@ class Command(BaseCommand):
         ]
 
         notes_to_set = []
-        if notes not in IGNORE and "PGPID" not in notes:
+        if notes not in IGNORE and "PGPID" not in notes and notes.strip():
             notes_to_set.append(notes)
 
         ## TECHNICAL NOTES
@@ -330,7 +330,7 @@ class Command(BaseCommand):
             scanned in drive (TRANSLATION)
             not in Gil
             Scanned in drive
-            scanned in drive 
+            scanned in drive
             scanned in drive (TRANSCRIPTION + TRANSLATION)
             scanned in drive (TRANSCRIPTION & TRANSLATION)
         """
@@ -350,6 +350,10 @@ class Command(BaseCommand):
                 f"There is a {detail} in Goitein's notes that should be digitized."
             )
             notes_to_set.append(DETAIL_GOTEIN_SCAN_NOTE)
+
+        # preserve FGP stub technical note for processing after import
+        if tech_notes == "FGP stub":
+            notes_to_set.append(tech_notes)
 
         return "\n".join(notes_to_set)
 
