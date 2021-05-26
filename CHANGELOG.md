@@ -12,7 +12,6 @@
 * As a Content Editor, I want to download a CSV version of all or a filtered list of sources in the backend, in order to data work or facilitate my own research.
 * As a Content Editor, I want to download a CSV version of all or a filtered list of footnotes in the backend, in order to data work or facilitate my own research.
 * As a Content Editor, I want scholarship records from known journals imported as articles even if no title is present, so I can identify the resources and augment them later.
-* As a Content Editor, I want duplicate joined documents to be automatically merged without losing their unique metadata, so that I don't have to merge them manually.
 * As a Content Editor, when editor and translator information is imported I want urls associated with the footnote so I can get to the resource if available.
 * As a Content Editor, I want to use the Text Block area to mark shelfmarks that are potential joins without adding to the string of shelfmarks, so that we can connect related documents without certainty.
 * As a Content Editor, I want to add and edit all footnotes associated with a single source to make bulk data entry easy and efficient.
@@ -23,5 +22,4 @@
 * As a Content Editor I want to link a source to a document as a footnote, in order to show that the source is helpful for understanding the document.
 * As a Content Editor, I want a one time import of the translator and editor information so I know which scholars have transcribed or translated a document. (first pass)
 * As a Content Editor, I want to create and edit scholarship records so that I can keep track of relevant scholarship on documentary geniza fragments.
-* As a User, I want to see updates and changes made in the new database in the current pgp site while the new website is still in development so that I can reference current information.
 * As a User, I want to view detailed information for a single Geniza document so that I can learn about that document.
