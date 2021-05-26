@@ -1,0 +1,12 @@
+{% extends 'admin/login.html' %}
+{% load static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link type="text/css" rel="stylesheet" href="{% static 'pucas/pu-login.css' %}"/>
+{% endblock %}
+
+{% block content %}
+    {% include 'pucas/pu-cas-login.html' %}
+    {{ block.super }}
+{% endblock %}

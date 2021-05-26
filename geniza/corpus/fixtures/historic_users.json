@@ -1,0 +1,281 @@
+[
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Arnold",
+            "last_name": "Franklin",
+            "username": "afranklin",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Akiva",
+            "last_name": "Jackson",
+            "username": "ajackson",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Amir",
+            "last_name": "Ashur",
+            "username": "aashur",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Oded",
+            "last_name": "Zinger",
+            "username": "ozinger",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Catherine",
+            "last_name": "Beaumont",
+            "username": "cbeaumont",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Christopher",
+            "last_name": "Taylor",
+            "username": "ctaylor",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Dan",
+            "last_name": "Beaumont",
+            "username": "dbeaumont",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Mark",
+            "last_name": "Cohen",
+            "username": "mcohen",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Emily",
+            "last_name": "Silkaitis",
+            "username": "esilkaitis",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Ethan",
+            "last_name": "Kahn",
+            "username": "ekahn",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Gabrielle",
+            "last_name": "Agus",
+            "username": "gagus",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Isaac",
+            "last_name": "Wolfe",
+            "username": "iwolfe",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Jane",
+            "last_name": "Hathaway",
+            "username": "jhathaway",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Jessica",
+            "last_name": "Marglin",
+            "username": "jmarglin",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Joshua",
+            "last_name": "Weissmann",
+            "username": "jweissmann",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Luke",
+            "last_name": "Yarbrough",
+            "username": "lyarbrough",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Micah",
+            "last_name": "Newberger",
+            "username": "mnewberger",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Nurit",
+            "last_name": "Tsafrir",
+            "username": "ntsafrir",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Nomi",
+            "last_name": "Heger",
+            "username": "nheger",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Naïm",
+            "last_name": "Vanthieghem",
+            "username": "nvanthieghem",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Olivia Remie",
+            "last_name": "Constable",
+            "username": "oconstable",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Nadia",
+            "last_name": "Vidro",
+            "username": "nvidro",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Phil",
+            "last_name": "Lieberman",
+            "username": "plieberman",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Roxani",
+            "last_name": "Margariti",
+            "username": "rmargariti",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Sarah",
+            "last_name": "Dinovelli",
+            "username": "sdinovelli",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Sarah",
+            "last_name": "Nisenson",
+            "username": "snisenson",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Sumaiya",
+            "last_name": "Hamdani",
+            "username": "shamdani",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Shazia'Ayn",
+            "last_name": "Babul",
+            "username": "sbabul",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Yael",
+            "last_name": "Steinberg",
+            "username": "ysteinberg",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Zafrira",
+            "last_name": "Friedmann",
+            "username": "zfriedmann",
+			"is_active": false
+        }
+    },
+    {
+        "model": "auth.user",
+        "fields": {
+            "first_name": "Cecilia",
+            "last_name": "Palombo",
+            "username": "cpalombo",
+            "is_active": false
+        }
+    }
+]

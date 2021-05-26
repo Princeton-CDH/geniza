@@ -1,0 +1,34 @@
+{% if perms.corpus.view_document or perms.corpus.view_fragment %}
+<div class="module" id="awaiting-review-module">
+    <h2>Awaiting review</h2>
+    {% if perms.corpus.view_document %}
+    <h3><a href="{% url 'admin:corpus_document_changelist' %}?needs_review__isempty=0">Document{{ docs_review_count|pluralize }} ({{ docs_review_count }})</a></h3>
+        <ul class="actionlist">
+            {% for doc in docs_need_review %}
+                <li class="changelink">
+                    <a href="{% url 'admin:corpus_document_change' doc.id %}">{{ doc }}</a>
+                    <br>
+                    <span class="mini quiet">{{ doc.needs_review|truncatechars:250 }}</span>
+                </li>
+            {% empty %}
+                <p>Reviews complete</p>
+            {% endfor %}
+        </ul>
+    <br>
+    {% endif %}
+    {% if perms.corpus.view_fragment %}
+    <h3><a href="{% url 'admin:corpus_fragment_changelist' %}?needs_review__isempty=0">Fragment{{ fragments_review_count|pluralize }} ({{ fragments_review_count }})</a></h3>
+        <ul class="actionlist">
+        {% for fragment in fragments_need_review %}
+            <li class="changelink">
+                <a href="{% url 'admin:corpus_fragment_change' fragment.id %}">{{ fragment }}</a>
+                <br>
+                <span class="mini quiet">{{ fragment.needs_review|truncatechars:250 }}</span>
+            </li>
+        {% empty %}
+            <p>Reviews complete</p>
+        {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+{% endif %}

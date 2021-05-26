@@ -1,0 +1,41 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR The Trustees of Princeton University
+# This file is distributed under the same license as the geniza package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: geniza 0.3.0-dev\n"
+"Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
+"POT-Creation-Date: 2021-04-20 09:30-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+#: geniza/corpus/templates/admin/corpus/app_index.html:9
+msgid "Home"
+msgstr ""
+
+#: geniza/corpus/templates/corpus/document_detail.html:12
+msgid "Shelfmark"
+msgstr ""
+
+#: geniza/corpus/templates/corpus/document_detail.html:15
+msgid "Document Type"
+msgstr ""
+
+#. Translators: Date document was first added to the PGP
+#: geniza/corpus/templates/corpus/document_detail.html:19
+msgid "First input"
+msgstr ""
+
+#: geniza/corpus/templates/corpus/document_detail.html:21
+msgid "Tags"
+msgstr ""

@@ -1,0 +1,58 @@
+
+/* customize headings for Language+Script to handle long labels */
+th.column-documents, th.column-probable_documents {
+	max-width: 5em;
+}
+.model-languagescript.change-list #changelist table thead th {
+	vertical-align: bottom;
+}	
+.model-languagescript.change-list #changelist table thead .text {
+	white-space: break-spaces;
+}
+
+#content-related {
+	clear: right;
+}
+
+/* tweak footnote document relation display for better use of space */
+.field-doc_relation ul {
+	margin-left: 0;
+}
+.field-doc_relation li {
+	list-style-type: none;
+}
+
+/* align gfklookup magnifying glass with footnote field */
+.field-object_id {
+	position: relative;
+	padding-left: 24px;
+}
+.gfklookup {
+	position: absolute;
+	bottom: 16px;
+	left: 0;
+	cursor: pointer;
+}
+
+/* make first/last revision dates look like actual fields */
+.module + .module {
+	margin-top: -30px;
+}
+
+/* customize display of first/last revision info */
+.action-time::after { content: ", by "}
+.action-user::after { content: " — "}
+.action-msg { font-style: italic; }
+
+/* left-aligned transcriptions; rtl is controlled thru html "dir=" attribute */
+.transcription {
+	display: inline-block;
+	margin-right: auto;
+}
+.transcription h3 { text-align: left; }
+
+
+/* keep document relationship choices labels in line with checkboxes */
+.field-doc_relation {
+	white-space: nowrap;
+}
