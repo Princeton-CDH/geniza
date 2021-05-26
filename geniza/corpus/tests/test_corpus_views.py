@@ -64,8 +64,7 @@ def test_old_pgp_edition():
     fn = Footnote.objects.create(
         doc_relation=[Footnote.EDITION],
         source=source,
-        content_type_id=ContentType.objects.get(model="document").id,
-        object_id=0,
+        content_object=doc,
     )
     doc.footnotes.add(fn)
 
@@ -76,8 +75,7 @@ def test_old_pgp_edition():
     fn2 = Footnote.objects.create(
         doc_relation=[Footnote.EDITION],
         source=source2,
-        content_type_id=ContentType.objects.get(model="document").id,
-        object_id=0,
+        content_object=doc,
     )
     doc.footnotes.add(fn2)
     edition_str = old_pgp_edition(doc.editions())
@@ -87,8 +85,7 @@ def test_old_pgp_edition():
     fn_trans = Footnote.objects.create(
         doc_relation=[Footnote.EDITION, Footnote.TRANSLATION],
         source=source3,
-        content_type_id=ContentType.objects.get(model="document").id,
-        object_id=0,
+        content_object=doc,
     )
     doc.footnotes.add(fn_trans)
     edition_str = old_pgp_edition(doc.editions())

@@ -425,6 +425,33 @@ class TestDocument:
         index_data = document.index_data()
         assert index_data["old_pgpids_is"] == [12345, 9876]
 
+    def test_editions(self, document, source):
+        # create multiple footnotes to test filtering and sorting
+
+        # footnote with no content
+        edition = Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.EDITION
+        )
+        edition2 = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
+            content="some text",
+        )
+        translation = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.TRANSLATION,
+        )
+
+        doc_editions = document.editions()
+        # check that only footnotes with doc relation including edition are included
+        assert edition in doc_editions
+        assert edition2 in doc_editions
+        assert translation not in doc_editions
+        # check that edition with content is sorted first
+        assert edition2 == doc_editions[0]
+
 
 @pytest.mark.django_db
 class TestTextBlock:
