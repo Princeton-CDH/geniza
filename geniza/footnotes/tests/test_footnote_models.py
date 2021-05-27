@@ -22,20 +22,20 @@ class TestSource:
     def test_str(self, source, twoauthor_source, multiauthor_untitledsource):
         # source has no year; str should be creator lastname, title,
         assert str(source) == "%s, %s" % (
-            source.authors.first().last_name,
+            source.authors.first().firstname_lastname(),
             source.title,
         )
         # set a year
         source.year = 1984
         assert str(source) == "%s, %s (1984)" % (
-            source.authors.first().last_name,
+            source.authors.first().firstname_lastname(),
             source.title,
         )
 
         # two authors
         assert str(twoauthor_source) == "%s and %s, %s" % (
-            twoauthor_source.authors.first().last_name,
-            twoauthor_source.authors.all()[1].last_name,
+            twoauthor_source.authors.first().firstname_lastname(),
+            twoauthor_source.authors.all()[1].firstname_lastname(),
             twoauthor_source.title,
         )
 
@@ -50,7 +50,7 @@ class TestSource:
 
         # article with title, journal title, volume, year
         assert str(article) == '%s, "%s" %s %s (%s)' % (
-            article.authors.first().last_name,
+            article.authors.first().firstname_lastname(),
             article.title,
             article.journal,
             article.volume,
@@ -59,7 +59,7 @@ class TestSource:
         # article with no title
         article.title = ""
         assert str(article) == "%s, %s %s (%s)" % (
-            article.authors.first().last_name,
+            article.authors.first().firstname_lastname(),
             article.journal,
             article.volume,
             article.year,
@@ -67,7 +67,7 @@ class TestSource:
         # no volume
         article.volume = ""
         assert str(article) == "%s, %s (%s)" % (
-            article.authors.first().last_name,
+            article.authors.first().firstname_lastname(),
             article.journal,
             article.year,
         )
@@ -104,14 +104,15 @@ class TestFootnote:
 
     def test_display(self, source):
         footnote = Footnote(source=source)
-        assert footnote.display() == "Orwell, A Nice Cup of Tea."
+        assert footnote.display() == "George Orwell, A Nice Cup of Tea."
 
         footnote.location = "p. 55"
-        assert footnote.display() == "Orwell, A Nice Cup of Tea, p. 55."
+        assert footnote.display() == "George Orwell, A Nice Cup of Tea, p. 55."
 
         footnote.notes = "With minor edits."
         assert (
-            footnote.display() == "Orwell, A Nice Cup of Tea, p. 55. With minor edits."
+            footnote.display()
+            == "George Orwell, A Nice Cup of Tea, p. 55. With minor edits."
         )
 
     @pytest.mark.django_db
@@ -138,6 +139,13 @@ class TestCreator:
     def test_get_by_natural_key(self):
         creator = Creator.objects.create(last_name="Angelou", first_name="Maya")
         assert Creator.objects.get_by_natural_key("Angelou", "Maya") == creator
+
+    def test_firstname_lastname(self):
+        creator = Creator(last_name="Angelou", first_name="Maya")
+        assert creator.firstname_lastname() == "Maya Angelou"
+
+        # no firstname
+        assert Creator(last_name="Goitein").firstname_lastname() == "Goitein"
 
 
 class TestAuthorship:

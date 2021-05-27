@@ -64,8 +64,7 @@ def test_old_pgp_edition():
     fn = Footnote.objects.create(
         doc_relation=[Footnote.EDITION],
         source=source,
-        content_type_id=ContentType.objects.get(model="document").id,
-        object_id=0,
+        content_object=doc,
     )
     doc.footnotes.add(fn)
 
@@ -76,25 +75,23 @@ def test_old_pgp_edition():
     fn2 = Footnote.objects.create(
         doc_relation=[Footnote.EDITION],
         source=source2,
-        content_type_id=ContentType.objects.get(model="document").id,
-        object_id=0,
+        content_object=doc,
     )
     doc.footnotes.add(fn2)
     edition_str = old_pgp_edition(doc.editions())
-    assert edition_str == f"Ed. Arabic dictionary; also ed. Rustow."
+    assert edition_str == f"Ed. Arabic dictionary; also ed. Marina Rustow."
 
     source3 = Source.objects.create(title="Geniza Encyclopedia", source_type=book)
     fn_trans = Footnote.objects.create(
         doc_relation=[Footnote.EDITION, Footnote.TRANSLATION],
         source=source3,
-        content_type_id=ContentType.objects.get(model="document").id,
-        object_id=0,
+        content_object=doc,
     )
     doc.footnotes.add(fn_trans)
     edition_str = old_pgp_edition(doc.editions())
     assert (
         edition_str
-        == "Ed. Arabic dictionary; also ed. and trans. Geniza Encyclopedia; also ed. Rustow."
+        == "Ed. Arabic dictionary; also ed. and trans. Geniza Encyclopedia; also ed. Marina Rustow."
     )
 
     fn.url = "example.com"
@@ -102,7 +99,7 @@ def test_old_pgp_edition():
     edition_str = old_pgp_edition(doc.editions())
     assert (
         edition_str
-        == "Ed. Arabic dictionary; also ed. and trans. Geniza Encyclopedia; also ed. Rustow example.com."
+        == "Ed. Arabic dictionary; also ed. and trans. Geniza Encyclopedia; also ed. Marina Rustow example.com."
     )
 
 

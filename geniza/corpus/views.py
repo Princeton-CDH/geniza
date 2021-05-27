@@ -3,11 +3,8 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormMixin
 from tabular_export.admin import export_to_csv_response
 
-from geniza.corpus.models import Document, TextBlock
-from geniza.corpus.admin import DocumentAdmin
-
 from geniza.corpus.forms import DocumentSearchForm
-from geniza.corpus.models import Document
+from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Footnote
 
@@ -171,7 +168,7 @@ def pgp_metadata_for_old_site(request):
     )
     # return response
     return export_to_csv_response(
-        DocumentAdmin.csv_filename(DocumentAdmin),
+        "pgp_metadata.csv",
         [
             "pgpid",
             "library",

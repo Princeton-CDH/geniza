@@ -46,7 +46,9 @@ class Collection(models.Model):
     objects = CollectionManager()
 
     class Meta:
-        ordering = ["lib_abbrev", "abbrev", "name", "library"]
+        # sort on the combination of these fields, since many are optional
+        # NOTE: this causes problems for sorting related models in django admin
+        # (i.e., sorting fragments by collection); see corpus admin for workaround
         ordering = [
             Concat(
                 models.F("lib_abbrev"),
@@ -440,8 +442,11 @@ class Document(ModelIndexable):
         return f"{self.doctype or 'Unknown'}: {self.shelfmark_display or '??'}"
 
     def editions(self):
-        # return all footnotes that include type edition
-        return self.footnotes.filter(doc_relation__contains=Footnote.EDITION)
+        """All footnotes for this document where the document relation includes
+        edition; footnotes with content will be sorted first."""
+        return self.footnotes.filter(doc_relation__contains=Footnote.EDITION).order_by(
+            "content", "source"
+        )
 
     @classmethod
     def items_to_index(cls):

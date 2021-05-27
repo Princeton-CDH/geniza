@@ -181,6 +181,74 @@ class TestFootnoteAdmin:
         footnote = Footnote(source=source, doc_relation=["E", "D"])
         assert fnoteadmin.doc_relation_list(footnote) == str(footnote.doc_relation)
 
+    @pytest.mark.django_db
+    def test_tabulate_queryset(self, source, document):
+        fnoteadmin = FootnoteAdmin(Footnote, admin.site)
+        Footnote.objects.create(
+            source=source, content_object=document, doc_relation=["E", "D"]
+        )
+        Footnote.objects.create(
+            source=source,
+            content_object=document,
+            doc_relation=["E"],
+            content={"lines": ["some text", "a little more text"]},
+        )
+
+        qs = fnoteadmin.get_queryset("rqst")
+
+        for footnote, footnote_data in zip(qs, fnoteadmin.tabulate_queryset(qs)):
+            # test some properties
+            assert footnote.content_object in footnote_data
+            assert footnote.source in footnote_data
+            assert footnote.location in footnote_data
+            assert footnote.doc_relation in footnote_data
+            assert footnote.notes in footnote_data
+            assert footnote.url in footnote_data
+
+            if footnote.content:
+                assert "\n".join(footnote.content["lines"]) in footnote_data
+
+            assert (
+                f"https://example.com/admin/footnotes/footnote/{footnote.id}/change/"
+                in footnote_data
+            )
+
+    @pytest.mark.django_db
+    @patch("geniza.footnotes.admin.export_to_csv_response")
+    def test_export_to_csv(self, mock_export_to_csv_response, source, document):
+        fnoteadmin = FootnoteAdmin(Footnote, admin.site)
+        Footnote.objects.create(
+            source=source, doc_relation=["E", "D"], content_object=document
+        )
+        Footnote.objects.create(
+            source=source,
+            content_object=document,
+            doc_relation=["E"],
+            content={"lines": ["some text", "a little more text"]},
+        )
+
+        with patch.object(fnoteadmin, "tabulate_queryset") as tabulate_queryset:
+            # if no queryset provided, should use default queryset
+            footnotes = fnoteadmin.get_queryset(Mock())
+            fnoteadmin.export_to_csv(Mock())
+            assert tabulate_queryset.called_once_with(footnotes)
+            # otherwise should respect the provided queryset
+            first_note = Footnote.objects.first()
+            fnoteadmin.export_to_csv(Mock(), first_note)
+            assert tabulate_queryset.called_once_with(first_note)
+
+            export_args, export_kwargs = mock_export_to_csv_response.call_args
+            # first arg is filename
+            csvfilename = export_args[0]
+            assert csvfilename.endswith(".csv")
+            assert csvfilename.startswith("geniza-footnotes")
+            # should include current date
+            assert timezone.now().strftime("%Y%m%d") in csvfilename
+            headers = export_args[1]
+            assert "document" in headers
+            assert "source" in headers
+            assert "content" in headers
+
 
 class TestSourceFootnoteInline:
     @pytest.mark.django_db

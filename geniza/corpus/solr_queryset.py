@@ -33,8 +33,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     admin_doc_qf = "{!edismax qf=$admin_doc_qf pf=$admin_doc_pf v=$doc_query}"
 
     def admin_search(self, search_term):
+        # remove " + " from search string to allow searching on shelfmark joins
         return self.search(self.admin_doc_qf).raw_query_parameters(
-            doc_query=search_term
+            doc_query=search_term.replace(" + ", " ")
         )
 
     keyword_search_qf = "{!type=edismax qf=$keyword_qf pf=$keyword_pf v=$keyword_query}"
