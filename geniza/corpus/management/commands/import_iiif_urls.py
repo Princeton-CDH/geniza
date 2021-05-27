@@ -21,6 +21,7 @@ class Command(BaseCommand):
         self.csv_path = options.get("csv")
         self.overwrite = options.get("overwrite")
         self.dryrun = options.get("dryrun")
+        self.stats = defaultdict(int)
 
     def add_arguments(self, parser):
         parser.add_argument("csv", type=str)
@@ -31,7 +32,6 @@ class Command(BaseCommand):
         self.csv_path = options.get("csv")
         self.overwrite = options.get("overwrite")
         self.dryrun = options.get("dryrun")
-        self.stats = defaultdict(int)
 
         with open(self.csv_path) as f:
             csvreader = csv.DictReader(f)
