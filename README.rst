@@ -64,6 +64,7 @@ Remember to add a ``SECRET_KEY`` setting!
 - Create Solr collection with the configured configset (use create_core with Solr standalone and create_collection with SolrCloud)::
 
     solr create_core -c geniza -n geniza
+
 - Index content in Solr::
 
     python manage.py index
@@ -74,9 +75,13 @@ Internationalization & Translation
 
 This application has internationalization and translation enabled.
 
-- If you create any new translatable content, you should run `makemessages <https://docs.djangoproject.com/en/3.1/ref/django-admin/#makemessages>`_ to create or update message files.
+- If you create any new translatable content, you should run `makemessages <https://docs.djangoproject.com/en/3.1/ref/django-admin/#makemessages>`_ to create or update message files. We use a customized version of this command, available in ``/geniza/common/management/commands/makemessages.py``.
 
-	cd geniza && django-admin makemessages
+	django-admin makemessages
+
+- Before running the app, you should run `compilemessages <https://docs.djangoproject.com/en/3.1/ref/django-admin/#compilemessages>`_ to generate compiled translations.
+
+    django-admin compilemessages
 
 Unit Tests
 ----------
