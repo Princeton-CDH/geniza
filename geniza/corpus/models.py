@@ -2,7 +2,7 @@ import logging
 
 from django.db import models
 from django.urls import reverse
-from django.db.models.functions import Concat, Coalesce
+from django.db.models.functions import Concat
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.fields import ArrayField
