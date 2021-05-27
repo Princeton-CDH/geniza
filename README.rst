@@ -27,7 +27,11 @@ Python 3.8 / Django 3.1 / Postgresql / Solr 8.6
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
-    :alt: code style: blacm
+    :alt: code style: Black
+
+.. image:: https://badges.crowdin.net/geniza/localized.svg
+    :target: https://crowdin.com/project/geniza
+    :alt: Localization status
 
 Development instructions
 ------------------------
