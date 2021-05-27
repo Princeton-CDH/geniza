@@ -2,6 +2,7 @@ from collections import defaultdict
 import logging
 
 from django.db import models
+from django.db.models.query import Prefetch
 from django.urls import reverse
 from django.db.models.functions import Concat
 from django.contrib.admin.models import LogEntry
@@ -445,31 +446,42 @@ class Document(ModelIndexable):
     @classmethod
     def items_to_index(cls):
         """Custom logic for finding items to be indexed when indexing in
-        bulk; only include public docs."""
-        return (
-            cls.objects.filter(status=Document.PUBLIC)
-            .select_related("doctype")
-            .prefetch_related(
-                "tags", "languages", "textblock_set", "textblock_set__fragment"
-            )
+        bulk."""
+        # TODO: can we share common/reused prefetching logic
+        # in a custom qureyset filter or similar? (adapted here from admin)
+        return cls.objects.select_related("doctype").prefetch_related(
+            "tags",
+            "languages",
+            "footnotes",
+            "log_entries",
+            Prefetch(
+                "textblock_set",
+                queryset=TextBlock.objects.select_related(
+                    "fragment", "fragment__collection"
+                ),
+            ),
         )
 
     def index_data(self):
         """data for indexing in Solr"""
-
         index_data = super().index_data()
+
+        # get fragments via textblocks for correct order
+        # and to take advantage of prefetching
+        fragments = [tb.fragment for tb in self.textblock_set.all()]
         index_data.update(
             {
                 "pgpid_i": self.id,
                 "type_s": self.doctype.name if self.doctype else "Unknown",
                 "description_t": self.description,
-                "notes_t": self.notes,
-                "needs_review_t": self.needs_review,
-                "shelfmark_ss": [f.shelfmark for f in self.fragments.all()],
+                "notes_t": self.notes or None,
+                "needs_review_t": self.needs_review or None,
+                "shelfmark_ss": [f.shelfmark for f in fragments],
+                # library/collection possibly redundant?
+                "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss": [t.name for t in self.tags.all()],
                 "status_s": self.get_status_display(),
                 "old_pgpids_is": self.old_pgpids,
-                # TODO: editors/translators/sources
             }
         )
 
@@ -485,6 +497,8 @@ class Document(ModelIndexable):
                 "num_translations_i": counts[Footnote.TRANSLATION],
                 "num_discussions_i": counts[Footnote.DISCUSSION],
                 "scholarship_count_i": sum(counts.values()),
+                # preliminary scholarship record indexing
+                "scholarship_t": [fn.display() for fn in footnotes],
             }
         )
 

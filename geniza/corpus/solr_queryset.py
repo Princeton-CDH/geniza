@@ -13,6 +13,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "type": "type_s",
         "status": "status_s",
         "shelfmark": "shelfmark_ss",
+        "collection": "collection_ss",
         "tags": "tags_ss",
         "description": "description_t",
         "notes": "notes_t",
@@ -24,6 +25,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "num_translations": "num_translations_i",
         "num_discussions": "num_discussions_i",
         "scholarship_count": "scholarship_count_i",
+        "scholarship": "scholarship_t",
     }
 
     # (adapted from mep)
