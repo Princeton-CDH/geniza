@@ -44,7 +44,9 @@ class Collection(models.Model):
     objects = CollectionManager()
 
     class Meta:
-        ordering = ["lib_abbrev", "abbrev", "name", "library"]
+        # sort on the combination of these fields, since many are optional
+        # NOTE: this causes problems for sorting related models in django admin
+        # (i.e., sorting fragments by collection); see corpus admin for workaround
         ordering = [
             Concat(
                 models.F("lib_abbrev"),

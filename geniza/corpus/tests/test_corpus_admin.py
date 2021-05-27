@@ -21,8 +21,9 @@ from pytest_django.asserts import assertContains
 from geniza.corpus.admin import (
     DocumentAdmin,
     DocumentForm,
-    LanguageScriptAdmin,
+    FragmentAdmin,
     FragmentTextBlockInline,
+    LanguageScriptAdmin,
 )
 from geniza.corpus.models import (
     Document,
@@ -330,3 +331,20 @@ class TestFragmentTextBlockInline:
         inline = FragmentTextBlockInline(Fragment, admin_site=admin.site)
 
         assert test_description == inline.document_description(textblock)
+
+
+class TestFragmentAdmin:
+    @pytest.mark.django_db
+    def test_changelist_sort_collection(self, db, admin_client):
+        # sorting fragment list on collection should not raise 500 error
+        response = admin_client.get(
+            reverse("admin:corpus_fragment_changelist") + "?o=2.1"
+        )
+        assert response.status_code == 200
+
+    @pytest.mark.django_db
+    def test_collection_display(self, fragment):
+        cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
+        fragment.collection = cul
+        frag_admin = FragmentAdmin(model=Fragment, admin_site=admin.site)
+        assert frag_admin.collection_display(fragment) == cul
