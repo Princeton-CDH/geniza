@@ -23,7 +23,7 @@ class Command(BaseCommand):
         self.dryrun = options.get("dryrun")
 
     def add_arguments(self, parser):
-        parser.add_argument("-c", "--csv", type=str, required=True)
+        parser.add_argument("csv", type=str)
         parser.add_argument("-o", "--overwrite", action="store_true")
         parser.add_argument("-d", "--dryrun", action="store_true")
 
