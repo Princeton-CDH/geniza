@@ -1,11 +1,14 @@
 {% extends 'base.html' %}
 {% load static i18n %}
 
-{% block title %}Documents{% endblock title %}
+{% comment %}Translators: Title for document search page{% endcomment %}
+{% translate 'Search Documents' as doctitle%}
+
+{% block title %}{{ doctitle }}{% endblock title %}
 
 {% block main %}
 <div class="container search">
-    <h1>Search Documents</h1>
+    <h1>{{ doctitle }}</h1>
 
     <form>
     {{ form }}
@@ -17,7 +20,12 @@
     {% endfor %}
     </form>
 
-    <p>{{ total }} total results</p>
+    {% comment %}Translators: number of search results{% endcomment %}
+    {% blocktranslate count counter=total %}
+        1 result
+    {% plural %}
+        {{ counter }} total results
+    {% endblocktranslate %}
 
     <ol>
     {% for document in documents %}
@@ -37,13 +45,13 @@
 
             {% if document.scholarship_count %}
             <p>✔️
-            {% if document.num_editions %}Transcription ({{ document.num_editions }}){% endif %}
-            {% if document.num_translations %}Translation ({{ document.num_translations }}){% endif %}
-            {% if document.num_discussions %}Discussion ({{ document.num_discussions }}){% endif %}
+            {% if document.num_editions %}{% translate 'Transcription' %}({{ document.num_editions }}){% endif %}
+            {% if document.num_translations %}{% translate 'Translation' %}({{ document.num_translations }}){% endif %}
+            {% if document.num_discussions %}{% translate 'Discussion' %}({{ document.num_discussions }}){% endif %}
             </p>
             {% endif %}
 
-            <a class="view" href="{% url 'corpus:document' document.pgpid %}">View document details ➡</a>
+            <a class="view" href="{% url 'corpus:document' document.pgpid %}">{% translate 'View document details' %}➡</a>
     {% endfor %}
     </ol>
 
