@@ -59,7 +59,7 @@ def test_the_import_iiif_url():
     row = AttrMap(
         {
             "shelfmark": "T-S NS 305.66",
-            "url": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00600",
+            "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-NS-J-00600",
         }
     )
     command.import_iiif_url(row)
@@ -74,7 +74,7 @@ def test_the_import_iiif_url():
     row = AttrMap(
         {
             "shelfmark": "T-S NS 305.75",
-            "url": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00600",
+            "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-NS-J-00600",
         }
     )
     command.import_iiif_url(row)
@@ -90,7 +90,7 @@ def test_the_import_iiif_url():
     row = AttrMap(
         {
             "shelfmark": "T-S NS 305.80",
-            "url": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00600",
+            "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-NS-J-00600",
         }
     )
     command.import_iiif_url(row)
