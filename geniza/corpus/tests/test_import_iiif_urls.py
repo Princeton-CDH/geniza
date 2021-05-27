@@ -7,7 +7,10 @@ from geniza.corpus.management.commands import import_iiif_urls
 from geniza.corpus.models import Fragment
 
 
-def test_get_iiif_csv():
+@pytest.mark.django_db
+def test_handle():
+    fragment = Fragment.objects.create(shelfmark="T-S NS 305.65")
+
     command = import_iiif_urls.Command()
     command.csv_path = "foo.csv"
     csv_data = "\n".join(
@@ -21,10 +24,10 @@ def test_get_iiif_csv():
     mockfile = mock_open(read_data=csv_data)
 
     with patch("geniza.corpus.management.commands.import_iiif_urls.open", mockfile):
-        rows = list(command.get_iiif_csv())
+        command.handle()
 
-    assert rows[0].shelfmark == "T-S NS 305.65"
-    assert rows[1].url == "https://cudl.lib.cam.ac.uk/view/MS-TS-NS-00305-00069"
+    fragment = Fragment.objects.get(shelfmark="T-S NS 305.65")
+    assert fragment.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-00305-00065"
 
 
 def test_view_to_iiif_url():

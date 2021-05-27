@@ -32,26 +32,11 @@ class Command(BaseCommand):
         self.overwrite = options.get("overwrite")
         self.dryrun = options.get("dryrun")
 
-        rows = self.get_iiif_csv()
-        for row in rows:
-            self.import_iiif_url(row)
-
-    def get_iiif_csv(self):
-        # given a name for a file in the configured data import urls,
-        # load the data by url and initialize and return a generator
-        # of namedtuple elements for each row
-
         with open(self.csv_path) as f:
-            csvreader = csv.reader(f)
-            header = next(csvreader)
-
-            # Create a namedtuple based on headers in the csv
-            # and local mapping of csv names to access names
-            CsvRow = namedtuple("IiifCsvRow", header)
-
-            # iterate over csv rows and yield a generator of the namedtuple
+            csvreader = csv.DictReader(f)
             for row in csvreader:
-                yield CsvRow(*row)
+                print(row)
+                self.import_iiif_url(row)
 
     def view_to_iiif_url(self, url):
         iiif_link = url.replace("/view/", "/iiif/")
@@ -61,17 +46,17 @@ class Command(BaseCommand):
 
     def import_iiif_url(self, row):
         try:
-            fragment = Fragment.objects.get(shelfmark=row.shelfmark)
+            fragment = Fragment.objects.get(shelfmark=row["shelfmark"])
         except Fragment.DoesNotExist:
             # logger.warning(
-            #     f"Fragment with shelfmark {row.shelfmark} does not exist in the database."
+            #     f"Fragment with shelfmark {row['shelfmark']} does not exist in the database."
             # )
             return
 
         if not fragment.iiif_url or self.overwrite:
-            fragment.iiif_url = self.view_to_iiif_url(row.url)
+            fragment.iiif_url = self.view_to_iiif_url(row["url"])
 
             if self.dryrun:
-                logger.info(f"Set {fragment} url to {row.url}")
+                logger.info(f"Set {fragment} url to {row['url']}")
             else:
                 fragment.save()
