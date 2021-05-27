@@ -4,5 +4,5 @@
 
 commit_message: "[ci skip]"
 files:
-  - source: geniza/locale/en/LC_MESSAGES/django.po
-    translation: geniza/locale/%two_letters_code%/LC_MESSAGES/django.po
+  - source: /geniza/locale/en/LC_MESSAGES/django.po
+    translation: /geniza/locale/%two_letters_code%/LC_MESSAGES/django.po
