@@ -13,15 +13,30 @@ main {
     flex-direction: column;
     align-items: center;
 }
+
+/* doc detail pages */
 dt, dd { margin: 0; }
 dt {margin-top: 20px;}
 dd ~ dd { margin-top: 5px; }
-
 dt.inline { display: inline; }
 dt.inline + dd { display: inline; }
 dt.inline::after { content: ':'; }
-
 dl.tags { text-align: right; }
+
+/* doc detail nav */
+nav[aria-label=tabs] > ul {
+    display: flex;
+    justify-content: space-between;
+    list-style: none;
+    padding: 0;
+}
+
+/* scholarship records */
+.footnote > * { display: block; }
+.footnote > * + * { margin-top: .5rem; }
+.footnote > .author,
+.footnote > .year { display: inline-block; }
+.footnote > .year::before { content: "/"; padding: 0 .5rem; }
 
 /* viewer */
 .wrapper {

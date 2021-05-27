@@ -329,6 +329,27 @@ class TestDocument:
         frag2.delete()
         assert doc.iiif_urls() == []
 
+    def test_fragment_urls(self):
+        # create example doc with two fragments with URLs
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark="s1", url="foo")
+        frag2 = Fragment.objects.create(shelfmark="s2", url="bar")
+        TextBlock.objects.create(document=doc, fragment=frag, order=1)
+        TextBlock.objects.create(document=doc, fragment=frag2, order=2)
+        assert doc.fragment_urls() == ["foo", "bar"]
+        # only one URL
+        frag2.url = ""
+        frag2.save()
+        assert doc.fragment_urls() == ["foo"]
+        # no URLs
+        frag.url = ""
+        frag.save()
+        assert doc.fragment_urls() == []
+        # no fragments
+        frag.delete()
+        frag2.delete()
+        assert doc.fragment_urls() == []
+
     def test_title(self):
         doc = Document.objects.create()
         assert doc.title == "Unknown: ??"

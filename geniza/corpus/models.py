@@ -451,6 +451,14 @@ class Document(ModelIndexable):
             )
         )
 
+    def fragment_urls(self):
+        """List of external URLs to view the Document's Fragments."""
+        return list(
+            dict.fromkeys(
+                filter(None, [b.fragment.url for b in self.textblock_set.all()])
+            )
+        )
+
     def has_transcription(self):
         """Admin display field indicating if document has a transcription."""
         return any(note.has_transcription() for note in self.footnotes.all())

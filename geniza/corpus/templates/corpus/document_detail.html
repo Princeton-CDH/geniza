@@ -9,8 +9,10 @@
 {% endblock extrahead %}
 
 {% block main %}
+<!-- document details -->
 <div class="container">
     <h1>{{ document.title }}</h1>
+    {% include "corpus/snippets/document_tabs.html" %}
     <dl>
         <dt class="sr-only">{% translate 'Shelfmark' %}</dt>
         <dd>{{ document.shelfmark }}</dd>
@@ -18,12 +20,11 @@
         <dt class="sr-only">{% translate 'Document Type' %}</dt>
         <dd>{{ document.doctype }}</dd>
         {% endif %}
-        {% comment %}Translators: Date document was first added to the PGP{% endcomment %}
+        {# Translators: Date document was first added to the PGP #}
         <dt class="inline">{% translate 'Input date' %}</dt>
         <dd>{{ document.log_entries.last.action_time.year }}</dd>
-
         {% if document.editions %}
-        {% comment %}Translators: Editor label{% endcomment %}
+        {# Translators: Editor label #}
         <dt>{% translate 'Editor' %}</dt>  {# optionally pluralize? #}
         {% for ed in document.editions %}
         <dd>{{ ed.display }}</dd>
