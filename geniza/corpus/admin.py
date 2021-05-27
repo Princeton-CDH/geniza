@@ -7,7 +7,8 @@ from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
-from django.db.models import Count, CharField, Q
+from django.db.models import Count, CharField, Q, F
+from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.forms.widgets import TextInput, Textarea
 from django.urls import reverse, resolve
@@ -452,7 +453,7 @@ class DocumentTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Fragment)
 class FragmentAdmin(admin.ModelAdmin):
-    list_display = ("shelfmark", "collection", "url", "is_multifragment")
+    list_display = ("shelfmark", "collection_display", "url", "is_multifragment")
     search_fields = ("shelfmark", "old_shelfmarks", "notes", "needs_review")
     readonly_fields = ("old_shelfmarks", "created", "last_modified")
     list_filter = (
@@ -474,4 +475,19 @@ class FragmentAdmin(admin.ModelAdmin):
         "notes",
         "needs_review",
         ("created", "last_modified"),
+    )
+
+    # default ordering on Collection uses concat with field references,
+    # which does not work when referenced from another model;
+    # as a workaround,add a display property that makes the custom sort
+    # relative to the fragment
+    def collection_display(self, obj):
+        return obj.collection
+
+    collection_display.verbose_name = "Collection"
+    collection_display.admin_order_field = Concat(
+        F("collection__lib_abbrev"),
+        F("collection__abbrev"),
+        F("collection__name"),
+        F("collection__library"),
     )

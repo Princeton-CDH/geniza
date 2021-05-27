@@ -2,7 +2,7 @@ import logging
 
 from django.db import models
 from django.urls import reverse
-from django.db.models.functions import Concat
+from django.db.models.functions import Concat, Coalesce
 from django.contrib.admin.models import LogEntry
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.fields import ArrayField
@@ -44,7 +44,9 @@ class Collection(models.Model):
     objects = CollectionManager()
 
     class Meta:
-        ordering = ["lib_abbrev", "abbrev", "name", "library"]
+        # sort on the combination of these fields, since many are optional
+        # NOTE: this causes problems for sorting related models in django admin
+        # (i.e., sorting fragments by collection); see corpus admin for workaround
         ordering = [
             Concat(
                 models.F("lib_abbrev"),
