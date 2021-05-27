@@ -503,6 +503,7 @@ class Document(ModelIndexable):
                 "num_discussions_i": counts[Footnote.DISCUSSION],
                 "scholarship_count_i": sum(counts.values()),
                 # preliminary scholarship record indexing
+                # (may need splitting out and weighting based on type of scholarship)
                 "scholarship_t": [fn.display() for fn in footnotes],
             }
         )
