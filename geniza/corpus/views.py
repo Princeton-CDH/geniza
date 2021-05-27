@@ -63,8 +63,21 @@ class DocumentSearchView(ListView, FormMixin):
             # order based on solr name for search option
             # documents = documents.order_by(self.solr_sort[search_opts['sort'] ])
 
+        self.queryset = documents
+
         # return 50 documents for now; pagination TODO
         return documents[:50]
+
+    def get_context_data(self):
+        context_data = super().get_context_data()
+        # should eventually be handled by paginator, but
+        # patch in total number of results for display for now
+        context_data.update(
+            {
+                "total": self.queryset.count(),
+            }
+        )
+        return context_data
 
 
 class DocumentDetailView(DetailView):
