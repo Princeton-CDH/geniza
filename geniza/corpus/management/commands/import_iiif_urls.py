@@ -1,7 +1,7 @@
 import csv
 import re
 import logging
-from collections import namedtuple
+from collections import defaultdict
 
 from django.core.management.base import BaseCommand
 
@@ -31,11 +31,16 @@ class Command(BaseCommand):
         self.csv_path = options.get("csv")
         self.overwrite = options.get("overwrite")
         self.dryrun = options.get("dryrun")
+        self.stats = defaultdict(int)
 
         with open(self.csv_path) as f:
             csvreader = csv.DictReader(f)
             for row in csvreader:
                 self.import_iiif_url(row)
+
+        logger.info(f"URLs added: {self.stats['added']}")
+        logger.info(f"URLs updated: {self.stats['updated']}")
+        logger.info(f"Fragments not found: {self.stats['not-found']}")
 
     def view_to_iiif_url(self, url):
         """Get IIIF Manifest URL for a fragment when possible"""
@@ -57,15 +62,20 @@ class Command(BaseCommand):
         try:
             fragment = Fragment.objects.get(shelfmark=row["shelfmark"])
         except Fragment.DoesNotExist:
-            # logger.warning(
-            #     f"Fragment with shelfmark {row['shelfmark']} does not exist in the database."
-            # )
+            self.stats["not-found"] += 1
             return
 
         if not fragment.iiif_url or self.overwrite:
             fragment.iiif_url = self.view_to_iiif_url(row["url"])
 
             if self.dryrun:
-                logger.info(f"Set {fragment} url to {row['url']}")
+                logger.info(
+                    f"Set {fragment} url to {self.view_to_iiif_url(row['url'])}"
+                )
             else:
                 fragment.save()
+
+            if fragment.iiif_url:
+                self.stats["updated"] += 1
+            else:
+                self.stats["added"] += 1

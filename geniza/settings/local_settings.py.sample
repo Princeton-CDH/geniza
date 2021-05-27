@@ -64,6 +64,10 @@ DATA_IMPORT_URLS = {
 #             'handlers': ['console'],
 #             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
 #         },
+#         'import': {
+#             'handlers': ['console'],
+#             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+#         }
 #         'parasolr': {
 #             'handlers': ['console'],
 #             'level': 'DEBUG'
