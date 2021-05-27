@@ -41,6 +41,7 @@ class Command(BaseCommand):
         logger.info(f"URLs added: {self.stats['added']}")
         logger.info(f"URLs updated: {self.stats['updated']}")
         logger.info(f"Fragments not found: {self.stats['not-found']}")
+        logger.info(f"Fragments skipped: {self.stats['skipped']}")
 
     def view_to_iiif_url(self, url):
         """Get IIIF Manifest URL for a fragment when possible"""
@@ -66,6 +67,11 @@ class Command(BaseCommand):
             return
 
         if not fragment.iiif_url or self.overwrite:
+            if fragment.iiif_url:
+                self.stats["updated"] += 1
+            else:
+                self.stats["added"] += 1
+
             fragment.iiif_url = self.view_to_iiif_url(row["url"])
 
             if self.dryrun:
@@ -74,8 +80,6 @@ class Command(BaseCommand):
                 )
             else:
                 fragment.save()
+            return
 
-            if fragment.iiif_url:
-                self.stats["updated"] += 1
-            else:
-                self.stats["added"] += 1
+        self.stats["skipped"] += 1
