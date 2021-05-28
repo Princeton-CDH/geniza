@@ -60,6 +60,7 @@ class Command(BaseCommand):
         return ""
 
     def import_iiif_url(self, row):
+        assert "shelfmark" in row and "url" in row
         try:
             fragment = Fragment.objects.get(shelfmark=row["shelfmark"])
         except Fragment.DoesNotExist:

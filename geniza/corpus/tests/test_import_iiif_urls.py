@@ -47,8 +47,14 @@ def test_view_to_iiif_url():
 def test_the_import_iiif_url():
     # Ensure shelfmark not existing is properly handled.
     command = import_iiif_urls.Command()
-    row = AttrMap({"shelfmark": "mm"})
+    row = AttrMap({"shelfmark": "mm", "url": "example.com"})
     command.import_iiif_url(row)  # Test would fail if error were raised
+
+    # Ensure that headers are correct
+    command = import_iiif_urls.Command()
+    row = AttrMap({"Shelfmark": "mm", "iiif_url": "example.com"})
+    with pytest.raises(Exception):
+        command.import_iiif_url(row)
 
     # Ensure that the iiif url is not overwritten unless overwrite arg is provided
     command = import_iiif_urls.Command(overwrite=None, dryrun=None)
