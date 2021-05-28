@@ -57,7 +57,9 @@ def test_the_import_iiif_url():
         command.import_iiif_url(row)
 
     # Ensure that the iiif url is not overwritten unless overwrite arg is provided
-    command = import_iiif_urls.Command(overwrite=None, dryrun=None)
+    command = import_iiif_urls.Command()
+    command.overwrite = None
+    command.dryrun = None
     Fragment.objects.create(
         shelfmark="T-S NS 305.66",
         iiif_url="https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00490",
@@ -72,7 +74,9 @@ def test_the_import_iiif_url():
     fragment = Fragment.objects.get(shelfmark="T-S NS 305.66")
     assert fragment.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00490"
 
-    command = import_iiif_urls.Command(overwrite=True, dryrun=None)
+    command = import_iiif_urls.Command()
+    command.overwrite = True
+    command.dryrun = None
     Fragment.objects.create(
         shelfmark="T-S NS 305.75",
         iiif_url="https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00490",
@@ -88,7 +92,9 @@ def test_the_import_iiif_url():
     assert fragment.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00600"
 
     # Ensure that changes aren't saved if dryrun argument is provided
-    command = import_iiif_urls.Command(overwrite=None, dryrun=True)
+    command = import_iiif_urls.Command()
+    command.overwrite = None
+    command.dryrun = True
     Fragment.objects.create(
         shelfmark="T-S NS 305.80",
         iiif_url="https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00490",

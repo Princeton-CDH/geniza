@@ -18,9 +18,6 @@ class Command(BaseCommand):
     """Given a CSV of fragments and IIIF URLs, add those IIIF urls to their respective fragments in the database"""
 
     def __init__(self, *args, **options):
-        self.csv_path = options.get("csv")
-        self.overwrite = options.get("overwrite")
-        self.dryrun = options.get("dryrun")
         self.stats = defaultdict(int)
 
     def add_arguments(self, parser):
