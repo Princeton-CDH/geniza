@@ -1,6 +1,5 @@
 import csv
 import re
-import logging
 from collections import defaultdict
 
 from django.core.management.base import BaseCommand
@@ -9,16 +8,12 @@ from parasolr.django.signals import IndexableSignalHandler
 from geniza.corpus.models import Fragment
 
 
-# logging config: use levels as integers for verbosity option
-logger = logging.getLogger("import")
-logging.basicConfig()
-LOG_LEVELS = {0: logging.ERROR, 1: logging.WARNING, 2: logging.INFO, 3: logging.DEBUG}
-
-
 class Command(BaseCommand):
     """Given a CSV of fragments and IIIF URLs, add those IIIF urls to their respective fragments in the database"""
 
     def __init__(self, *args, **options):
+        super().__init__(*args, **options)
+
         self.stats = defaultdict(int)
 
         # disconnect solr indexing signals
@@ -39,10 +34,10 @@ class Command(BaseCommand):
             for row in csvreader:
                 self.import_iiif_url(row)
 
-        logger.info(f"URLs added: {self.stats['added']}")
-        logger.info(f"URLs updated: {self.stats['updated']}")
-        logger.info(f"Fragments not found: {self.stats['not-found']}")
-        logger.info(f"Fragments skipped: {self.stats['skipped']}")
+        self.stdout.write(f"URLs added: {self.stats['added']}")
+        self.stdout.write(f"URLs updated: {self.stats['updated']}")
+        self.stdout.write(f"Fragments not found: {self.stats['not-found']}")
+        self.stdout.write(f"Fragments skipped: {self.stats['skipped']}")
 
     def view_to_iiif_url(self, url):
         """Get IIIF Manifest URL for a fragment when possible"""
@@ -77,7 +72,7 @@ class Command(BaseCommand):
             fragment.iiif_url = self.view_to_iiif_url(row["url"])
 
             if self.dryrun:
-                logger.info(
+                self.stdout.write(
                     f"Set {fragment} url to {self.view_to_iiif_url(row['url'])}"
                 )
             else:
