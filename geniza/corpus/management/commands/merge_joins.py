@@ -218,29 +218,28 @@ class Command(BaseCommand):
             csvwriter.writerows(report_rows)
         self.stdout.write("Report of merge candidates output as merge-report.csv")
 
-    def merge_documents(doc_list):
-        primary_doc = min(doc_list, lambda d: d.pgpid)
-        merge_docs = [doc for doc in doc_list if doc != primary_doc]
-
-        # add old ids
+    def merge_documents(primary_doc, merge_docs, rationale):
+        # takes a primary document, list of documents to merge
+        # and a rationale/description for how the merge was determined
         for doc in merge_docs:
-            primary_doc.add_old_pgpid(doc.pgpid)
+            # add merge ids to primary doc old pgpid list
+            primary_doc.old_pgpids.append(doc.pgpid)
+            # add any merge document tags to primary document
+            primary_doc.tags.add(*doc.tags)
 
-        # compress description
-        # confirm doctype the same
-        # compress unique tags
+        # combine descriptions (if necessary)
         # confirm languages all the same
         # confirm probable_languages are fine
         # language_note
-        # notes
-        # drop created
-        # drop last_modified
-        # collapse footnotes
-        # ignoring log entries, status, created, last_modified, needs_review
+        # combine notes
+        # combine needs review notes, if any
+        # combine footnotes; delete any that are redundant
+        # remove redundant log entries; move any unique entries to primary doc
 
         # primary_doc.save()
         # for doc in merge_docs:
         #   doc.delete()
+        # create log entry documenting the merge; include rationale
 
     def handle(self, *args, **options):
         self.mode = options["mode"]

@@ -277,7 +277,6 @@ class Document(ModelIndexable):
     appears on one or more fragments."""
 
     id = models.AutoField("PGPID", primary_key=True)
-    old_pgpids = models.CharField(max_length=255, blank=True)
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
     )
@@ -514,12 +513,6 @@ class Document(ModelIndexable):
             ] = last_log_entry.action_time.isoformat().replace("+00:00", "Z")
 
         return index_data
-
-    def add_old_pgpid(self, pgpid):
-        old_pgpids = set(self.old_pgpid.split(";"))
-        old_pgpids += pgpid
-        old_pgpids -= {"", None}
-        self.old_pgpids = ";".join(old_pgpids)
 
     # define signal handlers to update the index based on changes
     # to other models
