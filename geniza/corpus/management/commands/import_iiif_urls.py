@@ -4,6 +4,7 @@ import logging
 from collections import defaultdict
 
 from django.core.management.base import BaseCommand
+from parasolr.django.signals import IndexableSignalHandler
 
 from geniza.corpus.models import Fragment
 
@@ -19,6 +20,9 @@ class Command(BaseCommand):
 
     def __init__(self, *args, **options):
         self.stats = defaultdict(int)
+
+        # disconnect solr indexing signals
+        IndexableSignalHandler.disconnect()
 
     def add_arguments(self, parser):
         parser.add_argument("csv", type=str)
