@@ -1,8 +1,10 @@
+from collections import defaultdict
 from unittest.mock import patch, mock_open
-from attrdict import AttrMap
 import pytest
 
+from attrdict import AttrMap
 from django.contrib.admin.models import CHANGE, LogEntry
+from django.core.management import call_command
 from django.core.management.base import CommandError
 
 from geniza.corpus.management.commands import add_fragment_urls
@@ -30,6 +32,13 @@ def test_handle():
 
     fragment = Fragment.objects.get(shelfmark="T-S NS 305.65")
     assert fragment.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-00305-00065"
+
+
+@pytest.mark.django_db
+def test_call_command():
+    # test calling from command line; file not found on nonexistent csv
+    with pytest.raises(CommandError):
+        call_command("add_fragment_urls", "nonexistent.csv")
 
 
 @pytest.mark.django_db
@@ -155,6 +164,33 @@ def test_add_fragment_urls(mock_log_change):
     assert fragment.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00600"
     assert command.stats["iiif_updated"] == 1
     mock_log_change.assert_called_with(fragment, "added URL and updated IIIF URL")
+
+    # test updating url — url matches, should skip
+    fragment.url = row.url
+    fragment.save()
+    command.stats = defaultdict(int)
+    command.add_fragment_urls(row)
+    assert not command.stats["url_updated"]
+    assert not command.stats["url_added"]
+    assert command.stats["skipped"] == 1
+
+    # fragment url is set but does not match, no overwrite
+    fragment.url = "http://example.com/fragment/view"
+    fragment.save()
+    command.overwrite = False
+    command.stats = defaultdict(int)
+    command.add_fragment_urls(row)
+    assert not command.stats["url_updated"]
+    assert not command.stats["url_added"]
+    assert command.stats["skipped"] == 1
+
+    # url mismatch, overwrite specified
+    command.overwrite = True
+    command.stats = defaultdict(int)
+    command.add_fragment_urls(row)
+    assert command.stats["url_updated"] == 1
+    assert not command.stats["url_added"]
+    assert not command.stats["skipped"]
 
     # Ensure that changes aren't saved if dryrun argument is provided
     mock_log_change.reset_mock()
