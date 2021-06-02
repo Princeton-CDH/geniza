@@ -40,9 +40,6 @@ class Creator(models.Model):
 
     objects = CreatorManager()
 
-    def __str__(self):
-        return ", ".join([n for n in [self.last_name, self.first_name] if n])
-
     class Meta:
         ordering = ["last_name", "first_name"]
         constraints = [
@@ -51,8 +48,15 @@ class Creator(models.Model):
             )
         ]
 
+    def __str__(self):
+        return ", ".join([n for n in [self.last_name, self.first_name] if n])
+
     def natural_key(self):
         return (self.last_name, self.first_name)
+
+    def firstname_lastname(self):
+        """Creator full name, with first name first"""
+        return " ".join([n for n in [self.first_name, self.last_name] if n])
 
 
 class Authorship(models.Model):
@@ -121,9 +125,13 @@ class Source(models.Model):
         # author (year)
         # author, "title" journal vol (year)
 
+        # TODO: include language if not English
+
         author = ""
         if self.authorship_set.exists():
-            author_lastnames = [a.creator.last_name for a in self.authorship_set.all()]
+            author_lastnames = [
+                a.creator.firstname_lastname() for a in self.authorship_set.all()
+            ]
             # combine the last pair with and; combine all others with comma
             # thanks to https://stackoverflow.com/a/30084022
             if len(author_lastnames) > 1:
@@ -142,6 +150,7 @@ class Source(models.Model):
             else:
                 parts.append(self.title)
 
+        # TODO: formatted version with italics for book/journal title
         if self.journal:
             parts.append(self.journal)
         if self.volume:

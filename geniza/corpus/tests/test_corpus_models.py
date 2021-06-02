@@ -403,14 +403,21 @@ class TestDocument:
         assert index_data["pgpid_i"] == document.pk
         assert index_data["type_s"] == str(document.doctype)
         assert index_data["description_t"] == document.description
-        assert index_data["notes_t"] == document.notes
-        assert index_data["needs_review_t"] == document.needs_review
+        assert index_data["notes_t"] is None  # no notes
+        assert index_data["needs_review_t"] is None  # no review notes
         for frag in document.fragments.all():
             assert frag.shelfmark in index_data["shelfmark_ss"]
         for tag in document.tags.all():
             assert tag.name in index_data["tags_ss"]
         assert index_data["status_s"] == "Public"
         assert not index_data["old_pgpids_is"]
+
+        # test with notes and review notes
+        document.notes = "FGP stub"
+        document.needs_review = "check description"
+        index_data = document.index_data()
+        assert index_data["notes_t"] == document.notes
+        assert index_data["needs_review_t"] == document.needs_review
 
         # suppressed documents are still indexed,
         # since they need to be searchable in admin
@@ -424,6 +431,39 @@ class TestDocument:
         document.old_pgpids = [12345, 9876]
         index_data = document.index_data()
         assert index_data["old_pgpids_is"] == [12345, 9876]
+
+        # no footnotes — all scholarship counts should be zero
+        for scholarship_count in [
+            "num_editions_i",
+            "num_translations_i",
+            "num_discussions_i",
+            "scholarship_count_i",
+        ]:
+            assert index_data[scholarship_count] == 0
+        assert index_data["scholarship_t"] == []
+
+    def test_index_data_footnotes(self, document, source):
+        # footnote with no content
+        edition = Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.EDITION
+        )
+        edition2 = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
+        )
+        translation = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.TRANSLATION,
+        )
+        index_data = document.index_data()
+        assert index_data["num_editions_i"] == 2
+        assert index_data["num_translations_i"] == 2
+        assert index_data["scholarship_count_i"] == 4
+
+        for note in [edition, edition2, translation]:
+            assert note.display() in index_data["scholarship_t"]
 
     def test_editions(self, document, source):
         # create multiple footnotes to test filtering and sorting
