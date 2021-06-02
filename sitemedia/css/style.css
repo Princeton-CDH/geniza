@@ -51,3 +51,62 @@ dl.tags { text-align: right; }
     position: absolute;
     white-space: nowrap;
 }
+
+
+.search .result {
+    margin: 35px 0;
+}
+
+.search ol {
+  list-style: none; 
+  counter-reset: search-counter;
+}
+.search li {
+  counter-increment: search-counter;
+}
+.search h2::before {
+  /* anchor counter to h2 instead of li, for alignment regardless of tags */
+  content: counter(search-counter);
+  margin-left: -30px;
+  text-align: left;
+  float: left;
+  font-weight: bold;
+}
+
+.search h2 {
+    font-weight: normal;
+    font-size: 100%;
+    clear: right;
+}
+
+.search dl.tags { text-align: left; }
+
+.search a.view {
+    display: block;
+    color: black;
+    text-decoration: none;
+    text-align: right;
+}
+
+
+.search label[for="id_query"] {
+    /* sr-only */
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+}
+.search input[name="query"] {
+  width: 100%;
+  margin: 15px 0;
+  font-size: larger;
+}
+
+.search select[name="sort"] {
+  display: block;
+  min-width: 320px;
+  font-size: larger;
+}

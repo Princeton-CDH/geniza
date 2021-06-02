@@ -1,14 +1,18 @@
+from unittest.mock import Mock, patch
+
+from django.contrib.contenttypes.models import ContentType
 import pytest
-from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
-from geniza.footnotes.models import Footnote, Source, SourceType, Creator
 from pytest_django.asserts import assertContains
+
+from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
+from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import (
     old_pgp_edition,
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
+    DocumentSearchView,
 )
-from django.contrib.contenttypes.models import ContentType
-from unittest.mock import Mock
+from geniza.footnotes.models import Footnote, Source, SourceType, Creator
 
 
 class TestDocumentDetailView:
@@ -128,3 +132,52 @@ def test_pgp_metadata_for_old_site():
     # Ensure objects have been correctly parsed as strings
     assert b"36" in row1
     assert b"Legal" in row1
+
+
+class TestDocumentSearchView:
+    def test_get_form_kwargs(self):
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # no params
+        docsearch_view.request.GET = {}
+        assert docsearch_view.get_form_kwargs() == {
+            "initial": {},
+            "prefix": None,
+            "data": {},
+        }
+
+        # keyword search param
+        docsearch_view.request.GET = {"query": "contract"}
+        assert docsearch_view.get_form_kwargs() == {
+            "initial": {},
+            "prefix": None,
+            "data": {"query": "contract", "sort": "relevance"},
+        }
+
+    @pytest.mark.usefixtures("mock_solr_queryset")
+    def test_get_queryset(self, mock_solr_queryset):
+        with patch(
+            "geniza.corpus.views.DocumentSolrQuerySet",
+            new=self.mock_solr_queryset(DocumentSolrQuerySet),
+        ) as mock_queryset_cls:
+
+            docsearch_view = DocumentSearchView()
+            docsearch_view.request = Mock()
+            docsearch_view.request.GET = {"query": "six apartments"}
+            qs = docsearch_view.get_queryset()
+
+            mock_queryset_cls.assert_called_with()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.keyword_search.assert_called_with("six apartments")
+            # NOTE: keyword search not in parasolr list for mock solr queryset
+            mock_sqs.keyword_search.return_value.also.assert_called_with("score")
+
+    def test_get_context_data(self, rf):
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = rf.get("/documents/")
+        docsearch_view.queryset = Mock()
+        docsearch_view.queryset.count.return_value = 22
+        docsearch_view.object_list = docsearch_view.queryset
+
+        context_data = docsearch_view.get_context_data()
+        assert context_data["total"] == 22
