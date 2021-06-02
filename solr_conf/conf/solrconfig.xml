@@ -736,11 +736,12 @@
         description_t
         pgpid_i
         type_s
+        type_t
         collection_ss
         shelfmark_t
         shelfmark_ss
         tags_t
-        tags_ss        
+        tags_ss
         scholarship_t
         old_pgpids_is
       </str>
@@ -751,7 +752,7 @@
         shelfmark_t
         shelfmark_ss
         tags_t
-        tags_ss        
+        tags_ss
         scholarship_t
       </str>
 
