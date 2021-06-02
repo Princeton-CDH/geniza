@@ -2,6 +2,7 @@ from unittest.mock import patch, mock_open
 from attrdict import AttrMap
 import pytest
 
+from django.contrib.admin.models import CHANGE, LogEntry
 from django.core.management.base import CommandError
 
 from geniza.corpus.management.commands import import_iiif_urls
@@ -31,6 +32,7 @@ def test_handle():
     assert fragment.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-00305-00065"
 
 
+@pytest.mark.django_db
 def test_handle_missing_csv_headers():
     command = import_iiif_urls.Command()
     # none of the headers match
@@ -72,10 +74,11 @@ def test_handle_missing_csv_headers():
     mockfile = mock_open(read_data=csv_data)
     with patch("geniza.corpus.management.commands.import_iiif_urls.open", mockfile):
         with patch.object(command, "add_fragment_urls"):
-            # no exception
+            # no excetion
             command.handle()
 
 
+@pytest.mark.django_db
 def test_handle_file_not_found():
     command = import_iiif_urls.Command()
     with pytest.raises(CommandError) as err:
@@ -83,6 +86,7 @@ def test_handle_file_not_found():
         assert "FileNotFound" in str(err)
 
 
+@pytest.mark.django_db
 def test_view_to_iiif_url():
     command = import_iiif_urls.Command()
     assert (
@@ -99,12 +103,14 @@ def test_view_to_iiif_url():
 
 
 @pytest.mark.django_db
-def test_add_fragment_urls():
+@patch("geniza.corpus.management.commands.import_iiif_urls.Command.log_change")
+def test_add_fragment_urls(mock_log_change):
     # Ensure shelfmark not existing is properly handled.
     command = import_iiif_urls.Command()
     row = AttrMap({"shelfmark": "mm", "url": "example.com"})
     command.add_fragment_urls(row)  # Test would fail if error were raised
     assert command.stats["not_found"] == 1
+    assert not mock_log_change.call_count
 
     # Ensure that the iiif url is not overwritten unless overwrite arg is provided
     command = import_iiif_urls.Command()
@@ -128,6 +134,7 @@ def test_add_fragment_urls():
     assert not command.stats["iiif_added"]
     assert not command.stats["iiif_updated"]
     assert not command.stats["url_updated"]
+    mock_log_change.assert_called_with(fragment, "added URL")
 
     command = import_iiif_urls.Command()
     command.overwrite = True
@@ -147,8 +154,10 @@ def test_add_fragment_urls():
     assert fragment.iiif_url != orig_frag.iiif_url
     assert fragment.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00600"
     assert command.stats["iiif_updated"] == 1
+    mock_log_change.assert_called_with(fragment, "added URL and updated IIIF URL")
 
     # Ensure that changes aren't saved if dryrun argument is provided
+    mock_log_change.reset_mock()
     command = import_iiif_urls.Command()
     command.overwrite = None
     command.dryrun = True
@@ -165,3 +174,13 @@ def test_add_fragment_urls():
     command.add_fragment_urls(row)
     fragment = Fragment.objects.get(shelfmark=orig_frag.shelfmark)
     assert fragment.iiif_url == orig_frag.iiif_url
+    assert not mock_log_change.call_count
+
+
+@pytest.mark.django_db
+def test_log_change(fragment):
+    command = import_iiif_urls.Command()
+    command.log_change(fragment, "added url")
+    log_entry = LogEntry.objects.get(object_id=fragment.pk)
+    assert log_entry.action_flag == CHANGE
+    assert log_entry.change_message == "added url"
