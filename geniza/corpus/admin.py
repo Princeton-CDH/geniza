@@ -38,7 +38,7 @@ class FragmentTextBlockInline(admin.TabularInline):
     fields = (
         "document_link",
         "document_description",
-        "subfragment",
+        "multifragment",
         "side",
         "region",
     )
@@ -121,7 +121,7 @@ class DocumentTextBlockInline(admin.TabularInline):
     readonly_fields = ("thumbnail",)
     fields = (
         "fragment",
-        "subfragment",
+        "multifragment",
         "side",
         "region",
         "order",
@@ -328,7 +328,7 @@ class DocumentAdmin(admin.ModelAdmin):
             )
             iiif_urls = [fr.iiif_url for fr in all_fragments]
             view_urls = [fr.url for fr in all_fragments]
-            subfrag = [tb.subfragment for tb in all_textblocks]
+            multifrag = [tb.multifragment for tb in all_textblocks]
             side = [tb.get_side_display() for tb in all_textblocks]
             region = [tb.region for tb in all_textblocks]
             old_shelfmarks = [fragment.old_shelfmarks for fragment in all_fragments]
@@ -361,7 +361,7 @@ class DocumentAdmin(admin.ModelAdmin):
                 ";".join(iiif_urls) if any(iiif_urls) else "",
                 ";".join(view_urls) if any(view_urls) else "",
                 doc.shelfmark,  # shelfmark
-                ";".join([s for s in subfrag if s]),
+                ";".join([s for s in multifrag if s]),
                 ";".join([s for s in side if s]),  # side (recto/verso)
                 ";".join([r for r in region if r]),  # text block region
                 doc.doctype,
@@ -390,7 +390,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "iiif_urls",
         "fragment_urls",
         "shelfmark",
-        "subfragment",
+        "multifragment",
         "side",
         "region",
         "type",
