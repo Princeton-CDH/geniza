@@ -504,10 +504,10 @@ class TextBlock(models.Model):
         max_length=255,
         help_text="Label for region of fragment that document text occupies",
     )
-    subfragment = models.CharField(
+    multifragment = models.CharField(
         max_length=255,
         blank=True,
-        help_text="Identifier for subfragment, if part of a multifragment",
+        help_text="Identifier for fragment part, if part of a multifragment",
     )
     order = models.PositiveIntegerField(
         null=True,
@@ -521,11 +521,11 @@ class TextBlock(models.Model):
         verbose_name = "Related Fragment"  # for researcher legibility in admin
 
     def __str__(self):
-        # combine shelfmark, subfragment, side, region, and certainty
+        # combine shelfmark, multifragment, side, region, and certainty
         certainty_str = "(?)" if not self.certain else ""
         parts = [
             self.fragment.shelfmark,
-            self.subfragment,
+            self.multifragment,
             self.get_side_display(),
             self.region,
             certainty_str,
