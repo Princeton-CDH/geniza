@@ -493,6 +493,67 @@ class TestDocument:
         assert edition2 == doc_editions[0]
 
 
+def test_document_merge_with(document, join):
+    join.merge_with([document], "merge test")
+    # merged pgpid added to primary list of old pgpids
+    assert document.id in join.old_pgpids
+    # tags from merged document
+    assert "bill of sale" in join.tags.names()
+    assert "real estate" in join.tags.names()
+    # combined descriptions
+    assert document.description in join.description
+    assert "\nDescription from %s" % document.id in join.description
+    # original description from fixture should still be present
+    assert "testing description" in join.description
+    # no notes
+    assert join.notes == ""
+
+
+def test_document_merge_with_notes(document, join):
+    join.notes = "original doc"
+    join.needs_review = "cleanup needed"
+    document.notes = "awaiting transcription"
+    document.needs_review = "see join"
+    join.merge_with([document], "merge test")
+    assert (
+        join.notes
+        == "original doc\nNotes from %d:\nawaiting transcription" % document.id
+    )
+    assert join.needs_review == "cleanup needed\nsee join"
+
+
+def test_document_merge_with_tags(document, join):
+    # same tag on both documents
+    join.tags.add("bill of sale")
+    join.merge_with([document], "merge test")
+    # merged pgpid added to primary list of old pgpids
+    assert document.id in join.old_pgpids
+    # tags from merged document
+    tags = join.tags.names()
+    assert len(tags) == 2  # tag should not exist twice
+    assert "bill of sale" in tags
+    assert "real estate" in tags
+
+
+def test_document_merge_with_languages(document, join):
+    judeo_arabic = LanguageScript.objects.create(
+        language="Judaeo-Arabic", script="Hebrew"
+    )
+    join.languages.add(judeo_arabic)
+
+    arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
+    document.languages.add(judeo_arabic)
+    document.probable_languages.add(arabic)
+    document.language_note = "with diacritics"
+
+    join.merge_with([document], "merge test")
+
+    assert judeo_arabic in join.languages.all()
+    assert join.languages.count() == 1
+    assert arabic in join.probable_languages.all()
+    assert join.language_note == document.language_note
+
+
 @pytest.mark.django_db
 class TestTextBlock:
     def test_str(self):

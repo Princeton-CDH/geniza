@@ -533,6 +533,59 @@ class Document(ModelIndexable):
         # script+language when/if included in index data
     }
 
+    def merge_with(self, merge_docs, rationale):
+        """Merge the specified documents into this one. Combines all
+        metadata into this document, adds the merged documents into
+        list of old PGP IDs, and creates a log entry documenting
+        the merge, including the rationale."""
+
+        # initialize old pgpid list if previously unset
+        if self.old_pgpids is None:
+            self.old_pgpids = []
+
+        description_chunks = [self.description]
+        language_notes = [self.language_note] if self.language_note else []
+        notes = [self.notes] if self.notes else []
+        needs_review = [self.needs_review] if self.needs_review else []
+
+        for doc in merge_docs:
+            # add merge id to old pgpid list
+            self.old_pgpids.append(doc.id)
+            # add any tags from merge document tags to primary doc
+            self.tags.add(*doc.tags.names())
+            # add description if set and not duplicated
+            if doc.description and doc.description not in self.description:
+                description_chunks.append(
+                    "Description from %d:\n%s" % (doc.id, doc.description)
+                )
+            # add any notes
+            if doc.notes:
+                notes.append("Notes from %d:\n%s" % (doc.id, doc.notes))
+            if doc.needs_review:
+                needs_review.append(doc.needs_review)
+
+            # add languages and probable languages
+            for lang in doc.languages.all():
+                self.languages.add(lang)
+            for lang in doc.probable_languages.all():
+                self.probable_languages.add(lang)
+            if doc.language_note:
+                language_notes.append(doc.language_note)
+
+        # combine text fields
+        self.description = "\n".join(description_chunks)
+        self.notes = "\n".join(notes)
+        self.needs_review = "\n".join(needs_review)
+        self.language_note = "; ".join(language_notes)
+
+        # combine footnotes; delete any that are redundant
+        # remove redundant log entries; move any unique entries to primary doc
+
+        # primary_doc.save()
+        # for doc in merge_docs:
+        #   doc.delete()
+        # create log entry documenting the merge; include rationale
+
 
 class TextBlock(models.Model):
     """The portion of a document that appears on a particular fragment."""
