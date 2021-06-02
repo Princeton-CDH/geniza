@@ -322,6 +322,38 @@ class Document(ModelIndexable):
         help_text="Decide whether a document should be publicly visible",
     )
 
+    # preliminary date fields so dates can be pulled out from descriptions
+    doc_date_original = models.CharField(
+        "Date on document (original)",
+        help_text="explicit date on the document, in original format",
+        blank=True,
+        max_length=255,
+    )
+    CALENDAR_HIJRI = "h"
+    CALENDAR_KHARAJI = "k"
+    CALENDAR_SELEUCID = "s"
+    CALENDAR_ANNOMUNDI = "am"
+    CALENDAR_CHOICES = (
+        (CALENDAR_HIJRI, "hijrī"),
+        (CALENDAR_KHARAJI, "kharajī"),
+        (CALENDAR_SELEUCID, "Seleucid"),
+        (CALENDAR_ANNOMUNDI, "anno mundi"),
+    )
+    doc_date_calendar = models.CharField(
+        "Calendar",
+        max_length=2,
+        choices=CALENDAR_CHOICES,
+        help_text="Calendar according to which the document gives a date",
+        blank=True,
+    )
+    doc_date_standard = models.CharField(
+        "Document date (standardized)",
+        help_text="CE date (Julian before 1582, Gregorian after 1582). "
+        + "Use YYYY, YYYY-MM, YYYY-MM-DD format when possible",
+        blank=True,
+        max_length=255,
+    )
+
     footnotes = GenericRelation(Footnote, related_query_name="document")
     log_entries = GenericRelation(LogEntry, related_query_name="document")
 
