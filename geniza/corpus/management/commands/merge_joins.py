@@ -5,11 +5,17 @@ for data as tracked in the spreadsheet.
 
 To generate a report of potential merges and actions to be taken::
 
-    python manage.py. merge_joins report
+    python manage.py merge_joins report
+
+To execute the actions detailed in a report (by default, merge-report.csv)::
+
+    python manage.py merge_joins merge report.csv
 
 """
 import csv
 from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import List
 import re
 
 from django.core.management.base import BaseCommand
@@ -18,12 +24,28 @@ from django.db.models import Count
 from geniza.corpus.models import Document
 
 
+@dataclass
+class MergeGroup:
+    """Group of Documents that are ready to be merged: candidates in `to_merge`
+    will be combined with `primary` using Document.merge_with, creating log
+    entries to document the merge reasoning using `rationale`."""
+
+    primary: int = None  # pgpid
+    to_merge: List[int] = field(default_factory=list)  # list of pgpid
+    rationale: str = ""
+
+    def merge(self):
+        """Execute the merge using `Document.merge_with()`."""
+        Document.objects.get(self.primary).merge_with(self.to_merge, self.rationale)
+
+
 class Command(BaseCommand):
     """Merge documents that are variations of the same joins, based on
     shelfmark, document type, and description"""
 
     def add_arguments(self, parser):
         parser.add_argument("mode", choices=["report", "merge"])
+        parser.add_argument("path", type=str, nargs="?", default="merge-report.csv")
 
     def get_merge_candidates(self):
         """identify merge candidates from the database. Looks for documents
@@ -79,6 +101,7 @@ class Command(BaseCommand):
         """process candidates identified in :meth:`get_merge_candidates`
         to determine which ones should be merged"""
         same_desc = 0
+        group_id = 1
 
         # TODO: group documents to merge into a structure that can be
         # used for reporting OR to do the actual merge
@@ -187,6 +210,7 @@ class Command(BaseCommand):
                 report_rows.append(
                     [
                         shelfmark_type,
+                        group_id,
                         action,
                         status,
                         doc_status,
@@ -194,20 +218,19 @@ class Command(BaseCommand):
                         doc.description,
                     ]
                 )
+            group_id += 1
 
         self.stdout.write("%d groups with the same description" % same_desc)
+        return report_rows
 
-        if self.mode == "report":
-            self.generate_report(report_rows)
-
-    def generate_report(self, report_rows):
-        # output report of what would be done when in report mode
-
-        with open("merge-report.csv", "w") as csvfile:
+    def generate_report(self, report_rows, path):
+        """Generate a .csv report of identified candidate groups for merging."""
+        with open(path, "w") as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(
                 [
                     "merge group",
+                    "group id",
                     "action",
                     "status",
                     "role",
@@ -216,35 +239,37 @@ class Command(BaseCommand):
                 ]
             )
             csvwriter.writerows(report_rows)
-        self.stdout.write("Report of merge candidates output as merge-report.csv")
+        self.stdout.write(f"Report of merge candidates output as {path}")
 
-    def merge_documents(primary_doc, merge_docs, rationale):
-        # takes a primary document, list of documents to merge
-        # and a rationale/description for how the merge was determined
-        for doc in merge_docs:
-            # add merge ids to primary doc old pgpid list
-            primary_doc.old_pgpids.append(doc.pgpid)
-            # add any merge document tags to primary document
-            primary_doc.tags.add(*doc.tags)
-
-        # combine descriptions (if necessary)
-        # confirm languages all the same
-        # confirm probable_languages are fine
-        # language_note
-        # combine notes
-        # combine needs review notes, if any
-        # combine footnotes; delete any that are redundant
-        # remove redundant log entries; move any unique entries to primary doc
-
-        # primary_doc.save()
-        # for doc in merge_docs:
-        #   doc.delete()
-        # create log entry documenting the merge; include rationale
+    def load_report(self, path):
+        """Load a report .csv file and return a list of merge groups."""
+        groups = defaultdict(MergeGroup)
+        with open(path, encoding="utf8") as csvfile:
+            csvreader = csv.DictReader(csvfile)
+            for row in csvreader:
+                gid = row["group id"]
+                # ignore records not selected for merging
+                if row["action"] != "MERGE":
+                    continue
+                # if this is the primary record, store it as primary and set
+                # the merge rationale
+                if row["role"] == "primary":
+                    groups[gid].primary = row["pgpid"]
+                    groups[gid].rationale = row["status"]
+                # otherwise add it to the to_merge list
+                else:
+                    groups[gid].to_merge.append(row["pgpid"])
+        self.stdout.write(f"Loaded {len(groups)} merge groups from {path}")
+        # group IDs not used to merge; just return a list of MergeGroups
+        return list(groups.values())
 
     def handle(self, *args, **options):
         self.mode = options["mode"]
-        possible_joins = self.get_merge_candidates()
-        self.group_merge_candidates(possible_joins)
-        # doc_groups = self.get_documents_with_multiple_joins()
-        # for doc_list in doc_groups:
-        #     merge_documents(doc_list)
+        if self.mode == "report":
+            possible_joins = self.get_merge_candidates()
+            merge_groups = self.group_merge_candidates(possible_joins)
+            self.generate_report(merge_groups, options["path"])
+        elif self.mode == "merge":
+            merge_groups = self.load_report(options["path"])
+            for group in merge_groups:
+                group.merge()
