@@ -42,6 +42,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     keyword_search_qf = "{!type=edismax qf=$keyword_qf pf=$keyword_pf v=$keyword_query}"
 
     def keyword_search(self, search_term):
+        # ignore " + " in search strings here too, for search on shelfmark joins
         return self.search(self.keyword_search_qf).raw_query_parameters(
-            keyword_query=search_term
+            keyword_query=search_term.replace(" + ", " ")
         )
