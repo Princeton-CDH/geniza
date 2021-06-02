@@ -30,6 +30,7 @@ class DocumentSearchView(ListView, FormMixin):
         # otherwise use default (sort by name)
         if form_data.get("query", None):
             form_data["sort"] = "relevance"
+        # sorting TODO
         # else:
         # form_data['sort'] = self.initial['sort']
 

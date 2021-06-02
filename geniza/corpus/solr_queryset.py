@@ -21,6 +21,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "pgpid": "pgpid_i",
         "old_pgpids": "old_pgpid_is",
         "input_year": "input_year_i",
+        "input_date": "input_date_dt",
         "num_editions": "num_editions_i",
         "num_translations": "num_translations_i",
         "num_discussions": "num_discussions_i",

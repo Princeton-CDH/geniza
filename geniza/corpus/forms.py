@@ -44,13 +44,15 @@ class DocumentSearchForm(forms.Form):
             attrs={
                 "placeholder": "search by keyword",
                 "aria-label": "Keyword or Phrase",
+                "type": "search",
             }
         ),
     )
 
+    # sort still TODO; single choice only for display, for now
     SORT_CHOICES = [
         ("relevance", "Relevance"),
-        ("input_date", "Input Date (Latest – Earliest)"),
+        # ("input_date", "Input Date (Latest – Earliest)"),
     ]
 
     # NOTE these are not set by default!
@@ -68,7 +70,7 @@ class DocumentSearchForm(forms.Form):
         super().__init__(data=data, *args, **kwargs)
 
         # if a keyword search term is not present, relevance sort is disabled
-        if data and not data.get("query", None):
+        if not data or not data.get("query", None):
             self.fields["sort"].widget.choices[0] = (
                 self.SORT_CHOICES[0][0],
                 {"label": self.SORT_CHOICES[0][1], "disabled": True},

@@ -39,7 +39,7 @@
             </dl>
 
             <h2><b>{{ document.type }},</b> {{ document.shelfmark|join:" + " }}</h2>
-            <p>{% translate 'Input date' %} {{ document.input_year|default:'unknown' }}
+            <p>{% translate 'Input date' %} {{ document.input_year|default:'unknown' }}</p>
             <p>{% translate 'PGP ID' %} {{ document.pgpid }}</p>
             <p>{{ document.description.0|truncatechars:135 }}</p>
 

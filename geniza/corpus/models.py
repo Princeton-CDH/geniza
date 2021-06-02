@@ -173,7 +173,7 @@ class Fragment(TrackChangesModel):
     def iiif_images(self):
         # if there is no iiif for this fragment, bail out
         if not self.iiif_url:
-            return ""
+            return None
         images = []
         labels = []
         manifest = IIIFPresentation.from_url(self.iiif_url)
@@ -186,19 +186,12 @@ class Fragment(TrackChangesModel):
         return images, labels
 
     def iiif_thumbnails(self):
-        # if there is no iiif for this fragment, bail out
-        if not self.iiif_url:
+        # if there are no iiif images for this fragment, bail out
+        iiif_images = self.iiif_images()
+        if iiif_images is None:
             return ""
 
-        images = []
-        labels = []
-        manifest = IIIFPresentation.from_url(self.iiif_url)
-        for canvas in manifest.sequences[0].canvases:
-            image_id = canvas.images[0].resource.id
-            images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
-            # label provides library's recto/verso designation
-            labels.append(canvas.label)
-
+        images, labels = iiif_images
         return mark_safe(
             " ".join(
                 # include label as title for now
@@ -510,18 +503,14 @@ class Document(ModelIndexable):
 
         last_log_entry = self.log_entries.last()
         if last_log_entry:
-            # TODO: index full date for sorting but only display year
             index_data["input_year_i"] = last_log_entry.action_time.year
-        # image indexing was causing timeouts with cudl manifests,
-        # hold off on that for now
-        # images = img_labels = []
-        # for fragment in self.fragments.all():
-        #     imgs = fragment.iiif_images()
-        #     if imgs:
-        #         images.extend(imgs[0])
-        #         img_labels.extend(imgs[1])
-        # index_data['images_s'] = images
-        # index_data['img_labels_s'] = img_labels
+            # TODO: would be nice to use full date to display year
+            # instead of indexing separately
+            # (may require parasolr datetime conversion support? or implement
+            # in local queryset?)
+            index_data[
+                "input_date_dt"
+            ] = last_log_entry.action_time.isoformat().replace("+00:00", "Z")
 
         return index_data
 
