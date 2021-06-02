@@ -52,6 +52,8 @@
             {% endif %}
 
             <a class="view" href="{% url 'corpus:document' document.pgpid %}">{% translate 'View document details' %}➡</a>
+
+            <small>relevance {{ document.score }}</small>
     {% endfor %}
     </ol>
 

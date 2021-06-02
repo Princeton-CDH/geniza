@@ -57,9 +57,8 @@ class DocumentSearchView(ListView, FormMixin):
                     "score"
                 )  # include relevance score in results
 
-            # sorting TODO
-            # order based on solr name for search option
-            # documents = documents.order_by(self.solr_sort[search_opts['sort'] ])
+            # sorting TODO; for now, order by relevance
+            documents = documents.order_by("-score")
 
         self.queryset = documents
 
