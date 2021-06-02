@@ -1,7 +1,8 @@
 from unittest.mock import patch, mock_open
-from collections import namedtuple
 from attrdict import AttrMap
 import pytest
+
+from django.core.management.base import CommandError
 
 from geniza.corpus.management.commands import import_iiif_urls
 from geniza.corpus.models import Fragment
@@ -30,6 +31,58 @@ def test_handle():
     assert fragment.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-00305-00065"
 
 
+def test_handle_missing_csv_headers():
+    command = import_iiif_urls.Command()
+    # none of the headers match
+    csv_data = "\n".join(["foo,bar,baz", "one,two,three"])
+    mockfile = mock_open(read_data=csv_data)
+
+    with patch("geniza.corpus.management.commands.import_iiif_urls.open", mockfile):
+        with pytest.raises(CommandError) as err:
+            command.handle()
+        assert "CSV must include 'shelfmark'" in str(err)
+
+    # shelfmark but no url
+    csv_data = "\n".join(["shelfmark,view", "a,b"])
+    mockfile = mock_open(read_data=csv_data)
+
+    with patch("geniza.corpus.management.commands.import_iiif_urls.open", mockfile):
+        with pytest.raises(CommandError) as err:
+            command.handle()
+        assert "CSV must include 'shelfmark'" in str(err)
+
+    # shelfmark and url — ok
+    csv_data = "\n".join(["shelfmark,url", "a,b"])
+    mockfile = mock_open(read_data=csv_data)
+    with patch("geniza.corpus.management.commands.import_iiif_urls.open", mockfile):
+        with patch.object(command, "add_fragment_urls"):
+            # no exception
+            command.handle()
+
+    # shelfmark and iiif url — ok
+    csv_data = "\n".join(["shelfmark,iiif_url", "a,b"])
+    mockfile = mock_open(read_data=csv_data)
+    with patch("geniza.corpus.management.commands.import_iiif_urls.open", mockfile):
+        with patch.object(command, "add_fragment_urls"):
+            # no exception
+            command.handle()
+
+    # all three
+    csv_data = "\n".join(["shelfmark,url,iiif_url", "a,b"])
+    mockfile = mock_open(read_data=csv_data)
+    with patch("geniza.corpus.management.commands.import_iiif_urls.open", mockfile):
+        with patch.object(command, "add_fragment_urls"):
+            # no exception
+            command.handle()
+
+
+def test_handle_file_not_found():
+    command = import_iiif_urls.Command()
+    with pytest.raises(CommandError) as err:
+        command.handle(csv="/tmp/example/not-here.csv")
+        assert "FileNotFound" in str(err)
+
+
 def test_view_to_iiif_url():
     command = import_iiif_urls.Command()
     assert (
@@ -42,69 +95,73 @@ def test_view_to_iiif_url():
         == "https://cudl.lib.cam.ac.uk/iiif/MS-ADD-03430"
     )
 
+    assert command.view_to_iiif_url("https://example.com/iiif/1234") == ""
+
 
 @pytest.mark.django_db
-def test_the_import_iiif_url():
+def test_add_fragment_urls():
     # Ensure shelfmark not existing is properly handled.
     command = import_iiif_urls.Command()
     row = AttrMap({"shelfmark": "mm", "url": "example.com"})
-    command.import_iiif_url(row)  # Test would fail if error were raised
-
-    # Ensure that headers are correct
-    command = import_iiif_urls.Command()
-    row = AttrMap({"Shelfmark": "mm", "iiif_url": "example.com"})
-    with pytest.raises(Exception):
-        command.import_iiif_url(row)
+    command.add_fragment_urls(row)  # Test would fail if error were raised
+    assert command.stats["not_found"] == 1
 
     # Ensure that the iiif url is not overwritten unless overwrite arg is provided
     command = import_iiif_urls.Command()
     command.overwrite = None
     command.dryrun = None
-    Fragment.objects.create(
+    orig_frag = Fragment.objects.create(
         shelfmark="T-S NS 305.66",
         iiif_url="https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00490",
     )
     row = AttrMap(
         {
-            "shelfmark": "T-S NS 305.66",
+            "shelfmark": orig_frag.shelfmark,
             "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-NS-J-00600",
         }
     )
-    command.import_iiif_url(row)
-    fragment = Fragment.objects.get(shelfmark="T-S NS 305.66")
-    assert fragment.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00490"
+    command.add_fragment_urls(row)
+    fragment = Fragment.objects.get(shelfmark=orig_frag.shelfmark)
+    assert fragment.url == row["url"]
+    assert fragment.iiif_url == orig_frag.iiif_url
+    assert command.stats["url_added"] == 1
+    assert not command.stats["iiif_added"]
+    assert not command.stats["iiif_updated"]
+    assert not command.stats["url_updated"]
 
     command = import_iiif_urls.Command()
     command.overwrite = True
     command.dryrun = None
-    Fragment.objects.create(
+    orig_frag = Fragment.objects.create(
         shelfmark="T-S NS 305.75",
         iiif_url="https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00490",
     )
     row = AttrMap(
         {
-            "shelfmark": "T-S NS 305.75",
+            "shelfmark": orig_frag.shelfmark,
             "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-NS-J-00600",
         }
     )
-    command.import_iiif_url(row)
-    fragment = Fragment.objects.get(shelfmark="T-S NS 305.75")
+    command.add_fragment_urls(row)
+    fragment = Fragment.objects.get(shelfmark=orig_frag.shelfmark)
+    assert fragment.iiif_url != orig_frag.iiif_url
     assert fragment.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00600"
+    assert command.stats["iiif_updated"] == 1
 
     # Ensure that changes aren't saved if dryrun argument is provided
     command = import_iiif_urls.Command()
     command.overwrite = None
     command.dryrun = True
-    Fragment.objects.create(
+    orig_frag = Fragment.objects.create(
         shelfmark="T-S NS 305.80",
         iiif_url="https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00490",
     )
     row = AttrMap(
         {
-            "shelfmark": "T-S NS 305.80",
+            "shelfmark": orig_frag.shelfmark,
             "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-NS-J-00600",
         }
     )
-    command.import_iiif_url(row)
-    fragment = Fragment.objects.get(shelfmark="T-S NS 305.80")
-    assert fragment.iiif_url == "https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-J-00490"
+    command.add_fragment_urls(row)
+    fragment = Fragment.objects.get(shelfmark=orig_frag.shelfmark)
+    assert fragment.iiif_url == orig_frag.iiif_url
