@@ -273,7 +273,7 @@ class Command(BaseCommand):
             return 0
 
         primary_row = primary_rows[0]
-        primary_doc = Document.objects.filter(pk=primary_row["pgpid"]).first()
+        primary_doc = Document.objects.filter(pk=int(primary_row["pgpid"])).first()
         merge_docs = Document.objects.filter(pk__in=merge_ids)
         # check that group data matches database records
         if not primary_doc:
