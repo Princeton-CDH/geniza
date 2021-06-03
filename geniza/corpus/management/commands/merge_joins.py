@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from typing import List
 import re
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Count
 
 from geniza.corpus.models import Document
@@ -30,13 +30,26 @@ class MergeGroup:
     will be combined with `primary` using Document.merge_with, creating log
     entries to document the merge reasoning using `rationale`."""
 
+    # lazy implementation: defer fetching Documents from the db until merge;
+    # store only pgpids in the record
     primary: int = None  # pgpid
     to_merge: List[int] = field(default_factory=list)  # list of pgpid
     rationale: str = ""
 
     def merge(self):
-        """Execute the merge using `Document.merge_with()`."""
-        Document.objects.get(self.primary).merge_with(self.to_merge, self.rationale)
+        """Fetch documents to be merged and execute the merge."""
+        # catch Document.DoesNotExist and re-raise with info about missing PGPID
+        try:
+            primary = Document.objects.get(self.primary)
+        except Document.DoesNotExist:
+            raise Document.DoesNotExist(f"Primary PGPID {self.primary} not found")
+        docs_to_merge = []
+        for pgpid in self.to_merge:
+            try:
+                docs_to_merge.append(Document.objects.get(pgpid))
+            except Document.DoesNotExist:
+                raise Document.DoesNotExist(f"Merge PGPID {pgpid} not found")
+        primary.merge_with(docs_to_merge, self.rationale)
 
 
 class Command(BaseCommand):
@@ -244,21 +257,24 @@ class Command(BaseCommand):
     def load_report(self, path):
         """Load a report .csv file and return a list of merge groups."""
         groups = defaultdict(MergeGroup)
-        with open(path, encoding="utf8") as csvfile:
-            csvreader = csv.DictReader(csvfile)
-            for row in csvreader:
-                gid = row["group id"]
-                # ignore records not selected for merging
-                if row["action"] != "MERGE":
-                    continue
-                # if this is the primary record, store it as primary and set
-                # the merge rationale
-                if row["role"] == "primary":
-                    groups[gid].primary = row["pgpid"]
-                    groups[gid].rationale = row["status"]
-                # otherwise add it to the to_merge list
-                else:
-                    groups[gid].to_merge.append(row["pgpid"])
+        try:
+            with open(path, encoding="utf8") as csvfile:
+                csvreader = csv.DictReader(csvfile)
+                for row in csvreader:
+                    gid = row["group id"]
+                    # ignore records not selected for merging
+                    if row["action"] != "MERGE":
+                        continue
+                    # if this is the primary record, store it as primary and set
+                    # the merge rationale
+                    if row["role"] == "primary":
+                        groups[gid].primary = row["pgpid"]
+                        groups[gid].rationale = row["status"]
+                    # otherwise add it to the to_merge list
+                    else:
+                        groups[gid].to_merge.append(row["pgpid"])
+        except FileNotFoundError:
+            raise CommandError(f"report file not found: {path}")
         self.stdout.write(f"Loaded {len(groups)} merge groups from {path}")
         # group IDs not used to merge; just return a list of MergeGroups
         return list(groups.values())
