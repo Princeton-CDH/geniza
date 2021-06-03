@@ -178,7 +178,7 @@ class TestDocumentAdmin:
     def test_get_search_results(self, document, join):
         # index fixture data in solr
         Document.index_items([document, join])
-        time.sleep(2)
+        time.sleep(1)
 
         doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
         queryset, needs_distinct = doc_admin.get_search_results(
