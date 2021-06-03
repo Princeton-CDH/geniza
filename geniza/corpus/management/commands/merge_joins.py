@@ -10,6 +10,8 @@ To generate a report of potential merges and actions to be taken::
 """
 import csv
 from collections import defaultdict
+import itertools
+import operator
 import re
 
 from django.core.management.base import BaseCommand
@@ -24,6 +26,27 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("mode", choices=["report", "merge"])
+        parser.add_argument("path", type=str, nargs="?", default="merge-report.csv")
+
+    def handle(self, *args, **options):
+        mode = options["mode"]
+
+        if mode == "report":
+            possible_joins = self.get_merge_candidates()
+            merge_groups = self.group_merge_candidates(possible_joins)
+            self.generate_report(merge_groups, options["path"])
+
+        elif mode == "merge":
+            merge_groups = self.load_report(options["path"])
+            success = 0
+            group_count = 0
+            for group_id, group in merge_groups:
+                success += self.merge_group(group_id, list(group))
+                group_count += 1
+            self.stdout.write(
+                "Successfully merged %d groups; skipped %d"
+                % (success, (group_count - success))
+            )
 
     def get_merge_candidates(self):
         """identify merge candidates from the database. Looks for documents
@@ -47,7 +70,7 @@ class Command(BaseCommand):
             sorted_shelfmark = " + ".join(
                 sorted([fr.shelfmark for fr in doc.fragments.all()])
             )
-            # combinie shelfmark with type so we don't try to join
+            # combine shelfmark with type so we don't try to join
             # documents with the same shelfmark but different types
             shelfmark_type = " / ".join(
                 [sorted_shelfmark, (doc.doctype.name if doc.doctype else "Unknown")]
@@ -79,6 +102,7 @@ class Command(BaseCommand):
         """process candidates identified in :meth:`get_merge_candidates`
         to determine which ones should be merged"""
         same_desc = 0
+        group_id = 1
 
         # TODO: group documents to merge into a structure that can be
         # used for reporting OR to do the actual merge
@@ -187,6 +211,7 @@ class Command(BaseCommand):
                 report_rows.append(
                     [
                         shelfmark_type,
+                        group_id,
                         action,
                         status,
                         doc_status,
@@ -195,19 +220,19 @@ class Command(BaseCommand):
                     ]
                 )
 
+            group_id += 1
+
         self.stdout.write("%d groups with the same description" % same_desc)
+        return report_rows
 
-        if self.mode == "report":
-            self.generate_report(report_rows)
-
-    def generate_report(self, report_rows):
+    def generate_report(self, report_rows, path):
         # output report of what would be done when in report mode
-
-        with open("merge-report.csv", "w") as csvfile:
+        with open(path, "w") as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(
                 [
                     "merge group",
+                    "group id",
                     "action",
                     "status",
                     "role",
@@ -216,35 +241,51 @@ class Command(BaseCommand):
                 ]
             )
             csvwriter.writerows(report_rows)
-        self.stdout.write("Report of merge candidates output as merge-report.csv")
+        self.stdout.write(f"Report of merge candidates output as {path}")
 
-    def merge_documents(primary_doc, merge_docs, rationale):
-        # takes a primary document, list of documents to merge
-        # and a rationale/description for how the merge was determined
-        for doc in merge_docs:
-            # add merge ids to primary doc old pgpid list
-            primary_doc.old_pgpids.append(doc.pgpid)
-            # add any merge document tags to primary document
-            primary_doc.tags.add(*doc.tags)
+    def load_report(self, path):
+        """Load a report .csv file and generate list of merge groups."""
+        with open(path, encoding="utf8") as csvfile:
+            csvreader = csv.DictReader(csvfile)
+            records = [row for row in csvreader if row["action"] == "MERGE"]
 
-        # combine descriptions (if necessary)
-        # confirm languages all the same
-        # confirm probable_languages are fine
-        # language_note
-        # combine notes
-        # combine needs review notes, if any
-        # combine footnotes; delete any that are redundant
-        # remove redundant log entries; move any unique entries to primary doc
+        self.stdout.write(f"Loaded {len(records)} merge rows from {path}")
+        return itertools.groupby(records, lambda x: x["group id"])
 
-        # primary_doc.save()
-        # for doc in merge_docs:
-        #   doc.delete()
-        # create log entry documenting the merge; include rationale
+    def merge_group(self, group_id, group):
+        """Takes a group identifier and a list of dicts for the group;
+        there should be one primary record (role = primary) and one or more
+        non-primary records. Each entry should have a pgpid; the
+        status from the primary record will be used as merge rationale.
+        Will find and merge the documents if possible."""
+        primary_rows = [row for row in group if row["role"] == "primary"]
+        merge_ids = [int(row["pgpid"]) for row in group if row["role"] != "primary"]
 
-    def handle(self, *args, **options):
-        self.mode = options["mode"]
-        possible_joins = self.get_merge_candidates()
-        self.group_merge_candidates(possible_joins)
-        # doc_groups = self.get_documents_with_multiple_joins()
-        # for doc_list in doc_groups:
-        #     merge_documents(doc_list)
+        error_msg = None
+
+        # check that we have sufficient group data, or bail out
+        if not primary_rows or len(primary_rows) > 1:
+            error_msg = "Could not identify primary document for group %s" % group_id
+        elif not merge_ids:
+            error_msg = "No merge documents in group %s" % group_id
+        if error_msg:
+            self.stderr.write(error_msg)
+            return 0
+
+        primary_row = primary_rows[0]
+        primary_doc = Document.objects.filter(pk=primary_row["pgpid"]).first()
+        merge_docs = Document.objects.filter(pk__in=merge_ids)
+        # check that group data matches database records
+        if not primary_doc:
+            error_msg = "Primary document %s not found" % primary_row["pgpid"]
+        elif len(merge_docs) != len(merge_ids):
+            error_msg = (
+                "Not all merge documents found for group %s (expected %d, found %d)"
+                % (group_id, len(merge_ids), len(merge_docs))
+            )
+        if error_msg:
+            self.stderr.write(error_msg)
+            return 0
+
+        primary_doc.merge_with(merge_docs, primary_row["status"])
+        return 1  # successfully merged
