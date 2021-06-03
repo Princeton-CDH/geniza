@@ -499,6 +499,7 @@ class TestDocument:
 
 def test_document_merge_with(document, join):
     doc_id = document.id
+    doc_shelfmark = document.shelfmark
     doc_description = document.description
     join.merge_with([document], "merge test")
     # merged document should no longer be in the database
@@ -510,11 +511,13 @@ def test_document_merge_with(document, join):
     assert "real estate" in join.tags.names()
     # combined descriptions
     assert doc_description in join.description
-    assert "\nDescription from %s" % doc_id in join.description
+    assert "\nDescription from %s" % doc_shelfmark in join.description
     # original description from fixture should still be present
     assert "testing description" in join.description
     # no notes
     assert join.notes == ""
+    # merge by script = flagged for review
+    assert join.needs_review.startswith("SCRIPTMERGE")
 
 
 def test_document_merge_with_notes(document, join):
@@ -522,10 +525,13 @@ def test_document_merge_with_notes(document, join):
     join.needs_review = "cleanup needed"
     document.notes = "awaiting transcription"
     document.needs_review = "see join"
-    doc_id = document.id
+    doc_shelfmark = document.shelfmark
     join.merge_with([document], "merge test")
-    assert join.notes == "original doc\nNotes from %d:\nawaiting transcription" % doc_id
-    assert join.needs_review == "cleanup needed\nsee join"
+    assert (
+        join.notes
+        == "original doc\nNotes from %s:\nawaiting transcription" % doc_shelfmark
+    )
+    assert join.needs_review == "SCRIPTMERGE\ncleanup needed\nsee join"
 
 
 def test_document_merge_with_tags(document, join):
@@ -637,6 +643,8 @@ def test_document_merge_with_log_entries(document, join):
     assert creator.id == merge_log.user_id
     assert "combine log entries" in merge_log.change_message
     assert merge_log.action_flag == CHANGE
+    # not flagged for review when merged by a user
+    assert "SCRIPTMERGE" not in document.needs_review
 
 
 @pytest.mark.django_db

@@ -546,6 +546,13 @@ class Document(ModelIndexable):
         if self.old_pgpids is None:
             self.old_pgpids = []
 
+        # if user is not specified, log entry will be associated with
+        # script and document will be flagged for review
+        script = False
+        if user is None:
+            user = User.objects.get(username=settings.SCRIPT_USERNAME)
+            script = True
+
         description_chunks = [self.description]
         language_notes = [self.language_note] if self.language_note else []
         notes = [self.notes] if self.notes else []
@@ -559,11 +566,11 @@ class Document(ModelIndexable):
             # add description if set and not duplicated
             if doc.description and doc.description not in self.description:
                 description_chunks.append(
-                    "Description from %d:\n%s" % (doc.id, doc.description)
+                    "Description from %s:\n%s" % (doc.shelfmark, doc.description)
                 )
             # add any notes
             if doc.notes:
-                notes.append("Notes from %d:\n%s" % (doc.id, doc.notes))
+                notes.append("Notes from %s:\n%s" % (doc.shelfmark, doc.notes))
             if doc.needs_review:
                 needs_review.append(doc.needs_review)
 
@@ -609,8 +616,11 @@ class Document(ModelIndexable):
         # combine text fields
         self.description = "\n".join(description_chunks)
         self.notes = "\n".join(notes)
-        self.needs_review = "\n".join(needs_review)
         self.language_note = "; ".join(language_notes)
+        # if merged via script, flag for review
+        if script:
+            needs_review.insert(0, "SCRIPTMERGE")
+        self.needs_review = "\n".join(needs_review)
 
         # save current document with changes; delete merged documents
         self.save()
@@ -618,9 +628,6 @@ class Document(ModelIndexable):
         for doc in merge_docs:
             doc.delete()
         # create log entry documenting the merge; include rationale
-        # if user is not specified, log change as script
-        if user is None:
-            user = User.objects.get(username=settings.SCRIPT_USERNAME)
         doc_contenttype = ContentType.objects.get_for_model(Document)
         LogEntry.objects.log_action(
             user_id=user.id,
