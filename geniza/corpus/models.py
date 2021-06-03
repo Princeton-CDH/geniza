@@ -5,8 +5,11 @@ from django.db import models
 from django.db.models.query import Prefetch
 from django.urls import reverse
 from django.db.models.functions import Concat
-from django.contrib.admin.models import LogEntry
+from django.conf import settings
+from django.contrib.admin.models import CHANGE, LogEntry
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
@@ -533,7 +536,7 @@ class Document(ModelIndexable):
         # script+language when/if included in index data
     }
 
-    def merge_with(self, merge_docs, rationale):
+    def merge_with(self, merge_docs, rationale, user=None):
         """Merge the specified documents into this one. Combines all
         metadata into this document, adds the merged documents into
         list of old PGP IDs, and creates a log entry documenting
@@ -572,19 +575,61 @@ class Document(ModelIndexable):
             if doc.language_note:
                 language_notes.append(doc.language_note)
 
+            # if there are any textblocks with fragments not already
+            # asociated with this document, reassociate
+            # (i.e., for newly discovered joins)
+            # does not deal with discrepancies between text block fields or order
+            for textblock in doc.textblock_set.all():
+                if textblock.fragment not in self.fragments.all():
+                    self.textblock_set.add(textblock)
+
+            # reassociate all footnotes
+            for footnote in doc.footnotes.all():
+                # any good way to check if any are exactly the same?
+                self.footnotes.add(footnote)
+
+            # reassociate log entries
+            # make a list of currently associated log entries to skip duplicates
+            current_logs = [
+                "%s_%s" % (le.user_id, le.action_time.isoformat())
+                for le in self.log_entries.all()
+            ]
+            for log_entry in doc.log_entries.all():
+                # check  duplicate log entries, based on user id and time
+                # (likely only applies to historic input & revision)
+                if (
+                    "%s_%s" % (log_entry.user_id, log_entry.action_time.isoformat())
+                    in current_logs
+                ):
+                    # skip if it's a duplicate
+                    continue
+                # otherwise, reassociate
+                self.log_entries.add(log_entry)
+
         # combine text fields
         self.description = "\n".join(description_chunks)
         self.notes = "\n".join(notes)
         self.needs_review = "\n".join(needs_review)
         self.language_note = "; ".join(language_notes)
 
-        # combine footnotes; delete any that are redundant
-        # remove redundant log entries; move any unique entries to primary doc
-
-        # primary_doc.save()
-        # for doc in merge_docs:
-        #   doc.delete()
+        # save current document with changes; delete merged documents
+        self.save()
+        merged_ids = ", ".join([str(doc.id) for doc in merge_docs])
+        for doc in merge_docs:
+            doc.delete()
         # create log entry documenting the merge; include rationale
+        # if user is not specified, log change as script
+        if user is None:
+            user = User.objects.get(username=settings.SCRIPT_USERNAME)
+        doc_contenttype = ContentType.objects.get_for_model(Document)
+        LogEntry.objects.log_action(
+            user_id=user.id,
+            content_type_id=doc_contenttype.pk,
+            object_id=self.pk,
+            object_repr=str(self),
+            change_message="merged with %s: %s" % (merged_ids, rationale),
+            action_flag=CHANGE,
+        )
 
 
 class TextBlock(models.Model):
