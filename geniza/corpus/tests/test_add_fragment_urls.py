@@ -92,7 +92,7 @@ def test_handle_file_not_found():
     command = add_fragment_urls.Command()
     with pytest.raises(CommandError) as err:
         command.handle(csv="/tmp/example/not-here.csv")
-        assert "FileNotFound" in str(err)
+    assert "CSV file not found" in str(err)
 
 
 @pytest.mark.django_db

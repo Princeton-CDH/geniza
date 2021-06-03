@@ -1,6 +1,6 @@
 import csv
 import re
-from collections import defaultdict
+from collections import Counter
 
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
@@ -22,7 +22,7 @@ class Command(BaseCommand):
     def __init__(self, *args, **options):
         super().__init__(*args, **options)
 
-        self.stats = defaultdict(int)
+        self.stats = Counter()
 
         self.fragment_contenttype = ContentType.objects.get_for_model(Fragment)
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
@@ -51,8 +51,8 @@ class Command(BaseCommand):
                             "CSV must include 'shelfmark' and one or both of 'url' and 'iiif_url'"
                         )
                     self.add_fragment_urls(row)
-        except FileNotFoundError as err:
-            raise CommandError(err)
+        except FileNotFoundError:
+            raise CommandError(f"CSV file not found: {self.csv_path}")
 
         self.stdout.write(f"URLs added: {self.stats['url_added']}")
         self.stdout.write(f"URLs updated: {self.stats['url_updated']}")
