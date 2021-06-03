@@ -14,7 +14,7 @@ import itertools
 import operator
 import re
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Count
 
 from geniza.corpus.models import Document
@@ -245,9 +245,12 @@ class Command(BaseCommand):
 
     def load_report(self, path):
         """Load a report .csv file and generate list of merge groups."""
-        with open(path, encoding="utf8") as csvfile:
-            csvreader = csv.DictReader(csvfile)
-            records = [row for row in csvreader if row["action"] == "MERGE"]
+        try:
+            with open(path, encoding="utf8") as csvfile:
+                csvreader = csv.DictReader(csvfile)
+                records = [row for row in csvreader if row["action"] == "MERGE"]
+        except FileNotFoundError:
+            raise CommandError(f"Report file not found: {path}")
 
         self.stdout.write(f"Loaded {len(records)} merge rows from {path}")
         return itertools.groupby(records, lambda x: x["group id"])
