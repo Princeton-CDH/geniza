@@ -1,5 +1,6 @@
 from collections import namedtuple
 
+from adminsortable2.admin import SortableInlineAdminMixin
 from django import forms
 from django.conf import settings
 from django.conf.urls import url
@@ -113,7 +114,7 @@ class LanguageScriptAdmin(admin.ModelAdmin):
     probable_documents.admin_order_field = "probable_document__count"
 
 
-class DocumentTextBlockInline(admin.TabularInline):
+class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     """The TextBlockInline class for the Document admin"""
 
     model = TextBlock
