@@ -102,6 +102,10 @@ SOLR_CONNECTIONS = {
         "URL": "http://localhost:8983/solr/",
         "COLLECTION": "geniza",
         "CONFIGSET": "geniza",
+        "TEST": {
+            # set aggressive commitWithin when testing
+            "COMMITWITHIN": 750,
+        },
     }
 }
 
