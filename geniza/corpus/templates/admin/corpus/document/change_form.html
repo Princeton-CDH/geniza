@@ -1,5 +1,6 @@
 {% extends "admin/change_form.html" %}
 {% block after_field_sets %}
+{% if original.pk %} {# don't display record history when adding new document #}
 <fieldset class="module aligned">
     <div class="form-row">
         <div class="fieldBox">
@@ -15,6 +16,7 @@
         </div>
     </div>
 </fieldset>
+{% endif %}
 {% if original.has_transcription %}
 <h2>Transcription</h2>
 {% for footnote in original.footnotes.all %}
