@@ -1,7 +1,9 @@
+import os
 from io import StringIO
 from unittest.mock import patch
 
 import pytest
+from django.core.management import call_command
 from django.core.management.base import CommandError
 
 from geniza.corpus.management.commands import merge_joins
@@ -10,7 +12,7 @@ from geniza.corpus.models import Document
 
 @pytest.mark.django_db
 @patch.object(Document, "merge_with")
-def test_merge_group_error_handling(document, join):
+def test_merge_group_error_handling(mock_merge_with, document, join):
     stderr = StringIO()
     # no primary
     command = merge_joins.Command(stderr=stderr)
@@ -61,3 +63,20 @@ def test_merge_group(mock_merge_with, document, join):
     args, kwargs = mock_merge_with.call_args
     assert args[0][0].pk == join.pk
     assert args[1] == "test merge"
+
+
+@pytest.mark.django_db
+def test_handle_file_not_found(tmpdir):
+    command = merge_joins.Command()
+    with pytest.raises(CommandError) as err:
+        command.handle(mode="merge", path="/tmp/example/not-here.csv")
+    assert "Report file not found: /tmp/example/not-here.csv" in str(err)
+
+    # test with default path
+    # change working directory to tmpdir to ensure file is not found
+    os.chdir(tmpdir)
+    stderr = StringIO()
+    with pytest.raises(CommandError) as err:
+        call_command("merge_joins", "merge", stderr=stderr)
+
+    assert "Report file not found: merge-report.csv" in str(err)
