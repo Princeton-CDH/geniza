@@ -201,7 +201,7 @@ class TestDocumentAdmin:
         assert queryset.count() == Document.objects.all().count()
 
     @pytest.mark.django_db
-    def test_tabulate_queryset(self):
+    def test_tabulate_queryset(self, document):
         # Create all documents
         cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21", collection=cul)
@@ -254,6 +254,10 @@ class TestDocumentAdmin:
                 f"https://example.com/admin/corpus/document/{doc.id}/change/"
                 in doc_data
             )
+            # initial input should be before last modified
+            # (document fixture has a log entry, so should have a first input)
+            if doc_data[-6]:
+                assert doc_data[-6] < doc_data[-5]
 
     @pytest.mark.django_db
     @patch("geniza.corpus.admin.export_to_csv_response")
