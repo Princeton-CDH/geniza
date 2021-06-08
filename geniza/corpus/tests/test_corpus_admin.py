@@ -256,8 +256,13 @@ class TestDocumentAdmin:
             )
             # initial input should be before last modified
             # (document fixture has a log entry, so should have a first input)
-            if doc_data[-6]:
-                assert doc_data[-6] < doc_data[-5]
+            input_date = doc_data[-6]
+            last_modified = doc_data[-5]
+            if input_date:
+                assert input_date < last_modified, (
+                    "expect input date (%s) to be earlier than last modified (%s) [PGPID %s]"
+                    % (input_date, last_modified, doc.id)
+                )
 
     @pytest.mark.django_db
     @patch("geniza.corpus.admin.export_to_csv_response")
