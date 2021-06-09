@@ -379,7 +379,8 @@ class DocumentAdmin(admin.ModelAdmin):
                 doc.notes,
                 doc.needs_review,
                 f"{url_scheme}{site_domain}/admin/corpus/document/{doc.id}/change/",
-                all_log_entries[0].action_time if all_log_entries else "",
+                # default sort is most recent first, so initial input is last
+                all_log_entries.last().action_time if all_log_entries else "",
                 doc.last_modified,
                 ";".join(
                     set([user.get_full_name() or user.username for user in input_users])
