@@ -334,21 +334,23 @@ class Document(ModelIndexable):
     CALENDAR_SELEUCID = "s"
     CALENDAR_ANNOMUNDI = "am"
     CALENDAR_CHOICES = (
-        (CALENDAR_HIJRI, "hijrī"),
-        (CALENDAR_KHARAJI, "kharajī"),
+        (CALENDAR_HIJRI, "Hijrī"),
+        (CALENDAR_KHARAJI, "Kharājī"),
         (CALENDAR_SELEUCID, "Seleucid"),
-        (CALENDAR_ANNOMUNDI, "anno mundi"),
+        (CALENDAR_ANNOMUNDI, "Anno Mundi"),
     )
     doc_date_calendar = models.CharField(
         "Calendar",
         max_length=2,
         choices=CALENDAR_CHOICES,
-        help_text="Calendar according to which the document gives a date",
+        help_text="Calendar according to which the document gives a date: "
+        + "Hijrī (AH); Kharājī (rare - mostly for fiscal docs); "
+        + "Seleucid (sometimes listed as Minyan Shetarot); Anno Mundi (Hebrew calendar)",
         blank=True,
     )
     doc_date_standard = models.CharField(
         "Document date (standardized)",
-        help_text="CE date (Julian before 1582, Gregorian after 1582). "
+        help_text="CE date (convert to Julian before 1582, Gregorian after 1582). "
         + "Use YYYY, YYYY-MM, YYYY-MM-DD format when possible",
         blank=True,
         max_length=255,

@@ -16,12 +16,12 @@ class Migration(migrations.Migration):
             field=models.CharField(
                 blank=True,
                 choices=[
-                    ("h", "hijrī"),
-                    ("k", "kharajī"),
+                    ("h", "Hijrī"),
+                    ("k", "Kharājī"),
                     ("s", "Seleucid"),
-                    ("am", "anno mundi"),
+                    ("am", "Anno Mundi"),
                 ],
-                help_text="Calendar according to which the document gives a date",
+                help_text="Calendar according to which the document gives a date: Hijrī (AH); Kharājī (rare - mostly for fiscal docs); Seleucid (sometimes listed as Minyan Shetarot); Anno Mundi (Hebrew calendar)",
                 max_length=2,
                 verbose_name="Calendar",
             ),
@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
             name="doc_date_standard",
             field=models.CharField(
                 blank=True,
-                help_text="CE date (Julian before 1582, Gregorian after 1582). Use YYYY, YYYY-MM, YYYY-MM-DD format when possible",
+                help_text="CE date (convert to Julian before 1582, Gregorian after 1582). Use YYYY, YYYY-MM, YYYY-MM-DD format when possible",
                 max_length=255,
                 verbose_name="Document date (standardized)",
             ),
