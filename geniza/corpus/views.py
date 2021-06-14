@@ -141,6 +141,7 @@ def old_pgp_tabulate_data(queryset):
             join_shelfmark if " + " in join_shelfmark else "",  # join
             doc.description,  # description
             old_pgp_edition(doc.editions()),  # editor
+            ";".join([str(i) for i in doc.old_pgpids]) if doc.old_pgpids else "",
         ]
 
 
@@ -180,6 +181,7 @@ def pgp_metadata_for_old_site(request):
             "joins",
             "description",
             "editor",
+            "old_pgpids",
         ],
         old_pgp_tabulate_data(queryset),
     )

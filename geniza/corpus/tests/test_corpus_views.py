@@ -44,10 +44,17 @@ def test_old_pgp_tabulate_data():
     assert "T-S 8J22.21" in row
     assert "#marriage" in row
     assert "recto" in row
+    # should not error on document with no old pgpids
 
     # NOTE: strings are not parsed until after being fed into the csv plugin
     assert legal_doc in row
     assert 36 in row
+
+    doc.old_pgpids = [12345, 67890]
+    doc.save()
+    table_iter = old_pgp_tabulate_data(Document.objects.all())
+    row = next(table_iter)
+    assert "12345;67890" in row
 
 
 @pytest.mark.django_db
