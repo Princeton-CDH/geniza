@@ -75,6 +75,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "geniza.context_extras",
+                "geniza.context_processors.template_globals",
             ],
         },
     },

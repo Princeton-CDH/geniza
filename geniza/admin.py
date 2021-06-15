@@ -5,6 +5,9 @@ from geniza.corpus.models import Document, Fragment
 class GenizaAdminSite(admin.AdminSite):
     """A customized AdminSite to aid PGP workflow"""
 
+    site_header = "Princeton Geniza Project administration"
+    site_title = "Princeton Geniza Project site admin"
+
     REVIEW_PREVIEW_MAX = 10
 
     def each_context(self, request):
