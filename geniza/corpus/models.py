@@ -233,7 +233,7 @@ class DocumentSignalHandlers:
         "fragment": "fragments",
         "tag": "tags",
         "document type": "doctype",
-        # log entry ?
+        "Related Fragment": "textblock",  # textblock verbose name
     }
 
     @staticmethod
@@ -246,8 +246,12 @@ class DocumentSignalHandlers:
         # get related lookup for document filter
         model_name = instance._meta.verbose_name
         doc_attr = DocumentSignalHandlers.model_filter.get(model_name)
-        # if handler fired on an model we don't care about, ignore
+        # if handler fired on an model we don't care about, warn and exit
         if not doc_attr:
+            logger.warn(
+                "Indexing triggered on %s but no document attribute is configured"
+                % model_name
+            )
             return
 
         doc_filter = {"%s__pk" % doc_attr: instance.pk}
@@ -560,6 +564,10 @@ class Document(ModelIndexable):
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
         "doctype": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
+        "textblock_set": {
             "post_save": DocumentSignalHandlers.related_save,
             "pre_delete": DocumentSignalHandlers.related_delete,
         }
