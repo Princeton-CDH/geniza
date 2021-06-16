@@ -220,7 +220,8 @@ class Footnote(models.Model):
 
     def __str__(self):
         choices = dict(self.DOCUMENT_RELATION_TYPES)
-        rel = " and ".join([choices[c] for c in self.doc_relation]) or "Footnote"
+
+        rel = " and ".join([str(choices[c]) for c in self.doc_relation]) or "Footnote"
         return f"{rel} of {self.content_object}"
 
     def has_transcription(self):
