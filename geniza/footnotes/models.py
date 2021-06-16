@@ -1,9 +1,10 @@
-from django.db import models
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
-from gfklookupwidget.fields import GfkLookupField
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
+from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager
 from multiselectfield import MultiSelectField
 
@@ -187,9 +188,9 @@ class Footnote(models.Model):
     TRANSLATION = "T"
     DISCUSSION = "D"
     DOCUMENT_RELATION_TYPES = (
-        (EDITION, "Edition"),
-        (TRANSLATION, "Translation"),
-        (DISCUSSION, "Discussion"),
+        (EDITION, _("Edition")),
+        (TRANSLATION, _("Translation")),
+        (DISCUSSION, _("Discussion")),
     )
 
     doc_relation = MultiSelectField(
