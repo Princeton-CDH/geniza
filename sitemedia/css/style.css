@@ -5,6 +5,7 @@
 body {
     margin: 0;
     display: grid;
+    /* header, body (stretch to fit), footer */
     grid-template-rows: auto 1fr auto;
     min-height: 100vh;
 }
@@ -14,12 +15,47 @@ main {
     align-items: center;
 }
 
+/* typography */
+h1 { text-align: center; }
+
+/* main nav */
+nav[aria-label="main navigation"] {
+    display: flex;
+    align-items: end;
+}
+nav[aria-label="main navigation"] > .home {
+    display: inline-block;
+    flex: none;
+    padding: 30px 10px;
+    background: #F2F2F2;
+    font-size: 24px;
+    font-weight: bold;
+}
+nav[aria-label="main navigation"] > ul {
+    list-style: none;
+    margin: 0 10px 0 50px;
+    padding: 0;
+    flex: auto;
+    display: flex;
+    justify-content: end;
+    border: 1px solid #AAAAAA;
+}
+nav[aria-label="main navigation"] > ul li { padding: 10px 0; }
+nav[aria-label="main navigation"] > ul li + li { margin-left: 50px; }
+nav[aria-label="main navigation"] > ul li a {
+    text-decoration: none; color: black;
+}
+nav[aria-label="main navigation"] > ul li a[aria-current="page"] {
+    font-weight: bold;
+}
+nav[aria-label="main navigation"] > ul li:last-child { margin-right: 100px; }
+
 /* doc detail pages */
 dt, dd { margin: 0; }
 dt {margin-top: 20px;}
-dd ~ dd { margin-top: 5px; }
-dt.inline { display: inline; }
-dt.inline + dd { display: inline; }
+dd ~ dd, dd + dt.inline { margin-top: 5px; }
+dt.inline { display: inline-block; }
+dt.inline + dd { display: inline-block; }
 dt.inline::after { content: ':'; }
 dl.tags { text-align: right; }
 

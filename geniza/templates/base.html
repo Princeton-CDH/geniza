@@ -21,7 +21,7 @@
 </head>
 <body>
     {% block body %}
-    <header></header>
+    <header>{% include "nav.html" %}</header>
     <main>{% block main %}{% endblock main %}</main>
     <footer></footer>
     {% endblock body %}
