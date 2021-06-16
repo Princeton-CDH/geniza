@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-05-27 10:42-0400\n"
-"PO-Revision-Date: 2021-06-01 20:49\n"
+"POT-Creation-Date: 2021-06-16 14:33-0400\n"
+"PO-Revision-Date: 2021-06-16 18:47\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -21,25 +21,109 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/document_detail.html:15
+#: geniza/corpus/templates/corpus/document_detail.html:17
 msgid "Shelfmark"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/document_detail.html:18
+#: geniza/corpus/templates/corpus/document_detail.html:20
 msgid "Document Type"
 msgstr ""
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:22
+#: geniza/corpus/templates/corpus/document_detail.html:24
+#: geniza/corpus/templates/corpus/document_list.html:42
 msgid "Input date"
 msgstr ""
 
 #. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:27
+#: geniza/corpus/templates/corpus/document_detail.html:28
 msgid "Editor"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/document_detail.html:35
+#: geniza/corpus/templates/corpus/document_detail.html:36
+#: geniza/corpus/templates/corpus/document_list.html:35
 msgid "Tags"
+msgstr ""
+
+#. Translators: Title for document search page
+#: geniza/corpus/templates/corpus/document_list.html:5
+msgid "Search Documents"
+msgstr ""
+
+#. Translators: number of search results
+#: geniza/corpus/templates/corpus/document_list.html:24
+#, python-format
+msgid "1 result"
+msgid_plural "%(counter)s total results"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
+
+#: geniza/corpus/templates/corpus/document_list.html:43
+msgid "PGP ID"
+msgstr ""
+
+#: geniza/corpus/templates/corpus/document_list.html:48
+msgid "Transcription"
+msgstr ""
+
+#: geniza/corpus/templates/corpus/document_list.html:49
+#: geniza/footnotes/models.py:192
+msgid "Translation"
+msgstr ""
+
+#: geniza/corpus/templates/corpus/document_list.html:50
+#: geniza/footnotes/models.py:193
+msgid "Discussion"
+msgstr ""
+
+#: geniza/corpus/templates/corpus/document_list.html:54
+msgid "View document details"
+msgstr ""
+
+#: geniza/corpus/templates/corpus/document_scholarship.html:20
+msgid "Link to source"
+msgstr ""
+
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:5
+msgid "Document Details"
+msgstr ""
+
+#. Translators: n_records is number of scholarship records
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:8
+#, python-format
+msgid "Scholarship Records (%(n_records)s)"
+msgstr ""
+
+#. Translators: n_links is number of external links
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:13
+#, python-format
+msgid "External Links (%(n_links)s)"
+msgstr ""
+
+#: geniza/footnotes/models.py:191
+msgid "Edition"
+msgstr ""
+
+#. Translators: label for 'home' button in main navigation
+#: geniza/templates/nav.html:4
+msgid "GENIZA"
+msgstr ""
+
+#: geniza/templates/nav.html:10
+msgid "Search"
+msgstr ""
+
+#: geniza/templates/nav.html:13
+msgid "Editorial"
+msgstr ""
+
+#: geniza/templates/nav.html:14
+msgid "Contact Us"
+msgstr ""
+
+#: geniza/templates/nav.html:15
+msgid "About"
 msgstr ""
 
