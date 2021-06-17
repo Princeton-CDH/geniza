@@ -202,6 +202,7 @@ class DocumentAdmin(admin.ModelAdmin):
             custom_empty_field_list_filter("review status", "Needs review", "OK"),
         ),
         "status",
+        ("textblock__fragment__collection", admin.RelatedOnlyFieldListFilter),
         ("languages", admin.RelatedOnlyFieldListFilter),
         ("probable_languages", admin.RelatedOnlyFieldListFilter),
     )
