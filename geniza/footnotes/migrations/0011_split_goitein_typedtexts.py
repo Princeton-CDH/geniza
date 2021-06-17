@@ -34,9 +34,11 @@ def split_goitein_typedtexts(apps, schema_editor):
 
     # get a list of shelfmark prefixes for all fragments associated
     # with documents that are linked to our source via footnote
-    # use string index & substring to get shelfmark portion before the first space
+    # For all but T-S, use string index & substring to get shelfmark
+    # portion before the first space
     shelfmark_prefixes = set(
         Fragment.objects.filter(documents__id__in=footnote_doc_ids)
+        .exclude(shelfmark__startswith="T-S")
         .annotate(
             prefix=Substr(
                 "shelfmark",
@@ -48,11 +50,22 @@ def split_goitein_typedtexts(apps, schema_editor):
         .values_list("prefix", flat=True)
     )
 
+    ts_prefixes = set(
+        # for T-S shelfmarks, get first 6 characters of shelfmark
+        Fragment.objects.filter(documents__id__in=footnote_doc_ids)
+        .filter(shelfmark__startswith="T-S")
+        .annotate(
+            prefix=Substr("shelfmark", 1, 6, output_field=CharField()),
+        )
+        .values_list("prefix", flat=True)
+    )
+    # one exception: We want T-S Misc instead of T-S Mi
+    ts_prefixes.remove("T-S Mi")
+    ts_prefixes.add("T-S Misc")
+    shelfmark_prefixes = shelfmark_prefixes.union(ts_prefixes)
+
     # create sources & footnote subsets for each prefix
     for prefix in shelfmark_prefixes:
-        # TODO: T-S prefix is still too large and should be chunked further
-        # some of the others are pretty small
-
         # create a new source with prefix as volume
         vol_source = Source.objects.create(
             title_en="typed texts", volume=prefix, source_type=g_typedtexts.source_type
