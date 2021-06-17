@@ -1,5 +1,6 @@
 from collections import namedtuple
 
+from adminsortable2.admin import SortableInlineAdminMixin
 from django import forms
 from django.conf import settings
 from django.conf.urls import url
@@ -7,7 +8,8 @@ from django.contrib import admin
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
-from django.db.models import Count, CharField, Q
+from django.db.models import Count, CharField, Q, F
+from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.forms.widgets import TextInput, Textarea
 from django.urls import reverse, resolve
@@ -37,7 +39,7 @@ class FragmentTextBlockInline(admin.TabularInline):
     fields = (
         "document_link",
         "document_description",
-        "subfragment",
+        "multifragment",
         "side",
         "region",
     )
@@ -112,7 +114,7 @@ class LanguageScriptAdmin(admin.ModelAdmin):
     probable_documents.admin_order_field = "probable_document__count"
 
 
-class DocumentTextBlockInline(admin.TabularInline):
+class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     """The TextBlockInline class for the Document admin"""
 
     model = TextBlock
@@ -120,7 +122,7 @@ class DocumentTextBlockInline(admin.TabularInline):
     readonly_fields = ("thumbnail",)
     fields = (
         "fragment",
-        "subfragment",
+        "multifragment",
         "side",
         "region",
         "order",
@@ -200,6 +202,7 @@ class DocumentAdmin(admin.ModelAdmin):
             custom_empty_field_list_filter("review status", "Needs review", "OK"),
         ),
         "status",
+        ("textblock__fragment__collection", admin.RelatedOnlyFieldListFilter),
         ("languages", admin.RelatedOnlyFieldListFilter),
         ("probable_languages", admin.RelatedOnlyFieldListFilter),
     )
@@ -210,6 +213,7 @@ class DocumentAdmin(admin.ModelAdmin):
         ("languages", "probable_languages"),
         "language_note",
         "description",
+        ("doc_date_original", "doc_date_calendar", "doc_date_standard"),
         "tags",
         "status",
         ("needs_review", "notes"),
@@ -327,7 +331,7 @@ class DocumentAdmin(admin.ModelAdmin):
             )
             iiif_urls = [fr.iiif_url for fr in all_fragments]
             view_urls = [fr.url for fr in all_fragments]
-            subfrag = [tb.subfragment for tb in all_textblocks]
+            multifrag = [tb.multifragment for tb in all_textblocks]
             side = [tb.get_side_display() for tb in all_textblocks]
             region = [tb.region for tb in all_textblocks]
             old_shelfmarks = [fragment.old_shelfmarks for fragment in all_fragments]
@@ -360,7 +364,7 @@ class DocumentAdmin(admin.ModelAdmin):
                 ";".join(iiif_urls) if any(iiif_urls) else "",
                 ";".join(view_urls) if any(view_urls) else "",
                 doc.shelfmark,  # shelfmark
-                ";".join([s for s in subfrag if s]),
+                ";".join([s for s in multifrag if s]),
                 ";".join([s for s in side if s]),  # side (recto/verso)
                 ";".join([r for r in region if r]),  # text block region
                 doc.doctype,
@@ -370,10 +374,14 @@ class DocumentAdmin(admin.ModelAdmin):
                 doc.all_languages(),
                 doc.all_probable_languages(),
                 doc.language_note,
+                doc.doc_date_original,
+                doc.doc_date_calendar,
+                doc.doc_date_standard,
                 doc.notes,
                 doc.needs_review,
                 f"{url_scheme}{site_domain}/admin/corpus/document/{doc.id}/change/",
-                all_log_entries[0].action_time if all_log_entries else "",
+                # default sort is most recent first, so initial input is last
+                all_log_entries.last().action_time if all_log_entries else "",
                 doc.last_modified,
                 ";".join(
                     set([user.get_full_name() or user.username for user in input_users])
@@ -389,7 +397,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "iiif_urls",
         "fragment_urls",
         "shelfmark",
-        "subfragment",
+        "multifragment",
         "side",
         "region",
         "type",
@@ -399,6 +407,9 @@ class DocumentAdmin(admin.ModelAdmin):
         "languages",
         "languages_probable",
         "language_note",
+        "doc_date_original",
+        "doc_date_calendar",
+        "doc_date_standard",
         "notes",
         "needs_review",
         "url_admin",
@@ -452,7 +463,7 @@ class DocumentTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Fragment)
 class FragmentAdmin(admin.ModelAdmin):
-    list_display = ("shelfmark", "collection", "url", "is_multifragment")
+    list_display = ("shelfmark", "collection_display", "url", "is_multifragment")
     search_fields = ("shelfmark", "old_shelfmarks", "notes", "needs_review")
     readonly_fields = ("old_shelfmarks", "created", "last_modified")
     list_filter = (
@@ -474,4 +485,19 @@ class FragmentAdmin(admin.ModelAdmin):
         "notes",
         "needs_review",
         ("created", "last_modified"),
+    )
+
+    # default ordering on Collection uses concat with field references,
+    # which does not work when referenced from another model;
+    # as a workaround,add a display property that makes the custom sort
+    # relative to the fragment
+    def collection_display(self, obj):
+        return obj.collection
+
+    collection_display.verbose_name = "Collection"
+    collection_display.admin_order_field = Concat(
+        F("collection__lib_abbrev"),
+        F("collection__abbrev"),
+        F("collection__name"),
+        F("collection__library"),
     )

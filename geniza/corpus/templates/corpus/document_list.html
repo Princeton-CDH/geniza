@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% comment %}Translators: Title for document search page{% endcomment %}
+{% translate 'Search Documents' as doctitle%}
+
+{% block title %}{{ doctitle }}{% endblock title %}
+
+{% block main %}
+<div class="container search">
+    <h1>{{ doctitle }}</h1>
+
+    <form>
+    {{ form }}
+    {% for field, errors in form.errors.items %}
+    {# no clean way to get field labels here, so we just collapse the error lists #}
+        {% for error in errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    {% endfor %}
+    </form>
+
+    {% comment %}Translators: number of search results{% endcomment %}
+    {% blocktranslate count counter=total trimmed %}
+        1 result
+    {% plural %}
+        {{ counter }} total results
+    {% endblocktranslate %}
+
+    <ol>
+    {% for document in documents %}
+        <li class="result">
+
+            <dl class="tags">
+                <dt class="sr-only">{% translate 'Tags' %}</dt>
+                {% for tag in document.tags %}
+                <dd class="tag">#{{ tag }}</dd>
+                {% endfor %}
+            </dl>
+
+            <h2><b>{{ document.type }},</b> {{ document.shelfmark|join:" + " }}</h2>
+            <p>{% translate 'Input date' %} {{ document.input_year|default:'unknown' }}</p>
+            <p>{% translate 'PGP ID' %} {{ document.pgpid }}</p>
+            <p>{{ document.description.0|truncatechars:135 }}</p>
+
+            {% if document.scholarship_count %}
+            <p>✔️
+            {% if document.num_editions %}{% translate 'Transcription' %}({{ document.num_editions }}){% endif %}
+            {% if document.num_translations %}{% translate 'Translation' %}({{ document.num_translations }}){% endif %}
+            {% if document.num_discussions %}{% translate 'Discussion' %}({{ document.num_discussions }}){% endif %}
+            </p>
+            {% endif %}
+
+            <a class="view" href="{% url 'corpus:document' document.pgpid %}">{% translate 'View document details' %}➡</a>
+
+            <small>relevance {{ document.score }}</small>
+    {% endfor %}
+    </ol>
+
+</div>
+{% endblock main %}

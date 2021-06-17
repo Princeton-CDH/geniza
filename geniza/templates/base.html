@@ -15,13 +15,17 @@
     <meta name="theme-color" content="#6b59c1">
     <!-- styles -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% if SHOW_TEST_WARNING %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/test-banner.css' %}">
+    {% endif %}
     {% block extrastyle %}{% endblock extrastyle %}
     <!-- scripts -->
     {% block extrahead %}{% endblock extrahead %}
 </head>
 <body>
+    {% include 'snippets/test_banner.html' %}
     {% block body %}
-    <header></header>
+    <header>{% include "nav.html" %}</header>
     <main>{% block main %}{% endblock main %}</main>
     <footer></footer>
     {% endblock body %}

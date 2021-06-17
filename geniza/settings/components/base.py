@@ -75,6 +75,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "geniza.context_extras",
+                "geniza.context_processors.template_globals",
             ],
         },
     },
@@ -102,6 +103,10 @@ SOLR_CONNECTIONS = {
         "URL": "http://localhost:8983/solr/",
         "COLLECTION": "geniza",
         "CONFIGSET": "geniza",
+        "TEST": {
+            # set aggressive commitWithin when testing
+            "COMMITWITHIN": 750,
+        },
     }
 }
 

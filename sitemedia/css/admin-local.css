@@ -3,12 +3,34 @@
 th.column-documents, th.column-probable_documents {
 	max-width: 5em;
 }
-.model-languagescript.change-list #changelist table thead th {
+.model-languagescript.change-list #changelist table thead th,
+.model-document.change-list #changelist table thead th,
+.model-footnote.change-list #changelist table thead th {
 	vertical-align: bottom;
-}	
-.model-languagescript.change-list #changelist table thead .text {
+}
+.model-languagescript.change-list #changelist table thead .text,
+.model-document.change-list #changelist table thead .text,
+.model-footnote.change-list #changelist table thead .text {
 	white-space: break-spaces;
 }
+/* customize headings for Documents to adjust width and long labels */
+th.column-last_modified {
+	max-width: 10em;
+}
+
+.model-document th.column-has_transcription {
+	max-width: 6em;
+	overflow-wrap: break-word;
+}
+.model-document .field-last_modified.nowrap {
+	white-space: break-spaces !important;  /* override nowrap */
+}
+.model-footnote th.column-has_transcription {
+	max-width: 7em;
+	overflow-wrap: break-word;
+}
+
+
 
 #content-related {
 	clear: right;

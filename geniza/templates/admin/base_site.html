@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+    {{ block.super }}
+    <div id="sw-version">v. {{ SW_VERSION }}</div>
+{% endblock %}
+
+{% block nav-global %}
+    {{ block.super }}
+    {% include 'snippets/test_banner.html' %}
+{% endblock %}
+
+{% block extrastyle %}
+    {% if SHOW_TEST_WARNING %}
+    <link rel="stylesheet" type="text/css" href="{% static "css/test-banner.css" %}" />
+    {% endif %}
+{% endblock %}

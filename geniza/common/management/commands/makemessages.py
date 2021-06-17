@@ -1,7 +1,5 @@
 from django.core.management.commands import makemessages
 
-from geniza import __version__
-
 
 class Command(makemessages.Command):
     """Overrides `makemessages` to add metadata to .po files and exclude virtual
@@ -11,10 +9,7 @@ class Command(makemessages.Command):
     # For invocation options for xgettext, see:
     # https://www.gnu.org/software/gettext/manual/html_node/xgettext-Invocation.html
     xgettext_options = makemessages.Command.xgettext_options + [
-        "--copyright-holder=The Trustees of Princeton University",
         "--msgid-bugs-address=cdhdevteam@princeton.edu",
-        f"--package-version={__version__}",
-        "--package-name=geniza",
     ]
 
     def handle(self, *args, **options):

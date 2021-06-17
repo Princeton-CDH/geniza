@@ -736,27 +736,24 @@
         description_t
         pgpid_i
         type_s
-        library_s
+        type_t
+        collection_ss
         shelfmark_t
         shelfmark_ss
         tags_t
-        tags_ss        
-        editors_t
-        translators_t
-        transcription_t
+        tags_ss
+        scholarship_t
         old_pgpids_is
       </str>
       <str name="keyword_pf">
         description_t
         type_s
-        library_s
+        collection_ss
         shelfmark_t
         shelfmark_ss
         tags_t
-        tags_ss        
-        editors_txt
-        translators_txt
-        transcription_txt
+        tags_ss
+        scholarship_t
       </str>
 
        <!-- admin search field for Document model (no boosting because no relevance sort) -->
@@ -771,13 +768,16 @@
         needs_review_t
         pgpid_i
         old_pgpids_is
+        scholarship_t
       </str>
       <str name="admin_doc_pf">
+        type_s
         shelfmark_t
         tags_t
         description_t
         notes_t
         needs_review_t
+        scholarship_t
       </str>
 
     </lst>

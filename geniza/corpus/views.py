@@ -1,9 +1,80 @@
 from django.db.models.query import Prefetch
-from django.views.generic.detail import DetailView
+from django.views.generic import DetailView, ListView
+from django.views.generic.edit import FormMixin
 from tabular_export.admin import export_to_csv_response
 
+from geniza.corpus.forms import DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
+from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Footnote
+
+
+class DocumentSearchView(ListView, FormMixin):
+    model = Document
+    form_class = DocumentSearchForm
+    context_object_name = "documents"
+    template_name = "corpus/document_list.html"
+
+    # map form sort to solr sort field
+    solr_sort = {
+        "relevance": "-score",
+        #        'name': 'sort_name_isort'
+    }
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # use GET instead of default POST/PUT for form data
+        form_data = self.request.GET.copy()
+
+        # always use relevance sort for keyword search;
+        # otherwise use default (sort by name)
+        if form_data.get("query", None):
+            form_data["sort"] = "relevance"
+        # sorting TODO
+        # else:
+        # form_data['sort'] = self.initial['sort']
+
+        # use initial values as defaults
+        # for key, val in self.initial.items():
+        # form_data.setdefault(key, val)
+
+        kwargs["data"] = form_data
+        return kwargs
+
+    def get_queryset(self):
+        documents = DocumentSolrQuerySet()
+        form = self.get_form()
+        # return empty queryset if not valid
+        if not form.is_valid():
+            documents = documents.none()
+
+        # when form is valid, check for search term and filter queryset
+        else:
+            search_opts = form.cleaned_data
+
+            if search_opts["query"]:
+                documents = documents.keyword_search(search_opts["query"]).also(
+                    "score"
+                )  # include relevance score in results
+
+            # sorting TODO; for now, order by relevance
+            documents = documents.order_by("-score")
+
+        self.queryset = documents
+
+        # return 50 documents for now; pagination TODO
+        return documents[:50]
+
+    def get_context_data(self):
+        context_data = super().get_context_data()
+        # should eventually be handled by paginator, but
+        # patch in total number of results for display for now
+        context_data.update(
+            {
+                "total": self.queryset.count(),
+            }
+        )
+        return context_data
 
 
 class DocumentDetailView(DetailView):
@@ -17,6 +88,24 @@ class DocumentDetailView(DetailView):
         """Don't show document if it isn't public"""
         queryset = super().get_queryset(*args, **kwargs)
         return queryset.filter(status=Document.PUBLIC)
+
+
+class DocumentScholarshipView(DocumentDetailView):
+    """List of :class:`~geniza.footnotes.models.Footnote`s for a Document"""
+
+    template_name = "corpus/document_scholarship.html"
+
+    def get_queryset(self, *args, **kwargs):
+        """Prefetch footnotes, and don't show the page if there are none."""
+        # prefetch footnotes since we'll render all of them in the template
+        queryset = (
+            super()
+            .get_queryset(*args, **kwargs)
+            .prefetch_related("footnotes")
+            .distinct()     # prevent MultipleObjectsReturned if many footnotes
+        )
+
+        return queryset.filter(footnotes__isnull=False)
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #
@@ -70,6 +159,7 @@ def old_pgp_tabulate_data(queryset):
             join_shelfmark if " + " in join_shelfmark else "",  # join
             doc.description,  # description
             old_pgp_edition(doc.editions()),  # editor
+            ";".join([str(i) for i in doc.old_pgpids]) if doc.old_pgpids else "",
         ]
 
 
@@ -109,6 +199,7 @@ def pgp_metadata_for_old_site(request):
             "joins",
             "description",
             "editor",
+            "old_pgpids",
         ],
         old_pgp_tabulate_data(queryset),
     )

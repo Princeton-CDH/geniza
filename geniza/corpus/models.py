@@ -1,6 +1,8 @@
+from collections import defaultdict
 import logging
 
 from django.db import models
+from django.db.models.query import Prefetch
 from django.urls import reverse
 from django.db.models.functions import Concat
 from django.contrib.admin.models import LogEntry
@@ -44,7 +46,9 @@ class Collection(models.Model):
     objects = CollectionManager()
 
     class Meta:
-        ordering = ["lib_abbrev", "abbrev", "name", "library"]
+        # sort on the combination of these fields, since many are optional
+        # NOTE: this causes problems for sorting related models in django admin
+        # (i.e., sorting fragments by collection); see corpus admin for workaround
         ordering = [
             Concat(
                 models.F("lib_abbrev"),
@@ -166,11 +170,10 @@ class Fragment(TrackChangesModel):
     def natural_key(self):
         return (self.shelfmark,)
 
-    def iiif_thumbnails(self):
+    def iiif_images(self):
         # if there is no iiif for this fragment, bail out
         if not self.iiif_url:
-            return ""
-
+            return None
         images = []
         labels = []
         manifest = IIIFPresentation.from_url(self.iiif_url)
@@ -180,6 +183,15 @@ class Fragment(TrackChangesModel):
             # label provides library's recto/verso designation
             labels.append(canvas.label)
 
+        return images, labels
+
+    def iiif_thumbnails(self):
+        # if there are no iiif images for this fragment, bail out
+        iiif_images = self.iiif_images()
+        if iiif_images is None:
+            return ""
+
+        images, labels = iiif_images
         return mark_safe(
             " ".join(
                 # include label as title for now
@@ -221,7 +233,7 @@ class DocumentSignalHandlers:
         "fragment": "fragments",
         "tag": "tags",
         "document type": "doctype",
-        # log entry ?
+        "Related Fragment": "textblock",  # textblock verbose name
     }
 
     @staticmethod
@@ -234,8 +246,12 @@ class DocumentSignalHandlers:
         # get related lookup for document filter
         model_name = instance._meta.verbose_name
         doc_attr = DocumentSignalHandlers.model_filter.get(model_name)
-        # if handler fired on an model we don't care about, ignore
+        # if handler fired on an model we don't care about, warn and exit
         if not doc_attr:
+            logger.warn(
+                "Indexing triggered on %s but no document attribute is configured"
+                % model_name
+            )
             return
 
         doc_filter = {"%s__pk" % doc_attr: instance.pk}
@@ -308,6 +324,40 @@ class Document(ModelIndexable):
         choices=STATUS_CHOICES,
         default=PUBLIC,
         help_text="Decide whether a document should be publicly visible",
+    )
+
+    # preliminary date fields so dates can be pulled out from descriptions
+    doc_date_original = models.CharField(
+        "Date on document (original)",
+        help_text="explicit date on the document, in original format",
+        blank=True,
+        max_length=255,
+    )
+    CALENDAR_HIJRI = "h"
+    CALENDAR_KHARAJI = "k"
+    CALENDAR_SELEUCID = "s"
+    CALENDAR_ANNOMUNDI = "am"
+    CALENDAR_CHOICES = (
+        (CALENDAR_HIJRI, "Hijrī"),
+        (CALENDAR_KHARAJI, "Kharājī"),
+        (CALENDAR_SELEUCID, "Seleucid"),
+        (CALENDAR_ANNOMUNDI, "Anno Mundi"),
+    )
+    doc_date_calendar = models.CharField(
+        "Calendar",
+        max_length=2,
+        choices=CALENDAR_CHOICES,
+        help_text="Calendar according to which the document gives a date: "
+        + "Hijrī (AH); Kharājī (rare - mostly for fiscal docs); "
+        + "Seleucid (sometimes listed as Minyan Shetarot); Anno Mundi (Hebrew calendar)",
+        blank=True,
+    )
+    doc_date_standard = models.CharField(
+        "Document date (standardized)",
+        help_text="CE date (convert to Julian before 1582, Gregorian after 1582). "
+        + "Use YYYY, YYYY-MM, YYYY-MM-DD format when possible",
+        blank=True,
+        max_length=255,
     )
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
@@ -401,6 +451,14 @@ class Document(ModelIndexable):
             )
         )
 
+    def fragment_urls(self):
+        """List of external URLs to view the Document's Fragments."""
+        return list(
+            dict.fromkeys(
+                filter(None, [b.fragment.url for b in self.textblock_set.all()])
+            )
+        )
+
     def has_transcription(self):
         """Admin display field indicating if document has a transcription."""
         return any(note.has_transcription() for note in self.footnotes.all())
@@ -432,27 +490,73 @@ class Document(ModelIndexable):
     @classmethod
     def items_to_index(cls):
         """Custom logic for finding items to be indexed when indexing in
-        bulk; only include public docs."""
-        return cls.objects.filter(status=Document.PUBLIC)
+        bulk."""
+        # TODO: can we share common/reused prefetching logic
+        # in a custom qureyset filter or similar? (adapted here from admin)
+        return cls.objects.select_related("doctype").prefetch_related(
+            "tags",
+            "languages",
+            "footnotes",
+            "log_entries",
+            Prefetch(
+                "textblock_set",
+                queryset=TextBlock.objects.select_related(
+                    "fragment", "fragment__collection"
+                ),
+            ),
+        )
 
     def index_data(self):
         """data for indexing in Solr"""
-
         index_data = super().index_data()
+
+        # get fragments via textblocks for correct order
+        # and to take advantage of prefetching
+        fragments = [tb.fragment for tb in self.textblock_set.all()]
         index_data.update(
             {
                 "pgpid_i": self.id,
                 "type_s": self.doctype.name if self.doctype else "Unknown",
                 "description_t": self.description,
-                "notes_t": self.notes,
-                "needs_review_t": self.needs_review,
-                "shelfmark_ss": [f.shelfmark for f in self.fragments.all()],
+                "notes_t": self.notes or None,
+                "needs_review_t": self.needs_review or None,
+                "shelfmark_ss": [f.shelfmark for f in fragments],
+                # library/collection possibly redundant?
+                "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss": [t.name for t in self.tags.all()],
                 "status_s": self.get_status_display(),
                 "old_pgpids_is": self.old_pgpids,
-                # TODO: editors/translators/sources
             }
         )
+
+        # count scholarship records by type
+        footnotes = self.footnotes.all()
+        counts = defaultdict(int)
+        for fn in footnotes:
+            for val in fn.doc_relation:
+                counts[val] += 1
+        index_data.update(
+            {
+                "num_editions_i": counts[Footnote.EDITION],
+                "num_translations_i": counts[Footnote.TRANSLATION],
+                "num_discussions_i": counts[Footnote.DISCUSSION],
+                "scholarship_count_i": sum(counts.values()),
+                # preliminary scholarship record indexing
+                # (may need splitting out and weighting based on type of scholarship)
+                "scholarship_t": [fn.display() for fn in footnotes],
+            }
+        )
+
+        last_log_entry = self.log_entries.last()
+        if last_log_entry:
+            index_data["input_year_i"] = last_log_entry.action_time.year
+            # TODO: would be nice to use full date to display year
+            # instead of indexing separately
+            # (may require parasolr datetime conversion support? or implement
+            # in local queryset?)
+            index_data[
+                "input_date_dt"
+            ] = last_log_entry.action_time.isoformat().replace("+00:00", "Z")
 
         return index_data
 
@@ -468,6 +572,10 @@ class Document(ModelIndexable):
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
         "doctype": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
+        "textblock_set": {
             "post_save": DocumentSignalHandlers.related_save,
             "pre_delete": DocumentSignalHandlers.related_delete,
         }
@@ -502,10 +610,10 @@ class TextBlock(models.Model):
         max_length=255,
         help_text="Label for region of fragment that document text occupies",
     )
-    subfragment = models.CharField(
+    multifragment = models.CharField(
         max_length=255,
         blank=True,
-        help_text="Identifier for subfragment, if part of a multifragment",
+        help_text="Identifier for fragment part, if part of a multifragment",
     )
     order = models.PositiveIntegerField(
         null=True,
@@ -519,11 +627,11 @@ class TextBlock(models.Model):
         verbose_name = "Related Fragment"  # for researcher legibility in admin
 
     def __str__(self):
-        # combine shelfmark, subfragment, side, region, and certainty
+        # combine shelfmark, multifragment, side, region, and certainty
         certainty_str = "(?)" if not self.certain else ""
         parts = [
             self.fragment.shelfmark,
-            self.subfragment,
+            self.multifragment,
             self.get_side_display(),
             self.region,
             certainty_str,

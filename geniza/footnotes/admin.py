@@ -287,6 +287,7 @@ class FootnoteAdmin(admin.ModelAdmin):
         "has_transcription",
         "has_url",
     )
+    autocomplete_fields = ["source"]
     list_filter = (
         DocumentRelationTypesFilter,
         (
