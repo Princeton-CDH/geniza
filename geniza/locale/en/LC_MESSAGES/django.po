@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2021-06-16 14:33-0400\n"
-"PO-Revision-Date: 2021-06-01 22:12\n"
+"PO-Revision-Date: 2021-06-22 18:25\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en_US\n"
@@ -19,36 +19,36 @@ msgstr ""
 
 #: geniza/corpus/templates/admin/corpus/app_index.html:9
 msgid "Home"
-msgstr ""
+msgstr "Home"
 
 #: geniza/corpus/templates/corpus/document_detail.html:17
 msgid "Shelfmark"
-msgstr ""
+msgstr "Shelfmark"
 
 #: geniza/corpus/templates/corpus/document_detail.html:20
 msgid "Document Type"
-msgstr ""
+msgstr "Document Type"
 
 #. Translators: Date document was first added to the PGP
 #: geniza/corpus/templates/corpus/document_detail.html:24
 #: geniza/corpus/templates/corpus/document_list.html:42
 msgid "Input date"
-msgstr ""
+msgstr "Input date"
 
 #. Translators: Editor label
 #: geniza/corpus/templates/corpus/document_detail.html:28
 msgid "Editor"
-msgstr ""
+msgstr "Editor"
 
 #: geniza/corpus/templates/corpus/document_detail.html:36
 #: geniza/corpus/templates/corpus/document_list.html:35
 msgid "Tags"
-msgstr ""
+msgstr "Tags"
 
 #. Translators: Title for document search page
 #: geniza/corpus/templates/corpus/document_list.html:5
 msgid "Search Documents"
-msgstr ""
+msgstr "Search Documents"
 
 #. Translators: number of search results
 #: geniza/corpus/templates/corpus/document_list.html:24
@@ -124,3 +124,4 @@ msgstr ""
 #: geniza/templates/nav.html:15
 msgid "About"
 msgstr ""
+
