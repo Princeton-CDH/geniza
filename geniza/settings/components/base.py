@@ -23,7 +23,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -192,3 +191,6 @@ TEAM_USERNAME = "pgl"
 
 # use default Django site
 SITE_ID = 1
+
+# increase max from default 1000 to handle editing sources with lots of footnotes
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
