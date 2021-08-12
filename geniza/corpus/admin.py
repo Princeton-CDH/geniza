@@ -402,7 +402,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "tags",
         "description",
         "shelfmarks_historic",
-        "languages",
+        "languages_primary",
         "languages_secondary",
         "language_note",
         "doc_date_original",
