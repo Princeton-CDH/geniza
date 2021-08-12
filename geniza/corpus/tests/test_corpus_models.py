@@ -278,16 +278,16 @@ class TestDocument:
         doc.languages.add(arabic)
         assert doc.all_languages() == "%s, %s" % (arabic, lang)
 
-    def test_all_probable_languages(self):
+    def test_all_secondary_languages(self):
         doc = Document.objects.create()
         lang = LanguageScript.objects.create(language="Judaeo-Arabic", script="Hebrew")
-        doc.probable_languages.add(lang)
+        doc.secondary_languages.add(lang)
         # single language
-        assert doc.all_probable_languages() == str(lang)
+        assert doc.all_secondary_languages() == str(lang)
 
         arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
-        doc.probable_languages.add(arabic)
-        assert doc.all_probable_languages() == "%s,%s" % (arabic, lang)
+        doc.secondary_languages.add(arabic)
+        assert doc.all_secondary_languages() == "%s,%s" % (arabic, lang)
 
     def test_all_tags(self):
         doc = Document.objects.create()
