@@ -22,4 +22,14 @@ class Migration(migrations.Migration):
                 blank=True, to="corpus.LanguageScript", verbose_name="Primary Languages"
             ),
         ),
+        migrations.AlterField(
+            model_name="document",
+            name="secondary_languages",
+            field=models.ManyToManyField(
+                blank=True,
+                limit_choices_to=models.Q(_negated=True, language__exact="Unknown"),
+                related_name="secondary_document",
+                to="corpus.LanguageScript",
+            ),
+        ),
     ]
