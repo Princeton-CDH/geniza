@@ -293,11 +293,13 @@ class Document(ModelIndexable):
         verbose_name="Type",
     )
     tags = TaggableManager(blank=True)
-    languages = models.ManyToManyField(LanguageScript, blank=True)
-    probable_languages = models.ManyToManyField(
+    languages = models.ManyToManyField(
+        LanguageScript, blank=True, verbose_name="Primary Languages"
+    )
+    secondary_languages = models.ManyToManyField(
         LanguageScript,
         blank=True,
-        related_name="probable_document",
+        related_name="secondary_document",
         limit_choices_to=~models.Q(language__exact="Unknown"),
     )
     language_note = models.TextField(
@@ -422,10 +424,10 @@ class Document(ModelIndexable):
 
     all_languages.short_description = "Language"
 
-    def all_probable_languages(self):
-        return ",".join([str(lang) for lang in self.probable_languages.all()])
+    def all_secondary_languages(self):
+        return ",".join([str(lang) for lang in self.secondary_languages.all()])
 
-    all_probable_languages.short_description = "Probable Language"
+    all_secondary_languages.short_description = "Secondary Language"
 
     def all_tags(self):
         return ", ".join(t.name for t in self.tags.all())

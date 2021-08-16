@@ -70,7 +70,7 @@ class LanguageScriptAdmin(admin.ModelAdmin):
         "script",
         "display_name",
         "documents",
-        "probable_documents",
+        "secondary_documents",
     )
 
     document_admin_url = "admin:corpus_document_changelist"
@@ -85,7 +85,7 @@ class LanguageScriptAdmin(admin.ModelAdmin):
             .get_queryset(request)
             .annotate(
                 Count("document", distinct=True),
-                Count("probable_document", distinct=True),
+                Count("secondary_document", distinct=True),
             )
         )
 
@@ -97,21 +97,21 @@ class LanguageScriptAdmin(admin.ModelAdmin):
             obj.document__count,
         )
 
-    documents.short_description = "# documents on which this language appears"
+    documents.short_description = "# documents where this is the primary language"
     documents.admin_order_field = "document__count"
 
-    def probable_documents(self, obj):
+    def secondary_documents(self, obj):
         return format_html(
-            '<a href="{0}?probable_languages__id__exact={1!s}">{2}</a>',
+            '<a href="{0}?secondary_languages__id__exact={1!s}">{2}</a>',
             reverse(self.document_admin_url),
             str(obj.id),
-            obj.probable_document__count,
+            obj.secondary_document__count,
         )
 
-    probable_documents.short_description = (
-        "# documents on which this language might appear (requires confirmation)"
+    secondary_documents.short_description = (
+        "# documents where this is a secondary langauge"
     )
-    probable_documents.admin_order_field = "probable_document__count"
+    secondary_documents.admin_order_field = "secondary_document__count"
 
 
 class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
@@ -144,16 +144,14 @@ class DocumentForm(forms.ModelForm):
         }
 
     def clean(self):
-        # error if there is any overlap between language and probable lang
-        probable_languages = self.cleaned_data["probable_languages"]
-        if any(plang in self.cleaned_data["languages"] for plang in probable_languages):
+        # error if there is any overlap between language and secondary lang
+        secondary_languages = self.cleaned_data["secondary_languages"]
+        if any(
+            slang in self.cleaned_data["languages"] for slang in secondary_languages
+        ):
             raise ValidationError(
-                "The same language cannot be both probable and definite."
+                "The same language cannot be both primary and secondary."
             )
-        # check for unknown as probable here, since autocomplete doesn't
-        # honor limit_choices_to option set on thee model
-        if any(plang.language == "Unknown" for plang in probable_languages):
-            raise ValidationError('"Unknown" is not allowed for probable language.')
 
 
 @admin.register(Document)
@@ -204,13 +202,13 @@ class DocumentAdmin(admin.ModelAdmin):
         "status",
         ("textblock__fragment__collection", admin.RelatedOnlyFieldListFilter),
         ("languages", admin.RelatedOnlyFieldListFilter),
-        ("probable_languages", admin.RelatedOnlyFieldListFilter),
+        ("secondary_languages", admin.RelatedOnlyFieldListFilter),
     )
 
     fields = (
         ("shelfmark", "id", "old_pgpids"),
         "doctype",
-        ("languages", "probable_languages"),
+        ("languages", "secondary_languages"),
         "language_note",
         "description",
         ("doc_date_original", "doc_date_calendar", "doc_date_standard"),
@@ -219,7 +217,7 @@ class DocumentAdmin(admin.ModelAdmin):
         ("needs_review", "notes"),
         # edition, translation
     )
-    autocomplete_fields = ["languages", "probable_languages"]
+    autocomplete_fields = ["languages", "secondary_languages"]
     # NOTE: autocomplete does not honor limit_choices_to in model
     inlines = [DocumentTextBlockInline, DocumentFootnoteInline]
 
@@ -372,7 +370,7 @@ class DocumentAdmin(admin.ModelAdmin):
                 doc.description,
                 ";".join([os for os in old_shelfmarks if os]),
                 doc.all_languages(),
-                doc.all_probable_languages(),
+                doc.all_secondary_languages(),
                 doc.language_note,
                 doc.doc_date_original,
                 doc.doc_date_calendar,
@@ -404,8 +402,8 @@ class DocumentAdmin(admin.ModelAdmin):
         "tags",
         "description",
         "shelfmarks_historic",
-        "languages",
-        "languages_probable",
+        "languages_primary",
+        "languages_secondary",
         "language_note",
         "doc_date_original",
         "doc_date_calendar",
@@ -427,7 +425,7 @@ class DocumentAdmin(admin.ModelAdmin):
         # additional prefetching needed to optimize csv export but
         # not needed for admin list view
         queryset = queryset.order_by("id").prefetch_related(
-            "probable_languages",
+            "secondary_languages",
             "log_entries",
         )
 
