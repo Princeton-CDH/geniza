@@ -80,3 +80,41 @@ def test_handle_file_not_found(tmpdir):
         call_command("merge_joins", "merge", stderr=stderr)
 
     assert "Report file not found: merge-report.csv" in str(err)
+
+
+@patch.object(merge_joins.Command, "get_merge_candidates")
+@patch.object(merge_joins.Command, "group_merge_candidates")
+@patch.object(merge_joins.Command, "generate_report")
+def test_handle_report(mock_generate_report, mock_group_merge, mock_get_merge):
+    cmd = merge_joins.Command()
+    cmd.handle(mode="report", path="test-report.csv")
+    # confirm that the correct sequence of methods is called
+    mock_get_merge.assert_any_call()
+    mock_group_merge.assert_called_with(mock_get_merge.return_value)
+    mock_generate_report.assert_called_with(
+        mock_group_merge.return_value, "test-report.csv"
+    )
+
+
+@patch.object(merge_joins.Command, "merge_group")
+@patch.object(merge_joins.Command, "load_report")
+def test_handle_merge(mock_load_report, mock_merge_group):
+    stdout = StringIO()
+    path = "merge-groups.csv"
+    cmd = merge_joins.Command(stdout=stdout)
+    # return some mock groups from load method
+    mock_load_report.return_value = [
+        # group id, group
+        ("a", [1, 2, 3]),
+        ("b", [4, 5, 5]),
+    ]
+    # report success, then failure from merge method
+    mock_merge_group.side_effect = (1, 0)
+    cmd.handle(mode="merge", path=path)
+    # confirm that the correct sequence of methods is called
+    mock_load_report.assert_called_with(path)
+    for group_id, docs in mock_load_report.return_value:
+        mock_merge_group.assert_any_call(group_id, docs)
+    output = stdout.getvalue()
+    assert "Successfully merged 1 group" in output
+    assert "skipped 1" in output
