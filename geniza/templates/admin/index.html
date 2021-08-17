@@ -8,4 +8,8 @@
     {% include 'admin/corpus/review_list.html' %}
 </div>
 {{ block.super }}
+{# link to view all actions by this user, displayed under recent actions #}
+<div id="content-related"><p>
+    <a href="{% url "admin:admin_logentry_changelist" %}?user__id__exact={{ user.pk }}">View more actions</a>
+</p></div>
 {% endblock %}
