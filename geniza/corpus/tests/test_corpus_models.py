@@ -488,13 +488,14 @@ class TestDocument:
             doc_relation=Footnote.TRANSLATION,
         )
 
-        doc_editions = document.editions()
+        doc_edition_pks = [doc.pk for doc in document.editions()]
         # check that only footnotes with doc relation including edition are included
-        assert edition in doc_editions
-        assert edition2 in doc_editions
-        assert translation not in doc_editions
+        # NOTE: comparing by PK rather than using footnote equality check
+        assert edition.pk in doc_edition_pks
+        assert edition2.pk in doc_edition_pks
+        assert translation.pk not in doc_edition_pks
         # check that edition with content is sorted first
-        assert edition2 == doc_editions[0]
+        assert edition2.pk == doc_edition_pks[0]
 
 
 def test_document_merge_with(document, join):
