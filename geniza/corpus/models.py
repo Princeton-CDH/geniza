@@ -590,10 +590,12 @@ class Document(ModelIndexable):
                 if textblock.fragment not in self.fragments.all():
                     self.textblock_set.add(textblock)
 
-            # reassociate all footnotes
+            # combine footnotes
+            current_footnotes = self.footnotes.all()
             for footnote in doc.footnotes.all():
-                # any good way to check if any are exactly the same?
-                self.footnotes.add(footnote)
+                # if footnote is not present (based on footnote eqauality check), add it
+                if footnote not in current_footnotes:
+                    self.footnotes.add(footnote)
 
             # reassociate log entries
             # make a list of currently associated log entries to skip duplicates
@@ -602,7 +604,7 @@ class Document(ModelIndexable):
                 for le in self.log_entries.all()
             ]
             for log_entry in doc.log_entries.all():
-                # check  duplicate log entries, based on user id and time
+                # check duplicate log entries, based on user id and time
                 # (likely only applies to historic input & revision)
                 if (
                     "%s_%s" % (log_entry.user_id, log_entry.action_time.isoformat())
