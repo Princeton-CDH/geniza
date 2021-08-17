@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "pucas",
     "multiselectfield",
     "adminsortable2",
+    "admin_log_entries",
     "parasolr",
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
