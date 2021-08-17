@@ -1,7 +1,7 @@
 """
 Report on or merge joins based on duplicate shelfmark combinations,
-document type, and descriptions to remove redundant records needed
-for data as tracked in the spreadsheet.
+document type, and descriptions to consolidate redundant records needed
+for metadata as previously tracked in Google Sheets.
 
 To generate a report of potential merges and actions to be taken::
 
@@ -104,9 +104,6 @@ class Command(BaseCommand):
         same_desc = 0
         group_id = 1
 
-        # TODO: group documents to merge into a structure that can be
-        # used for reporting OR to do the actual merge
-        # should include primary document, merge rationale, merge documents
         report_rows = []
         for shelfmark_type, documents in joins.items():
 
