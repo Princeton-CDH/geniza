@@ -463,7 +463,7 @@ class DocumentTypeAdmin(admin.ModelAdmin):
 class FragmentAdmin(admin.ModelAdmin):
     list_display = ("shelfmark", "collection_display", "url", "is_multifragment")
     search_fields = ("shelfmark", "old_shelfmarks", "notes", "needs_review")
-    readonly_fields = ("old_shelfmarks", "created", "last_modified")
+    readonly_fields = ("created", "last_modified")
     list_filter = (
         ("url", custom_empty_field_list_filter("IIIF image", "Has image", "No image")),
         (
