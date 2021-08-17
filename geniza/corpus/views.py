@@ -90,6 +90,24 @@ class DocumentDetailView(DetailView):
         return queryset.filter(status=Document.PUBLIC)
 
 
+class DocumentScholarshipView(DocumentDetailView):
+    """List of :class:`~geniza.footnotes.models.Footnote`s for a Document"""
+
+    template_name = "corpus/document_scholarship.html"
+
+    def get_queryset(self, *args, **kwargs):
+        """Prefetch footnotes, and don't show the page if there are none."""
+        # prefetch footnotes since we'll render all of them in the template
+        queryset = (
+            super()
+            .get_queryset(*args, **kwargs)
+            .prefetch_related("footnotes")
+            .distinct()     # prevent MultipleObjectsReturned if many footnotes
+        )
+
+        return queryset.filter(footnotes__isnull=False)
+
+
 # --------------- Publish CSV to sync with old PGP site --------------------- #
 
 
@@ -141,6 +159,7 @@ def old_pgp_tabulate_data(queryset):
             join_shelfmark if " + " in join_shelfmark else "",  # join
             doc.description,  # description
             old_pgp_edition(doc.editions()),  # editor
+            ";".join([str(i) for i in doc.old_pgpids]) if doc.old_pgpids else "",
         ]
 
 
@@ -180,6 +199,7 @@ def pgp_metadata_for_old_site(request):
             "joins",
             "description",
             "editor",
+            "old_pgpids",
         ],
         old_pgp_tabulate_data(queryset),
     )

@@ -65,17 +65,21 @@ class TestLanguageScriptAdmin:
         assert f"?languages__id__exact={english.pk}" in english_usage_link
         assert "0</a>" in english_usage_link
 
-        # test probable documents
+        # test secondary documents
         arabic = qs.get(language="Arabic")
-        arabic_probable_link = lang_admin.probable_documents(qs.get(language="Arabic"))
-        assert f"?probable_languages__id__exact={arabic.pk}" in arabic_probable_link
-        assert "0</a>" in arabic_probable_link
+        arabic_secondary_link = lang_admin.secondary_documents(
+            qs.get(language="Arabic")
+        )
+        assert f"?secondary_languages__id__exact={arabic.pk}" in arabic_secondary_link
+        assert "0</a>" in arabic_secondary_link
 
-        # add a probable language to our arabic document
-        arabic_doc.probable_languages.add(french)
-        french_probable_link = lang_admin.probable_documents(qs.get(language="French"))
-        assert f"?probable_languages__id__exact={french.pk}" in french_probable_link
-        assert "1</a>" in french_probable_link
+        # add a secondary language to our arabic document
+        arabic_doc.secondary_languages.add(french)
+        french_secondary_link = lang_admin.secondary_documents(
+            qs.get(language="French")
+        )
+        assert f"?secondary_languages__id__exact={french.pk}" in french_secondary_link
+        assert "1</a>" in french_secondary_link
 
 
 class TestDocumentAdmin:
@@ -201,7 +205,7 @@ class TestDocumentAdmin:
         assert queryset.count() == Document.objects.all().count()
 
     @pytest.mark.django_db
-    def test_tabulate_queryset(self):
+    def test_tabulate_queryset(self, document):
         # Create all documents
         cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21", collection=cul)
@@ -221,7 +225,7 @@ class TestDocumentAdmin:
         french = LanguageScript.objects.create(language="French", script="Latin")
 
         doc.languages.add(arabic)
-        doc.probable_languages.add(french)
+        doc.secondary_languages.add(french)
 
         marina = Creator.objects.create(last_name="Rustow", first_name="Marina")
         book = SourceType.objects.create(type="Book")
@@ -254,6 +258,15 @@ class TestDocumentAdmin:
                 f"https://example.com/admin/corpus/document/{doc.id}/change/"
                 in doc_data
             )
+            # initial input should be before last modified
+            # (document fixture has a log entry, so should have a first input)
+            input_date = doc_data[-6]
+            last_modified = doc_data[-5]
+            if input_date:
+                assert input_date < last_modified, (
+                    "expect input date (%s) to be earlier than last modified (%s) [PGPID %s]"
+                    % (input_date, last_modified, doc.id)
+                )
 
     @pytest.mark.django_db
     @patch("geniza.corpus.admin.export_to_csv_response")
@@ -294,20 +307,10 @@ class TestDocumentForm:
         with pytest.raises(ValidationError) as err:
             docform.cleaned_data = {
                 "languages": ja,
-                "probable_languages": ja,
+                "secondary_languages": ja,
             }
             docform.clean()
-        assert "cannot be both probable and definite" in str(err)
-
-        # return all (including unknown) for probable; should error
-        with pytest.raises(ValidationError) as err:
-            docform.cleaned_data = {
-                "languages": [],
-                "probable_languages": LanguageScript.objects.all(),
-            }
-            docform.clean()
-
-        assert '"Unknown" is not allowed for probable language' in str(err)
+        assert "cannot be both primary and secondary" in str(err)
 
 
 @pytest.mark.django_db

@@ -282,16 +282,16 @@ class TestDocument:
         doc.languages.add(arabic)
         assert doc.all_languages() == "%s, %s" % (arabic, lang)
 
-    def test_all_probable_languages(self):
+    def test_all_secondary_languages(self):
         doc = Document.objects.create()
         lang = LanguageScript.objects.create(language="Judaeo-Arabic", script="Hebrew")
-        doc.probable_languages.add(lang)
+        doc.secondary_languages.add(lang)
         # single language
-        assert doc.all_probable_languages() == str(lang)
+        assert doc.all_secondary_languages() == str(lang)
 
         arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
-        doc.probable_languages.add(arabic)
-        assert doc.all_probable_languages() == "%s,%s" % (arabic, lang)
+        doc.secondary_languages.add(arabic)
+        assert doc.all_secondary_languages() == "%s,%s" % (arabic, lang)
 
     def test_all_tags(self):
         doc = Document.objects.create()
@@ -332,6 +332,27 @@ class TestDocument:
         frag.delete()
         frag2.delete()
         assert doc.iiif_urls() == []
+
+    def test_fragment_urls(self):
+        # create example doc with two fragments with URLs
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark="s1", url="foo")
+        frag2 = Fragment.objects.create(shelfmark="s2", url="bar")
+        TextBlock.objects.create(document=doc, fragment=frag, order=1)
+        TextBlock.objects.create(document=doc, fragment=frag2, order=2)
+        assert doc.fragment_urls() == ["foo", "bar"]
+        # only one URL
+        frag2.url = ""
+        frag2.save()
+        assert doc.fragment_urls() == ["foo"]
+        # no URLs
+        frag.url = ""
+        frag.save()
+        assert doc.fragment_urls() == []
+        # no fragments
+        frag.delete()
+        frag2.delete()
+        assert doc.fragment_urls() == []
 
     def test_title(self):
         doc = Document.objects.create()

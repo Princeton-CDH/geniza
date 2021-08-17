@@ -236,7 +236,7 @@ class DocumentSignalHandlers:
         "fragment": "fragments",
         "tag": "tags",
         "document type": "doctype",
-        # log entry ?
+        "Related Fragment": "textblock",  # textblock verbose name
     }
 
     @staticmethod
@@ -249,8 +249,12 @@ class DocumentSignalHandlers:
         # get related lookup for document filter
         model_name = instance._meta.verbose_name
         doc_attr = DocumentSignalHandlers.model_filter.get(model_name)
-        # if handler fired on an model we don't care about, ignore
+        # if handler fired on an model we don't care about, warn and exit
         if not doc_attr:
+            logger.warn(
+                "Indexing triggered on %s but no document attribute is configured"
+                % model_name
+            )
             return
 
         doc_filter = {"%s__pk" % doc_attr: instance.pk}
@@ -292,11 +296,13 @@ class Document(ModelIndexable):
         verbose_name="Type",
     )
     tags = TaggableManager(blank=True)
-    languages = models.ManyToManyField(LanguageScript, blank=True)
-    probable_languages = models.ManyToManyField(
+    languages = models.ManyToManyField(
+        LanguageScript, blank=True, verbose_name="Primary Languages"
+    )
+    secondary_languages = models.ManyToManyField(
         LanguageScript,
         blank=True,
-        related_name="probable_document",
+        related_name="secondary_document",
         limit_choices_to=~models.Q(language__exact="Unknown"),
     )
     language_note = models.TextField(
@@ -323,6 +329,40 @@ class Document(ModelIndexable):
         choices=STATUS_CHOICES,
         default=PUBLIC,
         help_text="Decide whether a document should be publicly visible",
+    )
+
+    # preliminary date fields so dates can be pulled out from descriptions
+    doc_date_original = models.CharField(
+        "Date on document (original)",
+        help_text="explicit date on the document, in original format",
+        blank=True,
+        max_length=255,
+    )
+    CALENDAR_HIJRI = "h"
+    CALENDAR_KHARAJI = "k"
+    CALENDAR_SELEUCID = "s"
+    CALENDAR_ANNOMUNDI = "am"
+    CALENDAR_CHOICES = (
+        (CALENDAR_HIJRI, "Hijrī"),
+        (CALENDAR_KHARAJI, "Kharājī"),
+        (CALENDAR_SELEUCID, "Seleucid"),
+        (CALENDAR_ANNOMUNDI, "Anno Mundi"),
+    )
+    doc_date_calendar = models.CharField(
+        "Calendar",
+        max_length=2,
+        choices=CALENDAR_CHOICES,
+        help_text="Calendar according to which the document gives a date: "
+        + "Hijrī (AH); Kharājī (rare - mostly for fiscal docs); "
+        + "Seleucid (sometimes listed as Minyan Shetarot); Anno Mundi (Hebrew calendar)",
+        blank=True,
+    )
+    doc_date_standard = models.CharField(
+        "Document date (standardized)",
+        help_text="CE date (convert to Julian before 1582, Gregorian after 1582). "
+        + "Use YYYY, YYYY-MM, YYYY-MM-DD format when possible",
+        blank=True,
+        max_length=255,
     )
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
@@ -387,10 +427,10 @@ class Document(ModelIndexable):
 
     all_languages.short_description = "Language"
 
-    def all_probable_languages(self):
-        return ",".join([str(lang) for lang in self.probable_languages.all()])
+    def all_secondary_languages(self):
+        return ",".join([str(lang) for lang in self.secondary_languages.all()])
 
-    all_probable_languages.short_description = "Probable Language"
+    all_secondary_languages.short_description = "Secondary Language"
 
     def all_tags(self):
         return ", ".join(t.name for t in self.tags.all())
@@ -413,6 +453,14 @@ class Document(ModelIndexable):
         return list(
             dict.fromkeys(
                 filter(None, [b.fragment.iiif_url for b in self.textblock_set.all()])
+            )
+        )
+
+    def fragment_urls(self):
+        """List of external URLs to view the Document's Fragments."""
+        return list(
+            dict.fromkeys(
+                filter(None, [b.fragment.url for b in self.textblock_set.all()])
             )
         )
 
@@ -529,6 +577,10 @@ class Document(ModelIndexable):
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
         "doctype": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
+        "textblock_set": {
             "post_save": DocumentSignalHandlers.related_save,
             "pre_delete": DocumentSignalHandlers.related_delete,
         }

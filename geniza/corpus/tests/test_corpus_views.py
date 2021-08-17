@@ -1,18 +1,18 @@
 from unittest.mock import Mock, patch
 
-from django.contrib.contenttypes.models import ContentType
 import pytest
+from django.urls import reverse
 from pytest_django.asserts import assertContains
 
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import (
+    DocumentSearchView,
     old_pgp_edition,
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
-    DocumentSearchView,
 )
-from geniza.footnotes.models import Footnote, Source, SourceType, Creator
+from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 
 class TestDocumentDetailView:
@@ -44,10 +44,17 @@ def test_old_pgp_tabulate_data():
     assert "T-S 8J22.21" in row
     assert "#marriage" in row
     assert "recto" in row
+    # should not error on document with no old pgpids
 
     # NOTE: strings are not parsed until after being fed into the csv plugin
     assert legal_doc in row
     assert 36 in row
+
+    doc.old_pgpids = [12345, 67890]
+    doc.save()
+    table_iter = old_pgp_tabulate_data(Document.objects.all())
+    row = next(table_iter)
+    assert "12345;67890" in row
 
 
 @pytest.mark.django_db
@@ -181,3 +188,27 @@ class TestDocumentSearchView:
 
         context_data = docsearch_view.get_context_data()
         assert context_data["total"] == 22
+
+
+class TestDocumentScholarshipView:
+    def test_get_queryset(self, client, document, source):
+        # no footnotes; should 404
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assert response.status_code == 404
+
+        # add a footnote; should return document in context
+        Footnote.objects.create(content_object=document, source=source)
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assert response.context["document"] == document
+
+        # suppress document; should 404 again
+        document.status = Document.SUPPRESSED
+        document.save()
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assert response.status_code == 404

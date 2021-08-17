@@ -23,7 +23,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,6 +42,7 @@ INSTALLED_APPS = [
     "pucas",
     "multiselectfield",
     "adminsortable2",
+    "admin_log_entries",
     "parasolr",
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
@@ -75,6 +75,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "geniza.context_extras",
+                "geniza.context_processors.template_globals",
             ],
         },
     },
@@ -102,6 +103,10 @@ SOLR_CONNECTIONS = {
         "URL": "http://localhost:8983/solr/",
         "COLLECTION": "geniza",
         "CONFIGSET": "geniza",
+        "TEST": {
+            # set aggressive commitWithin when testing
+            "COMMITWITHIN": 750,
+        },
     }
 }
 
@@ -187,3 +192,6 @@ TEAM_USERNAME = "pgl"
 
 # use default Django site
 SITE_ID = 1
+
+# increase max from default 1000 to handle editing sources with lots of footnotes
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000

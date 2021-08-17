@@ -1,5 +1,19 @@
 # Change Log
 
+## 0.4.0
+
+* As a content editor, I would like to input dates in a separate field, so that both content editors and site users can sort and filter documents by date.
+* As a content editor, I want to import fragment view and IIIF urls from a csv file into the database so that I can provide access to images for fragments.
+* As a content editor, I want to be able to filter documents by library, so that I can narrow down clusters of documents and perform other research and data tasks
+* As a content editor, I want to search documents by combined shelfmark without removing the + so I can quickly find documents that are part of joins.
+* As a user, I want to search documents by keyword or phrase so that I can find materials related to my interests.
+* As a user, I want to see updates and changes made in the new database in the current pgp site while the new website is still in development so that I can reference current information.
+* bugfix: Fragment reassociation doesn't update the search index
+* bugfix: Sorting fragments by collection raises a 500 error
+* bugfix: admin document csv export has wrong date for first input
+* bugifx: 500 error when trying to create a new document in the admin
+* removed code related to import
+
 ## 0.3.0
 
 * As a Global Admin, I want new documents created in the database after data import to receive PGPIDs higher than the highest imported PGPID, so that identifiers will be unique and semi-sequential.

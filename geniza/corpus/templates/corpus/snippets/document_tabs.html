@@ -1,0 +1,17 @@
+{% load i18n %}
+<!-- document detail page navigation -->
+<nav aria-label="tabs">
+    <ul>
+        <li><a href="{% url 'corpus:document' pk=document.pk %}">{% translate "Document Details" %}</a></li>
+        {% with n_records=document.footnotes.count %}
+        {# Translators: n_records is number of scholarship records #}
+        {% blocktranslate asvar srec_text %}Scholarship Records ({{ n_records }}){% endblocktranslate %}
+        <li>{% if n_records > 0 %}<a href="{% url 'corpus:document-scholarship' pk=document.pk %}">{{ srec_text }}</a>{% else %}<span>{{ srec_text }}</span>{% endif %}</li>
+        {% endwith %}
+        {% with n_links=document.fragment_urls|length %}
+        {# Translators: n_links is number of external links #}
+        {% blocktranslate asvar elink_text %}External Links ({{ n_links }}){% endblocktranslate %}
+        <li>{% if n_links > 0 %}<a>{{ elink_text }}</a>{% else %}<span>{{ elink_text }}</span>{% endif %}</li>
+        {% endwith %}
+    </ul>
+</nav>

@@ -13,3 +13,4 @@ python-dateutil>=2.8
 django-tabular-export
 parasolr>=0.7
 django-gfklookupwidget
+django-adminlogentries
