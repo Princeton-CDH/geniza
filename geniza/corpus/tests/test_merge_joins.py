@@ -7,7 +7,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 
 from geniza.corpus.management.commands import merge_joins
-from geniza.corpus.models import Document
+from geniza.corpus.models import Document, TextBlock
 
 
 @pytest.mark.django_db
@@ -118,3 +118,141 @@ def test_handle_merge(mock_load_report, mock_merge_group):
     output = stdout.getvalue()
     assert "Successfully merged 1 group" in output
     assert "skipped 1" in output
+
+
+@pytest.mark.django_db
+def test_get_merge_candidates(fragment, multifragment, join):
+    # looks for more than one document on the same set of fragments
+    # join is a document associated with fragment & multifragment
+    # create two other documents to be merged
+    doc2 = Document.objects.create(
+        description="see other fragment", doctype=join.doctype
+    )
+    # associate in same order as join
+    TextBlock.objects.create(document=doc2, fragment=fragment, order=1)
+    TextBlock.objects.create(document=doc2, fragment=multifragment, order=2)
+
+    doc3 = Document.objects.create(
+        description="see other fragment", doctype=join.doctype
+    )
+    # associate in different order as join doc
+    TextBlock.objects.create(document=doc3, fragment=fragment, order=2)
+    TextBlock.objects.create(document=doc3, fragment=multifragment, order=1)
+
+    # doc on the same fragments with different type (unknown)
+    unknown_doc = Document.objects.create(
+        description="something else",
+    )
+    # associate in same order as join doc
+    TextBlock.objects.create(document=unknown_doc, fragment=fragment, order=1)
+    TextBlock.objects.create(document=unknown_doc, fragment=multifragment, order=3)
+
+    command = merge_joins.Command()
+    candidates = command.get_merge_candidates()
+
+    # should result in one candidate group
+    assert len(candidates) == 1
+    # key should be shelfmark + type
+    shelfmark_type = "%s / %s" % (join.shelfmark, join.doctype.name)
+    assert shelfmark_type in candidates
+    # should not include document with different type
+    assert len(candidates[shelfmark_type]) == 3
+    for doc in [join, doc2, doc3]:
+        assert doc in candidates[shelfmark_type]
+
+
+@pytest.mark.django_db
+def test_group_merge_candidates_same_desc():
+    # merge based on same description
+    command = merge_joins.Command()
+    doc1 = Document.objects.create(description="a marriage contract")
+    doc2 = Document.objects.create(description=doc1.description)
+    shelfmark_id = "shelfmark / letter"
+    report_rows = command.group_merge_candidates(
+        {
+            shelfmark_id: [doc1, doc2],
+        }
+    )
+    assert report_rows[0] == [
+        shelfmark_id,
+        1,
+        "MERGE",
+        "all descriptions match",
+        "primary",
+        doc1.pk,
+        doc1.description,
+    ]
+    assert report_rows[1] == [
+        shelfmark_id,
+        1,
+        "MERGE",
+        "all descriptions match",
+        "merge",
+        doc2.pk,
+        doc2.description,
+    ]
+
+
+@pytest.mark.django_db
+def test_group_merge_candidates_empty_description():
+    # merge based on empty description text in secondary documents
+    command = merge_joins.Command()
+    doc1 = Document.objects.create(description="a marriage contract")
+    doc2 = Document.objects.create()
+    shelfmark_id = "shelfmark / letter"
+    report_rows = command.group_merge_candidates(
+        {
+            shelfmark_id: [doc1, doc2],
+        }
+    )
+    # status should be merge; rationale from empty description
+    assert report_rows[0][2] == "MERGE"
+    assert report_rows[0][3] == "one description, others empty"
+
+
+@pytest.mark.django_db
+def test_group_merge_candidates_see_join():
+    # merge based on "see join" text in secondary documents
+    command = merge_joins.Command()
+    doc1 = Document.objects.create(description="a marriage contract")
+    doc2 = Document.objects.create(description="See join.")
+    shelfmark_id = "shelfmark / letter"
+    report_rows = command.group_merge_candidates(
+        {
+            shelfmark_id: [doc1, doc2],
+        }
+    )
+    # status should be merge; rationale should be "see join"
+    assert report_rows[0][2] == "MERGE"
+    assert report_rows[0][3] == "see join"
+    assert report_rows[0][4] == "primary"
+    assert report_rows[0][5] == doc1.pk
+
+
+@pytest.mark.django_db
+def test_group_merge_candidates_see_pgpid():
+    # merge based on "see pgpid" text in secondary documents
+    command = merge_joins.Command()
+    doc1 = Document.objects.create(description="a marriage contract", pk=52)
+    doc2 = Document.objects.create(description="See PGPID %d" % doc1.pk)
+    shelfmark_id = "shelfmark / unknown"
+    report_rows = command.group_merge_candidates(
+        {
+            shelfmark_id: [doc1, doc2],
+        }
+    )
+    # status should be merge; rationale should be "see join"
+    assert report_rows[0][2] == "MERGE"
+    assert report_rows[0][3] == "see PGPID"
+
+
+@pytest.mark.django_db
+def test_generate_report(tmpdir):
+    report_path = tmpdir.join("report.csv")
+    command = merge_joins.Command()
+    test_rows = [["a", "b", "c", "d", "e", "f"], ["g", "h", "j", "k", "l", "m"]]
+    command.generate_report(test_rows, report_path)
+    report = report_path.read()
+    assert "merge group,group id,action,status,role,pgpid,description" in report
+    for row in test_rows:
+        assert ",".join(row) in report

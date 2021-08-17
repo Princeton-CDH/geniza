@@ -106,17 +106,15 @@ class Command(BaseCommand):
 
         report_rows = []
         for shelfmark_type, documents in joins.items():
-
             descriptions = defaultdict(list)
             for doc in documents:
                 descriptions[doc.description.strip()].append(doc)
-            # unique_descriptions = set([doc.description for doc in documents])
             unique_descriptions = descriptions.keys()
             primary_id = min([doc.id for doc in documents])  # maybe not
             status = action = ""
 
-            # all descriptions match; merge
-            # FIXME: some cases where all descriptions match but refer
+            # all descriptions match; recommend merging
+            # NOTE: there are cases where all descriptions match but refer
             # to another document NOT in this shelfmark group
             if len(unique_descriptions) == 1:
                 same_desc += 1
@@ -125,13 +123,10 @@ class Command(BaseCommand):
 
             # one description, with all others empty
             elif "" in unique_descriptions and len(unique_descriptions) == 2:
-                print("### single description and others empty")
                 primary_docs = [doc for doc in documents if doc.description]
                 # if there's more than one non-join description,
                 # can't identify the primary document
-                if len(primary_docs) > 1:
-                    print("### can't identify primary document")
-                else:
+                if len(primary_docs) == 1:
                     primary_document = primary_docs[0]
                     primary_id = primary_document.id
                     status = "one description, others empty"
@@ -153,9 +148,7 @@ class Command(BaseCommand):
                 ]
                 # if there's more than one non-join description,
                 # can't identify the primary document
-                if len(primary_docs) > 1:
-                    print("### can't identify primary document")
-                else:
+                if len(primary_docs) == 1:
                     primary_document = primary_docs[0]
                     primary_id = primary_document.id
                     status = "see join"
@@ -168,8 +161,6 @@ class Command(BaseCommand):
                 for doc in documents:
                     pgpid_match = self.re_see_pgpid.match(doc.description)
                     if pgpid_match:
-                        print("*** pgpid match: %s" % pgpid_match.groupdict()["pgpid"])
-                        print(doc.id, doc.description)
                         possible_primaries.add(int(pgpid_match.groupdict()["pgpid"]))
 
                 if possible_primaries:
@@ -179,23 +170,14 @@ class Command(BaseCommand):
                             primary_id = primary
                             status = "see PGPID"
                             action = "MERGE"
-                        elif primary not in group_ids:
-                            print(shelfmark_type)
-                            print(documents)
-                            print("### primary id %s not in group" % primary)
 
-                    else:
-                        print(shelfmark_type)
-                        print(documents)
-                        print(
-                            "### more than one possible primary id: %s"
-                            % possible_primaries
-                        )
+                    # warn if primary id not in group?
+                    # or more than one possible primary id?
 
-                # also possible: see shelfmark
+            # not handled: see shelfmark ###
 
-            # other possibilities: if a subset of documents in a group match
-            # based on description, should they be merged?
+            # convert into format for generating a report
+
             for doc in documents:
                 doc_status = ""
                 if action == "MERGE":
