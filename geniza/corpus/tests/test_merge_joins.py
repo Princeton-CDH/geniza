@@ -233,7 +233,7 @@ def test_group_merge_candidates_see_join():
 def test_group_merge_candidates_see_pgpid():
     # merge based on "see pgpid" text in secondary documents
     command = merge_joins.Command()
-    doc1 = Document.objects.create(description="a marriage contract", pk=52)
+    doc1 = Document.objects.create(description="a marriage contract", pk=134552)
     doc2 = Document.objects.create(description="See PGPID %d" % doc1.pk)
     shelfmark_id = "shelfmark / unknown"
     report_rows = command.group_merge_candidates(

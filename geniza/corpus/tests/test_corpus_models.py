@@ -580,14 +580,14 @@ def test_document_merge_with_languages(document, join):
 
     arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
     document.languages.add(judeo_arabic)
-    document.probable_languages.add(arabic)
+    document.secondary_languages.add(arabic)
     document.language_note = "with diacritics"
 
     join.merge_with([document], "merge test")
 
     assert judeo_arabic in join.languages.all()
     assert join.languages.count() == 1
-    assert arabic in join.probable_languages.all()
+    assert arabic in join.secondary_languages.all()
     assert join.language_note == document.language_note
 
 

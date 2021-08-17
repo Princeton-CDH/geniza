@@ -626,11 +626,11 @@ class Document(ModelIndexable):
             if doc.needs_review:
                 needs_review.append(doc.needs_review)
 
-            # add languages and probable languages
+            # add languages and secondary languages
             for lang in doc.languages.all():
                 self.languages.add(lang)
-            for lang in doc.probable_languages.all():
-                self.probable_languages.add(lang)
+            for lang in doc.secondary_languages.all():
+                self.secondary_languages.add(lang)
             if doc.language_note:
                 language_notes.append(doc.language_note)
 
