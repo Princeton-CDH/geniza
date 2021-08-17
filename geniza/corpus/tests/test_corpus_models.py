@@ -580,15 +580,16 @@ def test_document_merge_with_textblocks(document, join):
 
 def test_document_merge_with_footnotes(document, join, source):
     # create some footnotes
-    Footnote.objects.create(content_object=document, source=source)
+    Footnote.objects.create(content_object=document, source=source, location="p. 3")
+    # page 3 footnote is a duplicate
     Footnote.objects.create(content_object=join, source=source, location="p. 3")
     Footnote.objects.create(content_object=join, source=source, location="p. 100")
 
     assert document.footnotes.count() == 1
     assert join.footnotes.count() == 2
     document.merge_with([join], "combine footnotes")
-    # should have three footnotes after the merge
-    assert document.footnotes.count() == 3
+    # should only have two footnotes after the merge, because two of them are equal
+    assert document.footnotes.count() == 2
 
 
 def test_document_merge_with_log_entries(document, join):

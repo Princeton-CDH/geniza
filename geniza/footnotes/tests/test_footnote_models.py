@@ -122,6 +122,36 @@ class TestFootnote:
         footnote.url = "http://example.com/"
         assert footnote.has_url()
 
+    @pytest.mark.django_db
+    def test_eq(self, source, twoauthor_source, document):
+        # same source, content object, location
+        footnote1 = Footnote(source=source, content_object=document, location="p.1")
+        footnote2 = Footnote(source=source, content_object=document, location="p.1")
+        assert footnote1 == footnote2
+
+        # different location
+        footnote2.location = "p.5"
+        assert footnote1 != footnote2
+
+        # different source
+        footnote2.location = "p.1"
+        footnote2.source = twoauthor_source
+        assert footnote1 != footnote2
+
+        # different content object -- considered equal if all else is equal!
+        footnote2.source = source
+        footnote2.content_object = twoauthor_source
+        assert footnote1 == footnote2
+
+        # different notes
+        footnote2.notes = "some extra info"
+        assert footnote1 != footnote2
+
+        # different content
+        footnote2.notes = ""
+        footnote2.content = "{}"
+        assert footnote1 != footnote2
+
 
 class TestCreator:
     def test_str(self):
