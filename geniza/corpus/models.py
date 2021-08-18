@@ -300,10 +300,7 @@ class Document(ModelIndexable):
         LanguageScript, blank=True, verbose_name="Primary Languages"
     )
     secondary_languages = models.ManyToManyField(
-        LanguageScript,
-        blank=True,
-        related_name="secondary_document",
-        limit_choices_to=~models.Q(language__exact="Unknown"),
+        LanguageScript, blank=True, related_name="secondary_document"
     )
     language_note = models.TextField(
         blank=True, help_text="Notes on diacritics, vocalisation, etc."
