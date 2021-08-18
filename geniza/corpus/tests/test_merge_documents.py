@@ -6,7 +6,7 @@ import pytest
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
-from geniza.corpus.management.commands import merge_joins
+from geniza.corpus.management.commands import merge_documents
 from geniza.corpus.models import Document, TextBlock
 
 
@@ -15,7 +15,7 @@ from geniza.corpus.models import Document, TextBlock
 def test_merge_group_error_handling(mock_merge_with, document, join):
     stderr = StringIO()
     # no primary
-    command = merge_joins.Command(stderr=stderr)
+    command = merge_documents.Command(stderr=stderr)
     rval = command.merge_group("a", [])
     assert "Could not identify primary document" in stderr.getvalue()
     assert rval == 0
@@ -49,7 +49,7 @@ def test_merge_group_error_handling(mock_merge_with, document, join):
 @patch.object(Document, "merge_with")
 def test_merge_group(mock_merge_with, document, join):
     stderr = StringIO()
-    command = merge_joins.Command(stderr=stderr)
+    command = merge_documents.Command(stderr=stderr)
     rval = command.merge_group(
         "a",
         [
@@ -67,7 +67,7 @@ def test_merge_group(mock_merge_with, document, join):
 
 @pytest.mark.django_db
 def test_handle_file_not_found(tmpdir):
-    command = merge_joins.Command()
+    command = merge_documents.Command()
     with pytest.raises(CommandError) as err:
         command.handle(mode="merge", path="/tmp/example/not-here.csv")
     assert "Report file not found: /tmp/example/not-here.csv" in str(err)
@@ -77,16 +77,16 @@ def test_handle_file_not_found(tmpdir):
     os.chdir(tmpdir)
     stderr = StringIO()
     with pytest.raises(CommandError) as err:
-        call_command("merge_joins", "merge", stderr=stderr)
+        call_command("merge_documents", "merge", stderr=stderr)
 
     assert "Report file not found: merge-report.csv" in str(err)
 
 
-@patch.object(merge_joins.Command, "get_merge_candidates")
-@patch.object(merge_joins.Command, "group_merge_candidates")
-@patch.object(merge_joins.Command, "generate_report")
+@patch.object(merge_documents.Command, "get_merge_candidates")
+@patch.object(merge_documents.Command, "group_merge_candidates")
+@patch.object(merge_documents.Command, "generate_report")
 def test_handle_report(mock_generate_report, mock_group_merge, mock_get_merge):
-    cmd = merge_joins.Command()
+    cmd = merge_documents.Command()
     cmd.handle(mode="report", path="test-report.csv")
     # confirm that the correct sequence of methods is called
     mock_get_merge.assert_any_call()
@@ -96,12 +96,12 @@ def test_handle_report(mock_generate_report, mock_group_merge, mock_get_merge):
     )
 
 
-@patch.object(merge_joins.Command, "merge_group")
-@patch.object(merge_joins.Command, "load_report")
+@patch.object(merge_documents.Command, "merge_group")
+@patch.object(merge_documents.Command, "load_report")
 def test_handle_merge(mock_load_report, mock_merge_group):
     stdout = StringIO()
     path = "merge-groups.csv"
-    cmd = merge_joins.Command(stdout=stdout)
+    cmd = merge_documents.Command(stdout=stdout)
     # return some mock groups from load method
     mock_load_report.return_value = [
         # group id, group
@@ -147,7 +147,7 @@ def test_get_merge_candidates(fragment, multifragment, join):
     TextBlock.objects.create(document=unknown_doc, fragment=fragment, order=1)
     TextBlock.objects.create(document=unknown_doc, fragment=multifragment, order=3)
 
-    command = merge_joins.Command()
+    command = merge_documents.Command()
     candidates = command.get_merge_candidates()
 
     # should result in one candidate group
@@ -164,7 +164,7 @@ def test_get_merge_candidates(fragment, multifragment, join):
 @pytest.mark.django_db
 def test_group_merge_candidates_same_desc():
     # merge based on same description
-    command = merge_joins.Command()
+    command = merge_documents.Command()
     doc1 = Document.objects.create(description="a marriage contract")
     doc2 = Document.objects.create(description=doc1.description)
     shelfmark_id = "shelfmark / letter"
@@ -196,7 +196,7 @@ def test_group_merge_candidates_same_desc():
 @pytest.mark.django_db
 def test_group_merge_candidates_empty_description():
     # merge based on empty description text in secondary documents
-    command = merge_joins.Command()
+    command = merge_documents.Command()
     doc1 = Document.objects.create(description="a marriage contract")
     doc2 = Document.objects.create()
     shelfmark_id = "shelfmark / letter"
@@ -213,7 +213,7 @@ def test_group_merge_candidates_empty_description():
 @pytest.mark.django_db
 def test_group_merge_candidates_see_join():
     # merge based on "see join" text in secondary documents
-    command = merge_joins.Command()
+    command = merge_documents.Command()
     doc1 = Document.objects.create(description="a marriage contract")
     doc2 = Document.objects.create(description="See join.")
     shelfmark_id = "shelfmark / letter"
@@ -232,7 +232,7 @@ def test_group_merge_candidates_see_join():
 @pytest.mark.django_db
 def test_group_merge_candidates_see_pgpid():
     # merge based on "see pgpid" text in secondary documents
-    command = merge_joins.Command()
+    command = merge_documents.Command()
     doc1 = Document.objects.create(description="a marriage contract", pk=134552)
     doc2 = Document.objects.create(description="See PGPID %d" % doc1.pk)
     shelfmark_id = "shelfmark / unknown"
@@ -249,7 +249,7 @@ def test_group_merge_candidates_see_pgpid():
 @pytest.mark.django_db
 def test_generate_report(tmpdir):
     report_path = tmpdir.join("report.csv")
-    command = merge_joins.Command()
+    command = merge_documents.Command()
     test_rows = [["a", "b", "c", "d", "e", "f"], ["g", "h", "j", "k", "l", "m"]]
     command.generate_report(test_rows, report_path)
     report = report_path.read()
