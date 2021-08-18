@@ -6,4 +6,4 @@ django-debug-toolbar
 pre-commit
 black
 #sphinx
-#pytest-ordering
+pytest-ordering
