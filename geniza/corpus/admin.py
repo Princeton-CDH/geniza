@@ -169,7 +169,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "has_image",
         "is_public",
     )
-    readonly_fields = ("created", "last_modified", "shelfmark", "id", "old_pgpids")
+    readonly_fields = ("created", "last_modified", "shelfmark", "id", "view_old_pgpids")
     search_fields = (
         "fragments__shelfmark",
         "tags__name",
@@ -181,7 +181,14 @@ class DocumentAdmin(admin.ModelAdmin):
     )
     # TODO include search on edition once we add footnotes
     save_as = True
+    # display unset document type as Unknown
     empty_value_display = "Unknown"
+
+    # customize old pgpid display so unset does not show up as "Unknown"
+    def view_old_pgpids(self, obj):
+        return obj.old_pgpids or "-"
+
+    view_old_pgpids.short_description = "Old PGPIDs"
 
     list_filter = (
         "doctype",
@@ -206,7 +213,7 @@ class DocumentAdmin(admin.ModelAdmin):
     )
 
     fields = (
-        ("shelfmark", "id", "old_pgpids"),
+        ("shelfmark", "id", "view_old_pgpids"),
         "doctype",
         ("languages", "secondary_languages"),
         "language_note",

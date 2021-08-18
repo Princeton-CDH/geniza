@@ -315,7 +315,7 @@ class Document(ModelIndexable):
         blank=True,
         help_text="Enter text here if an administrator needs to review this document.",
     )
-    old_pgpids = ArrayField(models.IntegerField(), null=True)
+    old_pgpids = ArrayField(models.IntegerField(), null=True, verbose_name="Old PGPIDs")
 
     PUBLIC = "P"
     SUPPRESSED = "S"
