@@ -15,7 +15,10 @@ class Migration(migrations.Migration):
             model_name="document",
             name="old_pgpids",
             field=django.contrib.postgres.fields.ArrayField(
-                base_field=models.IntegerField(), null=True, size=None
+                base_field=models.IntegerField(),
+                null=True,
+                size=None,
+                verbose_name="Old PGPIDs",
             ),
         ),
     ]

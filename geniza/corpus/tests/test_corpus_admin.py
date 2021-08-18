@@ -294,6 +294,11 @@ class TestDocumentAdmin:
             assert "description" in headers
             assert "needs_review" in headers
 
+    def test_view_old_pgpids(self):
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        obj = Mock(old_pgpids=None)
+        assert doc_admin.view_old_pgpids(obj) == "-"
+
 
 @pytest.mark.django_db
 class TestDocumentForm:
