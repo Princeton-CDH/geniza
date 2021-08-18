@@ -618,11 +618,11 @@ class Document(ModelIndexable):
             # add description if set and not duplicated
             if doc.description and doc.description not in self.description:
                 description_chunks.append(
-                    "Description from %s:\n%s" % (doc.shelfmark, doc.description)
+                    "Description from PGPID %s:\n%s" % (doc.id, doc.description)
                 )
             # add any notes
             if doc.notes:
-                notes.append("Notes from %s:\n%s" % (doc.shelfmark, doc.notes))
+                notes.append("Notes from PGPID %s:\n%s" % (doc.id, doc.notes))
             if doc.needs_review:
                 needs_review.append(doc.needs_review)
 
@@ -645,7 +645,7 @@ class Document(ModelIndexable):
             # combine footnotes
             current_footnotes = self.footnotes.all()
             for footnote in doc.footnotes.all():
-                # if footnote is not present (based on footnote eqauality check), add it
+                # if footnote is not present (based on footnote equality check), add it
                 if footnote not in current_footnotes:
                     self.footnotes.add(footnote)
 

@@ -533,7 +533,7 @@ def test_document_merge_with(document, join):
     assert "real estate" in join.tags.names()
     # combined descriptions
     assert doc_description in join.description
-    assert "\nDescription from %s" % doc_shelfmark in join.description
+    assert "\nDescription from PGPID %s" % doc_id in join.description
     # original description from fixture should still be present
     assert "testing description" in join.description
     # no notes
@@ -547,11 +547,12 @@ def test_document_merge_with_notes(document, join):
     join.needs_review = "cleanup needed"
     document.notes = "awaiting transcription"
     document.needs_review = "see join"
+    doc_id = document.id
     doc_shelfmark = document.shelfmark
     join.merge_with([document], "merge test")
     assert (
         join.notes
-        == "original doc\nNotes from %s:\nawaiting transcription" % doc_shelfmark
+        == "original doc\nNotes from PGPID %s:\nawaiting transcription" % doc_id
     )
     assert join.needs_review == "SCRIPTMERGE\ncleanup needed\nsee join"
 
