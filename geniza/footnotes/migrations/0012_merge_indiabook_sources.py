@@ -37,6 +37,7 @@ def merge_indiabook_sources(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
+        ("contenttypes", "0001_initial"),
         ("footnotes", "0011_split_goitein_typedtexts"),
     ]
 
