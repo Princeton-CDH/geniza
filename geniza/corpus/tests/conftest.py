@@ -44,8 +44,7 @@ def document(db, fragment):
         doctype=DocumentType.objects.get_or_create(name="Legal")[0],
     )
     TextBlock.objects.create(document=doc, fragment=fragment)
-    doc.tags.add(Tag.objects.get_or_create(name="bill of sale")[0])
-    doc.tags.add(Tag.objects.get_or_create(name="real estate")[0])
+    doc.tags.add("bill of sale", "real estate")
     dctype = ContentType.objects.get_for_model(Document)
     script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
     team_user = User.objects.get(username=settings.TEAM_USERNAME)

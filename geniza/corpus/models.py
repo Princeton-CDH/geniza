@@ -5,8 +5,11 @@ from django.db import models
 from django.db.models.query import Prefetch
 from django.urls import reverse
 from django.db.models.functions import Concat
-from django.contrib.admin.models import LogEntry
+from django.conf import settings
+from django.contrib.admin.models import CHANGE, LogEntry
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.utils.safestring import mark_safe
 from piffle.image import IIIFImageClient
@@ -584,6 +587,110 @@ class Document(ModelIndexable):
         # footnotes and sources, when we include editors/translators
         # script+language when/if included in index data
     }
+
+    def merge_with(self, merge_docs, rationale, user=None):
+        """Merge the specified documents into this one. Combines all
+        metadata into this document, adds the merged documents into
+        list of old PGP IDs, and creates a log entry documenting
+        the merge, including the rationale."""
+
+        # initialize old pgpid list if previously unset
+        if self.old_pgpids is None:
+            self.old_pgpids = []
+
+        # if user is not specified, log entry will be associated with
+        # script and document will be flagged for review
+        script = False
+        if user is None:
+            user = User.objects.get(username=settings.SCRIPT_USERNAME)
+            script = True
+
+        description_chunks = [self.description]
+        language_notes = [self.language_note] if self.language_note else []
+        notes = [self.notes] if self.notes else []
+        needs_review = [self.needs_review] if self.needs_review else []
+
+        for doc in merge_docs:
+            # add merge id to old pgpid list
+            self.old_pgpids.append(doc.id)
+            # add any tags from merge document tags to primary doc
+            self.tags.add(*doc.tags.names())
+            # add description if set and not duplicated
+            if doc.description and doc.description not in self.description:
+                description_chunks.append(
+                    "Description from PGPID %s:\n%s" % (doc.id, doc.description)
+                )
+            # add any notes
+            if doc.notes:
+                notes.append("Notes from PGPID %s:\n%s" % (doc.id, doc.notes))
+            if doc.needs_review:
+                needs_review.append(doc.needs_review)
+
+            # add languages and secondary languages
+            for lang in doc.languages.all():
+                self.languages.add(lang)
+            for lang in doc.secondary_languages.all():
+                self.secondary_languages.add(lang)
+            if doc.language_note:
+                language_notes.append(doc.language_note)
+
+            # if there are any textblocks with fragments not already
+            # asociated with this document, reassociate
+            # (i.e., for newly discovered joins)
+            # does not deal with discrepancies between text block fields or order
+            for textblock in doc.textblock_set.all():
+                if textblock.fragment not in self.fragments.all():
+                    self.textblock_set.add(textblock)
+
+            # combine footnotes
+            current_footnotes = self.footnotes.all()
+            for footnote in doc.footnotes.all():
+                # if footnote is not present (based on footnote equality check), add it
+                if footnote not in current_footnotes:
+                    self.footnotes.add(footnote)
+
+            # reassociate log entries
+            # make a list of currently associated log entries to skip duplicates
+            current_logs = [
+                "%s_%s" % (le.user_id, le.action_time.isoformat())
+                for le in self.log_entries.all()
+            ]
+            for log_entry in doc.log_entries.all():
+                # check duplicate log entries, based on user id and time
+                # (likely only applies to historic input & revision)
+                if (
+                    "%s_%s" % (log_entry.user_id, log_entry.action_time.isoformat())
+                    in current_logs
+                ):
+                    # skip if it's a duplicate
+                    continue
+                # otherwise, reassociate
+                self.log_entries.add(log_entry)
+
+        # combine text fields
+        self.description = "\n".join(description_chunks)
+        self.notes = "\n".join(notes)
+        self.language_note = "; ".join(language_notes)
+        # if merged via script, flag for review
+        if script:
+            needs_review.insert(0, "SCRIPTMERGE")
+        self.needs_review = "\n".join(needs_review)
+
+        # save current document with changes; delete merged documents
+        self.save()
+        merged_ids = ", ".join([str(doc.id) for doc in merge_docs])
+        for doc in merge_docs:
+            doc.delete()
+        # create log entry documenting the merge; include rationale
+        doc_contenttype = ContentType.objects.get_for_model(Document)
+        LogEntry.objects.log_action(
+            user_id=user.id,
+            content_type_id=doc_contenttype.pk,
+            object_id=self.pk,
+            object_repr=str(self),
+            change_message="merged with %s: %s" % (merged_ids, rationale),
+            action_flag=CHANGE,
+        )
 
 
 class TextBlock(models.Model):
