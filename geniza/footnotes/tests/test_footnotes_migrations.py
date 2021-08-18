@@ -11,8 +11,11 @@ import pytest
 # and copied from mep-django
 
 
-@pytest.mark.last
 class TestMigrations(TransactionTestCase):
+    # Base class for migration test case
+
+    # NOTE: subclasses must be marked with @pytest.mark.last
+    # to avoid causing errors in fixtures/db state for other tests
 
     app = None
     migrate_from = None
