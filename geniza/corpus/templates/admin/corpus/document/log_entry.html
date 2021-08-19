@@ -1,6 +1,12 @@
 {% load humanize %}
 <div class="readonly">
     <span class="action-time">{{ log_entry.action_time|naturalday }}</span>
-    <span class="action-user">{% if log_entry.user.get_full_name %}{{ log_entry.user.get_full_name }}{% else %}{{ log_entry.user.get_username }}{% endif %}</span>
+    <span class="action-user">
+        {% if log_entry.user.get_full_name %}
+            {{ log_entry.user.get_full_name }}
+        {% else %}
+            {{ log_entry.user.get_username }}
+        {% endif %}
+    </span>
     <span class="action-msg">{{ log_entry.get_change_message }}</span>
 </div>

@@ -1,15 +1,14 @@
 {% extends "admin/change_form.html" %}
-{% block extrahead %}{{ block.super }}
+{% block extrahead %}
+    {{ block.super }}
     <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
-
 {% endblock %}
-
 {% block field_sets %}
-{% if original.iiif_url %}
-    <div class="wrapper">
-        <div id="change_form">{{ block.super }}</div>
-        <div id="iiif_viewer" class="image-viewer" style="position: relative; height:375px;"></div>
-        <script type="text/javascript">
+    {% if original.iiif_url %}
+        <div class="wrapper">
+            <div id="change_form">{{ block.super }}</div>
+            <div id="iiif_viewer" class="image-viewer" style="position: relative; height:375px;"></div>
+            <script type="text/javascript">
           Mirador.viewer({
             id: "iiif_viewer",
             window: {
@@ -36,9 +35,9 @@
                 enabled: false, // Remove extra workspace settings,
             }
           });
-        </script>
-    </div>
-{% else %}
-	{{ block.super }}
-{% endif %}
+            </script>
+        </div>
+    {% else %}
+        {{ block.super }}
+    {% endif %}
 {% endblock %}
