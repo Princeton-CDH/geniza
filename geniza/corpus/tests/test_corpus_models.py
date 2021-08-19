@@ -656,12 +656,14 @@ def test_document_merge_with_log_entries(document, join):
     # document has two log entries from fixture
     assert document.log_entries.count() == 3
     assert join.log_entries.count() == 2
+    join_pk = join.pk
     document.merge_with([join], "combine log entries", creator)
     # should have 5 log entries after the merge:
     # original 2 from fixture, 1 of the two duplicates, 1 unique,
     # and 1 documenting the merge
     assert document.log_entries.count() == 5
     # based on default sorting, most recent log entry will be first
+    # - should document the merge event
     merge_log = document.log_entries.first()
     # log action with specified user
     assert creator.id == merge_log.user_id
@@ -669,6 +671,10 @@ def test_document_merge_with_log_entries(document, join):
     assert merge_log.action_flag == CHANGE
     # not flagged for review when merged by a user
     assert "SCRIPTMERGE" not in document.needs_review
+
+    # reassociated log entry should include old pgpid
+    moved_log = document.log_entries.all()[1]
+    assert " [PGPID %s]" % join_pk in moved_log.change_message
 
 
 @pytest.mark.django_db

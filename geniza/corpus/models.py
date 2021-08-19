@@ -661,7 +661,15 @@ class Document(ModelIndexable):
                 ):
                     # skip if it's a duplicate
                     continue
-                # otherwise, reassociate
+
+                # otherwise annotate and reassociate
+                # - modify change message to document which object this event applied to
+                log_entry.change_message = "%s [PGPID %d]" % (
+                    log_entry.change_message,
+                    doc.pk,
+                )
+                log_entry.save()
+                # - associate with the primary document
                 self.log_entries.add(log_entry)
 
         # combine text fields
