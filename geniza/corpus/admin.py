@@ -5,18 +5,21 @@ from django import forms
 from django.conf import settings
 from django.conf.urls import url
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
-from django.db.models import Count, CharField, Q, F
+from django.db.models import CharField, Count, F, Q
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
-from django.forms.widgets import TextInput, Textarea
-from django.urls import reverse, resolve
-from django.utils.html import format_html
+from django.forms.widgets import Textarea, TextInput
+from django.urls import resolve, reverse
 from django.utils import timezone
+from django.utils.html import format_html
 from tabular_export.admin import export_to_csv_response
 
+from geniza.common.admin import custom_empty_field_list_filter
+from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
@@ -26,10 +29,7 @@ from geniza.corpus.models import (
     TextBlock,
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
-from geniza.common.admin import custom_empty_field_list_filter
 from geniza.footnotes.admin import DocumentFootnoteInline
-from geniza.common.utils import absolutize_url
-from django.contrib.auth.models import User
 
 
 class FragmentTextBlockInline(admin.TabularInline):

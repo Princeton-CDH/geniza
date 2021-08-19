@@ -1,11 +1,11 @@
-from datetime import timedelta, datetime
 import time
+from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.admin.models import LogEntry, ADDITION, CHANGE
+from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -26,14 +26,14 @@ from geniza.corpus.admin import (
     LanguageScriptAdmin,
 )
 from geniza.corpus.models import (
+    Collection,
     Document,
+    DocumentType,
     Fragment,
     LanguageScript,
     TextBlock,
-    Collection,
-    DocumentType,
 )
-from geniza.footnotes.models import Footnote, Creator, Source, SourceType
+from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 
 @pytest.mark.django_db

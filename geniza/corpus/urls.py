@@ -2,8 +2,8 @@ from django.urls import path
 
 from geniza.corpus.views import (
     DocumentDetailView,
-    DocumentSearchView,
     DocumentScholarshipView,
+    DocumentSearchView,
     pgp_metadata_for_old_site,
 )
 

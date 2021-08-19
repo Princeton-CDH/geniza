@@ -1,6 +1,7 @@
 from datetime import datetime
 from unittest.mock import patch
 
+import pytest
 from attrdict import AttrDict
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
@@ -8,7 +9,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.safestring import SafeString
-import pytest
 
 from geniza.corpus.models import (
     Collection,

@@ -1,13 +1,12 @@
-import pytest
 from unittest.mock import Mock
-from django.contrib.auth.models import Group, User
-from django.test import TestCase, override_settings
-from django.contrib.sites.models import Site
-from unittest.mock import Mock
-import pytest
 
-from geniza.common.utils import absolutize_url
+import pytest
+from django.contrib.auth.models import Group, User
+from django.contrib.sites.models import Site
+from django.test import TestCase, override_settings
+
 from geniza.common.admin import LocalUserAdmin, custom_empty_field_list_filter
+from geniza.common.utils import absolutize_url
 
 
 @pytest.mark.django_db

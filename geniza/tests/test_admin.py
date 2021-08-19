@@ -1,9 +1,9 @@
 import pytest
-from django.test.client import RequestFactory
 from django.contrib.auth.models import User
+from django.test.client import RequestFactory
 
-from geniza.corpus.models import Document, Fragment
 from geniza.admin import GenizaAdminSite
+from geniza.corpus.models import Document, Fragment
 
 
 class TestGenizaAdminSite:

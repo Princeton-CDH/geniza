@@ -3,7 +3,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
 from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager
 from multiselectfield import MultiSelectField

@@ -10,13 +10,14 @@ from django.db.models import Count
 from django.db.models.fields import CharField, TextField, URLField
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
-from django.forms.widgets import TextInput, Textarea
+from django.forms.widgets import Textarea, TextInput
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 from tabular_export.admin import export_to_csv_response
 
+from geniza.common.admin import custom_empty_field_list_filter
 from geniza.footnotes.models import (
     Authorship,
     Creator,
@@ -25,7 +26,6 @@ from geniza.footnotes.models import (
     SourceLanguage,
     SourceType,
 )
-from geniza.common.admin import custom_empty_field_list_filter
 
 
 class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):

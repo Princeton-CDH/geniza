@@ -1,6 +1,6 @@
-from modeltranslation.translator import register, TranslationOptions
+from modeltranslation.translator import TranslationOptions, register
 
-from geniza.footnotes.models import Source, Creator
+from geniza.footnotes.models import Creator, Source
 
 
 @register(Source)
