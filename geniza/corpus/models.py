@@ -1,26 +1,25 @@
-from collections import defaultdict
 import logging
+from collections import defaultdict
 
-from django.db import models
-from django.db.models.query import Prefetch
-from django.urls import reverse
-from django.db.models.functions import Concat
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
+from django.db import models
+from django.db.models.functions import Concat
+from django.db.models.query import Prefetch
+from django.urls import reverse
 from django.utils.safestring import mark_safe
+from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
 from taggit.models import Tag
 from taggit_selectize.managers import TaggableManager
-from parasolr.django.indexing import ModelIndexable
 
-from geniza.footnotes.models import Footnote
 from geniza.common.models import TrackChangesModel
-
+from geniza.footnotes.models import Footnote
 
 logger = logging.getLogger(__name__)
 

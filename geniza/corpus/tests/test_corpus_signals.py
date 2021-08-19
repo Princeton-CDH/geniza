@@ -4,10 +4,10 @@ import pytest
 from parasolr.django.indexing import ModelIndexable
 
 from geniza.corpus.models import (
-    Fragment,
     Document,
     DocumentSignalHandlers,
     DocumentType,
+    Fragment,
 )
 
 

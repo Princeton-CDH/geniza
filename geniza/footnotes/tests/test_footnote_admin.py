@@ -1,12 +1,13 @@
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
+import pytest
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
-import pytest
 
+from geniza.corpus.models import Document
 from geniza.footnotes.admin import (
     DocumentRelationTypesFilter,
     FootnoteAdmin,
@@ -14,7 +15,6 @@ from geniza.footnotes.admin import (
     SourceFootnoteInline,
 )
 from geniza.footnotes.models import Footnote, Source, SourceType
-from geniza.corpus.models import Document
 
 
 class TestDocumentRelationTypesFilter:

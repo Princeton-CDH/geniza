@@ -1,7 +1,7 @@
 from collections import defaultdict
-from unittest.mock import patch, mock_open
-import pytest
+from unittest.mock import mock_open, patch
 
+import pytest
 from attrdict import AttrMap
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.core.management import call_command

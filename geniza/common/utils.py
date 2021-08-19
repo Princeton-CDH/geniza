@@ -1,5 +1,5 @@
-from django.contrib.sites.models import Site
 from django.conf import settings
+from django.contrib.sites.models import Site
 
 
 def absolutize_url(local_url, request=None):

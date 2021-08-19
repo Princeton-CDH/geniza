@@ -1,7 +1,7 @@
-from geniza.corpus.models import TextBlock
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
+from geniza.corpus.models import TextBlock
 from geniza.footnotes.models import Footnote
 
 

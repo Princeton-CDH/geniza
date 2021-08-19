@@ -1,10 +1,9 @@
 import datetime
 
-from django.test import TransactionTestCase
+import pytest
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
-import pytest
-
+from django.test import TransactionTestCase
 
 # migration test case adapted from
 # https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/

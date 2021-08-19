@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corpus', '0013_document_old_pgpids'),
+        ("corpus", "0013_document_old_pgpids"),
     ]
 
     operations = [
@@ -16,8 +16,12 @@ class Migration(migrations.Migration):
             new_name="multifragment",
         ),
         migrations.AlterField(
-            model_name='textblock',
-            name='multifragment',
-            field=models.CharField(blank=True, help_text='Identifier for fragment part, if part of a multifragment', max_length=255),
+            model_name="textblock",
+            name="multifragment",
+            field=models.CharField(
+                blank=True,
+                help_text="Identifier for fragment part, if part of a multifragment",
+                max_length=255,
+            ),
         ),
     ]

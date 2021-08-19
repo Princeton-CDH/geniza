@@ -23,10 +23,10 @@ Example use::
 
 """
 import csv
-from collections import defaultdict
 import itertools
 import operator
 import re
+from collections import defaultdict
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Count

@@ -2,8 +2,8 @@ from datetime import datetime
 
 import pytest
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.utils.timezone import get_current_timezone, make_aware
 from taggit.models import Tag
