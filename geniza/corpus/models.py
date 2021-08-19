@@ -293,6 +293,8 @@ class Document(ModelIndexable):
         on_delete=models.SET_NULL,
         null=True,
         verbose_name="Type",
+        help_text='Refer to <a href="%s">PGP Document Type Guide</a>'
+        % settings.PGP_DOCTYPE_GUIDE,
     )
     tags = TaggableManager(blank=True)
     languages = models.ManyToManyField(
