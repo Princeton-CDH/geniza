@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name="doctype",
             field=models.ForeignKey(
                 blank=True,
-                help_text='Refer to <a href="https://docs.google.com/document/d/1FHr1iS_JD5h-y5O1rv5JNNw1OqEVQFb-vSTGr3hoiF4/edit">PGP Document Type Guide</a>',
+                help_text='Refer to <a href="https://docs.google.com/document/d/1FHr1iS_JD5h-y5O1rv5JNNw1OqEVQFb-vSTGr3hoiF4/edit" target="_blank">PGP Document Type Guide</a>',
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
                 to="corpus.documenttype",
