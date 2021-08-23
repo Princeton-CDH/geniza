@@ -250,7 +250,7 @@ class DocumentSignalHandlers:
         doc_attr = DocumentSignalHandlers.model_filter.get(model_name)
         # if handler fired on an model we don't care about, warn and exit
         if not doc_attr:
-            logger.warn(
+            logger.warning(
                 "Indexing triggered on %s but no document attribute is configured"
                 % model_name
             )
