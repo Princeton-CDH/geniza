@@ -186,7 +186,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
     # customize old pgpid display so unset does not show up as "Unknown"
     def view_old_pgpids(self, obj):
-        return obj.old_pgpids or "-"
+        return ",".join([str(pid) for pid in obj.old_pgpids]) if obj.old_pgpids else "-"
 
     view_old_pgpids.short_description = "Old PGPIDs"
 
