@@ -3,7 +3,6 @@ from collections import namedtuple
 from adminsortable2.admin import SortableInlineAdminMixin
 from django import forms
 from django.conf import settings
-from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -13,7 +12,7 @@ from django.db.models import CharField, Count, F, Q
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.forms.widgets import Textarea, TextInput
-from django.urls import resolve, reverse
+from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from tabular_export.admin import export_to_csv_response
@@ -448,8 +447,8 @@ class DocumentAdmin(admin.ModelAdmin):
         """Return admin urls; adds a custom URL for exporting all documents
         as CSV"""
         urls = [
-            url(
-                r"^csv/$",
+            path(
+                "csv/",
                 self.admin_site.admin_view(self.export_to_csv),
                 name="corpus_document_csv",
             )

@@ -1,6 +1,5 @@
 from adminsortable2.admin import SortableInlineAdminMixin
 from django import forms
-from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
@@ -11,7 +10,7 @@ from django.db.models.fields import CharField, TextField, URLField
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.forms.widgets import Textarea, TextInput
-from django.urls import reverse
+from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
@@ -231,8 +230,8 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         """Return admin urls; adds a custom URL for exporting all sources
         as CSV"""
         urls = [
-            url(
-                r"^csv/$",
+            path(
+                "csv/",
                 self.admin_site.admin_view(self.export_to_csv),
                 name="footnotes_source_csv",
             )
@@ -408,8 +407,8 @@ class FootnoteAdmin(admin.ModelAdmin):
         """Return admin urls; adds a custom URL for exporting all sources
         as CSV"""
         urls = [
-            url(
-                r"^csv/$",
+            path(
+                "csv/",
                 self.admin_site.admin_view(self.export_to_csv),
                 name="footnotes_footnote_csv",
             )
