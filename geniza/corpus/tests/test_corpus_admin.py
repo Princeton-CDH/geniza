@@ -296,8 +296,13 @@ class TestDocumentAdmin:
 
     def test_view_old_pgpids(self):
         doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
-        obj = Mock(old_pgpids=None)
+        obj = Document()
+        # display when there are no pgpids
         assert doc_admin.view_old_pgpids(obj) == "-"
+
+        # display multiple ids
+        doc = Document(old_pgpids=[460, 990])
+        assert doc_admin.view_old_pgpids(doc) == "460,990"
 
 
 @pytest.mark.django_db
