@@ -88,6 +88,10 @@ class LanguageScriptAdmin(admin.ModelAdmin):
             )
         )
 
+    @admin.display(
+        ordering="document__count",
+        description="# documents where this is the primary language",
+    )
     def documents(self, obj):
         return format_html(
             '<a href="{0}?languages__id__exact={1!s}">{2}</a>',
@@ -96,9 +100,10 @@ class LanguageScriptAdmin(admin.ModelAdmin):
             obj.document__count,
         )
 
-    documents.short_description = "# documents where this is the primary language"
-    documents.admin_order_field = "document__count"
-
+    @admin.display(
+        ordering="secondary_document__count",
+        description="# documents where this is a secondary langaug",
+    )
     def secondary_documents(self, obj):
         return format_html(
             '<a href="{0}?secondary_languages__id__exact={1!s}">{2}</a>',
@@ -106,11 +111,6 @@ class LanguageScriptAdmin(admin.ModelAdmin):
             str(obj.id),
             obj.secondary_document__count,
         )
-
-    secondary_documents.short_description = (
-        "# documents where this is a secondary langauge"
-    )
-    secondary_documents.admin_order_field = "secondary_document__count"
 
 
 class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
@@ -184,10 +184,11 @@ class DocumentAdmin(admin.ModelAdmin):
     empty_value_display = "Unknown"
 
     # customize old pgpid display so unset does not show up as "Unknown"
+    @admin.display(
+        description="Old PGPIDs",
+    )
     def view_old_pgpids(self, obj):
         return ",".join([str(pid) for pid in obj.old_pgpids]) if obj.old_pgpids else "-"
-
-    view_old_pgpids.short_description = "Old PGPIDs"
 
     list_filter = (
         "doctype",
@@ -425,6 +426,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "collection",
     ]
 
+    @admin.display(description="Export selected documents to CSV")
     def export_to_csv(self, request, queryset=None):
         """Stream tabular data as a CSV file"""
         queryset = queryset or self.get_queryset(request)
@@ -440,8 +442,6 @@ class DocumentAdmin(admin.ModelAdmin):
             self.csv_fields,
             self.tabulate_queryset(queryset),
         )
-
-    export_to_csv.short_description = "Export selected documents to CSV"
 
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all documents
