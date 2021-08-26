@@ -102,7 +102,7 @@ class DocumentScholarshipView(DocumentDetailView):
             super()
             .get_queryset(*args, **kwargs)
             .prefetch_related("footnotes")
-            .distinct()     # prevent MultipleObjectsReturned if many footnotes
+            .distinct()  # prevent MultipleObjectsReturned if many footnotes
         )
 
         return queryset.filter(footnotes__isnull=False)

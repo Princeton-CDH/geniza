@@ -1,4 +1,4 @@
-Princeton Geniza Project 
+Princeton Geniza Project
 #########################
 
 
@@ -28,6 +28,9 @@ Python 3.8 / Django 3.1 / Postgresql / Solr 8.6
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
     :alt: code style: Black
+
+.. image:: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
+    :target: https://pycqa.github.io/isort/
 
 .. image:: https://badges.crowdin.net/geniza/localized.svg
     :target: https://crowdin.com/project/geniza

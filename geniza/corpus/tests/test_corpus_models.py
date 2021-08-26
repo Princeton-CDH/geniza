@@ -1,10 +1,14 @@
+from datetime import datetime
 from unittest.mock import patch
 
-from attrdict import AttrDict
-from django.db import IntegrityError
-from django.utils.safestring import SafeString
-from django.urls import reverse
 import pytest
+from attrdict import AttrDict
+from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.db import IntegrityError
+from django.utils import timezone
+from django.utils.safestring import SafeString
 
 from geniza.corpus.models import (
     Collection,
@@ -278,16 +282,16 @@ class TestDocument:
         doc.languages.add(arabic)
         assert doc.all_languages() == "%s, %s" % (arabic, lang)
 
-    def test_all_probable_languages(self):
+    def test_all_secondary_languages(self):
         doc = Document.objects.create()
         lang = LanguageScript.objects.create(language="Judaeo-Arabic", script="Hebrew")
-        doc.probable_languages.add(lang)
+        doc.secondary_languages.add(lang)
         # single language
-        assert doc.all_probable_languages() == str(lang)
+        assert doc.all_secondary_languages() == str(lang)
 
         arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
-        doc.probable_languages.add(arabic)
-        assert doc.all_probable_languages() == "%s,%s" % (arabic, lang)
+        doc.secondary_languages.add(arabic)
+        assert doc.all_secondary_languages() == "%s,%s" % (arabic, lang)
 
     def test_all_tags(self):
         doc = Document.objects.create()
@@ -505,13 +509,172 @@ class TestDocument:
             doc_relation=Footnote.TRANSLATION,
         )
 
-        doc_editions = document.editions()
+        doc_edition_pks = [doc.pk for doc in document.editions()]
         # check that only footnotes with doc relation including edition are included
-        assert edition in doc_editions
-        assert edition2 in doc_editions
-        assert translation not in doc_editions
+        # NOTE: comparing by PK rather than using footnote equality check
+        assert edition.pk in doc_edition_pks
+        assert edition2.pk in doc_edition_pks
+        assert translation.pk not in doc_edition_pks
         # check that edition with content is sorted first
-        assert edition2 == doc_editions[0]
+        assert edition2.pk == doc_edition_pks[0]
+
+
+def test_document_merge_with(document, join):
+    doc_id = document.id
+    doc_shelfmark = document.shelfmark
+    doc_description = document.description
+    join.merge_with([document], "merge test")
+    # merged document should no longer be in the database
+    assert not Document.objects.filter(pk=doc_id).exists()
+    # merged pgpid added to primary list of old pgpids
+    assert doc_id in join.old_pgpids
+    # tags from merged document
+    assert "bill of sale" in join.tags.names()
+    assert "real estate" in join.tags.names()
+    # combined descriptions
+    assert doc_description in join.description
+    assert "\nDescription from PGPID %s" % doc_id in join.description
+    # original description from fixture should still be present
+    assert "testing description" in join.description
+    # no notes
+    assert join.notes == ""
+    # merge by script = flagged for review
+    assert join.needs_review.startswith("SCRIPTMERGE")
+
+
+def test_document_merge_with_notes(document, join):
+    join.notes = "original doc"
+    join.needs_review = "cleanup needed"
+    document.notes = "awaiting transcription"
+    document.needs_review = "see join"
+    doc_id = document.id
+    doc_shelfmark = document.shelfmark
+    join.merge_with([document], "merge test")
+    assert (
+        join.notes
+        == "original doc\nNotes from PGPID %s:\nawaiting transcription" % doc_id
+    )
+    assert join.needs_review == "SCRIPTMERGE\ncleanup needed\nsee join"
+
+
+def test_document_merge_with_tags(document, join):
+    # same tag on both documents
+    merged_doc_id = document.id
+    join.tags.add("bill of sale")
+    join.merge_with([document], "merge test")
+    # get a fresh copy from db to test changes are saved
+    updated_join = Document.objects.get(id=join.id)
+    # merged pgpid added to primary list of old pgpids
+    assert merged_doc_id in updated_join.old_pgpids
+    # tags from merged document
+    tags = updated_join.tags.names()
+    assert len(tags) == 2  # tag should not exist twice
+    assert "bill of sale" in tags
+    assert "real estate" in tags
+
+
+def test_document_merge_with_languages(document, join):
+    judeo_arabic = LanguageScript.objects.create(
+        language="Judaeo-Arabic", script="Hebrew"
+    )
+    join.languages.add(judeo_arabic)
+
+    arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
+    document.languages.add(judeo_arabic)
+    document.secondary_languages.add(arabic)
+    document.language_note = "with diacritics"
+
+    join.merge_with([document], "merge test")
+
+    assert judeo_arabic in join.languages.all()
+    assert join.languages.count() == 1
+    assert arabic in join.secondary_languages.all()
+    assert join.language_note == document.language_note
+
+
+def test_document_merge_with_textblocks(document, join):
+    # join has two fragments, document only has one of those two
+    assert document.fragments.count() == 1
+    document.merge_with([join], "new join")
+    # should have two fragments and text blocks after the merge
+    assert document.fragments.count() == 2
+    assert document.textblock_set.count() == 2
+
+
+def test_document_merge_with_footnotes(document, join, source):
+    # create some footnotes
+    Footnote.objects.create(content_object=document, source=source, location="p. 3")
+    # page 3 footnote is a duplicate
+    Footnote.objects.create(content_object=join, source=source, location="p. 3")
+    Footnote.objects.create(content_object=join, source=source, location="p. 100")
+
+    assert document.footnotes.count() == 1
+    assert join.footnotes.count() == 2
+    document.merge_with([join], "combine footnotes")
+    # should only have two footnotes after the merge, because two of them are equal
+    assert document.footnotes.count() == 2
+
+
+def test_document_merge_with_log_entries(document, join):
+    # create some log entries
+    document_contenttype = ContentType.objects.get_for_model(Document)
+    # creation
+    creation_date = timezone.make_aware(datetime(1991, 5, 1))
+    creator = User.objects.get_or_create(username="editor")[0]
+    LogEntry.objects.bulk_create(
+        [
+            LogEntry(
+                user_id=creator.id,
+                content_type_id=document_contenttype.pk,
+                object_id=document.id,
+                object_repr=str(document),
+                change_message="first input",
+                action_flag=ADDITION,
+                action_time=creation_date,
+            ),
+            LogEntry(
+                user_id=creator.id,
+                content_type_id=document_contenttype.pk,
+                object_id=join.id,
+                object_repr=str(join),
+                change_message="first input",
+                action_flag=ADDITION,
+                action_time=creation_date,
+            ),
+            LogEntry(
+                user_id=creator.id,
+                content_type_id=document_contenttype.pk,
+                object_id=join.id,
+                object_repr=str(join),
+                change_message="major revision",
+                action_flag=CHANGE,
+                action_time=timezone.now(),
+            ),
+        ]
+    )
+
+    # document has two log entries from fixture
+    assert document.log_entries.count() == 3
+    assert join.log_entries.count() == 2
+    join_pk = join.pk
+    document.merge_with([join], "combine log entries", creator)
+    # should have 5 log entries after the merge:
+    # original 2 from fixture, 1 of the two duplicates, 1 unique,
+    # and 1 documenting the merge
+    assert document.log_entries.count() == 5
+    # based on default sorting, most recent log entry will be first
+    # - should document the merge event
+    merge_log = document.log_entries.first()
+    # log action with specified user
+    assert creator.id == merge_log.user_id
+    assert "combine log entries" in merge_log.change_message
+    assert merge_log.action_flag == CHANGE
+    # not flagged for review when merged by a user
+    assert "SCRIPTMERGE" not in document.needs_review
+
+    # reassociated log entry should include old pgpid
+    moved_log = document.log_entries.all()[1]
+    assert " [PGPID %s]" % join_pk in moved_log.change_message
 
 
 @pytest.mark.django_db

@@ -1,23 +1,25 @@
-from collections import defaultdict
 import logging
+from collections import defaultdict
 
+from django.conf import settings
+from django.contrib.admin.models import CHANGE, LogEntry
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericRelation
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.urls import reverse
-from django.db.models.functions import Concat
-from django.contrib.admin.models import LogEntry
-from django.contrib.contenttypes.fields import GenericRelation
-from django.contrib.postgres.fields import ArrayField
 from django.utils.safestring import mark_safe
+from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
 from taggit.models import Tag
 from taggit_selectize.managers import TaggableManager
-from parasolr.django.indexing import ModelIndexable
 
-from geniza.footnotes.models import Footnote
 from geniza.common.models import TrackChangesModel
-
+from geniza.footnotes.models import Footnote
 
 logger = logging.getLogger(__name__)
 
@@ -248,7 +250,7 @@ class DocumentSignalHandlers:
         doc_attr = DocumentSignalHandlers.model_filter.get(model_name)
         # if handler fired on an model we don't care about, warn and exit
         if not doc_attr:
-            logger.warn(
+            logger.warning(
                 "Indexing triggered on %s but no document attribute is configured"
                 % model_name
             )
@@ -291,14 +293,15 @@ class Document(ModelIndexable):
         on_delete=models.SET_NULL,
         null=True,
         verbose_name="Type",
+        help_text='Refer to <a href="%s" target="_blank">PGP Document Type Guide</a>'
+        % settings.PGP_DOCTYPE_GUIDE,
     )
     tags = TaggableManager(blank=True)
-    languages = models.ManyToManyField(LanguageScript, blank=True)
-    probable_languages = models.ManyToManyField(
-        LanguageScript,
-        blank=True,
-        related_name="probable_document",
-        limit_choices_to=~models.Q(language__exact="Unknown"),
+    languages = models.ManyToManyField(
+        LanguageScript, blank=True, verbose_name="Primary Languages"
+    )
+    secondary_languages = models.ManyToManyField(
+        LanguageScript, blank=True, related_name="secondary_document"
     )
     language_note = models.TextField(
         blank=True, help_text="Notes on diacritics, vocalisation, etc."
@@ -310,7 +313,7 @@ class Document(ModelIndexable):
         blank=True,
         help_text="Enter text here if an administrator needs to review this document.",
     )
-    old_pgpids = ArrayField(models.IntegerField(), null=True)
+    old_pgpids = ArrayField(models.IntegerField(), null=True, verbose_name="Old PGPIDs")
 
     PUBLIC = "P"
     SUPPRESSED = "S"
@@ -422,10 +425,10 @@ class Document(ModelIndexable):
 
     all_languages.short_description = "Language"
 
-    def all_probable_languages(self):
-        return ",".join([str(lang) for lang in self.probable_languages.all()])
+    def all_secondary_languages(self):
+        return ",".join([str(lang) for lang in self.secondary_languages.all()])
 
-    all_probable_languages.short_description = "Probable Language"
+    all_secondary_languages.short_description = "Secondary Language"
 
     def all_tags(self):
         return ", ".join(t.name for t in self.tags.all())
@@ -582,6 +585,118 @@ class Document(ModelIndexable):
         # footnotes and sources, when we include editors/translators
         # script+language when/if included in index data
     }
+
+    def merge_with(self, merge_docs, rationale, user=None):
+        """Merge the specified documents into this one. Combines all
+        metadata into this document, adds the merged documents into
+        list of old PGP IDs, and creates a log entry documenting
+        the merge, including the rationale."""
+
+        # initialize old pgpid list if previously unset
+        if self.old_pgpids is None:
+            self.old_pgpids = []
+
+        # if user is not specified, log entry will be associated with
+        # script and document will be flagged for review
+        script = False
+        if user is None:
+            user = User.objects.get(username=settings.SCRIPT_USERNAME)
+            script = True
+
+        description_chunks = [self.description]
+        language_notes = [self.language_note] if self.language_note else []
+        notes = [self.notes] if self.notes else []
+        needs_review = [self.needs_review] if self.needs_review else []
+
+        for doc in merge_docs:
+            # add merge id to old pgpid list
+            self.old_pgpids.append(doc.id)
+            # add any tags from merge document tags to primary doc
+            self.tags.add(*doc.tags.names())
+            # add description if set and not duplicated
+            if doc.description and doc.description not in self.description:
+                description_chunks.append(
+                    "Description from PGPID %s:\n%s" % (doc.id, doc.description)
+                )
+            # add any notes
+            if doc.notes:
+                notes.append("Notes from PGPID %s:\n%s" % (doc.id, doc.notes))
+            if doc.needs_review:
+                needs_review.append(doc.needs_review)
+
+            # add languages and secondary languages
+            for lang in doc.languages.all():
+                self.languages.add(lang)
+            for lang in doc.secondary_languages.all():
+                self.secondary_languages.add(lang)
+            if doc.language_note:
+                language_notes.append(doc.language_note)
+
+            # if there are any textblocks with fragments not already
+            # asociated with this document, reassociate
+            # (i.e., for newly discovered joins)
+            # does not deal with discrepancies between text block fields or order
+            for textblock in doc.textblock_set.all():
+                if textblock.fragment not in self.fragments.all():
+                    self.textblock_set.add(textblock)
+
+            # combine footnotes
+            current_footnotes = self.footnotes.all()
+            for footnote in doc.footnotes.all():
+                # if footnote is not present (based on footnote equality check), add it
+                if footnote not in current_footnotes:
+                    self.footnotes.add(footnote)
+
+            # reassociate log entries
+            # make a list of currently associated log entries to skip duplicates
+            current_logs = [
+                "%s_%s" % (le.user_id, le.action_time.isoformat())
+                for le in self.log_entries.all()
+            ]
+            for log_entry in doc.log_entries.all():
+                # check duplicate log entries, based on user id and time
+                # (likely only applies to historic input & revision)
+                if (
+                    "%s_%s" % (log_entry.user_id, log_entry.action_time.isoformat())
+                    in current_logs
+                ):
+                    # skip if it's a duplicate
+                    continue
+
+                # otherwise annotate and reassociate
+                # - modify change message to document which object this event applied to
+                log_entry.change_message = "%s [PGPID %d]" % (
+                    log_entry.change_message,
+                    doc.pk,
+                )
+                log_entry.save()
+                # - associate with the primary document
+                self.log_entries.add(log_entry)
+
+        # combine text fields
+        self.description = "\n".join(description_chunks)
+        self.notes = "\n".join(notes)
+        self.language_note = "; ".join(language_notes)
+        # if merged via script, flag for review
+        if script:
+            needs_review.insert(0, "SCRIPTMERGE")
+        self.needs_review = "\n".join(needs_review)
+
+        # save current document with changes; delete merged documents
+        self.save()
+        merged_ids = ", ".join([str(doc.id) for doc in merge_docs])
+        for doc in merge_docs:
+            doc.delete()
+        # create log entry documenting the merge; include rationale
+        doc_contenttype = ContentType.objects.get_for_model(Document)
+        LogEntry.objects.log_action(
+            user_id=user.id,
+            content_type_id=doc_contenttype.pk,
+            object_id=self.pk,
+            object_repr=str(self),
+            change_message="merged with %s: %s" % (merged_ids, rationale),
+            action_flag=CHANGE,
+        )
 
 
 class TextBlock(models.Model):

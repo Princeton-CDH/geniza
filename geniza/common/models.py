@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class TrackChangesModel(models.Model):
     """:class:`~django.models.Model` mixin that keeps a copy of initial

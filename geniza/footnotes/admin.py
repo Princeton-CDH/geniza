@@ -1,6 +1,5 @@
 from adminsortable2.admin import SortableInlineAdminMixin
 from django import forms
-from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
@@ -10,13 +9,14 @@ from django.db.models import Count
 from django.db.models.fields import CharField, TextField, URLField
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
-from django.forms.widgets import TextInput, Textarea
-from django.urls import reverse
+from django.forms.widgets import Textarea, TextInput
+from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 from tabular_export.admin import export_to_csv_response
 
+from geniza.common.admin import custom_empty_field_list_filter
 from geniza.footnotes.models import (
     Authorship,
     Creator,
@@ -25,7 +25,6 @@ from geniza.footnotes.models import (
     SourceLanguage,
     SourceType,
 )
-from geniza.common.admin import custom_empty_field_list_filter
 
 
 class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
@@ -55,6 +54,9 @@ class SourceFootnoteInline(admin.TabularInline):
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
 
+    @admin.display(
+        description="object",
+    )
     def object_link(self, obj):
         """edit link with string display method for associated content object"""
         # return empty spring for unsaved footnote with no  content object
@@ -70,8 +72,6 @@ class SourceFootnoteInline(admin.TabularInline):
             f'<a href="{edit_path}">{content_obj} '
             + '<img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>'
         )
-
-    object_link.short_description = "object"
 
 
 class DocumentFootnoteInline(GenericTabularInline):
@@ -156,6 +156,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
             )
         )
 
+    @admin.display(description="# footnotes", ordering="footnote__count")
     def footnotes(self, obj):
         return format_html(
             '<a href="{0}?source__id__exact={1!s}">{2}</a>',
@@ -163,9 +164,6 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
             str(obj.id),
             obj.footnote__count,
         )
-
-    footnotes.short_description = "# footnotes"
-    footnotes.admin_order_field = "footnote__count"
 
     csv_fields = [
         "source_type",
@@ -216,6 +214,9 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
                 f"{url_scheme}{site_domain}/admin/footnotes/source/{source.id}/change/",
             ]
 
+    @admin.display(
+        description="Export selected sources to CSV",
+    )
     def export_to_csv(self, request, queryset=None):
         """Stream source records as CSV"""
         queryset = queryset or self.get_queryset(request)
@@ -225,14 +226,12 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
             self.tabulate_queryset(queryset),
         )
 
-    export_to_csv.short_description = "Export selected sources to CSV"
-
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all sources
         as CSV"""
         urls = [
-            url(
-                r"^csv/$",
+            path(
+                "csv/",
                 self.admin_site.admin_view(self.export_to_csv),
                 name="footnotes_source_csv",
             )
@@ -349,13 +348,15 @@ class FootnoteAdmin(admin.ModelAdmin):
             .prefetch_related("content_object", "source__authors")
         )
 
+    @admin.display(
+        ordering="doc_relation",
+        description="Document Relation",
+    )
     def doc_relation_list(self, obj):
         # Casting the multichoice object as string to return a reader-friendly
         #  comma-delimited list.
         return str(obj.doc_relation)
-
-    doc_relation_list.short_description = "Document Relation"
-    doc_relation_list.admin_order_field = "doc_relation"
+        # FIXME: property no longer in use?
 
     csv_fields = [
         "document",  # ~ content object
@@ -393,6 +394,7 @@ class FootnoteAdmin(admin.ModelAdmin):
                 f"{url_scheme}{site_domain}/admin/footnotes/footnote/{footnote.id}/change/",
             ]
 
+    @admin.display(description="Export selected footnotes to CSV")
     def export_to_csv(self, request, queryset=None):
         """Stream footnote records as CSV"""
         queryset = queryset or self.get_queryset(request)
@@ -402,14 +404,12 @@ class FootnoteAdmin(admin.ModelAdmin):
             self.tabulate_queryset(queryset),
         )
 
-    export_to_csv.short_description = "Export selected footnotes to CSV"
-
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all sources
         as CSV"""
         urls = [
-            url(
-                r"^csv/$",
+            path(
+                "csv/",
                 self.admin_site.admin_view(self.export_to_csv),
                 name="footnotes_footnote_csv",
             )

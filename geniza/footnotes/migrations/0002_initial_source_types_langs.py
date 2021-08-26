@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 SOURCE_TYPES = ["Book", "Article", "Unpublished", "Dissertation", "Blog"]
 
 

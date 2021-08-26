@@ -2,8 +2,8 @@ from datetime import datetime
 
 import pytest
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.utils.timezone import get_current_timezone, make_aware
 from taggit.models import Tag
@@ -44,8 +44,7 @@ def document(db, fragment):
         doctype=DocumentType.objects.get_or_create(name="Legal")[0],
     )
     TextBlock.objects.create(document=doc, fragment=fragment)
-    doc.tags.add(Tag.objects.get_or_create(name="bill of sale")[0])
-    doc.tags.add(Tag.objects.get_or_create(name="real estate")[0])
+    doc.tags.add("bill of sale", "real estate")
     dctype = ContentType.objects.get_for_model(Document)
     script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
     team_user = User.objects.get(username=settings.TEAM_USERNAME)
