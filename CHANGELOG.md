@@ -1,6 +1,16 @@
 # Change Log
 
-## 0.4.0
+## 0.5
+
+* As a Content Editor, I want to see help text for Document Type so that I can make an informed decision while editing documents.
+* As a content editor, I want a one time consolidation of India Book sources so that the source list correctly represents the book volumes.
+* As a content editor, I want to be able to edit the Historic Shelfmark so that I can correct errors in the metadata.
+* As a content editor, I want to see admin actions beyond my most recent ten or a specific document's history, so that I can review past work.
+* As a user, I want to view detailed information about all the sources that cite this document so that I can learn the volume and kind of academic engagement with the document.
+* Rename document languages to primary languages and probable languages to secondary languages
+* Adopted isort python style and configured pre-commit hook
+
+## 0.4
 
 * As a content editor, I would like to input dates in a separate field, so that both content editors and site users can sort and filter documents by date.
 * As a content editor, I want to import fragment view and IIIF urls from a csv file into the database so that I can provide access to images for fragments.
@@ -13,8 +23,9 @@
 * bugfix: admin document csv export has wrong date for first input
 * bugifx: 500 error when trying to create a new document in the admin
 * removed code related to import
+* Adopted black code style and configured pre-commit hook
 
-## 0.3.0
+## 0.3
 
 * As a Global Admin, I want new documents created in the database after data import to receive PGPIDs higher than the highest imported PGPID, so that identifiers will be unique and semi-sequential.
 * As a Global Admin, I want documents associated with language+script based on display name when importing documents from metadata spreadsheet.
