@@ -14,7 +14,7 @@ module.exports = (env, options) => ({
     output: {   // locations and filenames of bundled files
         path: path.resolve(__dirname, "sitemedia", "bundles"),
         publicPath: options.mode == "production" ? "/static/bundles/" : "http://localhost:3000/bundles/",
-        filename: options.mode == "production" ? "[name]-[hash].min.js" : "[name].js",
+        filename: options.mode == "production" ? "[name]-[contenthash].min.js" : "[name].js",
         clean: true,    // remove bundles from previous builds
     },
     module: {
@@ -69,7 +69,7 @@ module.exports = (env, options) => ({
         // extract css into a single file
         // https://webpack.js.org/plugins/mini-css-extract-plugin/
         new MiniCssExtractPlugin({
-            filename: options.mode == "production" ? "[name]-[hash].min.css" : "[name].css",
+            filename: options.mode == "production" ? "[name]-[contenthash].min.css" : "[name].css",
         })
     ],
     // configuration for dev server (run using `npm start`)
