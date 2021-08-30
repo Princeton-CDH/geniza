@@ -1,7 +1,7 @@
 # local settings for configuration that should not be checked into git
-
-from geniza.settings.components.base import DATABASES, PUCAS_LDAP, \
-    SOLR_CONNECTIONS, BASE_DIR
+#
+# NOTE importing variables into this file can change their values! this file
+# can already access everything declared in base.py without imports.
 
 DEBUG = True
 
