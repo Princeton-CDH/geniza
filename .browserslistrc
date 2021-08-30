@@ -1,0 +1,7 @@
+# browsers supported by this application
+# https://github.com/browserslist/browserslist
+# to evaluate this query and find actual supported versions, run:
+# `npx browserslist`
+# or visit https://browserslist.dev/
+
+>1% and last 2 versions
