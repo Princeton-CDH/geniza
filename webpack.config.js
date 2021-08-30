@@ -76,7 +76,6 @@ module.exports = (env, options) => ({
     // https://webpack.js.org/configuration/dev-server/
     devServer: {
         static: path.resolve(__dirname, "sitemedia", "bundles"),
-        hot: false,
         port: 3000,
         headers: {
             'Access-Control-Allow-Origin': '*',

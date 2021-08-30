@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "start": "webpack serve --mode=development",
+    "start": "webpack serve --mode=development --hot",
     "build": "webpack --mode=production"
   },
   "volta": {
