@@ -63,7 +63,7 @@ module.exports = (env, options) => ({
         // output manifest file so django knows where bundles live
         // https://github.com/django-webpack/webpack-bundle-tracker
         new BundleTracker({
-            filename: options.mode == "production" ? "./sitemedia/webpack-stats.json" : "./sitemedia/webpack-stats-dev.json",
+            filename: "./sitemedia/webpack-stats.json",
             relativePath: true,
             indent: 2
         }),

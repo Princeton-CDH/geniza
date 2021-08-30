@@ -172,8 +172,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "sitemedia",
 ]
 
-# Production webpack config: use the main stats file that points to checked-in
-# bundles in sitemedia/, and cache immediately upon loading.
+# Production webpack config: cache immediately upon loading the manifest
 WEBPACK_LOADER = {
     "DEFAULT": {
         "CACHE": True,
