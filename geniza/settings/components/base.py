@@ -209,6 +209,8 @@ SITE_ID = 1
 # increase max from default 1000 to handle editing sources with lots of footnotes
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 
+# configure default auto field for models
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # documentation links
 PGP_DOCTYPE_GUIDE = "https://docs.google.com/document/d/1FHr1iS_JD5h-y5O1rv5JNNw1OqEVQFb-vSTGr3hoiF4/edit"

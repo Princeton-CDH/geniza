@@ -124,7 +124,7 @@ class TestDocumentScholarshipTemplate:
         )
         assertNotContains(response, '<span class="location">')
 
-    def test_source_location(self, client, document, article):
+    def test_source_url(self, client, document, article):
         """Document scholarship template should show source URL if present"""
         fn = Footnote.objects.create(
             content_object=document, source=article, url="https://example.com/"

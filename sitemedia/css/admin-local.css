@@ -1,6 +1,6 @@
 
 /* customize headings for Language+Script to handle long labels */
-th.column-documents, th.column-probable_documents {
+th.column-documents, th.column-secondary_documents {
 	max-width: 5em;
 }
 .model-languagescript.change-list #changelist table thead th,

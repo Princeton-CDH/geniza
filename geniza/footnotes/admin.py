@@ -54,6 +54,9 @@ class SourceFootnoteInline(admin.TabularInline):
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
 
+    @admin.display(
+        description="object",
+    )
     def object_link(self, obj):
         """edit link with string display method for associated content object"""
         # return empty spring for unsaved footnote with no  content object
@@ -69,8 +72,6 @@ class SourceFootnoteInline(admin.TabularInline):
             f'<a href="{edit_path}">{content_obj} '
             + '<img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>'
         )
-
-    object_link.short_description = "object"
 
 
 class DocumentFootnoteInline(GenericTabularInline):
@@ -155,6 +156,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
             )
         )
 
+    @admin.display(description="# footnotes", ordering="footnote__count")
     def footnotes(self, obj):
         return format_html(
             '<a href="{0}?source__id__exact={1!s}">{2}</a>',
@@ -162,9 +164,6 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
             str(obj.id),
             obj.footnote__count,
         )
-
-    footnotes.short_description = "# footnotes"
-    footnotes.admin_order_field = "footnote__count"
 
     csv_fields = [
         "source_type",
@@ -215,6 +214,9 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
                 f"{url_scheme}{site_domain}/admin/footnotes/source/{source.id}/change/",
             ]
 
+    @admin.display(
+        description="Export selected sources to CSV",
+    )
     def export_to_csv(self, request, queryset=None):
         """Stream source records as CSV"""
         queryset = queryset or self.get_queryset(request)
@@ -223,8 +225,6 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
             self.csv_fields,
             self.tabulate_queryset(queryset),
         )
-
-    export_to_csv.short_description = "Export selected sources to CSV"
 
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all sources
@@ -348,13 +348,15 @@ class FootnoteAdmin(admin.ModelAdmin):
             .prefetch_related("content_object", "source__authors")
         )
 
+    @admin.display(
+        ordering="doc_relation",
+        description="Document Relation",
+    )
     def doc_relation_list(self, obj):
         # Casting the multichoice object as string to return a reader-friendly
         #  comma-delimited list.
         return str(obj.doc_relation)
-
-    doc_relation_list.short_description = "Document Relation"
-    doc_relation_list.admin_order_field = "doc_relation"
+        # FIXME: property no longer in use?
 
     csv_fields = [
         "document",  # ~ content object
@@ -392,6 +394,7 @@ class FootnoteAdmin(admin.ModelAdmin):
                 f"{url_scheme}{site_domain}/admin/footnotes/footnote/{footnote.id}/change/",
             ]
 
+    @admin.display(description="Export selected footnotes to CSV")
     def export_to_csv(self, request, queryset=None):
         """Stream footnote records as CSV"""
         queryset = queryset or self.get_queryset(request)
@@ -400,8 +403,6 @@ class FootnoteAdmin(admin.ModelAdmin):
             self.csv_fields,
             self.tabulate_queryset(queryset),
         )
-
-    export_to_csv.short_description = "Export selected footnotes to CSV"
 
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all sources
