@@ -178,7 +178,7 @@ WEBPACK_LOADER = {
     "DEFAULT": {
         "CACHE": True,
         "BUNDLE_DIR_NAME": "sitemedia/bundles/",  # must end with slash
-        "STATS_FILE": BASE_DIR / "sitemedia" / "webpack-stats.json",
+        "STATS_FILE": BASE_DIR.parent / "sitemedia" / "webpack-stats.json",
         "POLL_INTERVAL": 0.1,
         "TIMEOUT": None,
         "IGNORE": [r".+\.hot-update.js", r".+\.map"],

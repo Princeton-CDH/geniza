@@ -23,6 +23,14 @@ DATABASES['default']['PASSWORD'] = ""
 # SOLR_CONNECTIONS['default']['COLLECTION'] = ''  # default geniza
 # SOLR_CONNECTIONS['default']['CONFIGSET'] = ''   # default geniza
 
+# Development webpack config: don't cache bundles
+WEBPACK_LOADER["DEFAULT"]["CACHE"] = False
+
+# Uncomment below to switch to the development webpack manifest, which expects
+# a running webpack dev server to serve files from memory and enable autoreload.
+# WEBPACK_LOADER["DEFAULT"]["STATS_FILE"] = (
+#     BASE_DIR.parent / "sitemedia" / "webpack-stats-dev.json"
+# )
 
 # CAS login configuration
 CAS_SERVER_URL = ''
