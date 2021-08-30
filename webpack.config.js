@@ -5,27 +5,29 @@ const BundleTracker = require("webpack-bundle-tracker")
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 
 module.exports = (env, options) => ({
-    entry: {
-        main: [
+    entry: {    // locations and filenames of entry points for bundles
+        main: [   // this name ("main") is referenced by django-webpack-loader's {% render_bundle %} tag
             "./sitemedia/esm/main.esm.js",
             "./sitemedia/scss/main.scss",
         ],
     },
-    output: {
+    output: {   // locations and filenames of bundled files
         path: path.resolve(__dirname, "sitemedia", "bundles"),
         publicPath: options.mode == "production" ? "/static/bundles/" : "http://localhost:3000/bundles/",
         filename: options.mode == "production" ? "[name]-[hash].min.js" : "[name].js",
-        clean: true,
+        clean: true,    // remove bundles from previous builds
     },
     module: {
         rules: [
+            // styles configuration: handle .sass, .scss, .css files and apply autoprefixer
             {
                 test: /\.(sa|sc|c)ss$/,
                 use: [
+                    // extract all styles into a single file in prod; serve directly from memory in dev
                     options.mode == "production" ? MiniCssExtractPlugin.loader : "style-loader",
                     { loader: "css-loader" },
                     {
-                        loader: "postcss-loader",
+                        loader: "postcss-loader",   // postcss used for Autoprefixer
                         options: {
                             postcssOptions: {
                                 plugins: [
@@ -49,21 +51,28 @@ module.exports = (env, options) => ({
                     }
                 ],
             },
+            // script configuration: handle .js files and transpile with babel
             {
-                test: /\.esm?$/,
+                test: /\.js$/,
                 loader: "babel-loader",
             }
         ],
     },
     plugins: [
+        // output manifest file so django knows where bundles live
+        // https://github.com/django-webpack/webpack-bundle-tracker
         new BundleTracker({
             filename: options.mode == "production" ? "./sitemedia/webpack-stats.json" : "./sitemedia/webpack-stats-dev.json",
             indent: 2
         }),
+        // extract css into a single file
+        // https://webpack.js.org/plugins/mini-css-extract-plugin/
         new MiniCssExtractPlugin({
             filename: options.mode == "production" ? "[name]-[hash].min.css" : "[name].css",
         })
     ],
+    // configuration for dev server (run using `npm start`)
+    // https://webpack.js.org/configuration/dev-server/
     devServer: {
         static: path.resolve(__dirname, "sitemedia", "bundles"),
         hot: false,
