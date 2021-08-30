@@ -1,21 +1,21 @@
 {
   "status": "done",
   "assets": {
-    "main-4a2244ea28f99ebcc07c.min.css": {
-      "name": "main-4a2244ea28f99ebcc07c.min.css",
-      "path": "/Users/nbudak/src/geniza/sitemedia/bundles/main-4a2244ea28f99ebcc07c.min.css",
-      "publicPath": "/static/bundles/main-4a2244ea28f99ebcc07c.min.css"
+    "main-87bdd33e5b7b01e725c2.min.css": {
+      "name": "main-87bdd33e5b7b01e725c2.min.css",
+      "path": "main-87bdd33e5b7b01e725c2.min.css",
+      "publicPath": "/static/bundles/main-87bdd33e5b7b01e725c2.min.css"
     },
-    "main-4a2244ea28f99ebcc07c.min.js": {
-      "name": "main-4a2244ea28f99ebcc07c.min.js",
-      "path": "/Users/nbudak/src/geniza/sitemedia/bundles/main-4a2244ea28f99ebcc07c.min.js",
-      "publicPath": "/static/bundles/main-4a2244ea28f99ebcc07c.min.js"
+    "main-87bdd33e5b7b01e725c2.min.js": {
+      "name": "main-87bdd33e5b7b01e725c2.min.js",
+      "path": "main-87bdd33e5b7b01e725c2.min.js",
+      "publicPath": "/static/bundles/main-87bdd33e5b7b01e725c2.min.js"
     }
   },
   "chunks": {
     "main": [
-      "main-4a2244ea28f99ebcc07c.min.css",
-      "main-4a2244ea28f99ebcc07c.min.js"
+      "main-87bdd33e5b7b01e725c2.min.css",
+      "main-87bdd33e5b7b01e725c2.min.js"
     ]
   },
   "publicPath": "/static/bundles/"

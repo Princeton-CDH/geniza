@@ -63,6 +63,7 @@ module.exports = (env, options) => ({
         // https://github.com/django-webpack/webpack-bundle-tracker
         new BundleTracker({
             filename: options.mode == "production" ? "./sitemedia/webpack-stats.json" : "./sitemedia/webpack-stats-dev.json",
+            relativePath: true,
             indent: 2
         }),
         // extract css into a single file
