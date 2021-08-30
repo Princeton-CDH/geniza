@@ -74,6 +74,29 @@ Remember to add a ``SECRET_KEY`` setting!
     python manage.py index
 
 
+Static Files
+------------
+
+Static files are stored in `sitemedia/` and bundled by Webpack. The `webpack-bundle-tracker` plugin generates a JSON manifest file listing the name and location of bundled files. This file — `webpack-stats.json` in production/QA/test and `webpack-stats-dev.json` for local development — is read by Django using `django-webpack-loader` so that the relevant files can be included in the template's `<head>`.
+
+Bundled files and the production JSON manifest are checked into git and will be collected by Django's `collectstatic` command. They should be recompiled and any changes should be committed as part of a release. To recompile bundles for production::
+
+    npm run build
+
+When actively developing stylesheets and scripts, you can instead run a development Webpack server with live reload capability. To do this, first uncomment or add the line to your `local_settings.py` that tells Django to read from the development Webpack manifest instead::
+
+    WEBPACK_LOADER["DEFAULT"]["STATS_FILE"] = BASE_DIR.parent / "sitemedia" / "webpack-stats-dev.json"
+
+Then, run a development server to generate the manifest::
+
+    npm start
+
+JavaScript sources are transpiled using Babel so that modern features are supported. Source files that will be transpiled are stored using the `.esm.js` (EcmaScript module) file extension to indicate that they should not be directly included in templates. These files will not be collected as part of Django's `collectstatic` command.
+
+SCSS sources are compiled using Autoprefixer so that vendor prefixes for browser support of newer CSS features will be added automatically. Source files to be transpiled are stored with the `.scss` file extension for interoperability with CSS. These files will not be collected as part of Django's `collectstatic` command.
+
+See the `.browserslistrc` file for more information about browser versions officially supported by this application. This file controls the automatic insertion of vendor prefixes for CSS and polyfills for JavaScript so that bundled styles and scripts will be supported on all target browsers.
+
 Internationalization & Translation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
