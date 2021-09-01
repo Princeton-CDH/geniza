@@ -47,6 +47,10 @@ Initial setup and installation:
 
     pip install -r requirements/dev.txt
 
+- Install required javascript dependencies::
+
+    npm install
+
 - Copy sample local settings and configure for your environment::
 
 	cp geniza/settings/local_settings.py.sample geniza/settings/local_settings.py
@@ -80,19 +84,17 @@ Remember to add a ``SECRET_KEY`` setting!
 Static Files
 ------------
 
-Static files are stored in `sitemedia/` and bundled by Webpack. The `webpack-bundle-tracker` plugin generates a JSON manifest file listing the name and location of bundled files. This file — `webpack-stats.json` in production/QA/test and `webpack-stats-dev.json` for local development — is read by Django using `django-webpack-loader` so that the relevant files can be included in the template's `<head>`.
+Static files are stored in `sitemedia/` and bundled by Webpack. The `webpack-bundle-tracker` plugin generates a JSON manifest file listing the name and location of bundled files. This file, `webpack-stats.json`, is read by Django using `django-webpack-loader` so that the relevant files can be included in the template's `<head>`.
 
-Bundled files and the production JSON manifest are checked into git and will be collected by Django's `collectstatic` command. They should be recompiled and any changes should be committed as part of a release. To recompile bundles for production::
+Bundled files will be output into the `sitemedia/bundles` directory and picked up by Django's `collectstatic` command. To recompile bundles after making changes::
 
     npm run build
 
-When actively developing stylesheets and scripts, you can instead run a development Webpack server with live reload capability. To do this, first uncomment or add the line to your `local_settings.py` that tells Django to read from the development Webpack manifest instead::
-
-    WEBPACK_LOADER["DEFAULT"]["STATS_FILE"] = BASE_DIR.parent / "sitemedia" / "webpack-stats-dev.json"
-
-Then, run a development server to generate the manifest::
+When actively developing stylesheets and scripts, you can instead run a development Webpack server, which will recompile the bundle and refresh your browser when changes are saved::
 
     npm start
+
+Note that switching to the development Webpack server requires restarting your Django server, if one is running, in order to pick up the changes in `webpack-stats.json`.
 
 JavaScript sources are transpiled using Babel so that modern features are supported. Source files that will be transpiled are stored using the `.esm.js` (EcmaScript module) file extension to indicate that they should not be directly included in templates. These files will not be collected as part of Django's `collectstatic` command.
 
