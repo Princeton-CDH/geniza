@@ -6,6 +6,8 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin")
 
 module.exports = (env, options) => ({
+    // NOTE if you add a new entrypoint, update the dummy webpack-stats-ci.json
+    // in the sitemedia/ folder to list it as an empty array.
     entry: {    // locations and filenames of entry points for bundles
         main: [   // this name ("main") is referenced by django-webpack-loader's {% render_bundle %} tag
             "./sitemedia/esm/main.esm.js",
