@@ -1,6 +1,7 @@
 {
     "status": "done",
     "publicPath": "/static/bundles/",
+    "assets": [],
     "chunks": {
         "main": []
     }
