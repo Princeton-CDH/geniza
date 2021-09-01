@@ -1,5 +1,7 @@
 import os
 
+from geniza.settings.components.base import DATABASES, INSTALLED_APPS
+
 # These settings correspond to the service container settings in the
 # .github/workflow .yml files.
 DATABASES["default"].update(
