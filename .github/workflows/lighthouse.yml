@@ -28,6 +28,7 @@ jobs:
       - run: docker cp solr_conf ${{ job.services.solr.id }}:/var/solr/data/configsets/geniza
       - run: docker exec --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /var/solr/data/configsets/geniza"
       - run: docker exec ${{ job.services.solr.id }} solr create_core -c geniza -n geniza
+      - run: sudo apt install gettext
       - run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
       - uses: actions/setup-python@v2
         with:
