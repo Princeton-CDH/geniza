@@ -1,6 +1,8 @@
 from django.db.models.query import Prefetch
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormMixin
+from django.utils.text import Truncator
+from django.utils.translation import ngettext, gettext as _
 from tabular_export.admin import export_to_csv_response
 
 from geniza.corpus.forms import DocumentSearchForm
@@ -14,6 +16,10 @@ class DocumentSearchView(ListView, FormMixin):
     form_class = DocumentSearchForm
     context_object_name = "documents"
     template_name = "corpus/document_list.html"
+    # Translators: title of document search page
+    page_title = _("Search Documents")
+    # Translators: description of document search page, for search engines
+    page_description = _("Search and browse Geniza documents.")
 
     # map form sort to solr sort field
     solr_sort = {
@@ -72,6 +78,8 @@ class DocumentSearchView(ListView, FormMixin):
         context_data.update(
             {
                 "total": self.queryset.count(),
+                "page_title": self.page_title,
+                "page_description": self.page_description,
             }
         )
         return context_data
@@ -84,16 +92,49 @@ class DocumentDetailView(DetailView):
 
     context_object_name = "document"
 
+    def page_title(self):
+        return self.get_object().title
+
+    def page_description(self):
+        return Truncator(self.get_object().description).words(20)
+
     def get_queryset(self, *args, **kwargs):
         """Don't show document if it isn't public"""
         queryset = super().get_queryset(*args, **kwargs)
         return queryset.filter(status=Document.PUBLIC)
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data.update(
+            {
+                "page_title": self.page_title(),
+                "page_description": self.page_description(),
+            }
+        )
+        return context_data
 
 
 class DocumentScholarshipView(DocumentDetailView):
     """List of :class:`~geniza.footnotes.models.Footnote`s for a Document"""
 
     template_name = "corpus/document_scholarship.html"
+
+    def page_title(self):
+        # Translators: title of document scholarship page
+        return _("Scholarship on %(doc)s") % {"doc": self.get_object().title}
+
+    def page_description(self):
+        doc = self.get_object()
+        count = doc.footnotes.count()
+        # Translators: description of document scholarship page, for search engines
+        return ngettext(
+            "%(count)d scholarship record for %(doc)s",
+            "%(count)d scholarship records for %(doc)s",
+            count,
+        ) % {
+            "count": count,
+            "doc": doc.title,
+        }
 
     def get_queryset(self, *args, **kwargs):
         """Prefetch footnotes, and don't show the page if there are none."""

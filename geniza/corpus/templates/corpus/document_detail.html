@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static i18n %}
 
-{% block title %}{{ document.title }}{% endblock title %}
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block extrahead %}
 <script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>

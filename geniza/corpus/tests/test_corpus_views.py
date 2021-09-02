@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 from django.urls import reverse
 from pytest_django.asserts import assertContains
+from django.utils.text import Truncator
 
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
@@ -16,6 +17,18 @@ from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 
 class TestDocumentDetailView:
+    def test_page_title(self, document, client):
+        """should use doc title as detail view meta title"""
+        response = client.get(reverse("corpus:document", args=(document.id,)))
+        assert response.context["page_title"] == document.title
+
+    def test_page_description(self, document, client):
+        """should use truncated doc description as detail view meta description"""
+        response = client.get(reverse("corpus:document", args=(document.id,)))
+        assert response.context["page_description"] == Truncator(
+            document.description
+        ).words(20)
+
     def test_get_queryset(self, db, client):
         # Ensure page works normally when not suppressed
         doc = Document.objects.create()
@@ -191,6 +204,25 @@ class TestDocumentSearchView:
 
 
 class TestDocumentScholarshipView:
+    def test_page_title(self, document, client, source):
+        """should incorporate doc title into scholarship page title"""
+        Footnote.objects.create(content_object=document, source=source)
+        response = client.get(
+            reverse("corpus:document-scholarship", args=(document.id,))
+        )
+        assert response.context["page_title"] == f"Scholarship on {document.title}"
+
+    def test_page_description(self, document, client, source):
+        """should use number of scholarship records as scholarship page description"""
+        Footnote.objects.create(content_object=document, source=source)
+        response = client.get(
+            reverse("corpus:document-scholarship", args=(document.id,))
+        )
+        assert (
+            response.context["page_description"]
+            == f"1 scholarship record for {document.title}"
+        )
+
     def test_get_queryset(self, client, document, source):
         # no footnotes; should 404
         response = client.get(
