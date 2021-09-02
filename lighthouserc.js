@@ -1,7 +1,11 @@
 module.exports = {
     ci: {
         collect: {
-            url: ["http://localhost:8000/documents/"],
+            // URLs that Lighthouse will visit and test
+            url: [
+                "http://localhost:8000/documents/",     // doc search
+                "http://localhost:8000/documents/1/"    // doc detail
+            ],
             // The following two commands make Lighthouse start up a Django
             // server for us to test against. PYTHONUNBUFFERED is needed to make
             // stdout from the server process visible to Lighthouse; when it
