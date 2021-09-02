@@ -1,0 +1,41 @@
+name: lighthouse
+on: [push]
+jobs:
+  main:
+    name: lighthouse ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker exec -d ${{ job.services.solr.id }} "cp -r /opt/solr/server/solr/configsets /var/solr/data"
+      - run: docker cp solr_conf ${{ job.services.solr.id }}:/var/solr/data/configsets/geniza
+      - run: docker exec --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /var/solr/data/configsets/geniza"
+      - run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements/*.txt') }}
+          restore-keys: |
+            pip-${{ hashFiles('requirements/*.txt') }}
+            pip-
+      - run: pip install -r requirements/test.txt
+      - run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 12
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ hashFiles('package-lock.json') }}
+            npm-
+      - run: npm install -g @lhci/cli
+      - run: npm ci
+      - run: npm run build
+      - run: python manage.py collectstatic
+      - run: lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}

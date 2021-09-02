@@ -158,3 +158,6 @@ venv.bak/
 
 # npm
 node_modules/
+
+# local lighthouse runs
+.lighthouseci
