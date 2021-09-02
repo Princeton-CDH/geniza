@@ -56,6 +56,7 @@ jobs:
       - run: npm run build
       - run: python manage.py migrate
       - run: python manage.py create_test_site
+      - run: python manage.py compilemessages
       - run: python manage.py collectstatic
       - run: lhci autorun
         env:
