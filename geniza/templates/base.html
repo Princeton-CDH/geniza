@@ -21,7 +21,7 @@
     {% render_bundle "main" "css" %}
     {% block extrastyle %}{% endblock extrastyle %}
     <!-- scripts -->
-    {% render_bundle "main" "js" %}
+    {% render_bundle "main" "js" attrs="defer" %}
     {% block extrahead %}{% endblock extrahead %}
 </head>
 <body>
