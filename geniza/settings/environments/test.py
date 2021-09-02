@@ -21,3 +21,6 @@ ALLOWED_HOSTS = ["*"]
 
 # enable django-dbml for generating dbdocs
 INSTALLED_APPS.append("django_dbml")
+
+# disable django-debug-toolbar so it doesn't appear in snapshot tests
+INSTALLED_APPS.remove("debug_toolbar")
