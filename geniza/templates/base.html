@@ -1,4 +1,5 @@
 {% load static %}
+{% load render_bundle from webpack_loader %}
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
     <!-- metadata -->
@@ -14,12 +15,13 @@
     <meta name="msapplication-TileColor" content="#603cba">
     <meta name="theme-color" content="#6b59c1">
     <!-- styles -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% if SHOW_TEST_WARNING %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/test-banner.css' %}">
     {% endif %}
+    {% render_bundle "main" "css" %}
     {% block extrastyle %}{% endblock extrastyle %}
     <!-- scripts -->
+    {% render_bundle "main" "js" %}
     {% block extrahead %}{% endblock extrahead %}
 </head>
 <body>

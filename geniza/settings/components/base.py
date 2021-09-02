@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "django.contrib.staticfiles",
+    "geniza.apps.GenizaStaticFilesConfig",
     "django.contrib.postgres",
     "django.contrib.sites",
     "django_cas_ng",
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "adminsortable2",
     "admin_log_entries",
     "parasolr",
+    "webpack_loader",
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",
@@ -167,10 +168,21 @@ STATIC_ROOT = BASE_DIR / "static"
 
 STATIC_URL = "/static/"
 
-# disable until this exists, since otherwise collectstatic fails
 STATICFILES_DIRS = [
     BASE_DIR / "sitemedia",
 ]
+
+# Production webpack config: cache immediately upon loading the manifest
+WEBPACK_LOADER = {
+    "DEFAULT": {
+        "CACHE": True,
+        "BUNDLE_DIR_NAME": "sitemedia/bundles/",  # must end with slash
+        "STATS_FILE": BASE_DIR / "sitemedia" / "webpack-stats.json",
+        "POLL_INTERVAL": 0.1,
+        "TIMEOUT": None,
+        "IGNORE": [r".+\.hot-update.js", r".+\.map"],
+    }
+}
 
 # pucas configuration that is not expected to change across deploys
 # and does not reference local server configurations or fields
