@@ -36,6 +36,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: python manage.py collectstatic
+      - run: python manage.py create_test_site
       - run: lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
