@@ -1,4 +1,5 @@
 from django.contrib.sites.models import Site
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
 from geniza.corpus.tests.conftest import (
@@ -30,3 +31,6 @@ class Command(BaseCommand):
         multifrag = make_multifragment()
         make_document(frag)
         make_join(frag, multifrag)
+
+        # index everything in solr
+        call_command("index")
