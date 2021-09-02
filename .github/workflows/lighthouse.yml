@@ -1,9 +1,27 @@
 name: lighthouse
 on: [push]
+env:
+  DB_NAME: geniza
+  DB_USER: geniza
+  DB_PASSWORD: geniza
+  DJANGO_ENV: test
 jobs:
   main:
     name: lighthouse ci
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_DB: ${{ env.DB_NAME }}
+          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
+        ports:
+          - 5432:5432
+      solr:
+        image: solr:8.6
+        ports:
+          - 8983:8983
     steps:
       - uses: actions/checkout@v2
       - run: docker exec -d ${{ job.services.solr.id }} "cp -r /opt/solr/server/solr/configsets /var/solr/data"
@@ -35,8 +53,9 @@ jobs:
       - run: npm install -g @lhci/cli
       - run: npm ci
       - run: npm run build
-      - run: python manage.py collectstatic
+      - run: python manage.py migrate
       - run: python manage.py create_test_site
+      - run: python manage.py collectstatic
       - run: lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
