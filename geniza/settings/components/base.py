@@ -59,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "csp.middleware.CSPMiddleware",
 ]
 
 ROOT_URLCONF = "geniza.urls"
@@ -213,3 +214,47 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # documentation links
 PGP_DOCTYPE_GUIDE = "https://docs.google.com/document/d/1FHr1iS_JD5h-y5O1rv5JNNw1OqEVQFb-vSTGr3hoiF4/edit"
+
+# django-csp configuration for content security policy definition and
+# violation reporting - https://github.com/mozilla/django-csp
+# config adapated from both MEP and PPA
+
+# fallback for all protocols: block it
+CSP_DEFAULT_SRC = "'none'"
+
+# allow loading js locally and from google (for analytics); unpkg for Mirador
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "www.googletagmanager.com",
+    "*.google-analytics.com",
+    "unpkg.com",
+)
+
+# allow loading fonts locally and from google (via data: url)
+CSP_FONT_SRC = ("'self'", "https://fonts.gstatic.com data:")
+
+# allow loading css locally and from google (for fonts)
+CSP_STYLE_SRC = ("'self'", "https://fonts.googleapis.com")
+
+# allow loading web manifest locally only
+CSP_MANIFEST_SRC = ("'self'",)
+
+# allow XMLHttpRequest or Fetch requests locally (for search) & analytics
+CSP_CONNECT_SRC = ("'self'", "*.google-analytics.com")
+
+# whitelisted image sources - analytics (tracking pixel?), IIIF, etc.
+CSP_IMG_SRC = (
+    "'self'",
+    "www.googletagmanager.com",
+    "*.google-analytics.com",
+    "iiif.princeton.edu",
+    "figgy.princeton.edu",
+    "iiif-cloud.princeton.edu",
+    "data:",
+)
+
+# exclude admin and cms urls from csp directives since they're authenticated
+CSP_EXCLUDE_URL_PREFIXES = ("/admin", "/cms")
+
+# allow usage of nonce for inline js (for analytics)
+CSP_INCLUDE_NONCE_IN = ("script-src",)
