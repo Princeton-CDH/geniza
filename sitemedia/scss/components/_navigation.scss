@@ -1,0 +1,33 @@
+// -----------------------------------------------------------------------------
+// Main site navigation that appears on every page.
+// -----------------------------------------------------------------------------
+
+nav[aria-label="main navigation"] {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+nav[aria-label="main navigation"] > .home {
+    display: inline-block;
+    flex: none;
+    padding: 30px 10px;
+    background: #F2F2F2;
+    font-size: 24px;
+    font-weight: bold;
+}
+nav[aria-label="main navigation"] > ul {
+    padding: 0;
+    flex: auto;
+    display: flex;
+    justify-content: flex-end;
+    border: 1px solid #AAAAAA;
+}
+nav[aria-label="main navigation"] > ul li { padding: 10px 0; }
+nav[aria-label="main navigation"] > ul li + li { margin-left: 50px; }
+nav[aria-label="main navigation"] > ul li a {
+    text-decoration: none; color: black;
+}
+nav[aria-label="main navigation"] > ul li a[aria-current="page"] {
+    font-weight: bold;
+}
+nav[aria-label="main navigation"] > ul li:last-child { margin-right: 100px; }

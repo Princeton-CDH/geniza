@@ -1,0 +1,73 @@
+// -----------------------------------------------------------------------------
+// Colors used across the project, including the theme.
+// -----------------------------------------------------------------------------
+
+@use "sass:color";
+@use "sass:map";
+@use "sass:meta";
+
+// Basics
+$white: #ffffff;
+$black: #000000;
+$transparent: transparent;
+
+// Grays (warm)
+$gray-5: #fafaf9;
+$gray-10: #f5f5f4;
+$gray-20: #e7e5e4;
+$gray-30: #d6d3d1;
+$gray-40: #a8a29e;
+$gray-50: #78716c;
+$gray-60: #57534e;
+$gray-70: #44403c;
+$gray-80: #292524;
+$gray-90: #1c1917;
+
+// Cool grays
+$cool-gray-5: #f9fafb;
+$cool-gray-10: #f3f4f6;
+$cool-gray-20: #e5e7eb;
+$cool-gray-30: #d1d5db;
+$cool-gray-40: #9ca3af;
+$cool-gray-50: #6b7280;
+$cool-gray-60: #4b5563;
+$cool-gray-70: #374151;
+$cool-gray-80: #1f2937;
+$cool-gray-90: #111827;
+
+// Theme colors
+$theme: (
+    "primary": #223c97,
+    "secondary": #5bbbc1,
+    "on-background": #292524,
+    "background": #f3f4f6,
+    "on-primary": #ffffff,
+    "on-secondary": #000000,
+);
+
+// Dark mode theme colors
+$dark-theme: (
+    "primary": #223c97,
+    "secondary": #5bbbc1,
+    "on-background": #d6d3d1,
+    "background": #1f2937,
+    "on-primary": #ffffff,
+    "on-secondary": #000000,
+);
+
+/*
+ * Mixin for applying theme colors: sets a given property by looking up
+ * the color in the theme by name, and automatically switches it to the
+ * corresponding dark mode version using a media query.
+ *
+ * @param {string} $color - The color name to look up in the theme
+ * @param {string} $property - The CSS property to set; default "color"
+ *
+ */
+@mixin apply-theme($color, $property: color) {
+    #{$property}: map.get($theme, $color);
+
+    @media (prefers-color-scheme: dark) {
+        #{$property}: map.get($dark-theme, $color);
+    }
+}

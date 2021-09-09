@@ -1,0 +1,9 @@
+// -----------------------------------------------------------------------------
+// Lists of sources for scholarship on Geniza materials.
+// -----------------------------------------------------------------------------
+
+.footnote > * { display: block; }
+.footnote > * + * { margin-top: .5rem; }
+.footnote > .author,
+.footnote > .year { display: inline-block; }
+.footnote > .year::before { content: "/"; padding: 0 .5rem; }

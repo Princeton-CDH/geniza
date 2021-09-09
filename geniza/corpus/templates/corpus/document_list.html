@@ -5,8 +5,8 @@
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block main %}
-<div class="container search">
-    <h1>{{ page_title }}</h1>
+<h1>{{ page_title }}</h1>
+<div class="container">
 
     <form>
     {{ form }}
@@ -25,37 +25,10 @@
         {{ counter }} total results
     {% endblocktranslate %}
 
-    <ol>
+    <ol class="search-results">
     {% for document in documents %}
-        <li class="result">
-
-            {% if document.tags %}
-            <dl class="tags">
-                <dt class="sr-only">{% translate 'Tags' %}</dt>
-                {% for tag in document.tags %}
-                <dd class="tag">#{{ tag }}</dd>
-                {% endfor %}
-            </dl>
-            {% endif %}
-
-            <h2><b>{{ document.type }},</b> {{ document.shelfmark|join:" + " }}</h2>
-            <p>{% translate 'Input date' %} {{ document.input_year|default:'unknown' }}</p>
-            <p>{% translate 'PGP ID' %} {{ document.pgpid }}</p>
-            <p>{{ document.description.0|truncatechars:135 }}</p>
-
-            {% if document.scholarship_count %}
-            <p>✔️
-            {% if document.num_editions %}{% translate 'Transcription' %}({{ document.num_editions }}){% endif %}
-            {% if document.num_translations %}{% translate 'Translation' %}({{ document.num_translations }}){% endif %}
-            {% if document.num_discussions %}{% translate 'Discussion' %}({{ document.num_discussions }}){% endif %}
-            </p>
-            {% endif %}
-
-            <a class="view" href="{% url 'corpus:document' document.pgpid %}">{% translate 'View document details' %}➡</a>
-
-            <small>relevance {{ document.score }}</small>
+    {% include "corpus/snippets/document_result.html" %}
     {% endfor %}
     </ol>
-
 </div>
 {% endblock main %}

@@ -14,7 +14,8 @@
     pointer-events: none; }
     .ribbon-box.fade button {
       display: none; }
-  .ribbon-box h2 {
+  .ribbon-box .heading {
+    font-size: 1rem;
     font-family: "Lyon Text Web", Georgia, serif; }
   .ribbon-box button {
     border: #f8f8f8;

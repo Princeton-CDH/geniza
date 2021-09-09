@@ -11,8 +11,8 @@
 
 {% block main %}
 <!-- document details -->
+<h1>{{ document.title }}</h1>
 <div class="container">
-    <h1>{{ document.title }}</h1>
     {% include "corpus/snippets/document_tabs.html" %}
     <dl>
         <dt class="sr-only">{% translate 'Shelfmark' %}</dt>

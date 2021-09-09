@@ -1,0 +1,15 @@
+// -----------------------------------------------------------------------------
+// Visual labels for concepts, themes & other document metadata.
+// -----------------------------------------------------------------------------
+
+@use "../base/typography";
+
+.tag {
+    @include typography.button;
+
+    display: inline-block;
+}
+
+.tag + .tag {
+    margin-left: .5rem;
+}

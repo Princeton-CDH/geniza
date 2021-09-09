@@ -1,0 +1,46 @@
+{% load i18n %}
+{% spaceless %}
+<li class="search-result">
+    {# tags #}
+    {% if document.tags %}
+    <ul class="tags">
+        {% for tag in document.tags %}
+        <li class="tag">#{{ tag }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {# title #}
+    <h2 class="title">
+        <span class="doctype">{{ document.type }}</span>
+        <span class="shelfmark">{{ document.shelfmark|join:" + " }}</span>
+    </h2>
+
+    {# metadata #}
+    <dl class="metadata">
+        <dt>{% translate 'Input date' %}</dt>
+        <dd>{{ document.input_year|default:'unknown' }}</dd>
+        <dt>{% translate 'PGP ID' %}</dt>
+        <dd>{{ document.pgpid }}</dd>
+    </dl>
+
+    {# description #}
+    <p class="description">{{ document.description.0|truncatewords:25 }}</p>
+    
+    {# scholarship records #}
+    {% if document.scholarship_count %}
+    <p class="scholarship">
+    <i class="ph-check"></i>
+    {% if document.num_editions %}{% translate 'Transcription' %}{% if document.num_editions > 1 %} ({{ document.num_editions }}){% endif %}{% endif %}
+    {% if document.num_translations %}{% translate 'Translation' %}{% if document.num_translations > 1 %} ({{ document.num_translations }}){% endif %}{% endif %}
+    {% if document.num_discussions %}{% translate 'Discussion' %}{% if document.num_discussions > 1 %} ({{ document.num_discussions }}){% endif %}{% endif %}
+    </p>
+    {% endif %}
+
+    {# view link #}
+    <a class="view-link" href="{% url 'corpus:document' document.pgpid %}">
+        {% translate 'View document details' %}
+        <i class="ph-arrow-right"></i>
+    </a>
+</li>
+{% endspaceless %}

@@ -1,0 +1,27 @@
+// -----------------------------------------------------------------------------
+// Document search page.
+// -----------------------------------------------------------------------------
+
+// search form
+
+.search label[for="id_query"] {
+    /* sr-only */
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+}
+.search input[name="query"] {
+  width: 100%;
+  margin: 15px 0;
+  font-size: larger;
+}
+
+.search select[name="sort"] {
+  display: block;
+  min-width: 320px;
+  font-size: larger;
+}

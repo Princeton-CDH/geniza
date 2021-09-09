@@ -24,6 +24,7 @@
     <!-- scripts -->
     {% get_files "main" "js" as main_js %}
     <script src="{{ main_js.0.url }}" nonce="{{ request.csp_nonce }}" defer></script>
+    <script src="https://unpkg.com/phosphor-icons" nonce="{{ request.csp_nonce }}"></script>
     {% block extrahead %}{% endblock extrahead %}
 </head>
 <body>

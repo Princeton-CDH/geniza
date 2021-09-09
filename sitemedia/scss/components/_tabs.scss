@@ -1,0 +1,10 @@
+// -----------------------------------------------------------------------------
+// Tabbed navigation that appears in the header of some pages.
+// -----------------------------------------------------------------------------
+
+nav[aria-label=tabs] > ul {
+    display: flex;
+    justify-content: space-between;
+    list-style: none;
+    padding: 0;
+}
