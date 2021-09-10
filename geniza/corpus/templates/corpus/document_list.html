@@ -29,7 +29,7 @@
     {% for document in documents %}
         <li class="result">
 
-            {% if document.tags.exists %}
+            {% if document.tags %}
             <dl class="tags">
                 <dt class="sr-only">{% translate 'Tags' %}</dt>
                 {% for tag in document.tags %}
