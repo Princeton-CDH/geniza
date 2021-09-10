@@ -11,10 +11,16 @@
 
 {% block main %}
 <!-- document details -->
+
+{# title #}
 <h1>{{ document.title }}</h1>
+
 <div class="container">
+    {# tabs #}
     {% include "corpus/snippets/document_tabs.html" %}
-    <dl>
+
+    {# metadata #}
+    <dl class="metadata">
         <dt class="sr-only">{% translate 'Shelfmark' %}</dt>
         <dd>{{ document.shelfmark }}</dd>
         {% if document.doctype %}
@@ -33,14 +39,21 @@
         {% endfor %}
         {% endif %}
     </dl>
-    <dl class="tags">
-        <dt class="sr-only">{% translate 'Tags' %}</dt>
+
+    {# tags #}
+    {% if document.tags %}
+    <ul class="tags">
         {% for tag in document.tags.all %}
-        <dd class="tag">#{{ tag }}</dd>
+        <li class="tag">#{{ tag }}</li>
         {% endfor %}
-    </dl>
-    <p>{{ document.description }}</p>
+    </ul>
+    {% endif %}
+
+    {# description #}
+    <p class="description">{{ document.description }}</p>
 </div>
+
+{# viewer #}
 {% with iiif_urls=document.iiif_urls %}
 {% if iiif_urls %}
 <div class="wrapper">
