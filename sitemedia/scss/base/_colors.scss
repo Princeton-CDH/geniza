@@ -71,3 +71,22 @@ $dark-theme: (
         #{$property}: map.get($dark-theme, $color);
     }
 }
+
+/*
+ * Like @apply-theme, but sets both the background and text color using
+ * the corresponding pair (e.g. primary and on-primary). The combo is selected
+ * by background color.
+ *
+ * @param {string} $color - The background color name to look up in the theme
+ *
+ */
+ @mixin apply-combo($background) {
+    color: map.get($theme, "on-#{$background}");
+    background-color: map.get($theme, $background);
+
+    @media (prefers-color-scheme: dark) {
+        color: map.get($dark-theme, "on-#{$background}");
+        background-color: map.get($dark-theme, $background);
+    }
+ }
+ 
