@@ -5,8 +5,8 @@
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block extrahead %}
-<script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
-<script src="{% static 'js/viewer.js' %}" defer></script>
+<script src="https://unpkg.com/mirador@latest/dist/mirador.min.js" nonce="{{ request.csp_nonce}}" defer></script>
+<script src="{% static 'js/viewer.js' %}" nonce="{{ request.csp_nonce }}" defer></script>
 {% endblock extrahead %}
 
 {% block main %}

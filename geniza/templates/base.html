@@ -23,7 +23,7 @@
     {% block extrastyle %}{% endblock extrastyle %}
     <!-- scripts -->
     {% get_files "main" "js" as main_js %}
-    <script type="text/javascript" src="{{ main_js.0.url }}" nonce="{{ request.csp_nonce }}" defer></script>
+    <script src="{{ main_js.0.url }}" nonce="{{ request.csp_nonce }}" defer></script>
     {% block extrahead %}{% endblock extrahead %}
 </head>
 <body>

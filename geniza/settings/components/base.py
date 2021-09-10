@@ -217,42 +217,14 @@ PGP_DOCTYPE_GUIDE = "https://docs.google.com/document/d/1FHr1iS_JD5h-y5O1rv5JNNw
 
 # django-csp configuration for content security policy definition and
 # violation reporting - https://github.com/mozilla/django-csp
-# config adapated from both MEP and PPA
-
-# fallback for all protocols: block it
-CSP_DEFAULT_SRC = "'none'"
-
-# use lighthouse recommended strict CSP config with nonce for scripts. this
+#
+# uses lighthouse recommended strict CSP config with nonce for scripts. this
 # is the "modern" CSP config that doesn't use a whitelist and is instead based
-# on nonces generated on the server. For more info:
-# https://web.dev/strict-csp
+# on nonces generated on the server. For more info: https://web.dev/strict-csp
 CSP_INCLUDE_NONCE_IN = ("script-src",)
 CSP_SCRIPT_SRC = ("'strict-dynamic'", "https: 'unsafe-inline'")
 CSP_OBJECT_SRC = ("'none'",)
 CSP_BASE_URI = ("'none'",)
-
-# allow loading fonts locally and from google (via data: url)
-CSP_FONT_SRC = ("'self'", "https://fonts.gstatic.com data:")
-
-# allow loading css locally and from google (for fonts)
-CSP_STYLE_SRC = ("'self'", "https://fonts.googleapis.com")
-
-# allow loading web manifest locally only
-CSP_MANIFEST_SRC = ("'self'",)
-
-# allow XMLHttpRequest for analytics
-CSP_CONNECT_SRC = ("*.google-analytics.com", )
-
-# whitelisted image sources - analytics (tracking pixel?), IIIF, etc.
-CSP_IMG_SRC = (
-    "'self'",
-    "www.googletagmanager.com",
-    "*.google-analytics.com",
-    "iiif.princeton.edu",
-    "figgy.princeton.edu",
-    "iiif-cloud.princeton.edu",
-    "data:",
-)
 
 # exclude admin and cms urls from csp directives since they're authenticated
 CSP_EXCLUDE_URL_PREFIXES = ("/admin", "/cms")
