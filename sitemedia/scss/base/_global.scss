@@ -90,7 +90,9 @@ button {
     @include typography.button;
 }
 
-a {
+// Any links without a class (i.e. in body text) get the default link style;
+// if other links need it they can extend the same mixin.
+a:not([class]) {
     @include typography.link;
 }
 
