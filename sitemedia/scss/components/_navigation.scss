@@ -4,6 +4,7 @@
 
 @use "../base/typography";
 @use "../base/colors";
+@use "../base/spacing";
 
 .site-nav {
     display: flex;
@@ -17,7 +18,7 @@
 
         display: inline-block;
         flex: none;
-        padding: 30px 10px;
+        padding: spacing.$spacing-lg spacing.$spacing-md;
     }
 
     // List of links
@@ -26,19 +27,19 @@
         flex: auto;
         display: flex;
         justify-content: flex-end;
-        border: 1px solid colors.$gray-40;
+        border: spacing.$spacing-4xs solid colors.$gray-40;
     }
 
     // Individual menu items
     .menu-item {
-        padding: 10px 0;
+        padding: spacing.$spacing-sm 0;
 
         & + .menu-item {
-            margin-left: 50px;
+            margin-left: spacing.$spacing-2xl;
         }
 
         &:last-child {
-            margin-right: 100px;
+            margin-right: spacing.$spacing-3xl;
         }
     }
 

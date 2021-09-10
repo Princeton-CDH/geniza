@@ -2,13 +2,15 @@
 // Utility classes for controlling the width of elements.
 // -----------------------------------------------------------------------------
 
+@use "spacing";
+
 // Maximum width of a line of text, in characters. This is based on standards
 // of readability and determines the width of containers on the page. See:
 // https://every-layout.dev/rudiments/axioms/#measure
 $measure: 60ch;
 
 // Minimum amount of space left on either side of the page to create a margin.
-$gutter: 10px;
+$gutter: spacing.$spacing-sm;
 
 // Utility class for applying the measure to elements that normally would not
 // be constrained by it, such as <div>. Also applies the gutter.
