@@ -227,7 +227,7 @@ CSP_DEFAULT_SRC = "'none'"
 # on nonces generated on the server. For more info:
 # https://web.dev/strict-csp
 CSP_INCLUDE_NONCE_IN = ("script-src",)
-CSP_SCRIPT_SRC = ("'strict-dynamic'", "'unsafe-inline'")
+CSP_SCRIPT_SRC = ("'strict-dynamic'", "https: 'unsafe-inline'")
 CSP_OBJECT_SRC = ("'none'",)
 CSP_BASE_URI = ("'none'",)
 
