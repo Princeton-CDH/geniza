@@ -4,49 +4,58 @@
 
 @use "../base/typography";
 
+// list of results
 .search-results {
     list-style: none; 
     counter-reset: search-counter;
 }
 
+// single result
 .search-result {
     counter-increment: search-counter;
-}
 
-.search-result + .search-result {
-    margin-top: 35px;
-}
+    // spacing in between results
+    & + .search-result {
+        margin-top: 35px;
+    }
 
-.search-result .title {
-    @include typography.subtitle;
-    
-    position: relative;
-    
-    // anchor counter to h2 instead of li, for alignment regardless of tags
-    &::before {
-        content: counter(search-counter);
-        margin-left: -1.5rem;
-        text-align: left;
-        float: left;
+    // document titles
+    .title {
+        @include typography.subtitle;
+        
+        position: relative;
+        
+        // anchor counter to h2 instead of li, for alignment regardless of tags
+        &::before {
+            content: counter(search-counter);
+            margin-left: -1.5rem;
+            text-align: left;
+            float: left;
+            font-weight: bold;
+        }
+    }
+
+    // document type, inside title
+    .doctype {
         font-weight: bold;
+        
+        &::after {
+            font-weight: normal;
+            content: ", ";
+        }
     }
-}
 
-.search-result .doctype {
-    font-weight: bold;
+    // document description
+    .description {
+        margin: 0.5rem 0;
+    }
+
+    // "view more details" link
+    .view-link {
+        @include typography.link;
     
-    &::after {
-        font-weight: normal;
-        content: ", ";
+        display: block;
+        width: max-content;
+        margin-left: auto;
     }
-}
-
-.search-result .description {
-    margin: 0.5rem 0;
-}
-
-.search-result .view-link {
-    display: block;
-    width: max-content;
-    margin-left: auto;
 }

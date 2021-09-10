@@ -2,32 +2,48 @@
 // Main site navigation that appears on every page.
 // -----------------------------------------------------------------------------
 
-nav[aria-label="main navigation"] {
+@use "../base/typography";
+@use "../base/colors";
+
+.site-nav {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
+
+    // Logotype, links to homepage
+    .home-link {
+        @include typography.headline-4;
+        @include colors.apply-combo("primary");
+
+        display: inline-block;
+        flex: none;
+        padding: 30px 10px;
+    }
+
+    // List of links
+    .menu {
+        padding: 0;
+        flex: auto;
+        display: flex;
+        justify-content: flex-end;
+        border: 1px solid colors.$gray-40;
+    }
+
+    // Individual menu items
+    .menu-item {
+        padding: 10px 0;
+
+        & + .menu-item {
+            margin-left: 50px;
+        }
+
+        &:last-child {
+            margin-right: 100px;
+        }
+    }
+
+    // Currently active page
+    a[aria-current="page"] {
+        font-weight: bold;
+    }
 }
-nav[aria-label="main navigation"] > .home {
-    display: inline-block;
-    flex: none;
-    padding: 30px 10px;
-    background: #F2F2F2;
-    font-size: 24px;
-    font-weight: bold;
-}
-nav[aria-label="main navigation"] > ul {
-    padding: 0;
-    flex: auto;
-    display: flex;
-    justify-content: flex-end;
-    border: 1px solid #AAAAAA;
-}
-nav[aria-label="main navigation"] > ul li { padding: 10px 0; }
-nav[aria-label="main navigation"] > ul li + li { margin-left: 50px; }
-nav[aria-label="main navigation"] > ul li a {
-    text-decoration: none; color: black;
-}
-nav[aria-label="main navigation"] > ul li a[aria-current="page"] {
-    font-weight: bold;
-}
-nav[aria-label="main navigation"] > ul li:last-child { margin-right: 100px; }

@@ -8,8 +8,9 @@
     @include typography.button;
 
     display: inline-block;
-}
 
-.tag + .tag {
-    margin-left: .5rem;
+    // spacing between tags
+    & + .tag {
+        margin-left: .5rem;
+    }
 }
