@@ -241,7 +241,7 @@ CSP_STYLE_SRC = ("'self'", "https://fonts.googleapis.com")
 CSP_MANIFEST_SRC = ("'self'",)
 
 # allow XMLHttpRequest for analytics
-CSP_CONNECT_SRC = ("*.google-analytics.com")
+CSP_CONNECT_SRC = ("*.google-analytics.com", )
 
 # whitelisted image sources - analytics (tracking pixel?), IIIF, etc.
 CSP_IMG_SRC = (
