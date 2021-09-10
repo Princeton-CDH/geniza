@@ -222,13 +222,14 @@ PGP_DOCTYPE_GUIDE = "https://docs.google.com/document/d/1FHr1iS_JD5h-y5O1rv5JNNw
 # fallback for all protocols: block it
 CSP_DEFAULT_SRC = "'none'"
 
-# allow loading js locally and from google (for analytics); unpkg for Mirador
-CSP_SCRIPT_SRC = (
-    "'self'",
-    "www.googletagmanager.com",
-    "*.google-analytics.com",
-    "unpkg.com",
-)
+# use lighthouse recommended strict CSP config with nonce for scripts. this
+# is the "modern" CSP config that doesn't use a whitelist and is instead based
+# on nonces generated on the server. For more info:
+# https://web.dev/strict-csp
+CSP_INCLUDE_NONCE_IN = ("script-src",)
+CSP_SCRIPT_SRC = ("'strict-dynamic'", "'unsafe-inline'")
+CSP_OBJECT_SRC = ("'none'",)
+CSP_BASE_URI = ("'none'",)
 
 # allow loading fonts locally and from google (via data: url)
 CSP_FONT_SRC = ("'self'", "https://fonts.gstatic.com data:")
@@ -239,8 +240,8 @@ CSP_STYLE_SRC = ("'self'", "https://fonts.googleapis.com")
 # allow loading web manifest locally only
 CSP_MANIFEST_SRC = ("'self'",)
 
-# allow XMLHttpRequest or Fetch requests locally (for search) & analytics
-CSP_CONNECT_SRC = ("'self'", "*.google-analytics.com")
+# allow XMLHttpRequest for analytics
+CSP_CONNECT_SRC = ("*.google-analytics.com")
 
 # whitelisted image sources - analytics (tracking pixel?), IIIF, etc.
 CSP_IMG_SRC = (
@@ -255,6 +256,3 @@ CSP_IMG_SRC = (
 
 # exclude admin and cms urls from csp directives since they're authenticated
 CSP_EXCLUDE_URL_PREFIXES = ("/admin", "/cms")
-
-# allow usage of nonce for inline js (for analytics)
-CSP_INCLUDE_NONCE_IN = ("script-src",)

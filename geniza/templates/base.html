@@ -1,5 +1,4 @@
-{% load static %}
-{% load render_bundle from webpack_loader %}
+{% load static webpack_loader %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
@@ -23,7 +22,8 @@
     {% render_bundle "main" "css" %}
     {% block extrastyle %}{% endblock extrastyle %}
     <!-- scripts -->
-    {% render_bundle "main" "js" attrs="defer" %}
+    {% get_files "main" "js" as main_js %}
+    <script type="text/javascript" src="{{ main_js.0.url }}" nonce="{{ request.csp_nonce }}" defer></script>
     {% block extrahead %}{% endblock extrahead %}
 </head>
 <body>
