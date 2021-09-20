@@ -640,55 +640,8 @@ class Document(ModelIndexable):
                 if textblock.fragment not in self.fragments.all():
                     self.textblock_set.add(textblock)
 
-            # combine footnotes
-            for footnote in doc.footnotes.all():
-                # first, check for an exact match
-                equiv_fn = self.footnotes.includes_footnote(footnote)
-                # if there is no exact match, check again ignoring content
-                if not equiv_fn:
-                    equiv_fn = self.footnotes.includes_footnote(
-                        footnote, include_content=False
-                    )
-                    # if there's a partial match (everything but content)
-                    if equiv_fn:
-                        # if the new footnote has content, add it
-                        if footnote.content:
-                            self.footnotes.add(footnote)
-                        # if the partial match has no content, remove it
-                        # (if it has any content, then it is different from the new one
-                        # and should be preserved)
-                        if not equiv_fn.content:
-                            self.footnotes.remove(equiv_fn)
-
-                    # if neither an exact or partial match, add the new footnote
-                    else:
-                        self.footnotes.add(footnote)
-
-            # reassociate log entries
-            # make a list of currently associated log entries to skip duplicates
-            current_logs = [
-                "%s_%s" % (le.user_id, le.action_time.isoformat())
-                for le in self.log_entries.all()
-            ]
-            for log_entry in doc.log_entries.all():
-                # check duplicate log entries, based on user id and time
-                # (likely only applies to historic input & revision)
-                if (
-                    "%s_%s" % (log_entry.user_id, log_entry.action_time.isoformat())
-                    in current_logs
-                ):
-                    # skip if it's a duplicate
-                    continue
-
-                # otherwise annotate and reassociate
-                # - modify change message to document which object this event applied to
-                log_entry.change_message = "%s [PGPID %d]" % (
-                    log_entry.change_message,
-                    doc.pk,
-                )
-                log_entry.save()
-                # - associate with the primary document
-                self.log_entries.add(log_entry)
+            self._merge_footnotes(doc)
+            self._merge_logentries(doc)
 
         # combine text fields
         self.description = "\n".join(description_chunks)
@@ -714,6 +667,58 @@ class Document(ModelIndexable):
             change_message="merged with %s: %s" % (merged_ids, rationale),
             action_flag=CHANGE,
         )
+
+    def _merge_footnotes(self, doc):
+        # combine footnotes; footnote logic for merge_with
+        for footnote in doc.footnotes.all():
+            # first, check for an exact match
+            equiv_fn = self.footnotes.includes_footnote(footnote)
+            # if there is no exact match, check again ignoring content
+            if not equiv_fn:
+                equiv_fn = self.footnotes.includes_footnote(
+                    footnote, include_content=False
+                )
+                # if there's a partial match (everything but content)
+                if equiv_fn:
+                    # if the new footnote has content, add it
+                    if footnote.content:
+                        self.footnotes.add(footnote)
+                    # if the partial match has no content, remove it
+                    # (if it has any content, then it is different from the new one
+                    # and should be preserved)
+                    if not equiv_fn.content:
+                        self.footnotes.remove(equiv_fn)
+
+                # if neither an exact or partial match, add the new footnote
+                else:
+                    self.footnotes.add(footnote)
+
+    def _merge_logentries(self, doc):
+        # reassociate log entries; logic for merge_with
+        # make a list of currently associated log entries to skip duplicates
+        current_logs = [
+            "%s_%s" % (le.user_id, le.action_time.isoformat())
+            for le in self.log_entries.all()
+        ]
+        for log_entry in doc.log_entries.all():
+            # check duplicate log entries, based on user id and time
+            # (likely only applies to historic input & revision)
+            if (
+                "%s_%s" % (log_entry.user_id, log_entry.action_time.isoformat())
+                in current_logs
+            ):
+                # skip if it's a duplicate
+                continue
+
+            # otherwise annotate and reassociate
+            # - modify change message to document which object this event applied to
+            log_entry.change_message = "%s [PGPID %d]" % (
+                log_entry.change_message,
+                doc.pk,
+            )
+            log_entry.save()
+            # - associate with the primary document
+            self.log_entries.add(log_entry)
 
 
 class TextBlock(models.Model):
