@@ -175,14 +175,19 @@ class Source(models.Model):
 
 
 class FootnoteQuerySet(models.QuerySet):
-    def includes_footnote(self, other):
+    def includes_footnote(self, other, include_content=True):
         """Check if the current queryset includes a match for the
         specified footnotes. Matches are made by comparing content source,
         location, document relation type, notes, and content (ignores
-        associated content object).
+        associated content object). To ignore content when comparing
+        footnotes, specify `include_content=False`.
         Returns the matching object if there was one, or False if not."""
 
-        compare_fields = ["source", "location", "notes", "content"]
+        compare_fields = ["source", "location", "notes"]
+        # optionally include content when comparing; include by default
+        if include_content:
+            compare_fields.append("content")
+
         for fn in self.all():
             if (
                 all(getattr(fn, val) == getattr(other, val) for val in compare_fields)

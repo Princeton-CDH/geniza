@@ -176,6 +176,30 @@ class TestFootnoteQuerySet:
         footnote2.save()
         assert not Footnote.objects.filter(pk=footnote1.pk).includes_footnote(footnote2)
 
+    @pytest.mark.django_db
+    def test_includes_footnote_ignore_content(self, source, twoauthor_source, document):
+        # same source, content object, location; one with content
+        footnote1 = Footnote.objects.create(
+            source=source,
+            content_object=document,
+            location="p.1",
+            doc_relation=Footnote.EDITION,
+        )
+        footnote2 = Footnote.objects.create(
+            source=source,
+            content_object=document,
+            location="p.1",
+            doc_relation=Footnote.EDITION,
+            content="{'foo': 'bar'}",
+        )
+        assert not Footnote.objects.filter(pk=footnote1.pk).includes_footnote(footnote2)
+        assert (
+            Footnote.objects.filter(pk=footnote1.pk).includes_footnote(
+                footnote2, include_content=False
+            )
+            == footnote1
+        )
+
 
 class TestCreator:
     def test_str(self):

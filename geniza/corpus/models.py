@@ -641,12 +641,28 @@ class Document(ModelIndexable):
                     self.textblock_set.add(textblock)
 
             # combine footnotes
-            # current_footnotes = self.footnotes.all()
             for footnote in doc.footnotes.all():
-                # if footnote is not present (based on footnote equality check), add it
-                if not self.footnotes.includes_footnote(footnote):
-                    self.footnotes.add(footnote)
-                # TODO: compare ignoring transcription; remove non-transcription version
+                # first, check for an exact match
+                equiv_fn = self.footnotes.includes_footnote(footnote)
+                # if there is no exact match, check again ignoring content
+                if not equiv_fn:
+                    equiv_fn = self.footnotes.includes_footnote(
+                        footnote, include_content=False
+                    )
+                    # if there's a partial match (everything but content)
+                    if equiv_fn:
+                        # if the new footnote has content, add it
+                        if footnote.content:
+                            self.footnotes.add(footnote)
+                        # if the partial match has no content, remove it
+                        # (if it has any content, then it is different from the new one
+                        # and should be preserved)
+                        if not equiv_fn.content:
+                            self.footnotes.remove(equiv_fn)
+
+                    # if neither an exact or partial match, add the new footnote
+                    else:
+                        self.footnotes.add(footnote)
 
             # reassociate log entries
             # make a list of currently associated log entries to skip duplicates
