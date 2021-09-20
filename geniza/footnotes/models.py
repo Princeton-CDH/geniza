@@ -174,6 +174,27 @@ class Source(models.Model):
     all_authors.admin_order_field = "first_author"  # set in admin queryset
 
 
+class FootnoteQuerySet(models.QuerySet):
+    def includes_footnote(self, other):
+        """Check if the current queryset includes a match for the
+        specified footnotes. Matches are made by comparing content source,
+        location, document relation type, notes, and content (ignores
+        associated content object).
+        Returns the matching object if there was one, or False if not."""
+
+        compare_fields = ["source", "location", "notes", "content"]
+        for fn in self.all():
+            if (
+                all(getattr(fn, val) == getattr(other, val) for val in compare_fields)
+                # NOTE: fn.doc_relation seems to be different on queryset footnote
+                # than newly created object; check by display value to avoid problems
+                and fn.get_doc_relation_display() == other.get_doc_relation_display()
+            ):
+                return fn
+
+        return False
+
+
 class Footnote(models.Model):
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
     location = models.CharField(
@@ -214,6 +235,9 @@ class Footnote(models.Model):
     object_id = GfkLookupField("content_type")
     content_object = GenericForeignKey()
 
+    # replace default queryset with customized version
+    objects = FootnoteQuerySet.as_manager()
+
     class Meta:
         ordering = ["source", "location"]
 
@@ -222,15 +246,6 @@ class Footnote(models.Model):
 
         rel = " and ".join([str(choices[c]) for c in self.doc_relation]) or "Footnote"
         return f"{rel} of {self.content_object}"
-
-    def __eq__(self, other):
-        """Footnotes should be considered equal if content source,
-        location, document relation type, notes, and content all match.
-        Does not include associated content object in comparison check."""
-        return all(
-            getattr(self, val) == getattr(other, val)
-            for val in ["source", "location", "doc_relation", "notes", "content"]
-        )
 
     def has_transcription(self):
         """Admin display field indicating presence of digitized transcription."""
