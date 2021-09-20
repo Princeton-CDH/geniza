@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.6
+
+* As a content editor, I want duplicate joined documents to be automatically merged without losing their unique metadata, so that I don't have to merge them manually.
+* Setup for webpack build for frontend scss/js assets and static files
+* bugfix: 500 error saving documents with footnotes (bad footnote equality check)
+
 ## 0.5
 
 * As a Content Editor, I want to see help text for Document Type so that I can make an informed decision while editing documents.
