@@ -74,7 +74,7 @@ Remember to add a ``SECRET_KEY`` setting!
 
 - Create Solr collection with the configured configset (use create_core with Solr standalone and create_collection with SolrCloud)::
 
-    solr create_core -c geniza -n geniza
+    solr create -c geniza -n geniza
 
 - Index content in Solr::
 
