@@ -1,7 +1,7 @@
 # local settings for configuration that should not be checked into git
-
-from geniza.settings.components.base import DATABASES, PUCAS_LDAP, \
-    SOLR_CONNECTIONS, BASE_DIR
+#
+# NOTE importing variables into this file can change their values! this file
+# can already access everything declared in base.py without imports.
 
 DEBUG = True
 
@@ -23,6 +23,14 @@ DATABASES['default']['PASSWORD'] = ""
 # SOLR_CONNECTIONS['default']['COLLECTION'] = ''  # default geniza
 # SOLR_CONNECTIONS['default']['CONFIGSET'] = ''   # default geniza
 
+# Development webpack config: don't cache bundles
+WEBPACK_LOADER["DEFAULT"]["CACHE"] = False
+
+# Uncomment below to switch to the development webpack manifest, which expects
+# a running webpack dev server to serve files from memory and enable autoreload.
+# WEBPACK_LOADER["DEFAULT"]["STATS_FILE"] = (
+#     BASE_DIR.parent / "sitemedia" / "webpack-stats-dev.json"
+# )
 
 # CAS login configuration
 CAS_SERVER_URL = ''

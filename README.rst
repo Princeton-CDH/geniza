@@ -6,7 +6,7 @@ Princeton Geniza Project
 Python/Django web application for a new version of the `Princeton Geniza Project
 <https://cdh.princeton.edu/projects/princeton-geniza-project/>`_.
 
-Python 3.8 / Django 3.1 / Postgresql / Solr 8.6
+Python 3.8 / Django 3.2 / Node 12 / Postgresql / Solr 8.6
 
 
 .. image:: https://github.com/Princeton-CDH/geniza/workflows/unit%20tests/badge.svg
@@ -47,6 +47,10 @@ Initial setup and installation:
 
     pip install -r requirements/dev.txt
 
+- Install required javascript dependencies::
+
+    npm install
+
 - Copy sample local settings and configure for your environment::
 
 	cp geniza/settings/local_settings.py.sample geniza/settings/local_settings.py
@@ -76,6 +80,27 @@ Remember to add a ``SECRET_KEY`` setting!
 
     python manage.py index
 
+
+Static Files
+------------
+
+Static files are stored in `sitemedia/` and bundled by Webpack. The `webpack-bundle-tracker` plugin generates a JSON manifest file listing the name and location of bundled files. This file, `webpack-stats.json`, is read by Django using `django-webpack-loader` so that the relevant files can be included in the template's `<head>`.
+
+Bundled files will be output into the `sitemedia/bundles` directory and picked up by Django's `collectstatic` command. To recompile bundles after making changes::
+
+    npm run build
+
+When actively developing stylesheets and scripts, you can instead run a development Webpack server, which will recompile the bundle and refresh your browser when changes are saved::
+
+    npm start
+
+Note that switching to the development Webpack server requires restarting your Django server, if one is running, in order to pick up the changes in `webpack-stats.json`.
+
+JavaScript sources are transpiled using Babel so that modern features are supported. Source files that will be transpiled are stored using the `.esm.js` (EcmaScript module) file extension to indicate that they should not be directly included in templates. These files will not be collected as part of Django's `collectstatic` command.
+
+SCSS sources are compiled using Autoprefixer so that vendor prefixes for browser support of newer CSS features will be added automatically. Source files to be transpiled are stored with the `.scss` file extension for interoperability with CSS. These files will not be collected as part of Django's `collectstatic` command.
+
+See the `.browserslistrc` file for more information about browser versions officially supported by this application. This file controls the automatic insertion of vendor prefixes for CSS and polyfills for JavaScript so that bundled styles and scripts will be supported on all target browsers.
 
 Internationalization & Translation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

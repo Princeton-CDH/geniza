@@ -8,7 +8,9 @@ static
 media
 static/CACHE
 sitemedia/fonts
+sitemedia/bundles
 **/.sass-cache/
+webpack-stats.json 
 
 # Vim stuff
 *.pyc
