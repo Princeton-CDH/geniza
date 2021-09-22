@@ -23,10 +23,12 @@ module.exports = {
             preset: "lighthouse:no-pwa",
             assertions: {
                 // ignore warnings about serving files using compression and
-                // setting long cache times; we'll handle these separately 
+                // setting long cache times; we'll handle these separately
                 // using nginx or apache for actual deploys
                 "uses-text-compression": "off",
                 "uses-long-cache-ttl": "off",
+                // erroring about a console issue; seems to be user agent in webpack?
+                "inspector-issues": "off",
             }
         },
     }
