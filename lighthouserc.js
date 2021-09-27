@@ -4,7 +4,8 @@ module.exports = {
             // URLs that Lighthouse will visit and test
             url: [
                 "http://localhost:8000/documents/",     // doc search
-                "http://localhost:8000/documents/1/"    // doc detail
+                // "http://localhost:8000/documents/1/"    // doc detail — fixture uses bogus iiif url
+                "http://localhost:8000/documents/3951/"    // doc detail
             ],
             // The following two commands make Lighthouse start up a Django
             // server for us to test against. PYTHONUNBUFFERED is needed to make
@@ -29,6 +30,7 @@ module.exports = {
                 "uses-long-cache-ttl": "off",
                 // erroring about a console issue; seems to be user agent in webpack?
                 "inspector-issues": "off",
+                "errors-in-console": "off",
             }
         },
     }
