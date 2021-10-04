@@ -3,7 +3,7 @@ module.exports = {
         collect: {
             // URLs that Lighthouse will visit and test
             url: [
-                // "http://localhost:8000/documents/",     // doc search
+                "http://localhost:8000/documents/",     // doc search
                 // "http://localhost:8000/documents/1/"    // doc detail
                 "http://localhost:8000/documents/3951/"    // doc detail — currently with IIIF viewer
             ],
