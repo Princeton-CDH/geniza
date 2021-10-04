@@ -24,8 +24,8 @@ class TestDocumentDetailTemplate:
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, '<dd class="tag">#bill of sale</dd>', html=True)
-        assertContains(response, '<dd class="tag">#real estate</dd>', html=True)
+        assertContains(response, "<li>bill of sale</li>", html=True)
+        assertContains(response, "<li>real estate</li>", html=True)
 
     def test_description(self, client, document):
         """Document detail template should include document description"""

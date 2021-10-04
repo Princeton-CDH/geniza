@@ -43,12 +43,11 @@
         {% endif %}
     </dl>
     {% if document.tags.exists %}
-    <dl class="tags">
-        <dt class="sr-only">{% translate 'Tags' %}</dt>
+    <ul class="tags">
         {% for tag in document.tags.all %}
-        <li class="tag">#{{ tag }}</li>
+        <li>{{ tag }}</li>
         {% endfor %}
-    </dl>
+    </ul>
     {% endif %}
     <p>{{ document.description }}</p>
 </div>

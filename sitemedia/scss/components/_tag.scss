@@ -4,13 +4,16 @@
 
 @use "../base/typography";
 
-.tag {
+.tags li {
     @include typography.button;
 
     display: inline-block;
+    &::before {
+        content: "#";
+    }
 
     // spacing between tags
-    & + .tag {
+    & + li {
         margin-left: .5rem;
     }
 }
