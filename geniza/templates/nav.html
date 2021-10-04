@@ -1,18 +1,18 @@
 {% load i18n %}
-<nav aria-label="main navigation">
+<nav class="site-nav" aria-label="main navigation">
     {# Translators: label for 'home' button in main navigation #}
-    <div class="home">{% translate "GENIZA" %}</div>
+    <a class="home-link" href="#">{% translate "GENIZA" %}</a>
     {% spaceless %}
     {% url "corpus:document-search" as search_url %}
-    <ul>
-        <li>
+    <ul class="menu">
+        <li class="menu-item">
             <a href="{{ search_url }}"{% if request.path == search_url %} aria-current="page"{% endif %}>
             {% translate "Search" %}
             </a>
         </li>
-        <li><span>{% translate "Editorial" %}</span></li>
-        <li><span>{% translate "Contact Us" %}</span></li>
-        <li><span>{% translate "About" %}</span></li>
+        <li class="menu-item"><span>{% translate "Editorial" %}</span></li>
+        <li class="menu-item"><span>{% translate "Contact Us" %}</span></li>
+        <li class="menu-item"><span>{% translate "About" %}</span></li>
     </ul>
     {% endspaceless %}
 </nav>

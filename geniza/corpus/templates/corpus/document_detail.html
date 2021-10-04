@@ -7,17 +7,23 @@
 {% block extrahead %}
 {% if document.iiif_urls %} {# mirador is slow, so only include if needed #}
 {# NOTE: referencing specific version avoids an extra render-blocking lookup #}
-<script defer src="https://unpkg.com/mirador@3.2.0/dist/mirador.min.j" nonce="{{ request.csp_nonce}}"></script>
+<script defer src="https://unpkg.com/mirador@3.2.0/dist/mirador.min.js" nonce="{{ request.csp_nonce}}"></script>
 <script defer src="{% static 'js/viewer.js' %}" nonce="{{ request.csp_nonce }}"></script>
 {% endif %}
 {% endblock extrahead %}
 
 {% block main %}
 <!-- document details -->
+
+{# title #}
+<h1>{{ document.title }}</h1>
+
 <div class="container">
-    <h1>{{ document.title }}</h1>
+    {# tabs #}
     {% include "corpus/snippets/document_tabs.html" %}
-    <dl>
+
+    {# metadata #}
+    <dl class="metadata">
         <dt class="sr-only">{% translate 'Shelfmark' %}</dt>
         <dd>{{ document.shelfmark }}</dd>
         {% if document.doctype %}
@@ -37,15 +43,16 @@
         {% endif %}
     </dl>
     {% if document.tags.exists %}
-    <dl class="tags">
-        <dt class="sr-only">{% translate 'Tags' %}</dt>
+    <ul class="tags">
         {% for tag in document.tags.all %}
-        <dd class="tag">#{{ tag }}</dd>
+        <li>{{ tag }}</li>
         {% endfor %}
-    </dl>
+    </ul>
     {% endif %}
     <p>{{ document.description }}</p>
 </div>
+
+{# viewer #}
 {% with iiif_urls=document.iiif_urls %}
 {% if iiif_urls %}
 <div class="wrapper">

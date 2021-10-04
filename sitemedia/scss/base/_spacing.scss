@@ -1,0 +1,26 @@
+// -----------------------------------------------------------------------------
+// Scaled values to use for margin, padding, and other spacing.
+// -----------------------------------------------------------------------------
+
+@use "sass:math";
+
+// We use a harmonic scale here, as with the typography, to produce various
+// spacing values used across the project. See:
+// https://every-layout.dev/rudiments/modular-scale/
+
+$base: 1rem;
+$ratio: 1.5;
+
+$spacing-md: $base;
+
+$spacing-sm: math.div($base, $ratio);
+$spacing-xs: math.div($spacing-sm, $ratio);
+$spacing-2xs: math.div($spacing-xs, $ratio);
+$spacing-3xs: math.div($spacing-2xs, $ratio);
+$spacing-4xs: math.div($spacing-3xs, $ratio);
+
+$spacing-lg: $base * $ratio;
+$spacing-xl: $spacing-lg * $ratio;
+$spacing-2xl: $spacing-xl * $ratio;
+$spacing-3xl: $spacing-2xl * $ratio;
+$spacing-4xl: $spacing-3xl * $ratio;

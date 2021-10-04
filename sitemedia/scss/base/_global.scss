@@ -1,0 +1,102 @@
+// -----------------------------------------------------------------------------
+// Global styles & overrides for basic HTML elements.
+// -----------------------------------------------------------------------------
+
+@use "colors";
+@use "typography";
+@use "container";
+@use "icons";
+@use "a11y";
+
+// Use more intuitive box-sizing for all elements, but make it easy to override.
+// See: https://every-layout.dev/rudiments/boxes/#the-box-sizing-property
+html {
+    box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+// Use an exception-based approach to ensure we apply our desired measure to as
+// many elements as possible. See:
+// https://every-layout.dev/rudiments/axioms/#exception-based-styling
+* {
+    @include container.measure;
+}
+
+html,
+body,
+div,
+header,
+nav,
+main,
+footer {
+    max-width: none;
+}
+
+// Globally apply font-smoothing to improve rendering.
+html {
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+}
+
+// Body setup: vertical stack that always takes at least the full page height.
+body {
+    @include colors.apply-theme("on-background");
+    @include colors.apply-theme("background", $property: "background-color");
+    @include typography.body;
+
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+// Center-align sections of main content using flexbox.
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+// Apply basic typographic styles defined in the typography module
+h1 {
+    @include typography.headline-1;
+}
+
+h2 {
+    @include typography.headline-2;
+}
+
+h3 {
+    @include typography.headline-3;
+}
+
+h4 {
+    @include typography.headline-4;
+}
+
+h5 {
+    @include typography.headline-5;
+}
+
+h6 {
+    @include typography.headline-6;
+}
+
+button {
+    @include typography.button;
+}
+
+// Any links without a class (i.e. in body text) get the default link style;
+// if other links need it they can extend the same mixin.
+a:not([class]) {
+    @include typography.link;
+}
+
+figcaption,
+small {
+    @include typography.caption;
+}

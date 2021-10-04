@@ -1,0 +1,26 @@
+// -----------------------------------------------------------------------------
+// Project fonts, including font face declarations and font stacks.
+// -----------------------------------------------------------------------------
+
+// If not using Google Fonts, @font-face declarations would go here. Since we
+// use Google Fonts, we instead use the CSS2 API and request all the families,
+// weights, and variants we need using a single @import. See:
+// https://developers.google.com/fonts/docs/css2
+
+// Merriweather: light, light italic, regular, regular italic
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;1,300;1,400&display=swap");
+
+// Lato: regular, regular italic, bold, bold italic
+@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+
+// Variables containing font stacks go here, for use as "font-family" values.
+// We pick fallback fonts that are reasonably close to the desired webfont and
+// also likely to be installed on the user's machine. For more, see:
+// https://meowni.ca/font-style-matcher/
+// https://www.cssfontstack.com/
+
+// Primary font family: headlines & subtitles
+$primary: ("Merriweather", Georgia, serif);
+
+// Secondary font family: body text & captions
+$secondary: ("Lato", Tahoma, sans-serif);

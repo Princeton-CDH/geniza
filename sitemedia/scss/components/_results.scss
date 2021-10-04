@@ -1,0 +1,62 @@
+// -----------------------------------------------------------------------------
+// Lists of search results for documents.
+// -----------------------------------------------------------------------------
+
+@use "../base/typography";
+@use "../base/spacing";
+
+// list of results
+.search-results {
+    list-style: none; 
+    counter-reset: search-counter;
+}
+
+// single result
+.search-result {
+    counter-increment: search-counter;
+
+    // spacing in between results
+    & + .search-result {
+        margin-top: spacing.$spacing-lg;
+    }
+
+    // document titles
+    .title {
+        @include typography.subtitle;
+        
+        position: relative;
+        
+        // anchor counter to h2 instead of li, for alignment regardless of tags
+        &::before {
+            content: counter(search-counter);
+            margin-left: - spacing.$spacing-lg;
+            text-align: left;
+            float: left;
+            font-weight: bold;
+        }
+    }
+
+    // document type, inside title
+    .doctype {
+        font-weight: bold;
+        
+        &::after {
+            font-weight: normal;
+            content: ", ";
+        }
+    }
+
+    // document description
+    .description {
+        margin: spacing.$spacing-sm 0;
+    }
+
+    // "view more details" link
+    .view-link {
+        @include typography.link;
+    
+        display: block;
+        width: max-content;
+        margin-left: auto;
+    }
+}

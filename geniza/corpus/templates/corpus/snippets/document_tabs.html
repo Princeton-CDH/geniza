@@ -1,7 +1,7 @@
 {% load i18n %}
 <!-- document detail page navigation -->
 <nav aria-label="tabs">
-    <ul>
+    <ul class="tabs">
         <li><a href="{% url 'corpus:document' pk=document.pk %}">{% translate "Document Details" %}</a></li>
         {% with n_records=document.footnotes.count %}
         {# Translators: n_records is number of scholarship records #}

@@ -6,8 +6,8 @@
 
 {% block main %}
 <!-- document scholarship records -->
+<h1>{{ document.title }}</h1>
 <div class="container">
-    <h1>{{ document.title }}</h1>
     {% include "corpus/snippets/document_tabs.html" %}
     <ol>
         {% for fn in document.footnotes.all %}

@@ -1,0 +1,50 @@
+// -----------------------------------------------------------------------------
+// Main site navigation that appears on every page.
+// -----------------------------------------------------------------------------
+
+@use "../base/typography";
+@use "../base/colors";
+@use "../base/spacing";
+
+.site-nav {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    // Logotype, links to homepage
+    .home-link {
+        @include typography.headline-4;
+        @include colors.apply-combo("primary");
+
+        display: inline-block;
+        flex: none;
+        padding: spacing.$spacing-lg spacing.$spacing-md;
+    }
+
+    // List of links
+    .menu {
+        padding: 0;
+        flex: auto;
+        display: flex;
+        justify-content: flex-end;
+        border: spacing.$spacing-4xs solid colors.$gray-40;
+    }
+
+    // Individual menu items
+    .menu-item {
+        padding: spacing.$spacing-sm 0;
+
+        & + .menu-item {
+            margin-left: spacing.$spacing-2xl;
+        }
+
+        &:last-child {
+            margin-right: spacing.$spacing-3xl;
+        }
+    }
+
+    // Currently active page
+    a[aria-current="page"] {
+        font-weight: bold;
+    }
+}

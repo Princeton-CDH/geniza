@@ -1,1 +1,14 @@
-@import "../css/style.css"
+// Generic styles for HTML elements
+@use "base/reset";
+@use "base/global";
+
+// Patterns and collections of elements that are used across the site
+@use "components/navigation";
+@use "components/tabs";
+@use "components/footnote";
+@use "components/metadata";
+@use "components/tag";
+@use "components/results";
+
+// Page-specific styles
+@use "pages/search";
