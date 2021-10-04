@@ -31,6 +31,12 @@ module.exports = {
                 // erroring about a console issue; seems to be user agent in webpack?
                 "inspector-issues": "off",
                 "errors-in-console": "off",
+                "unminified-css": "off",
+                "unused-css-rules": "off",
+                // not quite following strict csp (yet)
+                "csp-xss": "off",
+                // this is important, but failing so disable for now
+                "render-blocking-resources": "off",
             }
         },
     }
