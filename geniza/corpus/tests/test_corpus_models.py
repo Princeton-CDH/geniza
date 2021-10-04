@@ -615,6 +615,23 @@ def test_document_merge_with_footnotes(document, join, source):
     assert document.footnotes.count() == 2
 
 
+def test_document_merge_with_footnotes_transcription(document, join, source):
+    # create some footnotes
+    Footnote.objects.create(content_object=document, source=source, location="p. 3")
+    # page 3 footnote is a near duplicate but adds content
+    Footnote.objects.create(
+        content_object=join, source=source, location="p. 3", content="{'foo': 'bar'}"
+    )
+
+    assert document.footnotes.count() == 1
+    assert join.footnotes.count() == 1
+    document.merge_with([join], "combine footnotes")
+    # should only have one footnotes after the merge
+    assert document.footnotes.count() == 1
+    # should preserve the footnote with content and remove the one without
+    assert document.footnotes.first().content
+
+
 def test_document_merge_with_log_entries(document, join):
     # create some log entries
     document_contenttype = ContentType.objects.get_for_model(Document)

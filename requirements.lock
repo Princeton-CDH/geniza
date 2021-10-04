@@ -22,6 +22,7 @@ django-admin-sortable2==1.0
 django-adminlogentries==0.1.2
 django-autocomplete-light==3.8.1
 django-cas-ng==4.2.1
+django-csp==3.7
 django-dbml==0.5.0
 django-debug-toolbar==3.2
 django-gfklookupwidget==1.0.9
@@ -31,6 +32,7 @@ django-sortedm2m==3.0.2
 django-split-settings==1.0.1
 django-tabular-export==1.1.0
 django-taggit==1.5.1
+django-webpack-loader==1.1.0
 -e git+ssh://git@github.com/Princeton-CDH/djiffy.git@5536e3edc8723c5a76787cb57d60292513bbc767#egg=djiffy
 djlint==0.2.6
 docopt==0.6.2
@@ -49,6 +51,8 @@ jsonschema==3.2.0
 latexcodec==2.0.1
 ldap3==2.9
 lxml==4.6.2
+Mako==1.1.5
+Markdown==3.3.4
 MarkupSafe==1.1.1
 mypy-extensions==0.4.3
 nodeenv==1.6.0
@@ -58,6 +62,7 @@ pandas==1.2.2
 -e git+ssh://git@github.com/Princeton-CDH/parasolr.git@8949fc66d211c646ccab191b6ce24170accc1c2d#egg=parasolr
 parsy==1.1.0
 pathspec==0.8.1
+pdoc3==0.10.0
 piffle==0.4.0
 Pillow==8.1.0
 pluggy==0.13.1
