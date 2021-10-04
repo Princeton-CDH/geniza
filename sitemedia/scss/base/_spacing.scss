@@ -13,11 +13,11 @@ $ratio: 1.5;
 
 $spacing-md: $base;
 
-$spacing-sm: $base / $ratio;
-$spacing-xs: $spacing-sm / $ratio;
-$spacing-2xs: $spacing-xs / $ratio;
-$spacing-3xs: $spacing-2xs / $ratio;
-$spacing-4xs: $spacing-3xs / $ratio;
+$spacing-sm: math.div($base, $ratio);
+$spacing-xs: math.div($spacing-sm, $ratio);
+$spacing-2xs: math.div($spacing-xs, $ratio);
+$spacing-3xs: math.div($spacing-2xs, $ratio);
+$spacing-4xs: math.div($spacing-3xs, $ratio);
 
 $spacing-lg: $base * $ratio;
 $spacing-xl: $spacing-lg * $ratio;
