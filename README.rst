@@ -6,7 +6,7 @@ Princeton Geniza Project
 Python/Django web application for a new version of the `Princeton Geniza Project
 <https://cdh.princeton.edu/projects/princeton-geniza-project/>`_.
 
-Python 3.8 / Django 3.1 / Postgresql / Solr 8.6
+Python 3.8 / Django 3.2 / Node 12 / Postgresql / Solr 8.6
 
 
 .. image:: https://github.com/Princeton-CDH/geniza/workflows/unit%20tests/badge.svg
@@ -74,7 +74,7 @@ Remember to add a ``SECRET_KEY`` setting!
 
 - Create Solr collection with the configured configset (use create_core with Solr standalone and create_collection with SolrCloud)::
 
-    solr create_core -c geniza -n geniza
+    solr create -c geniza -n geniza
 
 - Index content in Solr::
 

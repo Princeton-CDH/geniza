@@ -37,15 +37,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # workaround for problem in solr 8 docker image
-      - name: Copy solr default configsets to solr home directory
-        run: "docker exec -d ${{ job.services.solr.id }} cp -r /opt/solr/server/solr/configsets /var/solr/data"
-
-      # use docker cp to copy solr configset, then bash to set ownership to solr
+      # use docker cp to copy the configset, then bash to set ownership to solr
       - name: Copy Solr configset to solr service
         run: |
-          docker cp solr_conf ${{ job.services.solr.id }}:/var/solr/data/configsets/geniza
-          docker exec --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /var/solr/data/configsets/geniza"
+          docker cp solr_conf ${{ job.services.solr.id }}:/opt/solr/server/solr/configsets/geniza
+          docker exec --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /opt/solr/server/solr/configsets/geniza"
+
+      - name: Copy solr configsets to solr home directory (Solr 8 specific)
+        run: "docker exec -d ${{ job.services.solr.id }} cp -r /opt/solr/server/solr/configsets /var/solr/data"
 
       # Python version to use is stored in the .python-version file, which is the
       # convention for pyenv: https://github.com/pyenv/pyenv

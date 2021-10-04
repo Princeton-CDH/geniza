@@ -5,8 +5,11 @@
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block extrahead %}
-<script src="https://unpkg.com/mirador@latest/dist/mirador.min.js" nonce="{{ request.csp_nonce}}" defer></script>
-<script src="{% static 'js/viewer.js' %}" nonce="{{ request.csp_nonce }}" defer></script>
+{% if document.iiif_urls %} {# mirador is slow, so only include if needed #}
+{# NOTE: referencing specific version avoids an extra render-blocking lookup #}
+<script defer src="https://unpkg.com/mirador@3.2.0/dist/mirador.min.js" nonce="{{ request.csp_nonce}}"></script>
+<script defer src="{% static 'js/viewer.js' %}" nonce="{{ request.csp_nonce }}"></script>
+{% endif %}
 {% endblock extrahead %}
 
 {% block main %}
@@ -39,18 +42,15 @@
         {% endfor %}
         {% endif %}
     </dl>
-
-    {# tags #}
-    {% if document.tags %}
-    <ul class="tags">
+    {% if document.tags.exists %}
+    <dl class="tags">
+        <dt class="sr-only">{% translate 'Tags' %}</dt>
         {% for tag in document.tags.all %}
         <li class="tag">#{{ tag }}</li>
         {% endfor %}
-    </ul>
+    </dl>
     {% endif %}
-
-    {# description #}
-    <p class="description">{{ document.description }}</p>
+    <p>{{ document.description }}</p>
 </div>
 
 {# viewer #}
