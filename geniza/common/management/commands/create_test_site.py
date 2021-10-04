@@ -29,7 +29,10 @@ class Command(BaseCommand):
         # set up test models via pytest fixtures
         frag = make_fragment()
         multifrag = make_multifragment()
-        make_document(frag)
+        # remove the example iiif url used in the test fixture
+        multifrag.iiif_url = ""
+        multifrag.save()
+        make_document(multifrag)
         make_join(frag, multifrag)
 
         # index everything in solr
