@@ -1,14 +1,12 @@
 {% extends 'base.html' %}
 {% load static i18n %}
 
-{% comment %}Translators: Title for document search page{% endcomment %}
-{% translate 'Search Documents' as doctitle%}
-
-{% block title %}{{ doctitle }}{% endblock title %}
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block main %}
 <div class="container search">
-    <h1>{{ doctitle }}</h1>
+    <h1>{{ page_title }}</h1>
 
     <form>
     {{ form }}
@@ -31,12 +29,14 @@
     {% for document in documents %}
         <li class="result">
 
+            {% if document.tags %}
             <dl class="tags">
                 <dt class="sr-only">{% translate 'Tags' %}</dt>
                 {% for tag in document.tags %}
                 <dd class="tag">#{{ tag }}</dd>
                 {% endfor %}
             </dl>
+            {% endif %}
 
             <h2><b>{{ document.type }},</b> {{ document.shelfmark|join:" + " }}</h2>
             <p>{% translate 'Input date' %} {{ document.input_year|default:'unknown' }}</p>

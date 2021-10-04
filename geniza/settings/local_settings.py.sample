@@ -83,5 +83,13 @@ DATA_IMPORT_URLS = {
 #     }
 # }
 
+# https://github.com/mozilla/django-csp
+# Content security policy controls - see `settings/base.py` for policy settings.
+# In development, leave both lines commented out to block & not report.
+# In QA, set REPORT_ONLY to True and specify a "report-only" endpoint.
+# In production, set REPORT_ONLY to False and specify an "enforced" endpoint.
+# CSP_REPORT_ONLY = False
+# CSP_REPORT_URI = ""
+
 # path to preliminary JSON transcription data
 TRANSCRIPTIONS_JSON_FILE = BASE_DIR.parent / "data" / "transcriptions.json"

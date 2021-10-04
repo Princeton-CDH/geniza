@@ -15,3 +15,4 @@ parasolr>=0.7
 django-gfklookupwidget
 django-adminlogentries
 django-webpack-loader
+django-csp

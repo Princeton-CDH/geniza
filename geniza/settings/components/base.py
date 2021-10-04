@@ -59,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "csp.middleware.CSPMiddleware",
 ]
 
 ROOT_URLCONF = "geniza.urls"
@@ -213,3 +214,38 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # documentation links
 PGP_DOCTYPE_GUIDE = "https://docs.google.com/document/d/1FHr1iS_JD5h-y5O1rv5JNNw1OqEVQFb-vSTGr3hoiF4/edit"
+
+# django-csp configuration for content security policy definition and
+# violation reporting - https://github.com/mozilla/django-csp
+#
+# uses lighthouse recommended strict CSP config with nonce for scripts. this
+# is the "modern" CSP config that doesn't use a whitelist and is instead based
+# on nonces generated on the server. For more info: https://web.dev/strict-csp
+CSP_INCLUDE_NONCE_IN = ("script-src",)
+CSP_SCRIPT_SRC = ["'strict-dynamic'", "https: 'unsafe-inline'"]
+CSP_OBJECT_SRC = ("'none'",)
+CSP_BASE_URI = ("'none'",)
+
+# allow XMLHttpRequest or Fetch requests locally (for search), iiif manifests
+CSP_CONNECT_SRC = [
+    "'self'",
+    "*.google-analytics.com",
+    "*.lib.cam.ac.uk",
+    "*.example.com",
+]
+
+# allow loading css locally & via inline styles
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")  # , 'unpkg.com')
+
+# whitelisted image sources - analytics (tracking pixel?), IIIF, maps, etc.
+CSP_IMG_SRC = (
+    "'self'",
+    "iiif.princeton.edu",
+    "figgy.princeton.edu",
+    "iiif-cloud.princeton.edu",
+    "*.lib.cam.ac.uk",
+    "data:",
+)
+
+# exclude admin and cms urls from csp directives since they're authenticated
+CSP_EXCLUDE_URL_PREFIXES = ("/admin", "/cms")

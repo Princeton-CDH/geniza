@@ -121,6 +121,14 @@ Unit Tests
 Python unit tests are written with `py.test <http://doc.pytest.org/>`_
 and should be run with `pytest`.
 
+End-to-end Tests
+----------------
+
+Performance, accessibility, SEO and more are audited via `Lighthouse <https://developers.google.com/web/tools/lighthouse>`_. The tool runs in a GitHub actions workflow (`lighthouse.yml`).
+
+Lighthouse runs several checks by visiting a list of URLs and averaging the results. If new pages are adding to the site, a corresponding URL should be added to the configuration file `lighthouserc.js`.
+
+If the Lighthouse build is generating errors that need to be temporarily or permanently ignored, the corresponding error code can be set to "off" or "warn" in `lighthouserc.js`.
 
 Setup Black
 -----------
