@@ -5,7 +5,7 @@
     {% if document.tags %}
     <ul class="tags">
         {% for tag in document.tags %}
-        <li class="tag">#{{ tag }}</li>
+        <li>{{ tag }}</li>
         {% endfor %}
     </ul>
     {% endif %}
@@ -26,7 +26,7 @@
 
     {# description #}
     <p class="description">{{ document.description.0|truncatewords:25 }}</p>
-    
+
     {# scholarship records #}
     {% if document.scholarship_count %}
     <p class="scholarship">
