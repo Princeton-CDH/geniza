@@ -1,3 +1,4 @@
+from django.apps import apps  # used to dynamically get the Model
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
@@ -124,9 +125,7 @@ class Source(models.Model):
         # author, title (year)
         # author (year)
         # author, "title" journal vol (year)
-
-        # TODO: include language if not English
-
+        parts = []
         author = ""
         if self.authorship_set.exists():
             author_lastnames = [
@@ -141,8 +140,6 @@ class Source(models.Model):
             else:
                 author = author_lastnames[0]
 
-        parts = []
-
         if self.title:
             # if this is an article, wrap title in quotes
             if self.source_type.type == "Article":
@@ -150,7 +147,42 @@ class Source(models.Model):
             else:
                 parts.append(self.title)
 
-        # TODO: formatted version with italics for book/journal title
+        if self.languages:
+            if not self.languages.all():
+                languages = None
+
+            if len(self.languages.all()) > 1:
+                # Separate languages with commas
+                languages = ",".join([l.name for l in self.languages.all()])
+            else:
+                languages = " ".join([l.name for l in self.languages.all()])
+
+        # Source formatting for given source type, see #252
+
+        if self.source_type.type == "Article":
+            # S. D. Goitein, "Jewish Women in the Middle Ages" (English), Hadassah Magazine 55.2 (1973)"""
+            return f'{author}, "{self.title}"{"("+languages+")" if languages else ""}, {self.journal} {self.volume if self.volume else ""} {"("+str(self.year)+")" if self.year else ""}{": "+str(self.page_range) if self.page_range else ""}'
+
+        if self.source_type.type == "Book":
+            # Moshe Gil, Palestine during the First Muslim Period, 634–1099, in Hebrew (Tel Aviv, 1983), vol. 2, doc. 134"""
+            return f'{author}, {self.title} {"in "+languages+")" if languages else ""}, {self.volume if self.volume else ""} {"("+str(self.year)+")" if self.year else ""}{": "+str(self.page_range) if self.page_range else ""}'
+
+        if self.source_type.type == "Book Section":
+            # S. D. Goitein, "New Documents on the Gaonate in Palestine," in Salo Baron Jubilee Volume on the Occasion of His Seventy-fifth Birthday, ed. Arthur Hyman (New York, 1975), 2:55–74
+            # TODO need field for place of publication
+            return f'{author}, "{self.title}," {"in <i>"+self.journal+"</i>" if self.journal else ""} {"("+str(self.year)+")," if self.year else ""}{" "+self.volume+": " if self.volume else ""}{str(self.page_range) if self.page_range else ""}'
+
+            # TODO: formatted version with italics for book/journal title.
+            # AJ (10/18/21) Added <i> but will require |safe in templates, will appear as html in admin, is this the right solution?
+
+        # is Blog
+        # Source objects exist with type Blog, but no formatting is given in #252
+
+        if self.source_type.type == "Dissertation":
+            # Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza" (PhD diss. Tel Aviv University, 1992), ??? what is doc. 5 above?
+            return f'{author}, "{self.title}" {"in "+languages+")" if languages else ""}, {"("+self.other_info+", "+str(self.year)+")" if self.other_info and self.year else ""}'
+
+        # elif other source_type keep existing system
         if self.journal:
             parts.append(self.journal)
         if self.volume:

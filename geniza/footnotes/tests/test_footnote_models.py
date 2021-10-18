@@ -2,7 +2,13 @@ from unittest.mock import patch
 
 import pytest
 
-from geniza.footnotes.models import Creator, Footnote, SourceLanguage, SourceType
+from geniza.footnotes.models import (
+    Creator,
+    Footnote,
+    Source,
+    SourceLanguage,
+    SourceType,
+)
 
 
 class TestSourceType:
@@ -33,7 +39,7 @@ class TestSource:
         )
 
         # two authors
-        assert str(twoauthor_source) == "%s and %s, %s" % (
+        assert str(twoauthor_source) == "%s and %s, %s," % (
             twoauthor_source.authors.first().firstname_lastname(),
             twoauthor_source.authors.all()[1].firstname_lastname(),
             twoauthor_source.title,
@@ -45,32 +51,104 @@ class TestSource:
         ]
         assert str(multiauthor_untitledsource) == "%s, %s, %s and %s" % tuple(lastnames)
 
-    @pytest.mark.django_db
-    def test_str_article(self, article):
+        #                                            #
+        #  Test formatting for specific Source types #
+        #                                            #
+        for s in Source.objects.all():
+            # parse author names to string
+            author = ""
+            if s.authorship_set.exists():
+                author_lastnames = [
+                    a.creator.firstname_lastname() for a in s.authorship_set.all()
+                ]
+            if len(author_lastnames) > 1:
+                author = " and ".join(
+                    [", ".join(author_lastnames[:-1]), author_lastnames[-1]]
+                )
+            else:
+                author = author_lastnames[0]
 
-        # article with title, journal title, volume, year
-        assert str(article) == '%s, "%s" %s %s (%s)' % (
-            article.authors.first().firstname_lastname(),
-            article.title,
-            article.journal,
-            article.volume,
-            article.year,
-        )
-        # article with no title
-        article.title = ""
-        assert str(article) == "%s, %s %s (%s)" % (
-            article.authors.first().firstname_lastname(),
-            article.journal,
-            article.volume,
-            article.year,
-        )
-        # no volume
-        article.volume = ""
-        assert str(article) == "%s, %s (%s)" % (
-            article.authors.first().firstname_lastname(),
-            article.journal,
-            article.year,
-        )
+            if s.languages:
+                if not s.languages.all():
+                    languages = None
+
+                if len(s.languages.all()) > 1:
+                    # Separate languages with commas
+                    languages = ",".join([l.name for l in s.languages.all()])
+                else:
+                    languages = " ".join([l.name for l in s.languages.all()])
+
+            # Source is Article
+            # S. D. Goitein, "New Sources from the Geniza" (Hebrew), Tarbiz 18 (1954): 7–19
+            # <firstname> <lastname>, "<title>" (<language>), <journal> <volume> (<year>): <page_range>
+            test_case = Source.objects.filter(
+                title="Jewish Women in the Middle Ages", source_type__type="Article"
+            ).first()
+            if test_case:
+                assert (
+                    str(test_case)
+                    == """S. D. Goitein, "Jewish Women in the Middle Ages" (English), Hadassah Magazine 55.2 (1973)"""
+                )
+
+            if s.source_type.type == "Article":
+                assert (
+                    str(s)
+                    == f'{author}, "{s.title}"{"("+languages+")" if languages else ""}, {s.journal} {s.volume if s.volume else ""} {"("+str(s.year)+")" if s.year else ""}{": "+str(s.page_range) if s.page_range else ""}'
+                )
+
+            # Source is Blog
+            # TODO formatting for Blog is not outlined in Issue 252
+
+            # Source is Book
+            # Moshe Gil, Palestine during the First Muslim Period, 634–1099, in Hebrew (Tel Aviv, 1983), vol. 2, doc. 134
+            test_case = Source.objects.filter(
+                title="Palestine During the First Muslim Period (634–1099)",
+                source_type__type="Book",
+            ).first()
+            if test_case:
+                assert (
+                    str(test_case)
+                    == """Moshe Gil, Palestine during the First Muslim Period, 634–1099, in Hebrew (Tel Aviv, 1983), vol. 2, doc. 134"""
+                )
+
+            # Source is Book Section
+            # Outhwaite, "Byzantium and Byzantines in the Cairo Genizah: New and Old Sources," in <i>Jewish Reception of Greek Bible Versions</i> ([Missing], 2009), x:xx-xx
+            test_case = Source.objects.filter(
+                title="Byzantium and Byzantines in the Cairo Genizah: New and Old Sources",
+                source_type__type="Book Section",
+            ).first()
+            if test_case:
+                assert (
+                    str(test_case)
+                    == """Outhwaite, "Byzantium and Byzantines in the Cairo Genizah: New and Old Sources," in <i>Jewish Reception of Greek Bible Versions</i> (2009)"""
+                )
+
+            if s.source_type.type == "Book Section":
+                assert (
+                    str(s)
+                    == f'{author}, "{s.title}," {"in <i>"+s.journal+"</i>" if s.journal else ""} {"("+str(s.year)+")," if s.year else ""}{" "+s.volume+": " if s.volume else ""}{str(s.page_range) if s.page_range else ""}'
+                )
+
+            # Source is Dissertation
+            # Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza" (PhD diss. Tel Aviv University, 1992)
+            test_case = Source.objects.filter(
+                title="Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza",
+                source_type__type="Dissertation",
+            ).first()
+            if test_case:
+                assert (
+                    str(test_case)
+                    == """Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza" (PhD diss. Tel Aviv University, 1992)"""
+                )
+
+            if s.source_type.type == "Dissertation":
+                assert (
+                    str(s)
+                    == f'{author}, "{s.title}" {"in "+languages+")" if languages else ""}, {"("+s.other_info+", "+str(s.year)+")" if s.other_info and s.year else ""}'
+                )
+
+            # Source is Unpublished
+            # TODO formatting for Blog is not outlined in Issue 252
 
     def test_all_authors(self, twoauthor_source):
         author1, author2 = twoauthor_source.authorship_set.all()
