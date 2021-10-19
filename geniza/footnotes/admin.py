@@ -125,6 +125,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     )
     list_filter = (
         "source_type",
+        "footnote__doc_relation",
         "languages",
         ("authors", admin.RelatedOnlyFieldListFilter),
     )
