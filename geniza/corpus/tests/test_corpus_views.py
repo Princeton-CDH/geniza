@@ -2,8 +2,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 from django.urls import reverse
-from pytest_django.asserts import assertContains
 from django.utils.text import Truncator
+from pytest_django.asserts import assertContains
 
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet

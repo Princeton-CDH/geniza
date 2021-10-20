@@ -14,14 +14,14 @@
 }
 
 // ensure only screen readers can focus. apply this with .sr-only
-.sr-only-focusable { 
+.sr-only-focusable {
     &:active,
     &:focus {
-      position: static;
-      width: auto;
-      height: auto;
-      overflow: visible;
-      clip: auto;
-      white-space: normal;
-  }
+        position: static;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        clip: auto;
+        white-space: normal;
+    }
 }

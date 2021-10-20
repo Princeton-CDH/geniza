@@ -1,8 +1,8 @@
 {
-    "status": "done",
-    "publicPath": "/static/bundles/",
-    "assets": [],
-    "chunks": {
-        "main": []
-    }
+  "status": "done",
+  "publicPath": "/static/bundles/",
+  "assets": [],
+  "chunks": {
+    "main": []
+  }
 }

@@ -3,9 +3,9 @@ module.exports = {
         collect: {
             // URLs that Lighthouse will visit and test
             url: [
-                "http://localhost:8000/documents/",     // doc search
+                "http://localhost:8000/documents/", // doc search
                 // "http://localhost:8000/documents/1/"    // doc detail
-                "http://localhost:8000/documents/3951/"    // doc detail — currently with IIIF viewer
+                "http://localhost:8000/documents/3951/", // doc detail — currently with IIIF viewer
             ],
             // The following two commands make Lighthouse start up a Django
             // server for us to test against. PYTHONUNBUFFERED is needed to make
@@ -14,8 +14,9 @@ module.exports = {
             // server is running and ready to accept HTTP requests. We use the
             // --insecure flag so that Django serves static files from static/;
             // they first need to be built with Webpack and then collected.
-            startServerCommand: "PYTHONUNBUFFERED=1 python manage.py runserver --insecure",
-            startServerReadyPattern: "Quit the server"
+            startServerCommand:
+                "PYTHONUNBUFFERED=1 python manage.py runserver --insecure",
+            startServerReadyPattern: "Quit the server",
         },
         upload: {
             target: "temporary-public-storage",
@@ -37,7 +38,7 @@ module.exports = {
                 "csp-xss": "off",
                 // this is important, but failing so disable for now
                 "render-blocking-resources": "off",
-            }
+            },
         },
-    }
-}
+    },
+};

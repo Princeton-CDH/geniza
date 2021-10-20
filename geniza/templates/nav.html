@@ -3,16 +3,16 @@
     {# Translators: label for 'home' button in main navigation #}
     <a class="home-link" href="#">{% translate "GENIZA" %}</a>
     {% spaceless %}
-    {% url "corpus:document-search" as search_url %}
-    <ul class="menu">
-        <li class="menu-item">
-            <a href="{{ search_url }}"{% if request.path == search_url %} aria-current="page"{% endif %}>
-            {% translate "Search" %}
-            </a>
-        </li>
-        <li class="menu-item"><span>{% translate "Editorial" %}</span></li>
-        <li class="menu-item"><span>{% translate "Contact Us" %}</span></li>
-        <li class="menu-item"><span>{% translate "About" %}</span></li>
-    </ul>
+        {% url "corpus:document-search" as search_url %}
+        <ul class="menu">
+            <li class="menu-item">
+                <a href="{{ search_url }}"{% if request.path == search_url %} aria-current="page"{% endif %}>
+                    {% translate "Search" %}
+                </a>
+            </li>
+            <li class="menu-item"><span>{% translate "Editorial" %}</span></li>
+            <li class="menu-item"><span>{% translate "Contact Us" %}</span></li>
+            <li class="menu-item"><span>{% translate "About" %}</span></li>
+        </ul>
     {% endspaceless %}
 </nav>

@@ -1,38 +1,44 @@
 .ribbon-box {
-  width: 350px;
-  height: 350px;
-  position: fixed;
-  right: 0;
-  top:  0;
-  z-index: 11;
-  background: transparent;
-  font-size: 14px;
-  opacity: 0.95;
-  transition: opacity 0.2s; }
-  .ribbon-box.fade {
+    width: 350px;
+    height: 350px;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 11;
+    background: transparent;
+    font-size: 14px;
+    opacity: 0.95;
+    transition: opacity 0.2s;
+}
+.ribbon-box.fade {
     opacity: 0.3;
-    pointer-events: none; }
-    .ribbon-box.fade button {
-      display: none; }
-  .ribbon-box .heading {
+    pointer-events: none;
+}
+.ribbon-box.fade button {
+    display: none;
+}
+.ribbon-box .heading {
     font-size: 1rem;
-    font-family: "Lyon Text Web", Georgia, serif; }
-  .ribbon-box button {
+    font-family: "Lyon Text Web", Georgia, serif;
+}
+.ribbon-box button {
     border: #f8f8f8;
     border-radius: 5px;
     color: black;
     background-color: #f8f8f8;
     padding: 5px;
-    margin-bottom: 5px; }
+    margin-bottom: 5px;
+}
 
 .ribbon-wrapper {
-  width: 375px;
-  height: 375px;
-  overflow: hidden;
-  position: absolute;
-  right: -1px;
-  top: -1px; }
-  .ribbon-wrapper .ribbon {
+    width: 375px;
+    height: 375px;
+    overflow: hidden;
+    position: absolute;
+    right: -1px;
+    top: -1px;
+}
+.ribbon-wrapper .ribbon {
     background-color: #ff4545;
     color: #fff;
     font-size: 0.8em;
@@ -43,4 +49,5 @@
     text-align: center;
     top: 55px;
     transform: rotate(45deg);
-    width: 400px; }
+    width: 400px;
+}

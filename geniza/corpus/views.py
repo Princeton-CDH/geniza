@@ -1,8 +1,9 @@
 from django.db.models.query import Prefetch
+from django.utils.text import Truncator
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormMixin
-from django.utils.text import Truncator
-from django.utils.translation import ngettext, gettext as _
 from tabular_export.admin import export_to_csv_response
 
 from geniza.corpus.forms import DocumentSearchForm
