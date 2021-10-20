@@ -1,53 +1,53 @@
 name: dbdocs
 
 on:
-    push:
-        branches:
-            - develop # dev for now! switch to main later
-    pull_request:
-        # The branches below must be a subset of the branches above
-        branches: [develop]
+  push:
+    branches:
+      - develop # dev for now! switch to main later
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [develop]
 
 env:
-    NODE_VERSION: 10
-    DB_NAME: geniza
-    DB_USER: geniza
-    DB_PASSWORD: geniza
-    DJANGO_ENV: test
+  NODE_VERSION: 10
+  DB_NAME: geniza
+  DB_USER: geniza
+  DB_PASSWORD: geniza
+  DJANGO_ENV: test
 
 jobs:
-    publish-dbdocs:
-        name: Publish dbdocs
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v2
-            # Node is required to use dbdocs
-            - name: Setup node
-              uses: actions/setup-node@v2-beta
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
-            - name: Install dbdocs
-              run: npm install -g dbdocs
-            - name: Check dbdocs
-              run: dbdocs
-            # Python version to use is stored in the .python-version file, which is the
-            # convention for pyenv: https://github.com/pyenv/pyenv
-            - name: Get Python version
-              run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
-            - name: Setup Python
-              uses: actions/setup-python@v2
-              with:
-                  python-version: ${{ env.PYTHON_VERSION }}
-            - name: Install dependencies
-              run: pip install -r requirements/test.txt
-            - name: Setup local_settings.py
-              run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
+  publish-dbdocs:
+    name: Publish dbdocs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      # Node is required to use dbdocs
+      - name: Setup node
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install dbdocs
+        run: npm install -g dbdocs
+      - name: Check dbdocs
+        run: dbdocs
+      # Python version to use is stored in the .python-version file, which is the
+      # convention for pyenv: https://github.com/pyenv/pyenv
+      - name: Get Python version
+        run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        run: pip install -r requirements/test.txt
+      - name: Setup local_settings.py
+        run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
 
-            # Build and publish dbdocs
-            - name: Generate DBML
-              run: python manage.py dbml corpus common > geniza.dbml
-            - name: Push to dbdocs
-              env:
-                  DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
-              run: dbdocs build geniza.dbml --project geniza
+      # Build and publish dbdocs
+      - name: Generate DBML
+        run: python manage.py dbml corpus common > geniza.dbml
+      - name: Push to dbdocs
+        env:
+          DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
+        run: dbdocs build geniza.dbml --project geniza

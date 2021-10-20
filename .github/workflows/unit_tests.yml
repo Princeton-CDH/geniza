@@ -1,110 +1,110 @@
 name: unit tests
 
 on:
-    push: # run on every push or PR to any branch
-    pull_request:
-    schedule: # run automatically on main branch each Tuesday at 11am
-        - cron: "0 16 * * 2"
+  push: # run on every push or PR to any branch
+  pull_request:
+  schedule: # run automatically on main branch each Tuesday at 11am
+    - cron: "0 16 * * 2"
 
 env:
-    DB_NAME: geniza
-    DB_USER: geniza
-    DB_PASSWORD: geniza
-    DJANGO_ENV: test
+  DB_NAME: geniza
+  DB_USER: geniza
+  DB_PASSWORD: geniza
+  DJANGO_ENV: test
 
 jobs:
-    python-unit:
-        name: Python unit tests
-        runs-on: ubuntu-latest
-        # We use service containers to avoid needing to set up a local copy of
-        # mysql or postgres on the test runner instance. This syntax is similar to
-        # the spec of a docker-compose file. For more, see:
-        # https://docs.github.com/en/free-pro-team@latest/actions/guides/about-service-containers
-        services:
-            postgres:
-                image: postgres:12
-                env:
-                    POSTGRES_DB: ${{ env.DB_NAME }}
-                    POSTGRES_USER: ${{ env.DB_USER }}
-                    POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
-                ports:
-                    - 5432:5432
-            solr:
-                image: solr:8.6
-                ports:
-                    - 8983:8983
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v2
+  python-unit:
+    name: Python unit tests
+    runs-on: ubuntu-latest
+    # We use service containers to avoid needing to set up a local copy of
+    # mysql or postgres on the test runner instance. This syntax is similar to
+    # the spec of a docker-compose file. For more, see:
+    # https://docs.github.com/en/free-pro-team@latest/actions/guides/about-service-containers
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_DB: ${{ env.DB_NAME }}
+          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
+        ports:
+          - 5432:5432
+      solr:
+        image: solr:8.6
+        ports:
+          - 8983:8983
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-            # use docker cp to copy the configset, then bash to set ownership to solr
-            - name: Copy Solr configset to solr service
-              run: |
-                  docker cp solr_conf ${{ job.services.solr.id }}:/opt/solr/server/solr/configsets/geniza
-                  docker exec --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /opt/solr/server/solr/configsets/geniza"
+      # use docker cp to copy the configset, then bash to set ownership to solr
+      - name: Copy Solr configset to solr service
+        run: |
+          docker cp solr_conf ${{ job.services.solr.id }}:/opt/solr/server/solr/configsets/geniza
+          docker exec --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /opt/solr/server/solr/configsets/geniza"
 
-            - name: Copy solr configsets to solr home directory (Solr 8 specific)
-              run: "docker exec -d ${{ job.services.solr.id }} cp -r /opt/solr/server/solr/configsets /var/solr/data"
+      - name: Copy solr configsets to solr home directory (Solr 8 specific)
+        run: "docker exec -d ${{ job.services.solr.id }} cp -r /opt/solr/server/solr/configsets /var/solr/data"
 
-            # Python version to use is stored in the .python-version file, which is the
-            # convention for pyenv: https://github.com/pyenv/pyenv
-            - name: Get Python version
-              run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
-            - name: Setup Python
-              uses: actions/setup-python@v2
-              with:
-                  python-version: ${{ env.PYTHON_VERSION }}
+      # Python version to use is stored in the .python-version file, which is the
+      # convention for pyenv: https://github.com/pyenv/pyenv
+      - name: Get Python version
+        run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-            # We base the python cache on the hash of all requirements files, so that
-            # if any change, the cache is invalidated.
-            - name: Cache pip
-              uses: actions/cache@v2
-              with:
-                  path: ~/.cache/pip
-                  key: pip-${{ hashFiles('requirements/*.txt') }}
-                  restore-keys: |
-                      pip-${{ hashFiles('requirements/*.txt') }}
-                      pip-
+      # We base the python cache on the hash of all requirements files, so that
+      # if any change, the cache is invalidated.
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements/*.txt') }}
+          restore-keys: |
+            pip-${{ hashFiles('requirements/*.txt') }}
+            pip-
 
-            - name: Install dependencies
-              run: pip install -r requirements/test.txt
+      - name: Install dependencies
+        run: pip install -r requirements/test.txt
 
-            - name: Setup local_settings.py
-              run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
+      - name: Setup local_settings.py
+        run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
 
-            - name: Setup dummy webpack manifest
-              run: cp sitemedia/webpack-stats-ci.json sitemedia/webpack-stats.json
+      - name: Setup dummy webpack manifest
+        run: cp sitemedia/webpack-stats-ci.json sitemedia/webpack-stats.json
 
-            - name: Run pytest
-              run: py.test --cov=./ --cov-report=xml
+      - name: Run pytest
+        run: py.test --cov=./ --cov-report=xml
 
-            - name: Upload test coverage to Codecov
-              uses: codecov/codecov-action@v1
+      - name: Upload test coverage to Codecov
+        uses: codecov/codecov-action@v1
 
-            - name: Ensure all migrations have been created
-              if: ${{ github.event_name == 'pull_request' }}
-              run: python manage.py makemigrations --check --no-input
+      - name: Ensure all migrations have been created
+        if: ${{ github.event_name == 'pull_request' }}
+        run: python manage.py makemigrations --check --no-input
 
-            # Set the color of the slack message used in the next step based on the
-            # status of the build: "danger" for failure, "good" for success,
-            # "warning" for error
-            - name: Set Slack message color based on build status
-              if: ${{ always() }}
-              env:
-                  JOB_STATUS: ${{ job.status }}
-              run: echo "SLACK_COLOR=$(if [ "$JOB_STATUS" == "success" ]; then echo "good"; elif [ "$JOB_STATUS" == "failure" ]; then echo "danger"; else echo "warning"; fi)" >> $GITHUB_ENV
+      # Set the color of the slack message used in the next step based on the
+      # status of the build: "danger" for failure, "good" for success,
+      # "warning" for error
+      - name: Set Slack message color based on build status
+        if: ${{ always() }}
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: echo "SLACK_COLOR=$(if [ "$JOB_STATUS" == "success" ]; then echo "good"; elif [ "$JOB_STATUS" == "failure" ]; then echo "danger"; else echo "warning"; fi)" >> $GITHUB_ENV
 
-            # Send a message to slack to report the build status. The webhook is stored
-            # at the organization level and available to all repositories. Only run on
-            # scheduled builds & pushes, since PRs automatically report to Slack.
-            - name: Report status to Slack
-              uses: rtCamp/action-slack-notify@master
-              if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'push') }}
-              continue-on-error: true
-              env:
-                  SLACK_COLOR: ${{ env.SLACK_COLOR }}
-                  SLACK_WEBHOOK: ${{ secrets.ACTIONS_SLACK_WEBHOOK }}
-                  SLACK_TITLE: "Workflow `${{ github.workflow }}`: ${{ job.status }}"
-                  SLACK_MESSAGE: "Run <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|#${{ github.run_number }}> on <https://github.com/${{ github.repository }}/|${{ github.repository }}@${{ github.ref }}>"
-                  SLACK_FOOTER: "<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|View commit>"
-                  MSG_MINIMAL: true # use compact slack message format
+      # Send a message to slack to report the build status. The webhook is stored
+      # at the organization level and available to all repositories. Only run on
+      # scheduled builds & pushes, since PRs automatically report to Slack.
+      - name: Report status to Slack
+        uses: rtCamp/action-slack-notify@master
+        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'push') }}
+        continue-on-error: true
+        env:
+          SLACK_COLOR: ${{ env.SLACK_COLOR }}
+          SLACK_WEBHOOK: ${{ secrets.ACTIONS_SLACK_WEBHOOK }}
+          SLACK_TITLE: "Workflow `${{ github.workflow }}`: ${{ job.status }}"
+          SLACK_MESSAGE: "Run <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|#${{ github.run_number }}> on <https://github.com/${{ github.repository }}/|${{ github.repository }}@${{ github.ref }}>"
+          SLACK_FOOTER: "<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|View commit>"
+          MSG_MINIMAL: true # use compact slack message format
