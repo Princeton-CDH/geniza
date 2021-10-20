@@ -80,7 +80,7 @@ $dark-theme: (
  * @param {string} $color - The background color name to look up in the theme
  *
  */
- @mixin apply-combo($background) {
+@mixin apply-combo($background) {
     color: map.get($theme, "on-#{$background}");
     background-color: map.get($theme, $background);
 
@@ -88,5 +88,4 @@ $dark-theme: (
         color: map.get($dark-theme, "on-#{$background}");
         background-color: map.get($dark-theme, $background);
     }
- }
- 
+}

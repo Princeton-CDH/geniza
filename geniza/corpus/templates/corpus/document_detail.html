@@ -5,59 +5,59 @@
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block extrahead %}
-{% if document.iiif_urls %} {# mirador is slow, so only include if needed #}
-{# NOTE: referencing specific version avoids an extra render-blocking lookup #}
-<script defer src="https://unpkg.com/mirador@3.2.0/dist/mirador.min.js" nonce="{{ request.csp_nonce}}"></script>
-<script defer src="{% static 'js/viewer.js' %}" nonce="{{ request.csp_nonce }}"></script>
-{% endif %}
+    {% if document.iiif_urls %} {# mirador is slow, so only include if needed #}
+        {# NOTE: referencing specific version avoids an extra render-blocking lookup #}
+        <script defer src="https://unpkg.com/mirador@3.2.0/dist/mirador.min.js" nonce="{{ request.csp_nonce}}"></script>
+        <script defer src="{% static 'js/viewer.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    {% endif %}
 {% endblock extrahead %}
 
 {% block main %}
-<!-- document details -->
+    <!-- document details -->
 
-{# title #}
-<h1>{{ document.title }}</h1>
+    {# title #}
+    <h1>{{ document.title }}</h1>
 
-<div class="container">
-    {# tabs #}
-    {% include "corpus/snippets/document_tabs.html" %}
+    <div class="container">
+        {# tabs #}
+        {% include "corpus/snippets/document_tabs.html" %}
 
-    {# metadata #}
-    <dl class="metadata">
-        <dt class="sr-only">{% translate 'Shelfmark' %}</dt>
-        <dd>{{ document.shelfmark }}</dd>
-        {% if document.doctype %}
-        <dt class="sr-only">{% translate 'Document Type' %}</dt>
-        <dd>{{ document.doctype }}</dd>
+        {# metadata #}
+        <dl class="metadata">
+            <dt class="sr-only">{% translate 'Shelfmark' %}</dt>
+            <dd>{{ document.shelfmark }}</dd>
+            {% if document.doctype %}
+                <dt class="sr-only">{% translate 'Document Type' %}</dt>
+                <dd>{{ document.doctype }}</dd>
+            {% endif %}
+            {# Translators: Date document was first added to the PGP #}
+            <dt class="inline">{% translate 'Input date' %}</dt>
+            <dd>{{ document.log_entries.last.action_time.year }}</dd>
+            {% if document.editions %}
+                {# Translators: Editor label #}
+                <dt>{% translate 'Editor' %}</dt>  {# optionally pluralize? #}
+                {% for ed in document.editions %}
+                    <dd>{{ ed.display }}</dd>
+                    {# link ? #}
+                {% endfor %}
+            {% endif %}
+        </dl>
+        {% if document.tags.exists %}
+            <ul class="tags">
+                {% for tag in document.tags.all %}
+                    <li>{{ tag }}</li>
+                {% endfor %}
+            </ul>
         {% endif %}
-        {# Translators: Date document was first added to the PGP #}
-        <dt class="inline">{% translate 'Input date' %}</dt>
-        <dd>{{ document.log_entries.last.action_time.year }}</dd>
-        {% if document.editions %}
-        {# Translators: Editor label #}
-        <dt>{% translate 'Editor' %}</dt>  {# optionally pluralize? #}
-        {% for ed in document.editions %}
-        <dd>{{ ed.display }}</dd>
-        {# link ? #}
-        {% endfor %}
-        {% endif %}
-    </dl>
-    {% if document.tags.exists %}
-    <ul class="tags">
-        {% for tag in document.tags.all %}
-        <li>{{ tag }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-    <p>{{ document.description }}</p>
-</div>
+        <p>{{ document.description }}</p>
+    </div>
 
-{# viewer #}
-{% with iiif_urls=document.iiif_urls %}
-{% if iiif_urls %}
-<div class="wrapper">
-    <div id="iiif_viewer" data-iiif-urls="{{ iiif_urls|join:" " }}"></div>
-</div>
-{% endif %}
-{% endwith %}
+    {# viewer #}
+    {% with iiif_urls=document.iiif_urls %}
+        {% if iiif_urls %}
+            <div class="wrapper">
+                <div id="iiif_viewer" data-iiif-urls="{{ iiif_urls|join:" " }}"></div>
+            </div>
+        {% endif %}
+    {% endwith %}
 {% endblock main %}

@@ -17,7 +17,7 @@ $text-size-2xl: 1.95rem;
 $text-size-3xl: 2.44rem;
 $text-size-4xl: 3.05rem;
 $text-size-5xl: 3.81rem;
-              
+
 // Mixins to apply typographic styles to text elements.
 @mixin headline-1 {
     font-family: fonts.$primary;
@@ -82,7 +82,10 @@ $text-size-5xl: 3.81rem;
 }
 
 @mixin link {
-    @include colors.apply-theme("secondary", $property: "text-decoration-color");
+    @include colors.apply-theme(
+        "secondary",
+        $property: "text-decoration-color"
+    );
 
     font-family: fonts.$secondary;
     font-size: 1rem;

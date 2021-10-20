@@ -5,23 +5,23 @@
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block main %}
-<!-- document scholarship records -->
-<h1>{{ document.title }}</h1>
-<div class="container">
-    {% include "corpus/snippets/document_tabs.html" %}
-    <ol>
-        {% for fn in document.footnotes.all %}
-        {% spaceless %}
-        <li><p class="footnote">
-        {% if fn.source.title %}<span class="title">{{ fn.source.title }}</span>{% endif %}
-        {% if fn.source.authors.exists %}<span class="author">{{ fn.source.all_authors }}</span>{% endif %}
-        {% if fn.source.year %}<span class="year">{{ fn.source.year }}</span>{% endif %}
-        <span class="relation">{{ fn.doc_relation }}</span>
-        {% if fn.location %}<span class="location">{{ fn.location }}</span>{% endif %}
-        {% if fn.url %}<a href="{{ fn.url }}">{% translate "Link to source" %}</a>{% endif %}
-        </p></li>
-        {% endspaceless %}
-        {% endfor %}
-    </ol>
-</div>
+    <!-- document scholarship records -->
+    <h1>{{ document.title }}</h1>
+    <div class="container">
+        {% include "corpus/snippets/document_tabs.html" %}
+        <ol>
+            {% for fn in document.footnotes.all %}
+                {% spaceless %}
+                    <li><p class="footnote">
+                        {% if fn.source.title %}<span class="title">{{ fn.source.title }}</span>{% endif %}
+                        {% if fn.source.authors.exists %}<span class="author">{{ fn.source.all_authors }}</span>{% endif %}
+                        {% if fn.source.year %}<span class="year">{{ fn.source.year }}</span>{% endif %}
+                        <span class="relation">{{ fn.doc_relation }}</span>
+                        {% if fn.location %}<span class="location">{{ fn.location }}</span>{% endif %}
+                        {% if fn.url %}<a href="{{ fn.url }}">{% translate "Link to source" %}</a>{% endif %}
+                    </p></li>
+                {% endspaceless %}
+            {% endfor %}
+        </ol>
+    </div>
 {% endblock main %}

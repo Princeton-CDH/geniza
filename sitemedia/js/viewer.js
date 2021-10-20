@@ -1,28 +1,29 @@
-target = document.getElementById("iiif_viewer")
+target = document.getElementById("iiif_viewer");
 if (target) {
-    iiifUrls = target.dataset.iiifUrls.split(" ")
+    iiifUrls = target.dataset.iiifUrls.split(" ");
     Mirador.viewer({
         id: target.id,
         window: {
             allowClose: false, // Prevent the user from closing this window
             allowMaximize: false,
-            defaultSideBarPanel: 'info',
+            defaultSideBarPanel: "info",
             sideBarOpenByDefault: false,
-            views: [ // Only allow the user to select single and gallery view
-                { key: 'single' },
-                { key: 'gallery' },
+            views: [
+                // Only allow the user to select single and gallery view
+                { key: "single" },
+                { key: "gallery" },
             ],
-            defaultView: 'single',
+            defaultView: "single",
         },
         galleryView: {
-            height: 250
+            height: 250,
         },
         thumbnailNavigation: {
-            defaultPosition: 'far-right'
+            defaultPosition: "far-right",
         },
-        windows: iiifUrls.map(url => ({ loadedManifest: url })),
+        windows: iiifUrls.map((url) => ({ loadedManifest: url })),
         workspaceControlPanel: {
             enabled: false, // Remove extra workspace settings,
-        }
+        },
     });
 }

@@ -7,7 +7,7 @@
 
 // list of results
 .search-results {
-    list-style: none; 
+    list-style: none;
     counter-reset: search-counter;
 }
 
@@ -23,13 +23,13 @@
     // document titles
     .title {
         @include typography.subtitle;
-        
+
         position: relative;
-        
+
         // anchor counter to h2 instead of li, for alignment regardless of tags
         &::before {
             content: counter(search-counter);
-            margin-left: - spacing.$spacing-lg;
+            margin-left: -spacing.$spacing-lg;
             text-align: left;
             float: left;
             font-weight: bold;
@@ -39,7 +39,7 @@
     // document type, inside title
     .doctype {
         font-weight: bold;
-        
+
         &::after {
             font-weight: normal;
             content: ", ";
@@ -54,7 +54,7 @@
     // "view more details" link
     .view-link {
         @include typography.link;
-    
+
         display: block;
         width: max-content;
         margin-left: auto;

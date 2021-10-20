@@ -4,12 +4,12 @@
 {% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "css/admin-local.css" %}">{% endblock %}
 
 {% block sidebar %}
-<div id="content-related"> {# required to get django styles #}
-    {% include 'admin/corpus/review_list.html' %}
-</div>
-{{ block.super }}
-{# link to view all actions by this user, displayed under recent actions #}
-<div id="content-related"><p>
-    <a href="{% url "admin:admin_logentry_changelist" %}?user__id__exact={{ user.pk }}">View more actions</a>
-</p></div>
+    <div id="content-related"> {# required to get django styles #}
+        {% include 'admin/corpus/review_list.html' %}
+    </div>
+    {{ block.super }}
+    {# link to view all actions by this user, displayed under recent actions #}
+    <div id="content-related"><p>
+        <a href="{% url "admin:admin_logentry_changelist" %}?user__id__exact={{ user.pk }}">View more actions</a>
+    </p></div>
 {% endblock %}
