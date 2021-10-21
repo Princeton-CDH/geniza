@@ -19,6 +19,7 @@ from taggit.models import Tag
 from taggit_selectize.managers import TaggableManager
 
 from geniza.common.models import TrackChangesModel
+from geniza.common.utils import absolutize_url
 from geniza.footnotes.models import Footnote
 
 logger = logging.getLogger(__name__)
@@ -445,6 +446,10 @@ class Document(ModelIndexable):
 
     def get_absolute_url(self):
         return reverse("corpus:document", args=[str(self.id)])
+
+    @property
+    def permalink(self):
+        return absolutize_url(self.get_absolute_url())
 
     def iiif_urls(self):
         """List of IIIF urls for images of the Document's Fragments."""

@@ -49,7 +49,6 @@ class TestDocumentDetailView:
         """should contain permalink generated from absolutize_url"""
         response = client.get(reverse("corpus:document", args=(document.id,)))
         permalink = absolutize_url(document.get_absolute_url())
-        assert response.context["permalink"] == permalink
         assertContains(response, f'<link rel="canonical" href="{permalink}"')
 
 

@@ -4,7 +4,7 @@
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 {% block extrameta %}
-    <link rel="canonical" href="{{ permalink }}" />
+    <link rel="canonical" href="{{ document.permalink }}" />
 {% endblock extrameta %}
 {% block extrascript %}
     {% if document.iiif_urls %} {# mirador is slow, so only include if needed #}
@@ -45,8 +45,8 @@
             {% endif %}
             <dt class="inline">{% translate 'Permalink' %}</dt>
             <dd>
-                <a href="{{ permalink }}" rel="bookmark">
-                    {{ permalink }}
+                <a href="{{ document.permalink }}" rel="bookmark">
+                    {{ document.permalink }}
                 </a>
             </dd>
         </dl>
