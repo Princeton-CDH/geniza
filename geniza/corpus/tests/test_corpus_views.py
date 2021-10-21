@@ -5,6 +5,7 @@ import pytest
 from django.db.models.fields import related
 from django.urls import reverse
 from django.utils.text import Truncator
+from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains
 
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
@@ -214,8 +215,8 @@ class TestDocumentSearchView:
             description="See also %s" % document.shelfmark
         )
         TextBlock.objects.create(document=related_doc, fragment=multifragment)
-        # wait to make sure solr index is updated with document fixtures
-        sleep(1)
+        # ensure solr index is updated with document fixture data
+        SolrClient().update.index([], commit=True)
 
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()
