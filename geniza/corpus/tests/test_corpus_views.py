@@ -1,6 +1,8 @@
+from time import sleep
 from unittest.mock import Mock, patch
 
 import pytest
+from django.db.models.fields import related
 from django.urls import reverse
 from django.utils.text import Truncator
 from pytest_django.asserts import assertContains
@@ -201,6 +203,29 @@ class TestDocumentSearchView:
 
         context_data = docsearch_view.get_context_data()
         assert context_data["total"] == 22
+
+    def test_shelfmark_boost(self, document, multifragment):
+        # integration test for shelfmark field boosting
+        # in solr configuration
+
+        # create a second document with a different shelfmark
+        # that references the shelfmark of the first in the description
+        related_doc = Document.objects.create(
+            description="See also %s" % document.shelfmark
+        )
+        TextBlock.objects.create(document=related_doc, fragment=multifragment)
+        # wait to make sure solr index is updated with document fixtures
+        sleep(1)
+
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # assuming relevance sort is default; update if that changes
+        docsearch_view.request.GET = {"query": document.shelfmark}
+        qs = docsearch_view.get_queryset()
+        # should return both documents
+        assert qs.count() == 2
+        # document with matching shelfmark should be returned first
+        assert qs[0]["pgpid"] == document.id
 
 
 class TestDocumentScholarshipView:
