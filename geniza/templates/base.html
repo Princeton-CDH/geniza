@@ -15,6 +15,7 @@
         <meta name="msapplication-TileColor" content="#603cba">
         <meta name="theme-color" content="#6b59c1">
         <meta name="description" content="{% block meta_description %}{% endblock meta_description %}">
+        {% block extrameta %}{% endblock extrameta %}
         <!-- styles -->
         {% if SHOW_TEST_WARNING %}
             <link rel="stylesheet" type="text/css" href="{% static 'css/test-banner.css' %}"/>
@@ -26,7 +27,7 @@
         <!-- scripts -->
         {% get_files "main" "js" as main_js %}
         <script src="{{ main_js.0.url }}" nonce="{{ request.csp_nonce }}" defer></script>
-        {% block extrahead %}{% endblock extrahead %}
+        {% block extrascript %}{% endblock extrascript %}
     </head>
     <body>
         {% if SHOW_TEST_WARNING %}

@@ -6,6 +6,7 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormMixin
 from tabular_export.admin import export_to_csv_response
 
+from geniza.common.utils import absolutize_url
 from geniza.corpus.forms import DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
@@ -99,6 +100,9 @@ class DocumentDetailView(DetailView):
     def page_description(self):
         return Truncator(self.get_object().description).words(20)
 
+    def permalink(self):
+        return absolutize_url(self.get_object().get_absolute_url())
+
     def get_queryset(self, *args, **kwargs):
         """Don't show document if it isn't public"""
         queryset = super().get_queryset(*args, **kwargs)
@@ -110,6 +114,7 @@ class DocumentDetailView(DetailView):
             {
                 "page_title": self.page_title(),
                 "page_description": self.page_description(),
+                "permalink": self.permalink(),
             }
         )
         return context_data

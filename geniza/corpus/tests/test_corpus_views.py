@@ -8,6 +8,7 @@ from django.utils.text import Truncator
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains
 
+from geniza.common.utils import absolutize_url
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import (
@@ -43,6 +44,13 @@ class TestDocumentDetailView:
         doc = Document.objects.create(status=Document.SUPPRESSED)
         response = client.get(doc.get_absolute_url())
         assert response.status_code == 404
+
+    def test_permalink(self, document, client):
+        """should contain permalink generated from absolutize_url"""
+        response = client.get(reverse("corpus:document", args=(document.id,)))
+        permalink = absolutize_url(document.get_absolute_url())
+        assert response.context["permalink"] == permalink
+        assertContains(response, f'<link rel="canonical" href="{permalink}"')
 
 
 @pytest.mark.django_db
