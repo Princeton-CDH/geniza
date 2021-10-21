@@ -6,10 +6,12 @@ from attrdict import AttrDict
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.safestring import SafeString
 
+from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
@@ -311,6 +313,13 @@ class TestDocument:
     def test_get_absolute_url(self):
         doc = Document.objects.create(id=1)
         assert doc.get_absolute_url() == "/documents/1/"
+
+    def test_permalink(self):
+        """permalink property should be constructed from base url and absolute url"""
+        doc = Document.objects.create(id=1)
+        site_domain = Site.objects.get_current().domain.rstrip("/")
+        assert f"{site_domain}/documents/1/" in doc.permalink
+        assert doc.permalink == absolutize_url(doc.get_absolute_url())
 
     def test_iiif_urls(self):
         # create example doc with two fragments with URLs
