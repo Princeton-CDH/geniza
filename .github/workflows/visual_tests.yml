@@ -1,0 +1,91 @@
+name: visual tests
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+env:
+  NODE_VERSION: 12 # required for percy CLI
+  DB_NAME: cdhweb
+  DB_USER: cdhweb
+  DB_PASSWORD: cdhweb
+
+jobs:
+  visual-tests:
+    name: Visual regression tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_DB: ${{ env.DB_NAME }}
+          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ hashFiles('package-lock.json') }}
+            npm-
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Get Python version
+        run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements/*.txt') }}
+          restore-keys: |
+            pip-${{ hashFiles('requirements/*.txt') }}
+            pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements/test.txt
+
+      - name: Setup local_settings.py
+        run: |
+          cp ci/testsettings.py cdhweb/local_settings.py
+          python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> cdhweb/local_settings.py
+
+      - name: Migrate database
+        run: python manage.py migrate
+
+      - name: Load test site data
+        run: python manage.py create_test_site
+
+      - name: Populate search index
+        run: python manage.py update_index
+
+      - name: Build static assets
+        run: python manage.py compress
+
+      - name: Take DOM snapshots and upload to Percy
+        run: npm run test:visual
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}

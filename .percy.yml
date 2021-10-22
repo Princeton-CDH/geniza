@@ -1,0 +1,17 @@
+version: 2
+snapshot:
+  widths:
+    - 320
+    - 736
+    - 1069
+  minHeight: 1024
+discovery:
+  allowedHostnames: []
+  networkIdleTimeout: 100
+static:
+  baseUrl: /
+  files: "**/*.{html,htm}"
+  ignore: ""
+upload:
+  files: "**/*.{png,jpg,jpeg}"
+  ignore: ""
