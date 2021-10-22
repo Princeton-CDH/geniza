@@ -13,6 +13,8 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import (
+    DocumentDetailView,
+    DocumentScholarshipView,
     DocumentSearchView,
     old_pgp_edition,
     old_pgp_tabulate_data,
@@ -54,12 +56,32 @@ class TestDocumentDetailView:
 
     def test_past_id_mixin(self, db, client):
         """should redirect from 404 to new pgpid when an old_pgpid is matched"""
-        response_404 = client.get("/documents/2/")
+        response_404 = client.get(reverse("corpus:document", args=(2,)))
         assert response_404.status_code == 404
         doc = Document.objects.create(id=1, old_pgpids=[2])
-        response_301 = client.get("/documents/2/")
+        response_301 = client.get(reverse("corpus:document", args=(2,)))
         assert response_301.status_code == 301
-        assert response_301.url == doc.get_absolute_url()
+        assert response_301.url == doc.permalink
+
+        # Test when pgpid not first in the list
+        response_404_notfirst = client.get(reverse("corpus:document", args=(7,)))
+        assert response_404_notfirst.status_code == 404
+        doc.old_pgpids = [5, 6, 7]
+        doc.save()
+        response_301_notfirst = client.get(reverse("corpus:document", args=(7,)))
+        assert response_301_notfirst.status_code == 301
+        assert response_301_notfirst.url == doc.permalink
+
+        # Test partial matching pgpid
+        response_404_partialmatch = client.get(reverse("corpus:document", args=(71,)))
+        assert response_404_partialmatch.status_code == 404
+
+    def test_get_absolute_url(self, document):
+        """should return doc permalink"""
+        doc_detail_view = DocumentDetailView()
+        doc_detail_view.object = document
+        doc_detail_view.kwargs = {"pk": document.pk}
+        assert doc_detail_view.get_absolute_url() == document.permalink
 
 
 @pytest.mark.django_db
@@ -288,11 +310,22 @@ class TestDocumentScholarshipView:
         )
         assert response.status_code == 404
 
-    def test_past_id_mixin(self, db, client):
+    # def test_get_absolute_url(self, db, client):
+
+    def test_past_id_mixin(self, db, client, source):
         """should redirect from 404 to new pgpid when an old_pgpid is matched"""
-        response_404 = client.get("/documents/2/scholarship/")
+        response_404 = client.get(reverse("corpus:document-scholarship", args=[2]))
         assert response_404.status_code == 404
         doc = Document.objects.create(id=1, old_pgpids=[2])
-        response_301 = client.get("/documents/2/scholarship/")
+        Footnote.objects.create(content_object=doc, source=source)
+        response_301 = client.get(reverse("corpus:document-scholarship", args=[2]))
         assert response_301.status_code == 301
-        assert response_301.url == f"{doc.get_absolute_url()}scholarship/"
+        assert response_301.url == f"{doc.permalink}scholarship/"
+
+    def test_get_absolute_url(self, document, source):
+        """should return scholarship permalink"""
+        Footnote.objects.create(content_object=document, source=source)
+        doc_detail_view = DocumentScholarshipView()
+        doc_detail_view.object = document
+        doc_detail_view.kwargs = {"pk": document.pk}
+        assert doc_detail_view.get_absolute_url() == f"{document.permalink}scholarship/"

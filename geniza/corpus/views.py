@@ -1,6 +1,7 @@
 from django.db.models.query import Prefetch
 from django.http import Http404
 from django.http.response import HttpResponsePermanentRedirect
+from django.urls import reverse
 from django.utils.text import Truncator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -8,6 +9,7 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormMixin
 from tabular_export.admin import export_to_csv_response
 
+from geniza.common.utils import absolutize_url
 from geniza.corpus.forms import DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
@@ -99,14 +101,14 @@ class DocumentPastIdMixin:
             return super().get(request, *args, **kwargs)
         except Http404:
             # if not found, check for a match on a past PGPID
-            doc = Document.objects.filter(old_pgpids__0=self.kwargs["pk"]).first()
+            doc = Document.objects.filter(
+                old_pgpids__contains=[self.kwargs["pk"]]
+            ).first()
             # if found, redirect to the correct url for this view
             if doc:
-                return HttpResponsePermanentRedirect(
-                    request.get_full_path().replace(
-                        f'/{self.kwargs["pk"]}/', f"/{doc.id}/"
-                    )
-                )
+                self.kwargs["pk"] = doc.pk
+                self.object = doc
+                return HttpResponsePermanentRedirect(self.get_absolute_url())
             # otherwise, continue raising the 404
             raise
 
@@ -138,6 +140,10 @@ class DocumentDetailView(DocumentPastIdMixin, DetailView):
             }
         )
         return context_data
+
+    def get_absolute_url(self):
+        """Get the permalink to this page."""
+        return self.get_object().permalink
 
 
 class DocumentScholarshipView(DocumentDetailView):
@@ -173,6 +179,12 @@ class DocumentScholarshipView(DocumentDetailView):
         )
 
         return queryset.filter(footnotes__isnull=False)
+
+    def get_absolute_url(self):
+        """Get the permalink to this page."""
+        return absolutize_url(
+            reverse("corpus:document-scholarship", args=[self.get_object().pk])
+        )
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #
