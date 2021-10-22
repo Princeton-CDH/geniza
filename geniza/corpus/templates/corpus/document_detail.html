@@ -63,7 +63,7 @@
     {# viewer #}
     {% with iiif_urls=document.iiif_urls %}
         {% if iiif_urls %}
-            <div class="wrapper">
+            <div class="iiif_wrapper">
                 <div id="iiif_viewer" data-iiif-urls="{{ iiif_urls|join:" " }}"></div>
             </div>
         {% endif %}

@@ -1,0 +1,9 @@
+/* limit size of iiif viewer */
+.iiif_wrapper {
+    display: block;
+    width: clamp(300px, 75vw, 90vw);
+}
+#iiif_viewer {
+    position: relative;
+    height: clamp(200px, 75vh, 75vh);
+}
