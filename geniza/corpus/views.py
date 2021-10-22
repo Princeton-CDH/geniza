@@ -103,7 +103,9 @@ class DocumentPastIdMixin:
             # if found, redirect to the correct url for this view
             if doc:
                 return HttpResponsePermanentRedirect(
-                    request.get_full_path().replace(str(self.kwargs["pk"]), str(doc.id))
+                    request.get_full_path().replace(
+                        f'/{self.kwargs["pk"]}/', f"/{doc.id}/"
+                    )
                 )
             # otherwise, continue raising the 404
             raise
