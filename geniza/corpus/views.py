@@ -102,7 +102,9 @@ class DocumentPastIdMixin:
             doc = Document.objects.filter(old_pgpids__0=self.kwargs["pk"]).first()
             # if found, redirect to the correct url for this view
             if doc:
-                return HttpResponsePermanentRedirect(doc.get_absolute_url())
+                return HttpResponsePermanentRedirect(
+                    request.get_full_path().replace(str(self.kwargs["pk"]), str(doc.id))
+                )
             # otherwise, continue raising the 404
             raise
 
