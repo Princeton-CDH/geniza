@@ -1,4 +1,6 @@
 from django.db.models.query import Prefetch
+from django.http import Http404
+from django.http.response import HttpResponsePermanentRedirect
 from django.utils.text import Truncator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -86,7 +88,26 @@ class DocumentSearchView(ListView, FormMixin):
         return context_data
 
 
-class DocumentDetailView(DetailView):
+class DocumentPastIdMixin:
+    """View mixin to handle redirects for documents with old PGPIDs.
+    Overrides get request in the case of a 404, looking for any records
+    with passed PGPID in old_pgpids, and if found, redirects to that document
+    with current PGPID."""
+
+    def get(self, request, *args, **kwargs):
+        try:
+            return super().get(request, *args, **kwargs)
+        except Http404:
+            # if not found, check for a match on a past PGPID
+            doc = Document.objects.filter(old_pgpids__0=self.kwargs["pk"]).first()
+            # if found, redirect to the correct url for this view
+            if doc:
+                return HttpResponsePermanentRedirect(doc.get_absolute_url())
+            # otherwise, continue raising the 404
+            raise
+
+
+class DocumentDetailView(DocumentPastIdMixin, DetailView):
     """public display of a single :class:`~geniza.corpus.models.Document`"""
 
     model = Document

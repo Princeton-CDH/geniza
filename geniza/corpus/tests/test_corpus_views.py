@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from django.db.models.fields import related
+from django.http.response import Http404
 from django.urls import reverse
 from django.utils.text import Truncator
 from parasolr.django import SolrClient
@@ -50,6 +51,15 @@ class TestDocumentDetailView:
         response = client.get(reverse("corpus:document", args=(document.id,)))
         permalink = absolutize_url(document.get_absolute_url())
         assertContains(response, f'<link rel="canonical" href="{permalink}"')
+
+    def test_past_id_mixin(self, db, client):
+        """should redirect from 404 to new pgpid when an old_pgpid is matched"""
+        response_404 = client.get("/documents/2/")
+        assert response_404.status_code == 404
+        doc = Document.objects.create(id=1, old_pgpids=[2])
+        response_301 = client.get("/documents/2/")
+        assert response_301.status_code == 301
+        assert response_301.url == doc.get_absolute_url()
 
 
 @pytest.mark.django_db
