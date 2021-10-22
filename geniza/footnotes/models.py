@@ -150,18 +150,30 @@ class Source(models.Model):
         if self.languages:
             if not self.languages.all():
                 languages = None
-
-            if len(self.languages.all()) > 1:
-                # Separate languages with commas
-                languages = ",".join([l.name for l in self.languages.all()])
             else:
-                languages = " ".join([l.name for l in self.languages.all()])
+                # Separate languages with commas
+                languages = ", ".join([l.name for l in self.languages.all()])
 
-        # Source formatting for given source type, see #252
+        # Source formatting for given source type
 
         if self.source_type.type == "Article":
-            # S. D. Goitein, "Jewish Women in the Middle Ages" (English), Hadassah Magazine 55.2 (1973)"""
-            return f'{author}, "{self.title}"{"("+languages+")" if languages else ""}, {self.journal} {self.volume if self.volume else ""} {"("+str(self.year)+")" if self.year else ""}{": "+str(self.page_range) if self.page_range else ""}'
+            # S. D. Goitein, "Jewish Women in the Middle Ages" (English), Hadassah Magazine 55.2 (1973)
+            citation = ""
+            if author:
+                citation += author
+            if self.title:
+                citation += ", " + self.title
+            if languages:
+                citation += " (" + languages + ")"
+            if self.journal:
+                citation += " " + self.journal
+            if self.volume:
+                citation += " " + self.volume
+            if self.year:
+                citation += " (" + str(self.year) + ")"
+            if self.page_range:
+                citation += " " + self.page_range
+            return citation
 
         if self.source_type.type == "Book":
             # Moshe Gil, Palestine during the First Muslim Period, 634–1099, in Hebrew (Tel Aviv, 1983), vol. 2, doc. 134"""
@@ -170,7 +182,7 @@ class Source(models.Model):
         if self.source_type.type == "Book Section":
             # S. D. Goitein, "New Documents on the Gaonate in Palestine," in Salo Baron Jubilee Volume on the Occasion of His Seventy-fifth Birthday, ed. Arthur Hyman (New York, 1975), 2:55–74
             # TODO need field for place of publication
-            return f'{author}, "{self.title}," {"in <i>"+self.journal+"</i>" if self.journal else ""} {"("+str(self.year)+")," if self.year else ""}{" "+self.volume+": " if self.volume else ""}{str(self.page_range) if self.page_range else ""}'
+            return f'{author}, "{self.title}," {"in "+self.journal if self.journal else ""} {"("+str(self.year)+")," if self.year else ""}{" "+self.volume+": " if self.volume else ""}{str(self.page_range) if self.page_range else ""}'
 
             # TODO: formatted version with italics for book/journal title.
             # AJ (10/18/21) Added <i> but will require |safe in templates, will appear as html in admin, is this the right solution?
