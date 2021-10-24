@@ -1,4 +1,3 @@
-from django.apps import apps  # used to dynamically get the Model
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
@@ -115,7 +114,7 @@ class Source(models.Model):
         # requires queryset annotation
         ordering = ["title", "year"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         # generate simple string representation similar to
         # how records were listed in the metadata spreadsheet
         # author lastname, title (year)
@@ -125,7 +124,7 @@ class Source(models.Model):
         # author, title (year)
         # author (year)
         # author, "title" journal vol (year)
-        parts = []
+
         author = ""
         if self.authorship_set.exists():
             author_lastnames = [
@@ -140,13 +139,6 @@ class Source(models.Model):
             else:
                 author = author_lastnames[0]
 
-        if self.title:
-            # if this is an article, wrap title in quotes
-            if self.source_type.type == "Article":
-                parts.append('"%s"' % self.title)
-            else:
-                parts.append(self.title)
-
         if self.languages:
             if not self.languages.all():
                 languages = None
@@ -154,47 +146,40 @@ class Source(models.Model):
                 # Separate languages with commas
                 languages = ", ".join([l.name for l in self.languages.all()])
 
-        # Source formatting for given source type
-
         if self.source_type.type == "Article":
-            # S. D. Goitein, "Jewish Women in the Middle Ages" (English), Hadassah Magazine 55.2 (1973)
-            citation = ""
-            if author:
-                citation += author
-            if self.title:
-                citation += ", " + self.title
-            if languages:
-                citation += " (" + languages + ")"
-            if self.journal:
-                citation += " " + self.journal
-            if self.volume:
-                citation += " " + self.volume
-            if self.year:
-                citation += " (" + str(self.year) + ")"
-            if self.page_range:
-                citation += " " + self.page_range
+            citation = "{name}{title}{language}{journal}{volume}{year}{pages}".format(
+                name=f"{author}, " if author else "",
+                title=f'"{self.title}" ' if self.title else "",
+                language=f"({languages}), " if languages else "",
+                journal=f"{self.journal}" if self.journal else "",
+                volume=f" {self.volume} " if self.volume else "",
+                year=f"({str(self.year)})" if self.year else "",
+                pages=f": {self.page_range}" if self.page_range else "",
+            )
             return citation
 
         if self.source_type.type == "Book":
-            # Moshe Gil, Palestine during the First Muslim Period, 634–1099, in Hebrew (Tel Aviv, 1983), vol. 2, doc. 134"""
-            return f'{author}, {self.title} {"in "+languages+")" if languages else ""}, {self.volume if self.volume else ""} {"("+str(self.year)+")" if self.year else ""}{": "+str(self.page_range) if self.page_range else ""}'
+            # Moshe Gil, Palestine during the First Muslim Period, 634–1099, in Hebrew (Tel Aviv, 1983), vol. 2, doc. 134
+            citation = "{author}{title}{language}{year}{volume}{pages}".format(
+                author=f"{author}, " if author else "",
+                title=f"{self.title}, " if self.title else "",
+                language=f"in {languages} " if languages else "",
+                year=f"({str(self.year)})," if self.year else "",
+                volume=f" {self.volume}" if self.volume else "",
+                pages=f", {self.page_range}" if self.page_range else "",
+            )
+            return citation
+        # existing solution for additional Source types
+        parts = []
 
-        if self.source_type.type == "Book Section":
-            # S. D. Goitein, "New Documents on the Gaonate in Palestine," in Salo Baron Jubilee Volume on the Occasion of His Seventy-fifth Birthday, ed. Arthur Hyman (New York, 1975), 2:55–74
-            # TODO need field for place of publication
-            return f'{author}, "{self.title}," {"in "+self.journal if self.journal else ""} {"("+str(self.year)+")," if self.year else ""}{" "+self.volume+": " if self.volume else ""}{str(self.page_range) if self.page_range else ""}'
+        if self.title:
+            # if this is an article, wrap title in quotes
+            if self.source_type.type == "Article":
+                parts.append('"%s"' % self.title)
+            else:
+                parts.append(self.title)
 
-            # TODO: formatted version with italics for book/journal title.
-            # AJ (10/18/21) Added <i> but will require |safe in templates, will appear as html in admin, is this the right solution?
-
-        # is Blog
-        # Source objects exist with type Blog, but no formatting is given in #252
-
-        if self.source_type.type == "Dissertation":
-            # Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza" (PhD diss. Tel Aviv University, 1992), ??? what is doc. 5 above?
-            return f'{author}, "{self.title}" {"in "+languages+")" if languages else ""}, {"("+self.other_info+", "+str(self.year)+")" if self.other_info and self.year else ""}'
-
-        # elif other source_type keep existing system
+        # TODO: formatted version with italics for book/journal title
         if self.journal:
             parts.append(self.journal)
         if self.volume:
