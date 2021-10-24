@@ -92,9 +92,9 @@ WSGI_APPLICATION = "geniza.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "geniza",
-        "USER": "geniza",
-        "PASSWORD": "",
+        "NAME": "cdh_geniza",
+        "USER": "ajanco",
+        "PASSWORD": "pushka",
         "HOST": "",  # empty string for localhost
         "PORT": "",  # empty string for default
     }

@@ -27,36 +27,12 @@ class TestSource:
     @pytest.mark.django_db
     def test_str(
         self,
-        source_article,
         source_book,
         source,
         twoauthor_source,
         multiauthor_untitledsource,
     ):
-        # Source is article
-        assert str(
-            source_article
-        ) == '{name}, "{title}" ({language}), {journal} {volume} ({year}): {pages}'.format(
-            name=source_article.authors.first().firstname_lastname(),
-            title=source_article.title,
-            language=", ".join([l.name for l in source_article.languages.all()]),
-            journal=source_article.journal,
-            volume=source_article.volume,
-            year=source_article.year,
-            pages=source_article.page_range,
-        )
-        # Source is book
-        assert str(
-            source_book
-        ) == "{name}, {title}, in {language} ({year}), {volume}, {pages}".format(
-            name=source_book.authors.first().firstname_lastname(),
-            title=source_book.title,
-            language=", ".join([l.name for l in source_book.languages.all()]),
-            journal=source_book.journal,
-            volume=source_book.volume,
-            year=source_book.year,
-            pages=source_book.page_range,
-        )
+
         # source has no year; str should be creator lastname, title,
         assert str(source) == "%s, %s" % (
             source.authors.first().firstname_lastname(),
@@ -70,7 +46,7 @@ class TestSource:
         )
 
         # two authors
-        assert str(twoauthor_source) == "%s and %s, %s," % (
+        assert str(twoauthor_source) == "%s and %s, %s, " % (
             twoauthor_source.authors.first().firstname_lastname(),
             twoauthor_source.authors.all()[1].firstname_lastname(),
             twoauthor_source.title,
@@ -87,6 +63,42 @@ class TestSource:
         assert twoauthor_source.all_authors() == "%s; %s" % (
             author1.creator,
             author2.creator,
+        )
+
+    @pytest.mark.django_db
+    def test_str_article(
+        self,
+        article,
+    ):
+
+        assert str(
+            article
+        ) == '{name}, "{title}" ({language}), {journal} {volume} ({year}): {pages}'.format(
+            name=article.authors.first().firstname_lastname(),
+            title=article.title,
+            language=", ".join([l.name for l in article.languages.all()]),
+            journal=article.journal,
+            volume=article.volume,
+            year=article.year,
+            pages=article.page_range,
+        )
+
+    @pytest.mark.django_db
+    def test_str_book(
+        self,
+        source_book,
+    ):
+
+        assert str(
+            source_book
+        ) == "{name}, {title}, in {language} ({year}), {volume}, {pages}".format(
+            name=source_book.authors.first().firstname_lastname(),
+            title=source_book.title,
+            language=", ".join([l.name for l in source_book.languages.all()]),
+            journal=source_book.journal,
+            volume=source_book.volume,
+            year=source_book.year,
+            pages=source_book.page_range,
         )
 
 

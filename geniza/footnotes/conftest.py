@@ -46,7 +46,7 @@ def multiauthor_untitledsource(db):
 
 
 @pytest.fixture
-def source_article(db):
+def article(db):
     # fixture to create and return an article source
     # S. D. Goitein, "New Sources from the Geniza" (Hebrew), Tarbiz 18 (1954): 7–19
     goitein = Creator.objects.create(last_name="Goitein", first_name="S. D.")
