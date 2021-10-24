@@ -82,64 +82,6 @@ class TestSource:
         ]
         assert str(multiauthor_untitledsource) == "%s, %s, %s and %s" % tuple(lastnames)
 
-        #                                            #
-        #  Test formatting for specific Source types #
-        #                                            #
-
-        # Source is Blog
-        # TODO formatting for Blog is not outlined in Issue 252
-
-        # Source is Book
-        # Moshe Gil, Palestine during the First Muslim Period, 634–1099, in Hebrew (Tel Aviv, 1983), vol. 2, doc. 134
-        test_case = Source.objects.filter(
-            title="Palestine During the First Muslim Period (634–1099)",
-            source_type__type="Book",
-        ).first()
-        if test_case:
-            assert (
-                str(test_case)
-                == """Moshe Gil, Palestine during the First Muslim Period, 634–1099, in Hebrew (Tel Aviv, 1983), vol. 2, doc. 134"""
-            )
-
-        # Source is Book Section
-        # Outhwaite, "Byzantium and Byzantines in the Cairo Genizah: New and Old Sources," in <i>Jewish Reception of Greek Bible Versions</i> ([Missing], 2009), x:xx-xx
-        test_case = Source.objects.filter(
-            title="Byzantium and Byzantines in the Cairo Genizah: New and Old Sources",
-            source_type__type="Book Section",
-        ).first()
-        if test_case:
-            assert (
-                str(test_case)
-                == """Outhwaite, "Byzantium and Byzantines in the Cairo Genizah: New and Old Sources," in <i>Jewish Reception of Greek Bible Versions</i> (2009)"""
-            )
-
-        if s.source_type.type == "Book Section":
-            assert (
-                str(s)
-                == f'{author}, "{s.title}," {"in <i>"+s.journal+"</i>" if s.journal else ""} {"("+str(s.year)+")," if s.year else ""}{" "+s.volume+": " if s.volume else ""}{str(s.page_range) if s.page_range else ""}'
-            )
-
-        # Source is Dissertation
-        # Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza" (PhD diss. Tel Aviv University, 1992)
-        test_case = Source.objects.filter(
-            title="Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza",
-            source_type__type="Dissertation",
-        ).first()
-        if test_case:
-            assert (
-                str(test_case)
-                == """Ṣabīḥ ʿAodeh, "Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza" (PhD diss. Tel Aviv University, 1992)"""
-            )
-
-        if s.source_type.type == "Dissertation":
-            assert (
-                str(s)
-                == f'{author}, "{s.title}" {"in "+languages+")" if languages else ""}, {"("+s.other_info+", "+str(s.year)+")" if s.other_info and s.year else ""}'
-            )
-
-        # Source is Unpublished
-        # TODO formatting for Blog is not outlined in Issue 252
-
     def test_all_authors(self, twoauthor_source):
         author1, author2 = twoauthor_source.authorship_set.all()
         assert twoauthor_source.all_authors() == "%s; %s" % (
