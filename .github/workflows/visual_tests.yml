@@ -91,7 +91,9 @@ jobs:
 
       - name: Load test site data
         run: python manage.py create_test_site
-      # automatically indexed in solr on save
+
+      - name: Update Solr index
+        run: python manage.py index
 
       - name: Compile translation text
         run: |
