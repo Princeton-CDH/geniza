@@ -31,19 +31,18 @@ class Command(BaseCommand):
         # percy_snapshot(browser, "Content Page")
 
         # document search
-        # search term matches description of 3951
+        # search term should match description of 3951 (TODO: FIXME)
         # browser.get("http://localhost:8000/documents/?q=tujib")
         browser.get("http://localhost:8000/documents/")
         percy_snapshot(browser, "Document Search")
 
-        # Temporarily disable while testing
         # document detail
-        # browser.get("http://localhost:8000/documents/3951/")
-        # percy_snapshot(browser, "Document Details")
+        browser.get("http://localhost:8000/documents/3951/")
+        percy_snapshot(browser, "Document Details")
 
-        # # document scholarhip
-        # browser.get("http://localhost:8000/documents/3951/")
-        # percy_snapshot(browser, "Document Scholarship Records")
+        # # document scholarship
+        browser.get("http://localhost:8000/documents/3951/")
+        percy_snapshot(browser, "Document Scholarship Records")
 
         # 404 page TODO
         # browser.get("http://localhost:8000/bad-url")
