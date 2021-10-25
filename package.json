@@ -21,6 +21,7 @@
     "postcss-loader": "^6.1.1",
     "sass": "^1.38.1",
     "sass-loader": "^12.1.0",
+    "start-server-and-test": "^1.14.0",
     "style-loader": "^3.2.1",
     "webpack": "^5.51.1",
     "webpack-bundle-tracker": "^1.2.0",
