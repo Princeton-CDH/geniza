@@ -64,16 +64,16 @@ class TestDocumentDetailView:
         assert response_301.url == doc.permalink
 
         # Test when pgpid not first in the list
-        response_404_notfirst = client.get(reverse("corpus:document", args=(7,)))
+        response_404_notfirst = client.get(reverse("corpus:document", args=(71,)))
         assert response_404_notfirst.status_code == 404
-        doc.old_pgpids = [5, 6, 7]
+        doc.old_pgpids = [5, 6, 71]
         doc.save()
-        response_301_notfirst = client.get(reverse("corpus:document", args=(7,)))
+        response_301_notfirst = client.get(reverse("corpus:document", args=(71,)))
         assert response_301_notfirst.status_code == 301
         assert response_301_notfirst.url == doc.permalink
 
         # Test partial matching pgpid
-        response_404_partialmatch = client.get(reverse("corpus:document", args=(71,)))
+        response_404_partialmatch = client.get(reverse("corpus:document", args=(7,)))
         assert response_404_partialmatch.status_code == 404
 
     def test_get_absolute_url(self, document):
