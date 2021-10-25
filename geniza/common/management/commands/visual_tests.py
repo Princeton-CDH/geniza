@@ -35,13 +35,14 @@ class Command(BaseCommand):
         browser.get("http://localhost:8000/documents/?q=Tujib")
         percy_snapshot(browser, "Document Search")
 
+        # Temporarily disable while testing
         # document detail
-        browser.get("http://localhost:8000/documents/3951/")
-        percy_snapshot(browser, "Document Details")
+        # browser.get("http://localhost:8000/documents/3951/")
+        # percy_snapshot(browser, "Document Details")
 
-        # document scholarhip
-        browser.get("http://localhost:8000/documents/3951/")
-        percy_snapshot(browser, "Document Scholarship Records")
+        # # document scholarhip
+        # browser.get("http://localhost:8000/documents/3951/")
+        # percy_snapshot(browser, "Document Scholarship Records")
 
         # 404 page TODO
         # browser.get("http://localhost:8000/bad-url")
