@@ -81,9 +81,7 @@ jobs:
           docker exec ${{ job.services.solr.id }} solr create -c geniza -n geniza
 
       - name: Setup local_settings.py
-        run: |
-          cp ci/testsettings.py cdhweb/local_settings.py
-          python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> cdhweb/local_settings.py
+        run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
 
       - name: Migrate database
         run: python manage.py migrate
