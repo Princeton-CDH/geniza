@@ -177,11 +177,11 @@ class TestDocumentSearchView:
         }
 
         # keyword search param
-        docsearch_view.request.GET = {"query": "contract"}
+        docsearch_view.request.GET = {"q": "contract"}
         assert docsearch_view.get_form_kwargs() == {
             "initial": {},
             "prefix": None,
-            "data": {"query": "contract", "sort": "relevance"},
+            "data": {"q": "contract", "sort": "relevance"},
         }
 
     @pytest.mark.usefixtures("mock_solr_queryset")
@@ -193,7 +193,7 @@ class TestDocumentSearchView:
 
             docsearch_view = DocumentSearchView()
             docsearch_view.request = Mock()
-            docsearch_view.request.GET = {"query": "six apartments"}
+            docsearch_view.request.GET = {"q": "six apartments"}
             qs = docsearch_view.get_queryset()
 
             mock_queryset_cls.assert_called_with()
@@ -228,7 +228,7 @@ class TestDocumentSearchView:
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()
         # assuming relevance sort is default; update if that changes
-        docsearch_view.request.GET = {"query": document.shelfmark}
+        docsearch_view.request.GET = {"q": document.shelfmark}
         qs = docsearch_view.get_queryset()
         # should return both documents
         assert qs.count() == 2

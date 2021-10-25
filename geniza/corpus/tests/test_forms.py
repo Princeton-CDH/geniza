@@ -26,13 +26,13 @@ class TestSelectedWithDisabled:
 
 class TestDocumentSearch:
     def test_init(self):
-        data = {"query": "illness"}
+        data = {"q": "illness"}
         # has query, relevance enabled
         form = DocumentSearchForm(data)
         assert form.fields["sort"].widget.choices[0] == form.SORT_CHOICES[0]
 
         # empty query, relevance disabled
-        data["query"] = ""
+        data["q"] = ""
         form = DocumentSearchForm(data)
         assert form.fields["sort"].widget.choices[0] == (
             "relevance",
@@ -40,7 +40,7 @@ class TestDocumentSearch:
         )
 
         # no query, also relevance disabled
-        del data["query"]
+        del data["q"]
         form = DocumentSearchForm(data)
         assert form.fields["sort"].widget.choices[0] == (
             "relevance",

@@ -35,7 +35,7 @@ class DocumentSearchView(ListView, FormMixin):
 
         # always use relevance sort for keyword search;
         # otherwise use default (sort by name)
-        if form_data.get("query", None):
+        if form_data.get("q", None):
             form_data["sort"] = "relevance"
         # sorting TODO
         # else:
@@ -59,8 +59,8 @@ class DocumentSearchView(ListView, FormMixin):
         else:
             search_opts = form.cleaned_data
 
-            if search_opts["query"]:
-                documents = documents.keyword_search(search_opts["query"]).also(
+            if search_opts["q"]:
+                documents = documents.keyword_search(search_opts["q"]).also(
                     "score"
                 )  # include relevance score in results
 
