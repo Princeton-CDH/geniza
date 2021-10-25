@@ -93,7 +93,9 @@ jobs:
         run: python manage.py index
 
       - name: Compile translation text
-        run: python manage.py compilemessages
+        run: |
+          sudo apt install gettext
+          python manage.py compilemessages
 
       - name: Build static assets
         run: python manage.py collectstatic
