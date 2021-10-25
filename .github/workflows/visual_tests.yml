@@ -10,9 +10,10 @@ on:
 
 env:
   NODE_VERSION: 12 # required for percy CLI
-  DB_NAME: cdhweb
-  DB_USER: cdhweb
-  DB_PASSWORD: cdhweb
+  DB_NAME: geniza
+  DB_USER: geniza
+  DB_PASSWORD: geniza
+  DJANGO_ENV: test
 
 jobs:
   visual-tests:
@@ -27,6 +28,10 @@ jobs:
           POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
         ports:
           - 5432:5432
+      solr:
+        image: solr:8.6
+        ports:
+          - 8983:8983
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -68,6 +73,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements/test.txt
 
+      - name: Configure solr and create test core
+        run: |
+          docker cp solr_conf ${{ job.services.solr.id }}:/opt/solr/server/solr/configsets/geniza
+          docker exec --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /opt/solr/server/solr/configsets/geniza"
+          docker exec -d ${{ job.services.solr.id }} cp -r /opt/solr/server/solr/configsets /var/solr/data
+          docker exec ${{ job.services.solr.id }} solr create -c geniza -n geniza
+
       - name: Setup local_settings.py
         run: |
           cp ci/testsettings.py cdhweb/local_settings.py
@@ -79,11 +91,14 @@ jobs:
       - name: Load test site data
         run: python manage.py create_test_site
 
-      - name: Populate search index
-        run: python manage.py update_index
+      - name: Populate Solr index
+        run: python manage.py index
+
+      - name: Compile translation text
+        run: python manage.py compilemessages
 
       - name: Build static assets
-        run: python manage.py compress
+        run: python manage.py collectstatic
 
       - name: Take DOM snapshots and upload to Percy
         run: npm run test:visual
