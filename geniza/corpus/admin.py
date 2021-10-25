@@ -462,7 +462,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
 @admin.register(DocumentType)
 class DocumentTypeAdmin(admin.ModelAdmin):
-    list_display = ("name",)
+    list_display = ("name", "display_label")
 
 
 @admin.register(Fragment)
