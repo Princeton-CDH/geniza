@@ -9,8 +9,8 @@ discovery:
   networkIdleTimeout: 100
 static:
   baseUrl: /
-  files: "**/*.{html,htm}"
-  ignore: ""
+  include: "**/*.{html,htm}"
+  exclude: ""
 upload:
   files: "**/*.{png,jpg,jpeg}"
   ignore: ""
