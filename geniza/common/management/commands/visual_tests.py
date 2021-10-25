@@ -32,7 +32,7 @@ class Command(BaseCommand):
 
         # document search
         # search term matches description of 3951
-        browser.get("http://localhost:8000/documents?q=Tujib")
+        browser.get("http://localhost:8000/documents/?q=Tujib")
         percy_snapshot(browser, "Document Search")
 
         # document detail
