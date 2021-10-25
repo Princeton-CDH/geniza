@@ -107,7 +107,6 @@ class DocumentPastIdMixin:
             # if found, redirect to the correct url for this view
             if doc:
                 self.kwargs["pk"] = doc.pk
-                self.object = doc
                 return HttpResponsePermanentRedirect(self.get_absolute_url())
             # otherwise, continue raising the 404
             raise
@@ -143,7 +142,7 @@ class DocumentDetailView(DocumentPastIdMixin, DetailView):
 
     def get_absolute_url(self):
         """Get the permalink to this page."""
-        return self.get_object().permalink
+        return absolutize_url(reverse("corpus:document", args=[self.kwargs["pk"]]))
 
 
 class DocumentScholarshipView(DocumentDetailView):
@@ -183,7 +182,7 @@ class DocumentScholarshipView(DocumentDetailView):
     def get_absolute_url(self):
         """Get the permalink to this page."""
         return absolutize_url(
-            reverse("corpus:document-scholarship", args=[self.get_object().pk])
+            reverse("corpus:document-scholarship", args=[self.kwargs["pk"]])
         )
 
 
