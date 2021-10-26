@@ -13,6 +13,13 @@ DATABASES["default"].update(
     }
 )
 
+SOLR_CONNECTIONS["default"].update(
+    {
+        # set aggressive commitWithin for test
+        "COMMITWITHIN": 750,
+    }
+)
+
 # turn off debug so we see 404s when testing
 DEBUG = False
 

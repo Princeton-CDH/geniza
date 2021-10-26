@@ -1,0 +1,110 @@
+name: visual tests
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+env:
+  NODE_VERSION: 12 # required for percy CLI
+  DB_NAME: geniza
+  DB_USER: geniza
+  DB_PASSWORD: geniza
+  DJANGO_ENV: test
+
+jobs:
+  visual-tests:
+    name: Visual regression tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_DB: ${{ env.DB_NAME }}
+          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
+        ports:
+          - 5432:5432
+      solr:
+        image: solr:8.6
+        ports:
+          - 8983:8983
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ hashFiles('package-lock.json') }}
+            npm-
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Get Python version
+        run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements/*.txt') }}
+          restore-keys: |
+            pip-${{ hashFiles('requirements/*.txt') }}
+            pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements/test.txt
+
+      - name: Configure solr and create test core
+        run: |
+          docker cp solr_conf ${{ job.services.solr.id }}:/opt/solr/server/solr/configsets/geniza
+          docker exec --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /opt/solr/server/solr/configsets/geniza"
+          docker exec -d ${{ job.services.solr.id }} cp -r /opt/solr/server/solr/configsets /var/solr/data
+          curl "http://localhost:8983/solr/admin/cores?action=CREATE&name=geniza&configSet=geniza"
+        # NOTE: command line core creation does not seem to actually use the configset
+
+      - name: Setup local_settings.py
+        run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
+
+      - name: Run webpack to process scss/js
+        run: npm run build
+
+      - name: Migrate database
+        run: python manage.py migrate
+
+      - name: Load test site data
+        run: python manage.py create_test_site
+
+      - name: Update Solr index
+        run: python manage.py index
+
+      - name: Compile translation text
+        run: |
+          sudo apt install gettext
+          python manage.py compilemessages
+
+      - name: Build static assets
+        run: python manage.py collectstatic
+
+      - name: Take DOM snapshots and upload to Percy
+        run: npm run test:visual
+        env:
+          PERCY_TOKEN: ${{ secrets.PERCY_TOKEN }}

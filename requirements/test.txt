@@ -7,3 +7,4 @@ pytest-django
 pytest-cov
 wheel
 django-dbml>=0.5.0
+percy-selenium

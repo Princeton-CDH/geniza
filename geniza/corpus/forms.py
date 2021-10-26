@@ -37,7 +37,7 @@ class SelectWithDisabled(SelectDisabledMixin, forms.Select):
 
 
 class DocumentSearchForm(forms.Form):
-    query = forms.CharField(
+    q = forms.CharField(
         label="Keyword or Phrase",
         required=False,
         widget=forms.TextInput(
@@ -70,7 +70,7 @@ class DocumentSearchForm(forms.Form):
         super().__init__(data=data, *args, **kwargs)
 
         # if a keyword search term is not present, relevance sort is disabled
-        if not data or not data.get("query", None):
+        if not data or not data.get("q", None):
             self.fields["sort"].widget.choices[0] = (
                 self.SORT_CHOICES[0][0],
                 {"label": self.SORT_CHOICES[0][1], "disabled": True},
