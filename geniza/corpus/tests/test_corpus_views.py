@@ -244,9 +244,10 @@ class TestDocumentSearchView:
         context_data = docsearch_view.get_context_data()
         assert context_data["total"] == 22
 
-    def test_shelfmark_boost(self, document, multifragment):
+    def test_shelfmark_boost(self, empty_solr, document, multifragment):
         # integration test for shelfmark field boosting
         # in solr configuration
+        # - using empty solr fixture to ensure solr is empty when this test starts
 
         # create a second document with a different shelfmark
         # that references the shelfmark of the first in the description
@@ -261,13 +262,19 @@ class TestDocumentSearchView:
         )
         neighbor_doc = Document.objects.create()
         TextBlock.objects.create(document=neighbor_doc, fragment=frag)
-        # ensure solr index is updated with document fixture data
-        SolrClient().update.index([], commit=True)
+        # ensure solr index is updated with all three test documents
+        SolrClient().update.index(
+            [
+                document.index_data(),
+                neighbor_doc.index_data(),
+                related_doc.index_data(),
+            ],
+            commit=True,
+        )
 
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()
         # assuming relevance sort is default; update if that changes
-        # docsearch_view.request.GET = {"query": }
         docsearch_view.request.GET = {"query": document.shelfmark}
         qs = docsearch_view.get_queryset()
         # should return all three documents
