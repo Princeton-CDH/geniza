@@ -35,6 +35,10 @@
                 {% if document.num_translations %}{% translate 'Translation' %}{% if document.num_translations > 1 %} ({{ document.num_translations }}){% endif %}{% endif %}
                 {% if document.num_discussions %}{% translate 'Discussion' %}{% if document.num_discussions > 1 %} ({{ document.num_discussions }}){% endif %}{% endif %}
             </p>
+        {% else %}
+            <p class="scholarship">
+                No Scholarship Records
+            </p>
         {% endif %}
 
         {# view link #}
