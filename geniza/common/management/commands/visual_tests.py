@@ -31,9 +31,8 @@ class Command(BaseCommand):
         # percy_snapshot(browser, "Content Page")
 
         # document search
-        # search term should match description of 3951 (TODO: FIXME)
-        # browser.get("http://localhost:8000/documents/?q=tujib")
-        browser.get("http://localhost:8000/documents/")
+        # search term should match description of 3951
+        browser.get("http://localhost:8000/documents/?q=tujib")
         percy_snapshot(browser, "Document Search")
 
         # document detail
