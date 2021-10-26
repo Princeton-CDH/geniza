@@ -254,18 +254,33 @@ class TestDocumentSearchView:
             description="See also %s" % document.shelfmark
         )
         TextBlock.objects.create(document=related_doc, fragment=multifragment)
+
+        # third document with similar shelfmark
+        frag = Fragment.objects.create(
+            shelfmark="CUL Add.300",  # fixture has shelfmark CUL Add.2586
+        )
+        neighbor_doc = Document.objects.create()
+        TextBlock.objects.create(document=neighbor_doc, fragment=frag)
         # ensure solr index is updated with document fixture data
         SolrClient().update.index([], commit=True)
 
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()
         # assuming relevance sort is default; update if that changes
+        # docsearch_view.request.GET = {"query": }
         docsearch_view.request.GET = {"query": document.shelfmark}
         qs = docsearch_view.get_queryset()
-        # should return both documents
-        assert qs.count() == 2
-        # document with matching shelfmark should be returned first
-        assert qs[0]["pgpid"] == document.id
+        # should return all three documents
+        assert qs.count() == 3
+        # document with exact match on shelfmark should be returned first
+        assert (
+            qs[0]["pgpid"] == document.id
+        ), "document with matching shelfmark returned first"
+        # document with full shelfmark should in description should be second
+        assert (
+            qs[1]["pgpid"] == related_doc.id
+        ), "document with shelfmark in description returned second"
+        # (document with similar shelfmark is third)
 
 
 class TestDocumentScholarshipView:
