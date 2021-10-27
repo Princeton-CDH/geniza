@@ -5,11 +5,24 @@
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block main %}
-    <h1>{{ page_title }}</h1>
-    <div class="container">
-
-        <form>
-            {{ form }}
+    <div class="document-list">
+        <form class="search-form">
+            <div class="search-bar">
+                {{ form.q }}
+                <input type="submit" value="search" class="search-button">
+            </div>
+            <div class="results-count">
+                {% comment %}Translators: number of search results{% endcomment %}
+                {% blocktranslate count counter=total trimmed %}
+                    1 result
+                {% plural %}
+                    {{ counter }} total results
+                {% endblocktranslate %}
+            </div>
+            <div class="sort-by-container">
+                {{ form.sort.label }}
+                {{ form.sort }}
+            </div>
             {% for field, errors in form.errors.items %}
                 {# no clean way to get field labels here, so we just collapse the error lists #}
                 {% for error in errors %}
@@ -17,13 +30,6 @@
                 {% endfor %}
             {% endfor %}
         </form>
-
-        {% comment %}Translators: number of search results{% endcomment %}
-        {% blocktranslate count counter=total trimmed %}
-            1 result
-        {% plural %}
-            {{ counter }} total results
-        {% endblocktranslate %}
 
         <ol class="search-results">
             {% for document in documents %}

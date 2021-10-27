@@ -11,6 +11,7 @@
 $text-size-xs: 0.64rem;
 $text-size-sm: 0.8rem;
 $text-size-md: 1rem;
+$text-size-2md: 1.15rem;
 $text-size-lg: 1.25rem;
 $text-size-xl: 1.56rem;
 $text-size-2xl: 1.95rem;
@@ -67,6 +68,12 @@ $text-size-5xl: 3.81rem;
     font-family: fonts.$secondary;
     font-size: $text-size-md;
     line-height: 1.5;
+}
+
+@mixin meta {
+    font-family: fonts.$secondary;
+    font-size: $text-size-2md;
+    line-height: 1.3;
 }
 
 @mixin button {

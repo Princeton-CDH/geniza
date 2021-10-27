@@ -2,6 +2,16 @@
 // Document search page.
 // -----------------------------------------------------------------------------
 
+@use "../base/spacing";
+@use "../base/container";
+
 #search {
-    // rules go here once body context ID is applied
+    // Overall page layout
+    .document-list {
+        width: 100%;
+        max-width: container.$two-column;
+        display: flex;
+        flex-direction: column;
+        padding: spacing.$spacing-lg;
+    }
 }

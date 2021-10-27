@@ -9,6 +9,10 @@
 // https://every-layout.dev/rudiments/axioms/#measure
 $measure: 60ch;
 
+// Maximum width of a two-column layout, whose columns should not exceed
+// width of $measure
+$two-column: 900px;
+
 // Minimum amount of space left on either side of the page to create a margin.
 $gutter: spacing.$spacing-sm;
 

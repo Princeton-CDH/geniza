@@ -1,0 +1,59 @@
+// -----------------------------------------------------------------------------
+// Document search form.
+// -----------------------------------------------------------------------------
+
+@use "../base/colors";
+@use "../base/container";
+@use "../base/spacing";
+@use "../base/typography";
+
+// search form
+.search-form {
+    margin-top: spacing.$spacing-xl;
+    margin-bottom: spacing.$spacing-xl;
+    max-width: container.$two-column;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    .search-bar {
+        display: flex;
+        flex-flow: row nowrap;
+        .search-field {
+            border: 1px solid colors.$gray-50;
+            border-right: none;
+            margin-right: 0;
+            max-width: container.$two-column;
+            flex: 1 0 auto;
+            height: spacing.$spacing-xl;
+            padding: spacing.$spacing-sm;
+            &::placeholder {
+                font-size: typography.$text-size-md;
+            }
+        }
+        .search-button {
+            border-radius: 0;
+            margin-left: 0;
+            @include typography.button;
+            background-color: colors.$gray-30;
+            border: 1px solid colors.$gray-50;
+            height: spacing.$spacing-xl;
+        }
+    }
+    .results-count {
+        text-align: center;
+        margin-top: spacing.$spacing-md;
+        margin-bottom: spacing.$spacing-md;
+    }
+    .sort-by-container {
+        display: flex;
+        flex-flow: column;
+        align-items: flex-start;
+        .sort-by {
+            flex: 0 1 auto;
+            border-radius: 0;
+            height: spacing.$spacing-lg;
+            padding: spacing.$spacing-sm;
+            margin-top: spacing.$spacing-sm;
+        }
+    }
+}

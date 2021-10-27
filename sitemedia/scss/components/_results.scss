@@ -4,59 +4,82 @@
 
 @use "../base/typography";
 @use "../base/spacing";
+@use "../base/container";
+@use "../base/breakpoints";
 
 // list of results
 .search-results {
     list-style: none;
     counter-reset: search-counter;
+    max-width: container.$two-column;
 }
 
 // single result
 .search-result {
     counter-increment: search-counter;
+    margin-left: spacing.$spacing-xl;
+    max-width: container.$two-column;
+    display: flex;
+    justify-content: space-between;
+    flex-flow: column;
+    @include breakpoints.respond_to(medium) {
+        flex-flow: row;
+    }
 
     // spacing in between results
     & + .search-result {
         margin-top: spacing.$spacing-lg;
     }
 
-    // document titles
-    .title {
-        @include typography.subtitle;
+    // First row on mobile, left column on larger
+    .meta-container {
+        max-width: container.$measure;
+        // document titles
+        .title {
+            @include typography.subtitle;
 
-        position: relative;
+            position: relative;
+            margin-top: spacing.$spacing-sm;
+            margin-bottom: spacing.$spacing-xs;
 
-        // anchor counter to h2 instead of li, for alignment regardless of tags
-        &::before {
-            content: counter(search-counter);
-            margin-left: -#{spacing.$spacing-lg};
-            text-align: left;
-            float: left;
+            // anchor counter to h2 instead of li, for alignment regardless of tags
+            &::before {
+                content: counter(search-counter);
+                margin-left: -#{spacing.$spacing-xl};
+                text-align: left;
+                float: left;
+                font-weight: bold;
+            }
+        }
+
+        // document type, inside title
+        .doctype {
             font-weight: bold;
+
+            &::after {
+                font-weight: normal;
+                content: ", ";
+            }
+        }
+
+        // document description
+        .description {
+            margin: spacing.$spacing-md 0;
         }
     }
 
-    // document type, inside title
-    .doctype {
-        font-weight: bold;
+    // Second row on mobile, right column on larger
+    .content-container {
+        align-self: flex-end;
+        justify-self: flex-end;
+        max-width: container.$measure;
+        // "view more details" link
+        .view-link {
+            @include typography.link;
 
-        &::after {
-            font-weight: normal;
-            content: ", ";
+            display: block;
+            width: max-content;
+            margin-left: auto;
         }
-    }
-
-    // document description
-    .description {
-        margin: spacing.$spacing-sm 0;
-    }
-
-    // "view more details" link
-    .view-link {
-        @include typography.link;
-
-        display: block;
-        width: max-content;
-        margin-left: auto;
     }
 }
