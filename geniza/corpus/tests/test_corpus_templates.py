@@ -1,3 +1,4 @@
+from django.template.loader import get_template, render_to_string
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
@@ -219,3 +220,44 @@ class TestDocumentTabsSnippet:
 
         # count should be 2
         assertContains(response, "External Links (2)")
+
+
+class TestDocumentResult:
+    def test_no_scholarship_records(self):
+        assert "No Scholarship Records" in render_to_string(
+            "corpus/snippets/document_result.html", context={"document": {"pgpid": 1}}
+        )
+
+    def test_has_scholarship_records(self):
+        assert "No Scholarship Records" not in render_to_string(
+            "corpus/snippets/document_result.html",
+            context={"document": {"pgpid": 1, "scholarship_count": 10}},
+        )
+
+    def test_fifteen_editions(self):
+        assert "Transcription (15)" in render_to_string(
+            "corpus/snippets/document_result.html",
+            context={
+                "document": {"num_editions": 15, "pgpid": 1, "scholarship_count": 10}
+            },
+        )
+
+    def test_fifteen_translations(self):
+        assert "Translation (15)" in render_to_string(
+            "corpus/snippets/document_result.html",
+            context={
+                "document": {
+                    "num_translations": 15,
+                    "pgpid": 1,
+                    "scholarship_count": 10,
+                }
+            },
+        )
+
+    def test_fifteen_discussion(self):
+        assert "Discussion (15)" in render_to_string(
+            "corpus/snippets/document_result.html",
+            context={
+                "document": {"num_discussions": 15, "pgpid": 1, "scholarship_count": 10}
+            },
+        )
