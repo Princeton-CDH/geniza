@@ -39,5 +39,12 @@
                 {% endif %}
             </p>
         </div>
+        <div class="content-container">
+            {# view link #}
+            <a class="view-link" href="{% url 'corpus:document' document.pgpid %}">
+                {% translate 'View document details' %}
+                <i class="ph-arrow-right"></i>
+            </a>
+        </div>
     </li>
 {% endspaceless %}
