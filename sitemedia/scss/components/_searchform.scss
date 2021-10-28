@@ -11,7 +11,7 @@
 .search-form {
     margin-top: spacing.$spacing-xl;
     margin-bottom: spacing.$spacing-xl;
-    max-width: container.$two-column;
+    @include container.two-column;
     display: flex;
     flex-flow: column;
     justify-content: center;
@@ -22,7 +22,7 @@
             border: 1px solid colors.$gray-50;
             border-right: none;
             margin-right: 0;
-            max-width: container.$two-column;
+            @include container.two-column;
             flex: 1 0 auto;
             height: spacing.$spacing-xl;
             padding: spacing.$spacing-sm;

@@ -2,23 +2,23 @@
 // Lists of search results for documents.
 // -----------------------------------------------------------------------------
 
-@use "../base/typography";
-@use "../base/spacing";
-@use "../base/container";
 @use "../base/breakpoints";
+@use "../base/container";
+@use "../base/spacing";
+@use "../base/typography";
 
 // list of results
 .search-results {
     list-style: none;
     counter-reset: search-counter;
-    max-width: container.$two-column;
+    @include container.two-column;
 }
 
 // single result
 .search-result {
     counter-increment: search-counter;
     margin-left: spacing.$spacing-xl;
-    max-width: container.$two-column;
+    @include container.two-column;
     display: flex;
     justify-content: space-between;
     flex-flow: column;
