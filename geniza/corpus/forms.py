@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext as _
 
 
 class SelectDisabledMixin:
@@ -37,13 +38,16 @@ class SelectWithDisabled(SelectDisabledMixin, forms.Select):
 
 
 class DocumentSearchForm(forms.Form):
+
     q = forms.CharField(
         label="Keyword or Phrase",
         required=False,
         widget=forms.TextInput(
             attrs={
-                "placeholder": "search by keyword",
-                "aria-label": "Keyword or Phrase",
+                # Translators: placeholder for keyword search input
+                "placeholder": _("search by keyword"),
+                # Translators: accessible label for keyword search input
+                "aria-label": _("Keyword or Phrase"),
                 "type": "search",
             }
         ),
@@ -51,7 +55,8 @@ class DocumentSearchForm(forms.Form):
 
     # sort still TODO; single choice only for display, for now
     SORT_CHOICES = [
-        ("relevance", "Relevance"),
+        # Translators: label for sort by relevance
+        ("relevance", _("Relevance")),
         # ("input_date", "Input Date (Latest – Earliest)"),
     ]
 
@@ -60,7 +65,11 @@ class DocumentSearchForm(forms.Form):
     required_css_class = "required"
 
     sort = forms.ChoiceField(
-        label="Sort by", choices=SORT_CHOICES, required=False, widget=SelectWithDisabled
+        # Translators: label for form sort field
+        label=_("Sort by"),
+        choices=SORT_CHOICES,
+        required=False,
+        widget=SelectWithDisabled,
     )
 
     def __init__(self, data=None, *args, **kwargs):
