@@ -43,7 +43,9 @@
                     {# link ? #}
                 {% endfor %}
             {% endif %}
-            <dt class="inline">{% translate 'Permalink' %}</dt>
+            <dt class="inline">
+                {# Translators: label for permanent link to a document #}
+                {% translate 'Permalink' %}</dt>
             <dd>
                 <a href="{{ document.permalink }}" rel="bookmark">
                     {{ document.permalink }}
