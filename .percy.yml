@@ -5,7 +5,7 @@ snapshot:
     - 1440
   minHeight: 1024
 discovery:
-  allowedHostnames: []
+  allowedHostnames: ["unpkg.com"]
   networkIdleTimeout: 100
 static:
   baseUrl: /
