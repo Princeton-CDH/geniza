@@ -2,6 +2,7 @@
 // Document search form.
 // -----------------------------------------------------------------------------
 
+@use "../base/breakpoints";
 @use "../base/colors";
 @use "../base/container";
 @use "../base/spacing";
@@ -10,7 +11,10 @@
 // search form
 #search form {
     @include container.two-column;
-    margin-top: spacing.$spacing-xl;
+    margin-top: spacing.$spacing-lg;
+    @include breakpoints.for-tablet-landscape-up {
+        margin-top: spacing.$spacing-2xl;
+    }
     fieldset {
         @include container.two-column;
         display: flex;
@@ -33,7 +37,10 @@
         select[name="sort"] {
             font-size: typography.$text-size-sm;
             order: 4;
-            flex: 0 1 auto;
+            flex: 1 1 auto;
+            @include breakpoints.for-tablet-landscape-up {
+                flex: 0 1 auto;
+            }
             border-radius: 0;
             height: spacing.$spacing-xl;
             padding: spacing.$spacing-xs;
