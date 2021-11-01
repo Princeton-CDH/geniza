@@ -5,30 +5,34 @@
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block main %}
-    <h1>{{ page_title }}</h1>
-    <div class="container">
-
-        <form>
-            {{ form }}
-            {% for field, errors in form.errors.items %}
-                {# no clean way to get field labels here, so we just collapse the error lists #}
-                {% for error in errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
+    <h1 class="sr-only">{{ page_title }}</h1>
+    <form>
+        <fieldset>
+            {{ form.q }}
+            {{ form.sort }}
+            <label for="sort">{{ form.sort.label }}</label>
+            <input type="submit" value="search" />
+        </fieldset>
+        {% for field, errors in form.errors.items %}
+            {# no clean way to get field labels here, so we just collapse the error lists #}
+            {% for error in errors %}
+                <li>{{ error }}</li>
             {% endfor %}
-        </form>
-
-        {% comment %}Translators: number of search results{% endcomment %}
-        {% blocktranslate count counter=total trimmed %}
-            1 result
-        {% plural %}
-            {{ counter }} total results
-        {% endblocktranslate %}
-
-        <ol class="search-results">
+        {% endfor %}
+    </form>
+    <section id="document-list">
+        <h1>
+            {% comment %}Translators: number of search results{% endcomment %}
+            {% blocktranslate count counter=total trimmed %}
+                1 result
+            {% plural %}
+                {{ counter }} total results
+            {% endblocktranslate %}
+        </h1>
+        <ol>
             {% for document in documents %}
                 {% include "corpus/snippets/document_result.html" %}
             {% endfor %}
         </ol>
-    </div>
+    </section>
 {% endblock main %}

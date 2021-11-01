@@ -2,6 +2,7 @@
 // Utility classes for controlling the width of elements.
 // -----------------------------------------------------------------------------
 
+@use "../base/breakpoints";
 @use "spacing";
 
 // Maximum width of a line of text, in characters. This is based on standards
@@ -9,6 +10,15 @@
 // https://every-layout.dev/rudiments/axioms/#measure
 $measure: 60ch;
 
+// Maximum width of a two-column layout, whose columns should not exceed
+// width of $measure
+$two-column: 900px;
+@mixin two-column {
+    max-width: $measure;
+    @include breakpoints.for-tablet-landscape-up {
+        max-width: $two-column;
+    }
+}
 // Minimum amount of space left on either side of the page to create a margin.
 $gutter: spacing.$spacing-sm;
 

@@ -31,8 +31,8 @@ class Command(BaseCommand):
         # percy_snapshot(browser, "Content Page")
 
         # document search
-        # search term should match description of 3951
-        browser.get("http://localhost:8000/documents/?q=tujib")
+        # search term should match descriptions of 3951 and the fake letter document
+        browser.get("http://localhost:8000/documents/?q=tujib+description")
         percy_snapshot(browser, "Document Search")
 
         # document detail
