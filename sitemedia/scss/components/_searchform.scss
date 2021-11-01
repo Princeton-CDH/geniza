@@ -8,52 +8,52 @@
 @use "../base/typography";
 
 // search form
-.search-form {
-    margin-top: spacing.$spacing-xl;
-    margin-bottom: spacing.$spacing-xl;
+#search form {
     @include container.two-column;
-    display: flex;
-    flex-flow: column;
-    justify-content: center;
-    .search-bar {
+    margin-top: spacing.$spacing-xl;
+    fieldset {
+        @include container.two-column;
         display: flex;
-        flex-flow: row nowrap;
-        .search-field {
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: flex-start;
+        input[type="search"] {
+            @include container.two-column;
+            order: 1;
+            flex: 1 0 auto;
             border: 1px solid colors.$gray-50;
             border-right: none;
             margin-right: 0;
-            @include container.two-column;
-            flex: 1 0 auto;
             height: spacing.$spacing-xl;
             padding: spacing.$spacing-sm;
             &::placeholder {
                 font-size: typography.$text-size-md;
             }
         }
-        .search-button {
+        select[name="sort"] {
+            font-size: typography.$text-size-sm;
+            order: 4;
+            flex: 0 1 auto;
+            border-radius: 0;
+            height: spacing.$spacing-xl;
+            padding: spacing.$spacing-xs;
+            margin-top: spacing.$spacing-sm;
+        }
+        label[for="sort"] {
+            @include container.two-column;
+            order: 3;
+            flex: 1 0 100%;
+            margin-top: spacing.$spacing-lg;
+        }
+        input[type="submit"] {
+            @include typography.button;
+            order: 2;
+            flex: 0 0 10%;
             border-radius: 0;
             margin-left: 0;
-            @include typography.button;
             background-color: colors.$gray-30;
             border: 1px solid colors.$gray-50;
             height: spacing.$spacing-xl;
-        }
-    }
-    .results-count {
-        text-align: center;
-        margin-top: spacing.$spacing-md;
-        margin-bottom: spacing.$spacing-md;
-    }
-    .sort-by-container {
-        display: flex;
-        flex-flow: column;
-        align-items: flex-start;
-        .sort-by {
-            flex: 0 1 auto;
-            border-radius: 0;
-            height: spacing.$spacing-lg;
-            padding: spacing.$spacing-sm;
-            margin-top: spacing.$spacing-sm;
         }
     }
 }

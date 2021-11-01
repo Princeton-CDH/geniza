@@ -1,7 +1,13 @@
-{% load i18n %}
+{% load i18n corpus_extras %}
 {% spaceless %}
     <li class="search-result">
-        <div class="meta-container">
+        <section>
+            {# title #}
+            <h2 class="title">
+                <span class="doctype">{{ document.type }}</span>
+                <span class="shelfmark">{{ document.shelfmark|join:" + " }}</span>
+            </h2>
+
             {# tags #}
             {% if document.tags %}
                 <ul class="tags">
@@ -10,11 +16,6 @@
                     {% endfor %}
                 </ul>
             {% endif %}
-            {# title #}
-            <h2 class="title">
-                <span class="doctype">{{ document.type }}</span>
-                <span class="shelfmark">{{ document.shelfmark|join:" + " }}</span>
-            </h2>
 
             {# metadata #}
             <dl class="metadata">
@@ -38,13 +39,11 @@
                     No Scholarship Records
                 {% endif %}
             </p>
-        </div>
-        <div class="content-container">
-            {# view link #}
-            <a class="view-link" href="{% url 'corpus:document' document.pgpid %}">
-                {% translate 'View document details' %}
-                <i class="ph-arrow-right"></i>
-            </a>
-        </div>
+        </section>
+        {# view link #}
+        <a class="view-link" href="{% url 'corpus:document' document.pgpid %}">
+            {% translate 'View document details' %}
+            <i class="ph-arrow-right"></i>
+        </a>
     </li>
 {% endspaceless %}

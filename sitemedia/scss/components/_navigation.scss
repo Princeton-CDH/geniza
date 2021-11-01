@@ -27,7 +27,7 @@
         padding: 0;
         flex: auto;
         display: none;
-        @include breakpoints.respond_to(medium) {
+        @include breakpoints.for-tablet-landscape-up {
             display: flex;
         }
         justify-content: flex-end;

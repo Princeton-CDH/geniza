@@ -5,36 +5,33 @@
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block main %}
-    <div class="document-list">
-        <form class="search-form">
-            <div class="search-bar">
-                {{ form.q }}
-                <input type="submit" value="search" class="search-button">
-            </div>
-            <div class="results-count">
-                {% comment %}Translators: number of search results{% endcomment %}
-                {% blocktranslate count counter=total trimmed %}
-                    1 result
-                {% plural %}
-                    {{ counter }} total results
-                {% endblocktranslate %}
-            </div>
-            <div class="sort-by-container">
-                {{ form.sort.label }}
-                {{ form.sort }}
-            </div>
-            {% for field, errors in form.errors.items %}
-                {# no clean way to get field labels here, so we just collapse the error lists #}
-                {% for error in errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
+    <form>
+        <fieldset>
+            {{ form.q }}
+            {{ form.sort }}
+            <label for="sort">{{ form.sort.label }}</label>
+            <input type="submit" value="search" />
+        </fieldset>
+        {% for field, errors in form.errors.items %}
+            {# no clean way to get field labels here, so we just collapse the error lists #}
+            {% for error in errors %}
+                <li>{{ error }}</li>
             {% endfor %}
-        </form>
-
-        <ol class="search-results">
+        {% endfor %}
+    </form>
+    <section id="document-list">
+        <h1>
+            {% comment %}Translators: number of search results{% endcomment %}
+            {% blocktranslate count counter=total trimmed %}
+                1 result
+            {% plural %}
+                {{ counter }} total results
+            {% endblocktranslate %}
+        </h1>
+        <ol>
             {% for document in documents %}
                 {% include "corpus/snippets/document_result.html" %}
             {% endfor %}
         </ol>
-    </div>
+    </section>
 {% endblock main %}

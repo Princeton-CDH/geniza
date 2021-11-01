@@ -45,7 +45,6 @@ class DocumentSearchForm(forms.Form):
                 "placeholder": "search by keyword",
                 "aria-label": "Keyword or Phrase",
                 "type": "search",
-                "class": "search-field",
             }
         ),
     )
@@ -61,10 +60,7 @@ class DocumentSearchForm(forms.Form):
     required_css_class = "required"
 
     sort = forms.ChoiceField(
-        label="Sort by",
-        choices=SORT_CHOICES,
-        required=False,
-        widget=SelectWithDisabled(attrs={"class": "sort-by"}),
+        label="Sort by", choices=SORT_CHOICES, required=False, widget=SelectWithDisabled
     )
 
     def __init__(self, data=None, *args, **kwargs):

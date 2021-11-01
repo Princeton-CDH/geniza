@@ -15,7 +15,7 @@ $measure: 60ch;
 $two-column: 900px;
 @mixin two-column {
     max-width: $measure;
-    @include breakpoints.respond_to(medium) {
+    @include breakpoints.for-tablet-landscape-up {
         max-width: $two-column;
     }
 }
