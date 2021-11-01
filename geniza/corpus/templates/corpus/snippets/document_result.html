@@ -11,7 +11,7 @@
             {# tags #}
             {% if document.tags %}
                 <ul class="tags">
-                    {% for tag in document.tags %}
+                    {% for tag in document.tags|alphabetize %}
                         <li>{{ tag }}</li>
                     {% endfor %}
                 </ul>
