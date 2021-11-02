@@ -1,5 +1,9 @@
 # Deploy Notes
 
+## 0.7
+
+-   Update settings to configure **TEI_TRANSCRIPTIONS_LOCAL_PATH** for the deploy environment.
+
 ## 0.3.0
 
 -   Ensure that Django's default Site is configured with a valid hostname (e.g. test-geniza.cdh.princeton.edu)

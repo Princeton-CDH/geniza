@@ -249,3 +249,10 @@ CSP_IMG_SRC = (
 
 # exclude admin and cms urls from csp directives since they're authenticated
 CSP_EXCLUDE_URL_PREFIXES = ("/admin", "/cms")
+
+# URL for git repository of TEI transcriptions
+TEI_TRANSCRIPTIONS_GITREPO = (
+    "https://bitbucket.org/benjohnston/princeton-geniza-project.git"
+)
+# local path where git repo should be cloned
+TEI_TRANSCRIPTIONS_LOCAL_PATH = "data/tei_xml"
