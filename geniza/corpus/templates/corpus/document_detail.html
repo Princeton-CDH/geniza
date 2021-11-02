@@ -37,7 +37,7 @@
             <dd>{{ document.shelfmark }}</dd>
             {% if document.doctype %}
                 <dt class="sr-only">{% translate 'Document Type' %}</dt>
-                <dd>{{ document.doctype.display_label }}</dd>
+                <dd>{{ document.doctype }}</dd>
             {% endif %}
             {# Translators: Date document was first added to the PGP #}
             <dt class="inline">{% translate 'Input date' %}</dt>

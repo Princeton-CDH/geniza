@@ -441,9 +441,7 @@ class TestDocument:
         assert index_data["id"] == document.index_id()
         assert index_data["item_type_s"] == "document"
         assert index_data["pgpid_i"] == document.pk
-        assert index_data["type_s"] == str(
-            document.doctype.display_label or document.doctype
-        )
+        assert index_data["type_s"] == str(document.doctype)
         assert index_data["description_t"] == document.description
         assert index_data["notes_t"] is None  # no notes
         assert index_data["needs_review_t"] is None  # no review notes
