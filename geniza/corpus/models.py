@@ -12,7 +12,7 @@ from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
