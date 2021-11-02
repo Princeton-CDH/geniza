@@ -205,14 +205,11 @@ class TestFragment:
 
 class TestDocumentType:
     def test_str(self):
+        """Should use doctype.display_label if available, else use doctype.name"""
         doctype = DocumentType(name="Legal")
         assert str(doctype) == doctype.name
-
-    def test_display_label(self):
-        legal = DocumentType(name="Legal", display_label="Legal document")
-        assert legal.display_label == "Legal document"
-        no_label = DocumentType(name="test")
-        assert not no_label.display_label
+        doctype.display_label = "Legal document"
+        assert str(doctype) == "Legal document"
 
 
 @pytest.mark.django_db
