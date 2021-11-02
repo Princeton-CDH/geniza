@@ -522,10 +522,19 @@ class Document(ModelIndexable):
         # get fragments via textblocks for correct order
         # and to take advantage of prefetching
         fragments = [tb.fragment for tb in self.textblock_set.all()]
+
+        # use type label if possible
+        doctype = "Unknown type"
+        if self.doctype:
+            if self.doctype.display_label:
+                doctype = self.doctype.display_label
+            else:
+                doctype = self.doctype.name
+
         index_data.update(
             {
                 "pgpid_i": self.id,
-                "type_s": self.doctype.name if self.doctype else "Unknown",
+                "type_s": doctype,
                 "description_t": self.description,
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
