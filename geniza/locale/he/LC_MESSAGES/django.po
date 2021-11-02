@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-02 14:53-0400\n"
-"PO-Revision-Date: 2021-06-01 20:49\n"
+"POT-Creation-Date: 2021-11-02 15:14-0400\n"
+"PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -46,26 +46,26 @@ msgstr ""
 
 #: geniza/corpus/templates/admin/corpus/app_index.html:9
 msgid "Home"
-msgstr ""
+msgstr "דף הבית"
 
 #: geniza/corpus/templates/corpus/document_detail.html:34
 msgid "Shelfmark"
-msgstr ""
+msgstr "מספר מדף"
 
 #: geniza/corpus/templates/corpus/document_detail.html:37
 msgid "Document Type"
-msgstr ""
+msgstr "סוג המסמך"
 
 #. Translators: Date document was first added to the PGP
 #: geniza/corpus/templates/corpus/document_detail.html:41
 #: geniza/corpus/templates/corpus/snippets/document_result.html:22
 msgid "Input date"
-msgstr ""
+msgstr "תאריך קלט"
 
 #. Translators: Editor label
 #: geniza/corpus/templates/corpus/document_detail.html:45
 msgid "Editor"
-msgstr ""
+msgstr "עורך"
 
 #. Translators: label for permanent link to a document
 #: geniza/corpus/templates/corpus/document_detail.html:53
@@ -77,32 +77,32 @@ msgstr ""
 #, python-format
 msgid "1 result"
 msgid_plural "%(counter)s total results"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "תוצאה אחת"
+msgstr[1] "%(counter)s תוצאות"
+msgstr[2] "%(counter)s תוצאות"
+msgstr[3] "%(counter)s תוצאות"
 
 #: geniza/corpus/templates/corpus/document_scholarship.html:21
 msgid "Link to source"
-msgstr ""
+msgstr "קישור למקור"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:24
 msgid "PGP ID"
-msgstr ""
+msgstr "מזהה PGP"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:35
 msgid "Transcription"
-msgstr ""
+msgstr "תעתוק"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:36
 #: geniza/footnotes/models.py:217
 msgid "Translation"
-msgstr ""
+msgstr "תרגום"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:37
 #: geniza/footnotes/models.py:218
 msgid "Discussion"
-msgstr ""
+msgstr "דיון"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:39
 msgid "No Scholarship Records"
@@ -110,65 +110,65 @@ msgstr ""
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:45
 msgid "View document details"
-msgstr ""
+msgstr "הצגת פרטי מסמך"
 
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:5
 msgid "Document Details"
-msgstr ""
+msgstr "פרטי מסמך"
 
 #. Translators: n_records is number of scholarship records
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:8
 #, python-format
 msgid "Scholarship Records (%(n_records)s)"
-msgstr ""
+msgstr "רשומות קשורות (%(n_records)s)"
 
 #. Translators: n_links is number of external links
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:13
 #, python-format
 msgid "External Links (%(n_links)s)"
-msgstr ""
+msgstr "קישורים חיצוניים (%(n_links)s)"
 
 #. Translators: title of document search page
 #: geniza/corpus/views.py:25
 msgid "Search Documents"
-msgstr ""
+msgstr "חיפוש מסמכים"
 
 #. Translators: description of document search page, for search engines
 #: geniza/corpus/views.py:27
 msgid "Search and browse Geniza documents."
-msgstr ""
+msgstr "חיפוש וצפיה במסמכי הגניזה."
 
 #. Translators: title of document scholarship page
 #: geniza/corpus/views.py:157
 #, python-format
 msgid "Scholarship on %(doc)s"
-msgstr ""
+msgstr "רשומה קשורה ל-%(doc)s"
 
 #: geniza/corpus/views.py:164
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "רשומה קשורה %(count)d ל %(doc)s"
+msgstr[1] "%(count)d רשומות קשורות ל %(doc)s"
+msgstr[2] "%(count)d רשומות קשורות ל %(doc)s"
+msgstr[3] "%(count)d רשומות קשורות ל %(doc)s"
 
 #: geniza/footnotes/models.py:216
 msgid "Edition"
-msgstr ""
+msgstr "מהדורה"
 
 #: geniza/templates/admin/base_site.html:4
 msgid "Django site admin"
-msgstr ""
+msgstr "ניהול האתר"
 
 #. Translators: label for 'home' button in main navigation
 #: geniza/templates/nav.html:4
 msgid "GENIZA"
-msgstr ""
+msgstr "גניזה"
 
 #: geniza/templates/nav.html:10
 msgid "Search"
-msgstr ""
+msgstr "חיפוש"
 
 #: geniza/templates/nav.html:13
 msgid "Editorial"
@@ -176,8 +176,8 @@ msgstr ""
 
 #: geniza/templates/nav.html:14
 msgid "Contact Us"
-msgstr ""
+msgstr "יצירת קשר"
 
 #: geniza/templates/nav.html:15
 msgid "About"
-msgstr ""
+msgstr "אודות"

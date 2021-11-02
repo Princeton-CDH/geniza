@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-02 14:53-0400\n"
-"PO-Revision-Date: 2021-06-01 20:49\n"
+"POT-Creation-Date: 2021-11-02 15:14-0400\n"
+"PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -21,22 +21,22 @@ msgstr ""
 #. Translators: placeholder for keyword search input
 #: geniza/corpus/forms.py:48
 msgid "search by keyword"
-msgstr ""
+msgstr "البحث بواسطة الكلمة المفتاحية"
 
 #. Translators: accessible label for keyword search input
 #: geniza/corpus/forms.py:50
 msgid "Keyword or Phrase"
-msgstr ""
+msgstr "الكلمة المفتاحية أو القراءة"
 
 #. Translators: label for sort by relevance
 #: geniza/corpus/forms.py:59
 msgid "Relevance"
-msgstr ""
+msgstr "الأهمية"
 
 #. Translators: label for form sort field
 #: geniza/corpus/forms.py:69
 msgid "Sort by"
-msgstr ""
+msgstr "الترتيب حسب"
 
 #. Translators: Default label when document does not have a type
 #: geniza/corpus/models.py:533
@@ -70,127 +70,118 @@ msgstr "محرر"
 #. Translators: label for permanent link to a document
 #: geniza/corpus/templates/corpus/document_detail.html:53
 msgid "Permalink"
-msgstr ""
+msgstr "رابط دائم"
 
 #. Translators: number of search results
 #: geniza/corpus/templates/corpus/document_list.html:26
 #, python-format
 msgid "1 result"
 msgid_plural "%(counter)s total results"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
-msgstr[4] ""
-msgstr[5] ""
+msgstr[0] "نتائج %(counter)s"
+msgstr[1] "1 نتيجة"
+msgstr[2] "نتيجتين %(counter)s"
+msgstr[3] "النتائج %(counter)s"
+msgstr[4] "النتائج %(counter)s"
+msgstr[5] "مجموع النتائج %(counter)s"
 
 #: geniza/corpus/templates/corpus/document_scholarship.html:21
 msgid "Link to source"
-msgstr ""
+msgstr "رابط إلى المصدر"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:24
 msgid "PGP ID"
-msgstr ""
+msgstr "PGP ID"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:35
 msgid "Transcription"
-msgstr ""
+msgstr "نسخه"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:36
 #: geniza/footnotes/models.py:217
 msgid "Translation"
-msgstr ""
+msgstr "الترجمة"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:37
 #: geniza/footnotes/models.py:218
 msgid "Discussion"
-msgstr ""
+msgstr "المناقشة"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:39
 msgid "No Scholarship Records"
-msgstr ""
+msgstr "لا توجد سجلات للمنح الدراسية"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:45
 msgid "View document details"
-msgstr ""
+msgstr "عرض تفاصيل المستند"
 
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:5
-#, fuzzy
-#| msgid "Document Type"
 msgid "Document Details"
-msgstr "نوع المستند"
+msgstr "تفاصيل المستند"
 
 #. Translators: n_records is number of scholarship records
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:8
 #, python-format
 msgid "Scholarship Records (%(n_records)s)"
-msgstr ""
+msgstr "سجل المنح الدراسية (%(n_records)s)"
 
 #. Translators: n_links is number of external links
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:13
 #, python-format
 msgid "External Links (%(n_links)s)"
-msgstr ""
+msgstr "الروابط الخارجية (%(n_links)s)"
 
 #. Translators: title of document search page
 #: geniza/corpus/views.py:25
 msgid "Search Documents"
-msgstr ""
+msgstr "البحث في المستندات"
 
 #. Translators: description of document search page, for search engines
 #: geniza/corpus/views.py:27
 msgid "Search and browse Geniza documents."
-msgstr ""
+msgstr "البحث في وثائق جنيزا وتصفحها."
 
 #. Translators: title of document scholarship page
 #: geniza/corpus/views.py:157
 #, python-format
 msgid "Scholarship on %(doc)s"
-msgstr ""
+msgstr "منحة في %(doc)s"
 
 #: geniza/corpus/views.py:164
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
-msgstr[4] ""
-msgstr[5] ""
+msgstr[0] "%(count)d سجل منح دراسية لـ %(doc)s"
+msgstr[1] "%(count)d سجل منحة دراسية لـ %(doc)s"
+msgstr[2] "%(count)d سجل منح دراسية لـ %(doc)s"
+msgstr[3] "%(count)d سجل منح دراسية لـ %(doc)s"
+msgstr[4] "%(count)d سجل منح دراسية لـ %(doc)s"
+msgstr[5] "%(count)d سجل منح دراسية لـ %(doc)s"
 
 #: geniza/footnotes/models.py:216
-#, fuzzy
-#| msgid "Editor"
 msgid "Edition"
-msgstr "محرر"
+msgstr "الطبعة"
 
 #: geniza/templates/admin/base_site.html:4
 msgid "Django site admin"
-msgstr ""
+msgstr "Django site admin"
 
 #. Translators: label for 'home' button in main navigation
 #: geniza/templates/nav.html:4
 msgid "GENIZA"
-msgstr ""
+msgstr "GENIZA"
 
 #: geniza/templates/nav.html:10
 msgid "Search"
-msgstr ""
+msgstr "البحث"
 
 #: geniza/templates/nav.html:13
-#, fuzzy
-#| msgid "Editor"
 msgid "Editorial"
-msgstr "محرر"
+msgstr "تحرير"
 
 #: geniza/templates/nav.html:14
 msgid "Contact Us"
-msgstr ""
+msgstr "اتصل بنا"
 
 #: geniza/templates/nav.html:15
 msgid "About"
-msgstr ""
-
-#~ msgid "Tags"
-#~ msgstr "الوسوم"
+msgstr "حول"

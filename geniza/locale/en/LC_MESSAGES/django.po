@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-02 14:53-0400\n"
-"PO-Revision-Date: 2021-06-01 22:12\n"
+"POT-Creation-Date: 2021-11-02 15:14-0400\n"
+"PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en_US\n"
@@ -45,26 +45,26 @@ msgstr ""
 
 #: geniza/corpus/templates/admin/corpus/app_index.html:9
 msgid "Home"
-msgstr ""
+msgstr "Home"
 
 #: geniza/corpus/templates/corpus/document_detail.html:34
 msgid "Shelfmark"
-msgstr ""
+msgstr "Shelfmark"
 
 #: geniza/corpus/templates/corpus/document_detail.html:37
 msgid "Document Type"
-msgstr ""
+msgstr "Document Type"
 
 #. Translators: Date document was first added to the PGP
 #: geniza/corpus/templates/corpus/document_detail.html:41
 #: geniza/corpus/templates/corpus/snippets/document_result.html:22
 msgid "Input date"
-msgstr ""
+msgstr "Input date"
 
 #. Translators: Editor label
 #: geniza/corpus/templates/corpus/document_detail.html:45
 msgid "Editor"
-msgstr ""
+msgstr "Editor"
 
 #. Translators: label for permanent link to a document
 #: geniza/corpus/templates/corpus/document_detail.html:53
@@ -128,7 +128,7 @@ msgstr ""
 #. Translators: title of document search page
 #: geniza/corpus/views.py:25
 msgid "Search Documents"
-msgstr ""
+msgstr "Search Documents"
 
 #. Translators: description of document search page, for search engines
 #: geniza/corpus/views.py:27
