@@ -5,27 +5,28 @@ from django.db import migrations
 
 def populate_document_types(apps, schema_editor):
     DocumentType = apps.get_model("corpus", "DocumentType")
-    DocumentType.objects.update_or_create(
-        name="Legal", defaults={"display_label": "Legal document"}
-    )
-    DocumentType.objects.update_or_create(
-        name="Letter", defaults={"display_label": "Letter"}
-    )
-    DocumentType.objects.update_or_create(
-        name="List or table", defaults={"display_label": "List or table"}
-    )
-    DocumentType.objects.update_or_create(
-        name="Literary", defaults={"display_label": "Literary text"}
-    )
-    DocumentType.objects.update_or_create(
-        name="Paraliterary", defaults={"display_label": "Paraliterary text"}
-    )
-    DocumentType.objects.update_or_create(
-        name="State", defaults={"display_label": "State document"}
-    )
-    DocumentType.objects.update_or_create(
-        name="Unknown", defaults={"display_label": "Unknown type"}
-    )
+    types = [
+        {
+            "name": "Legal",
+            "display_label": "Legal document",
+        },
+        {
+            "name": "Literary",
+            "display_label": "Literary text",
+        },
+        {
+            "name": "Paraliterary",
+            "display_label": "Paraliterary text",
+        },
+        {
+            "name": "State",
+            "display_label": "State document",
+        },
+    ]
+    for type in types:
+        DocumentType.objects.update_or_create(
+            name=type["name"], defaults={"display_label": type["display_label"]}
+        )
 
 
 class Migration(migrations.Migration):
