@@ -1,0 +1,14 @@
+// -----------------------------------------------------------------------------
+// Document detail page.
+// -----------------------------------------------------------------------------
+
+@use "../base/typography";
+
+body#document {
+    h1 {
+        // document type, inside title
+        .doctype {
+            @include typography.doctype;
+        }
+    }
+}

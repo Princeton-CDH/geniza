@@ -205,8 +205,11 @@ class TestFragment:
 
 class TestDocumentType:
     def test_str(self):
+        """Should use doctype.display_label if available, else use doctype.name"""
         doctype = DocumentType(name="Legal")
         assert str(doctype) == doctype.name
+        doctype.display_label = "Legal document"
+        assert str(doctype) == "Legal document"
 
 
 @pytest.mark.django_db
@@ -365,14 +368,14 @@ class TestDocument:
 
     def test_title(self):
         doc = Document.objects.create()
-        assert doc.title == "Unknown: ??"
+        assert doc.title == "Unknown type; ??"
         legal = DocumentType.objects.get_or_create(name="Legal")[0]
         doc.doctype = legal
         doc.save()
-        assert doc.title == "Legal: ??"
+        assert doc.title == "Legal document; ??"
         frag = Fragment.objects.create(shelfmark="s1")
         TextBlock.objects.create(document=doc, fragment=frag, order=1)
-        assert doc.title == "Legal: s1"
+        assert doc.title == "Legal document; s1"
 
     def test_shelfmark_display(self):
         # T-S 8J22.21 + T-S NS J193

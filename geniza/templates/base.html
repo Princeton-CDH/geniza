@@ -29,7 +29,7 @@
         <script src="{{ main_js.0.url }}" nonce="{{ request.csp_nonce }}" defer></script>
         {% block extrascript %}{% endblock extrascript %}
     </head>
-    <body id="{{ id }}">
+    <body id="{{ page_type }}">
         {% if SHOW_TEST_WARNING %}
             {% include 'snippets/test_banner.html' %}
         {% endif %}

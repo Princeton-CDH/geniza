@@ -12,6 +12,7 @@ from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext as _
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
@@ -221,9 +222,14 @@ class DocumentType(models.Model):
     """The category of document in question."""
 
     name = models.CharField(max_length=255, unique=True)
+    display_label = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Optional label for display on the public site",
+    )
 
     def __str__(self):
-        return self.name
+        return self.display_label or self.name
 
 
 class DocumentSignalHandlers:
@@ -486,7 +492,7 @@ class Document(ModelIndexable):
     @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
-        return f"{self.doctype or 'Unknown'}: {self.shelfmark_display or '??'}"
+        return f"{self.doctype or _('Unknown type')}; {self.shelfmark_display or '??'}"
 
     def editions(self):
         """All footnotes for this document where the document relation includes
@@ -524,7 +530,7 @@ class Document(ModelIndexable):
         index_data.update(
             {
                 "pgpid_i": self.id,
-                "type_s": self.doctype.name if self.doctype else "Unknown",
+                "type_s": str(self.doctype) if self.doctype else _("Unknown type"),
                 "description_t": self.description,
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,

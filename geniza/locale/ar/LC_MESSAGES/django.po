@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-10-28 17:37-0400\n"
+"POT-Creation-Date: 2021-11-02 15:14-0400\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -10,7 +10,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 "X-Crowdin-Project: geniza\n"
 "X-Crowdin-Project-ID: 457634\n"
 "X-Crowdin-Language: ar\n"
@@ -37,36 +38,42 @@ msgstr "الأهمية"
 msgid "Sort by"
 msgstr "الترتيب حسب"
 
+#. Translators: Default label when document does not have a type
+#: geniza/corpus/models.py:533
+#: geniza/corpus/templates/corpus/document_detail.html:23
+msgid "Unknown type"
+msgstr ""
+
 #: geniza/corpus/templates/admin/corpus/app_index.html:9
 msgid "Home"
 msgstr "المنزل"
 
-#: geniza/corpus/templates/corpus/document_detail.html:29
+#: geniza/corpus/templates/corpus/document_detail.html:34
 msgid "Shelfmark"
 msgstr "الشرف"
 
-#: geniza/corpus/templates/corpus/document_detail.html:32
+#: geniza/corpus/templates/corpus/document_detail.html:37
 msgid "Document Type"
 msgstr "نوع المستند"
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:36
-#: geniza/corpus/templates/corpus/snippets/document_result.html:21
+#: geniza/corpus/templates/corpus/document_detail.html:41
+#: geniza/corpus/templates/corpus/snippets/document_result.html:22
 msgid "Input date"
 msgstr "Input date"
 
 #. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:40
+#: geniza/corpus/templates/corpus/document_detail.html:45
 msgid "Editor"
 msgstr "محرر"
 
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:48
+#: geniza/corpus/templates/corpus/document_detail.html:53
 msgid "Permalink"
 msgstr "رابط دائم"
 
 #. Translators: number of search results
-#: geniza/corpus/templates/corpus/document_list.html:22
+#: geniza/corpus/templates/corpus/document_list.html:26
 #, python-format
 msgid "1 result"
 msgid_plural "%(counter)s total results"
@@ -81,25 +88,25 @@ msgstr[5] "مجموع النتائج %(counter)s"
 msgid "Link to source"
 msgstr "رابط إلى المصدر"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:23
+#: geniza/corpus/templates/corpus/snippets/document_result.html:24
 msgid "PGP ID"
 msgstr "PGP ID"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:34
+#: geniza/corpus/templates/corpus/snippets/document_result.html:35
 msgid "Transcription"
 msgstr "نسخه"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:35
+#: geniza/corpus/templates/corpus/snippets/document_result.html:36
 #: geniza/footnotes/models.py:217
 msgid "Translation"
 msgstr "الترجمة"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:36
+#: geniza/corpus/templates/corpus/snippets/document_result.html:37
 #: geniza/footnotes/models.py:218
 msgid "Discussion"
 msgstr "المناقشة"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:38
+#: geniza/corpus/templates/corpus/snippets/document_result.html:39
 msgid "No Scholarship Records"
 msgstr "لا توجد سجلات للمنح الدراسية"
 
@@ -134,12 +141,12 @@ msgid "Search and browse Geniza documents."
 msgstr "البحث في وثائق جنيزا وتصفحها."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:155
+#: geniza/corpus/views.py:157
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "منحة في %(doc)s"
 
-#: geniza/corpus/views.py:162
+#: geniza/corpus/views.py:164
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
@@ -178,4 +185,3 @@ msgstr "اتصل بنا"
 #: geniza/templates/nav.html:15
 msgid "About"
 msgstr "حول"
-

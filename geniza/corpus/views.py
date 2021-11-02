@@ -85,7 +85,7 @@ class DocumentSearchView(ListView, FormMixin):
                 "total": self.queryset.count(),
                 "page_title": self.page_title,
                 "page_description": self.page_description,
-                "id": "search",
+                "page_type": "search",
             }
         )
         return context_data
@@ -137,6 +137,7 @@ class DocumentDetailView(DocumentPastIdMixin, DetailView):
             {
                 "page_title": self.page_title(),
                 "page_description": self.page_description(),
+                "page_type": "document",
             }
         )
         return context_data

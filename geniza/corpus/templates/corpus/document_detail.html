@@ -18,7 +18,12 @@
     <!-- document details -->
 
     {# title #}
-    <h1>{{ document.title }}</h1>
+    <h1>
+        {# Translators: Default label when document does not have a type #}
+        {% translate 'Unknown type' as unknown_type %}
+        <span class="doctype">{{ document.doctype|default:unknown_type }}</span>
+        <span class="shelfmark">{{ document.shelfmark_display }}</span>
+    </h1>
 
     <div class="container">
         {# tabs #}
