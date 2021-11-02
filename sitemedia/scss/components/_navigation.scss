@@ -2,9 +2,10 @@
 // Main site navigation that appears on every page.
 // -----------------------------------------------------------------------------
 
-@use "../base/typography";
+@use "../base/breakpoints";
 @use "../base/colors";
 @use "../base/spacing";
+@use "../base/typography";
 
 .site-nav {
     display: flex;
@@ -25,7 +26,10 @@
     .menu {
         padding: 0;
         flex: auto;
-        display: flex;
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            display: flex;
+        }
         justify-content: flex-end;
         border: spacing.$spacing-4xs solid colors.$gray-40;
     }

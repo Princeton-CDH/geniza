@@ -2,61 +2,106 @@
 // Lists of search results for documents.
 // -----------------------------------------------------------------------------
 
-@use "../base/typography";
+@use "../base/breakpoints";
+@use "../base/container";
 @use "../base/spacing";
+@use "../base/typography";
 
-// list of results
-.search-results {
-    list-style: none;
-    counter-reset: search-counter;
+section#document-list {
+    // count of results
+    h1 {
+        @include container.two-column;
+        @include typography.body;
+        text-align: center;
+        margin: spacing.$spacing-sm 0;
+    }
+    // list of results
+    ol {
+        list-style: none;
+        counter-reset: search-counter;
+        @include container.two-column;
+    }
 }
 
 // single result
 .search-result {
     counter-increment: search-counter;
+    margin-left: spacing.$spacing-xl;
+    @include container.two-column;
+    display: flex;
+    justify-content: space-between;
+    flex-flow: column;
 
     // spacing in between results
     & + .search-result {
         margin-top: spacing.$spacing-lg;
     }
 
-    // document titles
-    .title {
-        @include typography.subtitle;
+    // First row on mobile, left column on larger
+    section:first-of-type {
+        max-width: container.$measure;
+        display: flex;
+        flex-flow: column;
 
-        position: relative;
+        // document tags
+        .tags {
+            order: 1;
+        }
 
-        // anchor counter to h2 instead of li, for alignment regardless of tags
-        &::before {
-            content: counter(search-counter);
-            margin-left: -#{spacing.$spacing-lg};
-            text-align: left;
-            float: left;
-            font-weight: bold;
+        // document titles
+        .title {
+            @include typography.subtitle;
+            order: 2;
+            position: relative;
+            margin-top: spacing.$spacing-md;
+            margin-bottom: spacing.$spacing-md;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-bottom: spacing.$spacing-sm;
+            }
+
+            // anchor counter to h2 instead of li, for alignment regardless of tags
+            &::before {
+                content: counter(search-counter);
+                margin-left: -#{spacing.$spacing-xl};
+                text-align: left;
+                float: left;
+                font-weight: bold;
+            }
+
+            // document type, inside title
+            .doctype {
+                font-weight: bold;
+
+                &::after {
+                    font-weight: normal;
+                    content: ", ";
+                }
+            }
+        }
+
+        // other document metadata
+        .metadata {
+            order: 3;
+        }
+
+        // document description
+        .description {
+            order: 4;
+            margin: spacing.$spacing-md 0;
+        }
+
+        // document scholarship records
+        .scholarship {
+            order: 5;
         }
     }
 
-    // document type, inside title
-    .doctype {
-        font-weight: bold;
-
-        &::after {
-            font-weight: normal;
-            content: ", ";
-        }
-    }
-
-    // document description
-    .description {
-        margin: spacing.$spacing-sm 0;
-    }
-
-    // "view more details" link
     .view-link {
         @include typography.link;
 
         display: block;
         width: max-content;
         margin-left: auto;
+        margin-top: spacing.$spacing-md;
     }
 }
