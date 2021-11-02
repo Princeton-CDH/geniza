@@ -19,10 +19,8 @@
 
     {# title #}
     <h1>
-        {% if document.doctype and document.doctype.display_label %}
-            <span class="doctype">{{ document.doctype.display_label }}</span>
-        {% elif document.doctype %}
-            <span class="doctype">{{ document.doctype.name }}</span>
+        {% if document.doctype %}
+            <span class="doctype">{{ document.doctype }}</span>
         {% else %}
             <span class="doctype">Unknown type</span>
         {% endif %}

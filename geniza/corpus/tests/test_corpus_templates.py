@@ -15,7 +15,7 @@ class TestDocumentDetailTemplate:
     def test_doctype(self, client, document):
         """Document detail template should include document type"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<dd>Legal</dd>", html=True)
+        assertContains(response, "<dd>Legal document</dd>", html=True)
 
     def test_first_input(self, client, document):
         """Document detail template should include document first input date"""

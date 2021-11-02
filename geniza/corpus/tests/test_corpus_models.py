@@ -208,6 +208,15 @@ class TestDocumentType:
         doctype = DocumentType(name="Legal")
         assert str(doctype) == doctype.name
 
+    def test_display_label(self):
+        legal = DocumentType(name="Legal", display_label="Legal document")
+        assert legal.display_label == "Legal document"
+        no_label = DocumentType(name="test")
+        if no_label.display_label:
+            assert False
+        else:
+            assert True
+
 
 @pytest.mark.django_db
 class TestDocument:
@@ -365,14 +374,14 @@ class TestDocument:
 
     def test_title(self):
         doc = Document.objects.create()
-        assert doc.title == "Unknown: ??"
+        assert doc.title == "Unknown type; ??"
         legal = DocumentType.objects.get_or_create(name="Legal")[0]
         doc.doctype = legal
         doc.save()
-        assert doc.title == "Legal: ??"
+        assert doc.title == "Legal document; ??"
         frag = Fragment.objects.create(shelfmark="s1")
         TextBlock.objects.create(document=doc, fragment=frag, order=1)
-        assert doc.title == "Legal: s1"
+        assert doc.title == "Legal document; s1"
 
     def test_shelfmark_display(self):
         # T-S 8J22.21 + T-S NS J193
@@ -435,7 +444,9 @@ class TestDocument:
         assert index_data["id"] == document.index_id()
         assert index_data["item_type_s"] == "document"
         assert index_data["pgpid_i"] == document.pk
-        assert index_data["type_s"] == str(document.doctype)
+        assert index_data["type_s"] == str(
+            document.doctype.display_label or document.doctype
+        )
         assert index_data["description_t"] == document.description
         assert index_data["notes_t"] is None  # no notes
         assert index_data["needs_review_t"] is None  # no review notes
