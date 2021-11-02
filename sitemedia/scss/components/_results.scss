@@ -70,12 +70,7 @@ section#document-list {
 
             // document type, inside title
             .doctype {
-                font-weight: bold;
-
-                &::after {
-                    font-weight: normal;
-                    content: "; ";
-                }
+                @include typography.doctype;
             }
         }
 

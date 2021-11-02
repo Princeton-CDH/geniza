@@ -2,15 +2,13 @@
 // Document detail page.
 // -----------------------------------------------------------------------------
 
+@use "../base/typography";
+
 body#detail {
     h1 {
         // document type, inside title
         .doctype {
-            font-weight: bold;
-            &::after {
-                font-weight: normal;
-                content: "; ";
-            }
+            @include typography.doctype;
         }
     }
 }
