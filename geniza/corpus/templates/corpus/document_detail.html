@@ -19,7 +19,9 @@
 
     {# title #}
     <h1>
-         <span class="doctype">{{ document.doctype|default:"Unknown type" }}</span>
+        {# Translators: Default label when document does not have a type #}
+        {% translate 'Unknown type' as unknown_type %}
+        <span class="doctype">{{ document.doctype|default:unknown_type }}</span>
         <span class="shelfmark">{{ document.shelfmark_display }}</span>
     </h1>
 
