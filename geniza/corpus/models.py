@@ -221,7 +221,7 @@ class DocumentType(models.Model):
     """The category of document in question."""
 
     name = models.CharField(max_length=255, unique=True)
-    display_label = models.CharField(max_length=255, blank=True)
+    display_label = models.CharField(max_length=255, blank=True, help_text="optional label for display on the public site")
 
     def __str__(self):
         if self.display_label:
