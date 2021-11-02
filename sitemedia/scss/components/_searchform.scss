@@ -9,58 +9,51 @@
 @use "../base/typography";
 
 // search form
-#search form {
+#search form fieldset {
     @include container.two-column;
-    margin-top: spacing.$spacing-lg;
-    @include breakpoints.for-tablet-landscape-up {
-        margin-top: spacing.$spacing-2xl;
-    }
-    fieldset {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: flex-start;
+    input[type="search"] {
         @include container.two-column;
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        justify-content: flex-start;
-        input[type="search"] {
-            @include container.two-column;
-            order: 1;
-            flex: 1 0 auto;
-            border: 1px solid colors.$gray-50;
-            border-right: none;
-            margin-right: 0;
-            height: spacing.$spacing-xl;
-            padding: spacing.$spacing-sm;
-            &::placeholder {
-                font-size: typography.$text-size-md;
-            }
+        order: 1;
+        flex: 1 0 auto;
+        border: 1px solid colors.$gray-50;
+        border-right: none;
+        margin-right: 0;
+        height: spacing.$spacing-xl;
+        padding: spacing.$spacing-sm;
+        &::placeholder {
+            font-size: typography.$text-size-md;
         }
-        select[name="sort"] {
-            font-size: typography.$text-size-sm;
-            order: 4;
-            flex: 1 1 auto;
-            @include breakpoints.for-tablet-landscape-up {
-                flex: 0 1 auto;
-            }
-            border-radius: 0;
-            height: spacing.$spacing-xl;
-            padding: spacing.$spacing-xs;
-            margin-top: spacing.$spacing-sm;
+    }
+    select[name="sort"] {
+        font-size: typography.$text-size-sm;
+        order: 4;
+        flex: 1 1 auto;
+        @include breakpoints.for-tablet-landscape-up {
+            flex: 0 1 auto;
         }
-        label[for="sort"] {
-            @include container.two-column;
-            order: 3;
-            flex: 1 0 100%;
-            margin-top: spacing.$spacing-lg;
-        }
-        input[type="submit"] {
-            @include typography.button;
-            order: 2;
-            flex: 0 0 10%;
-            border-radius: 0;
-            margin-left: 0;
-            background-color: colors.$gray-30;
-            border: 1px solid colors.$gray-50;
-            height: spacing.$spacing-xl;
-        }
+        border-radius: 0;
+        height: spacing.$spacing-xl;
+        padding: spacing.$spacing-xs;
+        margin-top: spacing.$spacing-sm;
+    }
+    label[for="sort"] {
+        @include container.two-column;
+        order: 3;
+        flex: 1 0 100%;
+        margin-top: spacing.$spacing-lg;
+    }
+    input[type="submit"] {
+        @include typography.button;
+        order: 2;
+        flex: 0 0 10%;
+        border-radius: 0;
+        margin-left: 0;
+        background-color: colors.$gray-30;
+        border: 1px solid colors.$gray-50;
+        height: spacing.$spacing-xl;
     }
 }
