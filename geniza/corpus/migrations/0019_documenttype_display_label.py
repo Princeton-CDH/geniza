@@ -13,6 +13,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="documenttype",
             name="display_label",
-            field=models.CharField(blank=True, max_length=255),
+            field=models.CharField(
+                blank=True,
+                help_text="Optional label for display on the public site",
+                max_length=255,
+            ),
         ),
     ]
