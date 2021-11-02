@@ -19,11 +19,7 @@
 
     {# title #}
     <h1>
-        {% if document.doctype %}
-            <span class="doctype">{{ document.doctype }}</span>
-        {% else %}
-            <span class="doctype">Unknown type</span>
-        {% endif %}
+         <span class="doctype">{{ document.doctype|default:"Unknown type" }}</span>
         <span class="shelfmark">{{ document.shelfmark_display }}</span>
     </h1>
 
