@@ -52,7 +52,7 @@ class TestDocumentDetailView:
     def test_permalink(self, document, client):
         """should contain permalink generated from absolutize_url"""
         response = client.get(reverse("corpus:document", args=(document.id,)))
-        permalink = absolutize_url(document.get_absolute_url())
+        permalink = absolutize_url(document.get_absolute_url()).replace("/en/", "/")
         assertContains(response, f'<link rel="canonical" href="{permalink}"')
 
     def test_past_id_mixin(self, db, client):
@@ -62,7 +62,7 @@ class TestDocumentDetailView:
         doc = Document.objects.create(id=1, old_pgpids=[2])
         response_301 = client.get(reverse("corpus:document", args=(2,)))
         assert response_301.status_code == 301
-        assert response_301.url == doc.permalink
+        assert response_301.url == absolutize_url(doc.get_absolute_url())
 
         # Test when pgpid not first in the list
         response_404_notfirst = client.get(reverse("corpus:document", args=(71,)))
@@ -71,7 +71,7 @@ class TestDocumentDetailView:
         doc.save()
         response_301_notfirst = client.get(reverse("corpus:document", args=(71,)))
         assert response_301_notfirst.status_code == 301
-        assert response_301_notfirst.url == doc.permalink
+        assert response_301_notfirst.url == absolutize_url(doc.get_absolute_url())
 
         # Test partial matching pgpid
         response_404_partialmatch = client.get(reverse("corpus:document", args=(7,)))
@@ -82,7 +82,9 @@ class TestDocumentDetailView:
         doc_detail_view = DocumentDetailView()
         doc_detail_view.object = document
         doc_detail_view.kwargs = {"pk": document.pk}
-        assert doc_detail_view.get_absolute_url() == document.permalink
+        assert doc_detail_view.get_absolute_url() == absolutize_url(
+            document.get_absolute_url()
+        )
 
 
 @pytest.mark.django_db
@@ -351,7 +353,9 @@ class TestDocumentScholarshipView:
         Footnote.objects.create(content_object=doc, source=source)
         response_301 = client.get(reverse("corpus:document-scholarship", args=[2]))
         assert response_301.status_code == 301
-        assert response_301.url == f"{doc.permalink}scholarship/"
+        assert response_301.url == absolutize_url(
+            f"{doc.get_absolute_url()}scholarship/"
+        )
 
     def test_get_absolute_url(self, document, source):
         """should return scholarship permalink"""
@@ -359,4 +363,6 @@ class TestDocumentScholarshipView:
         doc_detail_view = DocumentScholarshipView()
         doc_detail_view.object = document
         doc_detail_view.kwargs = {"pk": document.pk}
-        assert doc_detail_view.get_absolute_url() == f"{document.permalink}scholarship/"
+        assert doc_detail_view.get_absolute_url() == absolutize_url(
+            f"{document.get_absolute_url()}scholarship/"
+        )

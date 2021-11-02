@@ -315,14 +315,16 @@ class TestDocument:
 
     def test_get_absolute_url(self):
         doc = Document.objects.create(id=1)
-        assert doc.get_absolute_url() == "/documents/1/"
+        assert doc.get_absolute_url() == "/en/documents/1/"
 
     def test_permalink(self):
-        """permalink property should be constructed from base url and absolute url"""
+        """permalink property should be constructed from base url and absolute url, without any language code"""
         doc = Document.objects.create(id=1)
         site_domain = Site.objects.get_current().domain.rstrip("/")
         assert f"{site_domain}/documents/1/" in doc.permalink
-        assert doc.permalink == absolutize_url(doc.get_absolute_url())
+        assert doc.permalink == absolutize_url(doc.get_absolute_url()).replace(
+            "/en/", "/"
+        )
 
     def test_iiif_urls(self):
         # create example doc with two fragments with URLs

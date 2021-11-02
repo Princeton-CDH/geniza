@@ -12,6 +12,7 @@ from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from django.utils.translation import activate
 from django.utils.translation import gettext as _
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
@@ -455,7 +456,10 @@ class Document(ModelIndexable):
 
     @property
     def permalink(self):
-        return absolutize_url(self.get_absolute_url())
+        # generate permalink without language url so that all versions
+        # have the same link and users will be directed preferred language
+        activate("en")
+        return absolutize_url(self.get_absolute_url().replace("/en/", "/"))
 
     def iiif_urls(self):
         """List of IIIF urls for images of the Document's Fragments."""

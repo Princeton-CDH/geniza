@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
+from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic.base import RedirectView
@@ -25,8 +26,12 @@ urlpatterns = [
     path("accounts/", include("pucas.cas_urls")),
     path("i18n/", include("django.conf.urls.i18n")),
     path("taggit/", include("taggit_selectize.urls")),
-    path("", include("geniza.corpus.urls", namespace="corpus")),
 ]
+
+# urls that should be available in multiple languages
+urlpatterns += i18n_patterns(
+    path("", include("geniza.corpus.urls", namespace="corpus")),
+)
 
 
 if settings.DEBUG:
