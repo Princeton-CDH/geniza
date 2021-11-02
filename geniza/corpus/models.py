@@ -224,9 +224,7 @@ class DocumentType(models.Model):
     display_label = models.CharField(max_length=255, blank=True, help_text="optional label for display on the public site")
 
     def __str__(self):
-        if self.display_label:
-            return self.display_label
-        return self.name
+        return self.display_label or self.name 
 
 
 class DocumentSignalHandlers:
