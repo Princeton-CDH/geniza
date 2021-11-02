@@ -212,10 +212,7 @@ class TestDocumentType:
         legal = DocumentType(name="Legal", display_label="Legal document")
         assert legal.display_label == "Legal document"
         no_label = DocumentType(name="test")
-        if no_label.display_label:
-            assert False
-        else:
-            assert True
+        assert not no_label.display_label
 
 
 @pytest.mark.django_db
