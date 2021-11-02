@@ -1,0 +1,16 @@
+// -----------------------------------------------------------------------------
+// Document detail page.
+// -----------------------------------------------------------------------------
+
+body#detail {
+    h1 {
+        // document type, inside title
+        .doctype {
+            font-weight: bold;
+            &::after {
+                font-weight: normal;
+                content: "; ";
+            }
+        }
+    }
+}

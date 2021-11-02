@@ -137,6 +137,7 @@ class DocumentDetailView(DocumentPastIdMixin, DetailView):
             {
                 "page_title": self.page_title(),
                 "page_description": self.page_description(),
+                "id": "detail",
             }
         )
         return context_data

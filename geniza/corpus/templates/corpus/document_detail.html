@@ -18,7 +18,10 @@
     <!-- document details -->
 
     {# title #}
-    <h1>{{ document.title }}</h1>
+    <h1>
+        <span class="doctype">{{ document.doctype }}</span>
+        <span class="shelfmark">{{ document.shelfmark_display }}</span>
+    </h1>
 
     <div class="container">
         {# tabs #}
