@@ -67,7 +67,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            @include a11y.sr-only;
             @include a11y.sr-only-focusable;
             @include breakpoints.for-tablet-landscape-up {
                 width: auto;
