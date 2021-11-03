@@ -11,7 +11,7 @@
             {{ form.q }}
             {{ form.sort }}
             <label for="sort">{{ form.sort.label }}</label>
-            <input type="submit" value="search" />
+            <button type="submit"><i class="ph-magnifying-glass"></i></button>
         </fieldset>
         {% for field, errors in form.errors.items %}
             {# no clean way to get field labels here, so we just collapse the error lists #}
