@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n humanize %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
@@ -23,10 +23,10 @@
     <section id="document-list">
         <h1>
             {% comment %}Translators: number of search results{% endcomment %}
-            {% blocktranslate count counter=total trimmed %}
+            {% blocktranslate with count_humanized=total|intcomma count counter=total trimmed %}
                 1 result
             {% plural %}
-                {{ counter }} total results
+                {{ count_humanized }} total results
             {% endblocktranslate %}
         </h1>
         <ol>
