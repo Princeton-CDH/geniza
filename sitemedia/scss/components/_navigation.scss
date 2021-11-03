@@ -36,6 +36,7 @@
 
     // Individual menu items
     .menu-item {
+        font-size: typography.$text-size-2md;
         padding: spacing.$spacing-sm 0;
 
         & + .menu-item {
@@ -50,5 +51,6 @@
     // Currently active page
     a[aria-current="page"] {
         font-weight: bold;
+        font-size: typography.$text-size-2md;
     }
 }

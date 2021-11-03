@@ -5,8 +5,8 @@
 @use "../base/typography";
 
 .tags li {
-    @include typography.button;
-
+    @include typography.meta;
+    text-transform: lowercase;
     display: inline-block;
     &::before {
         content: "#";
