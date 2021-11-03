@@ -200,6 +200,29 @@ class TestFootnoteQuerySet:
             == footnote1
         )
 
+    def test_editions(self, source, twoauthor_source, document):
+        # same source, content object, location
+        footnote1 = Footnote.objects.create(
+            source=source,
+            content_object=document,
+            location="p.1",
+            doc_relation=Footnote.EDITION,
+        )
+        footnote2 = Footnote.objects.create(
+            source=source,
+            content_object=document,
+            location="p.1",
+            doc_relation=Footnote.TRANSLATION,
+        )
+        editions = Footnote.objects.editions()
+        assert footnote1 in editions
+        assert footnote2 not in editions
+
+        # test filter with multiple document relations
+        footnote2.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
+        footnote2.save()
+        assert footnote2 in Footnote.objects.editions()
+
 
 class TestCreator:
     def test_str(self):

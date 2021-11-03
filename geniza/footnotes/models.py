@@ -199,6 +199,10 @@ class FootnoteQuerySet(models.QuerySet):
 
         return False
 
+    def editions(self):
+        """Filter to all footnotes that provide editions/transcriptions."""
+        return self.filter(doc_relation__contains=Footnote.EDITION)
+
 
 class Footnote(models.Model):
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
