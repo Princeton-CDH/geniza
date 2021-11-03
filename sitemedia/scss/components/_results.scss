@@ -13,7 +13,7 @@ section#document-list {
         @include container.two-column;
         @include typography.headline-6;
         text-align: center;
-        margin: spacing.$spacing-sm 0 spacing.$spacing-lg;
+        margin: spacing.$spacing-sm 0;
     }
     // list of results
     ol {
