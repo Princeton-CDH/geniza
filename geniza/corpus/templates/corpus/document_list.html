@@ -11,7 +11,9 @@
             {{ form.q }}
             {{ form.sort }}
             <label for="sort">{{ form.sort.label }}</label>
-            <button type="submit" aria-label="search">
+            {# Translators: Search submit button #}
+            {% translate 'Submit search' as search_label %}
+            <button type="submit" aria-label="{{ search_label }}">
                 <i class="ph-magnifying-glass"></i>
             </button>
         </fieldset>

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-02 15:14-0400\n"
+"POT-Creation-Date: 2021-11-03 11:47-0400\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -71,8 +71,13 @@ msgstr "Editor"
 msgid "Permalink"
 msgstr ""
 
+#. Translators: Search submit button
+#: geniza/corpus/templates/corpus/document_list.html:15
+msgid "Submit search"
+msgstr ""
+
 #. Translators: number of search results
-#: geniza/corpus/templates/corpus/document_list.html:26
+#: geniza/corpus/templates/corpus/document_list.html:30
 #, python-format
 msgid "1 result"
 msgid_plural "%(counter)s total results"
