@@ -27,7 +27,9 @@
             order: 1;
             flex: 1 0 auto;
             border: 1px solid colors.$gray-50;
-            border-right: none;
+            @include breakpoints.for-tablet-landscape-up {
+                border-right: none;
+            }
             margin-right: 0;
             height: spacing.$spacing-xl;
             padding: spacing.$spacing-sm;
