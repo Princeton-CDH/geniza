@@ -38,8 +38,9 @@ $cool-gray-90: #111827;
 // Theme colors
 $theme: (
     "primary": #223c97,
-    "secondary": #5bbbc1,
+    "secondary": #4994ff,
     "on-background": #292524,
+    "on-background-light": #646464,
     "background": #f3f4f6,
     "on-primary": #ffffff,
     "on-secondary": #000000,
@@ -48,8 +49,9 @@ $theme: (
 // Dark mode theme colors
 $dark-theme: (
     "primary": #223c97,
-    "secondary": #5bbbc1,
+    "secondary": #4994ff,
     "on-background": #d6d3d1,
+    "on-background-light": rgba(214, 211, 209, 0.66),
     "background": #1f2937,
     "on-primary": #ffffff,
     "on-secondary": #000000,

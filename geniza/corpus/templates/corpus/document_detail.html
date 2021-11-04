@@ -29,42 +29,49 @@
         {# tabs #}
         {% include "corpus/snippets/document_tabs.html" %}
 
-        {# metadata #}
-        <dl class="metadata">
-            <dt class="sr-only">{% translate 'Shelfmark' %}</dt>
-            <dd>{{ document.shelfmark }}</dd>
-            {% if document.doctype %}
-                <dt class="sr-only">{% translate 'Document Type' %}</dt>
-                <dd>{{ document.doctype }}</dd>
+        <section>
+            <h2 class="sr-only">
+                {# Translators: label for metadata section #}
+                {% translate 'Metadata' %}
+            </h2>
+            {# metadata #}
+            <dl class="metadata">
+                {% if document.editions %}
+                    {# Translators: Editor label #}
+                    <dt>{% translate 'Editor' %}</dt>  {# optionally pluralize? #}
+                    {% for ed in document.editions %}
+                        <dd>{{ ed.display }}</dd>
+                        {# link ? #}
+                    {% endfor %}
+                {% endif %}
+                {# Translators: Date document was first added to the PGP #}
+                <dt class="secondary">{% translate 'Input date' %}</dt>
+                <dd class="secondary">{{ document.log_entries.last.action_time.year }}</dd>
+                <dt class="secondary">
+                    {# Translators: label for permanent link to a document #}
+                    {% translate 'Permalink' %}
+                </dt>
+                <dd class="secondary">
+                    <a href="{{ document.permalink }}" rel="bookmark">
+                        {{ document.permalink }}
+                    </a>
+                </dd>
+            </dl>
+            {% if document.tags.exists %}
+                <ul class="tags">
+                    {% for tag in document.tags.all %}
+                        <li>{{ tag }}</li>
+                    {% endfor %}
+                </ul>
             {% endif %}
-            {# Translators: Date document was first added to the PGP #}
-            <dt class="inline">{% translate 'Input date' %}</dt>
-            <dd>{{ document.log_entries.last.action_time.year }}</dd>
-            {% if document.editions %}
-                {# Translators: Editor label #}
-                <dt>{% translate 'Editor' %}</dt>  {# optionally pluralize? #}
-                {% for ed in document.editions %}
-                    <dd>{{ ed.display }}</dd>
-                    {# link ? #}
-                {% endfor %}
-            {% endif %}
-            <dt class="inline">
-                {# Translators: label for permanent link to a document #}
-                {% translate 'Permalink' %}</dt>
-            <dd>
-                <a href="{{ document.permalink }}" rel="bookmark">
-                    {{ document.permalink }}
-                </a>
-            </dd>
-        </dl>
-        {% if document.tags.exists %}
-            <ul class="tags">
-                {% for tag in document.tags.all %}
-                    <li>{{ tag }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-        <p>{{ document.description }}</p>
+        </section>
+        <section>
+            <h2>
+                {# Translators: label for document description #}
+                {% translate 'Description' %}
+            </h2>
+            <p>{{ document.description }}</p>
+        </section>
     </div>
 
     {# viewer #}
