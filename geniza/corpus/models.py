@@ -496,7 +496,7 @@ class Document(ModelIndexable):
     @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
-        return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"
+        return f"{self.doctype or _('Unknown type')}; {self.shelfmark_display or '??'}"
 
     def editions(self):
         """All footnotes for this document where the document relation includes
