@@ -1,4 +1,5 @@
 from time import sleep
+from unittest import mock
 from unittest.mock import Mock, patch
 
 import pytest
@@ -220,7 +221,9 @@ class TestDocumentSearchView:
     def test_get_queryset(self, mock_solr_queryset):
         with patch(
             "geniza.corpus.views.DocumentSolrQuerySet",
-            new=self.mock_solr_queryset(DocumentSolrQuerySet),
+            new=self.mock_solr_queryset(
+                DocumentSolrQuerySet, extra_methods=["admin_search", "keyword_search"]
+            ),
         ) as mock_queryset_cls:
 
             docsearch_view = DocumentSearchView()
@@ -231,8 +234,10 @@ class TestDocumentSearchView:
             mock_queryset_cls.assert_called_with()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_called_with("six apartments")
-            # NOTE: keyword search not in parasolr list for mock solr queryset
-            mock_sqs.keyword_search.return_value.also.assert_called_with("score")
+            mock_sqs.keyword_search.return_value.highlight.assert_called_with(
+                "description", snippets=3, method="unified"
+            )
+            mock_sqs.also.assert_called_with("score")
 
     def test_get_context_data(self, rf):
         docsearch_view = DocumentSearchView()
@@ -243,6 +248,10 @@ class TestDocumentSearchView:
 
         context_data = docsearch_view.get_context_data()
         assert context_data["total"] == 22
+        assert (
+            context_data["highlighting"]
+            == docsearch_view.queryset.get_highlighting.return_value
+        )
 
     def test_shelfmark_boost(self, empty_solr, document, multifragment):
         # integration test for shelfmark field boosting
