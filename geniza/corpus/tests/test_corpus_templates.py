@@ -10,17 +10,17 @@ class TestDocumentDetailTemplate:
     def test_shelfmark(self, client, document):
         """Document detail template should include shelfmark"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<dd>CUL Add.2586</dd>", html=True)
+        assertContains(response, "CUL Add.2586", html=True)
 
     def test_doctype(self, client, document):
         """Document detail template should include document type"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<dd>Legal document</dd>", html=True)
+        assertContains(response, "Legal document", html=True)
 
     def test_first_input(self, client, document):
         """Document detail template should include document first input date"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<dd>2004</dd>", html=True)
+        assertContains(response, '<dd class="secondary">2004</dd>', html=True)
 
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""
@@ -172,7 +172,7 @@ class TestDocumentTabsSnippet:
         """document nav should render inert scholarship tab if no footnotes"""
         response = client.get(document.get_absolute_url())
         # uses span, not link
-        assertContains(response, "<span>Scholarship Records (0)</span>", html=True)
+        assertContains(response, "<span>0 Scholarship Records</span>", html=True)
 
     def test_with_footnotes(self, client, document, source):
         """document nav should render scholarship link with footnote counter"""
@@ -184,13 +184,13 @@ class TestDocumentTabsSnippet:
             response, reverse("corpus:document-scholarship", args=[document.pk])
         )
         # count should be 1
-        assertContains(response, "Scholarship Records (1)")
+        assertContains(response, "1 Scholarship Record</a>")
 
         Footnote.objects.create(content_object=document, source=source)
         response = client.get(document.get_absolute_url())
 
         # count should be 2
-        assertContains(response, "Scholarship Records (2)")
+        assertContains(response, "2 Scholarship Records</a>")
 
     def test_no_links(self, client, document, fragment):
         """document nav should render inert links tab if no external links"""
@@ -200,7 +200,7 @@ class TestDocumentTabsSnippet:
         response = client.get(document.get_absolute_url())
 
         # uses span, not link
-        assertContains(response, "<span>External Links (0)</span>", html=True)
+        assertContains(response, "<span>0 External Links</span>", html=True)
 
     def test_with_links(self, client, document, multifragment):
         """document nav should render external links link with link counter"""
@@ -212,14 +212,14 @@ class TestDocumentTabsSnippet:
         # )
 
         # count should be 1
-        assertContains(response, "External Links (1)")
+        assertContains(response, "1 External Link</a>")
 
         # associate to another fragment with a URL
         TextBlock.objects.create(document=document, fragment=multifragment)
         response = client.get(document.get_absolute_url())
 
         # count should be 2
-        assertContains(response, "External Links (2)")
+        assertContains(response, "2 External Links</a>")
 
 
 class TestDocumentResult:
