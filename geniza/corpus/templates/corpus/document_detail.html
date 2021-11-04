@@ -59,7 +59,7 @@
             </dl>
             {% if document.tags.exists %}
                 <ul class="tags">
-                    {% for tag in document.tags.all %}
+                    {% for tag in document.alphabetized_tags %}
                         <li>{{ tag }}</li>
                     {% endfor %}
                 </ul>

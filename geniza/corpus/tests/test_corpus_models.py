@@ -307,6 +307,21 @@ class TestDocument:
         assert "marriage" in tag_list
         assert ", " in tag_list
 
+    def test_alphabetized_tags(self):
+        doc = Document.objects.create()
+        # two lowercase tags
+        doc.tags.add("women", "marriage")
+        alphabetical_tag_list = doc.alphabetized_tags()
+        assert alphabetical_tag_list.first().name == "marriage"
+        # throw in an uppercase tag
+        doc.tags.add("Betical", "alphabet")
+        alphabetical_tag_list = doc.alphabetized_tags()
+        assert alphabetical_tag_list.first().name == "alphabet"
+        assert alphabetical_tag_list[1].name == "Betical"
+        # doc with no tags
+        doc_no_tags = Document.objects.create()
+        assert len(doc_no_tags.alphabetized_tags()) == 0
+
     def test_is_public(self):
         doc = Document.objects.create()
         assert doc.is_public()
