@@ -5,9 +5,11 @@ from collections import defaultdict
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import models
+from eulxml import xmlmap
 from git import Repo
 
 from geniza.corpus.models import Document
+from geniza.corpus.tei_transcriptions import GenizaTei
 from geniza.footnotes.models import Footnote
 
 
@@ -25,6 +27,15 @@ class Command(BaseCommand):
         # iterate through all tei files in the repository
         for xmlfile in glob.iglob(os.path.join(gitrepo_path, "*.xml")):
             stats["xml"] += 1
+
+            tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
+            # some files are stubs with no content
+            # check if there is no text content; report and skip
+            if tei.no_content():
+                self.stdout.write("%s has no text content, skipping" % xmlfile)
+                stats["empty_tei"] += 1
+                continue
+
             # get the document id from the filename (####.xml)
             pgpid = os.path.splitext(os.path.basename(xmlfile))[0]
             # in ONE case there is a duplicate id with b suffix on the second
@@ -33,8 +44,6 @@ class Command(BaseCommand):
             except ValueError:
                 self.stderr.write("Failed to generate integer PGPID from %s" % pgpid)
                 continue
-
-            # TODO: check empty files first, don't even look in db if no text
 
             # find the document in the database
             try:
@@ -53,12 +62,24 @@ class Command(BaseCommand):
                 # print(editions)
                 # print(list(ed.source for ed in editions))
                 stats["multiple_editions"] += 1
+                # TODO: could we filter by the one that already has content?
             elif not editions.exists():
                 # print(xmlfile)
                 # print('no edition')
                 stats["no_edition"] += 1
             else:
                 stats["one_edition"] += 1
+                # if only one edition, update the transciption content
+
+                footnote = editions.first()
+                html = tei.text_to_html()
+                if html:
+                    footnote.content = {"html": html}
+                    if footnote.has_changed("content"):
+                        footnote.save()
+                        stats["footnote_updated"] += 1
+                else:
+                    self.stderr.write("No html generated for %s" % doc.id)
 
             # start with the easy case? one edition footnote
             # start a list of questions! are multiple sources combined in the tei?
@@ -73,11 +94,12 @@ class Command(BaseCommand):
         # documents with transcriptions, number of fragments, and how how many joins
 
         self.stdout.write(
-            """Processed {xml:,} TEI/XML files.
+            """Processed {xml:,} TEI/XML files; skipped {empty_tei:,} TEI files with no text content.
 {document_not_found:,} documents not found in database.
 {multiple_editions:,} documents with multiple editions.
 {no_edition:,} documents with no edition.
 {one_edition:,} documents with one edition.
+Updated {footnote_updated:,} footnotes.
 """.format(
                 **stats
             )

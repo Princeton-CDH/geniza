@@ -1,20 +1,11 @@
-import glob
-import json
-import os.path
-
-import click
-import requests
 from eulxml import xmlmap
 from eulxml.xmlmap import teimap
-from flask import current_app
-from flask.cli import with_appcontext
-from parasolr.query import SolrQuerySet
-from parasolr.solr.client import SolrClient
 
 
 class GenizaTeiLine(teimap.TeiLine):
     name = xmlmap.StringField("local-name(.)")
     lang = xmlmap.StringField("@xml:lang|tei:span/@xml:lang")
+    number = xmlmap.StringField("@n")
 
 
 class MainText(teimap.TeiDiv):
@@ -33,26 +24,17 @@ class GenizaTei(teimap.Tei):
         "tei:text/tei:body/tei:div/tei:label", GenizaTeiLine
     )  # not really a line...
 
+    def no_content(self):
+        return str(self.text).strip() == ""
 
-@click.command()
-@with_appcontext
-def transcriptions():
-    xml_dir = current_app.config["XML_TRANSCRIPTIONS_DIR"]
-    data_dir = current_app.config["DATA_DIR"]
-
-    data = {}
-
-    for xmlfile in glob.iglob(os.path.join(xml_dir, "*.xml")):
-        # print(os.path.basename(xmlfile))
-        print(xmlfile)
-
-        tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
-
+    def text_to_html(self):
+        # convert the TEI text content to basic HTML
         blocks = []
-        label = []
         lines = []
-        languages = set()
-        for line in tei.text.lines:
+        label = []
+        # because blocks are indicated by labels without containing elements,
+        # iterate over all lines and create blocks based on the labels
+        for line in self.text.lines:
             if line.name == "label":
                 # append current text block if set, and initialize a new one
                 if lines:
@@ -60,7 +42,7 @@ def transcriptions():
                         {
                             "label": "\n".join(label),
                             "lines": lines,
-                            "languages": list(languages),
+                            # "languages": list(languages),
                         }
                     )
                     label = []
@@ -70,184 +52,34 @@ def transcriptions():
                 label.append(str(line))
 
             elif line.name == "l":
-                if line.lang:
-                    # NOTE: will need to add logic to detect languages;
-                    # language tags in the xml are sparse
-                    languages.add(line.lang)
-                lines.append(str(line))
+                # use language codes? unreliable in the xml
+                # append tuple of line number, text
+                lines.append((line.number, str(line)))
 
+        # append the last block
         if lines:
             blocks.append(
                 {
                     "label": "\n".join(label),
                     "lines": lines,
-                    "languages": list(languages),
                 }
             )
 
-        docdata = {"blocks": blocks, "lines": [str(l) for l in tei.text.lines]}
-        data[tei.pgpid] = docdata
+        # combine blocks of text into html
+        html = []
+        for block in blocks:
+            output = ["<section>"]
+            # add label if we have one
+            if block["label"]:
+                output.append(f" <h1>{block['label']}</h1>")
 
-    with open(os.path.join(data_dir, "transcriptions.json"), "w") as outfile:
-        json.dump(data, outfile, indent=4)
-
-
-@click.command()
-@with_appcontext
-def transcription_iiif():
-    # first pass at creating iiif annotations with tei transcriptions
-    # (currently only for items with IIIF and transcriptions)
-
-    data_dir = current_app.config["DATA_DIR"]
-    # use a subdir for iiif manifests; make sure it exists
-    manifest_dir = os.path.join(data_dir, "iiif", "manifests")
-    os.makedirs(manifest_dir, exist_ok=True)
-    # and another subdir for annotations
-    annotation_dir = os.path.join(data_dir, "iiif", "annotations")
-    os.makedirs(annotation_dir, exist_ok=True)
-
-    with open(os.path.join(data_dir, "transcriptions.json")) as transcriptionsfile:
-        transcriptions = json.load(transcriptionsfile)
-
-    solr = SolrClient(current_app.config["SOLR_URL"], current_app.config["SOLR_CORE"])
-    # find documents that have a IIIF link that ALSO have transcription
-    iiifdocs = SolrQuerySet(solr).filter(iiif_link_s="*", transcription_txt="*")
-    print("%d documents" % iiifdocs.count())
-    for doc in iiifdocs[:2000]:
-        # filenames where the file will be written
-        base_filename = "%s.json" % doc["id"]
-        # write the new annotation list to a file
-        annotation_filename = os.path.join(annotation_dir, base_filename)
-        # write out a local copy of the modified manifest
-        manifest_filename = os.path.join(manifest_dir, base_filename)
-
-        # if the files already exist, don't regenerate them
-        if all(os.path.exists(f) for f in [manifest_filename, annotation_filename]):
-            continue
-
-        # get the manifest for this document
-        response = requests.get(doc["iiif_link_s"])
-        if response.status_code != requests.codes.ok:
-            print("Error retrieving manifest: %s" % doc["iiif_link_s"])
-            continue
-        try:
-            manifest = response.json()
-        except json.decoder.JSONDecodeError as err:
-            print("Error decoding json: %s\n%s" % (err, doc["iiif_link_s"]))
-            continue
-
-        # for now, assume simple structure, single sequence
-        # for now, associate the annotation with the first image
-        canvas1 = manifest["sequences"][0]["canvases"][0]
-        # need id, width, and height
-        canvas_id = canvas1["@id"]
-        canvas_width = canvas1["width"]
-        canvas_height = canvas1["height"]
-
-        annotation_list = {
-            "@context": "http://iiif.io/api/presentation/2/context.json",
-            # placeholder id; should probably be unique!
-            "@id": "https://cdh.geniza.princeton.edu/iiif/canvas/AnnotationList",
-            "@type": "sc:AnnotationList",
-            "resources": [],
-        }
-
-        # for each block
-        for i, text_block in enumerate(transcriptions[doc["id"]]["blocks"]):
-            # text_lines = [text_block['label']] + text_block['lines']
-            # text_lines = '<br/>'.join(line for line in text_lines
-            # if line.strip())
-            label = (
-                "<p><b>%s</b></p>" % text_block["label"] if text_block["label"] else ""
+            text_lines = " <ul>%s</ul>" % "".join(
+                f"\n <li value='{line_number}'>{line}</li>"
+                for line_number, line in block["lines"]
+                if line.strip()
             )
-            text_lines = "<ol>%s</ol>" % "".join(
-                "<li>%s</li>" % line for line in text_block["lines"] if line.strip()
-            )
+            output.append(text_lines)
+            output.append("</section>")
+            html.append("\n".join(output))
 
-            annotation = {
-                # uri for this annotation; make something up
-                "@id": "https://cdh.geniza.princeton.edu/iiif/%s/list/%d"
-                % (doc["id"], i),
-                "@type": "oa:Annotation",
-                "motivation": "sc:painting",
-                "resource": {
-                    "@type": "cnt:ContentAsText",
-                    "format": "text/html",
-                    # language todo
-                    "chars": "<div dir='rtl'>%s%s</div>" % (label, text_lines),
-                },
-                # annotate the entire canvas for now
-                "on": "%s#xywh=0,0,%d,%d" % (canvas_id, canvas_width, canvas_height),
-            }
-            annotation_list["resources"].append(annotation)
-
-        with open(annotation_filename, "w") as outfile:
-            json.dump(annotation_list, outfile, indent=2)
-
-        # add the annotation to our copy of the manifest
-        canvas1["otherContent"] = [
-            {
-                "@context": "http://iiif.io/api/presentation/2/context.json",
-                "@id": "http://FLASK_URL/iiif/annotations/%s" % base_filename,
-                "@type": "sc:AnnotationList",
-            }
-        ]
-
-        with open(manifest_filename, "w") as outfile:
-            json.dump(manifest, outfile, indent=2)
-
-    # NOTE: preliminary / placeholder!
-    # test creating annotatio list for content not available as IIIF
-
-    # find documents that with transcription but NO IIIF link
-    iiifdocs = SolrQuerySet(solr).filter(
-        iiif_link_s__exists=False, transcription_txt="*"
-    )
-    for doc in iiifdocs[:5]:
-        # hard coded canvas id and size for now
-        canvas_id = "https://test-geniza.cdh.princteon.edu/iiif/na/canvas/1"
-        canvas_width = 3200
-        canvas_height = 4000
-
-        # filenames where the file will be written
-        base_filename = "%s.json" % doc["id"]
-        # write the new annotation list to a file
-        annotation_filename = os.path.join(annotation_dir, base_filename)
-
-        # NOTE: largely duplicates the functionality above
-        annotation_list = {
-            "@context": "http://iiif.io/api/presentation/2/context.json",
-            # placeholder id; should probably be unique!
-            "@id": "https://cdh.geniza.princeton.edu/iiif/canvas/AnnotationList",
-            "@type": "sc:AnnotationList",
-            "resources": [],
-        }
-
-        # for each block
-        for i, text_block in enumerate(transcriptions[doc["id"]]["blocks"]):
-            label = (
-                "<p><b>%s</b></p>" % text_block["label"] if text_block["label"] else ""
-            )
-            text_lines = "<ol>%s</ol>" % "".join(
-                "<li>%s</li>" % line for line in text_block["lines"] if line.strip()
-            )
-            annotation = {
-                # uri for this annotation; make something up
-                "@id": "https://cdh.geniza.princeton.edu/iiif/%s/list/%d"
-                % (doc["id"], i),
-                "@type": "oa:Annotation",
-                "motivation": "sc:painting",
-                "resource": {
-                    "@type": "cnt:ContentAsText",
-                    "format": "text/html",
-                    # language todo
-                    "chars": "<div dir='rtl'>%s%s</div>" % (label, text_lines),
-                },
-                # annotate the entire canvas for now
-                "on": "%s#xywh=0,0,%d,%d" % (canvas_id, canvas_width, canvas_height),
-            }
-            annotation_list["resources"].append(annotation)
-
-        with open(annotation_filename, "w") as outfile:
-            json.dump(annotation_list, outfile, indent=2)
-        print("saved transcription without iiif as %s" % annotation_filename)
+        return "\n".join(html)

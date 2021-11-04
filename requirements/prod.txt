@@ -19,3 +19,4 @@ django-adminlogentries
 django-webpack-loader
 django-csp
 gitpython
+eulxml

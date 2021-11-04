@@ -7,6 +7,8 @@ from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager
 from multiselectfield import MultiSelectField
 
+from geniza.common.models import TrackChangesModel
+
 
 class SourceType(models.Model):
     """type of source"""
@@ -204,7 +206,7 @@ class FootnoteQuerySet(models.QuerySet):
         return self.filter(doc_relation__contains=Footnote.EDITION)
 
 
-class Footnote(models.Model):
+class Footnote(TrackChangesModel):
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
     location = models.CharField(
         max_length=255,
