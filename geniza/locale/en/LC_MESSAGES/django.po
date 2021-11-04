@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-02 15:14-0400\n"
+"POT-Creation-Date: 2021-11-04 14:43-0400\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -47,35 +47,37 @@ msgstr ""
 msgid "Home"
 msgstr "Home"
 
-#: geniza/corpus/templates/corpus/document_detail.html:34
-msgid "Shelfmark"
-msgstr "Shelfmark"
+#. Translators: label for metadata section
+#: geniza/corpus/templates/corpus/document_detail.html:35
+msgid "Metadata"
+msgstr ""
 
-#: geniza/corpus/templates/corpus/document_detail.html:37
-msgid "Document Type"
-msgstr "Document Type"
+#. Translators: Editor label
+#: geniza/corpus/templates/corpus/document_detail.html:41
+msgid "Editor"
+msgstr "Editor"
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:41
+#: geniza/corpus/templates/corpus/document_detail.html:48
 #: geniza/corpus/templates/corpus/snippets/document_result.html:22
 msgid "Input date"
 msgstr "Input date"
 
-#. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:45
-msgid "Editor"
-msgstr "Editor"
-
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:53
+#: geniza/corpus/templates/corpus/document_detail.html:52
 msgid "Permalink"
+msgstr ""
+
+#. Translators: label for document description
+#: geniza/corpus/templates/corpus/document_detail.html:71
+msgid "Description"
 msgstr ""
 
 #. Translators: number of search results
 #: geniza/corpus/templates/corpus/document_list.html:26
 #, python-format
 msgid "1 result"
-msgid_plural "%(counter)s total results"
+msgid_plural "%(count_humanized)s total results"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -116,13 +118,13 @@ msgstr ""
 #. Translators: n_records is number of scholarship records
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:8
 #, python-format
-msgid "Scholarship Records (%(n_records)s)"
+msgid "%(n_records)s Scholarship Records"
 msgstr ""
 
 #. Translators: n_links is number of external links
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:13
 #, python-format
-msgid "External Links (%(n_links)s)"
+msgid "%(n_links)s External Links"
 msgstr ""
 
 #. Translators: title of document search page
@@ -176,3 +178,9 @@ msgstr ""
 #: geniza/templates/nav.html:15
 msgid "About"
 msgstr ""
+
+#~ msgid "Shelfmark"
+#~ msgstr "Shelfmark"
+
+#~ msgid "Document Type"
+#~ msgstr "Document Type"

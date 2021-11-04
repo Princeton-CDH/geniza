@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-02 15:14-0400\n"
+"POT-Creation-Date: 2021-11-04 14:43-0400\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -48,35 +48,41 @@ msgstr ""
 msgid "Home"
 msgstr "דף הבית"
 
-#: geniza/corpus/templates/corpus/document_detail.html:34
-msgid "Shelfmark"
-msgstr "מספר מדף"
+#. Translators: label for metadata section
+#: geniza/corpus/templates/corpus/document_detail.html:35
+msgid "Metadata"
+msgstr ""
 
-#: geniza/corpus/templates/corpus/document_detail.html:37
-msgid "Document Type"
-msgstr "סוג המסמך"
+#. Translators: Editor label
+#: geniza/corpus/templates/corpus/document_detail.html:41
+msgid "Editor"
+msgstr "עורך"
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:41
+#: geniza/corpus/templates/corpus/document_detail.html:48
 #: geniza/corpus/templates/corpus/snippets/document_result.html:22
 msgid "Input date"
 msgstr "תאריך קלט"
 
-#. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:45
-msgid "Editor"
-msgstr "עורך"
-
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:53
+#: geniza/corpus/templates/corpus/document_detail.html:52
 msgid "Permalink"
 msgstr ""
 
+#. Translators: label for document description
+#: geniza/corpus/templates/corpus/document_detail.html:71
+#, fuzzy
+#| msgid "Transcription"
+msgid "Description"
+msgstr "תעתוק"
+
 #. Translators: number of search results
 #: geniza/corpus/templates/corpus/document_list.html:26
-#, python-format
+#, fuzzy, python-format
+#| msgid "1 result"
+#| msgid_plural "%(counter)s total results"
 msgid "1 result"
-msgid_plural "%(counter)s total results"
+msgid_plural "%(count_humanized)s total results"
 msgstr[0] "תוצאה אחת"
 msgstr[1] "%(counter)s תוצאות"
 msgstr[2] "%(counter)s תוצאות"
@@ -118,15 +124,17 @@ msgstr "פרטי מסמך"
 
 #. Translators: n_records is number of scholarship records
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:8
-#, python-format
-msgid "Scholarship Records (%(n_records)s)"
-msgstr "רשומות קשורות (%(n_records)s)"
+#, fuzzy, python-format
+#| msgid "%(count)d scholarship record for %(doc)s"
+#| msgid_plural "%(count)d scholarship records for %(doc)s"
+msgid "%(n_records)s Scholarship Records"
+msgstr "רשומה קשורה %(count)d ל %(doc)s"
 
 #. Translators: n_links is number of external links
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:13
 #, python-format
-msgid "External Links (%(n_links)s)"
-msgstr "קישורים חיצוניים (%(n_links)s)"
+msgid "%(n_links)s External Links"
+msgstr ""
 
 #. Translators: title of document search page
 #: geniza/corpus/views.py:25
@@ -181,3 +189,17 @@ msgstr "יצירת קשר"
 #: geniza/templates/nav.html:15
 msgid "About"
 msgstr "אודות"
+
+#~ msgid "Shelfmark"
+#~ msgstr "מספר מדף"
+
+#~ msgid "Document Type"
+#~ msgstr "סוג המסמך"
+
+#, python-format
+#~ msgid "Scholarship Records (%(n_records)s)"
+#~ msgstr "רשומות קשורות (%(n_records)s)"
+
+#, python-format
+#~ msgid "External Links (%(n_links)s)"
+#~ msgstr "קישורים חיצוניים (%(n_links)s)"
