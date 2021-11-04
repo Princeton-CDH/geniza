@@ -64,8 +64,10 @@ class DocumentSearchView(ListView, FormMixin):
             search_opts = form.cleaned_data
 
             if search_opts["q"]:
-                documents = documents.keyword_search(search_opts["q"]).also(
-                    "score"
+                documents = (
+                    documents.keyword_search(search_opts["q"])
+                    .highlight("description", snippets=3, method="unified")
+                    .also("score")
                 )  # include relevance score in results
 
             # sorting TODO; for now, order by relevance
@@ -86,6 +88,7 @@ class DocumentSearchView(ListView, FormMixin):
                 "page_title": self.page_title,
                 "page_description": self.page_description,
                 "page_type": "search",
+                "highlighting": self.queryset.get_highlighting(),
             }
         )
         return context_data
