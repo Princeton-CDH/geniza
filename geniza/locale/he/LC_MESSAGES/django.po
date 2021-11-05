@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-04 15:18-0400\n"
+"POT-Creation-Date: 2021-11-05 09:18-0400\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -48,7 +48,7 @@ msgstr ""
 msgid "Home"
 msgstr "דף הבית"
 
-#. Translators: label for metadata section
+#. Translators: label for document metadata section (editor, date, input date)
 #: geniza/corpus/templates/corpus/document_detail.html:35
 msgid "Metadata"
 msgstr ""
@@ -122,32 +122,18 @@ msgstr "הצגת פרטי מסמך"
 msgid "Document Details"
 msgstr "פרטי מסמך"
 
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:8
-#, fuzzy
-#| msgid "%(count)d scholarship record for %(doc)s"
-#| msgid_plural "%(count)d scholarship records for %(doc)s"
-msgid "1 Scholarship Record"
-msgstr "רשומה קשורה %(count)d ל %(doc)s"
-
 #. Translators: n_records is number of scholarship records
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:11
-#, fuzzy, python-format
-#| msgid "%(count)d scholarship record for %(doc)s"
-#| msgid_plural "%(count)d scholarship records for %(doc)s"
-msgid "%(n_records)s Scholarship Records"
-msgstr "רשומה קשורה %(count)d ל %(doc)s"
-
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:17
-#, fuzzy
-#| msgid "External Links (%(n_links)s)"
-msgid "1 External Link"
-msgstr "קישורים חיצוניים (%(n_links)s)"
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:8
+#, python-format
+msgid "Scholarship Records (%(n_records)s)"
+msgstr "רשומות קשורות (%(n_records)s)"
 
 #. Translators: n_links is number of external links
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:20
-#, python-format
-msgid "%(n_links)s External Links"
-msgstr ""
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:13
+#, fuzzy, python-format
+#| msgid "External Links (%(n_links)s)"
+msgid "External Links (%(n_links)s)"
+msgstr "קישורים חיצוניים (%(n_links)s)"
 
 #. Translators: title of document search page
 #: geniza/corpus/views.py:25
@@ -208,7 +194,3 @@ msgstr "אודות"
 
 #~ msgid "Document Type"
 #~ msgstr "סוג המסמך"
-
-#, python-format
-#~ msgid "Scholarship Records (%(n_records)s)"
-#~ msgstr "רשומות קשורות (%(n_records)s)"

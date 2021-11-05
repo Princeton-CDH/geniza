@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-04 15:18-0400\n"
+"POT-Creation-Date: 2021-11-05 09:18-0400\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -47,7 +47,7 @@ msgstr ""
 msgid "Home"
 msgstr "Home"
 
-#. Translators: label for metadata section
+#. Translators: label for document metadata section (editor, date, input date)
 #: geniza/corpus/templates/corpus/document_detail.html:35
 msgid "Metadata"
 msgstr ""
@@ -115,24 +115,16 @@ msgstr ""
 msgid "Document Details"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:8
-msgid "1 Scholarship Record"
-msgstr ""
-
 #. Translators: n_records is number of scholarship records
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:11
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:8
 #, python-format
-msgid "%(n_records)s Scholarship Records"
-msgstr ""
-
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:17
-msgid "1 External Link"
+msgid "Scholarship Records (%(n_records)s)"
 msgstr ""
 
 #. Translators: n_links is number of external links
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:20
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:13
 #, python-format
-msgid "%(n_links)s External Links"
+msgid "External Links (%(n_links)s)"
 msgstr ""
 
 #. Translators: title of document search page
