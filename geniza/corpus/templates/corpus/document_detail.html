@@ -58,6 +58,8 @@
                 </dd>
             </dl>
             {% if document.tags.exists %}
+                {# Translators: label for tags on a document #}
+                <h3 class="sr-only">{% translate 'Tags' %}</h3>
                 <ul class="tags">
                     {% for tag in document.alphabetized_tags %}
                         <li>{{ tag }}</li>

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-05 09:18-0400\n"
+"POT-Creation-Date: 2021-11-05 09:28-0400\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -60,7 +60,7 @@ msgstr "محرر"
 
 #. Translators: Date document was first added to the PGP
 #: geniza/corpus/templates/corpus/document_detail.html:48
-#: geniza/corpus/templates/corpus/snippets/document_result.html:22
+#: geniza/corpus/templates/corpus/snippets/document_result.html:24
 msgid "Input date"
 msgstr "Input date"
 
@@ -69,8 +69,14 @@ msgstr "Input date"
 msgid "Permalink"
 msgstr "رابط دائم"
 
+#. Translators: label for tags on a document
+#: geniza/corpus/templates/corpus/document_detail.html:62
+#: geniza/corpus/templates/corpus/snippets/document_result.html:14
+msgid "Tags"
+msgstr ""
+
 #. Translators: label for document description
-#: geniza/corpus/templates/corpus/document_detail.html:71
+#: geniza/corpus/templates/corpus/document_detail.html:73
 #, fuzzy
 #| msgid "Transcription"
 msgid "Description"
@@ -94,29 +100,29 @@ msgstr[5] "مجموع النتائج %(counter)s"
 msgid "Link to source"
 msgstr "رابط إلى المصدر"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:24
+#: geniza/corpus/templates/corpus/snippets/document_result.html:26
 msgid "PGP ID"
 msgstr "PGP ID"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:35
+#: geniza/corpus/templates/corpus/snippets/document_result.html:37
 msgid "Transcription"
 msgstr "نسخه"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:36
+#: geniza/corpus/templates/corpus/snippets/document_result.html:38
 #: geniza/footnotes/models.py:217
 msgid "Translation"
 msgstr "الترجمة"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:37
+#: geniza/corpus/templates/corpus/snippets/document_result.html:39
 #: geniza/footnotes/models.py:218
 msgid "Discussion"
 msgstr "المناقشة"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:39
+#: geniza/corpus/templates/corpus/snippets/document_result.html:41
 msgid "No Scholarship Records"
 msgstr "لا توجد سجلات للمنح الدراسية"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:45
+#: geniza/corpus/templates/corpus/snippets/document_result.html:47
 msgid "View document details"
 msgstr "عرض تفاصيل المستند"
 
