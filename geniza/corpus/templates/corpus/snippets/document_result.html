@@ -28,16 +28,16 @@
             {# description #}
             <p class="description">
                 {# display keywords in context if any #}
-                {% if highlighting and document.id in highlighting %}
-                    {% with document_highlights=highlighting|dict_item:document.id %}
+                {% with document_highlights=highlighting|dict_item:document.id %}
+                    {% if document_highlights.description_t %}
                         {% for snippet in document_highlights.description_t %}
                             {{ snippet|safe }}
                         {% endfor %}
-                    {% endwith %}
-                {% else %}
-                    {# otherwise, display truncated description #}
-                    {{ document.description.0|truncatewords:25 }}
-                {% endif %}
+                    {% else %}
+                        {# otherwise, display truncated description #}
+                        {{ document.description.0|truncatewords:25 }}
+                    {% endif %}
+                {% endwith %}
             </p>
 
             {# scholarship records #}

@@ -259,17 +259,25 @@ class TestDocumentResult:
         assert "Discussion (2)" in result
 
     def test_description(self, document):
-        result = self.template.render(
-            context={
-                "document": {
-                    "pgpid": document.id,
-                    "description": [document.description],
-                }
+        context = {
+            "document": {
+                "pgpid": document.id,
+                "id": "document.%d" % document.id,
+                "description": [document.description],
             },
-        )
+            # no highlighting at all (i.e., no keyword search)
+            "highlighting": {},
+        }
+
         # template currently has truncate words 25; just check that the beginning
         # of the description is there
-        assert document.description[:50] in result
+        assert document.description[:50] in self.template.render(context)
+
+        # if there is highlighting but not for this document,
+        # description excerpt should still display
+        #  (solr returns empty list if there are no keywords)
+        context["highlighting"] = {"document.%d" % document.id: {"description_t": []}}
+        assert document.description[:50] in self.template.render(context)
 
     def test_description_highlighting(self, document):
         test_highlight = "passage of the <em>Tujib<em> quarter"
