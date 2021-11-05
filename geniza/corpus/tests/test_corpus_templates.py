@@ -228,13 +228,19 @@ class TestDocumentResult:
 
     def test_no_scholarship_records(self):
         assert "No Scholarship Records" in self.template.render(
-            context={"document": {"pgpid": 1}}
+            context={"document": {"pgpid": 1, "id": "document.1"}, "highlighting": {}}
         )
 
     def test_has_scholarship_records(self):
         result = self.template.render(
             context={
-                "document": {"pgpid": 1, "num_editions": 15, "scholarship_count": 10}
+                "document": {
+                    "pgpid": 1,
+                    "id": "document.1",
+                    "num_editions": 15,
+                    "scholarship_count": 10,
+                },
+                "highlighting": {},
             }
         )
         assert "No Scholarship Records" not in result
@@ -247,11 +253,13 @@ class TestDocumentResult:
             context={
                 "document": {
                     "pgpid": 1,
+                    "id": "document.1",
                     "num_editions": 2,
                     "num_translations": 3,
                     "num_discussions": 2,
                     "scholarship_count": 10,
-                }
+                },
+                "highlighting": {},
             },
         )
         assert "Transcription (2)" in result
