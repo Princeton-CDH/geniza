@@ -55,6 +55,9 @@ class Command(BaseCommand):
                 self.stdout.write("Document %s not found in database" % pgpid)
                 continue
 
+            if doc.fragments.count() > 1:
+                stats["joins"] += 1
+
             editions = doc.footnotes.editions()
             if editions.count() > 1:
                 # print(xmlfile)
@@ -81,6 +84,9 @@ class Command(BaseCommand):
                 else:
                     self.stderr.write("No html generated for %s" % doc.id)
 
+            # NOTE: in *one* case there is a TEI file with translation. That should
+            # probably be handled elsewhere!
+
             # start with the easy case? one edition footnote
             # start a list of questions! are multiple sources combined in the tei?
 
@@ -96,6 +102,7 @@ class Command(BaseCommand):
         self.stdout.write(
             """Processed {xml:,} TEI/XML files; skipped {empty_tei:,} TEI files with no text content.
 {document_not_found:,} documents not found in database.
+{joins:,} documents with multiple fragments.
 {multiple_editions:,} documents with multiple editions.
 {no_edition:,} documents with no edition.
 {one_edition:,} documents with one edition.

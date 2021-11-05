@@ -85,7 +85,16 @@ th.column-last_modified {
 
 .transcription li {
     white-space: pre;
-    list-style-type: auto;
+    list-style: none; /* suppress default line numbers */
+}
+
+.transcription li::before {
+    /* use pseudo marker to avoid periods for line numbers */
+    content: attr(value);
+    margin-left: 1em;
+    text-align: right;
+    float: right;
+    font-weight: bold;
 }
 
 .transcription li::marker {
