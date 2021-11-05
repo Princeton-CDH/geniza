@@ -53,11 +53,14 @@ class DocumentSearchForm(forms.Form):
         ),
     )
 
-    # sort still TODO; single choice only for display, for now
     SORT_CHOICES = [
         # Translators: label for sort by relevance
         ("relevance", _("Relevance")),
         # ("input_date", "Input Date (Latest – Earliest)"),
+        # Translators: label for descending sort by number of scholarship records
+        ("scholarship_desc", _("Scholarship Records (Most–Least)")),
+        # Translators: label for ascending sort by number of scholarship records
+        ("scholarship_asc", _("Scholarship Records (Least–Most)")),
     ]
 
     # NOTE these are not set by default!
@@ -71,16 +74,3 @@ class DocumentSearchForm(forms.Form):
         required=False,
         widget=SelectWithDisabled,
     )
-
-    def __init__(self, data=None, *args, **kwargs):
-        """
-        Override to set choices dynamically based on form kwargs.
-        """
-        super().__init__(data=data, *args, **kwargs)
-
-        # if a keyword search term is not present, relevance sort is disabled
-        if not data or not data.get("q", None):
-            self.fields["sort"].widget.choices[0] = (
-                self.SORT_CHOICES[0][0],
-                {"label": self.SORT_CHOICES[0][1], "disabled": True},
-            )

@@ -25,10 +25,13 @@ class DocumentSearchView(ListView, FormMixin):
     page_title = _("Search Documents")
     # Translators: description of document search page, for search engines
     page_description = _("Search and browse Geniza documents.")
+    initial = {"sort": "scholarship_desc"}
 
     # map form sort to solr sort field
     solr_sort = {
         "relevance": "-score",
+        "scholarship_desc": "-scholarship_count_i",
+        "scholarship_asc": "scholarship_count_i",
         #        'name': 'sort_name_isort'
     }
 
@@ -37,17 +40,12 @@ class DocumentSearchView(ListView, FormMixin):
         # use GET instead of default POST/PUT for form data
         form_data = self.request.GET.copy()
 
-        # always use relevance sort for keyword search;
-        # otherwise use default (sort by name)
-        if form_data.get("q", None):
+        # sort by chosen sort
+        if "sort" in form_data:
+            form_data["sort"] = form_data.get("sort", None)
+        # sort by relavance if query text exists and no sort chosen
+        elif form_data.get("q", None):
             form_data["sort"] = "relevance"
-        # sorting TODO
-        # else:
-        # form_data['sort'] = self.initial['sort']
-
-        # use initial values as defaults
-        # for key, val in self.initial.items():
-        # form_data.setdefault(key, val)
 
         kwargs["data"] = form_data
         return kwargs
@@ -67,9 +65,11 @@ class DocumentSearchView(ListView, FormMixin):
                 documents = documents.keyword_search(search_opts["q"]).also(
                     "score"
                 )  # include relevance score in results
-
-            # sorting TODO; for now, order by relevance
-            documents = documents.order_by("-score")
+            if search_opts["sort"]:
+                documents = documents.order_by(self.solr_sort[search_opts["sort"]])
+            else:
+                initial_sort = self.initial["sort"]
+                documents = documents.order_by(self.solr_sort[initial_sort])
 
         self.queryset = documents
 

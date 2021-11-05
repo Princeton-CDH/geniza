@@ -203,7 +203,7 @@ class TestDocumentSearchView:
         # no params
         docsearch_view.request.GET = {}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {},
+            "initial": {"sort": "scholarship_desc"},
             "prefix": None,
             "data": {},
         }
@@ -211,9 +211,25 @@ class TestDocumentSearchView:
         # keyword search param
         docsearch_view.request.GET = {"q": "contract"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {},
+            "initial": {"sort": "scholarship_desc"},
             "prefix": None,
             "data": {"q": "contract", "sort": "relevance"},
+        }
+
+        # sort search param
+        docsearch_view.request.GET = {"sort": "scholarship_desc"}
+        assert docsearch_view.get_form_kwargs() == {
+            "initial": {"sort": "scholarship_desc"},
+            "prefix": None,
+            "data": {"sort": "scholarship_desc"},
+        }
+
+        # keyword and sort search params
+        docsearch_view.request.GET = {"q": "contract", "sort": "scholarship_desc"}
+        assert docsearch_view.get_form_kwargs() == {
+            "initial": {"sort": "scholarship_desc"},
+            "prefix": None,
+            "data": {"q": "contract", "sort": "scholarship_desc"},
         }
 
     @pytest.mark.usefixtures("mock_solr_queryset")
@@ -225,6 +241,8 @@ class TestDocumentSearchView:
 
             docsearch_view = DocumentSearchView()
             docsearch_view.request = Mock()
+
+            # keyword search param
             docsearch_view.request.GET = {"q": "six apartments"}
             qs = docsearch_view.get_queryset()
 
@@ -233,6 +251,50 @@ class TestDocumentSearchView:
             mock_sqs.keyword_search.assert_called_with("six apartments")
             # NOTE: keyword search not in parasolr list for mock solr queryset
             mock_sqs.keyword_search.return_value.also.assert_called_with("score")
+            mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
+                "-score"
+            )
+
+            # sort search param
+            mock_sqs.reset_mock()
+            docsearch_view.request = Mock()
+            docsearch_view.request.GET = {"sort": "relevance"}
+            qs = docsearch_view.get_queryset()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.keyword_search.assert_not_called()
+            mock_sqs.order_by.assert_called_with("-score")
+
+            # keyword and sort search params
+            mock_sqs.reset_mock()
+            docsearch_view.request = Mock()
+            docsearch_view.request.GET = {
+                "q": "six apartments",
+                "sort": "scholarship_desc",
+            }
+            qs = docsearch_view.get_queryset()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.keyword_search.assert_called_with("six apartments")
+            mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
+                "-scholarship_count_i"
+            )
+
+            # empty params
+            mock_sqs.reset_mock()
+            docsearch_view.request = Mock()
+            docsearch_view.request.GET = {"q": "", "sort": ""}
+            qs = docsearch_view.get_queryset()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.keyword_search.assert_not_called()
+            mock_sqs.order_by.assert_called_with("-scholarship_count_i")
+
+            # no params
+            mock_sqs.reset_mock()
+            docsearch_view.request = Mock()
+            docsearch_view.request.GET = {}
+            qs = docsearch_view.get_queryset()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.keyword_search.assert_not_called()
+            mock_sqs.order_by.assert_called_with("-scholarship_count_i")
 
     def test_get_context_data(self, rf):
         docsearch_view = DocumentSearchView()
@@ -243,6 +305,76 @@ class TestDocumentSearchView:
 
         context_data = docsearch_view.get_context_data()
         assert context_data["total"] == 22
+
+    def test_scholarship_sort(self, empty_solr, source):
+        """integration test for sorting by scholarship asc and desc"""
+
+        doc_no_record = Document.objects.create()
+        doc_one_record = Document.objects.create(description="My record count is one")
+        Footnote.objects.create(
+            content_object=doc_one_record,
+            source=source,
+            doc_relation=Footnote.EDITION,
+        )
+        assert doc_one_record.index_data()["scholarship_count_i"] == 1
+        doc_three_records = Document.objects.create(
+            description="My record count is three"
+        )
+        for _ in range(3):
+            Footnote.objects.create(
+                content_object=doc_three_records,
+                source=source,
+                doc_relation=Footnote.EDITION,
+            )
+        doc_three_records.save()
+        assert doc_three_records.index_data()["scholarship_count_i"] == 3
+        # ensure solr index is updated with all three test documents
+        SolrClient().update.index(
+            [
+                doc_no_record.index_data(),
+                doc_one_record.index_data(),
+                doc_three_records.index_data(),
+            ],
+            commit=True,
+        )
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+
+        # no sort, no query
+        docsearch_view.request.GET = {}
+        qs = docsearch_view.get_queryset()
+        # should return all three documents
+        assert qs.count() == 3
+        # by default, should return document with most records first
+        assert (
+            qs[0]["pgpid"] == doc_three_records.id
+        ), "document with most scholarship records returned first"
+
+        # sort by scholarship desc
+        docsearch_view.request.GET = {"sort": "scholarship_desc"}
+        qs = docsearch_view.get_queryset()
+        # should return document with most records first
+        assert (
+            qs[0]["pgpid"] == doc_three_records.id
+        ), "document with most scholarship records returned first"
+
+        # sort by scholarship asc
+        docsearch_view.request.GET = {"sort": "scholarship_asc"}
+        qs = docsearch_view.get_queryset()
+        # should return document with fewest records first
+        assert (
+            qs[0]["pgpid"] == doc_no_record.id
+        ), "document with fewest scholarship records returned first"
+
+        # sort by scholarship asc with query
+        docsearch_view.request.GET = {"sort": "scholarship_asc", "q": "record"}
+        qs = docsearch_view.get_queryset()
+        # should return 2 documents
+        assert qs.count() == 2
+        # should return document with fewest records first
+        assert (
+            qs[0]["pgpid"] == doc_one_record.id
+        ), "document with matching description and fewest scholarship records returned first"
 
     def test_shelfmark_boost(self, empty_solr, document, multifragment):
         # integration test for shelfmark field boosting
@@ -331,8 +463,6 @@ class TestDocumentScholarshipView:
             reverse("corpus:document-scholarship", args=[document.pk])
         )
         assert response.status_code == 404
-
-    # def test_get_absolute_url(self, db, client):
 
     def test_past_id_mixin(self, db, client, source):
         """should redirect from 404 to new pgpid when an old_pgpid is matched"""
