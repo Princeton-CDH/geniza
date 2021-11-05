@@ -1,4 +1,5 @@
 from time import sleep
+from unittest import mock
 from unittest.mock import Mock, patch
 
 import pytest
@@ -51,7 +52,7 @@ class TestDocumentDetailView:
     def test_permalink(self, document, client):
         """should contain permalink generated from absolutize_url"""
         response = client.get(reverse("corpus:document", args=(document.id,)))
-        permalink = absolutize_url(document.get_absolute_url())
+        permalink = absolutize_url(document.get_absolute_url()).replace("/en/", "/")
         assertContains(response, f'<link rel="canonical" href="{permalink}"')
 
     def test_past_id_mixin(self, db, client):
@@ -61,7 +62,7 @@ class TestDocumentDetailView:
         doc = Document.objects.create(id=1, old_pgpids=[2])
         response_301 = client.get(reverse("corpus:document", args=(2,)))
         assert response_301.status_code == 301
-        assert response_301.url == doc.permalink
+        assert response_301.url == absolutize_url(doc.get_absolute_url())
 
         # Test when pgpid not first in the list
         response_404_notfirst = client.get(reverse("corpus:document", args=(71,)))
@@ -70,7 +71,7 @@ class TestDocumentDetailView:
         doc.save()
         response_301_notfirst = client.get(reverse("corpus:document", args=(71,)))
         assert response_301_notfirst.status_code == 301
-        assert response_301_notfirst.url == doc.permalink
+        assert response_301_notfirst.url == absolutize_url(doc.get_absolute_url())
 
         # Test partial matching pgpid
         response_404_partialmatch = client.get(reverse("corpus:document", args=(7,)))
@@ -81,7 +82,9 @@ class TestDocumentDetailView:
         doc_detail_view = DocumentDetailView()
         doc_detail_view.object = document
         doc_detail_view.kwargs = {"pk": document.pk}
-        assert doc_detail_view.get_absolute_url() == document.permalink
+        assert doc_detail_view.get_absolute_url() == absolutize_url(
+            document.get_absolute_url()
+        )
 
 
 @pytest.mark.django_db
@@ -236,7 +239,9 @@ class TestDocumentSearchView:
     def test_get_queryset(self, mock_solr_queryset):
         with patch(
             "geniza.corpus.views.DocumentSolrQuerySet",
-            new=self.mock_solr_queryset(DocumentSolrQuerySet),
+            new=self.mock_solr_queryset(
+                DocumentSolrQuerySet, extra_methods=["admin_search", "keyword_search"]
+            ),
         ) as mock_queryset_cls:
 
             docsearch_view = DocumentSearchView()
@@ -249,11 +254,11 @@ class TestDocumentSearchView:
             mock_queryset_cls.assert_called_with()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_called_with("six apartments")
-            # NOTE: keyword search not in parasolr list for mock solr queryset
-            mock_sqs.keyword_search.return_value.also.assert_called_with("score")
-            mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
-                "-score"
+            mock_sqs.keyword_search.return_value.highlight.assert_called_with(
+                "description", snippets=3, method="unified"
             )
+            mock_sqs.also.assert_called_with("score")
+            mock_sqs.also.return_value.order_by.assert_called_with("-score")
 
             # sort search param
             mock_sqs.reset_mock()
@@ -305,6 +310,10 @@ class TestDocumentSearchView:
 
         context_data = docsearch_view.get_context_data()
         assert context_data["total"] == 22
+        assert (
+            context_data["highlighting"]
+            == docsearch_view.queryset.get_highlighting.return_value
+        )
 
     def test_scholarship_sort(self, empty_solr, source):
         """integration test for sorting by scholarship asc and desc"""
@@ -472,7 +481,9 @@ class TestDocumentScholarshipView:
         Footnote.objects.create(content_object=doc, source=source)
         response_301 = client.get(reverse("corpus:document-scholarship", args=[2]))
         assert response_301.status_code == 301
-        assert response_301.url == f"{doc.permalink}scholarship/"
+        assert response_301.url == absolutize_url(
+            f"{doc.get_absolute_url()}scholarship/"
+        )
 
     def test_get_absolute_url(self, document, source):
         """should return scholarship permalink"""
@@ -480,4 +491,6 @@ class TestDocumentScholarshipView:
         doc_detail_view = DocumentScholarshipView()
         doc_detail_view.object = document
         doc_detail_view.kwargs = {"pk": document.pk}
-        assert doc_detail_view.get_absolute_url() == f"{document.permalink}scholarship/"
+        assert doc_detail_view.get_absolute_url() == absolutize_url(
+            f"{document.get_absolute_url()}scholarship/"
+        )

@@ -6,6 +6,7 @@
 @use "../base/container";
 @use "../base/spacing";
 @use "../base/typography";
+@use "../base/colors";
 
 section#document-list {
     // count of results
@@ -83,6 +84,18 @@ section#document-list {
         .description {
             order: 4;
             margin: spacing.$spacing-md 0;
+
+            // keywords in context
+            em {
+                @include colors.apply-theme("primary");
+                font-weight: bold;
+            }
+            /* solr returns multiple matches in text without space between */
+            em + em {
+                &::before {
+                    content: " ";
+                }
+            }
         }
 
         // document scholarship records

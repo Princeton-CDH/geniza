@@ -223,41 +223,64 @@ class TestDocumentTabsSnippet:
 
 
 class TestDocumentResult:
+
+    template = get_template("corpus/snippets/document_result.html")
+
     def test_no_scholarship_records(self):
-        assert "No Scholarship Records" in render_to_string(
-            "corpus/snippets/document_result.html", context={"document": {"pgpid": 1}}
+        assert "No Scholarship Records" in self.template.render(
+            context={"document": {"pgpid": 1}}
         )
 
     def test_has_scholarship_records(self):
-        assert "No Scholarship Records" not in render_to_string(
-            "corpus/snippets/document_result.html",
-            context={"document": {"pgpid": 1, "scholarship_count": 10}},
-        )
-
-    def test_fifteen_editions(self):
-        assert "Transcription (15)" in render_to_string(
-            "corpus/snippets/document_result.html",
+        result = self.template.render(
             context={
-                "document": {"num_editions": 15, "pgpid": 1, "scholarship_count": 10}
-            },
+                "document": {"pgpid": 1, "num_editions": 15, "scholarship_count": 10}
+            }
         )
+        assert "No Scholarship Records" not in result
+        assert "Transcription (15)" in result
+        assert "Translation" not in result
+        assert "Discusion" not in result
 
-    def test_fifteen_translations(self):
-        assert "Translation (15)" in render_to_string(
-            "corpus/snippets/document_result.html",
+    def test_multiple_scholarship_types(self):
+        result = self.template.render(
             context={
                 "document": {
-                    "num_translations": 15,
                     "pgpid": 1,
+                    "num_editions": 2,
+                    "num_translations": 3,
+                    "num_discussions": 2,
                     "scholarship_count": 10,
                 }
             },
         )
+        assert "Transcription (2)" in result
+        assert "Translation (3)" in result
+        assert "Discussion (2)" in result
 
-    def test_fifteen_discussion(self):
-        assert "Discussion (15)" in render_to_string(
-            "corpus/snippets/document_result.html",
+    def test_description(self, document):
+        result = self.template.render(
             context={
-                "document": {"num_discussions": 15, "pgpid": 1, "scholarship_count": 10}
+                "document": {
+                    "pgpid": document.id,
+                    "description": [document.description],
+                }
             },
         )
+        # template currently has truncate words 25; just check that the beginning
+        # of the description is there
+        assert document.description[:50] in result
+
+    def test_description_highlighting(self, document):
+        test_highlight = "passage of the <em>Tujib<em> quarter"
+        result = self.template.render(
+            context={
+                "document": {"pgpid": document.id, "id": "document.%d" % document.id},
+                "highlighting": {
+                    "document.%d" % document.id: {"description_t": [test_highlight]}
+                },
+            }
+        )
+        # keywords in context displayed instead of description excerpt
+        assert test_highlight in result
+        assert document.description[:50] not in result
