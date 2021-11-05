@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-02 15:14-0400\n"
+"POT-Creation-Date: 2021-11-05 13:27-0400\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -28,17 +28,27 @@ msgid "Keyword or Phrase"
 msgstr ""
 
 #. Translators: label for sort by relevance
-#: geniza/corpus/forms.py:59
+#: geniza/corpus/forms.py:58
 msgid "Relevance"
 msgstr ""
 
+#. Translators: label for descending sort by number of scholarship records
+#: geniza/corpus/forms.py:61
+msgid "Scholarship Records (Most–Least)"
+msgstr ""
+
+#. Translators: label for ascending sort by number of scholarship records
+#: geniza/corpus/forms.py:63
+msgid "Scholarship Records (Least–Most)"
+msgstr ""
+
 #. Translators: label for form sort field
-#: geniza/corpus/forms.py:69
+#: geniza/corpus/forms.py:72
 msgid "Sort by"
 msgstr ""
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:533
+#: geniza/corpus/models.py:537
 #: geniza/corpus/templates/corpus/document_detail.html:23
 msgid "Unknown type"
 msgstr ""
@@ -75,7 +85,7 @@ msgstr ""
 #: geniza/corpus/templates/corpus/document_list.html:26
 #, python-format
 msgid "1 result"
-msgid_plural "%(counter)s total results"
+msgid_plural "%(count_humanized)s total results"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -87,25 +97,25 @@ msgstr ""
 msgid "PGP ID"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:35
+#: geniza/corpus/templates/corpus/snippets/document_result.html:47
 msgid "Transcription"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:36
+#: geniza/corpus/templates/corpus/snippets/document_result.html:48
 #: geniza/footnotes/models.py:217
 msgid "Translation"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:37
+#: geniza/corpus/templates/corpus/snippets/document_result.html:49
 #: geniza/footnotes/models.py:218
 msgid "Discussion"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:39
+#: geniza/corpus/templates/corpus/snippets/document_result.html:51
 msgid "No Scholarship Records"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:45
+#: geniza/corpus/templates/corpus/snippets/document_result.html:57
 msgid "View document details"
 msgstr ""
 
@@ -136,12 +146,12 @@ msgid "Search and browse Geniza documents."
 msgstr ""
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:157
+#: geniza/corpus/views.py:160
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr ""
 
-#: geniza/corpus/views.py:164
+#: geniza/corpus/views.py:167
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"

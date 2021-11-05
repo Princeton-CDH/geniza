@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-02 15:14-0400\n"
+"POT-Creation-Date: 2021-11-05 13:27-0400\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -29,17 +29,31 @@ msgid "Keyword or Phrase"
 msgstr "الكلمة المفتاحية أو القراءة"
 
 #. Translators: label for sort by relevance
-#: geniza/corpus/forms.py:59
+#: geniza/corpus/forms.py:58
 msgid "Relevance"
 msgstr "الأهمية"
 
+#. Translators: label for descending sort by number of scholarship records
+#: geniza/corpus/forms.py:61
+#, fuzzy
+#| msgid "Scholarship Records (%(n_records)s)"
+msgid "Scholarship Records (Most–Least)"
+msgstr "سجل المنح الدراسية (%(n_records)s)"
+
+#. Translators: label for ascending sort by number of scholarship records
+#: geniza/corpus/forms.py:63
+#, fuzzy
+#| msgid "Scholarship Records (%(n_records)s)"
+msgid "Scholarship Records (Least–Most)"
+msgstr "سجل المنح الدراسية (%(n_records)s)"
+
 #. Translators: label for form sort field
-#: geniza/corpus/forms.py:69
+#: geniza/corpus/forms.py:72
 msgid "Sort by"
 msgstr "الترتيب حسب"
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:533
+#: geniza/corpus/models.py:537
 #: geniza/corpus/templates/corpus/document_detail.html:23
 msgid "Unknown type"
 msgstr ""
@@ -74,9 +88,11 @@ msgstr "رابط دائم"
 
 #. Translators: number of search results
 #: geniza/corpus/templates/corpus/document_list.html:26
-#, python-format
+#, fuzzy, python-format
+#| msgid "1 result"
+#| msgid_plural "%(counter)s total results"
 msgid "1 result"
-msgid_plural "%(counter)s total results"
+msgid_plural "%(count_humanized)s total results"
 msgstr[0] "نتائج %(counter)s"
 msgstr[1] "1 نتيجة"
 msgstr[2] "نتيجتين %(counter)s"
@@ -92,25 +108,25 @@ msgstr "رابط إلى المصدر"
 msgid "PGP ID"
 msgstr "PGP ID"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:35
+#: geniza/corpus/templates/corpus/snippets/document_result.html:47
 msgid "Transcription"
 msgstr "نسخه"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:36
+#: geniza/corpus/templates/corpus/snippets/document_result.html:48
 #: geniza/footnotes/models.py:217
 msgid "Translation"
 msgstr "الترجمة"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:37
+#: geniza/corpus/templates/corpus/snippets/document_result.html:49
 #: geniza/footnotes/models.py:218
 msgid "Discussion"
 msgstr "المناقشة"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:39
+#: geniza/corpus/templates/corpus/snippets/document_result.html:51
 msgid "No Scholarship Records"
 msgstr "لا توجد سجلات للمنح الدراسية"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:45
+#: geniza/corpus/templates/corpus/snippets/document_result.html:57
 msgid "View document details"
 msgstr "عرض تفاصيل المستند"
 
@@ -141,12 +157,12 @@ msgid "Search and browse Geniza documents."
 msgstr "البحث في وثائق جنيزا وتصفحها."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:157
+#: geniza/corpus/views.py:160
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "منحة في %(doc)s"
 
-#: geniza/corpus/views.py:164
+#: geniza/corpus/views.py:167
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
