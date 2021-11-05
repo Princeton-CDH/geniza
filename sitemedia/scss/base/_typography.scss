@@ -89,7 +89,10 @@ $text-size-5xl: 3.81rem;
 }
 
 @mixin link {
-    @include colors.apply-theme("secondary");
+    @include colors.apply-theme(
+        "secondary",
+        $property: "text-decoration-color"
+    );
 
     font-family: fonts.$secondary;
     font-size: 1rem;
