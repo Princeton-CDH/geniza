@@ -23,6 +23,7 @@
         }
     }
     li {
+        padding: 0 spacing.$spacing-xs;
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 spacing.$spacing-lg;
         }
