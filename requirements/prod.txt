@@ -11,7 +11,9 @@ django-modeltranslation
 django-admin-sortable2
 python-dateutil>=2.8
 django-tabular-export
-parasolr>=0.7
+#parasolr>=0.7
+# require develop version of parasolr until 0.8 is released
+git+https://github.com/Princeton-CDH/parasolr@develop#egg=parasolr
 django-gfklookupwidget
 django-adminlogentries
 django-webpack-loader
