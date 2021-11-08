@@ -370,14 +370,14 @@ class TestDocument:
 
     def test_title(self):
         doc = Document.objects.create()
-        assert doc.title == "Unknown type; ??"
+        assert doc.title == "Unknown type: ??"
         legal = DocumentType.objects.get_or_create(name="Legal")[0]
         doc.doctype = legal
         doc.save()
-        assert doc.title == "Legal document; ??"
+        assert doc.title == "Legal document: ??"
         frag = Fragment.objects.create(shelfmark="s1")
         TextBlock.objects.create(document=doc, fragment=frag, order=1)
-        assert doc.title == "Legal document; s1"
+        assert doc.title == "Legal document: s1"
 
     def test_shelfmark_display(self):
         # T-S 8J22.21 + T-S NS J193
