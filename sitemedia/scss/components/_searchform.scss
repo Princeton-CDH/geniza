@@ -13,6 +13,10 @@
 #search form fieldset {
     @include container.two-column;
     max-width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: flex-start;
     input[type="search"] {
         max-width: 100%;
         order: 1;
@@ -76,15 +80,5 @@
                 height: spacing.$spacing-xl;
             }
         }
-    }
-    input[type="submit"] {
-        @include typography.button;
-        order: 2;
-        flex: 0 0 10%;
-        border-radius: 0;
-        margin-left: 0;
-        background-color: colors.$gray-30;
-        border: 1px solid colors.$gray-50;
-        height: spacing.$spacing-xl;
     }
 }
