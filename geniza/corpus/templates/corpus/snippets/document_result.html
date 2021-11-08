@@ -28,7 +28,19 @@
             </dl>
 
             {# description #}
-            <p class="description">{{ document.description.0|truncatewords:25 }}</p>
+            <p class="description">
+                {# display keywords in context if any #}
+                {% with document_highlights=highlighting|dict_item:document.id %}
+                    {% if document_highlights.description_t %}
+                        {% for snippet in document_highlights.description_t %}
+                            {{ snippet|safe }}
+                        {% endfor %}
+                    {% else %}
+                        {# otherwise, display truncated description #}
+                        {{ document.description.0|truncatewords:25 }}
+                    {% endif %}
+                {% endwith %}
+            </p>
 
             {# scholarship records #}
             <p class="scholarship">
