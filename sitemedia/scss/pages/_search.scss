@@ -2,6 +2,7 @@
 // Document search page.
 // -----------------------------------------------------------------------------
 
+@use "../base/breakpoints";
 @use "../base/container";
 @use "../base/spacing";
 
@@ -13,6 +14,10 @@
         display: flex;
         flex-direction: column;
         padding: spacing.$spacing-md;
+        margin-top: spacing.$spacing-lg;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: spacing.$spacing-2xl;
+        }
     }
     section#document-list {
         width: 100%;

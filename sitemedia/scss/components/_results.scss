@@ -12,7 +12,7 @@ section#document-list {
     // count of results
     h1 {
         @include container.two-column;
-        @include typography.body;
+        @include typography.headline-6;
         text-align: center;
         margin: spacing.$spacing-sm 0;
     }
@@ -101,15 +101,27 @@ section#document-list {
         // document scholarship records
         .scholarship {
             order: 5;
+            @include typography.meta;
         }
     }
 
     .view-link {
-        @include typography.link;
-
-        display: block;
+        display: flex;
+        align-items: center;
         width: max-content;
         margin-left: auto;
         margin-top: spacing.$spacing-md;
+        font-size: typography.$text-size-md;
+        @include breakpoints.for-tablet-landscape-up {
+            font-size: typography.$text-size-lg;
+        }
+        i {
+            margin-left: spacing.$spacing-sm;
+            font-size: typography.$text-size-lg;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-left: spacing.$spacing-lg;
+                font-size: typography.$text-size-2xl;
+            }
+        }
     }
 }
