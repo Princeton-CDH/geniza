@@ -241,19 +241,28 @@ class TestDocumentSearchView:
             )
             mock_sqs.also.assert_called_with("score")
 
-    def test_get_context_data(self, rf):
-        docsearch_view = DocumentSearchView()
-        docsearch_view.request = rf.get("/documents/")
-        docsearch_view.queryset = Mock()
-        docsearch_view.queryset.count.return_value = 22
-        docsearch_view.object_list = docsearch_view.queryset
+    @pytest.mark.usefixtures("mock_solr_queryset")
+    def test_get_context_data(self, rf, mock_solr_queryset):
+        with patch(
+            "geniza.corpus.views.DocumentSolrQuerySet",
+            new=mock_solr_queryset(
+                DocumentSolrQuerySet, extra_methods=["admin_search", "keyword_search"]
+            ),
+        ) as mock_queryset_cls:
+            docsearch_view = DocumentSearchView(kwargs={})
+            docsearch_view.request = rf.get("/documents/")
+            docsearch_view.queryset = mock_queryset_cls.return_value
+            docsearch_view.queryset.count.return_value = 22
+            docsearch_view.queryset.__getitem__.return_value = docsearch_view.queryset
+            docsearch_view.object_list = docsearch_view.queryset
 
-        context_data = docsearch_view.get_context_data()
-        assert context_data["total"] == 22
-        assert (
-            context_data["highlighting"]
-            == docsearch_view.queryset.get_highlighting.return_value
-        )
+            context_data = docsearch_view.get_context_data()
+            assert context_data["total"] == 22
+            assert (
+                context_data["highlighting"]
+                == docsearch_view.queryset.get_highlighting.return_value
+            )
+            assert context_data["result_offset"] == 0
 
     def test_shelfmark_boost(self, empty_solr, document, multifragment):
         # integration test for shelfmark field boosting

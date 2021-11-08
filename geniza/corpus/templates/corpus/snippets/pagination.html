@@ -1,0 +1,67 @@
+{% load i18n corpus_extras %}
+{% spaceless %}
+    <nav class="pagination">
+        {# Translators: Label for "previous page" button in search results #}
+        {% translate 'previous page' as previous_page %}
+        {% if page_obj.has_previous %}
+            <a name="{{ previous_page }}" title="{{ previous_page }}" rel="prev" href="?{% querystring_replace page=page_obj.previous_page_number %}">
+                <i class="ph-caret-left"></i>
+            </a>
+        {% else %}
+            <a name="{{ previous_page }}" title="{{ previous_page }}" class="disabled">
+                <i class="ph-caret-left"></i>
+            </a>
+        {% endif %}
+
+        {% for number in page_obj.paginator.page_range %}
+
+            {# Translators: Title for link to page number in search results #}
+            {% blocktranslate asvar page_number_title %}page {{ number }}{% endblocktranslate %}
+
+            {% if number == page_obj.number %}
+                {#  always display current page, marked as active #}
+                <a title="{{ page_number_title }}" class="active" href="?{% querystring_replace page=number %}">{{ number }}</a>
+
+            {% elif page_obj.number <= 2  and number <= 5 %}
+                {# for current page 1 or 2, display first 5 #}
+                <a title="{{ page_number_title }}" href="?{% querystring_replace page=number %}">{{ number }}</a>
+
+            {% elif page_obj.number|add:1 >= page_obj.paginator.num_pages and number >= page_obj.paginator.num_pages|add:-4 %}
+                {# for current page last or next to last, display last 5 pages #}
+                <a title="{{ page_number_title }}" href="?{% querystring_replace page=number %}">{{ number }}</a>
+
+            {% elif page_obj.number|add:2 >= number and page_obj.number|add:-2 <= number %}
+                {# display the two numbers before and after the current page #}
+                <a title="{{ page_number_title }}" href="?{% querystring_replace page=number %}">{{ number }}</a>
+
+            {% elif forloop.first %}
+                {# always display the first page (not current page) #}
+                <a title="{{ page_number_title }}" href="?{% querystring_replace page=number %}">{{ number }}</a>
+                {# if there is a gap between 1 and group around current page #}
+                {% if page_obj.number > 4 and page_obj.paginator.num_pages > 6 %}
+                    <span>...</span>
+                {% endif %}
+
+            {% elif forloop.last %}
+                {# always display last page (not current, not around current page) #}
+                {# indicate if there is a gap between current and last #}
+                {% if page_obj.number|add:3 < number and number > 6 %}
+                    <span>...</span>
+                {% endif %}
+                <a title="{{ page_number_title }}" href="?{% querystring_replace page=number %}">{{ number }}</a>
+            {% endif%}
+        {% endfor %}
+
+        {# Translators: Label for "next page" button in search results #}
+        {% translate 'next page' as next_page %}
+        {% if page_obj.has_next %}
+            <a name="{{ next_page }}" title="{{ next_page }}" rel="next" href="?{% querystring_replace page=page_obj.next_page_number %}">
+                <i class="ph-caret-right"></i>
+            </a>
+        {% else %}
+            <a name="{{ next_page }}" title="{{ next_page }}" class="disabled">
+                <i class="ph-caret-right"></i>
+            </a>
+        {% endif %}
+    </nav>
+{% endspaceless %}

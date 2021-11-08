@@ -1,0 +1,40 @@
+// -----------------------------------------------------------------------------
+// Page navigation for the document search view
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/spacing";
+@use "../base/typography";
+
+nav.pagination {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: spacing.$spacing-lg 0;
+    @include breakpoints.for-tablet-landscape-up {
+        justify-content: center;
+        margin: spacing.$spacing-xl 0;
+    }
+    &:last-of-type {
+        margin: spacing.$spacing-2xl 0 0;
+        @include breakpoints.for-tablet-landscape-up {
+            margin: spacing.$spacing-3xl 0 spacing.$spacing-xl;
+        }
+    }
+    a,
+    span {
+        @include typography.link;
+        font-size: typography.$text-size-md;
+        font-weight: bold;
+        &:not(.active) {
+            text-decoration: none;
+            font-weight: normal;
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0 spacing.$spacing-sm;
+            font-size: typography.$text-size-2md;
+        }
+    }
+}
