@@ -3,7 +3,7 @@
 // -----------------------------------------------------------------------------
 
 // hide content for all but screen readers
-.sr-only {
+@mixin sr-only {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -13,8 +13,9 @@
     white-space: nowrap;
 }
 
-// ensure only screen readers can focus. apply this with .sr-only
-.sr-only-focusable {
+// hide content for all but screen readers, and ensure only screen readers can focus
+@mixin sr-only-focusable {
+    @include sr-only;
     &:active,
     &:focus {
         position: static;
@@ -24,4 +25,12 @@
         clip: auto;
         white-space: normal;
     }
+}
+
+.sr-only {
+    @include sr-only;
+}
+
+.sr-only-focusable {
+    @include sr-only-focusable;
 }

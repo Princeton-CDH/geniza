@@ -2,6 +2,7 @@
 // Document search form.
 // -----------------------------------------------------------------------------
 
+@use "../base/a11y";
 @use "../base/breakpoints";
 @use "../base/colors";
 @use "../base/container";
@@ -11,41 +12,44 @@
 // search form
 #search form fieldset {
     @include container.two-column;
+    max-width: 100%;
     display: flex;
     flex-flow: row wrap;
     align-items: center;
     justify-content: flex-start;
     input[type="search"] {
-        @include container.two-column;
+        max-width: 100%;
         order: 1;
         flex: 1 0 auto;
         border: 1px solid colors.$gray-50;
-        border-right: none;
         margin-right: 0;
         height: spacing.$spacing-xl;
         padding: spacing.$spacing-sm;
         font-size: typography.$text-size-md;
+        &::placeholder {
+            font-size: typography.$text-size-md;
+        }
         @include breakpoints.for-tablet-landscape-up {
+            border-right: none;
             font-size: typography.$text-size-2md;
         }
     }
     select[name="sort"] {
+        max-width: 100%;
         order: 4;
         flex: 1 1 auto;
-        @include breakpoints.for-tablet-landscape-up {
-            flex: 0 1 auto;
-        }
         border-radius: 0;
         height: spacing.$spacing-xl;
         padding: spacing.$spacing-2xs spacing.$spacing-xs;
         margin-top: spacing.$spacing-sm;
         font-size: typography.$text-size-2md;
         @include breakpoints.for-tablet-landscape-up {
+            flex: 0 1 auto;
             font-size: typography.$text-size-lg;
         }
     }
     label[for="sort"] {
-        @include container.two-column;
+        max-width: 100%;
         order: 3;
         flex: 1 0 100%;
         margin-top: spacing.$spacing-lg;
@@ -54,14 +58,27 @@
             font-size: typography.$text-size-2md;
         }
     }
-    input[type="submit"] {
-        @include typography.button;
+    button[type="submit"] {
         order: 2;
-        flex: 0 0 10%;
+        flex: 0 0 40px;
         border-radius: 0;
         margin-left: 0;
         background-color: colors.$gray-30;
         border: 1px solid colors.$gray-50;
-        height: spacing.$spacing-xl;
+        font-size: typography.$text-size-xl;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        @include a11y.sr-only-focusable;
+        @include breakpoints.for-tablet-landscape-up {
+            width: auto;
+            height: spacing.$spacing-xl;
+            position: relative;
+            &:active,
+            &:focus {
+                width: auto;
+                height: spacing.$spacing-xl;
+            }
+        }
     }
 }
