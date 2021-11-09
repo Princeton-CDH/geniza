@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models.functions import Concat
+from django.db.models.functions.text import Lower
 from django.db.models.query import Prefetch
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -442,6 +443,9 @@ class Document(ModelIndexable):
         return ", ".join(t.name for t in self.tags.all())
 
     all_tags.short_description = "tags"
+
+    def alphabetized_tags(self):
+        return self.tags.order_by(Lower("name"))
 
     def is_public(self):
         """admin display field indicating if doc is public or suppressed"""

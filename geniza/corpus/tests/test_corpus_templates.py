@@ -10,17 +10,17 @@ class TestDocumentDetailTemplate:
     def test_shelfmark(self, client, document):
         """Document detail template should include shelfmark"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<dd>CUL Add.2586</dd>", html=True)
+        assertContains(response, "CUL Add.2586", html=True)
 
     def test_doctype(self, client, document):
         """Document detail template should include document type"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<dd>Legal document</dd>", html=True)
+        assertContains(response, "Legal document", html=True)
 
     def test_first_input(self, client, document):
         """Document detail template should include document first input date"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<dd>2004</dd>", html=True)
+        assertContains(response, '<dd class="secondary">2004</dd>', html=True)
 
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""

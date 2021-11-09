@@ -7,9 +7,9 @@
 
 .metadata {
     display: grid;
-    grid-template-columns: auto 1fr;
-    column-gap: 1rem;
-    row-gap: spacing.$spacing-xs;
-
     @include typography.meta;
+    dd,
+    dt {
+        word-break: break-word;
+    }
 }
