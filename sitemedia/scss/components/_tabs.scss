@@ -2,7 +2,30 @@
 // Tabbed navigation that appears in the header of some pages.
 // -----------------------------------------------------------------------------
 
+@use "../base/breakpoints";
+@use "../base/spacing";
+@use "../base/typography";
+
 .tabs {
     display: flex;
     justify-content: space-between;
+    text-align: center;
+    font-size: typography.$text-size-sm;
+    margin: 0 auto;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: typography.$text-size-md;
+        padding: spacing.$spacing-2xs;
+    }
+    a {
+        font-size: typography.$text-size-sm;
+        @include breakpoints.for-tablet-landscape-up {
+            font-size: typography.$text-size-md;
+        }
+    }
+    li {
+        padding: 0 spacing.$spacing-xs;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0 spacing.$spacing-lg;
+        }
+    }
 }

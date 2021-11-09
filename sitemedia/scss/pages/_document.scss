@@ -2,13 +2,106 @@
 // Document detail page.
 // -----------------------------------------------------------------------------
 
+@use "../base/breakpoints";
+@use "../base/colors";
+@use "../base/spacing";
 @use "../base/typography";
 
 body#document {
+    // Document title
     h1 {
+        margin: spacing.$spacing-xl 0 spacing.$spacing-md;
+        @include breakpoints.for-desktop-up {
+            margin: spacing.$spacing-3xl 0 spacing.$spacing-2xl;
+        }
+        font-size: typography.$text-size-2md;
         // document type, inside title
         .doctype {
             @include typography.doctype;
+        }
+    }
+    // Primary container
+    .container {
+        display: flex;
+        flex-direction: column;
+        padding: spacing.$spacing-md;
+        section:first-of-type {
+            display: flex;
+            flex-direction: column;
+            @include breakpoints.for-desktop-up {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+        // Document metadata
+        .metadata {
+            margin: spacing.$spacing-xl spacing.$spacing-xl 0;
+            font-size: typography.$text-size-md;
+            @include breakpoints.for-desktop-up {
+                flex: 1 0 50%;
+                padding-right: 0;
+                margin: spacing.$spacing-3xl 0 0;
+                font-size: typography.$text-size-2md;
+            }
+            a {
+                @include breakpoints.for-desktop-up {
+                    font-size: typography.$text-size-2md;
+                }
+            }
+            // Lighter color metadata
+            .secondary {
+                @include colors.apply-theme("on-background-light");
+            }
+            dt {
+                margin-bottom: spacing.$spacing-3xs;
+            }
+            dt + dd {
+                margin-bottom: spacing.$spacing-sm;
+                @include breakpoints.for-desktop-up {
+                    margin-bottom: spacing.$spacing-md;
+                }
+                &:last-of-type {
+                    margin-bottom: 0;
+                }
+            }
+            // hanging "info" phosphor icon before link
+            dd a::before {
+                @include colors.apply-theme("on-background");
+                font-family: "Phosphor" !important;
+                content: "\f1e0";
+                font-feature-settings: "liga";
+                float: left;
+                text-align: center;
+                margin-left: -#{spacing.$spacing-xl};
+            }
+        }
+        // Document tags
+        .tags {
+            margin: spacing.$spacing-xl spacing.$spacing-xl 0;
+            align-self: flex-end;
+            @include breakpoints.for-desktop-up {
+                flex: 1 0 50%;
+                padding-left: 0;
+                margin: spacing.$spacing-3xl 0 0;
+                align-self: flex-start;
+                justify-self: flex-end;
+                text-align: right;
+                margin-left: 0;
+            }
+            li {
+                @include breakpoints.for-phone-only {
+                    font-size: typography.$text-size-md;
+                }
+            }
+        }
+        // "Description" header
+        h2 {
+            margin: spacing.$spacing-xl 0 spacing.$spacing-md;
+            font-size: typography.$text-size-md;
+            @include breakpoints.for-desktop-up {
+                margin: spacing.$spacing-3xl 0 spacing.$spacing-md;
+                font-size: typography.$text-size-2md;
+            }
         }
     }
 }

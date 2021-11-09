@@ -10,17 +10,17 @@ class TestDocumentDetailTemplate:
     def test_shelfmark(self, client, document):
         """Document detail template should include shelfmark"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<dd>CUL Add.2586</dd>", html=True)
+        assertContains(response, "CUL Add.2586", html=True)
 
     def test_doctype(self, client, document):
         """Document detail template should include document type"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<dd>Legal document</dd>", html=True)
+        assertContains(response, "Legal document", html=True)
 
     def test_first_input(self, client, document):
         """Document detail template should include document first input date"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<dd>2004</dd>", html=True)
+        assertContains(response, '<dd class="secondary">2004</dd>', html=True)
 
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""
@@ -228,13 +228,19 @@ class TestDocumentResult:
 
     def test_no_scholarship_records(self):
         assert "No Scholarship Records" in self.template.render(
-            context={"document": {"pgpid": 1}}
+            context={"document": {"pgpid": 1, "id": "document.1"}, "highlighting": {}}
         )
 
     def test_has_scholarship_records(self):
         result = self.template.render(
             context={
-                "document": {"pgpid": 1, "num_editions": 15, "scholarship_count": 10}
+                "document": {
+                    "pgpid": 1,
+                    "id": "document.1",
+                    "num_editions": 15,
+                    "scholarship_count": 10,
+                },
+                "highlighting": {},
             }
         )
         assert "No Scholarship Records" not in result
@@ -247,11 +253,13 @@ class TestDocumentResult:
             context={
                 "document": {
                     "pgpid": 1,
+                    "id": "document.1",
                     "num_editions": 2,
                     "num_translations": 3,
                     "num_discussions": 2,
                     "scholarship_count": 10,
-                }
+                },
+                "highlighting": {},
             },
         )
         assert "Transcription (2)" in result
@@ -259,17 +267,25 @@ class TestDocumentResult:
         assert "Discussion (2)" in result
 
     def test_description(self, document):
-        result = self.template.render(
-            context={
-                "document": {
-                    "pgpid": document.id,
-                    "description": [document.description],
-                }
+        context = {
+            "document": {
+                "pgpid": document.id,
+                "id": "document.%d" % document.id,
+                "description": [document.description],
             },
-        )
+            # no highlighting at all (i.e., no keyword search)
+            "highlighting": {},
+        }
+
         # template currently has truncate words 25; just check that the beginning
         # of the description is there
-        assert document.description[:50] in result
+        assert document.description[:50] in self.template.render(context)
+
+        # if there is highlighting but not for this document,
+        # description excerpt should still display
+        #  (solr returns empty list if there are no keywords)
+        context["highlighting"] = {"document.%d" % document.id: {"description_t": []}}
+        assert document.description[:50] in self.template.render(context)
 
     def test_description_highlighting(self, document):
         test_highlight = "passage of the <em>Tujib<em> quarter"
