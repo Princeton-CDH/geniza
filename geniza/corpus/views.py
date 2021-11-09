@@ -41,11 +41,19 @@ class DocumentSearchView(ListView, FormMixin):
         form_data = self.request.GET.copy()
 
         # sort by chosen sort
-        if "sort" in form_data:
-            form_data["sort"] = form_data.get("sort", None)
+        if "sort" in form_data and bool(form_data.get("sort")):
+            form_data["sort"] = form_data.get("sort")
         # sort by relevance if query text exists and no sort chosen
         elif form_data.get("q", None):
             form_data["sort"] = "relevance"
+
+        # Otherwise set all form values to default
+        for key, val in self.initial.items():
+            form_data.setdefault(key, val)
+
+        # Handle empty string for sort
+        if "sort" in form_data and not bool(form_data.get("sort")):
+            form_data["sort"] = self.initial["sort"]
 
         kwargs["data"] = form_data
         return kwargs
@@ -67,11 +75,8 @@ class DocumentSearchView(ListView, FormMixin):
                     .highlight("description", snippets=3, method="unified")
                     .also("score")
                 )  # include relevance score in results
-            if search_opts["sort"]:
-                documents = documents.order_by(self.solr_sort[search_opts["sort"]])
-            else:
-                initial_sort = self.initial["sort"]
-                documents = documents.order_by(self.solr_sort[initial_sort])
+
+            documents = documents.order_by(self.solr_sort[search_opts["sort"]])
 
         self.queryset = documents
 

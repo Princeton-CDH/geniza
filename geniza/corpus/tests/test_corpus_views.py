@@ -208,7 +208,7 @@ class TestDocumentSearchView:
         assert docsearch_view.get_form_kwargs() == {
             "initial": {"sort": "scholarship_desc"},
             "prefix": None,
-            "data": {},
+            "data": {"sort": "scholarship_desc"},
         }
 
         # keyword search param
@@ -411,7 +411,7 @@ class TestDocumentSearchView:
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()
         # assuming relevance sort is default; update if that changes
-        docsearch_view.request.GET = {"q": document.shelfmark}
+        docsearch_view.request.GET = {"q": document.shelfmark, "sort": "relevance"}
         qs = docsearch_view.get_queryset()
         # should return all three documents
         assert qs.count() == 3
