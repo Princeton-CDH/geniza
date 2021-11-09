@@ -43,7 +43,7 @@ class DocumentSearchView(ListView, FormMixin):
         # sort by chosen sort
         if "sort" in form_data:
             form_data["sort"] = form_data.get("sort", None)
-        # sort by relavance if query text exists and no sort chosen
+        # sort by relevance if query text exists and no sort chosen
         elif form_data.get("q", None):
             form_data["sort"] = "relevance"
 
