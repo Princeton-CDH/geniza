@@ -323,7 +323,7 @@ class TestSearchPagination:
         paginator = Paginator(range(5), per_page=5)
         ctx = {"page_obj": paginator.page(1), "request": HttpRequest()}
         result = self.template.render(ctx)
-        assert '<nav class="pagination">' in result
+        assert '<nav class="pagination' in result
         assert (
             '<a name="previous page" title="previous page" class="disabled">' in result
         )
