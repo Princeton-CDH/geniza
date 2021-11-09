@@ -75,6 +75,9 @@ section#document-list {
         // other document metadata
         .metadata {
             order: 3;
+            grid-template-columns: auto 1fr;
+            column-gap: 1rem;
+            row-gap: spacing.$spacing-xs;
         }
 
         // document description

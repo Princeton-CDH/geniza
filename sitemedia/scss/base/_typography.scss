@@ -113,6 +113,6 @@ $text-size-5xl: 3.81rem;
     font-weight: bold;
     &::after {
         font-weight: normal;
-        content: "; ";
+        content: ": ";
     }
 }

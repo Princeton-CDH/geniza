@@ -42,7 +42,7 @@ class TestDocumentDetailView:
         doc = Document.objects.create()
         response = client.get(doc.get_absolute_url())
         assert response.status_code == 200
-        assertContains(response, "Shelfmark")
+        assertContains(response, "shelfmark")
 
         # Test that when status isn't public, it is suppressed
         doc = Document.objects.create(status=Document.SUPPRESSED)

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-08 15:11-0500\n"
+"POT-Creation-Date: 2021-11-09 13:13-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -39,7 +39,7 @@ msgid "Sort by"
 msgstr "الترتيب حسب"
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:537
+#: geniza/corpus/models.py:541
 #: geniza/corpus/templates/corpus/document_detail.html:23
 msgid "Unknown type"
 msgstr ""
@@ -48,29 +48,39 @@ msgstr ""
 msgid "Home"
 msgstr "المنزل"
 
-#: geniza/corpus/templates/corpus/document_detail.html:34
-msgid "Shelfmark"
-msgstr "الشرف"
-
-#: geniza/corpus/templates/corpus/document_detail.html:37
-msgid "Document Type"
-msgstr "نوع المستند"
-
-#. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:41
-#: geniza/corpus/templates/corpus/snippets/document_result.html:27
-msgid "Input date"
-msgstr "Input date"
+#. Translators: label for document metadata section (editor, date, input date)
+#: geniza/corpus/templates/corpus/document_detail.html:35
+msgid "Metadata"
+msgstr ""
 
 #. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:45
+#: geniza/corpus/templates/corpus/document_detail.html:41
 msgid "Editor"
 msgstr "محرر"
 
+#. Translators: Date document was first added to the PGP
+#: geniza/corpus/templates/corpus/document_detail.html:48
+#: geniza/corpus/templates/corpus/snippets/document_result.html:29
+msgid "Input date"
+msgstr "Input date"
+
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:53
+#: geniza/corpus/templates/corpus/document_detail.html:52
 msgid "Permalink"
 msgstr "رابط دائم"
+
+#. Translators: label for tags on a document
+#: geniza/corpus/templates/corpus/document_detail.html:62
+#: geniza/corpus/templates/corpus/snippets/document_result.html:19
+msgid "Tags"
+msgstr ""
+
+#. Translators: label for document description
+#: geniza/corpus/templates/corpus/document_detail.html:73
+#, fuzzy
+#| msgid "Transcription"
+msgid "Description"
+msgstr "نسخه"
 
 #. Translators: Search submit button
 #: geniza/corpus/templates/corpus/document_list.html:15
@@ -95,29 +105,29 @@ msgstr[5] "مجموع النتائج %(count_humanized)s"
 msgid "Link to source"
 msgstr "رابط إلى المصدر"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:29
+#: geniza/corpus/templates/corpus/snippets/document_result.html:31
 msgid "PGP ID"
 msgstr "PGP ID"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:52
+#: geniza/corpus/templates/corpus/snippets/document_result.html:54
 msgid "Transcription"
 msgstr "نسخه"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:53
+#: geniza/corpus/templates/corpus/snippets/document_result.html:55
 #: geniza/footnotes/models.py:217
 msgid "Translation"
 msgstr "الترجمة"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:54
+#: geniza/corpus/templates/corpus/snippets/document_result.html:56
 #: geniza/footnotes/models.py:218
 msgid "Discussion"
 msgstr "المناقشة"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:56
+#: geniza/corpus/templates/corpus/snippets/document_result.html:58
 msgid "No Scholarship Records"
 msgstr "لا توجد سجلات للمنح الدراسية"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:62
+#: geniza/corpus/templates/corpus/snippets/document_result.html:64
 msgid "View document details"
 msgstr "عرض تفاصيل المستند"
 
@@ -133,7 +143,8 @@ msgstr "سجل المنح الدراسية (%(n_records)s)"
 
 #. Translators: n_links is number of external links
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:13
-#, python-format
+#, fuzzy, python-format
+#| msgid "External Links (%(n_links)s)"
 msgid "External Links (%(n_links)s)"
 msgstr "الروابط الخارجية (%(n_links)s)"
 
@@ -164,12 +175,12 @@ msgid "Search and browse Geniza documents."
 msgstr "البحث في وثائق جنيزا وتصفحها."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:172
+#: geniza/corpus/views.py:163
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "منحة في %(doc)s"
 
-#: geniza/corpus/views.py:179
+#: geniza/corpus/views.py:170
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
@@ -208,3 +219,9 @@ msgstr "اتصل بنا"
 #: geniza/templates/nav.html:15
 msgid "About"
 msgstr "حول"
+
+#~ msgid "Shelfmark"
+#~ msgstr "الشرف"
+
+#~ msgid "Document Type"
+#~ msgstr "نوع المستند"

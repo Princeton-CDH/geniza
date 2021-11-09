@@ -9,6 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models.functions import Concat
+from django.db.models.functions.text import Lower
 from django.db.models.query import Prefetch
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -443,6 +444,9 @@ class Document(ModelIndexable):
 
     all_tags.short_description = "tags"
 
+    def alphabetized_tags(self):
+        return self.tags.order_by(Lower("name"))
+
     def is_public(self):
         """admin display field indicating if doc is public or suppressed"""
         return self.status == self.PUBLIC
@@ -496,7 +500,7 @@ class Document(ModelIndexable):
     @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
-        return f"{self.doctype or _('Unknown type')}; {self.shelfmark_display or '??'}"
+        return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"
 
     def editions(self):
         """All footnotes for this document where the document relation includes
