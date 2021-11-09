@@ -229,13 +229,14 @@ class TestDocumentTabsSnippet:
 class TestDocumentResult:
 
     template = get_template("corpus/snippets/document_result.html")
+    page_obj = Paginator([1], 1).page(1)
 
     def test_no_scholarship_records(self):
         assert "No Scholarship Records" in self.template.render(
             context={
                 "document": {"pgpid": 1, "id": "document.1"},
                 "highlighting": {},
-                "result_offset": 0,
+                "page_obj": self.page_obj,
             }
         )
 
@@ -249,7 +250,7 @@ class TestDocumentResult:
                     "scholarship_count": 10,
                 },
                 "highlighting": {},
-                "result_offset": 0,
+                "page_obj": self.page_obj,
             }
         )
         assert "No Scholarship Records" not in result
@@ -269,7 +270,7 @@ class TestDocumentResult:
                     "scholarship_count": 10,
                 },
                 "highlighting": {},
-                "result_offset": 0,
+                "page_obj": self.page_obj,
             },
         )
         assert "Transcription (2)" in result
@@ -285,7 +286,7 @@ class TestDocumentResult:
             },
             # no highlighting at all (i.e., no keyword search)
             "highlighting": {},
-            "result_offset": 0,
+            "page_obj": self.page_obj,
         }
 
         # template currently has truncate words 25; just check that the beginning
@@ -306,7 +307,7 @@ class TestDocumentResult:
                 "highlighting": {
                     "document.%d" % document.id: {"description_t": [test_highlight]}
                 },
-                "result_offset": 0,
+                "page_obj": self.page_obj,
             }
         )
         # keywords in context displayed instead of description excerpt

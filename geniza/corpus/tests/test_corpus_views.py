@@ -262,7 +262,7 @@ class TestDocumentSearchView:
                 context_data["highlighting"]
                 == docsearch_view.queryset.get_highlighting.return_value
             )
-            assert context_data["result_offset"] == 0
+            assert context_data["page_obj"].start_index() == 0
 
     def test_shelfmark_boost(self, empty_solr, document, multifragment):
         # integration test for shelfmark field boosting

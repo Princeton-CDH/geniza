@@ -82,21 +82,15 @@ class DocumentSearchView(ListView, FormMixin):
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
 
-        paginator = Paginator(self.queryset, per_page=self.paginate_by)
-        page_num = self.request.GET.get("page", 1)
-        current_page = paginator.page(page_num)
-        paged_result = current_page.object_list
-
+        paged_result = context_data["page_obj"].object_list
         highlights = paged_result.get_highlighting() if paged_result.count() else {}
-        page_num = int(self.request.GET.get("page", 1))
+
         context_data.update(
             {
                 "highlighting": highlights,
                 "page_description": self.page_description,
-                "page_number": page_num,
                 "page_title": self.page_title,
                 "page_type": "search",
-                "result_offset": (page_num - 1) * self.paginate_by,
                 "total": self.queryset.count(),
             }
         )
