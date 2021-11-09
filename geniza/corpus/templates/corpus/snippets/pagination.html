@@ -1,6 +1,6 @@
 {% load i18n corpus_extras %}
 {% spaceless %}
-    <nav class="pagination">
+    <nav class="pagination {% if page_obj.paginator.num_pages < 5 %} compressed {% endif %}">
         {# Translators: Label for "previous page" button in search results #}
         {% translate 'previous page' as previous_page %}
         {% if page_obj.has_previous %}

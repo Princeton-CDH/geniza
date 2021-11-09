@@ -33,12 +33,16 @@
                 {{ count_humanized }} total results
             {% endblocktranslate %}
         </h1>
-        {% include "corpus/snippets/pagination.html" %}
+        {% if total > 0 %}
+            {% include "corpus/snippets/pagination.html" %}
+        {% endif %}
         <ol>
             {% for document in documents %}
                 {% include "corpus/snippets/document_result.html" %}
             {% endfor %}
         </ol>
-        {% include "corpus/snippets/pagination.html" %}
+        {% if total > 0 %}
+            {% include "corpus/snippets/pagination.html" %}
+        {% endif %}
     </section>
 {% endblock main %}
