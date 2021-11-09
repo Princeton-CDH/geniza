@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-08 09:54-0500\n"
-"PO-Revision-Date: 2021-11-09 15:03\n"
+"POT-Creation-Date: 2021-11-09 13:18-0500\n"
+"PO-Revision-Date: 2021-11-09 18:31\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -28,12 +28,22 @@ msgid "Keyword or Phrase"
 msgstr "الكلمة المفتاحية أو القراءة"
 
 #. Translators: label for sort by relevance
-#: geniza/corpus/forms.py:59
+#: geniza/corpus/forms.py:58
 msgid "Relevance"
 msgstr "الأهمية"
 
+#. Translators: label for descending sort by number of scholarship records
+#: geniza/corpus/forms.py:61
+msgid "Scholarship Records (Most–Least)"
+msgstr "سجلات المنح الدراسية (- أقل تقدير)"
+
+#. Translators: label for ascending sort by number of scholarship records
+#: geniza/corpus/forms.py:63
+msgid "Scholarship Records (Least–Most)"
+msgstr "سجل المنح الدراسية (أقل - موسى)"
+
 #. Translators: label for form sort field
-#: geniza/corpus/forms.py:69
+#: geniza/corpus/forms.py:72
 msgid "Sort by"
 msgstr "الترتيب حسب"
 
@@ -153,12 +163,12 @@ msgid "Search and browse Geniza documents."
 msgstr "البحث في وثائق جنيزا وتصفحها."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:160
+#: geniza/corpus/views.py:165
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "منحة في %(doc)s"
 
-#: geniza/corpus/views.py:167
+#: geniza/corpus/views.py:172
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
