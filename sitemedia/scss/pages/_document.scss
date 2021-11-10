@@ -25,7 +25,10 @@ body#document {
         display: flex;
         flex-direction: column;
         padding: spacing.$spacing-md;
-        margin-bottom: spacing.$spacing-xl;
+        margin-bottom: spacing.$spacing-md;
+        @include breakpoints.for-desktop-up {
+            margin-bottom: spacing.$spacing-xl;
+        }
         section:first-of-type {
             display: flex;
             flex-direction: column;
