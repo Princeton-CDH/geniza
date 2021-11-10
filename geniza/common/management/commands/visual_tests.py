@@ -36,7 +36,7 @@ class Command(BaseCommand):
         percy_snapshot(browser, "Document Search")
 
         # document detail
-        browser.get("http://localhost:8000/documents/999999/")
+        browser.get("http://localhost:8000/documents/3951/")
         percy_snapshot(browser, "Document Details")
 
         # # document scholarship

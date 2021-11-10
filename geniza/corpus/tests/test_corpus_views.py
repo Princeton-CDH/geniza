@@ -315,11 +315,16 @@ class TestDocumentSearchView:
             == docsearch_view.queryset.get_highlighting.return_value
         )
 
-    def test_scholarship_sort(self, document, document_with_editor, empty_solr, source):
+    def test_scholarship_sort(self, document, join, empty_solr, source):
         """integration test for sorting by scholarship asc and desc"""
 
+        Footnote.objects.create(
+            content_object=join,
+            source=source,
+            doc_relation=Footnote.EDITION,
+        )
         doc_three_records = Document.objects.create(
-            description="Lorem ipsum",
+            description="testing description",
         )
         for _ in range(3):
             Footnote.objects.create(
@@ -331,7 +336,7 @@ class TestDocumentSearchView:
         SolrClient().update.index(
             [
                 document.index_data(),  # no scholarship records
-                document_with_editor.index_data(),  # one scholarship record
+                join.index_data(),  # one scholarship record
                 doc_three_records.index_data(),  # 3 scholarship records
             ],
             commit=True,
@@ -366,13 +371,13 @@ class TestDocumentSearchView:
         ), "document with fewest scholarship records returned first"
 
         # sort by scholarship asc with query
-        docsearch_view.request.GET = {"sort": "scholarship_asc", "q": "Lorem"}
+        docsearch_view.request.GET = {"sort": "scholarship_asc", "q": "testing"}
         qs = docsearch_view.get_queryset()
         # should return 2 documents
         assert qs.count() == 2
         # should return document with fewest records first
         assert (
-            qs[0]["pgpid"] == document_with_editor.id
+            qs[0]["pgpid"] == join.id
         ), "document with matching description and fewest scholarship records returned first"
 
     def test_shelfmark_boost(self, empty_solr, document, multifragment):
