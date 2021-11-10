@@ -25,6 +25,7 @@ body#document {
         display: flex;
         flex-direction: column;
         padding: spacing.$spacing-md;
+        margin-bottom: spacing.$spacing-xl;
         section:first-of-type {
             display: flex;
             flex-direction: column;
@@ -55,13 +56,10 @@ body#document {
             dt {
                 margin-bottom: spacing.$spacing-3xs;
             }
-            dt + dd {
-                margin-bottom: spacing.$spacing-sm;
+            dd + dt {
+                margin-top: spacing.$spacing-sm;
                 @include breakpoints.for-desktop-up {
-                    margin-bottom: spacing.$spacing-md;
-                }
-                &:last-of-type {
-                    margin-bottom: 0;
+                    margin-top: spacing.$spacing-md;
                 }
             }
             // hanging "info" phosphor icon before link
@@ -79,13 +77,13 @@ body#document {
         .tags {
             margin: spacing.$spacing-xl spacing.$spacing-xl 0;
             align-self: flex-end;
+            text-align: right;
             @include breakpoints.for-desktop-up {
                 flex: 1 0 50%;
                 padding-left: 0;
                 margin: spacing.$spacing-3xl 0 0;
                 align-self: flex-start;
                 justify-self: flex-end;
-                text-align: right;
                 margin-left: 0;
             }
             li {
