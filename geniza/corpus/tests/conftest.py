@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.timezone import get_current_timezone, make_aware
 
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
+from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 
 def make_fragment():
@@ -69,6 +70,38 @@ def make_document(fragment):
     return doc
 
 
+def make_document_with_editor():
+    frag = Fragment.objects.create(
+        shelfmark="T-S 99.999",
+        is_multifragment=True,
+    )
+    doc = Document.objects.create(
+        id=999999,
+        description="""Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+        nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+        reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
+        qui officia deserunt mollit anim id est laborum.""",
+        doctype=DocumentType.objects.get_or_create(name="Legal")[0],
+    )
+    TextBlock.objects.create(document=doc, fragment=frag)
+    doc.tags.add("bill of sale", "real estate")
+    marina = Creator.objects.create(last_name="Rustow", first_name="Marina")
+    book = SourceType.objects.create(type="Book")
+    source = Source.objects.create(source_type=book)
+    source.authors.add(marina)
+    foot = Footnote.objects.create(
+        doc_relation=[Footnote.EDITION],
+        source=source,
+        content_type_id=ContentType.objects.get(model="document").id,
+        object_id=999999,
+    )
+    doc.footnotes.add(foot)
+    return doc
+
+
 def make_join(fragment, multifragment):
     """A fake letter document that occurs on two different fragments."""
     doc = Document.objects.create(
@@ -98,3 +131,8 @@ def document(db, fragment):
 @pytest.fixture
 def join(db, fragment, multifragment):
     return make_join(fragment, multifragment)
+
+
+@pytest.fixture
+def document_with_editor(db):
+    return make_document_with_editor()

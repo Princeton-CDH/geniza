@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 
 from geniza.corpus.tests.conftest import (
     make_document,
+    make_document_with_editor,
     make_fragment,
     make_join,
     make_multifragment,
@@ -33,6 +34,7 @@ class Command(BaseCommand):
         multifrag.iiif_url = ""
         multifrag.save()
         make_document(multifrag)
+        make_document_with_editor()
         make_join(frag, multifrag)
 
         # index everything in solr
