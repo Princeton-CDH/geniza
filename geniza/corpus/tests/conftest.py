@@ -87,7 +87,7 @@ def make_document_with_editor():
         doctype=DocumentType.objects.get_or_create(name="Legal")[0],
     )
     TextBlock.objects.create(document=doc, fragment=frag)
-    doc.tags.add("bill of sale", "real estate")
+    doc.tags.add("fake document", "fake tag", "test document", "testing", "many tags")
     marina = Creator.objects.create(last_name="Rustow", first_name="Marina")
     book = SourceType.objects.create(type="Book")
     source = Source.objects.create(source_type=book)
@@ -99,6 +99,19 @@ def make_document_with_editor():
         object_id=999999,
     )
     doc.footnotes.add(foot)
+    dctype = ContentType.objects.get_for_model(Document)
+    team_user = User.objects.get(username=settings.TEAM_USERNAME)
+    LogEntry.objects.create(
+        user=team_user,
+        object_id=str(doc.pk),
+        object_repr=str(doc)[:200],
+        content_type=dctype,
+        change_message="Initial data entry (spreadsheet), dated 2004",
+        action_flag=ADDITION,
+        action_time=make_aware(
+            datetime(year=2004, month=1, day=1), timezone=get_current_timezone()
+        ),
+    )
     return doc
 
 
