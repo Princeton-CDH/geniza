@@ -76,7 +76,15 @@ class DocumentSearchView(ListView, FormMixin):
                     .also("score")
                 )  # include relevance score in results
 
-            documents = documents.order_by(self.solr_sort[search_opts["sort"]])
+            documents = documents.order_by(
+                self.solr_sort[search_opts["sort"]]
+            ).facet_field("type", exclude="type_s", sort="value")
+            # TODO: exclude type filter when generating facet counts
+            # exclude isn't working; maybe a solr 6.6/8.6 difference?
+
+            # filter by type if specified
+            if search_opts["doctype"]:
+                documents = documents.filter(type=search_opts["doctype"])
 
         self.queryset = documents
 
@@ -87,6 +95,10 @@ class DocumentSearchView(ListView, FormMixin):
         context_data = super().get_context_data()
         # should eventually be handled by paginator, but
         # patch in total number of results for display for now
+
+        facet_dict = self.queryset.get_facets()
+        # populate choices for facet filter fields on the form
+        context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
         context_data.update(
             {
                 "total": self.queryset.count(),

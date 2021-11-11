@@ -81,4 +81,17 @@
             }
         }
     }
+
+    ul#id_doctype {
+        list-style-type: none;
+        // this willl hide the radio buttons,
+        // but we need a way to indicate selection
+        // input[type=radio] {
+        // opacity: 0;
+        // }
+
+        .count {
+            float: right;
+        }
+    }
 }
