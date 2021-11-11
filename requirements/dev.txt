@@ -7,3 +7,5 @@ pre-commit
 black
 #sphinx
 pytest-ordering
+django-fixture-magic
+future
