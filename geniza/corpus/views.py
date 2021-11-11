@@ -78,13 +78,12 @@ class DocumentSearchView(ListView, FormMixin):
 
             documents = documents.order_by(
                 self.solr_sort[search_opts["sort"]]
-            ).facet_field("type", exclude="type_s", sort="value")
-            # TODO: exclude type filter when generating facet counts
-            # exclude isn't working; maybe a solr 6.6/8.6 difference?
+            ).facet_field("type", exclude="type", sort="value")
+            # exclude type filter when generating counts
 
             # filter by type if specified
             if search_opts["doctype"]:
-                documents = documents.filter(type=search_opts["doctype"])
+                documents = documents.filter(type=search_opts["doctype"], tag="type")
 
         self.queryset = documents
 
