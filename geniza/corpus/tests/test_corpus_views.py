@@ -306,6 +306,7 @@ class TestDocumentSearchView:
         docsearch_view.request = rf.get("/documents/")
         docsearch_view.queryset = Mock()
         docsearch_view.queryset.count.return_value = 22
+        docsearch_view.queryset.get_facets.return_value.facet_fields = {}
         docsearch_view.object_list = docsearch_view.queryset
 
         context_data = docsearch_view.get_context_data()
