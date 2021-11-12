@@ -233,6 +233,9 @@ class DocumentType(models.Model):
     def __str__(self):
         return self.display_label or self.name
 
+    def natural_key(self):
+        return (self.name,)
+
 
 class DocumentSignalHandlers:
     """Signal handlers for indexing :class:`Document` records when

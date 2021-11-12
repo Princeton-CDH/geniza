@@ -7,5 +7,9 @@ pre-commit
 black
 #sphinx
 pytest-ordering
-django-fixture-magic
+# Using a fork of django-fixture-magic until this PR is merged:
+# https://github.com/davedash/django-fixture-magic/pull/76
+# (merge_fixtures with natural keys)
+git+https://github.com/KJagiela/django-fixture-magic
+# django-fixture-magic
 future
