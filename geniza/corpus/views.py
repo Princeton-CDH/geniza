@@ -83,7 +83,9 @@ class DocumentSearchView(ListView, FormMixin):
 
             # filter by type if specified
             if search_opts["doctype"]:
-                documents = documents.filter(type=search_opts["doctype"], tag="type")
+                documents = documents.filter(
+                    type='"%s"' % search_opts["doctype"], tag="type"
+                )
 
         self.queryset = documents
 
