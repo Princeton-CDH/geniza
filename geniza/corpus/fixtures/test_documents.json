@@ -3305,7 +3305,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "#013",
       "notes": "",
@@ -3360,7 +3360,7 @@
           "\u05d5\u05e1\u05d1\u05e2\u05d9\u05df \u05d3\u05d9\u05e0\u05d0\u05e8:"
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "",
       "notes": "",
@@ -3419,7 +3419,7 @@
           "\u05d5\u05db\u05ea\u05d1\u05e0\u05d0 \u05d5\u05d7\u05ea\u05de\u05e0\u05d0 \u05d3\u05dc\u05d9\u05d4\u05d5\u05d9 \u05dc\u05d6\u05db\u05d5 \u05d5\u05dc\u05e8\u05d0\u05d9\u05d4 \u05ea\u05dc\u05d9"
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "",
       "notes": "compared with G. Weiss, Legal Documents Written by the Court Clerk \u1e24alfon Ben Manasse, Ph.D. Dissertation, 1970",
@@ -3480,7 +3480,7 @@
           "\u05de\u05df \u05d2\u05de\u05dc\u05d4 \u05e8\u05e7\u05e2\u05d4 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df \u05d0\u05dc\u05d3\u05d9 \u05d1\u05d9\u05d3 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d9\u05e2\u05e7\u05d5\u05d1"
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "",
       "notes": "compared with G. Weiss, Legal Documents Written by the Court Clerk \u1e24alfon Ben Manasse, Ph.D. Dissertation, 1970",
@@ -3543,7 +3543,7 @@
           "\u05d0\u05d1\u05d5 \u05d0\u05dc\u05e4\u05e8\u05d2 \u05d1\u05df \u05e7\u05e1\u05d0\u05e1\u05d4 \u05d1\u05db\u05d8 \u05d5\u05e0\u05e6\u05e3 \u05d5\u05d7\u05e1\u05db\u05d4 \u05e4\u05e6\u05d4 \u05d5\u05de\u05d2\u05e1\u05dc \u05e4\u05e6\u05d4 \u05d5\u05e7\u05d7\u05e3 \u05e4\u05e6\u05d4"
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "",
       "notes": "compared with G. Weiss, Legal Documents Written by the Court Clerk \u1e24alfon Ben Manasse, Ph.D. Dissertation, 1970",
@@ -3642,7 +3642,7 @@
           "\u05e6\u05de\u05d7 \u05d4\u05dc\u05d5\u05d9 \u05d1\u05e8 \u05d9\u05e2\u05e7\u05d1 \u05e0\u05e0"
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "",
       "notes": "",
@@ -3656,7 +3656,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "#303",
       "notes": "",
@@ -3670,7 +3670,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E,T",
       "location": "doc. 68",
       "notes": "",
@@ -3684,7 +3684,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "T,E",
       "location": "",
       "notes": "",
@@ -3803,7 +3803,7 @@
           "..."
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "#177",
       "notes": "",
@@ -3817,7 +3817,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "T,E",
       "location": "",
       "notes": "",
@@ -3831,7 +3831,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "T,E",
       "location": "",
       "notes": "",
@@ -3845,7 +3845,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E,T",
       "location": "#103",
       "notes": "",
@@ -3905,7 +3905,7 @@
           "\u05d0\u05dc\u05e1\u05dc\u05dd"
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "",
       "notes": "",
@@ -3919,7 +3919,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "T,E",
       "location": "",
       "notes": "",
@@ -3933,7 +3933,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E,T",
       "location": "",
       "notes": "",
@@ -4020,7 +4020,7 @@
           "&&"
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "",
       "notes": "",
@@ -4085,7 +4085,7 @@
           "\u05d2\u05d5\u05dc\u05de\u05d4 \u05d5\u05d0\u05e0\u05d4 \u05d9\u05e7\u05d0\u05dc \u05e2\u05dc\u05d9\u05d4\u05d0 \u05d5\u05ea\u05d7\u05e1\u05d3 \u05d5\u05d9\u05d5\u05db\u05dc \u05dc\u05d7\u05de\u05d4\u05d0"
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "",
       "notes": "",
@@ -4224,7 +4224,7 @@
           "\u0645\u0646 \u0648\u0627\u0644\u062f\u062a\u0647 \u0644\u0627 \u0639\u062f\u0645\u062a\u0647"
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "",
       "notes": "With minor emendations by Alan Elbaum (2020)",
@@ -4378,7 +4378,7 @@
           ""
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "",
       "notes": "",
@@ -4392,7 +4392,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E,T",
       "location": "",
       "notes": "with suggestions from Khan and Shirazi",
@@ -4406,7 +4406,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "T,E",
       "location": "",
       "notes": "",
@@ -4420,7 +4420,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "",
       "notes": "",
@@ -4567,7 +4567,7 @@
           "\u05de\u05db\u05d0\u05df \u05d5\u05d0\u05d7\u05d3 \u05d5\u05d0\u05dc\u05d3\u05d9 \u05d5\u05e6\u05dc \u05de\u05e2 \u05d9\u05d7\u05d9\u05d9 \u05d1\u05df \u05d0\u05dc\u05de\u05d2\u05d0\u05e0\u05d9 \u05e1\u05d0\u05dc\u05e0\u05d9 \u05e4\u05d9\u05d4 \u05dc\u05de\u05d0 \u05e6\u05d0\u05e2\u05ea \u05d0\u05dc\u05e7\u05e4\u05d4"
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "",
       "notes": "",
@@ -4581,7 +4581,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "#54, pp. 219-226",
       "notes": "",
@@ -4595,7 +4595,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "#113, pp. 312-319",
       "notes": "",
@@ -4609,7 +4609,7 @@
   {
     "fields": {
       "content": null,
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "p.366",
       "notes": "",
@@ -4668,7 +4668,7 @@
           ""
         ]
       },
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "doc_relation": "E",
       "location": "Doc. R-2, pp. 338-339",
       "notes": "",
@@ -4684,789 +4684,666 @@
       "app_label": "taggit",
       "model": "taggeditem"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 13
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "taggit",
       "model": "tag"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 12
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "footnotes",
       "model": "sourcetype"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 19
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "footnotes",
       "model": "sourcelanguage"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 18
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "footnotes",
       "model": "source"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 20
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "footnotes",
       "model": "footnote"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 21
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "footnotes",
       "model": "creator"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 17
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "footnotes",
       "model": "authorship"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 16
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "corpus",
       "model": "textblock"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 11
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "corpus",
       "model": "languagescript"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 7
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "corpus",
       "model": "fragment"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 10
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "corpus",
       "model": "documenttype"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 9
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "corpus",
       "model": "collection"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 6
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "app_label": "admin",
       "model": "logentry"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 1
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "codename": "view_taggeditem",
-      "content_type": 13,
+      "content_type": ["taggit", "taggeditem"],
       "name": "Can view tagged item"
     },
-    "model": "auth.permission",
-    "pk": 52
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_taggeditem",
-      "content_type": 13,
+      "content_type": ["taggit", "taggeditem"],
       "name": "Can delete tagged item"
     },
-    "model": "auth.permission",
-    "pk": 51
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_taggeditem",
-      "content_type": 13,
+      "content_type": ["taggit", "taggeditem"],
       "name": "Can change tagged item"
     },
-    "model": "auth.permission",
-    "pk": 50
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_taggeditem",
-      "content_type": 13,
+      "content_type": ["taggit", "taggeditem"],
       "name": "Can add tagged item"
     },
-    "model": "auth.permission",
-    "pk": 49
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_tag",
-      "content_type": 12,
+      "content_type": ["taggit", "tag"],
       "name": "Can view tag"
     },
-    "model": "auth.permission",
-    "pk": 48
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_tag",
-      "content_type": 12,
+      "content_type": ["taggit", "tag"],
       "name": "Can delete tag"
     },
-    "model": "auth.permission",
-    "pk": 47
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_tag",
-      "content_type": 12,
+      "content_type": ["taggit", "tag"],
       "name": "Can change tag"
     },
-    "model": "auth.permission",
-    "pk": 46
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_tag",
-      "content_type": 12,
+      "content_type": ["taggit", "tag"],
       "name": "Can add tag"
     },
-    "model": "auth.permission",
-    "pk": 45
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_sourcetype",
-      "content_type": 19,
+      "content_type": ["footnotes", "sourcetype"],
       "name": "Can view source type"
     },
-    "model": "auth.permission",
-    "pk": 76
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_sourcetype",
-      "content_type": 19,
+      "content_type": ["footnotes", "sourcetype"],
       "name": "Can delete source type"
     },
-    "model": "auth.permission",
-    "pk": 75
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_sourcetype",
-      "content_type": 19,
+      "content_type": ["footnotes", "sourcetype"],
       "name": "Can change source type"
     },
-    "model": "auth.permission",
-    "pk": 74
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_sourcetype",
-      "content_type": 19,
+      "content_type": ["footnotes", "sourcetype"],
       "name": "Can add source type"
     },
-    "model": "auth.permission",
-    "pk": 73
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_sourcelanguage",
-      "content_type": 18,
+      "content_type": ["footnotes", "sourcelanguage"],
       "name": "Can view source language"
     },
-    "model": "auth.permission",
-    "pk": 72
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_sourcelanguage",
-      "content_type": 18,
+      "content_type": ["footnotes", "sourcelanguage"],
       "name": "Can delete source language"
     },
-    "model": "auth.permission",
-    "pk": 71
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_sourcelanguage",
-      "content_type": 18,
+      "content_type": ["footnotes", "sourcelanguage"],
       "name": "Can change source language"
     },
-    "model": "auth.permission",
-    "pk": 70
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_sourcelanguage",
-      "content_type": 18,
+      "content_type": ["footnotes", "sourcelanguage"],
       "name": "Can add source language"
     },
-    "model": "auth.permission",
-    "pk": 69
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_source",
-      "content_type": 20,
+      "content_type": ["footnotes", "source"],
       "name": "Can view source"
     },
-    "model": "auth.permission",
-    "pk": 80
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_source",
-      "content_type": 20,
+      "content_type": ["footnotes", "source"],
       "name": "Can delete source"
     },
-    "model": "auth.permission",
-    "pk": 79
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_source",
-      "content_type": 20,
+      "content_type": ["footnotes", "source"],
       "name": "Can change source"
     },
-    "model": "auth.permission",
-    "pk": 78
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_source",
-      "content_type": 20,
+      "content_type": ["footnotes", "source"],
       "name": "Can add source"
     },
-    "model": "auth.permission",
-    "pk": 77
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_footnote",
-      "content_type": 21,
+      "content_type": ["footnotes", "footnote"],
       "name": "Can view footnote"
     },
-    "model": "auth.permission",
-    "pk": 84
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_footnote",
-      "content_type": 21,
+      "content_type": ["footnotes", "footnote"],
       "name": "Can delete footnote"
     },
-    "model": "auth.permission",
-    "pk": 83
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_footnote",
-      "content_type": 21,
+      "content_type": ["footnotes", "footnote"],
       "name": "Can change footnote"
     },
-    "model": "auth.permission",
-    "pk": 82
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_footnote",
-      "content_type": 21,
+      "content_type": ["footnotes", "footnote"],
       "name": "Can add footnote"
     },
-    "model": "auth.permission",
-    "pk": 81
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_creator",
-      "content_type": 17,
+      "content_type": ["footnotes", "creator"],
       "name": "Can view creator"
     },
-    "model": "auth.permission",
-    "pk": 68
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_creator",
-      "content_type": 17,
+      "content_type": ["footnotes", "creator"],
       "name": "Can delete creator"
     },
-    "model": "auth.permission",
-    "pk": 67
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_creator",
-      "content_type": 17,
+      "content_type": ["footnotes", "creator"],
       "name": "Can change creator"
     },
-    "model": "auth.permission",
-    "pk": 66
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_creator",
-      "content_type": 17,
+      "content_type": ["footnotes", "creator"],
       "name": "Can add creator"
     },
-    "model": "auth.permission",
-    "pk": 65
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_authorship",
-      "content_type": 16,
+      "content_type": ["footnotes", "authorship"],
       "name": "Can view authorship"
     },
-    "model": "auth.permission",
-    "pk": 64
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_authorship",
-      "content_type": 16,
+      "content_type": ["footnotes", "authorship"],
       "name": "Can delete authorship"
     },
-    "model": "auth.permission",
-    "pk": 63
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_authorship",
-      "content_type": 16,
+      "content_type": ["footnotes", "authorship"],
       "name": "Can change authorship"
     },
-    "model": "auth.permission",
-    "pk": 62
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_authorship",
-      "content_type": 16,
+      "content_type": ["footnotes", "authorship"],
       "name": "Can add authorship"
     },
-    "model": "auth.permission",
-    "pk": 61
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_textblock",
-      "content_type": 11,
+      "content_type": ["corpus", "textblock"],
       "name": "Can view Related Fragment"
     },
-    "model": "auth.permission",
-    "pk": 44
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_textblock",
-      "content_type": 11,
+      "content_type": ["corpus", "textblock"],
       "name": "Can delete Related Fragment"
     },
-    "model": "auth.permission",
-    "pk": 43
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_textblock",
-      "content_type": 11,
+      "content_type": ["corpus", "textblock"],
       "name": "Can change Related Fragment"
     },
-    "model": "auth.permission",
-    "pk": 42
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_textblock",
-      "content_type": 11,
+      "content_type": ["corpus", "textblock"],
       "name": "Can add Related Fragment"
     },
-    "model": "auth.permission",
-    "pk": 41
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_languagescript",
-      "content_type": 7,
+      "content_type": ["corpus", "languagescript"],
       "name": "Can view Language + Script"
     },
-    "model": "auth.permission",
-    "pk": 28
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_languagescript",
-      "content_type": 7,
+      "content_type": ["corpus", "languagescript"],
       "name": "Can delete Language + Script"
     },
-    "model": "auth.permission",
-    "pk": 27
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_languagescript",
-      "content_type": 7,
+      "content_type": ["corpus", "languagescript"],
       "name": "Can change Language + Script"
     },
-    "model": "auth.permission",
-    "pk": 26
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_languagescript",
-      "content_type": 7,
+      "content_type": ["corpus", "languagescript"],
       "name": "Can add Language + Script"
     },
-    "model": "auth.permission",
-    "pk": 25
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_fragment",
-      "content_type": 10,
+      "content_type": ["corpus", "fragment"],
       "name": "Can view fragment"
     },
-    "model": "auth.permission",
-    "pk": 40
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_fragment",
-      "content_type": 10,
+      "content_type": ["corpus", "fragment"],
       "name": "Can delete fragment"
     },
-    "model": "auth.permission",
-    "pk": 39
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_fragment",
-      "content_type": 10,
+      "content_type": ["corpus", "fragment"],
       "name": "Can change fragment"
     },
-    "model": "auth.permission",
-    "pk": 38
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_fragment",
-      "content_type": 10,
+      "content_type": ["corpus", "fragment"],
       "name": "Can add fragment"
     },
-    "model": "auth.permission",
-    "pk": 37
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_documenttype",
-      "content_type": 9,
+      "content_type": ["corpus", "documenttype"],
       "name": "Can view document type"
     },
-    "model": "auth.permission",
-    "pk": 36
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_documenttype",
-      "content_type": 9,
+      "content_type": ["corpus", "documenttype"],
       "name": "Can delete document type"
     },
-    "model": "auth.permission",
-    "pk": 35
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_documenttype",
-      "content_type": 9,
+      "content_type": ["corpus", "documenttype"],
       "name": "Can change document type"
     },
-    "model": "auth.permission",
-    "pk": 34
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_documenttype",
-      "content_type": 9,
+      "content_type": ["corpus", "documenttype"],
       "name": "Can add document type"
     },
-    "model": "auth.permission",
-    "pk": 33
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_document",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "name": "Can view document"
     },
-    "model": "auth.permission",
-    "pk": 32
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_document",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "name": "Can delete document"
     },
-    "model": "auth.permission",
-    "pk": 31
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_document",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "name": "Can change document"
     },
-    "model": "auth.permission",
-    "pk": 30
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_document",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "name": "Can add document"
     },
-    "model": "auth.permission",
-    "pk": 29
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_collection",
-      "content_type": 6,
+      "content_type": ["corpus", "collection"],
       "name": "Can view collection"
     },
-    "model": "auth.permission",
-    "pk": 24
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "delete_collection",
-      "content_type": 6,
+      "content_type": ["corpus", "collection"],
       "name": "Can delete collection"
     },
-    "model": "auth.permission",
-    "pk": 23
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "change_collection",
-      "content_type": 6,
+      "content_type": ["corpus", "collection"],
       "name": "Can change collection"
     },
-    "model": "auth.permission",
-    "pk": 22
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "add_collection",
-      "content_type": 6,
+      "content_type": ["corpus", "collection"],
       "name": "Can add collection"
     },
-    "model": "auth.permission",
-    "pk": 21
+    "model": "auth.permission"
   },
   {
     "fields": {
       "codename": "view_logentry",
-      "content_type": 1,
+      "content_type": ["admin", "logentry"],
       "name": "Can view log entry"
     },
-    "model": "auth.permission",
-    "pk": 4
-  },
-  {
-    "fields": {
-      "first_name": "\u1e62ab\u012b\u1e25",
-      "first_name_ar": null,
-      "first_name_en": "\u1e62ab\u012b\u1e25",
-      "first_name_he": null,
-      "last_name": "\u02bfAodeh",
-      "last_name_ar": null,
-      "last_name_en": "\u02bfAodeh",
-      "last_name_he": null
-    },
-    "model": "footnotes.creator",
-    "pk": 1
-  },
-  {
-    "fields": {
-      "first_name": "Craig",
-      "first_name_ar": null,
-      "first_name_en": "Craig",
-      "first_name_he": null,
-      "last_name": "Perry",
-      "last_name_ar": null,
-      "last_name_en": "Perry",
-      "last_name_he": null
-    },
-    "model": "footnotes.creator",
-    "pk": 80
-  },
-  {
-    "fields": {
-      "first_name": "Geoffrey",
-      "first_name_ar": null,
-      "first_name_en": "Geoffrey",
-      "first_name_he": null,
-      "last_name": "Khan",
-      "last_name_ar": null,
-      "last_name_en": "Khan",
-      "last_name_he": null
-    },
-    "model": "footnotes.creator",
-    "pk": 25
-  },
-  {
-    "fields": {
-      "first_name": "Na\u00efm",
-      "first_name_ar": null,
-      "first_name_en": "Na\u00efm",
-      "first_name_he": null,
-      "last_name": "Vanthieghem",
-      "last_name_ar": null,
-      "last_name_en": "Vanthieghem",
-      "last_name_he": null
-    },
-    "model": "footnotes.creator",
-    "pk": 18
-  },
-  {
-    "fields": {
-      "first_name": "Marina",
-      "first_name_ar": null,
-      "first_name_en": "Marina",
-      "first_name_he": null,
-      "last_name": "Rustow",
-      "last_name_ar": null,
-      "last_name_en": "Rustow",
-      "last_name_he": null
-    },
-    "model": "footnotes.creator",
-    "pk": 6
-  },
-  {
-    "fields": {
-      "first_name": "S. D.",
-      "first_name_ar": null,
-      "first_name_en": "S. D.",
-      "first_name_he": null,
-      "last_name": "Goitein",
-      "last_name_ar": null,
-      "last_name_en": "Goitein",
-      "last_name_he": null
-    },
-    "model": "footnotes.creator",
-    "pk": 8
-  },
-  {
-    "fields": {
-      "first_name": "Menahem",
-      "first_name_ar": null,
-      "first_name_en": "Menahem",
-      "first_name_he": null,
-      "last_name": "Ben-Sasson",
-      "last_name_ar": null,
-      "last_name_en": "Ben-Sasson",
-      "last_name_he": null
-    },
-    "model": "footnotes.creator",
-    "pk": 72
-  },
-  {
-    "fields": {
-      "first_name": "Moshe",
-      "first_name_ar": null,
-      "first_name_en": "Moshe",
-      "first_name_he": "\u05de\u05e9\u05d4",
-      "last_name": "Gil",
-      "last_name_ar": null,
-      "last_name_en": "Gil",
-      "last_name_he": "\u05d2\u05d9\u05dc"
-    },
-    "model": "footnotes.creator",
-    "pk": 9
-  },
-  {
-    "fields": {
-      "first_name": "Dotan",
-      "first_name_ar": null,
-      "first_name_en": "Dotan",
-      "first_name_he": null,
-      "last_name": "Arad",
-      "last_name_ar": null,
-      "last_name_en": "Arad",
-      "last_name_he": null
-    },
-    "model": "footnotes.creator",
-    "pk": 54
+    "model": "auth.permission"
   },
   {
     "fields": {
       "name": "Content Editor",
       "permissions": [
-        4, 24, 29, 30, 32, 36, 37, 38, 40, 28, 41, 42, 43, 44, 61, 62, 63, 64,
-        65, 66, 68, 81, 82, 83, 84, 77, 78, 79, 80, 69, 70, 72, 73, 74, 76, 45,
-        46, 47, 48, 49, 50, 51, 52
+        ["view_logentry", "admin", "logentry"],
+        ["view_collection", "corpus", "collection"],
+        ["add_document", "corpus", "document"],
+        ["change_document", "corpus", "document"],
+        ["view_document", "corpus", "document"],
+        ["view_documenttype", "corpus", "documenttype"],
+        ["add_fragment", "corpus", "fragment"],
+        ["change_fragment", "corpus", "fragment"],
+        ["view_fragment", "corpus", "fragment"],
+        ["view_languagescript", "corpus", "languagescript"],
+        ["add_textblock", "corpus", "textblock"],
+        ["change_textblock", "corpus", "textblock"],
+        ["delete_textblock", "corpus", "textblock"],
+        ["view_textblock", "corpus", "textblock"],
+        ["add_authorship", "footnotes", "authorship"],
+        ["change_authorship", "footnotes", "authorship"],
+        ["delete_authorship", "footnotes", "authorship"],
+        ["view_authorship", "footnotes", "authorship"],
+        ["add_creator", "footnotes", "creator"],
+        ["change_creator", "footnotes", "creator"],
+        ["view_creator", "footnotes", "creator"],
+        ["add_footnote", "footnotes", "footnote"],
+        ["change_footnote", "footnotes", "footnote"],
+        ["delete_footnote", "footnotes", "footnote"],
+        ["view_footnote", "footnotes", "footnote"],
+        ["add_source", "footnotes", "source"],
+        ["change_source", "footnotes", "source"],
+        ["delete_source", "footnotes", "source"],
+        ["view_source", "footnotes", "source"],
+        ["add_sourcelanguage", "footnotes", "sourcelanguage"],
+        ["change_sourcelanguage", "footnotes", "sourcelanguage"],
+        ["view_sourcelanguage", "footnotes", "sourcelanguage"],
+        ["add_sourcetype", "footnotes", "sourcetype"],
+        ["change_sourcetype", "footnotes", "sourcetype"],
+        ["view_sourcetype", "footnotes", "sourcetype"],
+        ["add_tag", "taggit", "tag"],
+        ["change_tag", "taggit", "tag"],
+        ["delete_tag", "taggit", "tag"],
+        ["view_tag", "taggit", "tag"],
+        ["add_taggeditem", "taggit", "taggeditem"],
+        ["change_taggeditem", "taggit", "taggeditem"],
+        ["delete_taggeditem", "taggit", "taggeditem"],
+        ["view_taggeditem", "taggit", "taggeditem"]
       ]
     },
-    "model": "auth.group",
-    "pk": 1
-  },
-  {
-    "fields": {
-      "first_name": "Amir",
-      "first_name_ar": null,
-      "first_name_en": "Amir",
-      "first_name_he": null,
-      "last_name": "Ashur",
-      "last_name_ar": null,
-      "last_name_en": "Ashur",
-      "last_name_he": null
-    },
-    "model": "footnotes.creator",
-    "pk": 10
+    "model": "auth.group"
   },
   {
     "fields": {
       "name": "Content Admin",
       "permissions": [
-        4, 21, 22, 23, 24, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 25,
-        26, 27, 28, 41, 42, 43, 44, 61, 62, 63, 64, 65, 66, 67, 68, 81, 82, 83,
-        84, 77, 78, 79, 80, 69, 70, 71, 72, 73, 74, 75, 76, 45, 46, 47, 48
+        ["view_logentry", "admin", "logentry"],
+        ["add_collection", "corpus", "collection"],
+        ["change_collection", "corpus", "collection"],
+        ["delete_collection", "corpus", "collection"],
+        ["view_collection", "corpus", "collection"],
+        ["add_document", "corpus", "document"],
+        ["change_document", "corpus", "document"],
+        ["delete_document", "corpus", "document"],
+        ["view_document", "corpus", "document"],
+        ["add_documenttype", "corpus", "documenttype"],
+        ["change_documenttype", "corpus", "documenttype"],
+        ["delete_documenttype", "corpus", "documenttype"],
+        ["view_documenttype", "corpus", "documenttype"],
+        ["add_fragment", "corpus", "fragment"],
+        ["change_fragment", "corpus", "fragment"],
+        ["delete_fragment", "corpus", "fragment"],
+        ["view_fragment", "corpus", "fragment"],
+        ["add_languagescript", "corpus", "languagescript"],
+        ["change_languagescript", "corpus", "languagescript"],
+        ["delete_languagescript", "corpus", "languagescript"],
+        ["view_languagescript", "corpus", "languagescript"],
+        ["add_textblock", "corpus", "textblock"],
+        ["change_textblock", "corpus", "textblock"],
+        ["delete_textblock", "corpus", "textblock"],
+        ["view_textblock", "corpus", "textblock"],
+        ["add_authorship", "footnotes", "authorship"],
+        ["change_authorship", "footnotes", "authorship"],
+        ["delete_authorship", "footnotes", "authorship"],
+        ["view_authorship", "footnotes", "authorship"],
+        ["add_creator", "footnotes", "creator"],
+        ["change_creator", "footnotes", "creator"],
+        ["delete_creator", "footnotes", "creator"],
+        ["view_creator", "footnotes", "creator"],
+        ["add_footnote", "footnotes", "footnote"],
+        ["change_footnote", "footnotes", "footnote"],
+        ["delete_footnote", "footnotes", "footnote"],
+        ["view_footnote", "footnotes", "footnote"],
+        ["add_source", "footnotes", "source"],
+        ["change_source", "footnotes", "source"],
+        ["delete_source", "footnotes", "source"],
+        ["view_source", "footnotes", "source"],
+        ["add_sourcelanguage", "footnotes", "sourcelanguage"],
+        ["change_sourcelanguage", "footnotes", "sourcelanguage"],
+        ["delete_sourcelanguage", "footnotes", "sourcelanguage"],
+        ["view_sourcelanguage", "footnotes", "sourcelanguage"],
+        ["add_sourcetype", "footnotes", "sourcetype"],
+        ["change_sourcetype", "footnotes", "sourcetype"],
+        ["delete_sourcetype", "footnotes", "sourcetype"],
+        ["view_sourcetype", "footnotes", "sourcetype"],
+        ["add_tag", "taggit", "tag"],
+        ["change_tag", "taggit", "tag"],
+        ["delete_tag", "taggit", "tag"],
+        ["view_tag", "taggit", "tag"]
       ]
     },
-    "model": "auth.group",
-    "pk": 2
+    "model": "auth.group"
   },
   {
     "fields": {
@@ -5483,15 +5360,14 @@
       "user_permissions": [],
       "username": "ntsafrir"
     },
-    "model": "auth.user",
-    "pk": 21
+    "model": "auth.user"
   },
   {
     "fields": {
       "date_joined": "2021-06-03T23:56:32Z",
       "email": "brzowsky@princeton.edu",
       "first_name": "Jake",
-      "groups": [1],
+      "groups": [["Content Editor"]],
       "is_active": true,
       "is_staff": true,
       "is_superuser": false,
@@ -5501,8 +5377,7 @@
       "user_permissions": [],
       "username": "brzowsky"
     },
-    "model": "auth.user",
-    "pk": 48
+    "model": "auth.user"
   },
   {
     "fields": {
@@ -5519,15 +5394,14 @@
       "user_permissions": [],
       "username": "cbeaumont"
     },
-    "model": "auth.user",
-    "pk": 8
+    "model": "auth.user"
   },
   {
     "fields": {
       "date_joined": "2021-05-26T20:22:21Z",
       "email": "micahn@princeton.edu",
       "first_name": "Micah",
-      "groups": [1],
+      "groups": [["Content Editor"]],
       "is_active": true,
       "is_staff": true,
       "is_superuser": false,
@@ -5537,15 +5411,14 @@
       "user_permissions": [],
       "username": "micahn"
     },
-    "model": "auth.user",
-    "pk": 20
+    "model": "auth.user"
   },
   {
     "fields": {
       "date_joined": "2021-05-26T20:22:22Z",
       "email": "alg4@princeton.edu",
       "first_name": "Abigail",
-      "groups": [1],
+      "groups": [["Content Editor"]],
       "is_active": true,
       "is_staff": true,
       "is_superuser": false,
@@ -5555,8 +5428,7 @@
       "user_permissions": [],
       "username": "alg4"
     },
-    "model": "auth.user",
-    "pk": 38
+    "model": "auth.user"
   },
   {
     "fields": {
@@ -5593,8 +5465,7 @@
       "user_permissions": [],
       "username": "snisenson"
     },
-    "model": "auth.user",
-    "pk": 29
+    "model": "auth.user"
   },
   {
     "fields": {
@@ -5611,15 +5482,14 @@
       "user_permissions": [],
       "username": "nvidro"
     },
-    "model": "auth.user",
-    "pk": 25
+    "model": "auth.user"
   },
   {
     "fields": {
       "date_joined": "2021-06-03T15:41:21Z",
       "email": "mdudley@princeton.edu",
       "first_name": "Matthew",
-      "groups": [1],
+      "groups": [["Content Editor"]],
       "is_active": true,
       "is_staff": true,
       "is_superuser": false,
@@ -5629,8 +5499,7 @@
       "user_permissions": [],
       "username": "mdudley"
     },
-    "model": "auth.user",
-    "pk": 47
+    "model": "auth.user"
   },
   {
     "fields": {
@@ -5647,15 +5516,14 @@
       "user_permissions": [],
       "username": "mrustow"
     },
-    "model": "auth.user",
-    "pk": 37
+    "model": "auth.user"
   },
   {
     "fields": {
       "date_joined": "2021-05-26T20:22:21Z",
       "email": "aashur@princeton.edu",
       "first_name": "Amir",
-      "groups": [2],
+      "groups": [["Content Admin"]],
       "is_active": true,
       "is_staff": true,
       "is_superuser": false,
@@ -5665,8 +5533,7 @@
       "user_permissions": [],
       "username": "aashur"
     },
-    "model": "auth.user",
-    "pk": 6
+    "model": "auth.user"
   },
   {
     "fields": {
@@ -5683,15 +5550,14 @@
       "user_permissions": [],
       "username": "pgl"
     },
-    "model": "auth.user",
-    "pk": 2
+    "model": "auth.user"
   },
   {
     "fields": {
       "date_joined": "2021-05-26T20:22:21Z",
       "email": "ae5677@princeton.edu",
       "first_name": "Alan",
-      "groups": [2],
+      "groups": [["Content Admin"]],
       "is_active": true,
       "is_staff": true,
       "is_superuser": false,
@@ -5701,8 +5567,7 @@
       "user_permissions": [],
       "username": "ae5677"
     },
-    "model": "auth.user",
-    "pk": 35
+    "model": "auth.user"
   },
   {
     "fields": {
@@ -5719,26 +5584,24 @@
       "user_permissions": [],
       "username": "script"
     },
-    "model": "auth.user",
-    "pk": 1
+    "model": "auth.user"
   },
   {
     "fields": {
       "app_label": "corpus",
       "model": "document"
     },
-    "model": "contenttypes.contenttype",
-    "pk": 8
+    "model": "contenttypes.contenttype"
   },
   {
     "fields": {
       "action_flag": 1,
       "action_time": "2017-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2017",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "5626",
       "object_repr": "Bodl. MS heb. f 34/39 (PGPID 5626)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 7742
@@ -5748,10 +5611,10 @@
       "action_flag": 1,
       "action_time": "2018-03-19T04:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 3/19/2018 [PGPID 5627]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "5626",
       "object_repr": "Bodl. MS heb. f 34/40 (PGPID 5627)",
-      "user": 25
+      "user": ["nvidro"]
     },
     "model": "admin.logentry",
     "pk": 7745
@@ -5761,10 +5624,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:24:17.601Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "5626",
       "object_repr": "Bodl. MS heb. f 34/39 (PGPID 5626)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 7743
@@ -5774,10 +5637,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:24:17.649Z",
       "change_message": "Imported via script [PGPID 5627]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "5626",
       "object_repr": "Bodl. MS heb. f 34/40 (PGPID 5627)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 7746
@@ -5787,10 +5650,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:24:17.696Z",
       "change_message": "Imported via script [PGPID 5628]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "5626",
       "object_repr": "Bodl. MS heb. f 34/41 (PGPID 5628)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 7749
@@ -5800,10 +5663,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:24:17.737Z",
       "change_message": "Imported via script [PGPID 5629]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "5626",
       "object_repr": "Bodl. MS heb. f 34/42 (PGPID 5629)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 7752
@@ -5813,10 +5676,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:24:17.778Z",
       "change_message": "Imported via script [PGPID 5630]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "5626",
       "object_repr": "Bodl. MS heb. f 34/43 (PGPID 5630)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 7755
@@ -5826,10 +5689,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:24:17.822Z",
       "change_message": "Imported via script [PGPID 5631]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "5626",
       "object_repr": "Bodl. MS heb. f 34/44 (PGPID 5631)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 7758
@@ -5839,10 +5702,10 @@
       "action_flag": 2,
       "action_time": "2021-09-21T18:04:30.134Z",
       "change_message": "merged with 5627, 5628, 5629, 5630, 5631: all descriptions match",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "5626",
       "object_repr": "Bodl. MS heb. f 34/39 + \u2026 (PGPID 5626)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 108467
@@ -5852,17 +5715,17 @@
       "action_flag": 2,
       "action_time": "2021-09-23T14:20:45.879Z",
       "change_message": "[{\"changed\": {\"fields\": [\"Description\"]}}]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "5626",
       "object_repr": "Bodl. MS heb. f 34/39 + \u2026 (PGPID 5626)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 108709
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 5626,
       "tag": 680
     },
@@ -5871,7 +5734,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 5626,
       "tag": 534
     },
@@ -5880,7 +5743,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 5626,
       "tag": 480
     },
@@ -5892,10 +5755,10 @@
       "action_flag": 1,
       "action_time": "1990-06-28T04:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 6/28/1990",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2142",
       "object_repr": "T-S 8J5.1 (PGPID 2142)",
-      "user": 21
+      "user": ["ntsafrir"]
     },
     "model": "admin.logentry",
     "pk": 59947
@@ -5905,10 +5768,10 @@
       "action_flag": 1,
       "action_time": "1990-07-14T04:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 7/14/1990 [PGPID 2145]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2142",
       "object_repr": "T-S 8J5.1 (PGPID 2145)",
-      "user": 21
+      "user": ["ntsafrir"]
     },
     "model": "admin.logentry",
     "pk": 59945
@@ -5918,10 +5781,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:35:19.761Z",
       "change_message": "Imported via script [PGPID 2145]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2142",
       "object_repr": "T-S 8J5.1 (PGPID 2145)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 59946
@@ -5931,10 +5794,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:35:19.802Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2142",
       "object_repr": "T-S 8J5.1 (PGPID 2142)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 59948
@@ -5944,10 +5807,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:35:19.839Z",
       "change_message": "Imported via script [PGPID 2143]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2142",
       "object_repr": "T-S 8J5.1 (PGPID 2143)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 59950
@@ -5957,10 +5820,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:35:19.874Z",
       "change_message": "Imported via script [PGPID 2144]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2142",
       "object_repr": "T-S 8J5.1 (PGPID 2144)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 59952
@@ -5970,10 +5833,10 @@
       "action_flag": 2,
       "action_time": "2021-09-21T18:04:52.341Z",
       "change_message": "merged with 2143, 2144, 2145: all descriptions match - consecutive PGPIDs",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2142",
       "object_repr": "T-S 8J5.1 (PGPID 2142)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 108505
@@ -5983,10 +5846,10 @@
       "action_flag": 1,
       "action_time": "2021-09-16T13:31:26.367Z",
       "change_message": "[{\"added\": {}}]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "34373",
       "object_repr": "?? (PGPID 34373)",
-      "user": 6
+      "user": ["aashur"]
     },
     "model": "admin.logentry",
     "pk": 108043
@@ -5996,10 +5859,10 @@
       "action_flag": 1,
       "action_time": "2021-08-14T18:22:39.236Z",
       "change_message": "[{\"added\": {}}]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "34177",
       "object_repr": "?? (PGPID 34177)",
-      "user": 35
+      "user": ["ae5677"]
     },
     "model": "admin.logentry",
     "pk": 106670
@@ -6009,10 +5872,10 @@
       "action_flag": 1,
       "action_time": "2017-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2017",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "3504",
       "object_repr": "T-S 18J1.17 (PGPID 3504)",
-      "user": 29
+      "user": ["snisenson"]
     },
     "model": "admin.logentry",
     "pk": 54860
@@ -6022,10 +5885,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:33:59.874Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "3504",
       "object_repr": "T-S 18J1.17 (PGPID 3504)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 54861
@@ -6035,17 +5898,17 @@
       "action_flag": 2,
       "action_time": "2021-07-22T20:02:57.000Z",
       "change_message": "[{\"added\": {\"name\": \"footnote\", \"object\": \"Edition and Translation of T-S 18J1.17 (PGPID 3504)\"}}, {\"changed\": {\"name\": \"footnote\", \"object\": \"Edition of T-S 18J1.17 (PGPID 3504)\", \"fields\": [\"Notes\"]}}]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "3504",
       "object_repr": "T-S 18J1.17 (PGPID 3504)",
-      "user": 48
+      "user": ["brzowsky"]
     },
     "model": "admin.logentry",
     "pk": 105255
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 3504,
       "tag": 902
     },
@@ -6054,7 +5917,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 3504,
       "tag": 165
     },
@@ -6063,7 +5926,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 3504,
       "tag": 347
     },
@@ -6072,7 +5935,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 3504,
       "tag": 40
     },
@@ -6084,10 +5947,10 @@
       "action_flag": 1,
       "action_time": "1988-04-15T04:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 4/15/1988",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "444",
       "object_repr": "AIU VII.A.23 (PGPID 444)",
-      "user": 8
+      "user": ["cbeaumont"]
     },
     "model": "admin.logentry",
     "pk": 748
@@ -6097,10 +5960,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:22:35.972Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "444",
       "object_repr": "AIU VII.A.23 (PGPID 444)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 749
@@ -6110,17 +5973,17 @@
       "action_flag": 2,
       "action_time": "2021-06-18T16:46:10.993Z",
       "change_message": "[{\"changed\": {\"fields\": [\"Languages\"]}}]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "444",
       "object_repr": "T-S 13J35.3 + \u2026 (PGPID 444)",
-      "user": 20
+      "user": ["micahn"]
     },
     "model": "admin.logentry",
     "pk": 103783
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 444,
       "tag": 87
     },
@@ -6129,7 +5992,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 444,
       "tag": 88
     },
@@ -6141,10 +6004,10 @@
       "action_flag": 1,
       "action_time": "2020-10-21T04:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 10/21/2020",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "23342",
       "object_repr": "T-S Misc.24.56 (PGPID 23342)",
-      "user": 35
+      "user": ["ae5677"]
     },
     "model": "admin.logentry",
     "pk": 81102
@@ -6154,17 +6017,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:39:38.693Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "23342",
       "object_repr": "T-S Misc.24.56 (PGPID 23342)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 81103
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 23342,
       "tag": 86
     },
@@ -6173,7 +6036,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 23342,
       "tag": 1396
     },
@@ -6182,7 +6045,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 23342,
       "tag": 82
     },
@@ -6191,7 +6054,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 23342,
       "tag": 80
     },
@@ -6200,7 +6063,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 23342,
       "tag": 1381
     },
@@ -6209,7 +6072,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 23342,
       "tag": 225
     },
@@ -6221,10 +6084,10 @@
       "action_flag": 1,
       "action_time": "2019-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2019",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30851",
       "object_repr": "T-S C2.209 (PGPID 30851)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 78745
@@ -6234,10 +6097,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:39:06.135Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30851",
       "object_repr": "T-S C2.209 (PGPID 30851)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 78746
@@ -6247,17 +6110,17 @@
       "action_flag": 2,
       "action_time": "2021-07-06T18:18:54.069Z",
       "change_message": "[{\"deleted\": {\"name\": \"footnote\", \"object\": \"Edition of ENA 3751.5 + \\u2026 (PGPID 30851)\"}}]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30851",
       "object_repr": "ENA 3751.5 + \u2026 (PGPID 30851)",
-      "user": 38
+      "user": ["alg4"]
     },
     "model": "admin.logentry",
     "pk": 104509
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30851,
       "tag": 527
     },
@@ -6266,7 +6129,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30851,
       "tag": 526
     },
@@ -6275,7 +6138,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30851,
       "tag": 524
     },
@@ -6284,7 +6147,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30851,
       "tag": 99
     },
@@ -6296,10 +6159,10 @@
       "action_flag": 1,
       "action_time": "2018-12-07T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 12/7/2018",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "29181",
       "object_repr": "T-S AS 135.53 (PGPID 29181)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 66179
@@ -6309,17 +6172,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:36:42.361Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "29181",
       "object_repr": "T-S AS 135.53 (PGPID 29181)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 66180
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 29181,
       "tag": 375
     },
@@ -6328,7 +6191,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 29181,
       "tag": 921
     },
@@ -6340,10 +6203,10 @@
       "action_flag": 1,
       "action_time": "2016-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2016",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30825",
       "object_repr": "T-S Ar.30.245 (PGPID 30825)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 61452
@@ -6353,10 +6216,10 @@
       "action_flag": 2,
       "action_time": "2021-01-01T05:00:00Z",
       "change_message": "Major revision (spreadsheet), dated 2021",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30825",
       "object_repr": "T-S Ar.30.245 (PGPID 30825)",
-      "user": 35
+      "user": ["ae5677"]
     },
     "model": "admin.logentry",
     "pk": 61453
@@ -6366,17 +6229,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:35:42.555Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30825",
       "object_repr": "T-S Ar.30.245 (PGPID 30825)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 61454
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30825,
       "tag": 527
     },
@@ -6385,7 +6248,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30825,
       "tag": 524
     },
@@ -6394,7 +6257,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30825,
       "tag": 99
     },
@@ -6406,10 +6269,10 @@
       "action_flag": 1,
       "action_time": "2004-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2004",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "3879",
       "object_repr": "T-S Ar.30.129 (PGPID 3879)",
-      "user": 2
+      "user": ["pgl"]
     },
     "model": "admin.logentry",
     "pk": 61009
@@ -6419,17 +6282,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:35:36.411Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "3879",
       "object_repr": "T-S Ar.30.129 (PGPID 3879)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 61010
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 3879,
       "tag": 87
     },
@@ -6438,7 +6301,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 3879,
       "tag": 2254
     },
@@ -6447,7 +6310,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 3879,
       "tag": 452
     },
@@ -6456,7 +6319,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 3879,
       "tag": 1215
     },
@@ -6468,10 +6331,10 @@
       "action_flag": 1,
       "action_time": "2016-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2016",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30824",
       "object_repr": "T-S Ar.22.140 (PGPID 30824)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 60858
@@ -6481,10 +6344,10 @@
       "action_flag": 2,
       "action_time": "2021-01-01T05:00:00Z",
       "change_message": "Major revision (spreadsheet), dated 2021",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30824",
       "object_repr": "T-S Ar.22.140 (PGPID 30824)",
-      "user": 35
+      "user": ["ae5677"]
     },
     "model": "admin.logentry",
     "pk": 60859
@@ -6494,17 +6357,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:35:34.176Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30824",
       "object_repr": "T-S Ar.22.140 (PGPID 30824)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 60860
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30824,
       "tag": 527
     },
@@ -6513,7 +6376,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30824,
       "tag": 357
     },
@@ -6522,7 +6385,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30824,
       "tag": 524
     },
@@ -6531,7 +6394,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30824,
       "tag": 99
     },
@@ -6543,10 +6406,10 @@
       "action_flag": 1,
       "action_time": "2017-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2017",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "3497",
       "object_repr": "T-S 18J1.1 (PGPID 3497)",
-      "user": 29
+      "user": ["snisenson"]
     },
     "model": "admin.logentry",
     "pk": 54835
@@ -6556,17 +6419,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:33:59.448Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "3497",
       "object_repr": "T-S 18J1.1 (PGPID 3497)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 54836
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 3497,
       "tag": 87
     },
@@ -6575,7 +6438,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 3497,
       "tag": 2254
     },
@@ -6584,7 +6447,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 3497,
       "tag": 452
     },
@@ -6593,7 +6456,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 3497,
       "tag": 1215
     },
@@ -6605,10 +6468,10 @@
       "action_flag": 1,
       "action_time": "2004-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2004",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2969",
       "object_repr": "T-S 10J22.6 (PGPID 2969)",
-      "user": 2
+      "user": ["pgl"]
     },
     "model": "admin.logentry",
     "pk": 47919
@@ -6618,17 +6481,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:32:06.448Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2969",
       "object_repr": "T-S 10J22.6 (PGPID 2969)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 47920
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2969,
       "tag": 1947
     },
@@ -6637,7 +6500,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2969,
       "tag": 1946
     },
@@ -6646,7 +6509,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2969,
       "tag": 80
     },
@@ -6655,7 +6518,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2969,
       "tag": 206
     },
@@ -6664,7 +6527,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2969,
       "tag": 1127
     },
@@ -6673,7 +6536,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2969,
       "tag": 37
     },
@@ -6682,7 +6545,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2969,
       "tag": 324
     },
@@ -6691,7 +6554,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2969,
       "tag": 322
     },
@@ -6703,10 +6566,10 @@
       "action_flag": 1,
       "action_time": "2020-09-06T04:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 9/6/2020",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2811",
       "object_repr": "T-S 10J12.16 (PGPID 2811)",
-      "user": 35
+      "user": ["ae5677"]
     },
     "model": "admin.logentry",
     "pk": 46915
@@ -6716,17 +6579,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:31:49.965Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2811",
       "object_repr": "T-S 10J12.16 (PGPID 2811)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 46916
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 572
     },
@@ -6735,7 +6598,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 316
     },
@@ -6744,7 +6607,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 1465
     },
@@ -6753,7 +6616,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 86
     },
@@ -6762,7 +6625,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 82
     },
@@ -6771,7 +6634,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 817
     },
@@ -6780,7 +6643,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 80
     },
@@ -6789,7 +6652,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 463
     },
@@ -6798,7 +6661,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 462
     },
@@ -6807,7 +6670,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 813
     },
@@ -6816,7 +6679,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 395
     },
@@ -6825,7 +6688,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 647
     },
@@ -6834,7 +6697,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 828
     },
@@ -6843,7 +6706,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 613
     },
@@ -6852,7 +6715,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2811,
       "tag": 1892
     },
@@ -6864,10 +6727,10 @@
       "action_flag": 1,
       "action_time": "1988-05-02T04:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 5/2/1988",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "912",
       "object_repr": "Sassoon 1055b (PGPID 912)",
-      "user": 2
+      "user": ["pgl"]
     },
     "model": "admin.logentry",
     "pk": 46564
@@ -6877,17 +6740,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:31:43.374Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "912",
       "object_repr": "Sassoon 1055b (PGPID 912)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 46565
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 912,
       "tag": 167
     },
@@ -6896,7 +6759,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 912,
       "tag": 165
     },
@@ -6905,7 +6768,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 912,
       "tag": 268
     },
@@ -6917,10 +6780,10 @@
       "action_flag": 1,
       "action_time": "2020-02-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2/2020",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30176",
       "object_repr": "Princeton, no shelfmark (Michaelides 26) (PGPID 30176)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 46518
@@ -6930,17 +6793,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:31:42.942Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30176",
       "object_repr": "Princeton, no shelfmark (Michaelides 26) (PGPID 30176)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 46519
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30176,
       "tag": 1187
     },
@@ -6952,10 +6815,10 @@
       "action_flag": 1,
       "action_time": "2020-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2020",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "19633",
       "object_repr": "Princeton, No ShelfMark (PGPID 19633)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 46494
@@ -6965,10 +6828,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:31:42.736Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "19633",
       "object_repr": "Princeton, No ShelfMark (PGPID 19633)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 46495
@@ -6978,10 +6841,10 @@
       "action_flag": 1,
       "action_time": "2020-02-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2/2020",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30208",
       "object_repr": "Princeton, Islamic Manuscripts, Garrett Additional 20.1 (photo 20 in PUDL) (PGPID 30208)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 46425
@@ -6991,17 +6854,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:31:42.078Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30208",
       "object_repr": "Princeton, Islamic Manuscripts, Garrett Additional 20.1 (photo 20 in PUDL) (PGPID 30208)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 46426
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30208,
       "tag": 103
     },
@@ -7010,7 +6873,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30208,
       "tag": 1187
     },
@@ -7019,7 +6882,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30208,
       "tag": 673
     },
@@ -7031,10 +6894,10 @@
       "action_flag": 1,
       "action_time": "2021-03-06T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 3/6/2021",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "32644",
       "object_repr": "Moss. III,212.2 (PGPID 32644)",
-      "user": 35
+      "user": ["ae5677"]
     },
     "model": "admin.logentry",
     "pk": 42740
@@ -7044,17 +6907,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:30:58.874Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "32644",
       "object_repr": "Moss. III,212.2 (PGPID 32644)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 42741
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 32644,
       "tag": 13
     },
@@ -7066,10 +6929,10 @@
       "action_flag": 1,
       "action_time": "2020-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2020",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "32012",
       "object_repr": "JRL SERIES C 162 (PGPID 32012)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 41060
@@ -7079,17 +6942,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:30:28.499Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "32012",
       "object_repr": "JRL SERIES C 162 (PGPID 32012)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 41061
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 32012,
       "tag": 30
     },
@@ -7101,10 +6964,10 @@
       "action_flag": 1,
       "action_time": "2020-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2020",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "31950",
       "object_repr": "JRL SERIES C 100 (PGPID 31950)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 40856
@@ -7114,10 +6977,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:30:26.657Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "31950",
       "object_repr": "JRL SERIES C 100 (PGPID 31950)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 40857
@@ -7127,10 +6990,10 @@
       "action_flag": 1,
       "action_time": "2016-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2016",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30820",
       "object_repr": "F1908.44S (PGPID 30820)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 34314
@@ -7140,10 +7003,10 @@
       "action_flag": 2,
       "action_time": "2021-01-01T05:00:00Z",
       "change_message": "Major revision (spreadsheet), dated 2021",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30820",
       "object_repr": "F1908.44S (PGPID 30820)",
-      "user": 35
+      "user": ["ae5677"]
     },
     "model": "admin.logentry",
     "pk": 34315
@@ -7153,17 +7016,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:29:23.058Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30820",
       "object_repr": "F1908.44S (PGPID 30820)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 34316
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30820,
       "tag": 1087
     },
@@ -7172,7 +7035,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30820,
       "tag": 527
     },
@@ -7181,7 +7044,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30820,
       "tag": 1101
     },
@@ -7190,7 +7053,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30820,
       "tag": 524
     },
@@ -7199,7 +7062,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30820,
       "tag": 357
     },
@@ -7208,7 +7071,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30820,
       "tag": 99
     },
@@ -7220,10 +7083,10 @@
       "action_flag": 1,
       "action_time": "2016-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2016",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30818",
       "object_repr": "ENA 2697.8 (PGPID 30818)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 12779
@@ -7233,10 +7096,10 @@
       "action_flag": 2,
       "action_time": "2021-01-01T05:00:00Z",
       "change_message": "Major revision (spreadsheet), dated 2021",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30818",
       "object_repr": "ENA 2697.8 (PGPID 30818)",
-      "user": 35
+      "user": ["ae5677"]
     },
     "model": "admin.logentry",
     "pk": 12780
@@ -7246,17 +7109,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:25:28.058Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30818",
       "object_repr": "ENA 2697.8 (PGPID 30818)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 12781
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30818,
       "tag": 538
     },
@@ -7265,7 +7128,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30818,
       "tag": 537
     },
@@ -7274,7 +7137,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30818,
       "tag": 527
     },
@@ -7283,7 +7146,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30818,
       "tag": 524
     },
@@ -7292,7 +7155,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30818,
       "tag": 1187
     },
@@ -7304,10 +7167,10 @@
       "action_flag": 1,
       "action_time": "2016-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2016",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30833",
       "object_repr": "ENA 2209.12 (PGPID 30833)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 11578
@@ -7317,10 +7180,10 @@
       "action_flag": 2,
       "action_time": "2021-01-01T05:00:00Z",
       "change_message": "Major revision (spreadsheet), dated 2021",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30833",
       "object_repr": "ENA 2209.12 (PGPID 30833)",
-      "user": 35
+      "user": ["ae5677"]
     },
     "model": "admin.logentry",
     "pk": 11579
@@ -7330,17 +7193,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:25:14.049Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30833",
       "object_repr": "ENA 2209.12 (PGPID 30833)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 11580
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30833,
       "tag": 1151
     },
@@ -7349,7 +7212,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30833,
       "tag": 527
     },
@@ -7358,7 +7221,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30833,
       "tag": 526
     },
@@ -7367,7 +7230,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30833,
       "tag": 524
     },
@@ -7376,7 +7239,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30833,
       "tag": 99
     },
@@ -7385,7 +7248,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 30833,
       "tag": 1152
     },
@@ -7397,10 +7260,10 @@
       "action_flag": 1,
       "action_time": "2018-12-07T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 12/7/2018",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "29324",
       "object_repr": "CUL Or.1080 1.64 (PGPID 29324)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 8242
@@ -7410,17 +7273,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:24:25.489Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "29324",
       "object_repr": "CUL Or.1080 1.64 (PGPID 29324)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 8243
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 29324,
       "tag": 921
     },
@@ -7429,7 +7292,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 29324,
       "tag": 144
     },
@@ -7441,10 +7304,10 @@
       "action_flag": 1,
       "action_time": "2017-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2017",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2532",
       "object_repr": "Bodl. MS heb. d 65/17 (PGPID 2532)",
-      "user": 29
+      "user": ["snisenson"]
     },
     "model": "admin.logentry",
     "pk": 6278
@@ -7454,17 +7317,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:23:54.822Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "2532",
       "object_repr": "Bodl. MS heb. d 65/17 (PGPID 2532)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 6279
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2532,
       "tag": 768
     },
@@ -7473,7 +7336,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2532,
       "tag": 86
     },
@@ -7482,7 +7345,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2532,
       "tag": 256
     },
@@ -7491,7 +7354,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 2532,
       "tag": 80
     },
@@ -7503,10 +7366,10 @@
       "action_flag": 1,
       "action_time": "2017-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2017",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "6343",
       "object_repr": "Bodl. MS heb. b 3/13 (PGPID 6343)",
-      "user": 29
+      "user": ["snisenson"]
     },
     "model": "admin.logentry",
     "pk": 5576
@@ -7516,10 +7379,10 @@
       "action_flag": 2,
       "action_time": "2018-04-13T04:00:00Z",
       "change_message": "Major revision (spreadsheet), dated 4/13/2018",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "6343",
       "object_repr": "Bodl. MS heb. b 3/13 (PGPID 6343)",
-      "user": 25
+      "user": ["nvidro"]
     },
     "model": "admin.logentry",
     "pk": 5577
@@ -7529,10 +7392,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:23:41.394Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "6343",
       "object_repr": "Bodl. MS heb. b 3/13 (PGPID 6343)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 5578
@@ -7542,17 +7405,17 @@
       "action_flag": 2,
       "action_time": "2021-07-08T16:38:53.768Z",
       "change_message": "[{\"changed\": {\"fields\": [\"Languages\", \"Description\", \"Date on document (original)\", \"Calendar\", \"Document date (standardized)\", \"Tags\"]}}, {\"added\": {\"name\": \"footnote\", \"object\": \"Edition of Bodl. MS heb. b 3/13 (PGPID 6343)\"}}]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "6343",
       "object_repr": "Bodl. MS heb. b 3/13 (PGPID 6343)",
-      "user": 47
+      "user": ["mdudley"]
     },
     "model": "admin.logentry",
     "pk": 104532
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 6343,
       "tag": 228
     },
@@ -7561,7 +7424,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 6343,
       "tag": 1272
     },
@@ -7570,7 +7433,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 6343,
       "tag": 699
     },
@@ -7582,10 +7445,10 @@
       "action_flag": 1,
       "action_time": "2019-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2019",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "19612",
       "object_repr": "Bodl. MS heb. f 58/18 (PGPID 19612)",
-      "user": 37
+      "user": ["mrustow"]
     },
     "model": "admin.logentry",
     "pk": 7983
@@ -7595,10 +7458,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:24:21.429Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "19612",
       "object_repr": "Bodl. MS heb. f 58/18 (PGPID 19612)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 7984
@@ -7608,17 +7471,17 @@
       "action_flag": 2,
       "action_time": "2021-10-05T08:57:36.505Z",
       "change_message": "[{\"changed\": {\"fields\": [\"Status\"]}}]",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "19612",
       "object_repr": "Bodl. MS heb. f 58/18 (PGPID 19612)",
-      "user": 6
+      "user": ["aashur"]
     },
     "model": "admin.logentry",
     "pk": 109485
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 19612,
       "tag": 1
     },
@@ -7630,10 +7493,10 @@
       "action_flag": 1,
       "action_time": "2020-06-01T04:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 6/1/2020",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30661",
       "object_repr": "AIU VII.F.54 (PGPID 30661)",
-      "user": 35
+      "user": ["ae5677"]
     },
     "model": "admin.logentry",
     "pk": 1982
@@ -7643,10 +7506,10 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:22:51.376Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "30661",
       "object_repr": "AIU VII.F.54 (PGPID 30661)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 1983
@@ -7656,10 +7519,10 @@
       "action_flag": 1,
       "action_time": "2004-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2004",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "4744",
       "object_repr": "AIU VII.D.34 (PGPID 4744)",
-      "user": 2
+      "user": ["pgl"]
     },
     "model": "admin.logentry",
     "pk": 959
@@ -7669,17 +7532,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:22:38.673Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "4744",
       "object_repr": "AIU VII.D.34 (PGPID 4744)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 960
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 4744,
       "tag": 144
     },
@@ -7691,10 +7554,10 @@
       "action_flag": 1,
       "action_time": "2020-08-20T04:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 8/20/2020",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "31094",
       "object_repr": "AIU VI.C.10 (PGPID 31094)",
-      "user": 35
+      "user": ["ae5677"]
     },
     "model": "admin.logentry",
     "pk": 666
@@ -7704,17 +7567,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:22:35.002Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "31094",
       "object_repr": "AIU VI.C.10 (PGPID 31094)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 667
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 31094,
       "tag": 7
     },
@@ -7723,7 +7586,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 31094,
       "tag": 13
     },
@@ -7732,7 +7595,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 31094,
       "tag": 74
     },
@@ -7744,10 +7607,10 @@
       "action_flag": 1,
       "action_time": "2020-08-20T04:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 8/20/2020",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "31134",
       "object_repr": "AIU VI.B.35 (PGPID 31134)",
-      "user": 35
+      "user": ["ae5677"]
     },
     "model": "admin.logentry",
     "pk": 561
@@ -7757,17 +7620,17 @@
       "action_flag": 1,
       "action_time": "2021-05-26T20:22:33.814Z",
       "change_message": "Imported via script",
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": "31134",
       "object_repr": "AIU VI.B.35 (PGPID 31134)",
-      "user": 1
+      "user": ["script"]
     },
     "model": "admin.logentry",
     "pk": 562
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 31134,
       "tag": 37
     },
@@ -7776,7 +7639,7 @@
   },
   {
     "fields": {
-      "content_type": 8,
+      "content_type": ["corpus", "document"],
       "object_id": 31134,
       "tag": 48
     },

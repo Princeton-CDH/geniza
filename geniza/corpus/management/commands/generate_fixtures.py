@@ -54,7 +54,7 @@ class Command(BaseCommand):
         sysout = sys.stdout
         with open(fixtures[2], "w") as f2:
             sys.stdout = f2
-            call_command("custom_dump", "document", *pgpids)
+            call_command("custom_dump", "document", *pgpids, natural=True)
 
         # Merge all dumped fixtures
         with open("geniza/corpus/fixtures/test_documents.json", "w") as merged:
