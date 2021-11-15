@@ -206,33 +206,53 @@ class TestDocumentSearchView:
         # no params
         docsearch_view.request.GET = {}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"sort": "scholarship_desc"},
+            "initial": {
+                "doctype": "all",
+                "sort": "scholarship_desc",
+            },
             "prefix": None,
-            "data": {"sort": "scholarship_desc"},
+            "data": {"doctype": "all", "sort": "scholarship_desc"},
         }
 
         # keyword search param
         docsearch_view.request.GET = {"q": "contract"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"sort": "scholarship_desc"},
+            "initial": {"doctype": "all", "sort": "scholarship_desc"},
             "prefix": None,
-            "data": {"q": "contract", "sort": "relevance"},
+            "data": {
+                "q": "contract",
+                "sort": "relevance",
+                "doctype": "all",
+            },
         }
 
         # sort search param
         docsearch_view.request.GET = {"sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"sort": "scholarship_desc"},
+            "initial": {
+                "doctype": "all",
+                "sort": "scholarship_desc",
+            },
             "prefix": None,
-            "data": {"sort": "scholarship_desc"},
+            "data": {
+                "doctype": "all",
+                "sort": "scholarship_desc",
+            },
         }
 
         # keyword and sort search params
         docsearch_view.request.GET = {"q": "contract", "sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"sort": "scholarship_desc"},
+            "initial": {
+                "doctype": "all",
+                "sort": "scholarship_desc",
+            },
             "prefix": None,
-            "data": {"q": "contract", "sort": "scholarship_desc"},
+            "data": {
+                "doctype": "all",
+                "q": "contract",
+                "sort": "scholarship_desc",
+            },
         }
 
     @pytest.mark.usefixtures("mock_solr_queryset")
