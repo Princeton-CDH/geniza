@@ -14,6 +14,14 @@ from geniza.footnotes.models import Footnote
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "-n",
+            "--noact",
+            action="store_true",
+            help="Do not save changes to the database",
+        )
+
     def handle(self, *args, **options):
         # get settings for remote git repository url and local path
         gitrepo_url = settings.TEI_TRANSCRIPTIONS_GITREPO
@@ -23,6 +31,8 @@ class Command(BaseCommand):
         self.sync_git(gitrepo_url, gitrepo_path)
 
         stats = defaultdict(int)
+        # keep track of document ids with multiple digitized editions (likely merged records/joins)
+        multiedition_docs = set()
 
         # iterate through all tei files in the repository
         for xmlfile in glob.iglob(os.path.join(gitrepo_path, "*.xml")):
@@ -58,52 +68,60 @@ class Command(BaseCommand):
             if doc.fragments.count() > 1:
                 stats["joins"] += 1
 
+            footnote = None
+
             editions = doc.footnotes.editions()
             if editions.count() > 1:
-                # print(xmlfile)
-                # print('more than one edition')
-                # print(editions)
+                # debugging output for footnote selection
+                # print('more than one edition for %s' % xmlfile)
                 # print(list(ed.source for ed in editions))
+                # try filtering by current text content
+                editions_with_content = editions.filter(content__isnull=False)
+                # print('editions with content')
+                # print(list(ed.source for ed in editions_with_content))
                 stats["multiple_editions"] += 1
-                # TODO: could we filter by the one that already has content?
+                if editions_with_content.count() > 1:
+                    stats["multiple_editions_with_content"] += 1
+                    multiedition_docs.add(doc.id)
+                elif editions_with_content.count() == 1:
+                    # if there was only one, assume it's the one to update
+                    footnote = editions_with_content.first()
             elif not editions.exists():
-                # print(xmlfile)
-                # print('no edition')
+                # debugging output for footnote selection
+                # print('no edition for %s' % xmlfile)
                 stats["no_edition"] += 1
             else:
                 stats["one_edition"] += 1
-                # if only one edition, update the transciption content
-
+                # if only one edition, update the transciption content there
                 footnote = editions.first()
+
+            # if we identified the correct footnote, update it
+            if footnote:
                 html = tei.text_to_html()
                 if html:
                     footnote.content = {"html": html}
                     if footnote.has_changed("content"):
-                        footnote.save()
+                        # don't actually save in --noact mode
+                        if not options["noact"]:
+                            footnote.save()
+                        # but still count as a change
                         stats["footnote_updated"] += 1
                 else:
                     self.stderr.write("No html generated for %s" % doc.id)
 
-            # NOTE: in *one* case there is a TEI file with translation. That should
-            # probably be handled elsewhere!
-
-            # start with the easy case? one edition footnote
-            # start a list of questions! are multiple sources combined in the tei?
-
-        # for each tei file, identify the document and update the transcription
-        # iterate through all .xml files in git repo path; base name == pgpid
-        # — how to identify corresponding footnote?
-        # convert tei to iiif annotation with blocks & line numbers
+            # NOTE: in *one* case there is a TEI file with translation content and
+            # no transcription; will get reported as empty, but that's ok — it's out of scope
+            # for this script and should be handled elsewhere.
 
         # report on what was done
         # include total number of transcription files,
         # documents with transcriptions, number of fragments, and how how many joins
-
+        stats["multi_edition_docs"] = len(multiedition_docs)
         self.stdout.write(
             """Processed {xml:,} TEI/XML files; skipped {empty_tei:,} TEI files with no text content.
 {document_not_found:,} documents not found in database.
 {joins:,} documents with multiple fragments.
-{multiple_editions:,} documents with multiple editions.
+{multiple_editions:,} documents with multiple editions; {multiple_editions_with_content} multiple editions with content ({multi_edition_docs} unique documents).
 {no_edition:,} documents with no edition.
 {one_edition:,} documents with one edition.
 Updated {footnote_updated:,} footnotes.
