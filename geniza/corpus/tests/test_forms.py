@@ -1,6 +1,11 @@
 from django import forms
 
-from geniza.corpus.forms import DocumentSearchForm, FacetChoiceField, SelectWithDisabled
+from geniza.corpus.forms import (
+    DocumentSearchForm,
+    FacetChoiceField,
+    RadioSelectWithCount,
+    SelectWithDisabled,
+)
 
 
 class TestSelectedWithDisabled:
@@ -28,9 +33,9 @@ class TestFacetChoiceField:
     # test adapted from ppa-django
 
     def test_init(self):
-        fcf = FacetChoiceField()
-        # uses CheckboxSelectMultiple
-        fcf.widget == forms.CheckboxSelectMultiple
+        fcf = FacetChoiceField(legend="Document type")
+        # uses RadioSelectWithCount
+        fcf.widget == RadioSelectWithCount
         # not required by default
         assert not fcf.required
         # still can override required with a kwarg
@@ -57,3 +62,19 @@ class TestDocumentSearchForm:
             choice_label = choice[1]
             assert isinstance(choice_label, str)
             assert "<span>" in choice_label
+
+    def test_radio_select_get_context(self):
+        form = DocumentSearchForm()
+        fake_facets = {"doctype": {"foo": 1, "bar": 2, "baz": 3}}
+        form.set_choices_from_facets(fake_facets)
+        context = form.fields["doctype"].widget.get_context(
+            "doctype", "all", {"id": "id_doctype"}
+        )
+        optgroup = context["widget"].get("optgroups", [])[0][1]
+        for option in optgroup:
+            if option["value"] in fake_facets["doctype"]:
+                assert option["attrs"]["data-count"] == fake_facets["doctype"].get(
+                    option["value"]
+                )
+            else:
+                assert option["value"] == "all"
