@@ -28,6 +28,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "num_discussions": "num_discussions_i",
         "scholarship_count": "scholarship_count_i",
         "scholarship": "scholarship_t",
+        "transcription": "transcription_t",
     }
 
     # (adapted from mep)

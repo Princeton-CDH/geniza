@@ -23,7 +23,7 @@ from taggit_selectize.managers import TaggableManager
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
-from geniza.footnotes.models import Footnote
+from geniza.footnotes.models import Footnote, Source
 
 logger = logging.getLogger(__name__)
 
@@ -564,9 +564,16 @@ class Document(ModelIndexable):
         # count scholarship records by type
         footnotes = self.footnotes.all()
         counts = defaultdict(int)
+        transcription_texts = []
         for fn in footnotes:
             for val in fn.doc_relation:
                 counts[val] += 1
+            # if this is an edition/transcription, try to get plain text for indexing
+            if Footnote.EDITION in fn.doc_relation and fn.content:
+                plaintext = fn.content_text()
+                if plaintext:
+                    transcription_texts.append(plaintext)
+
         index_data.update(
             {
                 "num_editions_i": counts[Footnote.EDITION],
@@ -576,6 +583,8 @@ class Document(ModelIndexable):
                 # preliminary scholarship record indexing
                 # (may need splitting out and weighting based on type of scholarship)
                 "scholarship_t": [fn.display() for fn in footnotes],
+                # text content of any transcriptions
+                "transcription_t": transcription_texts,
             }
         )
 
