@@ -218,12 +218,6 @@ class TestDocumentType:
         doc_type = DocumentType(name="SomeType")
         assert len(doc_type.natural_key()) == 1
         assert "SomeType" in doc_type.natural_key()
-        doc = Document.objects.create()
-        doc.doctype = doc_type
-        serialized_doc = serialize(
-            "json", [doc], use_natural_foreign_keys=True, use_natural_primary_keys=True
-        )
-        assert '"doctype": ["SomeType"]' in serialized_doc
 
     def test_get_by_natural_key(self):
         """Should find DocumentType object by name"""
