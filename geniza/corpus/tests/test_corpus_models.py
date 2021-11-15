@@ -7,6 +7,7 @@ from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
+from django.core.serializers import serialize
 from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.safestring import SafeString
@@ -203,6 +204,7 @@ class TestFragment:
         )
 
 
+@pytest.mark.django_db
 class TestDocumentType:
     def test_str(self):
         """Should use doctype.display_label if available, else use doctype.name"""
@@ -210,6 +212,24 @@ class TestDocumentType:
         assert str(doctype) == doctype.name
         doctype.display_label = "Legal document"
         assert str(doctype) == "Legal document"
+
+    def test_natural_key(self):
+        """Should use name as natural key"""
+        doc_type = DocumentType(name="SomeType")
+        assert len(doc_type.natural_key()) == 1
+        assert "SomeType" in doc_type.natural_key()
+        doc = Document.objects.create()
+        doc.doctype = doc_type
+        serialized_doc = serialize(
+            "json", [doc], use_natural_foreign_keys=True, use_natural_primary_keys=True
+        )
+        assert '"doctype": ["SomeType"]' in serialized_doc
+
+    def test_get_by_natural_key(self):
+        """Should find DocumentType object by name"""
+        doc_type = DocumentType(name="SomeType")
+        doc_type.save()
+        assert DocumentType.objects.get_by_natural_key("SomeType") == doc_type
 
 
 @pytest.mark.django_db
