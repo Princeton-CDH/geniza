@@ -744,12 +744,14 @@
         tags_ss
         scholarship_t
         old_pgpids_is
+        transcription_t
       </str>
       <str name="keyword_pf">
         description_t^50
         shelfmark_t^100
         tags_t
         scholarship_t^80
+        transcription_t^80
       </str>
 
        <!-- admin search field for Document model (no boosting because no relevance sort) -->
