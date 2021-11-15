@@ -91,10 +91,15 @@ class FacetChoiceField(forms.ChoiceField):
         # generate the list of choice from the facets
 
         # Translators: "All" label for facet filter when no choice selected
-        choices = [("all", _("All"))]
+        choices = [("all", mark_safe(f'<span>{_("All")}</span>'))]
         for val, count in facet_dict.items():
             choices.append(
-                (val, mark_safe(f'{val}<span class="count">{count:,}</span>'))
+                (
+                    val,
+                    mark_safe(
+                        f'<span>{val}</span><span class="count">{count:,}</span>'
+                    ),
+                )
             )
         self.choices = choices
         # pass the counts to the widget so it can be set as a data attribute

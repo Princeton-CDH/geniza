@@ -36,13 +36,13 @@
     }
     select[name="sort"] {
         max-width: 100%;
-        order: 4;
+        order: 5;
         flex: 1 1 auto;
         border-radius: 0;
         height: spacing.$spacing-xl;
         padding: spacing.$spacing-2xs spacing.$spacing-xs;
         margin-top: spacing.$spacing-sm;
-        font-size: typography.$text-size-2md;
+        font-size: typography.$text-size-md;
         @include breakpoints.for-tablet-landscape-up {
             flex: 0 1 auto;
             font-size: typography.$text-size-lg;
@@ -50,7 +50,7 @@
     }
     label[for="sort"] {
         max-width: 100%;
-        order: 3;
+        order: 4;
         flex: 1 0 100%;
         margin-top: spacing.$spacing-lg;
         font-size: typography.$text-size-md;
@@ -81,17 +81,70 @@
             }
         }
     }
+    // document type filter
+    details {
+        order: 3;
+        flex: 1 0 100%;
+        max-width: 100%;
+        border: 1px solid colors.$gray-50;
+        margin-top: spacing.$spacing-lg;
+        @include breakpoints.for-tablet-landscape-up {
+            font-size: typography.$text-size-2md;
+        }
+        // Label for document type filter
+        summary {
+            max-width: 100%;
+            list-style-type: none;
+            display: flex;
+            justify-content: space-between;
+            padding: spacing.$spacing-sm;
+            @include breakpoints.for-tablet-landscape-up {
+                padding: spacing.$spacing-sm spacing.$spacing-md;
+            }
+            // Repalcing default details marker
+            &::-webkit-details-marker {
+                display: none;
+            }
+            &::after {
+                content: "\25B6";
+            }
+        }
+        &[open] summary {
+            border-bottom: 1px solid colors.$gray-50;
+            // Expanded details marker
+            &::after {
+                content: "\25BC";
+            }
+        }
 
-    ul#id_doctype {
-        list-style-type: none;
-        // this willl hide the radio buttons,
-        // but we need a way to indicate selection
-        // input[type=radio] {
-        // opacity: 0;
-        // }
-
-        .count {
-            float: right;
+        // List of filter options
+        ul#id_doctype {
+            max-width: 100%;
+            list-style-type: none;
+            padding: spacing.$spacing-sm;
+            @include breakpoints.for-tablet-landscape-up {
+                padding: spacing.$spacing-md;
+            }
+            li {
+                max-width: 100%;
+                input[type="radio"] {
+                    @include a11y.sr-only-focusable;
+                    margin: spacing.$spacing-xs spacing.$spacing-xs 0 0;
+                    &:checked + span,
+                    &:checked + span + .count {
+                        font-weight: bold;
+                        text-decoration: underline;
+                    }
+                }
+                label {
+                    max-width: 100%;
+                    display: flex;
+                    flex: 1 0 100%;
+                    .count {
+                        margin-left: auto;
+                    }
+                }
+            }
         }
     }
 }
