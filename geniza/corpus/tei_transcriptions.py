@@ -83,3 +83,15 @@ class GenizaTei(teimap.Tei):
             html.append("\n".join(output))
 
         return "\n".join(html)
+
+    def text_to_plaintext(self):
+        lines = []
+        # because blocks are indicated by labels without containing elements,
+        # iterate over all lines and create blocks based on the labels
+        for line in self.text.lines:
+            if line.name == "label":
+                # blank line to indicate breaks between blocks
+                lines.append("")
+            elif line.name == "l":
+                lines.append(str(line))
+        return "\n".join(lines)

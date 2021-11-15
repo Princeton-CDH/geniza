@@ -28,7 +28,7 @@ class Command(BaseCommand):
         gitrepo_path = settings.TEI_TRANSCRIPTIONS_LOCAL_PATH
 
         # make sure we have latest tei content from git repository
-        self.sync_git(gitrepo_url, gitrepo_path)
+        # self.sync_git(gitrepo_url, gitrepo_path)
 
         stats = defaultdict(int)
         # keep track of document ids with multiple digitized editions (likely merged records/joins)
@@ -98,8 +98,9 @@ class Command(BaseCommand):
             # if we identified the correct footnote, update it
             if footnote:
                 html = tei.text_to_html()
+                text = tei.text_to_plaintext()
                 if html:
-                    footnote.content = {"html": html}
+                    footnote.content = {"html": html, "text": text}
                     if footnote.has_changed("content"):
                         # don't actually save in --noact mode
                         if not options["noact"]:
