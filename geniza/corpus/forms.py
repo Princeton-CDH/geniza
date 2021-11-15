@@ -90,8 +90,9 @@ class FacetChoiceField(forms.ChoiceField):
         """
         # generate the list of choice from the facets
 
-        # Translators: "All" label for facet filter when no choice selected
-        choices = [("all", mark_safe(f'<span>{_("All")}</span>'))]
+        # Translators: "All" label for search filter (default when no choice selected)
+        all_label = _("All")
+        choices = [("all", mark_safe(f"<span>{all_label}</span>"))]
         for val, count in facet_dict.items():
             choices.append(
                 (
