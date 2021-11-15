@@ -89,11 +89,14 @@ class FacetChoiceField(forms.ChoiceField):
         Populate the field choices from the facets returned by solr.
         """
         # generate the list of choice from the facets
-        # self.choices = ((val, val) for val in facet_dict.keys())
-        self.choices = (
-            (val, mark_safe(f'{val}<span class="count">{count:,}</span>'))
-            for val, count in facet_dict.items()
-        )
+
+        # Translators: "All" label for facet filter when no choice selected
+        choices = [("all", _("All"))]
+        for val, count in facet_dict.items():
+            choices.append(
+                (val, mark_safe(f'{val}<span class="count">{count:,}</span>'))
+            )
+        self.choices = choices
         # pass the counts to the widget so it can be set as a data attribute
         self.widget.facet_counts = facet_dict
 

@@ -25,7 +25,10 @@ class DocumentSearchView(ListView, FormMixin):
     page_title = _("Search Documents")
     # Translators: description of document search page, for search engines
     page_description = _("Search and browse Geniza documents.")
-    initial = {"sort": "scholarship_desc"}
+    initial = {
+        "sort": "scholarship_desc",
+        "doctype": "all",
+    }
 
     # map form sort to solr sort field
     solr_sort = {
@@ -82,7 +85,7 @@ class DocumentSearchView(ListView, FormMixin):
             # exclude type filter when generating counts
 
             # filter by type if specified
-            if search_opts["doctype"]:
+            if search_opts["doctype"] and search_opts["doctype"] != "all":
                 documents = documents.filter(
                     type='"%s"' % search_opts["doctype"], tag="type"
                 )
