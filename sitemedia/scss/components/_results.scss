@@ -105,6 +105,10 @@ section#document-list {
         .scholarship {
             order: 5;
             @include typography.meta;
+
+            & span {
+                padding-right: spacing.$spacing-md;
+            }
         }
     }
 
