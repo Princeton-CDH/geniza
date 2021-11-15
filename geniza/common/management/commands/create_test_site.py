@@ -2,13 +2,6 @@ from django.contrib.sites.models import Site
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from geniza.corpus.tests.conftest import (
-    make_document,
-    make_fragment,
-    make_join,
-    make_multifragment,
-)
-
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
@@ -26,14 +19,8 @@ class Command(BaseCommand):
         # site.port = 8000
         # site.save()
 
-        # set up test models via pytest fixtures
-        frag = make_fragment()
-        multifrag = make_multifragment()
-        # remove the example iiif url used in the test fixture
-        multifrag.iiif_url = ""
-        multifrag.save()
-        make_document(multifrag)
-        make_join(frag, multifrag)
+        # set up test models via JSON fixtures
+        call_command("loaddata", "ui_ux_test_documents.json")
 
         # index everything in solr
         call_command("index")
