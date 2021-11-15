@@ -71,9 +71,16 @@ class DocumentSearchView(ListView, FormMixin):
 
             if search_opts["q"]:
                 documents = (
+                    # parasolr updates:
+                    # - highlighting on multiple fields
+                    # - aliases highlighting results
                     documents.keyword_search(search_opts["q"])
-                    .highlight("description", snippets=3, method="unified")
-                    .also("score")
+                    # TODO: parasolr doesn't support highlighting on multiple fields!
+                    # (but solr does, right?)
+                    # .highlight("description", snippets=3, method="unified")
+                    .highlight("transcription", snippets=3, method="unified").also(
+                        "score"
+                    )
                 )  # include relevance score in results
 
             documents = documents.order_by(self.solr_sort[search_opts["sort"]])
@@ -93,7 +100,9 @@ class DocumentSearchView(ListView, FormMixin):
                 "page_title": self.page_title,
                 "page_description": self.page_description,
                 "page_type": "search",
-                "highlighting": self.queryset.get_highlighting(),
+                "highlighting": self.queryset.get_highlighting()
+                if self.queryset
+                else {},
             }
         )
         return context_data

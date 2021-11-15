@@ -42,6 +42,19 @@
                 {% endwith %}
             </p>
 
+            {# transcription: keywords in context if any, or excerpt #}
+            {% with document_highlights=highlighting|dict_item:document.id %}
+                {% if document_highlights.transcription_t %}
+                    <p class="transcription">{% for snippet in document_highlights.transcription_t %}
+                        {{ snippet|safe }}
+                    {% endfor %}</p>
+                {% else %}
+                    {# otherwise, display truncated transcription #}
+                    {# TODO: does truncate words remove newlines? can we split on lines instead? #}
+                    <p class="transcription">{{ document.transcription.0|truncatechars:75 }}</p>
+                {% endif %}
+            {% endwith %}
+
             {# scholarship records #}
             <p class="scholarship">
                 {% if document.scholarship_count %}
