@@ -20,7 +20,7 @@ class Command(BaseCommand):
         # site.save()
 
         # set up test models via JSON fixtures
-        call_command("loaddata", "test_documents.json")
+        call_command("loaddata", "ui_ux_test_documents.json")
 
         # index everything in solr
         call_command("index")
