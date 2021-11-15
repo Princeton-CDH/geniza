@@ -287,18 +287,21 @@ class TestDocumentSearchView:
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_not_called()
+            mock_sqs.filter.assert_not_called()
             mock_sqs.order_by.assert_called_with("-score")
 
-            # keyword and sort search params
+            # keyword, sort, and doctype filter search params
             mock_sqs.reset_mock()
             docsearch_view.request = Mock()
             docsearch_view.request.GET = {
                 "q": "six apartments",
                 "sort": "scholarship_desc",
+                "doctype": "Legal",
             }
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_called_with("six apartments")
+            mock_sqs.keyword_search.return_value.also.return_value.order_by.return_value.filter.assert_called()
             mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
                 "-scholarship_count_i"
             )
@@ -400,6 +403,29 @@ class TestDocumentSearchView:
         assert (
             qs[0]["pgpid"] == join.id
         ), "document with matching description and fewest scholarship records returned first"
+
+    def test_doctype_filter(self, document, join, empty_solr):
+        """Integration test for document type filter"""
+        SolrClient().update.index(
+            [
+                document.index_data(),  # type = Legal document
+                join.index_data(),  # type = Letter
+            ],
+            commit=True,
+        )
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+
+        # no filter
+        docsearch_view.request.GET = {}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 2
+
+        # filter by doctype "Legal document"
+        docsearch_view.request.GET = {"doctype": "Legal document"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+        assert qs[0]["pgpid"] == document.id, "Only legal document returned"
 
     def test_shelfmark_boost(self, empty_solr, document, multifragment):
         # integration test for shelfmark field boosting
