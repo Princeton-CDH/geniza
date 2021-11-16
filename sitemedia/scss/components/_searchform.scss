@@ -108,14 +108,14 @@
             &::-webkit-details-marker {
                 display: none;
             }
-            &::after {
+            span.expand-icon::before {
                 content: "\25B6";
             }
         }
         &[open] summary {
             border-bottom: 1px solid colors.$gray-50;
             // Expanded details marker
-            &::after {
+            span.expand-icon::before {
                 content: "\25BC";
             }
         }

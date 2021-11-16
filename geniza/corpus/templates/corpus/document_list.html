@@ -11,7 +11,10 @@
             {{ form.q }}
 
             <details>
-                <summary>{{ form.doctype.label }}</summary>
+                <summary>
+                    <span>{{ form.doctype.label }}</span>
+                    <span class="expand-icon"></span>
+                </summary>
                 {{ form.doctype }}
             </details>
 
