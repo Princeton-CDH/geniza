@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-09 13:18-0500\n"
+"POT-Creation-Date: 2021-11-16 14:52-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -53,8 +53,8 @@ msgid "Sort by"
 msgstr ""
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:541
-#: geniza/corpus/templates/corpus/document_detail.html:23
+#: geniza/corpus/models.py:551
+#: geniza/corpus/templates/corpus/document_detail.html:33
 msgid "Unknown type"
 msgstr ""
 
@@ -62,35 +62,42 @@ msgstr ""
 msgid "Home"
 msgstr "דף הבית"
 
+#. Translators: Document edit button for admins
+#: geniza/corpus/templates/corpus/document_detail.html:25
+#, fuzzy
+#| msgid "Editor"
+msgid "Edit"
+msgstr "עורך"
+
 #. Translators: label for document metadata section (editor, date, input date)
-#: geniza/corpus/templates/corpus/document_detail.html:35
+#: geniza/corpus/templates/corpus/document_detail.html:45
 msgid "Metadata"
 msgstr ""
 
 #. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:41
+#: geniza/corpus/templates/corpus/document_detail.html:51
 msgid "Editor"
 msgstr "עורך"
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:48
+#: geniza/corpus/templates/corpus/document_detail.html:58
 #: geniza/corpus/templates/corpus/snippets/document_result.html:24
 msgid "Input date"
 msgstr "תאריך קלט"
 
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:52
+#: geniza/corpus/templates/corpus/document_detail.html:62
 msgid "Permalink"
 msgstr ""
 
 #. Translators: label for tags on a document
-#: geniza/corpus/templates/corpus/document_detail.html:62
+#: geniza/corpus/templates/corpus/document_detail.html:72
 #: geniza/corpus/templates/corpus/snippets/document_result.html:14
 msgid "Tags"
 msgstr ""
 
 #. Translators: label for document description
-#: geniza/corpus/templates/corpus/document_detail.html:73
+#: geniza/corpus/templates/corpus/document_detail.html:83
 #, fuzzy
 #| msgid "Transcription"
 msgid "Description"
