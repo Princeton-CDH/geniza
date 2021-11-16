@@ -20,6 +20,16 @@ section#document-list {
     ol {
         list-style: none;
         @include container.two-column;
+        margin-top: spacing.$spacing-2xl;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: spacing.$spacing-4xl;
+        }
+    }
+    nav.pagination + ol {
+        margin-top: 0;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: spacing.$spacing-md;
+        }
     }
 }
 

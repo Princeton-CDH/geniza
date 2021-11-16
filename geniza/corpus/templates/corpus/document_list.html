@@ -33,7 +33,7 @@
                 {{ count_humanized }} total results
             {% endblocktranslate %}
         </h1>
-        {% if total > 0 %}
+        {% if is_paginated %}
             {% include "corpus/snippets/pagination.html" %}
         {% endif %}
         <ol>
@@ -41,7 +41,7 @@
                 {% include "corpus/snippets/document_result.html" %}
             {% endfor %}
         </ol>
-        {% if total > 0 %}
+        {% if is_paginated %}
             {% include "corpus/snippets/pagination.html" %}
         {% endif %}
     </section>

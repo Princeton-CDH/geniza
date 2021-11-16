@@ -14,6 +14,7 @@ nav.pagination {
     margin: spacing.$spacing-lg 0;
     @include breakpoints.for-tablet-landscape-up {
         margin: spacing.$spacing-xl 0;
+        justify-content: center;
     }
     // special styling for nav at bottom of page
     &:last-of-type {
@@ -33,7 +34,7 @@ nav.pagination {
             font-weight: normal;
         }
         @include breakpoints.for-tablet-landscape-up {
-            padding: 0 spacing.$spacing-xs;
+            padding: 0 spacing.$spacing-sm;
             font-size: typography.$text-size-2md;
         }
     }
