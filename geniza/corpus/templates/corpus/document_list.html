@@ -10,10 +10,9 @@
         <fieldset>
             {{ form.q }}
 
-            <details>
+            <details class="doctype-filter">
                 <summary>
-                    <span>{{ form.doctype.label }}</span>
-                    <span class="expand-icon"></span>
+                    {{ form.doctype.label }}
                 </summary>
                 {{ form.doctype }}
             </details>
