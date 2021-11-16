@@ -35,6 +35,7 @@
         }
     }
     select[name="sort"] {
+        width: 100%;
         max-width: 100%;
         order: 5;
         flex: 1 1 auto;
@@ -44,6 +45,7 @@
         margin-top: spacing.$spacing-sm;
         font-size: typography.$text-size-md;
         @include breakpoints.for-tablet-landscape-up {
+            width: auto;
             flex: 0 1 auto;
             font-size: typography.$text-size-lg;
         }
