@@ -96,13 +96,14 @@
         // Label for document type filter
         summary {
             max-width: 100%;
-            list-style-type: none;
             display: flex;
+            flex-flow: row nowrap;
             justify-content: space-between;
             padding: spacing.$spacing-sm;
             @include breakpoints.for-tablet-landscape-up {
                 padding: spacing.$spacing-sm spacing.$spacing-md;
             }
+            list-style-type: none;
             // Repalcing default details marker
             &::-webkit-details-marker {
                 display: none;
