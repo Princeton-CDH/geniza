@@ -31,8 +31,8 @@
             <p class="description">
                 {# display keywords in context if any #}
                 {% with document_highlights=highlighting|dict_item:document.id %}
-                    {% if document_highlights.description_t %}
-                        {% for snippet in document_highlights.description_t %}
+                    {% if document_highlights.description %}
+                        {% for snippet in document_highlights.description %}
                             {{ snippet|safe }}
                         {% endfor %}
                     {% else %}
@@ -44,8 +44,8 @@
 
             {# transcription: keywords in context if any, or excerpt #}
             {% with document_highlights=highlighting|dict_item:document.id %}
-                {% if document_highlights.transcription_t %}
-                    <p class="transcription">{% for snippet in document_highlights.transcription_t %}
+                {% if document_highlights.transcription %}
+                    <p class="transcription">{% for snippet in document_highlights.transcription %}
                         {{ snippet|safe }}
                     {% endfor %}</p>
                 {% else %}
