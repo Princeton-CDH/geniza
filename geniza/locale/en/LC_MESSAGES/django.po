@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-16 14:52-0500\n"
+"POT-Creation-Date: 2021-11-16 14:56-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -57,7 +57,7 @@ msgstr ""
 msgid "Home"
 msgstr "Home"
 
-#. Translators: Document edit button for admins
+#. Translators: Document edit link for admins
 #: geniza/corpus/templates/corpus/document_detail.html:25
 #, fuzzy
 #| msgid "Editor"
