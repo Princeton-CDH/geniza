@@ -84,7 +84,7 @@
         }
     }
     // document type filter
-    div.deque-expander {
+    details {
         order: 3;
         flex: 1 0 100%;
         max-width: 100%;
@@ -94,55 +94,56 @@
             font-size: typography.$text-size-2md;
         }
         // Label for document type filter
-        div.deque-expander-summary {
-            @include colors.apply-theme("on-background");
-            @include colors.apply-theme(
-                "background",
-                $property: "background-color"
-            );
+        summary {
             max-width: 100%;
             display: flex;
             flex-flow: row nowrap;
             justify-content: space-between;
-            outline: 1px solid colors.$gray-50;
             padding: spacing.$spacing-sm;
             @include breakpoints.for-tablet-landscape-up {
                 padding: spacing.$spacing-sm spacing.$spacing-md;
             }
-            span.toggle-indicator::before {
-                @include colors.apply-theme("on-background");
+            list-style-type: none;
+            // Repalcing default details marker
+            &::-webkit-details-marker {
+                display: none;
+            }
+            &::after {
                 content: "\25B6";
             }
-            &[aria-expanded="true"] span.toggle-indicator::before {
+        }
+        &[open] summary {
+            border-bottom: 1px solid colors.$gray-50;
+            // Expanded details marker
+            &::after {
                 content: "\25BC";
             }
         }
-        div.deque-expander-content {
-            // List of filter options
-            ul#id_doctype {
+
+        // List of filter options
+        ul#id_doctype {
+            max-width: 100%;
+            list-style-type: none;
+            padding: spacing.$spacing-sm;
+            @include breakpoints.for-tablet-landscape-up {
+                padding: spacing.$spacing-md;
+            }
+            li {
                 max-width: 100%;
-                list-style-type: none;
-                padding: spacing.$spacing-sm;
-                @include breakpoints.for-tablet-landscape-up {
-                    padding: spacing.$spacing-md;
-                }
-                li {
-                    max-width: 100%;
-                    input[type="radio"] {
-                        @include a11y.sr-only;
-                        &:checked + span,
-                        &:checked + span + .count {
-                            font-weight: bold;
-                            text-decoration: underline;
-                        }
+                input[type="radio"] {
+                    @include a11y.sr-only;
+                    &:checked + span,
+                    &:checked + span + .count {
+                        font-weight: bold;
+                        text-decoration: underline;
                     }
-                    label {
-                        max-width: 100%;
-                        display: flex;
-                        flex: 1 0 100%;
-                        .count {
-                            margin-left: auto;
-                        }
+                }
+                label {
+                    max-width: 100%;
+                    display: flex;
+                    flex: 1 0 100%;
+                    .count {
+                        margin-left: auto;
                     }
                 }
             }
