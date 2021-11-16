@@ -14,8 +14,9 @@ repos:
     rev: v2.4.1
     hooks:
       - id: prettier
-        exclude: \.html$
+        exclude: \.html$|\.min\.js$|\.min\.css$
         # exclude django templates, which prettier does not support
+        # exclude minified vendor JS and CSS
   - repo: https://github.com/rtts/djhtml
     rev: v1.4.9
     hooks:
