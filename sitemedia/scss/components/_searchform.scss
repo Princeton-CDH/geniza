@@ -115,8 +115,9 @@
                 display: none;
             }
             &::after {
-                content: "\25B6"; // = ▶
-                transition: transform 0.5s ease;
+                font-family: "Phosphor";
+                content: "\f82b"; // phosphor caret-down-fill icon
+                transition: transform 0.75s ease;
                 float: right;
                 margin: 0;
                 padding: 0;
@@ -126,7 +127,7 @@
             border-bottom: 1px solid colors.$gray-50;
             // Expanded details marker
             &::after {
-                transform: rotate(90deg);
+                transform: rotate(-180deg);
             }
         }
 
