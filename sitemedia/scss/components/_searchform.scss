@@ -96,27 +96,28 @@
         // Label for document type filter
         summary {
             max-width: 100%;
-            display: flex;
-            flex-flow: row nowrap;
-            justify-content: space-between;
             padding: spacing.$spacing-sm;
             @include breakpoints.for-tablet-landscape-up {
                 padding: spacing.$spacing-sm spacing.$spacing-md;
             }
             list-style-type: none;
-            // Repalcing default details marker
+            // Suppress default details marker
             &::-webkit-details-marker {
                 display: none;
             }
-            span.expand-icon::before {
-                content: "\25B6";
+            &::after {
+                content: "\25B6"; // = ▶
+                transition: transform 0.5s ease;
+                float: right;
+                margin: 0;
+                padding: 0;
             }
         }
         &[open] summary {
             border-bottom: 1px solid colors.$gray-50;
             // Expanded details marker
-            span.expand-icon::before {
-                content: "\25BC";
+            &::after {
+                transform: rotate(90deg);
             }
         }
 
