@@ -42,8 +42,17 @@
         border-radius: 0;
         height: spacing.$spacing-xl;
         padding: spacing.$spacing-2xs spacing.$spacing-xs;
+        /*  NOTE: this will disable background gloss and curved borders on Safari,
+        but loses the dropdown arrow...  */
+        /* -webkit-appearance: none;  */
         margin-top: spacing.$spacing-sm;
         font-size: typography.$text-size-md;
+        border: 1px solid colors.$gray-50;
+        @include colors.apply-theme("on-background");
+        @include colors.apply-theme(
+            "background",
+            $property: "background-color"
+        );
         @include breakpoints.for-tablet-landscape-up {
             width: auto;
             flex: 0 1 auto;
