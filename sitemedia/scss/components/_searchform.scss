@@ -84,7 +84,7 @@
         }
     }
     // document type filter
-    details {
+    div.deque-expander {
         order: 3;
         flex: 1 0 100%;
         max-width: 100%;
@@ -94,57 +94,55 @@
             font-size: typography.$text-size-2md;
         }
         // Label for document type filter
-        summary {
+        div.deque-expander-summary {
+            @include colors.apply-theme("on-background");
+            @include colors.apply-theme(
+                "background",
+                $property: "background-color"
+            );
             max-width: 100%;
             display: flex;
             flex-flow: row nowrap;
             justify-content: space-between;
+            outline: 1px solid colors.$gray-50;
             padding: spacing.$spacing-sm;
             @include breakpoints.for-tablet-landscape-up {
                 padding: spacing.$spacing-sm spacing.$spacing-md;
             }
-            list-style-type: none;
-            // Repalcing default details marker
-            &::-webkit-details-marker {
-                display: none;
-            }
-            &::after {
+            span.toggle-indicator::before {
+                @include colors.apply-theme("on-background");
                 content: "\25B6";
             }
-        }
-        &[open] summary {
-            border-bottom: 1px solid colors.$gray-50;
-            // Expanded details marker
-            &::after {
+            &[aria-expanded="true"] span.toggle-indicator::before {
                 content: "\25BC";
             }
         }
-
-        // List of filter options
-        ul#id_doctype {
-            max-width: 100%;
-            list-style-type: none;
-            padding: spacing.$spacing-sm;
-            @include breakpoints.for-tablet-landscape-up {
-                padding: spacing.$spacing-md;
-            }
-            li {
+        div.deque-expander-content {
+            // List of filter options
+            ul#id_doctype {
                 max-width: 100%;
-                input[type="radio"] {
-                    @include a11y.sr-only-focusable;
-                    margin: spacing.$spacing-xs spacing.$spacing-xs 0 0;
-                    &:checked + span,
-                    &:checked + span + .count {
-                        font-weight: bold;
-                        text-decoration: underline;
-                    }
+                list-style-type: none;
+                padding: spacing.$spacing-sm;
+                @include breakpoints.for-tablet-landscape-up {
+                    padding: spacing.$spacing-md;
                 }
-                label {
+                li {
                     max-width: 100%;
-                    display: flex;
-                    flex: 1 0 100%;
-                    .count {
-                        margin-left: auto;
+                    input[type="radio"] {
+                        @include a11y.sr-only;
+                        &:checked + span,
+                        &:checked + span + .count {
+                            font-weight: bold;
+                            text-decoration: underline;
+                        }
+                    }
+                    label {
+                        max-width: 100%;
+                        display: flex;
+                        flex: 1 0 100%;
+                        .count {
+                            margin-left: auto;
+                        }
                     }
                 }
             }

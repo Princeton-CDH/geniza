@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% load static i18n humanize %}
 
+{% block extrastyle %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/deque-patterns.min.css' %}">
+{% endblock %}
+
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
@@ -10,10 +14,15 @@
         <fieldset>
             {{ form.q }}
 
-            <details>
-                <summary>{{ form.doctype.label }}</summary>
-                {{ form.doctype }}
-            </details>
+            <div class="deque-expander">
+                <div class="deque-expander-summary">
+                    {{ form.doctype.label }}
+                    <span class="toggle-indicator"></span>
+                </div>
+                <div class="deque-expander-content">
+                    {{ form.doctype }}
+                </div>
+            </div>
 
             {{ form.sort }}
             <label for="sort">{{ form.sort.label }}</label>
@@ -46,4 +55,5 @@
             {% endfor %}
         </ol>
     </section>
+    <script type="text/javascript" src="{% static 'js/deque-patterns.min.js' %}"></script>
 {% endblock main %}
