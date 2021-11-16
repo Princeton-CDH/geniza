@@ -65,6 +65,9 @@ body#document {
                     margin-top: spacing.$spacing-md;
                 }
             }
+            dt + dd + dd {
+                margin-top: spacing.$spacing-3xs;
+            }
             // hanging "info" phosphor icon before link
             dd a::before {
                 @include colors.apply-theme("on-background");
