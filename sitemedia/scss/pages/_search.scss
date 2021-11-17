@@ -9,13 +9,13 @@
 #search {
     // Overall page layout
     form {
-        width: 100%;
         @include container.two-column;
         display: flex;
         flex-direction: column;
         padding: spacing.$spacing-md;
         margin-top: spacing.$spacing-lg;
         @include breakpoints.for-tablet-landscape-up {
+            width: 100%;
             margin-top: spacing.$spacing-2xl;
         }
     }

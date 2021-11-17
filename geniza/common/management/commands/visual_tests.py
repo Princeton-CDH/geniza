@@ -30,6 +30,17 @@ class Command(BaseCommand):
         # browser.get("http://localhost:8000/content")
         # percy_snapshot(browser, "Content Page")
 
+        # document search with document type filter expanded
+        # NOTE: revise to capture search filter panel when we implement it
+        browser.get("http://localhost:8000/documents/")
+        # open document type filter
+        browser.find_element_by_css_selector(".doctype-filter summary").click()
+        # click the first option
+        browser.find_element_by_css_selector(
+            ".doctype-filter li:nth-child(1) label"
+        ).click()
+        percy_snapshot(browser, "Document Search filter")
+
         # document search
         browser.get("http://localhost:8000/documents/?q=the+writer&per_page=2")
         percy_snapshot(browser, "Document Search")

@@ -1,4 +1,5 @@
-from django.core.paginator import Paginator
+from ast import literal_eval
+
 from django.db.models.query import Prefetch
 from django.http import Http404
 from django.http.response import HttpResponsePermanentRedirect
@@ -78,7 +79,16 @@ class DocumentSearchView(ListView, FormMixin):
                     .also("score")
                 )  # include relevance score in results
 
-            documents = documents.order_by(self.solr_sort[search_opts["sort"]])
+            documents = documents.order_by(
+                self.solr_sort[search_opts["sort"]]
+            ).facet_field("type", exclude="type", sort="value")
+            # exclude type filter when generating counts
+
+            # filter by type if specified
+            if search_opts["doctype"]:
+                typelist = literal_eval(search_opts["doctype"])
+                quoted_typelist = ['"%s"' % doctype for doctype in typelist]
+                documents = documents.filter(type__in=quoted_typelist, tag="type")
 
         self.queryset = documents
 
@@ -105,7 +115,9 @@ class DocumentSearchView(ListView, FormMixin):
 
         paged_result = context_data["page_obj"].object_list
         highlights = paged_result.get_highlighting() if paged_result.count() else {}
-
+        facet_dict = self.queryset.get_facets()
+        # populate choices for facet filter fields on the form
+        context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
         context_data.update(
             {
                 "highlighting": highlights,

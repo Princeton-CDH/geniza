@@ -9,6 +9,13 @@
     <form>
         <fieldset>
             {{ form.q }}
+
+            <details class="doctype-filter">
+                <summary>
+                    {{ form.doctype.label }}
+                </summary>
+                {{ form.doctype }}
+            </details>
             {{ form.sort }}
             <label for="sort">{{ form.sort.label }}</label>
             {# Translators: Search submit button #}
@@ -17,6 +24,7 @@
                 <i class="ph-magnifying-glass"></i>
             </button>
         </fieldset>
+
         {% for field, errors in form.errors.items %}
             {# no clean way to get field labels here, so we just collapse the error lists #}
             {% for error in errors %}
