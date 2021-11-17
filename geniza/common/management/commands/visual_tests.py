@@ -31,12 +31,8 @@ class Command(BaseCommand):
         # percy_snapshot(browser, "Content Page")
 
         # document search
-        # search term should match descriptions of 2969 and 31094
-        browser.get("http://localhost:8000/documents/?q=physician")
+        browser.get("http://localhost:8000/documents/?q=the&per_page=2")
         percy_snapshot(browser, "Document Search")
-
-        browser.get("http://localhost:8000/documents/?per_page=2")
-        percy_snapshot(browser, "Document Search (paginated)")
 
         # document detail
         browser.get("http://localhost:8000/documents/2532/")
