@@ -4,6 +4,7 @@
 
 @use "../base/breakpoints";
 @use "../base/colors";
+@use "../base/container";
 @use "../base/spacing";
 @use "../base/typography";
 
@@ -18,6 +19,25 @@ body#document {
         // document type, inside title
         .doctype {
             @include typography.doctype;
+        }
+    }
+    .edit-link-container {
+        @include container.measure;
+        position: absolute;
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        a.edit-link {
+            span {
+                @include typography.link;
+            }
+            i {
+                text-decoration: none;
+            }
+            margin-right: spacing.$spacing-xl;
+            @include breakpoints.for-desktop-up {
+                margin: spacing.$spacing-xl spacing.$spacing-md;
+            }
         }
     }
     // Primary container

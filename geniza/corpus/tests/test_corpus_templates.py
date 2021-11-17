@@ -62,6 +62,14 @@ class TestDocumentDetailTemplate:
         second_url = join.textblock_set.last().fragment.iiif_url
         assertContains(response, f'data-iiif-urls="{first_url} {second_url}"')
 
+    def test_edit_link(self, client, admin_client, document):
+        """Edit link should appear if user is admin, otherwise it should not"""
+        edit_url = reverse("admin:corpus_document_change", args=[document.id])
+        response = client.get(document.get_absolute_url())
+        assertNotContains(response, edit_url)
+        response = admin_client.get(document.get_absolute_url())
+        assertContains(response, edit_url)
+
 
 class TestDocumentScholarshipTemplate:
     def test_source_title(self, client, document, source):
