@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-17 13:48-0500\n"
+"POT-Creation-Date: 2021-11-17 15:04-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -174,18 +174,23 @@ msgstr ""
 msgid "View document details"
 msgstr "הצגת פרטי מסמך"
 
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:5
+#. Translators: accessibility text label for document detail view tabs navigation
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:4
+msgid "tabs"
+msgstr ""
+
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:6
 msgid "Document Details"
 msgstr "פרטי מסמך"
 
 #. Translators: n_records is number of scholarship records
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:8
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:9
 #, python-format
 msgid "Scholarship Records (%(n_records)s)"
 msgstr "רשומות קשורות (%(n_records)s)"
 
 #. Translators: n_links is number of external links
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:13
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:14
 #, fuzzy, python-format
 #| msgid "External Links (%(n_links)s)"
 msgid "External Links (%(n_links)s)"
@@ -248,20 +253,25 @@ msgstr "דיון"
 msgid "Django site admin"
 msgstr "ניהול האתר"
 
+#. Translators: accessibility text label for site navigation
+#: geniza/templates/nav.html:3
+msgid "main navigation"
+msgstr ""
+
 #. Translators: label for 'home' button in main navigation
-#: geniza/templates/nav.html:4
+#: geniza/templates/nav.html:5
 msgid "GENIZA"
 msgstr "גניזה"
 
-#: geniza/templates/nav.html:10
+#: geniza/templates/nav.html:12
 msgid "Search"
 msgstr "חיפוש"
 
-#: geniza/templates/nav.html:13
+#: geniza/templates/nav.html:15
 msgid "Contact Us"
 msgstr "יצירת קשר"
 
-#: geniza/templates/nav.html:14
+#: geniza/templates/nav.html:16
 msgid "About"
 msgstr "אודות"
 
