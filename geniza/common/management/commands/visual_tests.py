@@ -35,6 +35,9 @@ class Command(BaseCommand):
         browser.get("http://localhost:8000/documents/?q=physician")
         percy_snapshot(browser, "Document Search")
 
+        browser.get("http://localhost:8000/documents/?per_page=2")
+        percy_snapshot(browser, "Document Search (paginated)")
+
         # document detail
         browser.get("http://localhost:8000/documents/2532/")
         percy_snapshot(browser, "Document Details")

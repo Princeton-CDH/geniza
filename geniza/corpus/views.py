@@ -84,6 +84,22 @@ class DocumentSearchView(ListView, FormMixin):
 
         return documents
 
+    def get_paginate_by(self, queryset):
+        """Try to get pagination from GET request query,
+        if there is none fallback to the original."""
+        paginate_by = super().get_paginate_by(queryset)
+
+        # NOTE: This may be reimplemented as a part of the form later
+        req_params = self.request.GET.copy()
+        if "per_page" in req_params:
+            try:
+                per_page = int(req_params["per_page"])
+                if per_page < self.paginate_by:
+                    paginate_by = per_page
+            except:
+                pass
+        return paginate_by
+
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
 

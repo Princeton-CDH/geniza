@@ -498,3 +498,11 @@ class TestDocumentScholarshipView:
         assert doc_detail_view.get_absolute_url() == absolutize_url(
             f"{document.get_absolute_url()}scholarship/"
         )
+
+    def test_get_paginate_by(self):
+        """Should set pagination to 2 per page"""
+        docsearch_view = DocumentSearchView(kwargs={})
+        docsearch_view.request = Mock()
+        docsearch_view.request.GET = {"per_page": "2"}
+        qs = docsearch_view.get_queryset()
+        assert docsearch_view.get_paginate_by(qs) == 2
