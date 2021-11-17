@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 
@@ -35,6 +36,66 @@ class SelectWithDisabled(SelectDisabledMixin, forms.Select):
     Subclass of :class:`django.forms.Select` with option to mark
     a choice as disabled.
     """
+
+
+class CheckboxSelectWithCount(forms.CheckboxSelectMultiple):
+    # extend default CheckboxSelectMultiple to add facet counts and
+    # include per-item count as a data attribute
+    facet_counts = {}
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        for optgroup in context["widget"].get("optgroups", []):
+            for option in optgroup[1]:
+                count = self.facet_counts.get(option["value"], None)
+                # make facet count available as data-count attribute
+                if count:
+                    option["attrs"]["data-count"] = f"{count:,}"
+        return context
+
+
+class FacetChoiceField(forms.ChoiceField):
+    """Choice field where choices are set based on Solr facets"""
+
+    # Borrowed from ppa-django / mep-django
+    # - turn off choice validation (shouldn't fail if facets don't get loaded)
+    # - default is not required
+
+    # use a custom widget so we can add facet count as a data attribute
+    widget = CheckboxSelectWithCount
+
+    def __init__(self, *args, **kwargs):
+        if "required" not in kwargs:
+            kwargs["required"] = False
+
+        # get custom kwarg and remove before passing to MultipleChoiceField
+        # super method, which would cause an error
+        self.widget.legend = None
+        if "legend" in kwargs:
+            self.widget.legend = kwargs["legend"]
+            del kwargs["legend"]
+
+        super().__init__(*args, **kwargs)
+
+        # if no custom legend, set it from label
+        if not self.widget.legend:
+            self.widget.legend = self.label
+
+    def valid_value(self, value):
+        return True
+
+    def populate_from_facets(self, facet_dict):
+        """
+        Populate the field choices from the facets returned by solr.
+        """
+        # generate the list of choice from the facets
+
+        self.choices = (
+            (val, mark_safe(f'<span>{val}</span><span class="count">{count:,}</span>'))
+            for val, count in facet_dict.items()
+        )
+        # pass the counts to the widget so it can be set as a data attribute
+        self.widget.facet_counts = facet_dict
 
 
 class DocumentSearchForm(forms.Form):
@@ -74,3 +135,22 @@ class DocumentSearchForm(forms.Form):
         required=False,
         widget=SelectWithDisabled,
     )
+
+    doctype = FacetChoiceField(
+        # Translators: label for document type search form filter
+        label=_("Document Type"),
+    )
+
+    # mapping of solr facet fields to form input
+    solr_facet_fields = {"type": "doctype"}
+
+    def set_choices_from_facets(self, facets):
+        """Set choices on field from a dictionary of facets"""
+        # borrowed from ppa-django;
+        # populate facet field choices from current facets
+        for key, facet_dict in facets.items():
+            # use field from facet fields map or else field name as is
+            formfield = self.solr_facet_fields.get(key, key)
+            # for each facet, set the corresponding choice field
+            if formfield in self.fields:
+                self.fields[formfield].populate_from_facets(facet_dict)
