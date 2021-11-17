@@ -1,5 +1,4 @@
-from django.contrib.auth.models import User
-from django.template.loader import get_template, render_to_string
+from django.template.loader import get_template
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
@@ -59,17 +58,13 @@ class TestDocumentDetailTemplate:
         second_url = join.textblock_set.last().fragment.iiif_url
         assertContains(response, f'data-iiif-urls="{first_url} {second_url}"')
 
-    def test_edit_link(self, client, document):
+    def test_edit_link(self, client, admin_client, document):
         """Edit link should appear if user is admin, otherwise it should not"""
         edit_url = reverse("admin:corpus_document_change", args=[document.id])
         response = client.get(document.get_absolute_url())
-        assertNotContains(response, f'<a class="edit-link" href="{edit_url}">')
-        user = User.objects.create_user(
-            "foo", "myemail@test.com", "bar", is_superuser=True
-        )
-        client.login(username="foo", password="bar")
-        response = client.get(document.get_absolute_url())
-        assertContains(response, f'<a class="edit-link" href="{edit_url}">')
+        assertNotContains(response, edit_url)
+        response = admin_client.get(document.get_absolute_url())
+        assertContains(response, edit_url)
 
 
 class TestDocumentScholarshipTemplate:
