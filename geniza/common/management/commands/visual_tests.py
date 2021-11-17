@@ -39,10 +39,6 @@ class Command(BaseCommand):
         browser.find_element_by_css_selector(
             ".doctype-filter li:nth-child(1) label"
         ).click()
-        # click the fourth option
-        browser.find_element_by_css_selector(
-            ".doctype-filter li:nth-child(4) label"
-        ).click()
         percy_snapshot(browser, "Document Search filter")
 
         # document search
