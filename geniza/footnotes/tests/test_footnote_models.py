@@ -79,6 +79,10 @@ class TestSource:
             author2.creator,
         )
 
+    def test_str_unpublished_vol(self, typed_texts):
+        # displays without volume
+        assert str(typed_texts) == "S. D. Goitein, typed texts"
+
 
 class TestFootnote:
     @pytest.mark.django_db
