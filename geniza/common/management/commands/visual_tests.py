@@ -31,7 +31,7 @@ class Command(BaseCommand):
         # percy_snapshot(browser, "Content Page")
 
         # document search
-        browser.get("http://localhost:8000/documents/?q=the&per_page=2")
+        browser.get("http://localhost:8000/documents/?q=the+writer&per_page=2")
         percy_snapshot(browser, "Document Search")
 
         # document detail
