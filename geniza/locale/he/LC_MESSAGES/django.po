@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-17 10:48-0500\n"
-"PO-Revision-Date: 2021-11-17 17:45\n"
+"POT-Creation-Date: 2021-11-17 13:10-0500\n"
+"PO-Revision-Date: 2021-11-17 18:46\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -18,34 +18,39 @@ msgstr ""
 "X-Crowdin-File-ID: 28\n"
 
 #. Translators: placeholder for keyword search input
-#: geniza/corpus/forms.py:48
+#: geniza/corpus/forms.py:109
 msgid "search by keyword"
 msgstr ""
 
 #. Translators: accessible label for keyword search input
-#: geniza/corpus/forms.py:50
+#: geniza/corpus/forms.py:111
 msgid "Keyword or Phrase"
 msgstr ""
 
 #. Translators: label for sort by relevance
-#: geniza/corpus/forms.py:58
+#: geniza/corpus/forms.py:119
 msgid "Relevance"
 msgstr ""
 
 #. Translators: label for descending sort by number of scholarship records
-#: geniza/corpus/forms.py:61
+#: geniza/corpus/forms.py:122
 msgid "Scholarship Records (Most–Least)"
 msgstr ""
 
 #. Translators: label for ascending sort by number of scholarship records
-#: geniza/corpus/forms.py:63
+#: geniza/corpus/forms.py:124
 msgid "Scholarship Records (Least–Most)"
 msgstr ""
 
 #. Translators: label for form sort field
-#: geniza/corpus/forms.py:72
+#: geniza/corpus/forms.py:133
 msgid "Sort by"
 msgstr ""
+
+#. Translators: label for document type search form filter
+#: geniza/corpus/forms.py:141
+msgid "Document Type"
+msgstr "סוג המסמך"
 
 #. Translators: Default label when document does not have a type
 #: geniza/corpus/models.py:551
@@ -90,12 +95,12 @@ msgid "Description"
 msgstr ""
 
 #. Translators: Search submit button
-#: geniza/corpus/templates/corpus/document_list.html:15
+#: geniza/corpus/templates/corpus/document_list.html:22
 msgid "Submit search"
 msgstr ""
 
 #. Translators: number of search results
-#: geniza/corpus/templates/corpus/document_list.html:30
+#: geniza/corpus/templates/corpus/document_list.html:38
 #, python-format
 msgid "1 result"
 msgid_plural "%(count_humanized)s total results"
@@ -183,22 +188,22 @@ msgid "next page"
 msgstr ""
 
 #. Translators: title of document search page
-#: geniza/corpus/views.py:26
+#: geniza/corpus/views.py:28
 msgid "Search Documents"
 msgstr "חיפוש מסמכים"
 
 #. Translators: description of document search page, for search engines
-#: geniza/corpus/views.py:28
+#: geniza/corpus/views.py:30
 msgid "Search and browse Geniza documents."
 msgstr "חיפוש וצפיה במסמכי הגניזה."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:168
+#: geniza/corpus/views.py:197
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "רשומה קשורה ל-%(doc)s"
 
-#: geniza/corpus/views.py:175
+#: geniza/corpus/views.py:204
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
@@ -242,7 +247,4 @@ msgstr "אודות"
 
 #~ msgid "Shelfmark"
 #~ msgstr "Shelfmark"
-
-#~ msgid "Document Type"
-#~ msgstr "Document Type"
 
