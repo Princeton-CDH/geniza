@@ -41,10 +41,16 @@
                 {{ count_humanized }} total results
             {% endblocktranslate %}
         </h1>
+        {% if is_paginated %}
+            {% include "corpus/snippets/pagination.html" %}
+        {% endif %}
         <ol>
             {% for document in documents %}
                 {% include "corpus/snippets/document_result.html" %}
             {% endfor %}
         </ol>
+        {% if is_paginated %}
+            {% include "corpus/snippets/pagination.html" %}
+        {% endif %}
     </section>
 {% endblock main %}

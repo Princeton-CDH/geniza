@@ -318,20 +318,29 @@ class TestDocumentSearchView:
             mock_sqs.keyword_search.assert_not_called()
             mock_sqs.order_by.assert_called_with("-scholarship_count_i")
 
-    def test_get_context_data(self, rf):
-        docsearch_view = DocumentSearchView()
-        docsearch_view.request = rf.get("/documents/")
-        docsearch_view.queryset = Mock()
-        docsearch_view.queryset.count.return_value = 22
-        docsearch_view.queryset.get_facets.return_value.facet_fields = {}
-        docsearch_view.object_list = docsearch_view.queryset
+    @pytest.mark.usefixtures("mock_solr_queryset")
+    def test_get_context_data(self, rf, mock_solr_queryset):
+        with patch(
+            "geniza.corpus.views.DocumentSolrQuerySet",
+            new=mock_solr_queryset(
+                DocumentSolrQuerySet, extra_methods=["admin_search", "keyword_search"]
+            ),
+        ) as mock_queryset_cls:
+            docsearch_view = DocumentSearchView(kwargs={})
+            docsearch_view.request = rf.get("/documents/")
+            docsearch_view.queryset = mock_queryset_cls.return_value
+            docsearch_view.queryset.count.return_value = 22
+            docsearch_view.queryset.get_facets.return_value.facet_fields = {}
+            docsearch_view.queryset.__getitem__.return_value = docsearch_view.queryset
+            docsearch_view.object_list = docsearch_view.queryset
 
-        context_data = docsearch_view.get_context_data()
-        assert context_data["total"] == 22
-        assert (
-            context_data["highlighting"]
-            == docsearch_view.queryset.get_highlighting.return_value
-        )
+            context_data = docsearch_view.get_context_data()
+            assert context_data["total"] == 22
+            assert (
+                context_data["highlighting"]
+                == docsearch_view.queryset.get_highlighting.return_value
+            )
+            assert context_data["page_obj"].start_index() == 0
 
     def test_scholarship_sort(self, document, join, empty_solr, source):
         """integration test for sorting by scholarship asc and desc"""
@@ -530,3 +539,11 @@ class TestDocumentScholarshipView:
         assert doc_detail_view.get_absolute_url() == absolutize_url(
             f"{document.get_absolute_url()}scholarship/"
         )
+
+    def test_get_paginate_by(self):
+        """Should set pagination to 2 per page"""
+        docsearch_view = DocumentSearchView(kwargs={})
+        docsearch_view.request = Mock()
+        docsearch_view.request.GET = {"per_page": "2"}
+        qs = docsearch_view.get_queryset()
+        assert docsearch_view.get_paginate_by(qs) == 2

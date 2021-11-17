@@ -1,4 +1,7 @@
+from unittest.mock import Mock
+
 import pytest
+from django.http.request import QueryDict
 
 from geniza.corpus.templatetags import corpus_extras
 
@@ -43,3 +46,28 @@ def test_dict_item():
     assert corpus_extras.dict_item({13: "lucky"}, 13) == "lucky"
     # integer value
     assert corpus_extras.dict_item({13: 7}, 13) is 7
+
+
+def test_querystring_replace():
+    mockrequest = Mock()
+    mockrequest.GET = QueryDict("?q=contract")
+    context = {"request": mockrequest}
+    # replace when arg is not present
+    args = corpus_extras.querystring_replace(context, page=1)
+    # preserves existing args
+    assert "q=contract" in args
+    # adds new arg
+    assert "page=1" in args
+
+    mockrequest.GET = QueryDict("?q=contract&page=2")
+    args = corpus_extras.querystring_replace(context, page=3)
+    assert "q=contract" in args
+    # replaces existing arg
+    assert "page=3" in args
+    assert "page=2" not in args
+
+    mockrequest.GET = QueryDict("?q=contract&page=2&sort=relevance")
+    args = corpus_extras.querystring_replace(context, page=10)
+    assert "q=contract" in args
+    assert "sort=relevance" in args
+    assert "page=10" in args
