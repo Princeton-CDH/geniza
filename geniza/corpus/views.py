@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.db.models.query import Prefetch
 from django.http import Http404
 from django.http.response import HttpResponsePermanentRedirect
@@ -25,6 +26,7 @@ class DocumentSearchView(ListView, FormMixin):
     page_title = _("Search Documents")
     # Translators: description of document search page, for search engines
     page_description = _("Search and browse Geniza documents.")
+    paginate_by = 50
     initial = {"sort": "scholarship_desc"}
 
     # map form sort to solr sort field
@@ -80,20 +82,37 @@ class DocumentSearchView(ListView, FormMixin):
 
         self.queryset = documents
 
-        # return 50 documents for now; pagination TODO
-        return documents[:50]
+        return documents
 
-    def get_context_data(self):
-        context_data = super().get_context_data()
-        # should eventually be handled by paginator, but
-        # patch in total number of results for display for now
+    def get_paginate_by(self, queryset):
+        """Try to get pagination from GET request query,
+        if there is none fallback to the original."""
+        paginate_by = super().get_paginate_by(queryset)
+
+        # NOTE: This may be reimplemented as a part of the form later
+        req_params = self.request.GET.copy()
+        if "per_page" in req_params:
+            try:
+                per_page = int(req_params["per_page"])
+                if per_page < self.paginate_by:
+                    paginate_by = per_page
+            except:
+                pass
+        return paginate_by
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+
+        paged_result = context_data["page_obj"].object_list
+        highlights = paged_result.get_highlighting() if paged_result.count() else {}
+
         context_data.update(
             {
-                "total": self.queryset.count(),
-                "page_title": self.page_title,
+                "highlighting": highlights,
                 "page_description": self.page_description,
+                "page_title": self.page_title,
                 "page_type": "search",
-                "highlighting": self.queryset.get_highlighting(),
+                "total": self.queryset.count(),
             }
         )
         return context_data

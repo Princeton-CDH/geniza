@@ -19,15 +19,23 @@ section#document-list {
     // list of results
     ol {
         list-style: none;
-        counter-reset: search-counter;
         @include container.two-column;
+        margin-top: spacing.$spacing-2xl;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: spacing.$spacing-4xl;
+        }
+    }
+    nav.pagination + ol {
+        margin-top: 0;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: spacing.$spacing-md;
+        }
     }
 }
 
 // single result
 .search-result {
-    counter-increment: search-counter;
-    margin-left: spacing.$spacing-xl;
+    margin-left: spacing.$spacing-2xl;
     @include container.two-column;
     display: flex;
     justify-content: space-between;
@@ -61,9 +69,8 @@ section#document-list {
             }
 
             // anchor counter to h2 instead of li, for alignment regardless of tags
-            &::before {
-                content: counter(search-counter);
-                margin-left: -#{spacing.$spacing-xl};
+            .counter {
+                margin-left: -#{spacing.$spacing-2xl};
                 text-align: left;
                 float: left;
                 font-weight: bold;

@@ -4,6 +4,11 @@
         <section>
             {# title #}
             <h2 class="title">
+                {# result number #}
+                <span class="counter">
+                    {{ forloop.counter0|add:page_obj.start_index }}
+                </span>
+                {# type and shelfmark #}
                 <span class="doctype">{{ document.type }}</span>
                 <span class="shelfmark">{{ document.shelfmark|join:" + " }}</span>
             </h2>
