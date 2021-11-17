@@ -1,6 +1,5 @@
 from ast import literal_eval
 
-from django.core.paginator import Paginator
 from django.db.models.query import Prefetch
 from django.http import Http404
 from django.http.response import HttpResponsePermanentRedirect
