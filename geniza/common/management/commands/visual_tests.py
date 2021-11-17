@@ -31,16 +31,16 @@ class Command(BaseCommand):
         # percy_snapshot(browser, "Content Page")
 
         # document search
-        # search term should match descriptions of 3951 and the fake letter document
-        browser.get("http://localhost:8000/documents/?q=tujib+description")
+        # search term should match descriptions of 2969 and 31094
+        browser.get("http://localhost:8000/documents/?q=physician")
         percy_snapshot(browser, "Document Search")
 
         # document detail
-        browser.get("http://localhost:8000/documents/3951/")
+        browser.get("http://localhost:8000/documents/2532/")
         percy_snapshot(browser, "Document Details")
 
-        # # document scholarship
-        browser.get("http://localhost:8000/documents/3951/")
+        # document scholarship
+        browser.get("http://localhost:8000/documents/2532/scholarship/")
         percy_snapshot(browser, "Document Scholarship Records")
 
         # 404 page TODO

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-09 13:13-0500\n"
+"POT-Creation-Date: 2021-11-17 10:48-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -29,17 +29,31 @@ msgid "Keyword or Phrase"
 msgstr "الكلمة المفتاحية أو القراءة"
 
 #. Translators: label for sort by relevance
-#: geniza/corpus/forms.py:59
+#: geniza/corpus/forms.py:58
 msgid "Relevance"
 msgstr "الأهمية"
 
+#. Translators: label for descending sort by number of scholarship records
+#: geniza/corpus/forms.py:61
+#, fuzzy
+#| msgid "Scholarship Records (%(n_records)s)"
+msgid "Scholarship Records (Most–Least)"
+msgstr "سجل المنح الدراسية (%(n_records)s)"
+
+#. Translators: label for ascending sort by number of scholarship records
+#: geniza/corpus/forms.py:63
+#, fuzzy
+#| msgid "Scholarship Records (%(n_records)s)"
+msgid "Scholarship Records (Least–Most)"
+msgstr "سجل المنح الدراسية (%(n_records)s)"
+
 #. Translators: label for form sort field
-#: geniza/corpus/forms.py:69
+#: geniza/corpus/forms.py:72
 msgid "Sort by"
 msgstr "الترتيب حسب"
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:541
+#: geniza/corpus/models.py:551
 #: geniza/corpus/templates/corpus/document_detail.html:23
 msgid "Unknown type"
 msgstr ""
@@ -109,25 +123,50 @@ msgstr "رابط إلى المصدر"
 msgid "PGP ID"
 msgstr "PGP ID"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:54
-msgid "Transcription"
-msgstr "نسخه"
-
-#: geniza/corpus/templates/corpus/snippets/document_result.html:55
-#: geniza/footnotes/models.py:217
-msgid "Translation"
-msgstr "الترجمة"
-
+#. Translators: number of editions for this document
 #: geniza/corpus/templates/corpus/snippets/document_result.html:56
-#: geniza/footnotes/models.py:218
-msgid "Discussion"
-msgstr "المناقشة"
+#, fuzzy, python-format
+#| msgid "Transcription"
+msgid "1 Transcription"
+msgid_plural "%(counter)s Transcriptions"
+msgstr[0] "نسخه"
+msgstr[1] "نسخه"
+msgstr[2] "نسخه"
+msgstr[3] "نسخه"
+msgstr[4] "نسخه"
+msgstr[5] "نسخه"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:58
+#. Translators: number of translations for this document
+#: geniza/corpus/templates/corpus/snippets/document_result.html:66
+#, fuzzy, python-format
+#| msgid "Translation"
+msgid "1 Translation"
+msgid_plural "%(counter)s Translations"
+msgstr[0] "الترجمة"
+msgstr[1] "الترجمة"
+msgstr[2] "الترجمة"
+msgstr[3] "الترجمة"
+msgstr[4] "الترجمة"
+msgstr[5] "الترجمة"
+
+#. Translators: number of sources that discuss this document
+#: geniza/corpus/templates/corpus/snippets/document_result.html:76
+#, fuzzy, python-format
+#| msgid "Discussion"
+msgid "1 Discussion"
+msgid_plural "%(counter)s Discussions"
+msgstr[0] "المناقشة"
+msgstr[1] "المناقشة"
+msgstr[2] "المناقشة"
+msgstr[3] "المناقشة"
+msgstr[4] "المناقشة"
+msgstr[5] "المناقشة"
+
+#: geniza/corpus/templates/corpus/snippets/document_result.html:84
 msgid "No Scholarship Records"
 msgstr "لا توجد سجلات للمنح الدراسية"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:64
+#: geniza/corpus/templates/corpus/snippets/document_result.html:90
 msgid "View document details"
 msgstr "عرض تفاصيل المستند"
 
@@ -175,12 +214,12 @@ msgid "Search and browse Geniza documents."
 msgstr "البحث في وثائق جنيزا وتصفحها."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:163
+#: geniza/corpus/views.py:168
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "منحة في %(doc)s"
 
-#: geniza/corpus/views.py:170
+#: geniza/corpus/views.py:175
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
@@ -191,9 +230,17 @@ msgstr[3] "%(count)d سجل منح دراسية لـ %(doc)s"
 msgstr[4] "%(count)d سجل منح دراسية لـ %(doc)s"
 msgstr[5] "%(count)d سجل منح دراسية لـ %(doc)s"
 
-#: geniza/footnotes/models.py:216
+#: geniza/footnotes/models.py:218
 msgid "Edition"
 msgstr "الطبعة"
+
+#: geniza/footnotes/models.py:219
+msgid "Translation"
+msgstr "الترجمة"
+
+#: geniza/footnotes/models.py:220
+msgid "Discussion"
+msgstr "المناقشة"
 
 #: geniza/templates/admin/base_site.html:4
 msgid "Django site admin"
@@ -209,16 +256,15 @@ msgid "Search"
 msgstr "البحث"
 
 #: geniza/templates/nav.html:13
-msgid "Editorial"
-msgstr "تحرير"
-
-#: geniza/templates/nav.html:14
 msgid "Contact Us"
 msgstr "اتصل بنا"
 
-#: geniza/templates/nav.html:15
+#: geniza/templates/nav.html:14
 msgid "About"
 msgstr "حول"
+
+#~ msgid "Editorial"
+#~ msgstr "تحرير"
 
 #~ msgid "Shelfmark"
 #~ msgstr "الشرف"

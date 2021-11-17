@@ -22,27 +22,3 @@ class TestSelectedWithDisabled:
         # no is disabled
         assert '<option value="no" disabled="disabled"' in rendered
         assert '<option value="yes">' in rendered
-
-
-class TestDocumentSearch:
-    def test_init(self):
-        data = {"q": "illness"}
-        # has query, relevance enabled
-        form = DocumentSearchForm(data)
-        assert form.fields["sort"].widget.choices[0] == form.SORT_CHOICES[0]
-
-        # empty query, relevance disabled
-        data["q"] = ""
-        form = DocumentSearchForm(data)
-        assert form.fields["sort"].widget.choices[0] == (
-            "relevance",
-            {"label": "Relevance", "disabled": True},
-        )
-
-        # no query, also relevance disabled
-        del data["q"]
-        form = DocumentSearchForm(data)
-        assert form.fields["sort"].widget.choices[0] == (
-            "relevance",
-            {"label": "Relevance", "disabled": True},
-        )

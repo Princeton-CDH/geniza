@@ -220,6 +220,11 @@ class Fragment(TrackChangesModel):
         super(Fragment, self).save(*args, **kwargs)
 
 
+class DocumentTypeManager(models.Manager):
+    def get_by_natural_key(self, name):
+        return self.get(name=name)
+
+
 class DocumentType(models.Model):
     """The category of document in question."""
 
@@ -230,8 +235,13 @@ class DocumentType(models.Model):
         help_text="Optional label for display on the public site",
     )
 
+    objects = DocumentTypeManager()
+
     def __str__(self):
         return self.display_label or self.name
+
+    def natural_key(self):
+        return (self.name,)
 
 
 class DocumentSignalHandlers:

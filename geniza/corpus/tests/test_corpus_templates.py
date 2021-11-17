@@ -254,7 +254,7 @@ class TestDocumentResult:
             }
         )
         assert "No Scholarship Records" not in result
-        assert "Transcription (15)" in result
+        assert "15 Transcriptions" in result
         assert "Translation" not in result
         assert "Discusion" not in result
 
@@ -265,7 +265,7 @@ class TestDocumentResult:
                     "pgpid": 1,
                     "id": "document.1",
                     "num_editions": 2,
-                    "num_translations": 3,
+                    "num_translations": 1,
                     "num_discussions": 2,
                     "scholarship_count": 10,
                 },
@@ -273,9 +273,9 @@ class TestDocumentResult:
                 "page_obj": self.page_obj,
             },
         )
-        assert "Transcription (2)" in result
-        assert "Translation (3)" in result
-        assert "Discussion (2)" in result
+        assert "2 Transcriptions" in result
+        assert "1 Translation" in result
+        assert "2 Discussions" in result
 
     def test_description(self, document):
         context = {

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-09 13:13-0500\n"
+"POT-Creation-Date: 2021-11-17 10:48-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -28,17 +28,27 @@ msgid "Keyword or Phrase"
 msgstr ""
 
 #. Translators: label for sort by relevance
-#: geniza/corpus/forms.py:59
+#: geniza/corpus/forms.py:58
 msgid "Relevance"
 msgstr ""
 
+#. Translators: label for descending sort by number of scholarship records
+#: geniza/corpus/forms.py:61
+msgid "Scholarship Records (Most–Least)"
+msgstr ""
+
+#. Translators: label for ascending sort by number of scholarship records
+#: geniza/corpus/forms.py:63
+msgid "Scholarship Records (Least–Most)"
+msgstr ""
+
 #. Translators: label for form sort field
-#: geniza/corpus/forms.py:69
+#: geniza/corpus/forms.py:72
 msgid "Sort by"
 msgstr ""
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:541
+#: geniza/corpus/models.py:551
 #: geniza/corpus/templates/corpus/document_detail.html:23
 msgid "Unknown type"
 msgstr ""
@@ -100,25 +110,35 @@ msgstr ""
 msgid "PGP ID"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:54
-msgid "Transcription"
-msgstr ""
-
-#: geniza/corpus/templates/corpus/snippets/document_result.html:55
-#: geniza/footnotes/models.py:217
-msgid "Translation"
-msgstr ""
-
+#. Translators: number of editions for this document
 #: geniza/corpus/templates/corpus/snippets/document_result.html:56
-#: geniza/footnotes/models.py:218
-msgid "Discussion"
-msgstr ""
+#, python-format
+msgid "1 Transcription"
+msgid_plural "%(counter)s Transcriptions"
+msgstr[0] ""
+msgstr[1] ""
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:58
+#. Translators: number of translations for this document
+#: geniza/corpus/templates/corpus/snippets/document_result.html:66
+#, python-format
+msgid "1 Translation"
+msgid_plural "%(counter)s Translations"
+msgstr[0] ""
+msgstr[1] ""
+
+#. Translators: number of sources that discuss this document
+#: geniza/corpus/templates/corpus/snippets/document_result.html:76
+#, python-format
+msgid "1 Discussion"
+msgid_plural "%(counter)s Discussions"
+msgstr[0] ""
+msgstr[1] ""
+
+#: geniza/corpus/templates/corpus/snippets/document_result.html:84
 msgid "No Scholarship Records"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:64
+#: geniza/corpus/templates/corpus/snippets/document_result.html:90
 msgid "View document details"
 msgstr ""
 
@@ -165,20 +185,28 @@ msgid "Search and browse Geniza documents."
 msgstr ""
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:163
+#: geniza/corpus/views.py:168
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr ""
 
-#: geniza/corpus/views.py:170
+#: geniza/corpus/views.py:175
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
 msgstr[0] ""
 msgstr[1] ""
 
-#: geniza/footnotes/models.py:216
+#: geniza/footnotes/models.py:218
 msgid "Edition"
+msgstr ""
+
+#: geniza/footnotes/models.py:219
+msgid "Translation"
+msgstr ""
+
+#: geniza/footnotes/models.py:220
+msgid "Discussion"
 msgstr ""
 
 #: geniza/templates/admin/base_site.html:4
@@ -195,14 +223,10 @@ msgid "Search"
 msgstr ""
 
 #: geniza/templates/nav.html:13
-msgid "Editorial"
-msgstr ""
-
-#: geniza/templates/nav.html:14
 msgid "Contact Us"
 msgstr ""
 
-#: geniza/templates/nav.html:15
+#: geniza/templates/nav.html:14
 msgid "About"
 msgstr ""
 
