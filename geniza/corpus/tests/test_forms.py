@@ -1,9 +1,9 @@
 from django import forms
 
 from geniza.corpus.forms import (
+    CheckboxSelectWithCount,
     DocumentSearchForm,
     FacetChoiceField,
-    RadioSelectWithCount,
     SelectWithDisabled,
 )
 
@@ -35,7 +35,7 @@ class TestFacetChoiceField:
     def test_init(self):
         fcf = FacetChoiceField(legend="Document type")
         # uses RadioSelectWithCount
-        fcf.widget == RadioSelectWithCount
+        fcf.widget == CheckboxSelectWithCount
         # not required by default
         assert not fcf.required
         # still can override required with a kwarg
@@ -73,8 +73,6 @@ class TestDocumentSearchForm:
         optgroup = context["widget"].get("optgroups", [])[0][1]
         for option in optgroup:
             if option["value"] in fake_facets["doctype"]:
-                assert option["attrs"]["data-count"] == fake_facets["doctype"].get(
+                assert int(option["attrs"]["data-count"]) == fake_facets["doctype"].get(
                     option["value"]
                 )
-            else:
-                assert option["value"] == "all"

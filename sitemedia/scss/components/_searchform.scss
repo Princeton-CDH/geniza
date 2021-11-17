@@ -135,18 +135,38 @@
         ul#id_doctype {
             max-width: 100%;
             list-style-type: none;
-            padding: spacing.$spacing-sm;
+            padding: spacing.$spacing-sm spacing.$spacing-lg;
             @include breakpoints.for-tablet-landscape-up {
-                padding: spacing.$spacing-md;
+                padding: spacing.$spacing-md spacing.$spacing-lg;
             }
             li {
                 max-width: 100%;
-                input[type="radio"] {
+                input[type="checkbox"] {
                     @include a11y.sr-only;
-                    &:checked + span,
-                    &:checked + span + .count {
+                    & + span {
+                        display: flex;
+                        align-items: center;
+                        &::before {
+                            opacity: 0%;
+                            font-family: "Phosphor";
+                            content: "\f851";
+                            font-feature-settings: "liga";
+                            float: left;
+                            text-align: center;
+                            margin-left: -#{spacing.$spacing-lg};
+                            padding: 0 spacing.$spacing-xs;
+                            font-size: typography.$text-size-sm;
+                            @include colors.apply-theme("secondary");
+                        }
+                    }
+                    &:active + span,
+                    &:focus + span,
+                    &:active + span + .count,
+                    &:focus + span + .count {
                         font-weight: bold;
-                        text-decoration: underline;
+                    }
+                    &:checked + span::before {
+                        opacity: 100%;
                     }
                 }
                 label {

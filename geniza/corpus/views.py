@@ -1,3 +1,5 @@
+from ast import literal_eval
+
 from django.db.models.query import Prefetch
 from django.http import Http404
 from django.http.response import HttpResponsePermanentRedirect
@@ -27,7 +29,6 @@ class DocumentSearchView(ListView, FormMixin):
     page_description = _("Search and browse Geniza documents.")
     initial = {
         "sort": "scholarship_desc",
-        "doctype": "all",
     }
 
     # map form sort to solr sort field
@@ -85,10 +86,10 @@ class DocumentSearchView(ListView, FormMixin):
             # exclude type filter when generating counts
 
             # filter by type if specified
-            if search_opts["doctype"] and search_opts["doctype"] != "all":
-                documents = documents.filter(
-                    type='"%s"' % search_opts["doctype"], tag="type"
-                )
+            if search_opts["doctype"]:
+                typelist = literal_eval(search_opts["doctype"])
+                quoted_typelist = ['"%s"' % doctype for doctype in typelist]
+                documents = documents.filter(type__in=quoted_typelist, tag="type")
 
         self.queryset = documents
 

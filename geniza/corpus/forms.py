@@ -38,8 +38,8 @@ class SelectWithDisabled(SelectDisabledMixin, forms.Select):
     """
 
 
-class RadioSelectWithCount(forms.RadioSelect):
-    # extend default radio select to add facet counts and
+class CheckboxSelectWithCount(forms.CheckboxSelectMultiple):
+    # extend default CheckboxSelectMultiple to add facet counts and
     # include per-item count as a data attribute
     facet_counts = {}
 
@@ -62,7 +62,7 @@ class FacetChoiceField(forms.ChoiceField):
     # - default is not required
 
     # use a custom widget so we can add facet count as a data attribute
-    widget = RadioSelectWithCount
+    widget = CheckboxSelectWithCount
 
     def __init__(self, *args, **kwargs):
         if "required" not in kwargs:
@@ -90,19 +90,10 @@ class FacetChoiceField(forms.ChoiceField):
         """
         # generate the list of choice from the facets
 
-        # Translators: "All" label for search filter (default when no choice selected)
-        all_label = _("All")
-        choices = [("all", mark_safe(f"<span>{all_label}</span>"))]
-        for val, count in facet_dict.items():
-            choices.append(
-                (
-                    val,
-                    mark_safe(
-                        f'<span>{val}</span><span class="count">{count:,}</span>'
-                    ),
-                )
-            )
-        self.choices = choices
+        self.choices = (
+            (val, mark_safe(f'<span>{val}</span><span class="count">{count:,}</span>'))
+            for val, count in facet_dict.items()
+        )
         # pass the counts to the widget so it can be set as a data attribute
         self.widget.facet_counts = facet_dict
 

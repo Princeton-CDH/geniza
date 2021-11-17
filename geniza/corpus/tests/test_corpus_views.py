@@ -207,22 +207,20 @@ class TestDocumentSearchView:
         docsearch_view.request.GET = {}
         assert docsearch_view.get_form_kwargs() == {
             "initial": {
-                "doctype": "all",
                 "sort": "scholarship_desc",
             },
             "prefix": None,
-            "data": {"doctype": "all", "sort": "scholarship_desc"},
+            "data": {"sort": "scholarship_desc"},
         }
 
         # keyword search param
         docsearch_view.request.GET = {"q": "contract"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"doctype": "all", "sort": "scholarship_desc"},
+            "initial": {"sort": "scholarship_desc"},
             "prefix": None,
             "data": {
                 "q": "contract",
                 "sort": "relevance",
-                "doctype": "all",
             },
         }
 
@@ -230,12 +228,10 @@ class TestDocumentSearchView:
         docsearch_view.request.GET = {"sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
             "initial": {
-                "doctype": "all",
                 "sort": "scholarship_desc",
             },
             "prefix": None,
             "data": {
-                "doctype": "all",
                 "sort": "scholarship_desc",
             },
         }
@@ -244,12 +240,10 @@ class TestDocumentSearchView:
         docsearch_view.request.GET = {"q": "contract", "sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
             "initial": {
-                "doctype": "all",
                 "sort": "scholarship_desc",
             },
             "prefix": None,
             "data": {
-                "doctype": "all",
                 "q": "contract",
                 "sort": "scholarship_desc",
             },
@@ -296,7 +290,7 @@ class TestDocumentSearchView:
             docsearch_view.request.GET = {
                 "q": "six apartments",
                 "sort": "scholarship_desc",
-                "doctype": "Legal",
+                "doctype": ["Legal"],
             }
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
@@ -422,7 +416,7 @@ class TestDocumentSearchView:
         assert qs.count() == 2
 
         # filter by doctype "Legal document"
-        docsearch_view.request.GET = {"doctype": "Legal document"}
+        docsearch_view.request.GET = {"doctype": ["Legal document"]}
         qs = docsearch_view.get_queryset()
         assert qs.count() == 1
         assert qs[0]["pgpid"] == document.id, "Only legal document returned"
