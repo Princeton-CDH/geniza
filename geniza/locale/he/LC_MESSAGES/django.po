@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-17 13:10-0500\n"
-"PO-Revision-Date: 2021-11-17 18:46\n"
+"POT-Creation-Date: 2021-11-17 13:48-0500\n"
+"PO-Revision-Date: 2021-11-17 19:48\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -54,7 +54,7 @@ msgstr "סוג המסמך"
 
 #. Translators: Default label when document does not have a type
 #: geniza/corpus/models.py:551
-#: geniza/corpus/templates/corpus/document_detail.html:23
+#: geniza/corpus/templates/corpus/document_detail.html:33
 msgid "Unknown type"
 msgstr ""
 
@@ -62,35 +62,41 @@ msgstr ""
 msgid "Home"
 msgstr "דף הבית"
 
+#. Translators: Document edit link for admins
+#: geniza/corpus/templates/corpus/document_detail.html:25
+#| msgid "Editor"
+msgid "Edit"
+msgstr ""
+
 #. Translators: label for document metadata section (editor, date, input date)
-#: geniza/corpus/templates/corpus/document_detail.html:35
+#: geniza/corpus/templates/corpus/document_detail.html:45
 msgid "Metadata"
 msgstr ""
 
 #. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:41
+#: geniza/corpus/templates/corpus/document_detail.html:51
 msgid "Editor"
 msgstr "עורך"
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:48
+#: geniza/corpus/templates/corpus/document_detail.html:58
 #: geniza/corpus/templates/corpus/snippets/document_result.html:29
 msgid "Input date"
 msgstr "תאריך קלט"
 
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:52
+#: geniza/corpus/templates/corpus/document_detail.html:62
 msgid "Permalink"
 msgstr ""
 
 #. Translators: label for tags on a document
-#: geniza/corpus/templates/corpus/document_detail.html:62
+#: geniza/corpus/templates/corpus/document_detail.html:72
 #: geniza/corpus/templates/corpus/snippets/document_result.html:19
 msgid "Tags"
 msgstr "תגים"
 
 #. Translators: label for document description
-#: geniza/corpus/templates/corpus/document_detail.html:73
+#: geniza/corpus/templates/corpus/document_detail.html:83
 msgid "Description"
 msgstr ""
 
@@ -188,22 +194,22 @@ msgid "next page"
 msgstr ""
 
 #. Translators: title of document search page
-#: geniza/corpus/views.py:28
+#: geniza/corpus/views.py:27
 msgid "Search Documents"
 msgstr "חיפוש מסמכים"
 
 #. Translators: description of document search page, for search engines
-#: geniza/corpus/views.py:30
+#: geniza/corpus/views.py:29
 msgid "Search and browse Geniza documents."
 msgstr "חיפוש וצפיה במסמכי הגניזה."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:197
+#: geniza/corpus/views.py:196
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "רשומה קשורה ל-%(doc)s"
 
-#: geniza/corpus/views.py:204
+#: geniza/corpus/views.py:203
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
