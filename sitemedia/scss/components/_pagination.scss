@@ -11,6 +11,7 @@ nav.pagination {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
+    flex-flow: row wrap;
     margin: spacing.$spacing-lg 0;
     @include breakpoints.for-tablet-landscape-up {
         margin: spacing.$spacing-xl 0;
@@ -37,6 +38,13 @@ nav.pagination {
             padding: 0 spacing.$spacing-sm;
             font-size: typography.$text-size-2md;
         }
+    }
+    a {
+        display: flex;
+        min-width: 48px;
+        min-height: 48px;
+        align-items: center;
+        justify-content: center;
     }
     // special styling for fewer than 5 pages on mobile
     &.compressed {
