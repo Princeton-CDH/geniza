@@ -40,6 +40,9 @@
             outline: 1px dashed;
             @include colors.apply-theme("secondary", "outline-color");
         }
+        @include breakpoints.for-tablet-landscape-up {
+            display: none;
+        }
     }
     // Phosphor icon button for mobile menu
     label {
@@ -52,6 +55,9 @@
         margin-left: -48px;
         font-size: typography.$text-size-3xl;
         @include colors.apply-theme("on-background");
+        @include breakpoints.for-tablet-landscape-up {
+            display: none;
+        }
         @include breakpoints.for-tablet-landscape-up {
             display: none;
         }
