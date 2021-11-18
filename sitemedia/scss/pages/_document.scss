@@ -66,7 +66,7 @@ body#document {
                 }
             }
             dt + dd + dd {
-                margin-top: spacing.$spacing-3xs;
+                margin-top: spacing.$spacing-xs;
             }
             // hanging "info" phosphor icon before link
             dd a::before {
