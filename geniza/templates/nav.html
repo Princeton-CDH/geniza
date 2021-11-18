@@ -5,7 +5,7 @@
     <a class="home-link" href="#">{% translate "GENIZA" %}</a>
     {% spaceless %}
         {% url "corpus:document-search" as search_url %}
-        <input type="checkbox" id="menu-toggle" aria-hidden="true" />
+        <input type="checkbox" id="menu-toggle" />
         <label for="menu-toggle">
             {# Translators: label for 'menu' open/close button for mobile navigation #}
             <span class="sr-only">{% translate "Toggle main navigation menu" %}</span>

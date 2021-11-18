@@ -32,7 +32,14 @@
     input[type="checkbox"] {
         display: block;
         opacity: 0;
+        margin-top: spacing.$spacing-md;
+        width: 48px;
+        height: 48px;
         z-index: 2;
+        &:focus + label {
+            outline: 1px dashed;
+            @include colors.apply-theme("secondary", "outline-color");
+        }
     }
     // Phosphor icon button for mobile menu
     label {
@@ -42,7 +49,7 @@
         }
         display: flex;
         align-self: center;
-        margin-left: -#{spacing.$spacing-md};
+        margin-left: -48px;
         font-size: typography.$text-size-3xl;
         @include colors.apply-theme("on-background");
         @include breakpoints.for-tablet-landscape-up {
