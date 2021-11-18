@@ -15,9 +15,8 @@
         align-items: flex-end;
         justify-content: space-between;
     }
-
     // Logotype, links to homepage
-    .home-link {
+    a.home-link {
         @include typography.headline-5;
         @include breakpoints.for-tablet-landscape-up {
             @include typography.headline-4;
@@ -28,66 +27,82 @@
         flex: none;
         padding: spacing.$spacing-lg spacing.$spacing-md;
     }
-    // Hidden input for menu toggle
-    input[type="checkbox"] {
+    // Mobile-only menu buttons
+    li.menu-button {
         display: block;
-        opacity: 0;
-        margin-top: spacing.$spacing-md;
-        width: 48px;
-        height: 48px;
-        z-index: 2;
-        &:focus + label {
-            outline: 1px dashed;
-            @include colors.apply-theme("secondary", "outline-color");
-        }
-        @include breakpoints.for-tablet-landscape-up {
-            display: none;
+        a {
+            display: flex;
+            text-decoration: none;
+            font-size: typography.$text-size-3xl;
+            @include colors.apply-theme("on-background");
         }
     }
-    // Phosphor icon button for mobile menu
-    label {
-        &::before {
+    // Top-left corner links: home and open menu button
+    ul#corner-links {
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        li.menu-button a::before {
             font-family: "Phosphor";
             content: "\f1fa";
-        }
-        display: flex;
-        align-self: center;
-        margin-left: -48px;
-        font-size: typography.$text-size-3xl;
-        @include colors.apply-theme("on-background");
-        @include breakpoints.for-tablet-landscape-up {
-            display: none;
-        }
-        @include breakpoints.for-tablet-landscape-up {
-            display: none;
         }
     }
     // List of links
     ul#menu {
+        display: none;
+        position: fixed;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: space-between;
         padding: 0;
         max-width: 100%;
-        display: none;
-        flex-flow: column;
+        width: 100%;
+        li.menu-button {
+            display: none;
+            & a::before {
+                font-family: "Phosphor";
+                content: "\f36d";
+            }
+        }
+        &:target {
+            display: flex;
+            pointer-events: all;
+            flex: 1 0 100%;
+            z-index: 100;
+            @include breakpoints.for-tablet-landscape-up {
+                flex: 1 0 auto;
+            }
+            li.menu-button {
+                display: flex;
+                margin-right: spacing.$spacing-sm;
+            }
+        }
         @include breakpoints.for-tablet-landscape-up {
+            position: relative;
             display: flex;
             flex: 1 0 auto;
             flex-flow: row nowrap;
             justify-content: flex-end;
             outline: 1px solid;
+            width: auto;
             margin: 0 spacing.$spacing-sm 0 spacing.$spacing-2xl;
+            z-index: 0;
+            pointer-events: all;
         }
         @include colors.apply-theme("nav-outline", "outline-color");
+        @include colors.apply-theme("background", "background-color");
     }
-    input:checked + label + ul#menu {
-        display: flex;
-        flex: 1 0 100%;
+    li.menu-button,
+    ul#menu li.home,
+    ul#menu:target li.menu-button {
         @include breakpoints.for-tablet-landscape-up {
-            flex: 1 0 auto;
+            display: none;
         }
     }
 
     // Individual menu items
     .menu-item {
+        flex: 1 0 100%;
         // Mobile links which need padding, inline-block, and border-top
         a {
             text-decoration: none;
@@ -108,6 +123,7 @@
         }
         @include breakpoints.for-tablet-landscape-up {
             // desktop links (strip some mobile styles)
+            flex: 0 0 auto;
             padding: spacing.$spacing-xs 0;
             a {
                 display: inline;

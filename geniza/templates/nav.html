@@ -1,16 +1,34 @@
 {% load i18n %}
 {# Translators: accessibility text label for site navigation #}
 <nav class="site-nav" aria-label="{% translate "main navigation" %}">
-    {# Translators: label for 'home' button in main navigation #}
-    <a class="home-link" href="#">{% translate "GENIZA" %}</a>
     {% spaceless %}
+        <ul id="corner-links">
+            <li class="home">
+                {# Translators: accessibility label for 'home' button in main navigation #}
+                {% translate "home" as aria_home %}
+                {# Translators: site name label for 'home' button in main navigation #}
+                {% translate "GENIZA" as site_name %}
+                <a class="home-link" href="#" aria-label="{{ aria_home }}">{{ site_name }}</a>
+            </li>
+            <li class="menu-button">
+                <a id="open-main-menu" href="#menu" role="button">
+                    {# Translators: label for 'menu' open button for mobile navigation #}
+                    <span class="sr-only">{% translate "Open main navigation menu" %}</span>
+                </a>
+            </li>
+        </ul>
         {% url "corpus:document-search" as search_url %}
-        <input type="checkbox" id="menu-toggle" />
-        <label for="menu-toggle">
-            {# Translators: label for 'menu' open/close button for mobile navigation #}
-            <span class="sr-only">{% translate "Toggle main navigation menu" %}</span>
-        </label>
         <ul id="menu">
+            <li class="home">
+                {# Translators: label for 'home' button in main navigation #}
+                <a class="home-link" href="#" aria-label="{{ aria_home }}">{{ site_name }}</a>
+            </li>
+            <li class="menu-button">
+                <a id="close-main-menu" href="#" role="button">
+                    {# Translators: label for 'menu' close button for mobile navigation #}
+                    <span class="sr-only">{% translate "Close main navigation menu" %}</span>
+                </a>
+            </li>
             <li class="menu-item">
                 <a href="{{ search_url }}"{% if request.path == search_url %} aria-current="page"{% endif %}>
                     {% translate "Search" %}
