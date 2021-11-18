@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-17 15:04-0500\n"
+"POT-Creation-Date: 2021-11-18 09:48-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -240,15 +240,20 @@ msgstr ""
 msgid "GENIZA"
 msgstr ""
 
-#: geniza/templates/nav.html:12
-msgid "Search"
-msgstr ""
-
-#: geniza/templates/nav.html:15
-msgid "Contact Us"
+#. Translators: label for 'menu' open/close button for mobile navigation
+#: geniza/templates/nav.html:11
+msgid "Toggle main navigation menu"
 msgstr ""
 
 #: geniza/templates/nav.html:16
+msgid "Search"
+msgstr ""
+
+#: geniza/templates/nav.html:20
+msgid "Contact Us"
+msgstr ""
+
+#: geniza/templates/nav.html:23
 msgid "About"
 msgstr ""
 

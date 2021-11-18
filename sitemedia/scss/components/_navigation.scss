@@ -9,7 +9,9 @@
 
 .site-nav {
     display: flex;
+    flex-flow: row wrap;
     @include breakpoints.for-tablet-landscape-up {
+        flex-flow: row nowrap;
         align-items: flex-end;
         justify-content: space-between;
     }
@@ -26,47 +28,97 @@
         flex: none;
         padding: spacing.$spacing-lg spacing.$spacing-md;
     }
-    // Phosphor icon for mobile menu
-    i.ph-list {
+    // Hidden input for menu toggle
+    input[type="checkbox"] {
+        display: block;
+        opacity: 0;
+        z-index: 2;
+    }
+    // Phosphor icon button for mobile menu
+    label {
+        &::before {
+            font-family: "Phosphor";
+            content: "\f1fa";
+        }
         display: flex;
         align-self: center;
+        margin-left: -#{spacing.$spacing-md};
         font-size: typography.$text-size-3xl;
+        @include colors.apply-theme("on-background");
         @include breakpoints.for-tablet-landscape-up {
             display: none;
         }
     }
     // List of links
-    .menu {
+    ul#menu {
         padding: 0;
         max-width: 100%;
-        flex: 1 0 auto;
         display: none;
-        margin: 0 spacing.$spacing-sm 0 spacing.$spacing-2xl;
+        flex-flow: column;
         @include breakpoints.for-tablet-landscape-up {
             display: flex;
+            flex: 1 0 auto;
+            flex-flow: row nowrap;
+            justify-content: flex-end;
+            outline: 1px solid;
+            margin: 0 spacing.$spacing-sm 0 spacing.$spacing-2xl;
         }
-        justify-content: flex-end;
-        outline: 1px solid;
         @include colors.apply-theme("nav-outline", "outline-color");
+    }
+    input:checked + label + ul#menu {
+        display: flex;
+        flex: 1 0 100%;
+        @include breakpoints.for-tablet-landscape-up {
+            flex: 1 0 auto;
+        }
     }
 
     // Individual menu items
     .menu-item {
-        font-size: typography.$text-size-2md;
-        padding: spacing.$spacing-xs 0;
-
-        & + .menu-item {
-            margin-left: spacing.$spacing-2xl;
+        // Mobile links which need padding, inline-block, and border-top
+        a {
+            text-decoration: none;
+            font-size: typography.$text-size-2md;
+            padding: spacing.$spacing-2xl spacing.$spacing-sm
+                spacing.$spacing-lg;
+            width: 100%;
+            display: inline-block;
+            border-top: 1px solid;
+            @include colors.apply-theme("nav-outline", "border-top-color");
         }
-
+        & + .menu-item a {
+            padding-top: spacing.$spacing-lg;
+            border-top-color: colors.$gray-50;
+        }
         &:last-child {
-            margin-right: spacing.$spacing-4xl;
-            &::after {
-                font-family: "Phosphor";
-                content: "\f0c2"; // phosphor caret-down-fill icon
-                float: right;
-                margin-left: spacing.$spacing-xs;
+            height: 100vh;
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            // desktop links (strip some mobile styles)
+            padding: spacing.$spacing-xs 0;
+            a {
+                display: inline;
+                border: none;
                 padding: 0;
+            }
+            & + .menu-item {
+                margin-left: spacing.$spacing-2xl;
+                & a {
+                    border: none;
+                    padding: 0;
+                }
+            }
+            &:last-child {
+                margin-right: spacing.$spacing-4xl;
+                height: auto;
+                // NOTE: Icon for "About" link, may need to be moved around if order changes
+                &::after {
+                    font-family: "Phosphor";
+                    content: "\f0c2"; // phosphor caret-down icon
+                    float: right;
+                    margin-left: spacing.$spacing-xs;
+                    padding: 0;
+                }
             }
         }
     }
