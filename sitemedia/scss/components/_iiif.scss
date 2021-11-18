@@ -1,7 +1,11 @@
 /* limit size of iiif viewer */
+
+@use "../base/spacing";
+
 .iiif_wrapper {
     display: block;
     width: clamp(300px, 75vw, 90vw);
+    padding: spacing.$spacing-md;
 }
 #iiif_viewer {
     position: relative;
