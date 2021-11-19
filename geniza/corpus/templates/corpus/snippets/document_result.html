@@ -36,8 +36,8 @@
             <p class="description">
                 {# display keywords in context if any #}
                 {% with document_highlights=highlighting|dict_item:document.id %}
-                    {% if document_highlights.description_t %}
-                        {% for snippet in document_highlights.description_t %}
+                    {% if document_highlights.description %}
+                        {% for snippet in document_highlights.description %}
                             {{ snippet|safe }}
                         {% endfor %}
                     {% else %}
