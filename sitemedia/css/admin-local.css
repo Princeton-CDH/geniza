@@ -74,9 +74,31 @@ th.column-last_modified {
 .transcription {
     display: inline-block;
     margin-right: auto;
+    direction: rtl;
 }
-.transcription h3 {
+.transcription h3,
+.transcription section h1 {
     text-align: left;
+    direction: ltr;
+    font-size: 115%;
+}
+
+.transcription li {
+    white-space: pre;
+    list-style: none; /* suppress default line numbers */
+}
+
+.transcription li::before {
+    /* use pseudo marker to avoid periods for line numbers */
+    content: attr(value);
+    margin-left: 1em;
+    text-align: right;
+    float: right;
+    font-weight: bold;
+}
+
+.transcription li::marker {
+    direction: rtl;
 }
 
 /* keep document relationship choices labels in line with checkboxes */

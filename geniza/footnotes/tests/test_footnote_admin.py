@@ -48,9 +48,19 @@ class TestDocumentRelationTypesFilter:
 
         Footnote.objects.bulk_create(
             [
-                Footnote(doc_relation=["E"], **footnote_args),
-                Footnote(doc_relation=["E", "T"], **footnote_args),
-                Footnote(doc_relation=["E", "D", "T"], **footnote_args),
+                Footnote(doc_relation=[Footnote.EDITION], **footnote_args),
+                Footnote(
+                    doc_relation=[Footnote.EDITION, Footnote.TRANSLATION],
+                    **footnote_args,
+                ),
+                Footnote(
+                    doc_relation=[
+                        Footnote.EDITION,
+                        Footnote.TRANSLATION,
+                        Footnote.DISCUSSION,
+                    ],
+                    **footnote_args,
+                ),
             ]
         )
 

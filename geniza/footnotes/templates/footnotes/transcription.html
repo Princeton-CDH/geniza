@@ -1,4 +1,7 @@
 <div class="transcription" dir="rtl">
+    {# provisional html format #}
+    {{ transcription.html|safe }}
+    {# old format #}
     {% for block in transcription.blocks %}
         {% if block.label %}<h3>{{ block.label }}</h3>{% endif %}
         <p>{% for line in block.lines %}<span>{{ line }}</span><br/>{% endfor %}</p>
