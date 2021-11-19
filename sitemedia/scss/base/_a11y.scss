@@ -13,7 +13,8 @@
     white-space: nowrap;
 }
 
-// hide content for all but screen readers, and ensure only screen readers can focus
+// hide content for all but screen readers, but allow focus by keyboard
+// and display content when focused
 @mixin sr-only-focusable {
     @include sr-only;
     &:active,

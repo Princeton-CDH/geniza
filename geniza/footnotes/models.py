@@ -155,7 +155,9 @@ class Source(models.Model):
         # TODO: formatted version with italics for book/journal title
         if self.journal:
             parts.append(self.journal)
-        if self.volume:
+        # omit volumes for unpublished sources
+        # (those volumes are an admin convienence for managing Goitein content)
+        if self.volume and self.source_type.type != "Unpublished":
             parts.append(self.volume)
         if self.year:
             parts.append("(%d)" % self.year)

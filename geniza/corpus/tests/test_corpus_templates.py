@@ -1,4 +1,8 @@
-from django.template.loader import get_template, render_to_string
+import html
+
+from django.core.paginator import Paginator
+from django.http.request import HttpRequest, QueryDict
+from django.template.loader import get_template
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
@@ -57,6 +61,14 @@ class TestDocumentDetailTemplate:
         first_url = join.textblock_set.first().fragment.iiif_url
         second_url = join.textblock_set.last().fragment.iiif_url
         assertContains(response, f'data-iiif-urls="{first_url} {second_url}"')
+
+    def test_edit_link(self, client, admin_client, document):
+        """Edit link should appear if user is admin, otherwise it should not"""
+        edit_url = reverse("admin:corpus_document_change", args=[document.id])
+        response = client.get(document.get_absolute_url())
+        assertNotContains(response, edit_url)
+        response = admin_client.get(document.get_absolute_url())
+        assertContains(response, edit_url)
 
 
 class TestDocumentScholarshipTemplate:
@@ -225,10 +237,15 @@ class TestDocumentTabsSnippet:
 class TestDocumentResult:
 
     template = get_template("corpus/snippets/document_result.html")
+    page_obj = Paginator([1], 1).page(1)
 
     def test_no_scholarship_records(self):
         assert "No Scholarship Records" in self.template.render(
-            context={"document": {"pgpid": 1, "id": "document.1"}, "highlighting": {}}
+            context={
+                "document": {"pgpid": 1, "id": "document.1"},
+                "highlighting": {},
+                "page_obj": self.page_obj,
+            }
         )
 
     def test_has_scholarship_records(self):
@@ -241,10 +258,11 @@ class TestDocumentResult:
                     "scholarship_count": 10,
                 },
                 "highlighting": {},
+                "page_obj": self.page_obj,
             }
         )
         assert "No Scholarship Records" not in result
-        assert "Transcription (15)" in result
+        assert "15 Transcriptions" in result
         assert "Translation" not in result
         assert "Discusion" not in result
 
@@ -255,16 +273,17 @@ class TestDocumentResult:
                     "pgpid": 1,
                     "id": "document.1",
                     "num_editions": 2,
-                    "num_translations": 3,
+                    "num_translations": 1,
                     "num_discussions": 2,
                     "scholarship_count": 10,
                 },
                 "highlighting": {},
+                "page_obj": self.page_obj,
             },
         )
-        assert "Transcription (2)" in result
-        assert "Translation (3)" in result
-        assert "Discussion (2)" in result
+        assert "2 Transcriptions" in result
+        assert "1 Translation" in result
+        assert "2 Discussions" in result
 
     def test_description(self, document):
         context = {
@@ -275,6 +294,7 @@ class TestDocumentResult:
             },
             # no highlighting at all (i.e., no keyword search)
             "highlighting": {},
+            "page_obj": self.page_obj,
         }
 
         # template currently has truncate words 25; just check that the beginning
@@ -284,7 +304,7 @@ class TestDocumentResult:
         # if there is highlighting but not for this document,
         # description excerpt should still display
         #  (solr returns empty list if there are no keywords)
-        context["highlighting"] = {"document.%d" % document.id: {"description_t": []}}
+        context["highlighting"] = {"document.%d" % document.id: {"description": []}}
         assert document.description[:50] in self.template.render(context)
 
     def test_description_highlighting(self, document):
@@ -293,10 +313,63 @@ class TestDocumentResult:
             context={
                 "document": {"pgpid": document.id, "id": "document.%d" % document.id},
                 "highlighting": {
-                    "document.%d" % document.id: {"description_t": [test_highlight]}
+                    "document.%d" % document.id: {"description": [test_highlight]}
                 },
+                "page_obj": self.page_obj,
             }
         )
         # keywords in context displayed instead of description excerpt
         assert test_highlight in result
         assert document.description[:50] not in result
+
+
+class TestSearchPagination:
+
+    template = get_template("corpus/snippets/pagination.html")
+
+    def test_one_page(self):
+        paginator = Paginator(range(5), per_page=5)
+        ctx = {"page_obj": paginator.page(1), "request": HttpRequest()}
+        result = self.template.render(ctx)
+        assert '<nav class="pagination' in result
+        assert (
+            '<a name="previous page" title="previous page" class="disabled">' in result
+        )
+        assert '<a title="page 1" class="active"' in result
+        assert '<a name="next page" title="next page" class="disabled">' in result
+
+    def test_first_of_twenty_pages(self):
+        paginator = Paginator(range(20), per_page=1)
+        ctx = {"page_obj": paginator.page(1), "request": HttpRequest()}
+        result = self.template.render(ctx)
+        assert (
+            '<a name="previous page" title="previous page" class="disabled">' in result
+        )
+        assert '<a title="page 1" class="active"' in result
+        assert '<a title="page 2" href="?page=2">' in result
+        assert (
+            '<a name="next page" title="next page" rel="next" href="?page=2">' in result
+        )
+
+    def test_tenth_of_twenty_pages(self):
+        paginator = Paginator(range(20), per_page=1)
+        ctx = {"page_obj": paginator.page(10), "request": HttpRequest()}
+        result = self.template.render(ctx)
+        assert (
+            '<a name="previous page" title="previous page" rel="prev" href="?page=9">'
+            in result
+        )
+        assert '<a title="page 10" class="active"' in result
+        assert '<a title="page 11" href="?page=11">' in result
+        assert (
+            '<a name="next page" title="next page" rel="next" href="?page=11">'
+            in result
+        )
+
+    def test_with_query_param(self):
+        paginator = Paginator(range(20), per_page=1)
+        req = HttpRequest()
+        req.GET = QueryDict("?q=contract")
+        ctx = {"page_obj": paginator.page(10), "request": req}
+        result = self.template.render(ctx)
+        assert f"q=contract&page=9" in html.unescape(result)
