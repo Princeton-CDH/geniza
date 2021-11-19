@@ -304,7 +304,7 @@ class TestDocumentResult:
         # if there is highlighting but not for this document,
         # description excerpt should still display
         #  (solr returns empty list if there are no keywords)
-        context["highlighting"] = {"document.%d" % document.id: {"description_t": []}}
+        context["highlighting"] = {"document.%d" % document.id: {"description": []}}
         assert document.description[:50] in self.template.render(context)
 
     def test_description_highlighting(self, document):
@@ -313,7 +313,7 @@ class TestDocumentResult:
             context={
                 "document": {"pgpid": document.id, "id": "document.%d" % document.id},
                 "highlighting": {
-                    "document.%d" % document.id: {"description_t": [test_highlight]}
+                    "document.%d" % document.id: {"description": [test_highlight]}
                 },
                 "page_obj": self.page_obj,
             }
