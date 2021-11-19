@@ -1,0 +1,86 @@
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <teiHeader>
+        <fileDesc>
+            <titleStmt>
+                <title>TS 13 J 15 5</title>
+                <editor/>
+            </titleStmt>
+            <publicationStmt>
+                <distributor><idno type="PGP">968</idno></distributor>
+            </publicationStmt>
+            <sourceDesc>
+                <msDesc>
+                    <msIdentifier>
+                        <repository>Library</repository>
+                        <msName/>
+                    </msIdentifier>
+                    <msContents>
+                        <p>TS 13 J 15, fol. 5, ed. Gil, Palestine, III, pp. 293-295 (Doc. #514),</p>
+                        <p>C.T., 6-9-86, (P)</p>
+                    </msContents>
+                </msDesc>
+            </sourceDesc>
+        </fileDesc>
+        <profileDesc>
+            <textClass>
+                <keywords>
+                    <term/>
+                </keywords>
+            </textClass>
+        </profileDesc>
+        <revisionDesc>
+            <change when="2013-12-24" who="#BJ">TEI created</change>
+        </revisionDesc>
+    </teiHeader>
+    <text xml:space="preserve">
+        <body>
+            <div>
+                <l n="1">כתאבי אטאל אללה בקא מולי אלשיך ואדאם</l>
+                <l n="2">עזה ונ עמתה מן דמשק ליומין כלת מן גמאדה</l>
+                <l n="3">אלאכיר ען סלאמה ונ עמה ואלחמד ללה וחדה</l>
+                <l n="4">כאן תקדם כתאב אלא מולי אעלמתה כתבי</l>
+                <l n="5">עליה ספתגתין במיתין וכמסין דינ אר ואנ נ י</l>
+                <l n="6">דפעתה לאבן חזיר סלף עלי ורק עלאמה אבן</l>
+                <l n="7">אמאם ואנ נ י חולת מע סלאמה אבן גיש אל</l>
+                <l n="8">אסבוע אלמאצי עשר אחמאל ופי יומנ א</l>
+                <l n="9">הדא חול ה אחמאל ואנ א אומל אן אתמם</l>
+                <l n="10">צחבתה מא יסהלה אללה תעלא וקד רסם לי</l>
+                <l n="11">מולי אלשיך אלגליל מכאתבת מולי אלשיך</l>
+                <l n="12">וסואלה פי שרא סתין חק דהב מן אחסן מא</l>
+                <l n="13">יקדר עליה לא יכון פיה מקטע //ולא מקטע// אלא</l>
+                <l n="14">גיד גאיה ויבטנ וה ויקדם חמלה פי</l>
+                <l n="15">חרבי מע מן יסהלה אללה אלא אבן אבי חפאץ</l>
+                <l n="16">ויכתב יעלמנ י כמא תמנ ה ומע מן חמל</l>
+                <l n="17">לאן לי חאגה אליה מאסה וכדאלך סאלתה</l>
+                <l n="18">שרא צרף זית בזר באי סעה כאן יתקדם</l>
+                <l n="19">חמלה מע חרבי ויקלדנ י בדאלך אלמאנ ה</l>
+                <l n="20">ולא יתואנ א פי תחציל אלגמיע מתפצל</l>
+                <l n="21">מנ עם ויואצלנ י בכתבה מתפצל מנ עם</l>
+                <l n="22">ויערפנ י סער אללסאן אלתור וסידת אל</l>
+                <label>Right Margin </label>
+
+                <l n="1">מא </l>
+                <l n="2">ושלמך </l>
+                <l n="3">ירבה </l>
+                <l n="4">אסל מולי </l>
+
+                <l n="5">אלשיך ביע </l>
+                <l n="6">צרוף אלורד </l>
+                <l n="7"> אול פי אול </l>
+                <l n="8"> לאלא תגסם </l>
+
+                <label>Recto </label>
+                <label># </label>
+
+                <l n="1">موﻻى الشيخ ابو العﻻ </l>
+                <l n="2">يوسف بن داود بن شعيا</l>
+                <l n="3">الحسين بن طاهر</l>
+
+                <l n="4"> شاكر تفضله ﻻ عدمه </l>
+                <l n="5"> الفسطاط ان شاء الله </l>
+                <l n="6"> الحسن بن ابرهيم </l>
+                <label># </label>
+            </div>
+        </body>
+    </text>
+</TEI>
