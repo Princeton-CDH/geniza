@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-18 09:48-0500\n"
+"POT-Creation-Date: 2021-11-22 13:15-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -253,32 +253,83 @@ msgstr "דיון"
 msgid "Django site admin"
 msgstr "ניהול האתר"
 
+#: geniza/templates/base.html:37
+msgid "Skip to main content"
+msgstr ""
+
 #. Translators: accessibility text label for site navigation
-#: geniza/templates/nav.html:3
+#: geniza/templates/nav.html:8
 msgid "main navigation"
 msgstr ""
 
-#. Translators: label for 'home' button in main navigation
-#: geniza/templates/nav.html:5
+#. Translators: accessibility label for 'home' button in main navigation
+#: geniza/templates/nav.html:14
+msgid "home"
+msgstr ""
+
+#. Translators: site name label for 'home' button in main navigation
+#: geniza/templates/nav.html:16
 msgid "GENIZA"
 msgstr "גניזה"
 
-#. Translators: label for 'menu' open/close button for mobile navigation
-#: geniza/templates/nav.html:11
-msgid "Toggle main navigation menu"
+#. Translators: label for 'menu' open button for mobile navigation
+#: geniza/templates/nav.html:22
+msgid "Open main navigation menu"
 msgstr ""
 
-#: geniza/templates/nav.html:16
+#. Translators: label for 'menu' close button for mobile navigation
+#: geniza/templates/nav.html:35
+msgid "Close main navigation menu"
+msgstr ""
+
+#. Translators: label for link to 'Search' page in main navigation
+#: geniza/templates/nav.html:42
 msgid "Search"
 msgstr "חיפוש"
 
-#: geniza/templates/nav.html:20
+#: geniza/templates/nav.html:46
 msgid "Contact Us"
 msgstr "יצירת קשר"
 
-#: geniza/templates/nav.html:23
+#. Translators: label for 'about' link in main navigation
+#: geniza/templates/nav.html:50
 msgid "About"
 msgstr "אודות"
+
+#. Translators: accessibility label for 'about' menu in navigation
+#: geniza/templates/nav.html:59
+msgid "about menu"
+msgstr ""
+
+#. Translators: label for main menu back button for mobile navigation
+#: geniza/templates/nav.html:64
+msgid "Return to main menu"
+msgstr ""
+
+#. Translators: label for link to 'Credits' page in main navigation
+#: geniza/templates/nav.html:78
+msgid "Credits"
+msgstr ""
+
+#. Translators: label for link to 'How to Cite' page in main navigation
+#: geniza/templates/nav.html:82
+msgid "How to Cite"
+msgstr ""
+
+#. Translators: label for link to 'Data Exports' page in main navigation
+#: geniza/templates/nav.html:86
+msgid "Data Exports"
+msgstr ""
+
+#. Translators: label for link to 'Technical' page in main navigation
+#: geniza/templates/nav.html:90
+msgid "Technical"
+msgstr ""
+
+#. Translators: label for link to 'FAQ' page in main navigation
+#: geniza/templates/nav.html:94
+msgid "FAQ"
+msgstr ""
 
 #~ msgid "Shelfmark"
 #~ msgstr "מספר מדף"
