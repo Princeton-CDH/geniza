@@ -6,7 +6,7 @@
 
 {% block main %}
     <!-- document scholarship records -->
-    <h1>{{ document.title }}</h1>
+    {% include "corpus/snippets/document_header.html" %}
     <div class="container">
         {% include "corpus/snippets/document_tabs.html" %}
         <ol>
