@@ -87,7 +87,6 @@
             outline: 1px solid;
             width: auto;
             margin: 0 spacing.$spacing-sm 0 spacing.$spacing-2xl;
-            z-index: 0;
             pointer-events: all;
             & > li.menu-item + li.menu-item {
                 margin-left: spacing.$spacing-2xl;
@@ -109,6 +108,7 @@
     .menu-item,
     #about-menu .menu-item {
         flex: 1 0 100%;
+        max-width: 100%;
         // Mobile links which need padding, inline-block, and border-top
         a {
             text-decoration: none;
@@ -116,6 +116,7 @@
             padding: spacing.$spacing-2xl spacing.$spacing-sm
                 spacing.$spacing-lg;
             width: 100%;
+            max-width: 100%;
             display: inline-block;
             border-top: 1px solid;
             @include colors.apply-theme("nav-outline", "border-top-color");

@@ -14,7 +14,7 @@
                 {% translate "home" as aria_home %}
                 {# Translators: site name label for 'home' button in main navigation #}
                 {% translate "GENIZA" as site_name %}
-                <a class="home-link" href="#" aria-label="{{ aria_home }}" role="menuitem">{{ site_name }}</a>
+                <a class="home-link" href="#" aria-label="{{ aria_home }}" role="button">{{ site_name }}</a>
             </li>
             <li class="menu-button">
                 <a id="open-main-menu" href="#menu" role="button">
@@ -25,27 +25,27 @@
         </ul>
         {% url "corpus:document-search" as search_url %}
         <ul id="menu" role="menu" aria-label="{{ main_nav_label }}">
-            <li class="home">
+            <li class="home" role="none">
                 {# Translators: label for 'home' button in main navigation #}
                 <a class="home-link" href="#" aria-label="{{ aria_home }}" role="menuitem">{{ site_name }}</a>
             </li>
-            <li class="menu-button">
-                <a id="close-main-menu" href="#" role="button">
+            <li class="menu-button" role="none">
+                <a href="#" role="button">
                     {# Translators: label for 'menu' close button for mobile navigation #}
                     {% translate "Close main navigation menu" as close_button %}
                     <span class="sr-only">{{ close_button }}</span>
                 </a>
             </li>
-            <li class="menu-item">
+            <li class="menu-item" role="none">
                 <a href="{{ search_url }}"{% if request.path == search_url %} aria-current="page"{% endif %} role="menuitem">
                     {# Translators: label for link to 'Search' page in main navigation #}
                     {% translate "Search" %}
                 </a>
             </li>
-            <li class="menu-item">
+            <li class="menu-item" role="none">
                 <a href="#" role="menuitem">{% translate "Contact Us" %}</a>
             </li>
-            <li class="menu-item has-submenu">
+            <li class="menu-item has-submenu" role="none">
                 {# Translators: label for 'about' link in main navigation #}
                 {% translate "About" as about_label %}
                 <a id="open-about-menu"
@@ -58,38 +58,38 @@
                 {# Translators: accessibility label for 'about' menu in navigation #}
                 {% translate "about menu" as about_menu_label %}
                 <ul id="about-menu" role="menu" aria-label="{{ about_menu_label }}">
-                    <li class="menu-button">
+                    <li class="menu-button" role="none">
                         <a id="back-to-main-menu" href="#menu" role="button">
                             {# Translators: label for main menu back button for mobile navigation #}
                             {% translate "Return to main menu" as back_button %}
                             <span class="sr-only">{{ back_button }}</span>
                         </a>
                     </li>
-                    <li class="menu-label">
+                    <li class="menu-label" role="none">
                         <span>{{ about_label }}</span>
                     </li>
-                    <li class="menu-button">
-                        <a id="close-main-menu" href="#" role="button">
+                    <li class="menu-button" role="none">
+                        <a href="#" role="button">
                             <span class="sr-only">{{ close_button }}</span>
                         </a>
                     </li>
-                    <li class="menu-item">
+                    <li class="menu-item" role="none">
                         {# Translators: label for link to 'Credits' page in main navigation #}
                         <a href="#" role="menuitem">{% translate "Credits" %}</a>
                     </li>
-                    <li class="menu-item">
+                    <li class="menu-item" role="none">
                         {# Translators: label for link to 'How to Cite' page in main navigation #}
                         <a href="#" role="menuitem">{% translate "How to Cite" %}</a>
                     </li>
-                    <li class="menu-item">
+                    <li class="menu-item" role="none">
                         {# Translators: label for link to 'Data Exports' page in main navigation #}
                         <a href="#" role="menuitem">{% translate "Data Exports" %}</a>
                     </li>
-                    <li class="menu-item">
+                    <li class="menu-item" role="none">
                         {# Translators: label for link to 'Technical' page in main navigation #}
                         <a href="#" role="menuitem">{% translate "Technical" %}</a>
                     </li>
-                    <li class="menu-item">
+                    <li class="menu-item" role="none">
                         {# Translators: label for link to 'FAQ' page in main navigation #}
                         <a href="#" role="menuitem">{% translate "FAQ" %}</a>
                     </li>
