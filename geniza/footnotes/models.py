@@ -100,6 +100,10 @@ class Source(models.Model):
     page_range = models.CharField(
         max_length=255, blank=True, help_text="Page range for article or book section."
     )
+    publisher = models.CharField(max_length=255, blank=True, help_text="Publisher name")
+    place_published = models.CharField(
+        max_length=255, blank=True, help_text="Place where the work was published"
+    )
     other_info = models.TextField(
         blank=True, help_text="Additional citation information, if any"
     )
