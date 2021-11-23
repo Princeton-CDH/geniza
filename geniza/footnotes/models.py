@@ -2,6 +2,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
+from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager
@@ -121,18 +122,15 @@ class Source(models.Model):
         ordering = ["title", "year"]
 
     def __str__(self):
-        # generate simple string representation similar to
-        # how records were listed in the metadata spreadsheet
-        # author lastname, title (year)
+        """strip HTML tags and trailing period from formatted display"""
+        return strip_tags(self.formatted_display())[:-1]
 
-        # author
-        # author, title
-        # author, title (year)
-        # author (year)
-        # author, "title" journal vol (year)
+    def all_authors(self):
+        """semi-colon delimited list of authors in order"""
+        return "; ".join([str(c.creator) for c in self.authorship_set.all()])
 
-        # TODO: include language if not English
-
+    def formatted_display(self):
+        """format source for display; used on document scholarship page"""
         author = ""
         if self.authorship_set.exists():
             author_lastnames = [
@@ -148,35 +146,111 @@ class Source(models.Model):
                 author = author_lastnames[0]
 
         parts = []
+        url = self.url
 
+        if not url:
+            for fn in self.footnote_set.all():
+                if fn.url:
+                    url = fn.url
+                    break
+
+        if url:
+            parts.append('<a href="%s">' % url)
+
+        doublequoted_types = ["Article", "Dissertation", "Book Section"]
         if self.title:
-            # if this is an article, wrap title in quotes
-            if self.source_type.type == "Article":
+            # if this is a book, italicize title
+            if self.source_type.type == "Book":
+                parts.append("<em>%s</em>" % self.title)
+            # if this is a doublequoted type, wrap title in quotes
+            elif self.source_type.type in doublequoted_types and not (
+                self.title[0] == '"' and self.title[-1] == '"'
+            ):
                 parts.append('"%s"' % self.title)
+            # otherwise, just leave unformatted
             else:
                 parts.append(self.title)
+        elif self.source_type and self.source_type.type:
+            # Use type as descriptive title when no title available, per CMS
+            parts.append(self.source_type.type.lower())
 
-        # TODO: formatted version with italics for book/journal title
+        if url:
+            # prevent trailing space from being inserted in link text
+            parts[-1] += "</a>"
+
+        # Add non-English languages as parenthetical
+        if self.languages.count():
+            for lang in self.languages.all():
+                if "English" not in str(lang):
+                    parts.append("(in %s)" % lang)
+
+        # italics for book/journal title
         if self.journal:
-            parts.append(self.journal)
+            if (
+                self.source_type.type in doublequoted_types
+                and not self.languages.count()
+            ):
+                # special case for comma inside doublequotes
+                parts[-1] = parts[-1][:-1] + ',"'
+            else:
+                parts[-1] += ","
+            if self.source_type.type == "Book Section":
+                parts.append("in")
+
+            parts.append("<em>%s</em>" % self.journal)
+
+        # Volume for journals appears before publication info
+        if self.source_type.type == "Article":
+            if self.volume:
+                parts.append(self.volume)
+            # TODO: Add issue to model or remove below
+            # if self.issue:
+            # parts[-1] += ","
+            # parts.append("no. %d" % self.issue)
+
+        # Location, publisher, and date
+        parts.append("(")
+        if self.place_published or self.publisher:
+            if self.place_published:
+                parts[-1] += "%s:" % self.place_published
+            else:
+                parts[-1] += "n.p.:"
+            if self.publisher:
+                parts.append("%s," % self.publisher)
+            else:
+                parts.append("n.p.,")
+        else:
+            parts[-1] += "n.p.,"
+
+        if self.year:
+            parts.append(str(self.year))
+        else:
+            parts.append("n.d.")
+        parts[-1] += ")"
+
         # omit volumes for unpublished sources
         # (those volumes are an admin convienence for managing Goitein content)
-        if self.volume and self.source_type.type != "Unpublished":
-            parts.append(self.volume)
-        if self.year:
-            parts.append("(%d)" % self.year)
-        if self.other_info:
-            parts.append(self.other_info)
+        # and for articles (appears earlier in citation)
+        needs_volume = bool(
+            self.volume and self.source_type.type not in ["Article", "Unpublished"]
+        )
 
-        # title, journal, etc should be joined by spaces only
+        # Page range
+        if self.page_range:
+            parts[-1] += ","
+            if needs_volume:
+                parts.append("%s:%s" % (self.volume, self.page_range))
+            elif not self.volume:
+                parts.append(self.page_range)
+        elif needs_volume:
+            parts[-1] += ","
+            parts.append(self.volume)
+
+        # title and other metadata should be joined by spaces
         ref = " ".join(parts)
 
         # delimit with comma whichever values are set
-        return ", ".join([val for val in (author, ref) if val])
-
-    def all_authors(self):
-        """semi-colon delimited list of authors in order"""
-        return "; ".join([str(c.creator) for c in self.authorship_set.all()])
+        return ", ".join([val for val in (author, ref) if val]) + "."
 
     all_authors.short_description = "Authors"
     all_authors.admin_order_field = "first_author"  # set in admin queryset
