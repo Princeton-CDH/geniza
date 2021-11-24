@@ -14,12 +14,14 @@
                 {% spaceless %}
                     <li class="footnote">
                         <dt class="sr-only">
+                            {# Translators: accessibility label for a footnote citation in scholarship records view #}
                             {% translate 'Footnote' %}
                         </dt>
                         <dd>
                             {{ fn.source.formatted_display|safe }}
                         </dd>
                         <dt class="includes">
+                            {# Translators: label for included document relations for a footnote #}
                             {% translate 'includes' %}
                         </dt>
                         <dd class="includes">

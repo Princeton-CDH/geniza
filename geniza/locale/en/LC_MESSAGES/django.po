@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-17 13:48-0500\n"
+"POT-Creation-Date: 2021-11-24 14:58-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -54,7 +54,7 @@ msgstr "Document Type"
 
 #. Translators: Default label when document does not have a type
 #: geniza/corpus/models.py:551
-#: geniza/corpus/templates/corpus/document_detail.html:33
+#: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr ""
 
@@ -62,42 +62,35 @@ msgstr ""
 msgid "Home"
 msgstr "Home"
 
-#. Translators: Document edit link for admins
-#: geniza/corpus/templates/corpus/document_detail.html:25
-#, fuzzy
-#| msgid "Editor"
-msgid "Edit"
-msgstr "Editor"
-
 #. Translators: label for document metadata section (editor, date, input date)
-#: geniza/corpus/templates/corpus/document_detail.html:45
+#: geniza/corpus/templates/corpus/document_detail.html:28
 msgid "Metadata"
 msgstr ""
 
 #. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:51
+#: geniza/corpus/templates/corpus/document_detail.html:34
 msgid "Editor"
 msgstr "Editor"
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:58
+#: geniza/corpus/templates/corpus/document_detail.html:41
 #: geniza/corpus/templates/corpus/snippets/document_result.html:29
 msgid "Input date"
 msgstr "Input date"
 
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:62
+#: geniza/corpus/templates/corpus/document_detail.html:45
 msgid "Permalink"
 msgstr ""
 
 #. Translators: label for tags on a document
-#: geniza/corpus/templates/corpus/document_detail.html:72
+#: geniza/corpus/templates/corpus/document_detail.html:55
 #: geniza/corpus/templates/corpus/snippets/document_result.html:19
 msgid "Tags"
 msgstr ""
 
 #. Translators: label for document description
-#: geniza/corpus/templates/corpus/document_detail.html:83
+#: geniza/corpus/templates/corpus/document_detail.html:66
 msgid "Description"
 msgstr ""
 
@@ -114,9 +107,22 @@ msgid_plural "%(count_humanized)s total results"
 msgstr[0] ""
 msgstr[1] ""
 
-#: geniza/corpus/templates/corpus/document_scholarship.html:21
-msgid "Link to source"
+#. Translators: accessibility label for a footnote citation in scholarship records view
+#: geniza/corpus/templates/corpus/document_scholarship.html:18
+msgid "Footnote"
 msgstr ""
+
+#. Translators: label for included document relations for a footnote
+#: geniza/corpus/templates/corpus/document_scholarship.html:25
+msgid "includes"
+msgstr ""
+
+#. Translators: Document edit link for admins
+#: geniza/corpus/templates/corpus/snippets/document_header.html:9
+#, fuzzy
+#| msgid "Editor"
+msgid "Edit"
+msgstr "Editor"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:31
 msgid "PGP ID"
@@ -154,18 +160,18 @@ msgstr ""
 msgid "View document details"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:5
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:6
 msgid "Document Details"
 msgstr ""
 
 #. Translators: n_records is number of scholarship records
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:8
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:9
 #, python-format
 msgid "Scholarship Records (%(n_records)s)"
 msgstr ""
 
 #. Translators: n_links is number of external links
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:13
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:15
 #, python-format
 msgid "External Links (%(n_links)s)"
 msgstr ""
@@ -209,15 +215,15 @@ msgid_plural "%(count)d scholarship records for %(doc)s"
 msgstr[0] ""
 msgstr[1] ""
 
-#: geniza/footnotes/models.py:218
+#: geniza/footnotes/models.py:307
 msgid "Edition"
 msgstr ""
 
-#: geniza/footnotes/models.py:219
+#: geniza/footnotes/models.py:308
 msgid "Translation"
 msgstr ""
 
-#: geniza/footnotes/models.py:220
+#: geniza/footnotes/models.py:309
 msgid "Discussion"
 msgstr ""
 
