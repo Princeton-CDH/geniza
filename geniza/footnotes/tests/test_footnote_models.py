@@ -20,20 +20,20 @@ class TestSourceLanguage:
 class TestSource:
     @pytest.mark.django_db
     def test_str(self, source, twoauthor_source, multiauthor_untitledsource):
-        # source has no year; str should be creator lastname, title,
-        assert str(source) == "%s, %s" % (
+        # source has no year; str should be creator lastname, title, (n.p., n.d.)
+        assert str(source) == "%s, %s (n.p., n.d.)" % (
             source.authors.first().firstname_lastname(),
             source.title,
         )
         # set a year
         source.year = 1984
-        assert str(source) == "%s, %s (1984)" % (
+        assert str(source) == "%s, %s (n.p., 1984)" % (
             source.authors.first().firstname_lastname(),
             source.title,
         )
 
         # two authors
-        assert str(twoauthor_source) == "%s and %s, %s" % (
+        assert str(twoauthor_source) == "%s and %s, %s (n.p., n.d.)" % (
             twoauthor_source.authors.first().firstname_lastname(),
             twoauthor_source.authors.all()[1].firstname_lastname(),
             twoauthor_source.title,
@@ -43,13 +43,15 @@ class TestSource:
         lastnames = [
             a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
         ]
-        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s" % tuple(lastnames)
+        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s, %s" % (
+            tuple(lastnames) + (multiauthor_untitledsource.source_type.type.lower(),)
+        )
 
     @pytest.mark.django_db
     def test_str_article(self, article):
 
         # article with title, journal title, volume, year
-        assert str(article) == '%s, "%s" %s %s (%s)' % (
+        assert str(article) == '%s, "%s," %s %s (n.p., %s)' % (
             article.authors.first().firstname_lastname(),
             article.title,
             article.journal,
@@ -58,16 +60,18 @@ class TestSource:
         )
         # article with no title
         article.title = ""
-        assert str(article) == "%s, %s %s (%s)" % (
+        assert str(article) == "%s, %s, %s %s (n.p., %s)" % (
             article.authors.first().firstname_lastname(),
+            article.source_type.type.lower(),
             article.journal,
             article.volume,
             article.year,
         )
         # no volume
         article.volume = ""
-        assert str(article) == "%s, %s (%s)" % (
+        assert str(article) == "%s, %s, %s (n.p., %s)" % (
             article.authors.first().firstname_lastname(),
+            article.source_type.type.lower(),
             article.journal,
             article.year,
         )
@@ -108,15 +112,18 @@ class TestFootnote:
 
     def test_display(self, source):
         footnote = Footnote(source=source)
-        assert footnote.display() == "George Orwell, A Nice Cup of Tea."
+        assert footnote.display() == "George Orwell, A Nice Cup of Tea (n.p., n.d.)."
 
         footnote.location = "p. 55"
-        assert footnote.display() == "George Orwell, A Nice Cup of Tea, p. 55."
+        assert (
+            footnote.display()
+            == "George Orwell, A Nice Cup of Tea (n.p., n.d.), p. 55."
+        )
 
         footnote.notes = "With minor edits."
         assert (
             footnote.display()
-            == "George Orwell, A Nice Cup of Tea, p. 55. With minor edits."
+            == "George Orwell, A Nice Cup of Tea (n.p., n.d.), p. 55. With minor edits."
         )
 
     @pytest.mark.django_db

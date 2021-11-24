@@ -186,12 +186,13 @@ class Source(models.Model):
 
         # italics for book/journal title
         if self.journal:
-            if (
+            if self.title and (
                 self.source_type.type in doublequoted_types
                 and not self.languages.count()
             ):
                 # special case for comma inside doublequotes
-                parts[-1] = parts[-1][:-1] + ',"'
+                last_dq = parts[-1].rindex('"')
+                parts[-1] = parts[-1][:last_dq] + "," + parts[-1][last_dq:]
             else:
                 parts[-1] += ","
             if self.source_type.type == "Book Section":
@@ -209,24 +210,26 @@ class Source(models.Model):
             # parts.append("no. %d" % self.issue)
 
         # Location, publisher, and date
-        parts.append("(")
-        if self.place_published or self.publisher:
-            if self.place_published:
-                parts[-1] += "%s:" % self.place_published
+        # Omit for unpublished, unless it has a year
+        if not (self.source_type.type == "Unpublished" and not self.year):
+            parts.append("(")
+            if self.place_published or self.publisher:
+                if self.place_published:
+                    parts[-1] += "%s:" % self.place_published
+                else:
+                    parts[-1] += "n.p.:"
+                if self.publisher:
+                    parts.append("%s," % self.publisher)
+                else:
+                    parts.append("n.p.,")
             else:
-                parts[-1] += "n.p.:"
-            if self.publisher:
-                parts.append("%s," % self.publisher)
-            else:
-                parts.append("n.p.,")
-        else:
-            parts[-1] += "n.p.,"
+                parts[-1] += "n.p.,"
 
-        if self.year:
-            parts.append(str(self.year))
-        else:
-            parts.append("n.d.")
-        parts[-1] += ")"
+            if self.year:
+                parts.append(str(self.year))
+            else:
+                parts.append("n.d.")
+            parts[-1] += ")"
 
         # omit volumes for unpublished sources
         # (those volumes are an admin convienence for managing Goitein content)
@@ -244,6 +247,8 @@ class Source(models.Model):
                 parts.append(self.page_range)
         elif needs_volume:
             parts[-1] += ","
+            if self.source_type.type == "Book":
+                parts.append("vol.")
             parts.append(self.volume)
 
         # title and other metadata should be joined by spaces
