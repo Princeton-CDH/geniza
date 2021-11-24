@@ -13,7 +13,10 @@ h1#document-title {
     @include breakpoints.for-desktop-up {
         margin: spacing.$spacing-3xl 0 spacing.$spacing-2xl;
     }
-    font-size: typography.$text-size-2md;
+    font-size: typography.$text-size-lg;
+    @include breakpoints.for-desktop-up {
+        font-size: typography.$text-size-xl;
+    }
     // document type, inside title
     .doctype {
         @include typography.doctype;

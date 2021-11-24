@@ -33,7 +33,7 @@
                     {# Translators: Editor label #}
                     <dt>{% translate 'Editor' %}</dt>  {# optionally pluralize? #}
                     {% for ed in document.editions %}
-                        <dd>{{ ed.display }}</dd>
+                        <dd>{{ ed.display|safe }}</dd>
                         {# link ? #}
                     {% endfor %}
                 {% endif %}

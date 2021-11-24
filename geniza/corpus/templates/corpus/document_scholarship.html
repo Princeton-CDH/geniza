@@ -12,14 +12,20 @@
         <ol>
             {% for fn in document.footnotes.all %}
                 {% spaceless %}
-                    <li><p class="footnote">
-                        {% if fn.source.title %}<span class="title">{{ fn.source.title }}</span>{% endif %}
-                        {% if fn.source.authors.exists %}<span class="author">{{ fn.source.all_authors }}</span>{% endif %}
-                        {% if fn.source.year %}<span class="year">{{ fn.source.year }}</span>{% endif %}
-                        <span class="relation">{{ fn.doc_relation }}</span>
-                        {% if fn.location %}<span class="location">{{ fn.location }}</span>{% endif %}
-                        {% if fn.url %}<a href="{{ fn.url }}">{% translate "Link to source" %}</a>{% endif %}
-                    </p></li>
+                    <li class="footnote">
+                        <dt class="sr-only">
+                            {% translate 'Footnote' %}
+                        </dt>
+                        <dd>
+                            {{ fn.source.formatted_display|safe }}
+                        </dd>
+                        <dt class="includes">
+                            {% translate 'includes' %}
+                        </dt>
+                        <dd class="includes">
+                            {{ fn.doc_relation }}
+                        </dd>
+                    </li>
                 {% endspaceless %}
             {% endfor %}
         </ol>
