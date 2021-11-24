@@ -185,7 +185,7 @@ class Source(models.Model):
                     parts.append("(in %s)" % lang)
 
         # italics for book/journal title
-        if self.journal:
+        if self.journal or self.source_type.type == "Dissertation":
             if self.title and (
                 self.source_type.type in doublequoted_types
                 and not self.languages.count()
@@ -195,6 +195,8 @@ class Source(models.Model):
                 parts[-1] = parts[-1][:last_dq] + "," + parts[-1][last_dq:]
             else:
                 parts[-1] += ","
+
+        if self.journal:
             if self.source_type.type == "Book Section":
                 parts.append("in")
 
@@ -208,6 +210,9 @@ class Source(models.Model):
             # if self.issue:
             # parts[-1] += ","
             # parts.append("no. %d" % self.issue)
+
+        if self.source_type.type == "Dissertation":
+            parts.append("PhD diss.,")
 
         # Location, publisher, and date
         # Omit for unpublished, unless it has a year
