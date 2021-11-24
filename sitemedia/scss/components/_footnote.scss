@@ -18,6 +18,12 @@
         padding-left: spacing.$spacing-xl;
         margin-left: 0;
     }
+    a {
+        font-size: typography.$text-size-2md;
+        @include breakpoints.for-desktop-up {
+            font-size: typography.$text-size-lg;
+        }
+    }
     & + .footnote {
         padding-top: spacing.$spacing-md;
         border-top: 1px solid;
