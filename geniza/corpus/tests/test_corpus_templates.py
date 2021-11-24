@@ -153,24 +153,23 @@ class TestDocumentScholarshipTemplate:
         )
         assertNotContains(response, '<a href="https://example.com/">')
 
-    # TODO: Add this to template
-    # def test_source_relation(self, client, document, source):
-    #     """Document scholarship template should show source relation to doc"""
-    #     fn = Footnote.objects.create(
-    #         content_object=document, source=source, doc_relation=Footnote.EDITION
-    #     )
-    #     response = client.get(
-    #         reverse("corpus:document-scholarship", args=[document.pk])
-    #     )
-    #     assertContains(response, '<span class="relation">Edition</span>', html=True)
-    #     fn.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
-    #     fn.save()
-    #     response = client.get(
-    #         reverse("corpus:document-scholarship", args=[document.pk])
-    #     )
-    #     assertContains(
-    #         response, '<span class="relation">Edition, Translation</span>', html=True
-    #     )
+    def test_source_relation(self, client, document, source):
+        """Document scholarship template should show source relation to doc"""
+        fn = Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.EDITION
+        )
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assertContains(response, '<dd class="relation">Edition</dd>', html=True)
+        fn.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
+        fn.save()
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assertContains(
+            response, '<dd class="relation">Edition, Translation</dd>', html=True
+        )
 
 
 class TestDocumentTabsSnippet:
