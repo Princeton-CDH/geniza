@@ -4,6 +4,11 @@
         <section>
             {# title #}
             <h2 class="title">
+                {# result number #}
+                <span class="counter">
+                    {{ forloop.counter0|add:page_obj.start_index }}
+                </span>
+                {# type and shelfmark #}
                 <span class="doctype">{{ document.type }}</span>
                 <span class="shelfmark">{{ document.shelfmark|join:" + " }}</span>
             </h2>
@@ -58,10 +63,36 @@
             {# scholarship records #}
             <p class="scholarship">
                 {% if document.scholarship_count %}
-                    <i class="ph-check"></i>
-                    {% if document.num_editions %}{% translate 'Transcription' %}{% if document.num_editions > 1 %} ({{ document.num_editions }}){% endif %}{% endif %}
-                    {% if document.num_translations %}{% translate 'Translation' %}{% if document.num_translations > 1 %} ({{ document.num_translations }}){% endif %}{% endif %}
-                    {% if document.num_discussions %}{% translate 'Discussion' %}{% if document.num_discussions > 1 %} ({{ document.num_discussions }}){% endif %}{% endif %}
+                    {% if document.num_editions %}
+                        <span>
+                            {% comment %}Translators: number of editions for this document{% endcomment %}
+                            {% blocktranslate count counter=document.num_editions trimmed %}
+                                1 Transcription
+                            {% plural %}
+                                {{ counter }} Transcriptions
+                            {% endblocktranslate %}
+                        </span>
+                    {% endif %}
+                    {% if document.num_translations %}
+                        <span>
+                            {% comment %}Translators: number of translations for this document{% endcomment %}
+                            {% blocktranslate count counter=document.num_translations trimmed %}
+                                1 Translation
+                            {% plural %}
+                                {{ counter }} Translations
+                            {% endblocktranslate %}
+                        </span>
+                    {% endif %}
+                    {% if document.num_discussions %}
+                        <span>
+                            {% comment %}Translators: number of sources that discuss this document{% endcomment %}
+                            {% blocktranslate count counter=document.num_discussions trimmed %}
+                                1 Discussion
+                            {% plural %}
+                                {{ counter }} Discussions
+                            {% endblocktranslate %}
+                        </span>
+                    {% endif %}
                 {% else %}
                     {% translate 'No Scholarship Records' %}
                 {% endif %}

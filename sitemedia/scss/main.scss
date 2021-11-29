@@ -11,6 +11,7 @@
 @use "components/results";
 @use "components/searchform";
 @use "components/iiif";
+@use "components/pagination";
 
 // Page-specific styles
 @use "pages/search";

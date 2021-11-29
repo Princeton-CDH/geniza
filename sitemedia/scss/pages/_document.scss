@@ -4,6 +4,7 @@
 
 @use "../base/breakpoints";
 @use "../base/colors";
+@use "../base/container";
 @use "../base/spacing";
 @use "../base/typography";
 
@@ -20,11 +21,34 @@ body#document {
             @include typography.doctype;
         }
     }
+    .edit-link-container {
+        @include container.measure;
+        position: absolute;
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        a.edit-link {
+            span {
+                @include typography.link;
+            }
+            i {
+                text-decoration: none;
+            }
+            margin-right: spacing.$spacing-xl;
+            @include breakpoints.for-desktop-up {
+                margin: spacing.$spacing-xl spacing.$spacing-md;
+            }
+        }
+    }
     // Primary container
     .container {
         display: flex;
         flex-direction: column;
         padding: spacing.$spacing-md;
+        margin-bottom: spacing.$spacing-md;
+        @include breakpoints.for-desktop-up {
+            margin-bottom: spacing.$spacing-xl;
+        }
         section:first-of-type {
             display: flex;
             flex-direction: column;
@@ -55,14 +79,14 @@ body#document {
             dt {
                 margin-bottom: spacing.$spacing-3xs;
             }
-            dt + dd {
-                margin-bottom: spacing.$spacing-sm;
+            dd + dt {
+                margin-top: spacing.$spacing-sm;
                 @include breakpoints.for-desktop-up {
-                    margin-bottom: spacing.$spacing-md;
+                    margin-top: spacing.$spacing-md;
                 }
-                &:last-of-type {
-                    margin-bottom: 0;
-                }
+            }
+            dt + dd + dd {
+                margin-top: spacing.$spacing-xs;
             }
             // hanging "info" phosphor icon before link
             dd a::before {
@@ -79,13 +103,13 @@ body#document {
         .tags {
             margin: spacing.$spacing-xl spacing.$spacing-xl 0;
             align-self: flex-end;
+            text-align: right;
             @include breakpoints.for-desktop-up {
                 flex: 1 0 50%;
                 padding-left: 0;
                 margin: spacing.$spacing-3xl 0 0;
                 align-self: flex-start;
                 justify-self: flex-end;
-                text-align: right;
                 margin-left: 0;
             }
             li {

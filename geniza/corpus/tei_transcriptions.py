@@ -14,6 +14,7 @@ class MainText(teimap.TeiDiv):
 
 class GenizaTei(teimap.Tei):
     # extend eulxml TEI to add mappings for the fields we care about
+    # NOTE: at least one pgpid is in format ### + ###
     pgpid = xmlmap.IntegerField('tei:teiHeader//tei:idno[@type="PGP"]')
     # normally main text content is under text/body/div; but at least one document has no div
     text = xmlmap.NodeField(
