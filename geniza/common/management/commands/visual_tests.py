@@ -59,7 +59,7 @@ class Command(BaseCommand):
         percy_snapshot(browser, "Mobile menu")
 
         # about submenu open on both desktop and mobile
-        browser.get("http://localhost:8000/documents/")
+        browser.get("http://localhost:8000/documents/#about-menu")
         # open about menu
         browser.find_element_by_id("open-about-menu").click()
         # scroll to top
