@@ -30,7 +30,7 @@
                 <a class="home-link" href="#" aria-label="{{ aria_home }}" role="menuitem">{{ site_name }}</a>
             </li>
             <li class="menu-button" role="none">
-                <a href="#" role="button">
+                <a id="close-main-menu" href="#" role="button">
                     {# Translators: label for 'menu' close button for mobile navigation #}
                     {% translate "Close main navigation menu" as close_button %}
                     <span class="sr-only">{{ close_button }}</span>
@@ -69,7 +69,7 @@
                         <span>{{ about_label }}</span>
                     </li>
                     <li class="menu-button" role="none">
-                        <a href="#" role="button">
+                        <a id="close-about-menu" href="#" role="button">
                             <span class="sr-only">{{ close_button }}</span>
                         </a>
                     </li>

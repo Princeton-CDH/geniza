@@ -1,0 +1,75 @@
+// -----------------------------------------------------------------------------
+// Animation mixins and classes.
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+
+@mixin slidein-left {
+    animation: 0.5s slideinleft forwards;
+}
+
+@keyframes slideinleft {
+    from {
+        left: calc(-100vw);
+    }
+
+    to {
+        left: 0;
+    }
+}
+
+@mixin slideout-left {
+    animation: 0.5s slideoutleft forwards;
+}
+
+@keyframes slideoutleft {
+    from {
+        left: 0;
+    }
+
+    to {
+        left: calc(-100vw);
+    }
+}
+
+@mixin slidein-right {
+    animation: 0.5s slideinright forwards;
+}
+
+@keyframes slideinright {
+    from {
+        left: calc(100vw);
+    }
+
+    to {
+        left: 0;
+    }
+}
+
+@mixin slideout-right {
+    animation: 0.5s slideoutright forwards;
+}
+
+@keyframes slideoutright {
+    from {
+        left: 0;
+    }
+
+    to {
+        left: calc(100vw);
+    }
+}
+
+.slideout-left-mobile {
+    @include slideout-left;
+    @include breakpoints.for-tablet-landscape-up {
+        animation: none;
+    }
+}
+
+.slideout-right-mobile {
+    @include slideout-right;
+    @include breakpoints.for-tablet-landscape-up {
+        animation: none;
+    }
+}

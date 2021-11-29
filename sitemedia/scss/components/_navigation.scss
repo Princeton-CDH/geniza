@@ -2,6 +2,7 @@
 // Main site navigation that appears on every page.
 // -----------------------------------------------------------------------------
 
+@use "../base/animations";
 @use "../base/breakpoints";
 @use "../base/colors";
 @use "../base/spacing";
@@ -50,7 +51,7 @@
     // List of links
     ul#menu {
         display: flex;
-        transform: translateX(calc(-100vw));
+        left: calc(-100vw);
         position: fixed;
         flex-flow: row wrap;
         align-items: center;
@@ -67,8 +68,8 @@
             }
         }
         &:target {
+            @include animations.slidein-left;
             pointer-events: all;
-            transform: translateX(0);
             @include breakpoints.for-tablet-landscape-up {
                 flex: 1 0 auto;
             }
@@ -79,7 +80,8 @@
         }
         @include breakpoints.for-tablet-landscape-up {
             height: auto;
-            transform: translateX(0);
+            animation: none;
+            left: auto;
             position: relative;
             flex: 1 0 auto;
             flex-flow: row nowrap;
@@ -184,7 +186,7 @@
         }
     }
     #about-menu {
-        transform: translateX(calc(-100vw));
+        left: calc(100vw);
         position: fixed;
         top: 0;
         display: flex;
@@ -220,18 +222,18 @@
             font-size: typography.$text-size-2md;
         }
         &:target {
-            transform: translateX(calc(100vw));
+            @include animations.slidein-right;
             @include breakpoints.for-tablet-landscape-up {
-                transform: translateX(0);
+                animation: none;
             }
         }
         @include breakpoints.for-tablet-landscape-up {
+            left: auto;
+            animation: none;
             display: none;
             flex: 1 0 auto;
             position: absolute;
             top: 100%;
-            transform: translateX(0);
-            transition: none;
             width: auto;
             height: auto;
             border: 1px solid;
@@ -256,12 +258,6 @@
             li.menu-item {
                 display: block;
             }
-        }
-    }
-    ul {
-        transition: transform 0.5s ease;
-        @include breakpoints.for-tablet-landscape-up {
-            transition: none;
         }
     }
 
