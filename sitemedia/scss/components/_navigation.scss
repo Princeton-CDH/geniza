@@ -70,10 +70,6 @@
         &:target {
             @include animations.slidein-left;
             pointer-events: all;
-            @media only percy {
-                left: 0;
-                animation: none;
-            }
             @include breakpoints.for-tablet-landscape-up {
                 flex: 1 0 auto;
                 animation: none;
@@ -228,10 +224,6 @@
         }
         &:target {
             @include animations.slidein-right;
-            @media only percy {
-                left: 0;
-                animation: none;
-            }
             @include breakpoints.for-tablet-landscape-up {
                 animation: none;
             }
