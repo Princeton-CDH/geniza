@@ -130,7 +130,6 @@ class DocumentSearchView(ListView, FormMixin):
                 "highlighting": self.queryset.get_highlighting()
                 if self.queryset
                 else {},
-                "total": self.queryset.count(),  # FIXME: use page object instead
             }
         )
         return context_data

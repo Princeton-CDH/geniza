@@ -35,7 +35,7 @@
     <section id="document-list">
         <h1>
             {% comment %}Translators: number of search results{% endcomment %}
-            {% blocktranslate with count_humanized=total|intcomma count counter=total trimmed %}
+            {% blocktranslate with count_humanized=paginator.count|intcomma count counter=paginator.count trimmed %}
                 1 result
             {% plural %}
                 {{ count_humanized }} total results
