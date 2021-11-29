@@ -42,7 +42,9 @@ class Command(BaseCommand):
         percy_snapshot(browser, "Document Search filter")
 
         # document search
-        browser.get("http://localhost:8000/documents/?q=the+writer+באנפנא&per_page=2")
+        browser.get(
+            "http://localhost:8000/documents/?q=the+writer+Avraham+באנפנא&per_page=2"
+        )
         percy_snapshot(browser, "Document Search")
 
         # document detail
