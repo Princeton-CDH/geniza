@@ -20,3 +20,4 @@ django-webpack-loader
 django-csp
 gitpython
 eulxml
+wagtail

@@ -48,6 +48,18 @@ INSTALLED_APPS = [
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",
+    "wagtail.contrib.forms",
+    "wagtail.contrib.redirects",
+    "wagtail.embeds",
+    "wagtail.sites",
+    "wagtail.users",
+    "wagtail.snippets",
+    "wagtail.documents",
+    "wagtail.images",
+    "wagtail.search",
+    "wagtail.admin",
+    "wagtail.core",
+    "modelcluster",
 ]
 
 MIDDLEWARE = [
@@ -60,6 +72,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # "csp.middleware.CSPMiddleware",
+    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 
 ROOT_URLCONF = "geniza.urls"
@@ -256,3 +269,19 @@ TEI_TRANSCRIPTIONS_GITREPO = (
 )
 # local path where git repo should be cloned
 TEI_TRANSCRIPTIONS_LOCAL_PATH = "data/tei_xml"
+
+# Media root for user uploads (required by wagtail)
+MEDIA_ROOT = BASE_DIR / "media"
+
+# Media URL for user uploads (required by wagtail)
+MEDIA_URL = "/media/"
+
+# Wagtail site name
+WAGTAIL_SITE_NAME = "GENIZA"
+
+# Wagtail search backends for fulltext search of content pages
+WAGTAILSEARCH_BACKENDS = {
+    "default": {
+        "BACKEND": "wagtail.search.backends.database",
+    }
+}

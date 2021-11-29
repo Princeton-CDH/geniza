@@ -15,9 +15,11 @@ Including another URLconf
 """
 from django.conf import settings
 from django.conf.urls.i18n import i18n_patterns
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic.base import RedirectView
+from wagtail.admin import urls as wagtailadmin_urls
 
 urlpatterns = [
     # redirect homepage to admin site for now
@@ -26,6 +28,7 @@ urlpatterns = [
     path("accounts/", include("pucas.cas_urls")),
     path("i18n/", include("django.conf.urls.i18n")),
     path("taggit/", include("taggit_selectize.urls")),
+    path("cms/", include(wagtailadmin_urls)),
 ]
 
 # urls that should be available in multiple languages
@@ -33,6 +36,8 @@ urlpatterns += i18n_patterns(
     path("", include("geniza.corpus.urls", namespace="corpus")),
 )
 
+# Media URLs for wagtail
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     try:
