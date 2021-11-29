@@ -2,6 +2,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from percy import percy_snapshot
 from selenium import webdriver
+from selenium.common.exceptions import ElementNotInteractableException
 from selenium.webdriver.common.keys import Keys
 
 
@@ -55,13 +56,16 @@ class Command(BaseCommand):
         percy_snapshot(browser, "Document Scholarship Records")
 
         # # mobile menu
-        # browser.get("http://localhost:8000/documents/#menu")
-        # percy_snapshot(browser, "Mobile menu")
+        browser.get("http://localhost:8000/documents/#menu")
+        percy_snapshot(browser, "Mobile menu")
 
         # about submenu open on both desktop and mobile
-        browser.get("http://localhost:8000/documents/#menu")
-        # open about menu
-        browser.find_element_by_id("open-about-menu").click()
+        browser.get("http://localhost:8000/documents/#about-menu")
+        # open about menu on desktop
+        try:
+            browser.find_element_by_id("open-about-menu").click()
+        except ElementNotInteractableException:  # ignore on mobile
+            pass
         # scroll to top
         browser.find_element_by_tag_name("body").send_keys(Keys.CONTROL + Keys.HOME)
         percy_snapshot(browser, "About submenu")
