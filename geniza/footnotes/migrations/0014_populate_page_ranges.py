@@ -24,5 +24,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(populate_page_ranges),
+        migrations.RunPython(populate_page_ranges, migrations.RunPython.noop),
     ]
