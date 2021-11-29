@@ -315,7 +315,7 @@ class Document(ModelIndexable):
         help_text='Refer to <a href="%s" target="_blank">PGP Document Type Guide</a>'
         % settings.PGP_DOCTYPE_GUIDE,
     )
-    tags = TaggableManager(blank=True)
+    tags = TaggableManager(blank=True, related_name="tagged_document")
     languages = models.ManyToManyField(
         LanguageScript, blank=True, verbose_name="Primary Languages"
     )
