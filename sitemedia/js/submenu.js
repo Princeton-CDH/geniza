@@ -1,26 +1,26 @@
 // Better menu animation when JS enabled
 
-function closeAboutMenu() {
-    aboutMenu = document.querySelector("ul#about-menu");
-    if (aboutMenu && !aboutMenu.classList.contains("slideout-right-mobile")) {
-        aboutMenu.classList.add("slideout-right-mobile");
+function addClass(target, className) {
+    if (target) {
+        target.classList.add(className);
     }
     return false;
 }
-function closeMainMenu(mainMenu) {
-    if (mainMenu && !mainMenu.classList.contains("slideout-left-mobile")) {
-        mainMenu.classList.add("slideout-left-mobile");
+const mainMenu = document.querySelector("ul#menu");
+const menuButtons = mainMenu.querySelectorAll("a[role=button]");
+Array.prototype.forEach.call(menuButtons, function (el) {
+    if (el.parentNode.parentNode.id === "about-menu") {
+        // Slide about menu out to the right
+        el.addEventListener("click", () => {
+            addClass(el.parentNode.parentNode, "slideout-right-mobile");
+        });
+    } else {
+        // Slide main menu out to the left
+        el.addEventListener("click", () => {
+            addClass(el.parentNode.parentNode, "slideout-left-mobile");
+        });
     }
-    return false;
-}
-
-let mainMenu = document.querySelector("ul#menu");
-mainMenu
-    .querySelector("a.home-link")
-    .addEventListener("click", () => closeMainMenu(mainMenu));
-mainMenu
-    .querySelector("a#close-main-menu")
-    .addEventListener("click", () => closeMainMenu(mainMenu));
+});
 
 // Adapted from W3C web accessibility tutorials:
 // https://www.w3.org/WAI/tutorials/menus/flyout/#flyoutnavkbfixed
@@ -36,17 +36,7 @@ Array.prototype.forEach.call(menuItems, function (el) {
             this.setAttribute("aria-expanded", "false");
         }
         // Animate main menu closing on opening submenu
-        mainMenu = this.parentNode.parentNode;
-        closeMainMenu(mainMenu);
+        addClass(mainMenu, "slideout-left-mobile");
         return false;
     });
-    // Animate submenu closing on clicking relevant buttons
-    el.querySelector("a#back-to-main-menu").addEventListener(
-        "click",
-        closeAboutMenu
-    );
-    el.querySelector("a#close-about-menu").addEventListener(
-        "click",
-        closeAboutMenu
-    );
 });

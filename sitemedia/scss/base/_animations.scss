@@ -17,11 +17,6 @@
         left: 0;
     }
 }
-
-@mixin slideout-left {
-    animation: 0.5s slideoutleft forwards;
-}
-
 @keyframes slideoutleft {
     from {
         left: 0;
@@ -46,10 +41,6 @@
     }
 }
 
-@mixin slideout-right {
-    animation: 0.5s slideoutright forwards;
-}
-
 @keyframes slideoutright {
     from {
         left: 0;
@@ -61,14 +52,14 @@
 }
 
 .slideout-left-mobile {
-    @include slideout-left;
+    animation: 0.5s slideoutleft forwards;
     @include breakpoints.for-tablet-landscape-up {
         animation: none;
     }
 }
 
 .slideout-right-mobile {
-    @include slideout-right;
+    animation: 0.5s slideoutright forwards;
     @include breakpoints.for-tablet-landscape-up {
         animation: none;
     }
