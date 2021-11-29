@@ -54,12 +54,12 @@ class Command(BaseCommand):
         browser.get("http://localhost:8000/documents/2532/scholarship/")
         percy_snapshot(browser, "Document Scholarship Records")
 
-        # mobile menu
-        browser.get("http://localhost:8000/documents/#menu")
-        percy_snapshot(browser, "Mobile menu")
+        # # mobile menu
+        # browser.get("http://localhost:8000/documents/#menu")
+        # percy_snapshot(browser, "Mobile menu")
 
         # about submenu open on both desktop and mobile
-        browser.get("http://localhost:8000/documents/#about-menu")
+        browser.get("http://localhost:8000/documents/#menu")
         # open about menu
         browser.find_element_by_id("open-about-menu").click()
         # scroll to top
