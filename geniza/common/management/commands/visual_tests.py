@@ -2,6 +2,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from percy import percy_snapshot
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 
 
 class Command(BaseCommand):
@@ -52,6 +53,18 @@ class Command(BaseCommand):
         # document scholarship
         browser.get("http://localhost:8000/documents/2532/scholarship/")
         percy_snapshot(browser, "Document Scholarship Records")
+
+        # mobile menu
+        browser.get("http://localhost:8000/documents/#menu")
+        percy_snapshot(browser, "Mobile menu")
+
+        # about submenu open on both desktop and mobile
+        browser.get("http://localhost:8000/documents/")
+        # open about menu
+        browser.find_element_by_id("open-about-menu").click()
+        # scroll to top
+        browser.find_element_by_tag_name("body").send_keys(Keys.CONTROL + Keys.HOME)
+        percy_snapshot(browser, "About submenu")
 
         # 404 page TODO
         # browser.get("http://localhost:8000/bad-url")
