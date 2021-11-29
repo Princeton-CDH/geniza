@@ -57,6 +57,7 @@ class Command(BaseCommand):
         # iterate through all tei files in the repository
         for xmlfile in glob.iglob(os.path.join(gitrepo_path, "*.xml")):
             self.stats["xml"] += 1
+            xmlfile_basename = os.path.basename(xmlfile)
 
             tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
             # some files are stubs with no content
@@ -67,13 +68,15 @@ class Command(BaseCommand):
                 continue
 
             # get the document id from the filename (####.xml)
-            pgpid = os.path.splitext(os.path.basename(xmlfile))[0]
+            pgpid = os.path.splitext(xmlfile_basename)[0]
             # in ONE case there is a duplicate id with b suffix on the second
             try:
                 pgpid = int(pgpid.strip("b"))
             except ValueError:
                 self.stderr.write("Failed to generate integer PGPID from %s" % pgpid)
                 continue
+            # can we rely on pgpid from xml?
+            # but in some cases, it looks like a join 12047 + 12351
 
             # find the document in the database
             try:
