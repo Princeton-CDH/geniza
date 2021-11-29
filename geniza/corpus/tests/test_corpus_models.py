@@ -513,7 +513,10 @@ class TestDocument:
     def test_index_data_footnotes(self, document, source):
         # footnote with no content
         edition = Footnote.objects.create(
-            content_object=document, source=source, doc_relation=Footnote.EDITION
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.EDITION,
+            content={"text": "transcription lines"},
         )
         edition2 = Footnote.objects.create(
             content_object=document,
@@ -529,6 +532,7 @@ class TestDocument:
         assert index_data["num_editions_i"] == 2
         assert index_data["num_translations_i"] == 2
         assert index_data["scholarship_count_i"] == 4
+        assert index_data["transcription_t"] == ["transcription lines"]
 
         for note in [edition, edition2, translation]:
             assert note.display() in index_data["scholarship_t"]
