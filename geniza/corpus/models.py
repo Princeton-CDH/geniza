@@ -564,6 +564,7 @@ class Document(ModelIndexable):
                 "tags_ss": [t.name for t in self.tags.all()],
                 "status_s": self.get_status_display(),
                 "old_pgpids_is": self.old_pgpids,
+                "language_code_ss": [lang.iso_code for lang in self.languages.all()],
             }
         )
 

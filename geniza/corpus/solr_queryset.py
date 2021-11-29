@@ -29,6 +29,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "scholarship_count": "scholarship_count_i",
         "scholarship": "scholarship_t",
         "transcription": "transcription_t",
+        "language_code": "language_code_ss",
     }
 
     # (adapted from mep)
