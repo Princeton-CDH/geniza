@@ -288,3 +288,8 @@ class Footnote(TrackChangesModel):
 
     has_url.boolean = True
     has_url.admin_order_field = "url"
+
+    def content_text(self):
+        "content as plain text, if available"
+        if self.content:
+            return self.content.get("text")

@@ -90,8 +90,9 @@ section#document-list {
             row-gap: spacing.$spacing-xs;
         }
 
-        // document description
-        .description {
+        // document description, transcription
+        .description,
+        .transcription {
             order: 4;
             margin: spacing.$spacing-md 0;
 
@@ -106,6 +107,13 @@ section#document-list {
                     content: " ";
                 }
             }
+        }
+
+        // styles specific to transcription
+        .transcription {
+            text-align: right;
+            direction: rtl;
+            white-space: pre-line;
         }
 
         // document scholarship records
