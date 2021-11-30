@@ -2,7 +2,10 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from percy import percy_snapshot
 from selenium import webdriver
-from selenium.common.exceptions import ElementNotInteractableException
+from selenium.common.exceptions import (
+    ElementClickInterceptedException,
+    ElementNotInteractableException,
+)
 from selenium.webdriver.common.keys import Keys
 
 
@@ -10,20 +13,11 @@ class Command(BaseCommand):
     """Execute visual regression tests against a running django server."""
 
     help = __doc__
-    menu_css_override = """
-        ul#menu:target,
-        ul#about-menu:target
-        {
-            left: 0  !important;
-            animation: none !important;
-        }
-        @media (min-width: 900px) {
-            ul#menu:target,
-            ul#about-menu:target {
-                left: auto !important;
-            }
-        }
-    """
+
+    def css_override(self):
+        mobile_css_override = "ul#menu:target, ul#about-menu:target { left: 0 !important; animation: none !important; }"
+        desktop_css_override = "media (min-width: 900px) { ul#menu:target, ul#about-menu:target { left: auto !important; }}"
+        return mobile_css_override + desktop_css_override
 
     def get_browser(self):
         """Initialize a browser driver to use for taking snapshots."""
@@ -71,15 +65,18 @@ class Command(BaseCommand):
 
         # # mobile menu
         browser.get("http://localhost:8000/documents/2532/#menu")
-        percy_snapshot(browser, "Mobile menu", percy_css=self.menu_css_override)
+        percy_snapshot(browser, "Mobile menu", percy_css=self.css_override())
 
         # about submenu open on both desktop and mobile
-        browser.get("http://localhost:8000/documents/2532/#menu")
+        browser.get("http://localhost:8000/documents/2532/#about-menu")
         # open about menu on desktop
-        browser.find_element_by_id("open-about-menu").click()
+        try:
+            browser.find_element_by_id("open-about-menu").click()
+        except (ElementClickInterceptedException, ElementNotInteractableException):
+            pass
         # scroll to top
         browser.find_element_by_tag_name("body").send_keys(Keys.CONTROL + Keys.HOME)
-        percy_snapshot(browser, "About submenu", percy_css=self.menu_css_override)
+        percy_snapshot(browser, "About submenu", percy_css=self.css_override())
 
         # 404 page TODO
         # browser.get("http://localhost:8000/bad-url")
