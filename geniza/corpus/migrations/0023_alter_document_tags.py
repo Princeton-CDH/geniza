@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("taggit", "0003_taggeditem_add_unique_index"),
-        ("corpus", "0020_populate_documenttype_display_label"),
+        ("corpus", "0022_populate_language_iso_codes"),
     ]
 
     operations = [

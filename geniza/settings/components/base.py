@@ -56,7 +56,6 @@ INSTALLED_APPS = [
     "wagtail.snippets",
     "wagtail.documents",
     "wagtail.images",
-    "wagtail.search",
     "wagtail.admin",
     "wagtail.core",
     "modelcluster",
@@ -278,10 +277,3 @@ MEDIA_URL = "/media/"
 
 # Wagtail site name
 WAGTAIL_SITE_NAME = "GENIZA"
-
-# Wagtail search backends for fulltext search of content pages
-WAGTAILSEARCH_BACKENDS = {
-    "default": {
-        "BACKEND": "wagtail.search.backends.database",
-    }
-}
