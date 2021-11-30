@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-17 13:48-0500\n"
-"PO-Revision-Date: 2021-11-17 19:48\n"
+"POT-Creation-Date: 2021-11-22 13:15-0500\n"
+"PO-Revision-Date: 2021-11-30 20:25\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -169,18 +169,23 @@ msgstr "لا توجد سجلات للمنح الدراسية"
 msgid "View document details"
 msgstr "عرض تفاصيل المستند"
 
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:5
+#. Translators: accessibility text label for document detail view tabs navigation
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:4
+msgid "tabs"
+msgstr "tabs"
+
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:6
 msgid "Document Details"
 msgstr "تفاصيل المستند"
 
 #. Translators: n_records is number of scholarship records
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:8
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:9
 #, python-format
 msgid "Scholarship Records (%(n_records)s)"
 msgstr "سجل المنح الدراسية (%(n_records)s)"
 
 #. Translators: n_links is number of external links
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:13
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:14
 #, python-format
 msgid "External Links (%(n_links)s)"
 msgstr "الروابط الخارجية (%(n_links)s)"
@@ -244,22 +249,83 @@ msgstr "المناقشة"
 msgid "Django site admin"
 msgstr "Django site admin"
 
-#. Translators: label for 'home' button in main navigation
-#: geniza/templates/nav.html:4
+#: geniza/templates/base.html:37
+msgid "Skip to main content"
+msgstr "تخطي إلى المحتوى الرئيسي"
+
+#. Translators: accessibility text label for site navigation
+#: geniza/templates/nav.html:8
+msgid "main navigation"
+msgstr "الملاحة الرئيسية"
+
+#. Translators: accessibility label for 'home' button in main navigation
+#: geniza/templates/nav.html:14
+msgid "home"
+msgstr "المنزل"
+
+#. Translators: site name label for 'home' button in main navigation
+#: geniza/templates/nav.html:16
 msgid "GENIZA"
 msgstr "GENIZA"
 
-#: geniza/templates/nav.html:10
+#. Translators: label for 'menu' open button for mobile navigation
+#: geniza/templates/nav.html:22
+msgid "Open main navigation menu"
+msgstr "فتح قائمة التنقل الرئيسية"
+
+#. Translators: label for 'menu' close button for mobile navigation
+#: geniza/templates/nav.html:35
+msgid "Close main navigation menu"
+msgstr "إغلاق قائمة التنقل الرئيسية"
+
+#. Translators: label for link to 'Search' page in main navigation
+#: geniza/templates/nav.html:42
 msgid "Search"
 msgstr "البحث"
 
-#: geniza/templates/nav.html:13
+#: geniza/templates/nav.html:46
 msgid "Contact Us"
 msgstr "اتصل بنا"
 
-#: geniza/templates/nav.html:14
+#. Translators: label for 'about' link in main navigation
+#: geniza/templates/nav.html:50
 msgid "About"
 msgstr "حول"
+
+#. Translators: accessibility label for 'about' menu in navigation
+#: geniza/templates/nav.html:59
+msgid "about menu"
+msgstr "حول القائمة"
+
+#. Translators: label for main menu back button for mobile navigation
+#: geniza/templates/nav.html:64
+msgid "Return to main menu"
+msgstr "العودة إلى القائمة الرئيسية"
+
+#. Translators: label for link to 'Credits' page in main navigation
+#: geniza/templates/nav.html:78
+msgid "Credits"
+msgstr "الاعتمادات"
+
+#. Translators: label for link to 'How to Cite' page in main navigation
+#: geniza/templates/nav.html:82
+msgid "How to Cite"
+msgstr "كيف نسيت"
+
+#. Translators: label for link to 'Data Exports' page in main navigation
+#: geniza/templates/nav.html:86
+msgid "Data Exports"
+msgstr "تصدير البيانات"
+
+#. Translators: label for link to 'Technical' page in main navigation
+#: geniza/templates/nav.html:90
+msgid "Technical"
+msgstr "فني"
+
+#. Translators: label for link to 'FAQ' page in main navigation
+#: geniza/templates/nav.html:94
+msgid "FAQ"
+msgstr "أسئلة متكررة"
 
 #~ msgid "Shelfmark"
 #~ msgstr "Shelfmark"
