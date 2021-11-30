@@ -187,9 +187,9 @@ class Source(models.Model):
                     non_english_langs += 1
                     parts.append("(in %s)" % lang)
 
-        # Comma after title/language if there is a journal/book title
+        # Handling presence of book/journal title
         if self.journal:
-            # add comma inside doublequotes when present and appropriate
+            # add comma inside doublequotes when they are present, if no language parenthetical
             # examples:
             #   "Title"                 --> "Title,"
             #   NOT "Title" (in Hebrew) --> "Title," (in Hebrew)
@@ -209,14 +209,15 @@ class Source(models.Model):
             else:
                 parts[-1] += ","
 
-        # formatting for book/journal title
-        if self.journal:
+            # CMS needs "in" before book title
             if self.source_type.type == "Book Section":
                 parts.append("in")
 
+            # italicize book/journal title
             parts.append("<em>%s</em>" % self.journal)
 
-        # Volume for journals appears before publisher info
+        # Unlike other work types, journal articles' volume/issue numbers
+        # appear before the publisher info and date
         if self.source_type.type == "Article":
             if self.volume:
                 parts.append(self.volume)
