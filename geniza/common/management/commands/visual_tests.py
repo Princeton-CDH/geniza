@@ -2,6 +2,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from percy import percy_snapshot
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 
 
 class Command(BaseCommand):
@@ -42,7 +43,9 @@ class Command(BaseCommand):
         percy_snapshot(browser, "Document Search filter")
 
         # document search
-        browser.get("http://localhost:8000/documents/?q=the+writer&per_page=2")
+        browser.get(
+            "http://localhost:8000/documents/?q=the+writer+Avraham+באנפנא&per_page=2"
+        )
         percy_snapshot(browser, "Document Search")
 
         # document detail
@@ -52,6 +55,24 @@ class Command(BaseCommand):
         # document scholarship
         browser.get("http://localhost:8000/documents/2532/scholarship/")
         percy_snapshot(browser, "Document Scholarship Records")
+
+        # # mobile menu
+        browser.get("http://localhost:8000/documents/2532/#menu")
+        percy_snapshot(
+            browser,
+            "Mobile menu",
+            percy_css="ul#menu { left: 0 !important; transition: none !important; }",
+        )
+
+        # about submenu open on both desktop and mobile
+        browser.get("http://localhost:8000/documents/2532/#menu")
+        # open about menu
+        browser.find_element_by_id("open-about-menu").send_keys(Keys.ENTER)
+        percy_snapshot(
+            browser,
+            "About submenu",
+            percy_css="ul#about-menu { left: 0 !important; transition: none !important; } @media (min-width: 900px) { ul#about-menu { left: auto !important; } }",
+        )
 
         # 404 page TODO
         # browser.get("http://localhost:8000/bad-url")

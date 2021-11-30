@@ -43,3 +43,14 @@ def test_html():
 
     # check that the last line / last block is included
     assert "<li value='6'>الحسن بن ابرهيم</li>" in html
+
+
+def test_text_to_plaintext():
+    tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
+    plaintext = tei.text_to_plaintext()
+    assert plaintext.count("\n") == 39
+    # two section breaks
+    assert plaintext.count("\n\n") == 2
+    assert "Right Margin" not in plaintext
+    assert "מא" in plaintext
+    assert "الحسن بن ابرهيم" in plaintext

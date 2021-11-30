@@ -76,6 +76,9 @@ class DocumentSearchView(ListView, FormMixin):
                 documents = (
                     documents.keyword_search(search_opts["q"])
                     .highlight("description", snippets=3, method="unified")
+                    # return smaller chunk of highlighted text for transcriptions
+                    # since the lines are often shorter, resulting in longer text
+                    .highlight("transcription", method="unified", fragsize=50)
                     .also("score")
                 )  # include relevance score in results
 
@@ -124,7 +127,9 @@ class DocumentSearchView(ListView, FormMixin):
                 "page_description": self.page_description,
                 "page_title": self.page_title,
                 "page_type": "search",
-                "total": self.queryset.count(),
+                "highlighting": self.queryset.get_highlighting()
+                if self.queryset
+                else {},
             }
         )
         return context_data
