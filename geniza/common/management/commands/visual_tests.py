@@ -69,12 +69,7 @@ class Command(BaseCommand):
         # about submenu open on both desktop and mobile
         browser.get("http://localhost:8000/documents/2532/#about-menu")
         # open about menu on desktop
-        try:
-            browser.find_element_by_id("open-about-menu").click()
-        except (ElementClickInterceptedException, ElementNotInteractableException):
-            pass
-        # scroll to top
-        browser.find_element_by_tag_name("body").send_keys(Keys.CONTROL + Keys.HOME)
+        browser.find_element_by_id("open-about-menu").send_keys(Keys.ENTER)
         percy_snapshot(
             browser,
             "About submenu",
