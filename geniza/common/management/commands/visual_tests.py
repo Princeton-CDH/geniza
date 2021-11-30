@@ -2,10 +2,6 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from percy import percy_snapshot
 from selenium import webdriver
-from selenium.common.exceptions import (
-    ElementClickInterceptedException,
-    ElementNotInteractableException,
-)
 from selenium.webdriver.common.keys import Keys
 
 
@@ -67,8 +63,8 @@ class Command(BaseCommand):
         )
 
         # about submenu open on both desktop and mobile
-        browser.get("http://localhost:8000/documents/2532/#about-menu")
-        # open about menu on desktop
+        browser.get("http://localhost:8000/documents/2532/#menu")
+        # open about menu
         browser.find_element_by_id("open-about-menu").send_keys(Keys.ENTER)
         percy_snapshot(
             browser,
