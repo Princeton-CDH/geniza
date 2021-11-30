@@ -63,7 +63,7 @@ class Command(BaseCommand):
         percy_snapshot(
             browser,
             "Mobile menu",
-            percy_css="ul#menu { left: 0 !important; animation: none !important; }",
+            percy_css="ul#menu { left: 0 !important; transition: none !important; }",
         )
 
         # about submenu open on both desktop and mobile
@@ -78,7 +78,7 @@ class Command(BaseCommand):
         percy_snapshot(
             browser,
             "About submenu",
-            percy_css="ul#about-menu { left: 0 !important; animation: none !important; }",
+            percy_css="ul#about-menu { left: 0 !important; transition: none !important; } @media (min-width: 900px) { ul#about-menu { left: auto !important; } }",
         )
 
         # 404 page TODO
