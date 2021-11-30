@@ -52,15 +52,9 @@ section#document-list {
         display: flex;
         flex-flow: column;
 
-        // document tags
-        .tags {
-            order: 1;
-        }
-
         // document titles
         .title {
             @include typography.subtitle;
-            order: 2;
             position: relative;
             margin-top: spacing.$spacing-md;
             margin-bottom: spacing.$spacing-md;
@@ -84,7 +78,6 @@ section#document-list {
 
         // other document metadata
         .metadata {
-            order: 3;
             grid-template-columns: auto 1fr;
             column-gap: 1rem;
             row-gap: spacing.$spacing-xs;
@@ -93,7 +86,6 @@ section#document-list {
         // document description, transcription
         .description,
         .transcription {
-            order: 4;
             margin: spacing.$spacing-md 0;
 
             // keywords in context
@@ -118,7 +110,6 @@ section#document-list {
 
         // document scholarship records
         .scholarship {
-            order: 5;
             @include typography.meta;
 
             & span {
