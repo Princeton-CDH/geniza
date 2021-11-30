@@ -8,7 +8,8 @@
 @use "../base/typography";
 
 // Document title
-h1#document-title {
+span#formatted-title {
+    @include typography.headline-1;
     margin: spacing.$spacing-xl 0 spacing.$spacing-md;
     @include breakpoints.for-desktop-up {
         margin: spacing.$spacing-3xl 0 spacing.$spacing-2xl;

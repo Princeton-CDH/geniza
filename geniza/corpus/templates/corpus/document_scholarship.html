@@ -5,6 +5,7 @@
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block main %}
+    <h1 class="sr-only">{{ page_title }}</h1>
     <!-- document scholarship records -->
     {% include "corpus/snippets/document_header.html" %}
     <div class="container">
@@ -12,10 +13,10 @@
         <ol>
             {% for fn in document.footnotes.all %}
                 {% spaceless %}
-                    <li class="footnote">
+                    <li class="citation">
                         <dt class="sr-only">
-                            {# Translators: accessibility label for a footnote citation in scholarship records view #}
-                            {% translate 'Footnote' %}
+                            {# Translators: accessibility label for a footnote source citation in scholarship records view #}
+                            {% translate 'Bibliographic citation' %}
                         </dt>
                         <dd>
                             {{ fn.source.formatted_display|safe }}

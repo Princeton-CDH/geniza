@@ -7,7 +7,7 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-.footnote {
+.citation {
     counter-increment: search-counter;
     padding-bottom: spacing.$spacing-md;
     font-size: typography.$text-size-2md;
@@ -24,7 +24,7 @@
             font-size: typography.$text-size-lg;
         }
     }
-    & + .footnote {
+    & + .citation {
         padding-top: spacing.$spacing-md;
         border-top: 1px solid;
         @include colors.apply-theme("gray-40-line", "border-top-color");

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-24 14:58-0500\n"
+"POT-Creation-Date: 2021-11-30 10:49-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -68,34 +68,34 @@ msgid "Home"
 msgstr "المنزل"
 
 #. Translators: label for document metadata section (editor, date, input date)
-#: geniza/corpus/templates/corpus/document_detail.html:28
+#: geniza/corpus/templates/corpus/document_detail.html:29
 msgid "Metadata"
 msgstr ""
 
 #. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:34
+#: geniza/corpus/templates/corpus/document_detail.html:35
 msgid "Editor"
 msgstr "محرر"
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:41
+#: geniza/corpus/templates/corpus/document_detail.html:42
 #: geniza/corpus/templates/corpus/snippets/document_result.html:29
 msgid "Input date"
 msgstr "Input date"
 
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:45
+#: geniza/corpus/templates/corpus/document_detail.html:46
 msgid "Permalink"
 msgstr "رابط دائم"
 
 #. Translators: label for tags on a document
-#: geniza/corpus/templates/corpus/document_detail.html:55
+#: geniza/corpus/templates/corpus/document_detail.html:56
 #: geniza/corpus/templates/corpus/snippets/document_result.html:19
 msgid "Tags"
 msgstr ""
 
 #. Translators: label for document description
-#: geniza/corpus/templates/corpus/document_detail.html:66
+#: geniza/corpus/templates/corpus/document_detail.html:67
 #, fuzzy
 #| msgid "Transcription"
 msgid "Description"
@@ -120,13 +120,13 @@ msgstr[3] "النتائج %(count_humanized)s"
 msgstr[4] "النتائج %(count_humanized)s"
 msgstr[5] "مجموع النتائج %(count_humanized)s"
 
-#. Translators: accessibility label for a footnote citation in scholarship records view
-#: geniza/corpus/templates/corpus/document_scholarship.html:18
-msgid "Footnote"
+#. Translators: accessibility label for a footnote source citation in scholarship records view
+#: geniza/corpus/templates/corpus/document_scholarship.html:19
+msgid "Bibliographic citation"
 msgstr ""
 
 #. Translators: label for included document relations for a footnote
-#: geniza/corpus/templates/corpus/document_scholarship.html:25
+#: geniza/corpus/templates/corpus/document_scholarship.html:26
 msgid "includes"
 msgstr ""
 
@@ -248,15 +248,15 @@ msgstr[3] "%(count)d سجل منح دراسية لـ %(doc)s"
 msgstr[4] "%(count)d سجل منح دراسية لـ %(doc)s"
 msgstr[5] "%(count)d سجل منح دراسية لـ %(doc)s"
 
-#: geniza/footnotes/models.py:307
+#: geniza/footnotes/models.py:312
 msgid "Edition"
 msgstr "الطبعة"
 
-#: geniza/footnotes/models.py:308
+#: geniza/footnotes/models.py:313
 msgid "Translation"
 msgstr "الترجمة"
 
-#: geniza/footnotes/models.py:309
+#: geniza/footnotes/models.py:314
 msgid "Discussion"
 msgstr "المناقشة"
 
