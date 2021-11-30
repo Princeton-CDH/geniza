@@ -101,7 +101,11 @@ class Source(models.Model):
     page_range = models.CharField(
         max_length=255, blank=True, help_text="Page range for article or book section."
     )
-    publisher = models.CharField(max_length=255, blank=True, help_text="Publisher name")
+    publisher = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Publisher name, or degree granting institution for a dissertations",
+    )
     place_published = models.CharField(
         max_length=255, blank=True, help_text="Place where the work was published"
     )
@@ -154,87 +158,102 @@ class Source(models.Model):
                     url = fn.url
                     break
 
-        if url:
-            parts.append('<a href="%s">' % url)
-
         doublequoted_types = ["Article", "Dissertation", "Book Section"]
         if self.title:
             # if this is a book, italicize title
             if self.source_type.type == "Book":
-                parts.append("<em>%s</em>" % self.title)
+                work_title = "<em>%s</em>" % self.title
             # if this is a doublequoted type, wrap title in quotes
-            elif self.source_type.type in doublequoted_types and not (
-                self.title[0] == '"' and self.title[-1] == '"'
-            ):
-                parts.append('"%s"' % self.title)
+            elif self.source_type.type in doublequoted_types:
+                stripped_title = self.title.strip("\"'")
+                work_title = '"%s"' % stripped_title
             # otherwise, just leave unformatted
             else:
-                parts.append(self.title)
+                work_title = self.title
         elif self.source_type and self.source_type.type:
             # Use type as descriptive title when no title available, per CMS
-            parts.append(self.source_type.type.lower())
+            work_title = self.source_type.type.lower()
 
-        if url:
-            # prevent trailing space from being inserted in link text
-            parts[-1] += "</a>"
+        if url and work_title:
+            parts.append('<a href="%s">%s</a>' % (url, work_title))
+        elif work_title:
+            parts.append(work_title)
 
+        non_english_langs = 0
         # Add non-English languages as parenthetical
         if self.languages.count():
             for lang in self.languages.all():
                 if "English" not in str(lang):
+                    non_english_langs += 1
                     parts.append("(in %s)" % lang)
 
-        # italics for book/journal title
-        if self.journal or self.source_type.type == "Dissertation":
+        # Comma after title/language if there is a journal/book title
+        if self.journal:
+            # add comma inside doublequotes when present and appropriate
+            # examples:
+            #   "Title"                 --> "Title,"
+            #   NOT "Title" (in Hebrew) --> "Title," (in Hebrew)
             if self.title and (
                 self.source_type.type in doublequoted_types
-                and not self.languages.count()
+                and not non_english_langs  # put comma after language even when doublequotes present
             ):
-                # special case for comma inside doublequotes
-                last_dq = parts[-1].rindex('"')
-                parts[-1] = parts[-1][:last_dq] + "," + parts[-1][last_dq:]
+                # find rightmost doublequote
+                formatted_title = parts[-1]
+                last_dq = formatted_title.rindex('"')
+                # add comma directly before it
+                parts[-1] = formatted_title[:last_dq] + "," + formatted_title[last_dq:]
+            # otherwise, simply add the comma at the end of the title (or language)
+            # examples:
+            #   <em>Title</em>      --> <em>Title</em>,
+            #   "Title" (in Hebrew) --> "Title" (in Hebrew),
             else:
                 parts[-1] += ","
 
+        # formatting for book/journal title
         if self.journal:
             if self.source_type.type == "Book Section":
                 parts.append("in")
 
             parts.append("<em>%s</em>" % self.journal)
 
-        # Volume for journals appears before publication info
+        # Volume for journals appears before publisher info
         if self.source_type.type == "Article":
             if self.volume:
                 parts.append(self.volume)
-            # TODO: Add issue to model or remove below
+            # TODO: Add issue number to model or remove below
             # if self.issue:
             # parts[-1] += ","
             # parts.append("no. %d" % self.issue)
 
-        if self.source_type.type == "Dissertation":
-            parts.append("PhD diss.,")
-
-        # Location, publisher, and date
-        # Omit for unpublished, unless it has a year
+        # Location, publisher, and date (omit for unpublished, unless it has a year)
+        # examples:
+        #   (n.p., n.d.)
+        #   (n.p., 2013)
+        #   (Oxford: n.p., 2013)
+        #   (n.p.: Oxford University Press, 2013)
+        #   (Oxford: Oxford University Press, 2013)
+        #   (PhD diss., n.p., n.d.)
+        #   (PhD diss., n.p., 2013)
+        #   (PhD diss., Oxford University, 2013)
         if not (self.source_type.type == "Unpublished" and not self.year):
-            parts.append("(")
-            if self.place_published or self.publisher:
+            # If publisher name present, assign it to "pubname", otherwise assign n.p.
+            pub_name = "n.p." if not self.publisher else self.publisher
+            if self.source_type.type == "Dissertation":
+                # Add "PhD diss." and degree granting institution for dissertation
+                # (do not include place published here)
+                pub_data = "PhD diss., %s" % pub_name
+            elif self.place_published or self.publisher:
+                # Add publisher information for all other works, if available
                 if self.place_published:
-                    parts[-1] += "%s:" % self.place_published
+                    pub_data = "%s: %s" % (self.place_published, pub_name)
                 else:
-                    parts[-1] += "n.p.:"
-                if self.publisher:
-                    parts.append("%s," % self.publisher)
-                else:
-                    parts.append("n.p.,")
+                    pub_data = "n.p.: %s" % pub_name
             else:
-                parts[-1] += "n.p.,"
+                # If not a dissertation and no publisher info, then just use n.p.
+                pub_data = pub_name
 
-            if self.year:
-                parts.append(str(self.year))
-            else:
-                parts.append("n.d.")
-            parts[-1] += ")"
+            pub_year = "n.d." if not self.year else str(self.year)
+            parts.append("(%s, %s)" % (pub_data, pub_year))
 
         # omit volumes for unpublished sources
         # (those volumes are an admin convienence for managing Goitein content)
@@ -243,14 +262,15 @@ class Source(models.Model):
             self.volume and self.source_type.type not in ["Article", "Unpublished"]
         )
 
-        # Page range
         if self.page_range:
+            # Page range and/or volume at end of citation
             parts[-1] += ","
             if needs_volume:
                 parts.append("%s:%s" % (self.volume, self.page_range))
-            elif not self.volume:
+            else:
                 parts.append(self.page_range)
         elif needs_volume:
+            # Just volume at end of citation
             parts[-1] += ","
             if self.source_type.type == "Book":
                 parts.append("vol.")
