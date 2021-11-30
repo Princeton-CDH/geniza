@@ -14,11 +14,6 @@ class Command(BaseCommand):
 
     help = __doc__
 
-    def css_override(self):
-        mobile_css_override = "ul#menu:target, ul#about-menu:target { left: 0 !important; animation: none !important; }"
-        desktop_css_override = "media (min-width: 900px) { ul#menu:target, ul#about-menu:target { left: auto !important; }}"
-        return mobile_css_override + desktop_css_override
-
     def get_browser(self):
         """Initialize a browser driver to use for taking snapshots."""
         options = webdriver.ChromeOptions()
@@ -65,7 +60,11 @@ class Command(BaseCommand):
 
         # # mobile menu
         browser.get("http://localhost:8000/documents/2532/#menu")
-        percy_snapshot(browser, "Mobile menu", percy_css=self.css_override())
+        percy_snapshot(
+            browser,
+            "Mobile menu",
+            percy_css="ul#menu { left: 0 !important; animation: none !important; }",
+        )
 
         # about submenu open on both desktop and mobile
         browser.get("http://localhost:8000/documents/2532/#about-menu")
@@ -76,7 +75,11 @@ class Command(BaseCommand):
             pass
         # scroll to top
         browser.find_element_by_tag_name("body").send_keys(Keys.CONTROL + Keys.HOME)
-        percy_snapshot(browser, "About submenu", percy_css=self.css_override())
+        percy_snapshot(
+            browser,
+            "About submenu",
+            percy_css="ul#about-menu { left: 0 !important; animation: none !important; }",
+        )
 
         # 404 page TODO
         # browser.get("http://localhost:8000/bad-url")
