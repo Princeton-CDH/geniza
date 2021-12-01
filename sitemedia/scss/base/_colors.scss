@@ -44,6 +44,7 @@ $theme: (
     "background": #ffffff,
     "gray-10-background": $gray-10,
     "gray-40-line": $gray-40,
+    "nav-outline": $gray-40,
     "on-primary": #ffffff,
     "on-secondary": #000000,
 );
@@ -54,6 +55,7 @@ $dark-theme: (
     "secondary": #5bbbc1,
     "on-background": #d6d3d1,
     "on-background-light": rgba(214, 211, 209, 0.66),
+    "nav-outline": $gray-60,
     "background": #1f2937,
     "gray-10-background": rgba(255, 255, 255, 0.1),
     "gray-40-line": rgba(255, 255, 255, 0.4),

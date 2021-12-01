@@ -1,4 +1,4 @@
-{% load static webpack_loader %}
+{% load static webpack_loader i18n %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
     <head>
@@ -34,8 +34,9 @@
             {% include 'snippets/test_banner.html' %}
         {% endif %}
         {% block body %}
+            <a id="skip" class="sr-only-focusable" href="#main-content">{% translate "Skip to main content" %}</a>
             <header>{% include "nav.html" %}</header>
-            <main>{% block main %}{% endblock main %}</main>
+            <main id="main-content">{% block main %}{% endblock main %}</main>
             <footer></footer>
         {% endblock body %}
     </body>

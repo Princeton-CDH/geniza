@@ -36,5 +36,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(populate_document_types),
+        migrations.RunPython(populate_document_types, migrations.RunPython.noop),
     ]

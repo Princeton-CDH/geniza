@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-11-30 10:49-0500\n"
+"POT-Creation-Date: 2021-12-01 12:48-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -58,7 +58,7 @@ msgid "Document Type"
 msgstr "סוג המסמך"
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:551
+#: geniza/corpus/models.py:557
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr ""
@@ -140,7 +140,7 @@ msgid "PGP ID"
 msgstr "מזהה PGP"
 
 #. Translators: number of editions for this document
-#: geniza/corpus/templates/corpus/snippets/document_result.html:56
+#: geniza/corpus/templates/corpus/snippets/document_result.html:71
 #, fuzzy, python-format
 #| msgid "Transcription"
 msgid "1 Transcription"
@@ -151,7 +151,7 @@ msgstr[2] "תעתוק"
 msgstr[3] "תעתוק"
 
 #. Translators: number of translations for this document
-#: geniza/corpus/templates/corpus/snippets/document_result.html:66
+#: geniza/corpus/templates/corpus/snippets/document_result.html:81
 #, fuzzy, python-format
 #| msgid "Translation"
 msgid "1 Translation"
@@ -162,7 +162,7 @@ msgstr[2] "תרגום"
 msgstr[3] "תרגום"
 
 #. Translators: number of sources that discuss this document
-#: geniza/corpus/templates/corpus/snippets/document_result.html:76
+#: geniza/corpus/templates/corpus/snippets/document_result.html:91
 #, fuzzy, python-format
 #| msgid "Discussion"
 msgid "1 Discussion"
@@ -172,26 +172,31 @@ msgstr[1] "דיון"
 msgstr[2] "דיון"
 msgstr[3] "דיון"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:84
+#: geniza/corpus/templates/corpus/snippets/document_result.html:99
 msgid "No Scholarship Records"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:90
+#: geniza/corpus/templates/corpus/snippets/document_result.html:105
 msgid "View document details"
 msgstr "הצגת פרטי מסמך"
 
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:6
+#. Translators: accessibility text label for document detail view tabs navigation
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:4
+msgid "tabs"
+msgstr ""
+
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:7
 msgid "Document Details"
 msgstr "פרטי מסמך"
 
 #. Translators: n_records is number of scholarship records
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:9
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:10
 #, python-format
 msgid "Scholarship Records (%(n_records)s)"
 msgstr "רשומות קשורות (%(n_records)s)"
 
 #. Translators: n_links is number of external links
-#: geniza/corpus/templates/corpus/snippets/document_tabs.html:15
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:16
 #, fuzzy, python-format
 #| msgid "External Links (%(n_links)s)"
 msgid "External Links (%(n_links)s)"
@@ -224,12 +229,12 @@ msgid "Search and browse Geniza documents."
 msgstr "חיפוש וצפיה במסמכי הגניזה."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:196
+#: geniza/corpus/views.py:201
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "רשומה קשורה ל-%(doc)s"
 
-#: geniza/corpus/views.py:203
+#: geniza/corpus/views.py:208
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
@@ -238,15 +243,15 @@ msgstr[1] "%(count)d רשומות קשורות ל %(doc)s"
 msgstr[2] "%(count)d רשומות קשורות ל %(doc)s"
 msgstr[3] "%(count)d רשומות קשורות ל %(doc)s"
 
-#: geniza/footnotes/models.py:312
+#: geniza/footnotes/models.py:340
 msgid "Edition"
 msgstr "מהדורה"
 
-#: geniza/footnotes/models.py:313
+#: geniza/footnotes/models.py:341
 msgid "Translation"
 msgstr "תרגום"
 
-#: geniza/footnotes/models.py:314
+#: geniza/footnotes/models.py:342
 msgid "Discussion"
 msgstr "דיון"
 
@@ -254,22 +259,83 @@ msgstr "דיון"
 msgid "Django site admin"
 msgstr "ניהול האתר"
 
-#. Translators: label for 'home' button in main navigation
-#: geniza/templates/nav.html:4
+#: geniza/templates/base.html:37
+msgid "Skip to main content"
+msgstr ""
+
+#. Translators: accessibility text label for site navigation
+#: geniza/templates/nav.html:8
+msgid "main navigation"
+msgstr ""
+
+#. Translators: accessibility label for 'home' button in main navigation
+#: geniza/templates/nav.html:14
+msgid "home"
+msgstr ""
+
+#. Translators: site name label for 'home' button in main navigation
+#: geniza/templates/nav.html:16
 msgid "GENIZA"
 msgstr "גניזה"
 
-#: geniza/templates/nav.html:10
+#. Translators: label for 'menu' open button for mobile navigation
+#: geniza/templates/nav.html:22
+msgid "Open main navigation menu"
+msgstr ""
+
+#. Translators: label for 'menu' close button for mobile navigation
+#: geniza/templates/nav.html:35
+msgid "Close main navigation menu"
+msgstr ""
+
+#. Translators: label for link to 'Search' page in main navigation
+#: geniza/templates/nav.html:42
 msgid "Search"
 msgstr "חיפוש"
 
-#: geniza/templates/nav.html:13
+#: geniza/templates/nav.html:46
 msgid "Contact Us"
 msgstr "יצירת קשר"
 
-#: geniza/templates/nav.html:14
+#. Translators: label for 'about' link in main navigation
+#: geniza/templates/nav.html:50
 msgid "About"
 msgstr "אודות"
+
+#. Translators: accessibility label for 'about' menu in navigation
+#: geniza/templates/nav.html:59
+msgid "about menu"
+msgstr ""
+
+#. Translators: label for main menu back button for mobile navigation
+#: geniza/templates/nav.html:64
+msgid "Return to main menu"
+msgstr ""
+
+#. Translators: label for link to 'Credits' page in main navigation
+#: geniza/templates/nav.html:78
+msgid "Credits"
+msgstr ""
+
+#. Translators: label for link to 'How to Cite' page in main navigation
+#: geniza/templates/nav.html:82
+msgid "How to Cite"
+msgstr ""
+
+#. Translators: label for link to 'Data Exports' page in main navigation
+#: geniza/templates/nav.html:86
+msgid "Data Exports"
+msgstr ""
+
+#. Translators: label for link to 'Technical' page in main navigation
+#: geniza/templates/nav.html:90
+msgid "Technical"
+msgstr ""
+
+#. Translators: label for link to 'FAQ' page in main navigation
+#: geniza/templates/nav.html:94
+msgid "FAQ"
+msgstr ""
 
 #~ msgid "Link to source"
 #~ msgstr "קישור למקור"

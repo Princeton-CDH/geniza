@@ -320,6 +320,53 @@ class TestDocumentResult:
         assert test_highlight in result
         assert document.description[:50] not in result
 
+    def test_transcription(self, document):
+        transcription_txt = """שהדותא דהוה באנפנא אנן שהדי דחתימין לתחתא בשטר זביני דנן
+בתלתא בשבה דהוה ח…"""
+        context = {
+            "document": {
+                "pgpid": document.id,
+                "id": "document.%d" % document.id,
+                "transcription": [transcription_txt],
+            },
+            "highlighting": {},
+            "page_obj": self.page_obj,
+        }
+
+        # template currently has truncate chars 75; just check that the beginning
+        # of the transcription is there
+        rendered = self.template.render(context)
+        assert transcription_txt[:75] in rendered
+        # language not specified
+        assert 'lang=""' in rendered
+
+        # use first language code, if specified
+        context["document"]["language_code"] = ["jrb", "ara"]
+        rendered = self.template.render(context)
+        assert 'lang="jrb"' in rendered
+
+    def test_transcription_highlighting(self, document):
+        test_highlight = "<em>לסידנא</em> אלרב ותערפני וצולהא פי רסאלתך אן שא אללה"
+        transcription_txt = """שהדותא דהוה באנפנא אנן שהדי דחתימין לתחתא בשטר זביני דנן
+בתלתא בשבה דהוה ח…"""
+        result = self.template.render(
+            context={
+                "document": {
+                    "pgpid": document.id,
+                    "id": "document.%d" % document.id,
+                    "transcription": [transcription_txt],
+                    "lang": ["jrb"],
+                },
+                "highlighting": {
+                    "document.%d" % document.id: {"transcription": [test_highlight]}
+                },
+                "page_obj": self.page_obj,
+            }
+        )
+        # keywords in context displayed instead of description excerpt
+        assert test_highlight in result
+        assert transcription_txt[:75] not in result
+
 
 class TestSearchPagination:
 
