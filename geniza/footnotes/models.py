@@ -104,7 +104,7 @@ class Source(models.Model):
     publisher = models.CharField(
         max_length=255,
         blank=True,
-        help_text="Publisher name, or degree granting institution for a dissertations",
+        help_text="Publisher name, or degree granting institution for a dissertation",
     )
     place_published = models.CharField(
         max_length=255, blank=True, help_text="Place where the work was published"

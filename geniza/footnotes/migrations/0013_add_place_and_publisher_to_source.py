@@ -23,7 +23,9 @@ class Migration(migrations.Migration):
             model_name="source",
             name="publisher",
             field=models.CharField(
-                blank=True, help_text="Publisher name", max_length=255
+                blank=True,
+                help_text="Publisher name, or degree granting institution for a dissertation",
+                max_length=255,
             ),
         ),
     ]
