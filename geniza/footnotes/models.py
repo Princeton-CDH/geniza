@@ -298,8 +298,18 @@ class Source(models.Model):
         # title and other metadata should be joined by spaces
         ref = " ".join(parts)
 
-        # delimit with comma only if title present and extra_fields is true
-        delimiter = ", " if work_title and extra_fields else " "
+        # use comma delimiter after authors when it does not break citation;
+        # i.e. extra_fields is true, source has a title, or source has a journal
+        # and no non-english languages to list.
+        # examples:
+        #   Allony (in Hebrew), Journal 6 (1964)    (no comma)
+        #   L. B. Yarbrough (in Hebrew)             (no comma)
+        #   Author (1964)                           (no comma)
+        #   Author, Journal 6 (1964)                (comma)
+        use_comma = (
+            extra_fields or self.title or (self.journal and not non_english_langs)
+        )
+        delimiter = ", " if use_comma else " "
 
         return delimiter.join([val for val in (author, ref) if val]) + "."
 
