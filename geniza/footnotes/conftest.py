@@ -69,3 +69,20 @@ def typed_texts(db):
     author = Creator.objects.create(last_name="Goitein", first_name="S. D.")
     Authorship.objects.create(creator=author, source=source)
     return source
+
+
+@pytest.fixture
+def book_section(db):
+    # fixture to create and return a book section source
+    section_type = SourceType.objects.get(type="Book Section")
+    author = Creator.objects.create(last_name="Melammed", first_name="Renée Levine")
+    book_sect = Source.objects.create(
+        source_type=section_type,
+        title="A Look at Women's Lives in Cairo Geniza Society",
+        journal="Festschrift Darkhei Noam: The Jews of Arab Lands",
+        year=2015,
+        publisher="Brill",
+        place_published="Leiden",
+    )
+    Authorship.objects.create(creator=author, source=book_sect)
+    return book_sect

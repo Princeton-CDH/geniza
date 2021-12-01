@@ -72,6 +72,31 @@ class TestSource:
             article.year,
         )
 
+    def test_str_language(self, article):
+        article.languages.add(SourceLanguage.objects.get(name="Hebrew"))
+        assert "(in Hebrew)" in str(article)
+
+    def test_str_book_section(self, book_section):
+        # book section with authors, title, book title, year
+        assert str(book_section) == '%s, "%s," in %s (%s)' % (
+            book_section.authors.first().firstname_lastname(),
+            book_section.title,
+            book_section.journal,
+            book_section.year,
+        )
+
+    def test_formatted_display(self, book_section):
+        # should display proper publisher info for book section fixture
+        assert (
+            "(%s: %s, %s)"
+            % (
+                book_section.place_published,
+                book_section.publisher,
+                book_section.year,
+            )
+            in book_section.formatted_display()
+        )
+
     def test_all_authors(self, twoauthor_source):
         author1, author2 = twoauthor_source.authorship_set.all()
         assert twoauthor_source.all_authors() == "%s; %s" % (
