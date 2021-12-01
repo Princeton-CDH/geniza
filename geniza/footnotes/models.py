@@ -183,9 +183,11 @@ class Source(models.Model):
             # otherwise, just leave unformatted
             else:
                 work_title = self.title + ltr_mark
-        elif self.source_type and self.source_type.type and extra_fields:
+        elif self.source_type and (extra_fields or not author):
             # Use type as descriptive title when no title available, per CMS
-            work_title = self.source_type.type.lower()
+            work_title = (
+                self.source_type.type if not author else self.source_type.type.lower()
+            )
 
         # Wrap title in link to URL
         if url and work_title:
