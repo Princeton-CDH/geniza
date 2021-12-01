@@ -183,7 +183,7 @@ class Source(models.Model):
             # otherwise, just leave unformatted
             else:
                 work_title = self.title + ltr_mark
-        elif self.source_type and self.source_type.type:
+        elif self.source_type and self.source_type.type and extra_fields:
             # Use type as descriptive title when no title available, per CMS
             work_title = self.source_type.type.lower()
 
@@ -220,7 +220,7 @@ class Source(models.Model):
             # examples:
             #   <em>Title</em>      --> <em>Title</em>,
             #   "Title" (in Hebrew) --> "Title" (in Hebrew),
-            else:
+            elif len(parts):
                 parts[-1] += ","
 
             # CMS needs "in" before book title
@@ -298,8 +298,10 @@ class Source(models.Model):
         # title and other metadata should be joined by spaces
         ref = " ".join(parts)
 
-        # delimit with comma whichever values are set
-        return ", ".join([val for val in (author, ref) if val]) + "."
+        # delimit with comma only if title present and extra_fields is true
+        delimiter = ", " if work_title and extra_fields else " "
+
+        return delimiter.join([val for val in (author, ref) if val]) + "."
 
     all_authors.short_description = "Authors"
     all_authors.admin_order_field = "first_author"  # set in admin queryset
