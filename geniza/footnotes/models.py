@@ -127,14 +127,17 @@ class Source(models.Model):
 
     def __str__(self):
         """strip HTML tags and trailing period from formatted display"""
-        return strip_tags(self.formatted_display())[:-1]
+        return strip_tags(self.formatted_display(extra_fields=False))[:-1]
 
     def all_authors(self):
         """semi-colon delimited list of authors in order"""
         return "; ".join([str(c.creator) for c in self.authorship_set.all()])
 
-    def formatted_display(self):
-        """format source for display; used on document scholarship page"""
+    def formatted_display(self, extra_fields=True):
+        """Format source for display; used on document scholarship page.
+        To omit publisher, place_published, and page_range fields,
+        specify `extra_fields=False`."""
+
         author = ""
         if self.authorship_set.exists():
             author_lastnames = [
@@ -162,14 +165,14 @@ class Source(models.Model):
         if self.title:
             # if this is a book, italicize title
             if self.source_type.type == "Book":
-                work_title = "<em>%s</em>" % self.title
+                work_title = "<em>%s&lrm;</em>" % self.title
             # if this is a doublequoted type, wrap title in quotes
             elif self.source_type.type in doublequoted_types:
                 stripped_title = self.title.strip("\"'")
-                work_title = '"%s"' % stripped_title
+                work_title = '"%s&lrm;"' % stripped_title
             # otherwise, just leave unformatted
             else:
-                work_title = self.title
+                work_title = "%s&lrm;" % self.title
         elif self.source_type and self.source_type.type:
             # Use type as descriptive title when no title available, per CMS
             work_title = self.source_type.type.lower()
@@ -214,7 +217,7 @@ class Source(models.Model):
                 parts.append("in")
 
             # italicize book/journal title
-            parts.append("<em>%s</em>" % self.journal)
+            parts.append("<em>%s&lrm;</em>" % self.journal)
 
         # Unlike other work types, journal articles' volume/issue numbers
         # appear before the publisher info and date
@@ -226,35 +229,39 @@ class Source(models.Model):
             # parts[-1] += ","
             # parts.append("no. %d" % self.issue)
 
-        # Location, publisher, and date (omit for unpublished, unless it has a year)
-        # examples:
-        #   (n.p., n.d.)
-        #   (n.p., 2013)
-        #   (Oxford: n.p., 2013)
-        #   (n.p.: Oxford University Press, 2013)
-        #   (Oxford: Oxford University Press, 2013)
-        #   (PhD diss., n.p., n.d.)
-        #   (PhD diss., n.p., 2013)
-        #   (PhD diss., Oxford University, 2013)
-        if not (self.source_type.type == "Unpublished" and not self.year):
-            # If publisher name present, assign it to "pubname", otherwise assign n.p.
-            pub_name = "n.p." if not self.publisher else self.publisher
-            if self.source_type.type == "Dissertation":
-                # Add "PhD diss." and degree granting institution for dissertation
-                # (do not include place published here)
-                pub_data = "PhD diss., %s" % pub_name
-            elif self.place_published or self.publisher:
-                # Add publisher information for all other works, if available
-                if self.place_published:
-                    pub_data = "%s: %s" % (self.place_published, pub_name)
+        if extra_fields:
+            # Location, publisher, and date (omit for unpublished, unless it has a year)
+            # examples:
+            #   (n.p., n.d.)
+            #   (n.p., 2013)
+            #   (Oxford: n.p., 2013)
+            #   (n.p.: Oxford University Press, 2013)
+            #   (Oxford: Oxford University Press, 2013)
+            #   (PhD diss., n.p., n.d.)
+            #   (PhD diss., n.p., 2013)
+            #   (PhD diss., Oxford University, 2013)
+            if not (self.source_type.type == "Unpublished" and not self.year):
+                # If publisher name present, assign it to "pubname", otherwise assign n.p.
+                pub_name = "n.p." if not self.publisher else self.publisher
+                if self.source_type.type == "Dissertation":
+                    # Add "PhD diss." and degree granting institution for dissertation
+                    # (do not include place published here)
+                    pub_data = "PhD diss., %s" % pub_name
+                elif self.place_published or self.publisher:
+                    # Add publisher information for all other works, if available
+                    if self.place_published:
+                        pub_data = "%s: %s" % (self.place_published, pub_name)
+                    else:
+                        pub_data = "n.p.: %s" % pub_name
                 else:
-                    pub_data = "n.p.: %s" % pub_name
-            else:
-                # If not a dissertation and no publisher info, then just use n.p.
-                pub_data = pub_name
+                    # If not a dissertation and no publisher info, then just use n.p.
+                    pub_data = pub_name
 
-            pub_year = "n.d." if not self.year else str(self.year)
-            parts.append("(%s, %s)" % (pub_data, pub_year))
+                pub_year = "n.d." if not self.year else str(self.year)
+                parts.append("(%s, %s)" % (pub_data, pub_year))
+        elif self.year:
+            # when extra fields disabled, show year only
+            parts.append("(%s)" % str(self.year))
 
         # omit volumes for unpublished sources
         # (those volumes are an admin convienence for managing Goitein content)
@@ -263,7 +270,7 @@ class Source(models.Model):
             self.volume and self.source_type.type not in ["Article", "Unpublished"]
         )
 
-        if self.page_range:
+        if extra_fields and self.page_range:
             # Page range and/or volume at end of citation
             parts[-1] += ","
             if needs_volume:
