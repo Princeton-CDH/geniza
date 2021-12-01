@@ -161,29 +161,40 @@ class Source(models.Model):
                     url = fn.url
                     break
 
+        # Ensure that Unicode LTR mark is added after fields when RTL languages present
+        rtl_langs = ["Hebrew", "Arabic", "Judaeo-Arabic"]
+        source_langs = [str(lang) for lang in self.languages.all()]
+        source_contains_rtl = set(source_langs).intersection(set(rtl_langs))
+        ltr_mark = chr(8206) if source_contains_rtl else ""
+
+        # Types that should receive double quotes around title
         doublequoted_types = ["Article", "Dissertation", "Book Section"]
+
+        # Handle title
+        work_title = ""
         if self.title:
             # if this is a book, italicize title
             if self.source_type.type == "Book":
-                work_title = "<em>%s&lrm;</em>" % self.title
+                work_title = "<em>%s%s</em>" % (self.title, ltr_mark)
             # if this is a doublequoted type, wrap title in quotes
             elif self.source_type.type in doublequoted_types:
                 stripped_title = self.title.strip("\"'")
-                work_title = '"%s&lrm;"' % stripped_title
+                work_title = '"%s%s"' % (stripped_title, ltr_mark)
             # otherwise, just leave unformatted
             else:
-                work_title = "%s&lrm;" % self.title
+                work_title = self.title + ltr_mark
         elif self.source_type and self.source_type.type:
             # Use type as descriptive title when no title available, per CMS
             work_title = self.source_type.type.lower()
 
+        # Wrap title in link to URL
         if url and work_title:
             parts.append('<a href="%s">%s</a>' % (url, work_title))
         elif work_title:
             parts.append(work_title)
 
-        non_english_langs = 0
         # Add non-English languages as parenthetical
+        non_english_langs = 0
         if self.languages.count():
             for lang in self.languages.all():
                 if "English" not in str(lang):
@@ -217,7 +228,7 @@ class Source(models.Model):
                 parts.append("in")
 
             # italicize book/journal title
-            parts.append("<em>%s&lrm;</em>" % self.journal)
+            parts.append("<em>%s%s</em>" % (self.journal, ltr_mark))
 
         # Unlike other work types, journal articles' volume/issue numbers
         # appear before the publisher info and date
