@@ -54,7 +54,7 @@ body#document {
                     margin-top: spacing.$spacing-md;
                 }
             }
-            dt + dd + dd {
+            dd + dd {
                 margin-top: spacing.$spacing-xs;
             }
             // hanging "info" phosphor icon before link
