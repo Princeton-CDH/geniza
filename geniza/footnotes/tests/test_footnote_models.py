@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+from django.contrib.humanize.templatetags.humanize import ordinal
 
 from geniza.footnotes.models import Creator, Footnote, SourceLanguage, SourceType
 
@@ -37,6 +38,15 @@ class TestSource:
             twoauthor_source.authors.first().firstname_lastname(),
             twoauthor_source.authors.all()[1].firstname_lastname(),
             twoauthor_source.title,
+        )
+
+        # set an edition
+        twoauthor_source.edition = 3
+        assert str(twoauthor_source) == "%s and %s, %s, %s ed." % (
+            twoauthor_source.authors.first().firstname_lastname(),
+            twoauthor_source.authors.all()[1].firstname_lastname(),
+            twoauthor_source.title,
+            ordinal(twoauthor_source.edition),
         )
 
         # four authors, no title
@@ -80,11 +90,12 @@ class TestSource:
         assert "(in Hebrew)" in str(article)
 
     def test_str_book_section(self, book_section):
-        # book section with authors, title, book title, year, volume no.
-        assert str(book_section) == '%s, "%s," in %s (%s), vol. %s' % (
+        # book section with authors, title, book title, edition, year, volume no.
+        assert str(book_section) == '%s, "%s," in %s, %s ed. (%s), vol. %s' % (
             book_section.authors.first().firstname_lastname(),
             book_section.title,
             book_section.journal,
+            ordinal(book_section.edition),
             book_section.year,
             book_section.volume,
         )

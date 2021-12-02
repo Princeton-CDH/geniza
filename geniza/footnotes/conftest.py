@@ -86,6 +86,7 @@ def book_section(db):
         place_published="Leiden",
         page_range="64–85",
         volume="1",
+        edition=2,
     )
     Authorship.objects.create(creator=author, source=book_sect)
     return book_sect

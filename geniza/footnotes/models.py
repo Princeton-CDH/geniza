@@ -200,6 +200,13 @@ class Source(models.Model):
         elif work_title:
             parts.append(work_title)
 
+        # Add edition for Book type if present
+        if self.edition:
+            edition_str = "%s ed." % ordinal(self.edition)
+            if self.source_type.type == "Book" and self.title:
+                parts[-1] += ","
+                parts.append(edition_str)
+
         # Add non-English languages as parenthetical
         non_english_langs = 0
         if self.languages.count():
@@ -236,6 +243,10 @@ class Source(models.Model):
 
             # italicize book/journal title
             parts.append("<em>%s%s</em>" % (self.journal, ltr_mark))
+
+            if self.source_type.type == "Book Section" and self.edition:
+                parts[-1] += ","
+                parts.append(edition_str)
 
         # Unlike other work types, journal articles' volume/issue numbers
         # appear before the publisher info and date
