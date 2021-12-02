@@ -145,7 +145,7 @@ class TestSourceAdmin:
             for authorship in source.authorship_set.all():
                 assert str(authorship.creator) in source_data[1]
             for lang in source.languages.all():
-                assert lang.name in source_data[9]
+                assert lang.name in source_data[12]
 
             # none of the fixtures have footnotes, but count should be included
             assert 0 in source_data
