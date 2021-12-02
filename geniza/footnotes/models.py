@@ -293,7 +293,7 @@ class Source(models.Model):
         elif needs_volume:
             # Just volume at end of citation
             parts[-1] += ","
-            if self.source_type.type == "Book":
+            if "Book" in self.source_type.type:
                 parts.append("vol.")
             parts.append(self.volume)
 

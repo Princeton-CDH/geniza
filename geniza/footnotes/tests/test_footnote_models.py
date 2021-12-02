@@ -77,24 +77,13 @@ class TestSource:
         assert "(in Hebrew)" in str(article)
 
     def test_str_book_section(self, book_section):
-        # book section with authors, title, book title, year
-        assert str(book_section) == '%s, "%s," in %s (%s)' % (
+        # book section with authors, title, book title, year, volume no.
+        assert str(book_section) == '%s, "%s," in %s (%s), vol. %s' % (
             book_section.authors.first().firstname_lastname(),
             book_section.title,
             book_section.journal,
             book_section.year,
-        )
-
-    def test_formatted_display(self, book_section):
-        # should display proper publisher info for book section fixture
-        assert (
-            "(%s: %s, %s)"
-            % (
-                book_section.place_published,
-                book_section.publisher,
-                book_section.year,
-            )
-            in book_section.formatted_display()
+            book_section.volume,
         )
 
     def test_all_authors(self, twoauthor_source):
@@ -107,6 +96,52 @@ class TestSource:
     def test_str_unpublished_vol(self, typed_texts):
         # displays without volume
         assert str(typed_texts) == "S. D. Goitein, typed texts"
+
+    def test_formatted_display(self, book_section):
+        # should display proper publisher info, page range for book section fixture
+        assert (
+            "(%s: %s, %s), %s:%s"
+            % (
+                book_section.place_published,
+                book_section.publisher,
+                book_section.year,
+                book_section.volume,
+                book_section.page_range,
+            )
+            in book_section.formatted_display()
+        )
+
+        # should dispaly n.p.: Publisher when no place published
+        book_section.place_published = ""
+        assert (
+            "(n.p.: %s, %s)"
+            % (
+                book_section.publisher,
+                book_section.year,
+            )
+            in book_section.formatted_display()
+        )
+
+    def test_formatted_phd_diss(self, phd_dissertation):
+        # should include "PhD diss." and degree-granting institution;
+        # should surround title in double quotes;
+        # should not include publication place;
+        # should end in a period
+        assert (
+            phd_dissertation.formatted_display()
+            == '%s, "%s" (PhD diss., %s, %s).'
+            % (
+                phd_dissertation.authors.first().firstname_lastname(),
+                phd_dissertation.title,
+                phd_dissertation.publisher,
+                phd_dissertation.year,
+            )
+        )
+        assert (
+            phd_dissertation.place_published
+            and phd_dissertation.place_published
+            not in phd_dissertation.formatted_display()
+        )
 
 
 class TestFootnote:
