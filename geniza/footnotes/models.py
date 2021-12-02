@@ -92,6 +92,11 @@ class Source(models.Model):
         blank=True,
         help_text="Volume of a multivolume book, or journal volume for an article",
     )
+    issue = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Issue number for a journal article",
+    )
     journal = models.CharField(
         "Journal / Book",
         max_length=255,
@@ -116,7 +121,7 @@ class Source(models.Model):
     languages = models.ManyToManyField(
         SourceLanguage, help_text="The language(s) the source is written in"
     )
-    url = models.URLField(blank=True, max_length=300)
+    url = models.URLField(blank=True, max_length=300, verbose_name="URL")
     # preliminary place to store transcription text; should not be editable
     notes = models.TextField(blank=True)
 
@@ -237,10 +242,9 @@ class Source(models.Model):
         if self.source_type.type == "Article":
             if self.volume:
                 parts.append(self.volume)
-            # TODO: Add issue number to model or remove below
-            # if self.issue:
-            # parts[-1] += ","
-            # parts.append("no. %d" % self.issue)
+            if self.issue:
+                parts[-1] += ","
+                parts.append("no. %d" % self.issue)
 
         if extra_fields:
             # Location, publisher, and date (omit for unpublished, unless it has a year)

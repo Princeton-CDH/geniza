@@ -55,6 +55,7 @@ def article(db):
         journal="Tarbiz",
         source_type=article,
         volume="32",
+        issue=1,
         year=1963,
     )
     Authorship.objects.create(creator=goitein, source=tarbiz)

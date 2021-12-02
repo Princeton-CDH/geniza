@@ -49,23 +49,26 @@ class TestSource:
     def test_str_article(self, article):
 
         # article with title, journal title, volume, year
-        assert str(article) == '%s, "%s," %s %s (%s)' % (
+        assert str(article) == '%s, "%s," %s %s, no. %d (%s)' % (
             article.authors.first().firstname_lastname(),
             article.title,
             article.journal,
             article.volume,
+            article.issue,
             article.year,
         )
         # article with no title
         article.title = ""
-        assert str(article) == "%s, %s %s (%s)" % (
+        assert str(article) == "%s, %s %s, no. %d (%s)" % (
             article.authors.first().firstname_lastname(),
             article.journal,
             article.volume,
+            article.issue,
             article.year,
         )
-        # no volume
+        # no volume or issue
         article.volume = ""
+        article.issue = None
         assert str(article) == "%s, %s (%s)" % (
             article.authors.first().firstname_lastname(),
             article.journal,

@@ -28,4 +28,18 @@ class Migration(migrations.Migration):
                 max_length=255,
             ),
         ),
+        migrations.AddField(
+            model_name="source",
+            name="issue",
+            field=models.PositiveIntegerField(
+                blank=True,
+                null=True,
+                help_text="Issue number for a journal article",
+            ),
+        ),
+        migrations.AlterField(
+            model_name="source",
+            name="url",
+            field=models.URLField(blank=True, max_length=300, verbose_name="URL"),
+        ),
     ]
