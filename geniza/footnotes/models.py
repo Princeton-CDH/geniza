@@ -86,7 +86,7 @@ class Source(models.Model):
     authors = models.ManyToManyField(Creator, through=Authorship)
     title = models.CharField(max_length=255, blank=True, null=True)
     year = models.PositiveIntegerField(blank=True, null=True)
-    edition = models.CharField(max_length=255, blank=True)
+    edition = models.PositiveIntegerField(blank=True, null=True)
     volume = models.CharField(
         max_length=255,
         blank=True,
