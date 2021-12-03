@@ -12,7 +12,8 @@
     text-align: center;
     font-size: typography.$text-size-md;
     margin: 0 auto;
-    a {
+    a,
+    span {
         flex: 1 0 auto;
         display: inline-block;
         font-size: typography.$text-size-md;
