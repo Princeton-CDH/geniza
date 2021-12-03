@@ -231,6 +231,15 @@ class DocumentScholarshipView(DocumentDetailView):
             reverse("corpus:document-scholarship", args=[self.kwargs["pk"]])
         )
 
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data.update(
+            {
+                "page_type": "scholarship",
+            }
+        )
+        return context_data
+
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #
 

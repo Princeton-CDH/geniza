@@ -55,6 +55,7 @@ def article(db):
         journal="Tarbiz",
         source_type=article,
         volume="32",
+        issue=1,
         year=1963,
     )
     Authorship.objects.create(creator=goitein, source=tarbiz)
@@ -69,3 +70,39 @@ def typed_texts(db):
     author = Creator.objects.create(last_name="Goitein", first_name="S. D.")
     Authorship.objects.create(creator=author, source=source)
     return source
+
+
+@pytest.fixture
+def book_section(db):
+    # fixture to create and return a book section source
+    section_type = SourceType.objects.get(type="Book Section")
+    author = Creator.objects.create(last_name="Melammed", first_name="Renée Levine")
+    book_sect = Source.objects.create(
+        source_type=section_type,
+        title="A Look at Women's Lives in Cairo Geniza Society",
+        journal="Festschrift Darkhei Noam: The Jews of Arab Lands",
+        year=2015,
+        publisher="Brill",
+        place_published="Leiden",
+        page_range="64–85",
+        volume="1",
+        edition=2,
+    )
+    Authorship.objects.create(creator=author, source=book_sect)
+    return book_sect
+
+
+@pytest.fixture
+def phd_dissertation(db):
+    # fixture to create and return a PhD dissertation source
+    diss_type = SourceType.objects.get(type="Dissertation")
+    author = Creator.objects.create(last_name="Zinger", first_name="Oded")
+    dissertation = Source.objects.create(
+        source_type=diss_type,
+        title="Women, Gender and Law: Marital Disputes According to Documents of the Cairo Geniza",
+        year=2014,
+        place_published="Princeton, NJ",
+        publisher="Princeton University",
+    )
+    Authorship.objects.create(creator=author, source=dissertation)
+    return dissertation

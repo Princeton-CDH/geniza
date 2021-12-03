@@ -100,3 +100,7 @@ figcaption,
 small {
     @include typography.caption;
 }
+
+em {
+    font-style: italic;
+}
