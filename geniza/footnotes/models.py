@@ -162,7 +162,9 @@ class Source(models.Model):
 
         if not url:
             for fn in self.footnote_set.all():
-                if fn.url:
+                if fn.url and not fn.location:
+                    # if fn.location is defined, the URL will be included there in the
+                    # scholarship record template; otherwise, surround the title here
                     url = fn.url
                     break
 

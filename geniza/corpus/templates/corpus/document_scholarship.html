@@ -22,8 +22,20 @@
                             {{ fn.source.formatted_display|safe }}
                         </dd>
                         <dt class="relation">
-                            {# Translators: label for included document relations for a footnote #}
-                            {% translate 'includes' %}
+                            {% if fn.location and fn.url %}
+                                {# Translators: label for footnote location within source (with url) #}
+                                {% blocktranslate with location=fn.location url=fn.url trimmed %}
+                                    see <a href="{{ url }}">{{ location }}</a> for
+                                {% endblocktranslate %}
+                            {% elif fn.location %}
+                                {# Translators: label for footnote location within source #}
+                                {% blocktranslate with location=fn.location trimmed %}
+                                    see {{ location }} for
+                                {% endblocktranslate %}
+                            {% else %}
+                                {# Translators: label for included document relations for a footnote #}
+                                {% translate 'includes' %}
+                            {% endif %}
                         </dt>
                         <dd class="relation">
                             {{ fn.doc_relation }}

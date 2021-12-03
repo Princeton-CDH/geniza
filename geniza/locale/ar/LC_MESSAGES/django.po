@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-01 12:48-0500\n"
+"POT-Creation-Date: 2021-12-03 13:06-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -125,8 +125,20 @@ msgstr[5] "مجموع النتائج %(count_humanized)s"
 msgid "Bibliographic citation"
 msgstr ""
 
+#. Translators: label for footnote location within source (with url)
+#: geniza/corpus/templates/corpus/document_scholarship.html:27
+#, python-format
+msgid "see <a href=\"%(url)s\">%(location)s</a> for"
+msgstr ""
+
+#. Translators: label for footnote location within source
+#: geniza/corpus/templates/corpus/document_scholarship.html:32
+#, python-format
+msgid "see %(location)s for"
+msgstr ""
+
 #. Translators: label for included document relations for a footnote
-#: geniza/corpus/templates/corpus/document_scholarship.html:26
+#: geniza/corpus/templates/corpus/document_scholarship.html:37
 msgid "includes"
 msgstr ""
 
@@ -253,15 +265,15 @@ msgstr[3] "%(count)d سجل منح دراسية لـ %(doc)s"
 msgstr[4] "%(count)d سجل منح دراسية لـ %(doc)s"
 msgstr[5] "%(count)d سجل منح دراسية لـ %(doc)s"
 
-#: geniza/footnotes/models.py:340
+#: geniza/footnotes/models.py:382
 msgid "Edition"
 msgstr "الطبعة"
 
-#: geniza/footnotes/models.py:341
+#: geniza/footnotes/models.py:383
 msgid "Translation"
 msgstr "الترجمة"
 
-#: geniza/footnotes/models.py:342
+#: geniza/footnotes/models.py:384
 msgid "Discussion"
 msgstr "المناقشة"
 
