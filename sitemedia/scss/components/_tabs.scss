@@ -12,22 +12,21 @@
     text-align: center;
     font-size: typography.$text-size-md;
     margin: 0 auto;
-    @include breakpoints.for-tablet-landscape-up {
-        font-size: typography.$text-size-2md;
-        padding: spacing.$spacing-2xs;
-    }
-    a {
-        flex: 0 1;
+    a,
+    span {
+        flex: 1 0 auto;
+        display: inline-block;
         font-size: typography.$text-size-md;
         @include breakpoints.for-tablet-landscape-up {
             font-size: typography.$text-size-2md;
+            padding: spacing.$spacing-2xs spacing.$spacing-lg;
         }
     }
-    li {
-        flex: 0 1;
-        padding: 0 spacing.$spacing-xs;
+    // Center tab padding boost
+    li:nth-child(2) a,
+    li:nth-child(2) span {
         @include breakpoints.for-tablet-landscape-up {
-            padding: 0 spacing.$spacing-lg;
+            padding: spacing.$spacing-2xs spacing.$spacing-2xl;
         }
     }
     a[aria-current="page"] {
