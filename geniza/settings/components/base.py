@@ -27,6 +27,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "modeltranslation",  # this has to come before admin config
+    "wagtail.documents",  # this also has to come first to unregister
+    "wagtail.images",  #    this also has to come first to unregister
     "geniza.apps.GenizaAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -48,14 +50,13 @@ INSTALLED_APPS = [
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",
+    "geniza.pages.apps.PagesConfig",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
     "wagtail.snippets",
-    "wagtail.documents",
-    "wagtail.images",
     "wagtail.admin",
     "wagtail.core",
     "modelcluster",
