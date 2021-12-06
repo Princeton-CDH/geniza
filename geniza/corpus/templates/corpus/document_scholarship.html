@@ -21,6 +21,10 @@
                         <dd>
                             {{ fn.source.formatted_display|safe }}
                         </dd>
+                        {% if fn.source.source_type.type == "Unpublished" %}
+                            {# Translators: label for an unpublished scholarship record #}
+                            <span class="unpublished">{% translate 'unpublished' %}</span>
+                        {% endif %}
                         <dt class="relation">
                             {% if fn.location and fn.url %}
                                 {# Translators: label for footnote location within source (with url) #}
