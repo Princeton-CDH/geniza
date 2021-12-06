@@ -435,15 +435,18 @@ class Footnote(TrackChangesModel):
     def display(self):
         """format footnote for display; used on document detail page
         and metdata export for old pgp site"""
-        # source, location. notes
-        # source. notes
+        # source, location. notes.
+        # source. notes.
         # source, location.
         parts = [str(self.source)]
         if self.location:
             parts.extend([", ", self.location])
         parts.append(".")
         if self.notes:
-            parts.extend([" ", self.notes])
+            # uppercase first letter of notes if not capitalized
+            notes = self.notes[0].upper() + self.notes[1:]
+            # append period to notes if not present
+            parts.extend([" ", notes.strip("."), "."])
         return "".join(parts)
 
     def has_url(self):

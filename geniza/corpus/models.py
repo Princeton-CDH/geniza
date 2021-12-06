@@ -525,6 +525,23 @@ class Document(ModelIndexable):
             "content", "source"
         )
 
+    def digital_editions(self):
+        """All footnotes for this document where the document relation includes
+        edition AND the footnote has content."""
+        editions_with_content = (
+            self.footnotes.filter(doc_relation__contains=Footnote.EDITION)
+            .filter(content__isnull=False)
+            .order_by("content", "source")
+        )
+        display_strings = []
+        editions_with_unique_display = []
+        for f in editions_with_content:
+            if f.display() not in display_strings:
+                # Prevent redundant display of identical brief citations on detail page
+                editions_with_unique_display += [f.pk]
+                display_strings += [f.display()]
+        return editions_with_content.filter(pk__in=editions_with_unique_display)
+
     @classmethod
     def items_to_index(cls):
         """Custom logic for finding items to be indexed when indexing in

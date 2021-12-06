@@ -79,8 +79,11 @@ class TestDocumentDetailTemplate:
             doc_relation=Footnote.EDITION,
         )
         response = client.get(document.get_absolute_url())
-        print(response.content)
-        assertContains(response, "p. 25")
+        assertNotContains(response, "p. 25")  # should not show when no content
+        fn.content = "fake content"
+        fn.save()
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "p. 25")  # should show when there is content
         fn.location = ""
         fn.save()
         response = client.get(
