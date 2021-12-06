@@ -579,20 +579,12 @@ class TestDocument:
             doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
             content="A piece of text",
         )
-        # footnote with same source
-        # (so will not be included in digital_editions as its brief citation is identical)
-        edition3 = Footnote.objects.create(
-            content_object=document,
-            source=source,
-            doc_relation=Footnote.EDITION,
-            content="B some other text",
-        )
         # footnote with different source
-        edition4 = Footnote.objects.create(
+        edition3 = Footnote.objects.create(
             content_object=document,
             source=twoauthor_source,
             doc_relation=Footnote.EDITION,
-            content="C other text",
+            content="B other text",
         )
         digital_edition_pks = [ed.pk for ed in document.digital_editions()]
 
@@ -600,10 +592,7 @@ class TestDocument:
         assert edition.pk not in digital_edition_pks
         # Has content, should appear in digital editions
         assert edition2.pk in digital_edition_pks
-        # Identical brief citation, should not appear in digital editions
-        assert edition3.pk not in digital_edition_pks
-        # New source, new brief citation, has content, should appear in digital editions
-        assert edition4.pk in digital_edition_pks
+        assert edition3.pk in digital_edition_pks
         # Edition 2 should be alphabetically first based on its content
         assert edition2.pk == digital_edition_pks[0]
 

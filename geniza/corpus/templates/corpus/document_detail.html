@@ -31,8 +31,8 @@
             {# metadata #}
             <dl class="metadata">
                 {% if document.digital_editions %}
-                    {# Translators: Editor label #}
                     <dt>
+                        {# Translators: Editor label #}
                         {% blocktranslate count counter=document.digital_editions.count trimmed %}
                             Editor
                         {% plural %}
@@ -40,7 +40,9 @@
                         {% endblocktranslate %}
                     </dt>
                     {% for ed in document.digital_editions %}
-                        <dd>{{ ed.display|safe }}</dd>
+                        {% ifchanged %}
+                            <dd>{{ ed.display|safe }}</dd>
+                        {% endifchanged %}
                         {# link ? #}
                     {% endfor %}
                 {% endif %}
