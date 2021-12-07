@@ -37,10 +37,6 @@ class Command(BaseCommand):
         ]
         self.skipped_types = ["image", "iiif", "transcription", "cudl"]
 
-        # Get Goitein and sources
-        self.goitein = Creator.objects.get(last_name="Goitein")
-        self.goitein_sources = self.goitein.source_set.all()
-
         # disconnect solr indexing signals
         IndexableSignalHandler.disconnect()
 
@@ -84,17 +80,19 @@ class Command(BaseCommand):
 
     def get_goitein_footnotes(self, doc):
         # TODO: How to handle multiple Goitein footnotes?
-        goitein_footnotes = doc.footnotes.filter(source__in=self.goitein_sources)
+        # Find the source wiht the volume that matches the beginning of the shelfmark for the document
+        #   The logic where this is split out is split_goitein_type_text
+
+        goitein_footnotes = doc.footnotes.filter(
+            source__authors__last_name="Goitein", source__title="typed texts"
+        )
         count = goitein_footnotes.count()
         if count > 1:
             self.stdout.write(
                 f"There were {count} Goitein footnotes found for PGPID {doc.id}, using the first footnote."
             )
         elif not count:
-            # ?: Should a new footnote be created if there's not already a Goitein footnote?
-            self.stdout.write(
-                f"No Goitein footnote found for PGPID {doc.id}. A url will not be added."
-            )
+            self.stdout.write(f"No Goitein footnote found for PGPID {doc.id}.")
 
         return goitein_footnotes.first()
 
