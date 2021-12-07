@@ -1,0 +1,46 @@
+// -----------------------------------------------------------------------------
+// Content page styles
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/spacing";
+@use "../base/typography";
+
+#content-page {
+    .container {
+        padding: spacing.$spacing-md spacing.$spacing-sm;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: spacing.$spacing-lg 0;
+        }
+        ul,
+        ol {
+            margin: spacing.$spacing-md 0 spacing.$spacing-md
+                spacing.$spacing-lg;
+            li + li {
+                margin-top: spacing.$spacing-md;
+            }
+        }
+        ul {
+            list-style: disc outside;
+        }
+        ol {
+            counter-reset: listitem;
+            li::before {
+                content: counter(listitem);
+                counter-increment: listitem;
+                float: left;
+                padding-left: spacing.$spacing-2xs;
+                margin-left: -#{spacing.$spacing-lg};
+            }
+        }
+    }
+
+    // Credits page
+    dd {
+        margin-top: spacing.$spacing-xs;
+        text-decoration: underline;
+        & + dt {
+            margin-top: spacing.$spacing-lg;
+        }
+    }
+}

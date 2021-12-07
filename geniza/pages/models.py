@@ -68,6 +68,11 @@ class ContentPage(Page):
         RichTextFieldPanel("body"),
     ]
 
+    def get_context(self, request):
+        context = super(ContentPage, self).get_context(request)
+        context["page_type"] = "content-page"
+        return context
+
 
 class Contributor(models.Model):
     """Contributor to be listed on the credits page"""
@@ -101,8 +106,3 @@ class CreditsPage(ContentPage):
 
     def contributors(self):
         return Contributor.objects.all()
-
-    def get_context(self, request):
-        context = super(CreditsPage, self).get_context(request)
-        context["page_type"] = "credits"
-        return context
