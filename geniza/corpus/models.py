@@ -536,7 +536,11 @@ class Document(ModelIndexable):
 
     def editors(self):
         """All unique authors of digital editions for this document."""
-        return Creator.objects.filter(source__footnote__doc_relation__contains=Footnote.EDITION, content_isnull=False, source__footnote__document=self).distinct()
+        return Creator.objects.filter(
+            source__footnote__doc_relation__contains=Footnote.EDITION,
+            content_isnull=False,
+            source__footnote__document=self,
+        ).distinct()
 
     @classmethod
     def items_to_index(cls):

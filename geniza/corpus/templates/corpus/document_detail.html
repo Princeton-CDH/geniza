@@ -40,6 +40,7 @@
                         {% endblocktranslate %}
                     </dt>
                     {% for ed in document.digital_editions %}
+                        {# ifchanged to avoid showing duplicate editions #}
                         {% ifchanged %}
                             <dd>{{ ed.display|safe }}</dd>
                         {% endifchanged %}
