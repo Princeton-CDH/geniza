@@ -97,7 +97,7 @@ $text-size-5xl: 3.81rem;
 @mixin quote {
     padding-left: spacing.$spacing-lg;
     border-left: 2px solid;
-    margin-top: spacing.$spacing-2xl;
+    margin: spacing.$spacing-2xl 0;
     @include colors.apply-theme(
         "on-background",
         $property: "border-left-color"
@@ -112,7 +112,6 @@ $text-size-5xl: 3.81rem;
         content: "\201D";
         font-size: $text-size-4xl;
         position: absolute;
-        // margin-top: spacing.$spacing-xl;
         display: block;
     }
 }
@@ -134,8 +133,10 @@ $text-size-5xl: 3.81rem;
 
 @mixin caption {
     font-family: fonts.$secondary;
-    font-size: $text-size-sm;
+    font-size: $text-size-md;
     font-style: italic;
+    margin-top: spacing.$spacing-sm;
+    @include colors.apply-theme("on-background-light");
 }
 
 @mixin link {

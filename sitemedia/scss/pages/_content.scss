@@ -35,6 +35,22 @@
         }
     }
 
+    figure {
+        max-width: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        margin: spacing.$spacing-md 0;
+        figcaption {
+            align-self: flex-start;
+        }
+        img {
+            max-width: 100%;
+            align-self: center;
+            height: auto;
+        }
+    }
+
     // Credits page
     dd {
         margin-top: spacing.$spacing-xs;
