@@ -11,7 +11,7 @@ from django.db import models
 from parasolr.django.signals import IndexableSignalHandler
 
 from geniza.corpus.models import Document
-from geniza.footnotes.models import Creator
+from geniza.footnotes.models import Footnote, Source
 
 
 class Command(BaseCommand):
@@ -64,7 +64,9 @@ class Command(BaseCommand):
         except FileNotFoundError:
             raise CommandError(f"CSV file not found: {self.csv_path}")
 
-        self.stdout.write(f"Documents not found: {self.stats['document_not_found']}")
+        self.stdout.write("STATS SUMMARY")
+        for key, value in self.stats.items():
+            self.stdout.write(f"\t{key}: {value}")
 
     def get_document(self, pgpid: int):
         """Find a document given its new or old PGPID"""
@@ -84,17 +86,41 @@ class Command(BaseCommand):
         #   The logic where this is split out is split_goitein_type_text
 
         goitein_footnotes = doc.footnotes.filter(
-            source__authors__last_name="Goitein", source__title="typed texts"
+            source__authors__last_name="Goitein", source__title_en="typed texts"
         )
         count = goitein_footnotes.count()
         if count > 1:
             self.stdout.write(
                 f"There were {count} Goitein footnotes found for PGPID {doc.id}, using the first footnote."
             )
-        elif not count:
-            self.stdout.write(f"No Goitein footnote found for PGPID {doc.id}.")
 
         return goitein_footnotes.first()
+
+    def get_goitein_source(self, doc):
+        """Get Goiteins typed text volume given the shelfmark"""
+        # if the shelfmark starts with "T-S" split by the second space
+        # Otherwise split at the first space
+        default_source = Source.objects.filter(
+            title_en="typed texts", authors__last_name="Goitein", volume=""
+        ).first()
+
+        if doc.shelfmark.startswith("T-S"):
+            volume = " ".join(doc.shelfmark.split(" ")[:2])
+        else:
+            volume = doc.shelfmark[0:6]
+            volume = "T-S Misc" if volume == "T-S Mi" else volume
+        goitein_source = Source.objects.filter(
+            title_en="typed texts", authors__last_name="Goitein", volume=volume
+        )
+
+        if goitein_source:
+            assert goitein_source.count() == 1  # TODO: Remove me
+            return goitein_source.first()
+        else:
+            self.stdout.write(
+                f"No goitein source with the volume prefix {volume} was found for PGPID {doc.id}. Providing the default source."
+            )
+            return default_source
 
     def parse_goitein_note(self, doc, row):
         base_url = "https://commons.princeton.edu/media/geniza/"
@@ -102,15 +128,11 @@ class Command(BaseCommand):
         if footnote:
             url = base_url + row["link_target"]
             footnote.url = url
-            self.stats["url_updated"] += 1
-            # log_message.append("updated URL")
-            if self.dryrun:
-                self.stdout.write(f"Set footnote url for PGPID {doc.id} to {url}")
-            else:
-                # footnote.save()
-                # ?: Only the footnote needs to be saved, correct?
-                # LOG CHANGES
-                pass
+        else:
+            source = self.get_goitein_source(doc)
+            footnote = Footnote(source=source)
+            footnote.doc_relation = [Footnote.EDITION]
+        return footnote
 
     def parse_indexcard(self, doc, row):
         pass
@@ -131,13 +153,9 @@ class Command(BaseCommand):
         if not doc:
             return
 
-        # Process document link
-        # Create new footnote
-        # If dryrun, write process to stdout
-        # Else save and log
-
+        # Get new or updated footnote for each link type
         if row["link_type"] == "goitein_note":
-            self.parse_goitein_note(doc, row)
+            footnote = self.parse_goitein_note(doc, row)
         elif row["link_type"] == "indexcard":
             self.parse_indexcard(doc, row)
         elif row["link_type"] == "jewish-traders":
@@ -146,3 +164,10 @@ class Command(BaseCommand):
             self.parse_india_traders(doc, row)
         else:
             self.stats["skipped"] += 1
+
+        if self.dryrun:
+            # Log
+            pass
+        else:
+            pass
+            # footnote.save()
