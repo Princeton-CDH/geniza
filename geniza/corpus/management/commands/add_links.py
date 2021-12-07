@@ -88,24 +88,39 @@ class Command(BaseCommand):
         count = goitein_footnotes.count()
         if count > 1:
             self.stdout.write(
-                f"There were {count} Goitein footnotes found for PGPID {doc.id}, using the first footnotes."
+                f"There were {count} Goitein footnotes found for PGPID {doc.id}, using the first footnote."
             )
         elif not count:
-            self.stdout.write(f"No Goitein footnote found for PGPID {doc.id}")
+            # ?: Should a new footnote be created if there's not already a Goitein footnote?
+            self.stdout.write(
+                f"No Goitein footnote found for PGPID {doc.id}. A url will not be added."
+            )
 
         return goitein_footnotes.first()
 
-    def parse_goitein_note(self, row):
+    def parse_goitein_note(self, doc, row):
         base_url = "https://commons.princeton.edu/media/geniza/"
-        link = base_url + row["link_target"]
+        footnote = self.get_goitein_footnotes(doc)
+        if footnote:
+            url = base_url + row["link_target"]
+            footnote.url = url
+            self.stats["url_updated"] += 1
+            # log_message.append("updated URL")
+            if self.dryrun:
+                self.stdout.write(f"Set footnote url for PGPID {doc.id} to {url}")
+            else:
+                # footnote.save()
+                # ?: Only the footnote needs to be saved, correct?
+                # LOG CHANGES
+                pass
 
-    def parse_indexcard(self, row):
+    def parse_indexcard(self, doc, row):
         pass
 
-    def parse_jewish_traders(self, row):
+    def parse_jewish_traders(self, doc, row):
         pass
 
-    def parse_india_traders(self, row):
+    def parse_india_traders(self, doc, row):
         pass
 
     def add_link(self, row):
@@ -114,8 +129,8 @@ class Command(BaseCommand):
         ):
             return
 
-        document = self.get_document(row["object_id"])
-        if not document:
+        doc = self.get_document(row["object_id"])
+        if not doc:
             return
 
         # Process document link
@@ -124,12 +139,12 @@ class Command(BaseCommand):
         # Else save and log
 
         if row["link_type"] == "goitein_note":
-            self.parse_goitein_note(row)
+            self.parse_goitein_note(doc, row)
         elif row["link_type"] == "indexcard":
-            self.parse_indexcard(row)
+            self.parse_indexcard(doc, row)
         elif row["link_type"] == "jewish-traders":
-            self.parse_jewish_traders(row)
+            self.parse_jewish_traders(doc, row)
         elif row["link_type"] == "india-traders":
-            self.parse_india_traders(row)
+            self.parse_india_traders(doc, row)
         else:
             self.stats["skipped"] += 1
