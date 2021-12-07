@@ -188,8 +188,12 @@ class Source(models.Model):
             # otherwise, just leave unformatted
             else:
                 work_title = self.title + ltr_mark
-        elif self.source_type and (extra_fields or not author):
+        elif self.source_type and (
+            extra_fields or not author or self.source_type.type == "Unpublished"
+        ):
             # Use type as descriptive title when no title available, per CMS
+            # Only when extra_fields enabled, or there is no author, or "unpublished" should appear
+            # in brief citation
             work_title = (
                 self.source_type.type if not author else self.source_type.type.lower()
             )
@@ -323,8 +327,12 @@ class Source(models.Model):
         #   L. B. Yarbrough (in Hebrew)             (no comma)
         #   Author (1964)                           (no comma)
         #   Author, Journal 6 (1964)                (comma)
+        #   Author, unpublished                     (comma)
         use_comma = (
-            extra_fields or self.title or (self.journal and not non_english_langs)
+            extra_fields
+            or self.title
+            or (self.journal and not non_english_langs)
+            or self.source_type.type == "Unpublished"
         )
         delimiter = ", " if use_comma else " "
 
@@ -427,15 +435,18 @@ class Footnote(TrackChangesModel):
     def display(self):
         """format footnote for display; used on document detail page
         and metdata export for old pgp site"""
-        # source, location. notes
-        # source. notes
+        # source, location. notes.
+        # source. notes.
         # source, location.
         parts = [str(self.source)]
         if self.location:
             parts.extend([", ", self.location])
         parts.append(".")
         if self.notes:
-            parts.extend([" ", self.notes])
+            # uppercase first letter of notes if not capitalized
+            notes = self.notes[0].upper() + self.notes[1:]
+            # append period to notes if not present
+            parts.extend([" ", notes.strip("."), "."])
         return "".join(parts)
 
     def has_url(self):

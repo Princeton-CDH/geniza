@@ -79,14 +79,50 @@ class TestDocumentDetailTemplate:
             doc_relation=Footnote.EDITION,
         )
         response = client.get(document.get_absolute_url())
-        print(response.content)
-        assertContains(response, "p. 25")
+        assertNotContains(response, "p. 25")  # should not show when no content
+        fn.content = "fake content"
+        fn.save()
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "p. 25")  # should show when there is content
         fn.location = ""
         fn.save()
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
         assertNotContains(response, "p. 25")
+
+    def test_editors(self, client, document, source, twoauthor_source):
+        # footnote with no content
+        Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.EDITION
+        )
+        # No digital editions, so no editors
+        response = client.get(document.get_absolute_url())
+        assertNotContains(response, "Editor")
+
+        # footnote with one author, content
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
+            content="A piece of text",
+        )
+
+        # Digital edition with one author, should have one editor but not multiple
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "Editor")
+        assertNotContains(response, "Editors")
+
+        # footnote with two authors, content
+        Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.EDITION,
+            content="B other text",
+        )
+        # Should now be "editors"
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "Editors")
 
 
 class TestDocumentScholarshipTemplate:

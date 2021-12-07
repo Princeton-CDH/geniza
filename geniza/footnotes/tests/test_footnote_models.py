@@ -49,11 +49,13 @@ class TestSource:
             ordinal(twoauthor_source.edition),
         )
 
-        # four authors, no title
+        # four authors, no title, unpublished
         lastnames = [
             a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
         ]
-        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s" % tuple(lastnames)
+        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s, %s" % (
+            tuple(lastnames) + (multiauthor_untitledsource.source_type.type.lower(),)
+        )
 
     @pytest.mark.django_db
     def test_str_article(self, article):

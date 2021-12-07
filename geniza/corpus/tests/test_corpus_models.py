@@ -565,6 +565,70 @@ class TestDocument:
         # check that edition with content is sorted first
         assert edition2.pk == doc_edition_pks[0]
 
+    def test_digital_editions(self, document, source, twoauthor_source):
+        # test filter by content
+
+        # footnote with no content
+        edition = Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.EDITION
+        )
+        # footnote with content
+        edition2 = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
+            content="A piece of text",
+        )
+        # footnote with different source
+        edition3 = Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.EDITION,
+            content="B other text",
+        )
+        digital_edition_pks = [ed.pk for ed in document.digital_editions()]
+
+        # No content, should not appear in digital editions
+        assert edition.pk not in digital_edition_pks
+        # Has content, should appear in digital editions
+        assert edition2.pk in digital_edition_pks
+        assert edition3.pk in digital_edition_pks
+        # Edition 2 should be alphabetically first based on its content
+        assert edition2.pk == digital_edition_pks[0]
+
+    def test_editors(self, document, source, twoauthor_source):
+        # footnote with no content
+        Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.EDITION
+        )
+        # No digital editions, so editors count should be 0
+        assert document.editors().count() == 0
+
+        # footnote with one author, content
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
+            content="A piece of text",
+        )
+
+        # Digital edition with one author, editor should be author of source
+        assert document.editors().count() == 1
+        assert document.editors().first() == source.authors.first()
+
+        # footnote with two authors, content
+        Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.EDITION,
+            content="B other text",
+        )
+        # Should now be three editors, since this edition's source had two authors
+        assert document.editors().count() == 3
+        assert twoauthor_source.authors.first().pk in [
+            editor.pk for editor in document.editors().all()
+        ]
+
 
 def test_document_merge_with(document, join):
     doc_id = document.id
