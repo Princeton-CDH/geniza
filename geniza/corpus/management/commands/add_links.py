@@ -37,9 +37,6 @@ class Command(BaseCommand):
         ]
         self.skipped_types = ["image", "iiif", "transcription", "cudl"]
 
-        # TODO: REMOVE AS DEVELOPMENT CONTINUES
-        self.skipped_types += ["indexcard", "jewish-traders", "india-traders"]
-
         # Get Goitein and sources
         self.goitein = Creator.objects.get(last_name="Goitein")
         self.goitein_sources = self.goitein.source_set.all()
@@ -49,6 +46,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("csv", type=str)
+        parser.add_argument("-t", "--link_type")
         parser.add_argument("-o", "--overwrite", action="store_true")
         parser.add_argument("-d", "--dryrun", action="store_true")
 
@@ -56,6 +54,7 @@ class Command(BaseCommand):
         self.csv_path = options.get("csv")
         self.overwrite = options.get("overwrite")
         self.dryrun = options.get("dryrun")
+        self.link_type = options.get("link_type")
 
         try:
             with open(self.csv_path) as f:
@@ -110,7 +109,9 @@ class Command(BaseCommand):
         pass
 
     def add_link(self, row):
-        if row["link_type"] in self.skipped_types:
+        if (self.link_type and self.link_type != row["link_type"]) or (
+            row["link_type"] in self.skipped_types
+        ):
             return
 
         document = self.get_document(row["object_id"])
