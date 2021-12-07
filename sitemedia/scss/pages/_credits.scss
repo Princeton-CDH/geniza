@@ -1,0 +1,31 @@
+// -----------------------------------------------------------------------------
+// Credits content page.
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/spacing";
+@use "../base/typography";
+
+#credits {
+    h1 {
+        font-size: typography.$text-size-lg;
+        margin: spacing.$spacing-md;
+        @include breakpoints.for-tablet-landscape-up {
+            font-size: typography.$text-size-xl;
+            margin: spacing.$spacing-3xl spacing.$spacing-md spacing.$spacing-md;
+        }
+    }
+    .container {
+        padding: spacing.$spacing-md;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: spacing.$spacing-lg 0;
+        }
+    }
+    dd {
+        margin-top: spacing.$spacing-xs;
+        text-decoration: underline;
+        & + dt {
+            margin-top: spacing.$spacing-lg;
+        }
+    }
+}
