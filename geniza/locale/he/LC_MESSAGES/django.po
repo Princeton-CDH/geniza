@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-01 12:48-0500\n"
-"PO-Revision-Date: 2021-12-03 15:28\n"
+"POT-Creation-Date: 2021-12-06 14:53-0500\n"
+"PO-Revision-Date: 2021-12-07 21:25\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -53,7 +53,7 @@ msgid "Document Type"
 msgstr "סוג המסמך"
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:557
+#: geniza/corpus/models.py:566
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr ""
@@ -68,29 +68,34 @@ msgid "Metadata"
 msgstr ""
 
 #. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:35
+#: geniza/corpus/templates/corpus/document_detail.html:36
+#| msgid "Editor"
 msgid "Editor"
-msgstr "עורך"
+msgid_plural "Editors"
+msgstr[0] "עורך"
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:42
+#: geniza/corpus/templates/corpus/document_detail.html:50
 #: geniza/corpus/templates/corpus/snippets/document_result.html:29
 msgid "Input date"
 msgstr "תאריך קלט"
 
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:46
+#: geniza/corpus/templates/corpus/document_detail.html:54
 msgid "Permalink"
 msgstr ""
 
 #. Translators: label for tags on a document
-#: geniza/corpus/templates/corpus/document_detail.html:56
+#: geniza/corpus/templates/corpus/document_detail.html:64
 #: geniza/corpus/templates/corpus/snippets/document_result.html:19
 msgid "Tags"
 msgstr "תגים"
 
 #. Translators: label for document description
-#: geniza/corpus/templates/corpus/document_detail.html:67
+#: geniza/corpus/templates/corpus/document_detail.html:75
 msgid "Description"
 msgstr ""
 
@@ -229,15 +234,15 @@ msgstr[1] "%(count)d רשומות קשורות ל %(doc)s"
 msgstr[2] "%(count)d רשומות קשורות ל %(doc)s"
 msgstr[3] "%(count)d רשומות קשורות ל %(doc)s"
 
-#: geniza/footnotes/models.py:340
+#: geniza/footnotes/models.py:388
 msgid "Edition"
 msgstr "מהדורה"
 
-#: geniza/footnotes/models.py:341
+#: geniza/footnotes/models.py:389
 msgid "Translation"
 msgstr "תרגום"
 
-#: geniza/footnotes/models.py:342
+#: geniza/footnotes/models.py:390
 msgid "Discussion"
 msgstr "דיון"
 
