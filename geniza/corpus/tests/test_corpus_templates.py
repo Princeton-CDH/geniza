@@ -91,6 +91,39 @@ class TestDocumentDetailTemplate:
         )
         assertNotContains(response, "p. 25")
 
+    def test_editors(self, client, document, source, twoauthor_source):
+        # footnote with no content
+        Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.EDITION
+        )
+        # No digital editions, so no editors
+        response = client.get(document.get_absolute_url())
+        assertNotContains(response, "Editor")
+
+        # footnote with one author, content
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
+            content="A piece of text",
+        )
+
+        # Digital edition with one author, should have one editor but not multiple
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "Editor")
+        assertNotContains(response, "Editors")
+
+        # footnote with two authors, content
+        Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.EDITION,
+            content="B other text",
+        )
+        # Should now be "editors"
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "Editors")
+
 
 class TestDocumentScholarshipTemplate:
     def test_source_title(self, client, document, twoauthor_source):

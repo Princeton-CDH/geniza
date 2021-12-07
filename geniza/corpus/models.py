@@ -23,7 +23,7 @@ from taggit_selectize.managers import TaggableManager
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
-from geniza.footnotes.models import Footnote, Source
+from geniza.footnotes.models import Creator, Footnote
 
 logger = logging.getLogger(__name__)
 
@@ -533,6 +533,13 @@ class Document(ModelIndexable):
             .filter(content__isnull=False)
             .order_by("content", "source")
         )
+
+    def editors(self):
+        """All unique authors of digital editions for this document."""
+        editor_pks = []
+        for de in self.digital_editions():
+            editor_pks += [author.pk for author in de.source.authors.all()]
+        return Creator.objects.filter(pk__in=editor_pks)
 
     @classmethod
     def items_to_index(cls):
