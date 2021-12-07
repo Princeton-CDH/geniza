@@ -8,7 +8,14 @@
     <!-- document scholarship records -->
     <h1>{{ page.title }}</h1>
     <div class="container">
-        {% comment %} TODO: Add credits content {% endcomment %}
+        {% if page.contributors %}
+            <dl>
+                {% for contributor in page.contributors %}
+                    <dd>{{ contributor }}</dd>
+                    <dt>{{ contributor.role }}</dt>
+                {% endfor %}
+            </dl>
+        {% endif %}
     </div>
 {% endblock main %}
 {% load wagtailcore_tags %}

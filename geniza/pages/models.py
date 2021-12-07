@@ -1,3 +1,4 @@
+from django import forms
 from django.db import models
 from wagtail.admin.edit_handlers import FieldPanel, RichTextFieldPanel
 from wagtail.core.fields import RichTextField
@@ -68,11 +69,35 @@ class ContentPage(Page):
     ]
 
 
-class CreditsPage(ContentPage):
-    """:class:`ContentPage` model for displaying the credits page."""
+class Contributor(models.Model):
+    """Contributor to be listed on the credits page"""
 
-    # fields
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    role = models.CharField(max_length=255)
+
+    class Meta:
+        ordering = ["last_name", "first_name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["first_name", "last_name"], name="contributor_unique_name"
+            )
+        ]
+
+    def __str__(self):
+        """Creator full name, with first name first"""
+        return " ".join([n for n in [self.first_name, self.last_name] if n])
+
+    def natural_key(self):
+        return (self.last_name, self.first_name)
+
+
+class CreditsPage(ContentPage):
+    """:class:`ContentPage` model for displaying a credits page."""
+
     content_panels = Page.content_panels + [
         FieldPanel("description"),
     ]
-    # TODO: Add fields for credits
+
+    def contributors(self):
+        return Contributor.objects.all()
