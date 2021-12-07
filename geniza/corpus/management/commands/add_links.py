@@ -11,6 +11,7 @@ from django.db import models
 from parasolr.django.signals import IndexableSignalHandler
 
 from geniza.corpus.models import Document
+from geniza.footnotes.models import Creator
 
 
 class Command(BaseCommand):
@@ -35,6 +36,13 @@ class Command(BaseCommand):
             "link_attribution",
         ]
         self.skipped_types = ["image", "iiif", "transcription", "cudl"]
+
+        # TODO: REMOVE AS DEVELOPMENT CONTINUES
+        self.skipped_types += ["indexcard", "jewish-traders", "india-traders"]
+
+        # Get Goitein and sources
+        self.goitein = Creator.objects.get(last_name="Goitein")
+        self.goitein_sources = self.goitein.source_set.all()
 
         # disconnect solr indexing signals
         IndexableSignalHandler.disconnect()
@@ -74,6 +82,19 @@ class Command(BaseCommand):
             self.stats["document_not_found"] += 1
             self.stdout.write("Document %s not found in database" % pgpid)
             return
+
+    def get_goitein_footnotes(self, doc):
+        # TODO: How to handle multiple Goitein footnotes?
+        goitein_footnotes = doc.footnotes.filter(source__in=self.goitein_sources)
+        count = goitein_footnotes.count()
+        if count > 1:
+            self.stdout.write(
+                f"There were {count} Goitein footnotes found for PGPID {doc.id}, using the first footnotes."
+            )
+        elif not count:
+            self.stdout.write(f"No Goitein footnote found for PGPID {doc.id}")
+
+        return goitein_footnotes.first()
 
     def parse_goitein_note(self, row):
         base_url = "https://commons.princeton.edu/media/geniza/"
