@@ -30,6 +30,7 @@ class HomePage(Page):
     )
     # can only be child of Root
     parent_page_types = [Page]
+    subpage_types = ["pages.ContentPage", "pages.CreditsPage"]
     content_panels = Page.content_panels + [
         FieldPanel("description"),
         RichTextFieldPanel("body"),
@@ -62,7 +63,7 @@ class ContentPage(Page):
         ],
         blank=True,
     )
-    parent_page_types = [Page]
+    parent_page_types = [HomePage]
     content_panels = Page.content_panels + [
         FieldPanel("description"),
         RichTextFieldPanel("body"),
