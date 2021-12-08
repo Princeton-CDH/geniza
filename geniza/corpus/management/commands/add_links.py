@@ -42,6 +42,9 @@ class Command(BaseCommand):
 
         self.goitein = Creator.objects.get(last_name="Goitein")
         self.unpublished = SourceType.objects.get(type="Unpublished")
+        self.jewish_traders = Source.objects.get(
+            title="Letters of Medieval Jewish Traders"
+        )
 
     def add_arguments(self, parser):
         parser.add_argument("csv", type=str)
@@ -68,7 +71,7 @@ class Command(BaseCommand):
             raise CommandError(f"CSV file not found: {self.csv_path}")
 
         self.stdout.write("STATS SUMMARY")
-        for key, value in self.stats.items():
+        for key, value in sorted(self.stats.items()):
             self.stdout.write(f"\t{key}: {value}")
 
     # HELPERS -------------------------
@@ -96,7 +99,7 @@ class Command(BaseCommand):
             volume = shelfmark.split(" ")[0]
         return volume
 
-    # GOITEIN_NOTE -------------------
+    # TYPED TEXT -------------------
 
     def get_typed_text_footnote(self, doc):
         try:
@@ -109,15 +112,11 @@ class Command(BaseCommand):
     def get_or_create_typed_text_source(self, doc):
         """Get Goiteins typed text volume given the shelfmark"""
         volume = self.get_volume(doc.shelfmark)
-
-        # TODO: title_en and title query gives different items
-        goitein_source = Source.objects.filter(
-            title_en="typed texts", authors__last_name="Goitein", volume=volume
-        )
-
-        if goitein_source:
-            return goitein_source.first()
-        else:
+        try:
+            return Source.objects.get(
+                title_en="typed texts", authors__last_name="Goitein", volume=volume
+            )
+        except Source.DoesNotExist:
             source = Source(
                 # TODO: year, languages?
                 url="https://geniza.princeton.edu/indexcards/",
@@ -149,7 +148,13 @@ class Command(BaseCommand):
 
     # INDEX CARDS -------------------
 
-    def get_or_create_index_card_source(self, doc):
+    def get_indexcard_footnote(self, doc):
+        try:
+            return doc.footnotes.get(title="Index Cards")
+        except Footnote.DoesNotExist:
+            return None
+
+    def get_or_create_indexcard_source(self, doc):
         """Get or create the index card source related to a given document"""
         volume = self.get_volume(doc.shelfmark)
         source = Source.objects.filter(title="Index Cards", volume=volume)
@@ -164,39 +169,52 @@ class Command(BaseCommand):
                 source_type=self.unpublished,
             )
             source.authors.add(self.goitein)
+            self.stats["indexcard_source_create"] += 1
             return source
 
     def parse_indexcard(self, doc, row):
         url = f"https://geniza.princeton.edu/indexcards/index.php?a=card&id={row['link_target']}"
-        existing_footnote = doc.footnotes.filter(url=url)
-        if not existing_footnote:
-            source = self.get_or_create_index_card_source(doc)
+        existing_footnote = self.get_indexcard_footnote(doc)
+        if existing_footnote:
+            existing_footnote.url = url
+            if existing_footnote.has_changed("url"):
+                self.stats["indexcard_footnote_update"] += 1
+            return existing_footnote.source, existing_footnote
+        else:
+            source = self.get_or_create_indexcard_source(doc)
             footnote = Footnote(
                 source=source,
                 url=url,
                 content_object=doc,
                 doc_relation=[Footnote.DISCUSSION],
             )
+            self.stats["indexcard_footnote_create"] += 1
             return source, footnote
-        else:
-            return existing_footnote.source, existing_footnote
 
     # JEWISH TRADERS -------------------
 
+    def get_jewish_traders_footnote(self, doc):
+        try:
+            return doc.footnotes.get(source=self.jewish_traders)
+        except Footnote.DoesNotExist:
+            return None
+
     def parse_jewish_traders(self, doc, row):
         url = f"https://s3.amazonaws.com/goitein-lmjt/{row['link_target']}"
-        source = Source.objects.get(title="Letters of Medieval Jewish Traders")
-        existing_footnote = doc.footnotes.filter(source=source)
-        if not existing_footnote:
+        existing_footnote = self.get_jewish_traders_footnote(doc)
+        if existing_footnote:
+            existing_footnote.url = url
+            if existing_footnote.has_changed("url"):
+                self.stats["jewish_traders_footnote_update"] += 1
+            return existing_footnote
+        else:
+            self.stats["jewish_traders_footnote_create"] += 1
             return Footnote(
-                source=source,
+                source=self.jewish_traders,
                 url=url,
                 content_object=doc,
                 doc_relation=[Footnote.TRANSLATION],
             )
-        else:
-            existing_footnote.url = url
-            return existing_footnote
 
     # INDIA TRADERS -------------------
 
@@ -209,20 +227,31 @@ class Command(BaseCommand):
         rn_mapper = {"I": 1, "II": 2, "III": 3}
         return Source.objects.get(title=f"India Book {rn_mapper[book_part]}")
 
+    def get_india_traders_footnote(self, source, doc):
+        try:
+            return doc.footnotes.get(source=source)
+        except:
+            return None
+
     def parse_india_traders(self, doc, row):
         url = f"https://s3.amazonaws.com/goitein-india-traders/{row['link_target']}"
         source = self.get_india_book(row)
-        existing_footnote = doc.footnotes.filter(source=source)
-        if not existing_footnote:
+        existing_footnote = self.get_india_traders_footnote(source, doc)
+        if existing_footnote:
+            existing_footnote.url = url
+            if existing_footnote.has_changed("url"):
+                self.stats["india_traders_footnote_update"] += 1
+            return existing_footnote
+        else:
+            self.stats["india_traders_footnote_create"] += 1
             return Footnote(
                 source=source,
                 url=url,
                 content_object=doc,
                 doc_relation=[Footnote.TRANSLATION],
             )
-        else:
-            existing_footnote.url = url
-            return existing_footnote
+
+    # PROCESS ENTRY --------------------
 
     def add_link(self, row):
         if (self.link_type and self.link_type != row["link_type"]) or (
