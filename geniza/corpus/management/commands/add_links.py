@@ -96,19 +96,23 @@ class Command(BaseCommand):
 
         return goitein_footnotes.first()
 
+    def get_volume(self, shelfmark):
+        """Given a shelfmark, get the volume label"""
+        if shelfmark.startswith("T-S"):
+            volume = shelfmark[0:6]
+            volume = "T-S Misc" if volume == "T-S Mi" else volume
+        else:
+            volume = shelfmark.split(" ")[0]
+        return volume
+
     def get_goitein_source(self, doc):
         """Get Goiteins typed text volume given the shelfmark"""
-        # if the shelfmark starts with "T-S" split by the second space
-        # Otherwise split at the first space
         default_source = Source.objects.filter(
             title_en="typed texts", authors__last_name="Goitein", volume=""
         ).first()
 
-        if doc.shelfmark.startswith("T-S"):
-            volume = " ".join(doc.shelfmark.split(" ")[:2])
-        else:
-            volume = doc.shelfmark[0:6]
-            volume = "T-S Misc" if volume == "T-S Mi" else volume
+        volume = self.get_volume(doc.shelfmark)
+
         goitein_source = Source.objects.filter(
             title_en="typed texts", authors__last_name="Goitein", volume=volume
         )
@@ -120,6 +124,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 f"No goitein source with the volume prefix {volume} was found for PGPID {doc.id}. Providing the default source."
             )
+            # TODO: Create new source?
             return default_source
 
     def parse_goitein_note(self, doc, row):
@@ -135,7 +140,9 @@ class Command(BaseCommand):
         return footnote
 
     def parse_indexcard(self, doc, row):
-        pass
+        url = ""
+        # Ensure that footnote with the URL doesn't already exist
+        Document.footnotes.filter()
 
     def parse_jewish_traders(self, doc, row):
         pass
