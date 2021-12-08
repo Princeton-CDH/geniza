@@ -13,6 +13,8 @@ from parasolr.django.signals import IndexableSignalHandler
 from geniza.corpus.models import Document
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
+# TODO: Not all headers are required, look back later and remove unnecessary requirements
+
 
 class Command(BaseCommand):
     """Takes a CSV export of the Geniza v3 database to add footnotes with Goitein
@@ -103,7 +105,7 @@ class Command(BaseCommand):
 
     # TYPED TEXT -------------------
 
-    def get_or_create_typed_text_source(self, doc):
+    def get_typed_text_source(self, doc):
         """Get Goiteins typed text volume given the shelfmark"""
         # TODO: get_or_create instead of supporting dry_run
         #  - and change long function
@@ -115,11 +117,9 @@ class Command(BaseCommand):
             )
         except Source.DoesNotExist:
             source = Source(
-                # TODO: year, languages?
                 url="https://geniza.princeton.edu/indexcards/",
                 title="typed texts",
                 volume=volume,
-                # TODO: Confirm unpublished is correct source type
                 source_type=self.unpublished,
             )
             source.authors.add(self.goitein)
@@ -129,7 +129,6 @@ class Command(BaseCommand):
     # TODO: test how removing get_typed_text_footnote would affect flow
     def parse_typed_text(self, doc, row):
         base_url = "https://commons.princeton.edu/media/geniza/"
-        # TODO: How to handle multiple Goitein footnotes?
         existing_footnote = doc.footnotes.filter(
             source__authors__last_name="Goitein", source__title_en="typed texts"
         ).first()
@@ -139,7 +138,7 @@ class Command(BaseCommand):
             self.stats["typed_text_footnote_update"] += 1
             return existing_footnote.source, existing_footnote
         else:
-            source = self.get_or_create_typed_text_source(doc)
+            source = self.get_typed_text_source(doc)
             footnote = Footnote(
                 source=source, doc_relation=[Footnote.EDITION], content_object=doc
             )
@@ -148,7 +147,7 @@ class Command(BaseCommand):
 
     # INDEX CARDS -------------------
 
-    def get_or_create_indexcard_source(self, doc):
+    def get_indexcard_source(self, doc):
         """Get or create the index card source related to a given document"""
         volume = Source.get_volume(doc.shelfmark)
         source = Source.objects.filter(title="Index Cards", volume=volume).first()
@@ -156,7 +155,6 @@ class Command(BaseCommand):
             return source
         else:
             source = Source(
-                # TODO: year, languages?
                 url="https://geniza.princeton.edu/indexcards/",
                 title="Index Cards",
                 volume=volume,
@@ -177,7 +175,7 @@ class Command(BaseCommand):
                 self.stats["indexcard_footnote_skipped"] += 1
             return existing_footnote.source, existing_footnote
         else:
-            source = self.get_or_create_indexcard_source(doc)
+            source = self.get_indexcard_source(doc)
             footnote = Footnote(
                 source=source,
                 url=url,
