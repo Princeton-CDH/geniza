@@ -1,5 +1,5 @@
-from django import forms
 from django.db import models
+from modeltranslation.manager import MultilingualManager
 from wagtail.admin.edit_handlers import FieldPanel, RichTextFieldPanel
 from wagtail.core.fields import RichTextField
 from wagtail.core.models import Page
@@ -74,12 +74,19 @@ class ContentPage(Page):
         return context
 
 
+class ContributorManager(MultilingualManager):
+    def get_by_natural_key(self, last_name, first_name):
+        return self.get(last_name=last_name, first_name=first_name)
+
+
 class Contributor(models.Model):
     """Contributor to be listed on the credits page"""
 
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     role = models.CharField(max_length=255)
+
+    objects = ContributorManager()
 
     class Meta:
         ordering = ["last_name", "first_name"]
