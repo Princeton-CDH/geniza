@@ -189,8 +189,28 @@ class Command(BaseCommand):
         else:
             return existing_footnote
 
+    def get_india_book(self, row):
+        book_part = (
+            row["link_title"]
+            .split("India Traders of the Middle Ages, ")[1]
+            .split("-")[0]
+        )
+        rn_mapper = {"I": 1, "II": 2, "III": 3}
+        return Source.objects.get(title=f"India Book {rn_mapper[book_part]}")
+
     def parse_india_traders(self, doc, row):
-        pass
+        url = f"https://s3.amazonaws.com/goitein-india-traders/{row['link_target']}"
+        existing_footnote = doc.footnotes.filter(url=url)
+        if not existing_footnote:
+            source = self.get_india_book(row)
+            return Footnote(
+                source=source,
+                url=url,
+                content_object=doc,
+                doc_relation=[Footnote.TRANSLATION],
+            )
+        else:
+            return existing_footnote
 
     def add_link(self, row):
         if (self.link_type and self.link_type != row["link_type"]) or (
