@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "admin_log_entries",
     "parasolr",
     "webpack_loader",
+    "djiffy",
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",
@@ -250,6 +251,11 @@ CSP_IMG_SRC = (
 
 # exclude admin and cms urls from csp directives since they're authenticated
 CSP_EXCLUDE_URL_PREFIXES = ("/admin", "/cms")
+
+# use jpg instead of png since some providers only support jpg
+DJIFFY_THUMBNAIL_FORMAT = "jpg"
+# disable djiffy import check, since we are not using djiffy views
+DJIFFY_IMPORT_CHECK_SUPPORTED = False
 
 # URL for git repository of TEI transcriptions
 TEI_TRANSCRIPTIONS_GITREPO = (
