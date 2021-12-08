@@ -107,15 +107,6 @@ class Command(BaseCommand):
 
     # TYPED TEXT -------------------
 
-    # TODO: Use first()
-    def get_typed_text_footnote(self, doc):
-        try:
-            return doc.footnotes.get(
-                source__authors__last_name="Goitein", source__title_en="typed texts"
-            )
-        except Footnote.DoesNotExist:
-            return None
-
     def get_or_create_typed_text_source(self, doc):
         """Get Goiteins typed text volume given the shelfmark"""
         # TODO: get_or_create instead of supporting dry_run
@@ -143,7 +134,9 @@ class Command(BaseCommand):
     def parse_typed_text(self, doc, row):
         base_url = "https://commons.princeton.edu/media/geniza/"
         # TODO: How to handle multiple Goitein footnotes?
-        existing_footnote = self.get_typed_text_footnote(doc)
+        existing_footnote = doc.footnotes.filter(
+            source__authors__last_name="Goitein", source__title_en="typed texts"
+        ).first()
         if existing_footnote:
             url = base_url + row["link_target"]
             existing_footnote.url = url
@@ -158,12 +151,6 @@ class Command(BaseCommand):
             return source, footnote
 
     # INDEX CARDS -------------------
-
-    def get_indexcard_footnote(self, doc):
-        try:
-            return doc.footnotes.get(title="Index Cards")
-        except Footnote.DoesNotExist:
-            return None
 
     def get_or_create_indexcard_source(self, doc):
         """Get or create the index card source related to a given document"""
@@ -185,7 +172,7 @@ class Command(BaseCommand):
 
     def parse_indexcard(self, doc, row):
         url = f"https://geniza.princeton.edu/indexcards/index.php?a=card&id={row['link_target']}"
-        existing_footnote = self.get_indexcard_footnote(doc)
+        existing_footnote = doc.footnotes.filter(title="Index Cards").first()
         if existing_footnote:
             existing_footnote.url = url
             if existing_footnote.has_changed("url"):
@@ -206,15 +193,9 @@ class Command(BaseCommand):
 
     # JEWISH TRADERS -------------------
 
-    def get_jewish_traders_footnote(self, doc):
-        try:
-            return doc.footnotes.get(source=self.jewish_traders)
-        except Footnote.DoesNotExist:
-            return None
-
     def parse_jewish_traders(self, doc, row):
         url = f"https://s3.amazonaws.com/goitein-lmjt/{row['link_target']}"
-        existing_footnote = self.get_jewish_traders_footnote(doc)
+        existing_footnote = doc.footnotes.filter(source=self.jewish_traders).first()
         if existing_footnote:
             existing_footnote.url = url
             if existing_footnote.has_changed("url"):
@@ -242,16 +223,10 @@ class Command(BaseCommand):
         rn_mapper = {"I": 1, "II": 2, "III": 3}
         return Source.objects.get(title=f"India Book {rn_mapper[book_part]}")
 
-    def get_india_traders_footnote(self, source, doc):
-        try:
-            return doc.footnotes.get(source=source)
-        except:
-            return None
-
     def parse_india_traders(self, doc, row):
         url = f"https://s3.amazonaws.com/goitein-india-traders/{row['link_target']}"
         source = self.get_india_book(row)
-        existing_footnote = self.get_india_traders_footnote(source, doc)
+        existing_footnote = doc.footnotes.filter(source=source).first()
         if existing_footnote:
             existing_footnote.url = url
             if existing_footnote.has_changed("url"):
