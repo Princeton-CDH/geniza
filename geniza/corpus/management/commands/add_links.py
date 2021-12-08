@@ -37,8 +37,6 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("csv", type=str)
         parser.add_argument("-t", "--link_type")
-        parser.add_argument("-o", "--overwrite", action="store_true")
-        parser.add_argument("-d", "--dryrun", action="store_true")
 
     def handle(self, *args, **options):
         # disconnect solr indexing signals
@@ -58,8 +56,6 @@ class Command(BaseCommand):
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
         self.csv_path = options.get("csv")
-        self.overwrite = options.get("overwrite")
-        self.dryrun = options.get("dryrun")
         self.link_type = options.get("link_type")
 
         try:
@@ -107,104 +103,51 @@ class Command(BaseCommand):
 
     def get_typed_text_source(self, doc):
         """Get Goiteins typed text volume given the shelfmark"""
-        # TODO: get_or_create instead of supporting dry_run
-        #  - and change long function
-        # TODO: Try to remove link_type-specific logging
         volume = Source.get_volume(doc.shelfmark)
-        try:
-            return Source.objects.get(
-                title_en="typed texts", authors__last_name="Goitein", volume=volume
-            )
-        except Source.DoesNotExist:
-            source = Source(
-                url="https://geniza.princeton.edu/indexcards/",
-                title="typed texts",
-                volume=volume,
-                source_type=self.unpublished,
-            )
-            source.authors.add(self.goitein)
-            self.stats["typed_text_source_create"] += 1
-            return source
+        source = Source.objects.get_or_create(title_en="typed texts", volume=volume)
+        source.url = "https://geniza.princeton.edu/indexcards/"
+        source.source_type = self.unpublished
+        source.authors.add(self.goitein)
+        source.save()
+        return source
 
-    # TODO: test how removing get_typed_text_footnote would affect flow
     def parse_typed_text(self, doc, row):
         base_url = "https://commons.princeton.edu/media/geniza/"
-        existing_footnote = doc.footnotes.filter(
-            source__authors__last_name="Goitein", source__title_en="typed texts"
-        ).first()
-        if existing_footnote:
-            url = base_url + row["link_target"]
-            existing_footnote.url = url
-            self.stats["typed_text_footnote_update"] += 1
-            return existing_footnote.source, existing_footnote
-        else:
-            source = self.get_typed_text_source(doc)
-            footnote = Footnote(
-                source=source, doc_relation=[Footnote.EDITION], content_object=doc
-            )
-            self.stats["typed_text_footnote_create"] += 1
-            return source, footnote
+        source = self.get_typed_text_source(doc)
+        footnote = Footnote.get_or_create(source=source, content_object=doc)
+        footnote.url = url
+        footnote.doc_relation = [Footnote.EDITION]
+        footnote.save()
 
     # INDEX CARDS -------------------
 
     def get_indexcard_source(self, doc):
         """Get or create the index card source related to a given document"""
         volume = Source.get_volume(doc.shelfmark)
-        source = Source.objects.filter(title="Index Cards", volume=volume).first()
-        if source:
-            return source
-        else:
-            source = Source(
-                url="https://geniza.princeton.edu/indexcards/",
-                title="Index Cards",
-                volume=volume,
-                source_type=self.unpublished,
-            )
-            source.authors.add(self.goitein)
-            self.stats["indexcard_source_create"] += 1
-            return source
+        source = Source.objects.get_or_create(title="Index Cards", volume=volume)
+        source.url = "https://geniza.princeton.edu/indexcards/"
+        source.source_type = self.unpublished
+        source.authors.add(goitein)
+        return source
 
     def parse_indexcard(self, doc, row):
         url = f"https://geniza.princeton.edu/indexcards/index.php?a=card&id={row['link_target']}"
-        existing_footnote = doc.footnotes.filter(title="Index Cards").first()
-        if existing_footnote:
-            existing_footnote.url = url
-            if existing_footnote.has_changed("url"):
-                self.stats["indexcard_footnote_update"] += 1
-            else:
-                self.stats["indexcard_footnote_skipped"] += 1
-            return existing_footnote.source, existing_footnote
-        else:
-            source = self.get_indexcard_source(doc)
-            footnote = Footnote(
-                source=source,
-                url=url,
-                content_object=doc,
-                doc_relation=[Footnote.DISCUSSION],
-            )
-            self.stats["indexcard_footnote_create"] += 1
-            return source, footnote
+        source = self.get_indexcard_source(doc)
+        footnote = Footnote.get_or_create(source=source, content_object=doc)
+        footnote.url = url
+        footnote.doc_relation = [Footnote.DISCUSSION]
+        footnote.save()
 
     # JEWISH TRADERS -------------------
 
     def parse_jewish_traders(self, doc, row):
         url = f"https://s3.amazonaws.com/goitein-lmjt/{row['link_target']}"
-        existing_footnote = doc.footnotes.filter(source=self.jewish_traders).first()
-        if existing_footnote:
-            existing_footnote.url = url
-            if existing_footnote.has_changed("url"):
-                self.stats["jewish_traders_footnote_update"] += 1
-            else:
-                self.stats["jewish_traders_footnote_skipped"] += 1
-            return existing_footnote
-        else:
-            self.stats["jewish_traders_footnote_create"] += 1
-            return Footnote(
-                source=self.jewish_traders,
-                url=url,
-                content_object=doc,
-                doc_relation=[Footnote.TRANSLATION],
-            )
+        footnote = Footnote.get_or_create(
+            source=self.jewish_traders, content_object=doc
+        )
+        footnote.url = url
+        footnote.doc_relation = [Footnote.TRANSLATION]
+        footnote.save()
 
     # INDIA TRADERS -------------------
 
@@ -220,22 +163,8 @@ class Command(BaseCommand):
     def parse_india_traders(self, doc, row):
         url = f"https://s3.amazonaws.com/goitein-india-traders/{row['link_target']}"
         source = self.get_india_book(row)
-        existing_footnote = doc.footnotes.filter(source=source).first()
-        if existing_footnote:
-            existing_footnote.url = url
-            if existing_footnote.has_changed("url"):
-                self.stats["india_traders_footnote_update"] += 1
-            else:
-                self.stats["india_traders_footnote_skipped"] += 1
-            return existing_footnote
-        else:
-            self.stats["india_traders_footnote_create"] += 1
-            return Footnote(
-                source=source,
-                url=url,
-                content_object=doc,
-                doc_relation=[Footnote.TRANSLATION],
-            )
+        footnote = Footnote.get_or_create(source=source, content_object=doc)
+        footnote.doc_relation = [Footnote.TRANSLATION]
 
     # PROCESS ENTRY --------------------
 
@@ -252,19 +181,12 @@ class Command(BaseCommand):
 
         # Get new or updated footnote and source for each link type
         if row["link_type"] == "goitein_note":
-            source, footnote = self.parse_typed_text(doc, row)
+            self.parse_typed_text(doc, row)
         elif row["link_type"] == "indexcard":
-            source, footnote = self.parse_indexcard(doc, row)
+            self.parse_indexcard(doc, row)
         elif row["link_type"] == "jewish-traders":
-            footnote = self.parse_jewish_traders(doc, row)
+            self.parse_jewish_traders(doc, row)
         elif row["link_type"] == "india-traders":
-            footnote = self.parse_india_traders(doc, row)
+            self.parse_india_traders(doc, row)
         else:
             self.stats["document_skipped"] += 1
-
-        if self.dryrun:
-            pass
-        else:
-            pass
-            # source.save()
-            # footnote.save()
