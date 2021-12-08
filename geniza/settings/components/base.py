@@ -232,6 +232,7 @@ CSP_CONNECT_SRC = [
     "*.google-analytics.com",
     "*.lib.cam.ac.uk",
     "*.example.com",
+    "iiif-cloud.princeton.edu",
 ]
 
 # allow loading css locally & via inline styles
