@@ -13,7 +13,13 @@ from parasolr.django.signals import IndexableSignalHandler
 from geniza.corpus.models import Document
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
-# TODO: Not all headers are required, look back later and remove unnecessary requirements
+"""
+TODO
+- Not all headers are required, look back later and remove unnecessary requirements
+- Reintroduce logging
+- 
+
+"""
 
 
 class Command(BaseCommand):
@@ -99,72 +105,25 @@ class Command(BaseCommand):
             action_flag=CHANGE,
         )
 
-    # TYPED TEXT -------------------
+    def create_footnote(self, doc=None, source=None, url=None, doc_relation=None):
+        footnote, _ = doc.footnotes.get_or_create(source=source)
+        footnote.url = url
+        footnote.doc_relation = doc_relation
+        footnote.save()
 
-    def get_typed_text_source(self, doc):
-        """Get Goiteins typed text volume given the shelfmark"""
-        volume = Source.get_volume(doc.shelfmark)
-        source = Source.objects.get_or_create(title_en="typed texts", volume=volume)
-        source.url = "https://geniza.princeton.edu/indexcards/"
-        source.source_type = self.unpublished
+    def get_goitein_source(self, doc=None, title=None):
+        volume = Source.get_volume_from_shelfmark(doc.shelfmark)
+        source, _ = Source.objects.get_or_create(
+            title_en=title, volume=volume, source_type=self.unpublished
+        )
         source.authors.add(self.goitein)
         source.save()
         return source
 
-    def parse_typed_text(self, doc, row):
-        base_url = "https://commons.princeton.edu/media/geniza/"
-        source = self.get_typed_text_source(doc)
-        footnote = Footnote.get_or_create(source=source, content_object=doc)
-        footnote.url = url
-        footnote.doc_relation = [Footnote.EDITION]
-        footnote.save()
-
-    # INDEX CARDS -------------------
-
-    def get_indexcard_source(self, doc):
-        """Get or create the index card source related to a given document"""
-        volume = Source.get_volume(doc.shelfmark)
-        source = Source.objects.get_or_create(title="Index Cards", volume=volume)
-        source.url = "https://geniza.princeton.edu/indexcards/"
-        source.source_type = self.unpublished
-        source.authors.add(goitein)
-        return source
-
-    def parse_indexcard(self, doc, row):
-        url = f"https://geniza.princeton.edu/indexcards/index.php?a=card&id={row['link_target']}"
-        source = self.get_indexcard_source(doc)
-        footnote = Footnote.get_or_create(source=source, content_object=doc)
-        footnote.url = url
-        footnote.doc_relation = [Footnote.DISCUSSION]
-        footnote.save()
-
-    # JEWISH TRADERS -------------------
-
-    def parse_jewish_traders(self, doc, row):
-        url = f"https://s3.amazonaws.com/goitein-lmjt/{row['link_target']}"
-        footnote = Footnote.get_or_create(
-            source=self.jewish_traders, content_object=doc
-        )
-        footnote.url = url
-        footnote.doc_relation = [Footnote.TRANSLATION]
-        footnote.save()
-
-    # INDIA TRADERS -------------------
-
-    def get_india_book(self, row):
-        book_part = (
-            row["link_title"]
-            .split("India Traders of the Middle Ages, ")[1]
-            .split("-")[0]
-        )
+    def get_india_book(self, title):
+        book_part = title.split("India Traders of the Middle Ages, ")[1].split("-")[0]
         rn_mapper = {"I": 1, "II": 2, "III": 3}
         return Source.objects.get(title=f"India Book {rn_mapper[book_part]}")
-
-    def parse_india_traders(self, doc, row):
-        url = f"https://s3.amazonaws.com/goitein-india-traders/{row['link_target']}"
-        source = self.get_india_book(row)
-        footnote = Footnote.get_or_create(source=source, content_object=doc)
-        footnote.doc_relation = [Footnote.TRANSLATION]
 
     # PROCESS ENTRY --------------------
 
@@ -179,14 +138,33 @@ class Command(BaseCommand):
         if not doc:
             return
 
-        # Get new or updated footnote and source for each link type
         if row["link_type"] == "goitein_note":
-            self.parse_typed_text(doc, row)
+            self.create_footnote(
+                doc=doc,
+                source=self.get_goitein_source(doc=doc, title="typed texts"),
+                url=f"https://commons.princeton.edu/media/geniza/{row['link_target']}",
+                doc_relation=[Footnote.EDITION],
+            )
         elif row["link_type"] == "indexcard":
-            self.parse_indexcard(doc, row)
+            self.create_footnote(
+                doc=doc,
+                source=self.get_goitein_source(doc=doc, title="index cards"),
+                url=f"https://geniza.princeton.edu/indexcards/index.php?a=card&id={row['link_target']}",
+                doc_relation=[Footnote.DISCUSSION],
+            )
         elif row["link_type"] == "jewish-traders":
-            self.parse_jewish_traders(doc, row)
+            self.create_footnote(
+                doc=doc,
+                source=self.jewish_traders,
+                url=f"https://s3.amazonaws.com/goitein-lmjt/{row['link_target']}",
+                doc_relation=[Footnote.TRANSLATION],
+            )
         elif row["link_type"] == "india-traders":
-            self.parse_india_traders(doc, row)
+            self.create_footnote(
+                doc=doc,
+                source=self.get_india_book(row["link_title"]),
+                url=f"https://s3.amazonaws.com/goitein-india-traders/{row['link_target']}",
+                doc_relation=[Footnote.TRANSLATION],
+            )
         else:
             self.stats["document_skipped"] += 1
