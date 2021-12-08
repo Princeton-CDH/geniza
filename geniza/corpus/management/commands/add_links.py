@@ -13,8 +13,6 @@ from parasolr.django.signals import IndexableSignalHandler
 from geniza.corpus.models import Document
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
-# TODO: Maybe shift from init to handle or setup or on class
-
 
 class Command(BaseCommand):
     """Takes a CSV export of the Geniza v3 database to add footnotes with Goitein
@@ -24,21 +22,23 @@ class Command(BaseCommand):
 
     help = __doc__
 
-    def __init__(self, *args, **options):
-        super().__init__(*args, **options)
+    expected_headers = [
+        "linkID",
+        "object_id",
+        "link_type",
+        "link_title",
+        "link_target",
+        "link_attribution",
+    ]
+    skipped_types = ["image", "iiif", "transcription", "cudl"]
 
-        self.stats = Counter()
-        self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
-        self.expected_headers = [
-            "linkID",
-            "object_id",
-            "link_type",
-            "link_title",
-            "link_target",
-            "link_attribution",
-        ]
-        self.skipped_types = ["image", "iiif", "transcription", "cudl"]
+    def add_arguments(self, parser):
+        parser.add_argument("csv", type=str)
+        parser.add_argument("-t", "--link_type")
+        parser.add_argument("-o", "--overwrite", action="store_true")
+        parser.add_argument("-d", "--dryrun", action="store_true")
 
+    def handle(self, *args, **options):
         # disconnect solr indexing signals
         IndexableSignalHandler.disconnect()
 
@@ -48,17 +48,13 @@ class Command(BaseCommand):
             title="Letters of Medieval Jewish Traders"
         )
 
+        self.stats = Counter()
+        self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
+
         self.footnote_contenttype = ContentType.objects.get_for_model(Footnote)
         self.source_contenttype = ContentType.objects.get_for_model(Source)
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
-    def add_arguments(self, parser):
-        parser.add_argument("csv", type=str)
-        parser.add_argument("-t", "--link_type")
-        parser.add_argument("-o", "--overwrite", action="store_true")
-        parser.add_argument("-d", "--dryrun", action="store_true")
-
-    def handle(self, *args, **options):
         self.csv_path = options.get("csv")
         self.overwrite = options.get("overwrite")
         self.dryrun = options.get("dryrun")
