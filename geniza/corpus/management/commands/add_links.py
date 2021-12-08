@@ -176,7 +176,18 @@ class Command(BaseCommand):
             return existing_footnote
 
     def parse_jewish_traders(self, doc, row):
-        pass
+        url = f"https://s3.amazonaws.com/goitein-lmjt/{row['link_target']}"
+        existing_footnote = doc.footnotes.filter(url=url)
+        if not existing_footnote:
+            source = Source.objects.get(title="Letters of Medieval Jewish Traders")
+            return Footnote(
+                source=source,
+                url=url,
+                content_object=doc,
+                doc_relation=[Footnote.TRANSLATION],
+            )
+        else:
+            return existing_footnote
 
     def parse_india_traders(self, doc, row):
         pass
