@@ -41,6 +41,7 @@ class Command(BaseCommand):
         IndexableSignalHandler.disconnect()
 
         self.goitein = Creator.objects.get(last_name="Goitein")
+        self.unpublished = SourceType.objects.get(type="Unpublished")
 
     def add_arguments(self, parser):
         parser.add_argument("csv", type=str)
@@ -70,7 +71,9 @@ class Command(BaseCommand):
         for key, value in self.stats.items():
             self.stdout.write(f"\t{key}: {value}")
 
-    def get_document(self, pgpid: int):
+    # HELPERS -------------------------
+
+    def get_document(self, pgpid):
         """Find a document given its new or old PGPID"""
         pgpid = int(pgpid)
         try:
@@ -81,22 +84,6 @@ class Command(BaseCommand):
             self.stats["document_not_found"] += 1
             self.stdout.write("Document %s not found in database" % pgpid)
             return
-
-    def get_goitein_footnotes(self, doc):
-        # TODO: How to handle multiple Goitein footnotes?
-        # Find the source wiht the volume that matches the beginning of the shelfmark for the document
-        #   The logic where this is split out is split_goitein_type_text
-
-        goitein_footnotes = doc.footnotes.filter(
-            source__authors__last_name="Goitein", source__title_en="typed texts"
-        )
-        count = goitein_footnotes.count()
-        if count > 1:
-            self.stdout.write(
-                f"There were {count} Goitein footnotes found for PGPID {doc.id}, using the first footnote."
-            )
-
-        return goitein_footnotes.first()
 
     def get_volume(self, shelfmark):
         """Given a shelfmark, get our volume label. This logic was determined in
@@ -109,77 +96,98 @@ class Command(BaseCommand):
             volume = shelfmark.split(" ")[0]
         return volume
 
-    def get_typed_text_source(self, doc):
-        """Get Goiteins typed text volume given the shelfmark"""
-        default_source = Source.objects.filter(
-            title_en="typed texts", authors__last_name="Goitein", volume=""
-        ).first()
+    # GOITEIN_NOTE -------------------
 
+    def get_typed_text_footnote(self, doc):
+        try:
+            return doc.footnotes.get(
+                source__authors__last_name="Goitein", source__title_en="typed texts"
+            )
+        except Footnote.DoesNotExist:
+            return None
+
+    def get_or_create_typed_text_source(self, doc):
+        """Get Goiteins typed text volume given the shelfmark"""
         volume = self.get_volume(doc.shelfmark)
 
+        # TODO: title_en and title query gives different items
         goitein_source = Source.objects.filter(
             title_en="typed texts", authors__last_name="Goitein", volume=volume
         )
 
         if goitein_source:
-            assert goitein_source.count() == 1  # TODO: Remove me
             return goitein_source.first()
         else:
-            self.stdout.write(
-                f"No goitein source with the volume prefix {volume} was found for PGPID {doc.id}. Providing the default source."
+            source = Source(
+                # TODO: year, languages?
+                url="https://geniza.princeton.edu/indexcards/",
+                title="typed texts",
+                volume=volume,
+                # TODO: Confirm unpublished is correct source type
+                source_type=self.unpublished,
             )
-            # TODO: Create new source?
-            return default_source
+            source.authors.add(self.goitein)
+            self.stats["typed_text_source_create"] += 1
+            return source
 
-    def parse_goitein_note(self, doc, row):
+    def parse_typed_text(self, doc, row):
         base_url = "https://commons.princeton.edu/media/geniza/"
-        footnote = self.get_goitein_footnotes(doc)
-        if footnote:
+        # TODO: How to handle multiple Goitein footnotes?
+        existing_footnote = self.get_typed_text_footnote(doc)
+        if existing_footnote:
             url = base_url + row["link_target"]
-            footnote.url = url
+            existing_footnote.url = url
+            self.stats["typed_text_footnote_update"] += 1
+            return existing_footnote.source, existing_footnote
         else:
-            source = self.get_typed_text_source(doc)
+            source = self.get_or_create_typed_text_source(doc)
             footnote = Footnote(
                 source=source, doc_relation=[Footnote.EDITION], content_object=doc
             )
-        return footnote
+            self.stats["typed_text_footnote_create"] += 1
+            return source, footnote
+
+    # INDEX CARDS -------------------
 
     def get_or_create_index_card_source(self, doc):
         """Get or create the index card source related to a given document"""
         volume = self.get_volume(doc.shelfmark)
-        Source.objects.filter(title="Index Cards", volume=volume)
-        if not source:
-            source_type = SourceType.objects.get(type="Unpublished")
+        source = Source.objects.filter(title="Index Cards", volume=volume)
+        if source:
+            return source
+        else:
             source = Source(
-                # TODO: title, year, edition, languages?
+                # TODO: year, languages?
                 url="https://geniza.princeton.edu/indexcards/",
                 title="Index Cards",
                 volume=volume,
-                source_type=source_type,
+                source_type=self.unpublished,
             )
-            source.add(self.goitein)
-            source.save()
+            source.authors.add(self.goitein)
+            return source
 
     def parse_indexcard(self, doc, row):
         url = f"https://geniza.princeton.edu/indexcards/index.php?a=card&id={row['link_target']}"
-        # Ensure that footnote with the URL doesn't already exist
         existing_footnote = doc.footnotes.filter(url=url)
         if not existing_footnote:
             source = self.get_or_create_index_card_source(doc)
-            return Footnote(
+            footnote = Footnote(
                 source=source,
                 url=url,
                 content_object=doc,
                 doc_relation=[Footnote.DISCUSSION],
             )
+            return source, footnote
         else:
-            return existing_footnote
+            return existing_footnote.source, existing_footnote
+
+    # JEWISH TRADERS -------------------
 
     def parse_jewish_traders(self, doc, row):
         url = f"https://s3.amazonaws.com/goitein-lmjt/{row['link_target']}"
-        existing_footnote = doc.footnotes.filter(url=url)
+        source = Source.objects.get(title="Letters of Medieval Jewish Traders")
+        existing_footnote = doc.footnotes.filter(source=source)
         if not existing_footnote:
-            source = Source.objects.get(title="Letters of Medieval Jewish Traders")
             return Footnote(
                 source=source,
                 url=url,
@@ -187,7 +195,10 @@ class Command(BaseCommand):
                 doc_relation=[Footnote.TRANSLATION],
             )
         else:
+            existing_footnote.url = url
             return existing_footnote
+
+    # INDIA TRADERS -------------------
 
     def get_india_book(self, row):
         book_part = (
@@ -200,9 +211,9 @@ class Command(BaseCommand):
 
     def parse_india_traders(self, doc, row):
         url = f"https://s3.amazonaws.com/goitein-india-traders/{row['link_target']}"
-        existing_footnote = doc.footnotes.filter(url=url)
+        source = self.get_india_book(row)
+        existing_footnote = doc.footnotes.filter(source=source)
         if not existing_footnote:
-            source = self.get_india_book(row)
             return Footnote(
                 source=source,
                 url=url,
@@ -210,6 +221,7 @@ class Command(BaseCommand):
                 doc_relation=[Footnote.TRANSLATION],
             )
         else:
+            existing_footnote.url = url
             return existing_footnote
 
     def add_link(self, row):
@@ -222,21 +234,21 @@ class Command(BaseCommand):
         if not doc:
             return
 
-        # Get new or updated footnote for each link type
+        # Get new or updated footnote and source for each link type
         if row["link_type"] == "goitein_note":
-            footnote = self.parse_goitein_note(doc, row)
+            source, footnote = self.parse_typed_text(doc, row)
         elif row["link_type"] == "indexcard":
-            self.parse_indexcard(doc, row)
+            source, footnote = self.parse_indexcard(doc, row)
         elif row["link_type"] == "jewish-traders":
-            self.parse_jewish_traders(doc, row)
+            footnote = self.parse_jewish_traders(doc, row)
         elif row["link_type"] == "india-traders":
-            self.parse_india_traders(doc, row)
+            footnote = self.parse_india_traders(doc, row)
         else:
             self.stats["skipped"] += 1
 
         if self.dryrun:
-            # Log
             pass
         else:
             pass
+            # source.save()
             # footnote.save()
