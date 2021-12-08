@@ -11,7 +11,7 @@ from django.db import models
 from parasolr.django.signals import IndexableSignalHandler
 
 from geniza.corpus.models import Document
-from geniza.footnotes.models import Footnote, Source
+from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 
 class Command(BaseCommand):
@@ -39,6 +39,8 @@ class Command(BaseCommand):
 
         # disconnect solr indexing signals
         IndexableSignalHandler.disconnect()
+
+        self.goitein = Creator.objects.get(last_name="Goitein")
 
     def add_arguments(self, parser):
         parser.add_argument("csv", type=str)
@@ -97,7 +99,9 @@ class Command(BaseCommand):
         return goitein_footnotes.first()
 
     def get_volume(self, shelfmark):
-        """Given a shelfmark, get the volume label"""
+        """Given a shelfmark, get our volume label. This logic was determined in
+        migration 0011_split_goitein_typedtexts.py
+        """
         if shelfmark.startswith("T-S"):
             volume = shelfmark[0:6]
             volume = "T-S Misc" if volume == "T-S Mi" else volume
@@ -105,7 +109,7 @@ class Command(BaseCommand):
             volume = shelfmark.split(" ")[0]
         return volume
 
-    def get_goitein_source(self, doc):
+    def get_typed_text_source(self, doc):
         """Get Goiteins typed text volume given the shelfmark"""
         default_source = Source.objects.filter(
             title_en="typed texts", authors__last_name="Goitein", volume=""
@@ -134,15 +138,42 @@ class Command(BaseCommand):
             url = base_url + row["link_target"]
             footnote.url = url
         else:
-            source = self.get_goitein_source(doc)
-            footnote = Footnote(source=source)
-            footnote.doc_relation = [Footnote.EDITION]
+            source = self.get_typed_text_source(doc)
+            footnote = Footnote(
+                source=source, doc_relation=[Footnote.EDITION], content_object=doc
+            )
         return footnote
 
+    def get_or_create_index_card_source(self, doc):
+        """Get or create the index card source related to a given document"""
+        volume = self.get_volume(doc.shelfmark)
+        Source.objects.filter(title="Index Cards", volume=volume)
+        if not source:
+            source_type = SourceType.objects.get(type="Unpublished")
+            source = Source(
+                # TODO: title, year, edition, languages?
+                url="https://geniza.princeton.edu/indexcards/",
+                title="Index Cards",
+                volume=volume,
+                source_type=source_type,
+            )
+            source.add(self.goitein)
+            source.save()
+
     def parse_indexcard(self, doc, row):
-        url = ""
+        url = f"https://geniza.princeton.edu/indexcards/index.php?a=card&id={row['link_target']}"
         # Ensure that footnote with the URL doesn't already exist
-        Document.footnotes.filter()
+        existing_footnote = doc.footnotes.filter(url=url)
+        if not existing_footnote:
+            source = self.get_or_create_index_card_source(doc)
+            return Footnote(
+                source=source,
+                url=url,
+                content_object=doc,
+                doc_relation=[Footnote.DISCUSSION],
+            )
+        else:
+            return existing_footnote
 
     def parse_jewish_traders(self, doc, row):
         pass
