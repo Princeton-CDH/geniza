@@ -333,6 +333,18 @@ class Source(models.Model):
     all_authors.short_description = "Authors"
     all_authors.admin_order_field = "first_author"  # set in admin queryset
 
+    @classmethod
+    def get_volume_from_shelfmark(cls, shelfmark):
+        """Given a shelfmark, get our volume label. This logic was determined in
+        migration 0011_split_goitein_typedtexts.py
+        """
+        if shelfmark.startswith("T-S"):
+            volume = shelfmark[0:6]
+            volume = "T-S Misc" if volume == "T-S Mi" else volume
+        else:
+            volume = shelfmark.split(" ")[0]
+        return volume
+
 
 class FootnoteQuerySet(models.QuerySet):
     def includes_footnote(self, other, include_content=True):

@@ -105,18 +105,6 @@ class Command(BaseCommand):
             action_flag=CHANGE,
         )
 
-    def get_volume(self, shelfmark):
-
-        """Given a shelfmark, get our volume label. This logic was determined in
-        migration 0011_split_goitein_typedtexts.py
-        """
-        if shelfmark.startswith("T-S"):
-            volume = shelfmark[0:6]
-            volume = "T-S Misc" if volume == "T-S Mi" else volume
-        else:
-            volume = shelfmark.split(" ")[0]
-        return volume
-
     # TYPED TEXT -------------------
 
     # TODO: Use first()
@@ -132,9 +120,8 @@ class Command(BaseCommand):
         """Get Goiteins typed text volume given the shelfmark"""
         # TODO: get_or_create instead of supporting dry_run
         #  - and change long function
-        # TODO: Move get_volume logic as a classmethod in Source
         # TODO: Try to remove link_type-specific logging
-        volume = self.get_volume(doc.shelfmark)
+        volume = Source.get_volume(doc.shelfmark)
         try:
             return Source.objects.get(
                 title_en="typed texts", authors__last_name="Goitein", volume=volume
@@ -180,7 +167,7 @@ class Command(BaseCommand):
 
     def get_or_create_indexcard_source(self, doc):
         """Get or create the index card source related to a given document"""
-        volume = self.get_volume(doc.shelfmark)
+        volume = Source.get_volume(doc.shelfmark)
         source = Source.objects.filter(title="Index Cards", volume=volume).first()
         if source:
             return source
