@@ -24,6 +24,10 @@ class GenizaTei(teimap.Tei):
     labels = xmlmap.NodeListField(
         "tei:text/tei:body/tei:div/tei:label", GenizaTeiLine
     )  # not really a line...
+    # source description sometimes contains reference to scholarship record
+    source = xmlmap.NodeListField(
+        "tei:teiHeader//tei:sourceDesc/tei:msDesc/tei:msContents/tei:p", GenizaTeiLine
+    )
 
     def no_content(self):
         return str(self.text).strip() == ""

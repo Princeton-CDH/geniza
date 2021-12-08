@@ -29,6 +29,8 @@ from geniza.footnotes.models import Footnote
 class Command(BaseCommand):
     """Synchronize TEI transcriptions to edition footnote content"""
 
+    v_normal = 1  # default verbosity
+
     def add_arguments(self, parser):
         parser.add_argument(
             "-n",
@@ -41,6 +43,8 @@ class Command(BaseCommand):
         # get settings for remote git repository url and local path
         gitrepo_url = settings.TEI_TRANSCRIPTIONS_GITREPO
         gitrepo_path = settings.TEI_TRANSCRIPTIONS_LOCAL_PATH
+
+        self.verbosity = options["verbosity"]
 
         # make sure we have latest tei content from git repository
         # self.sync_git(gitrepo_url, gitrepo_path)
@@ -91,7 +95,7 @@ class Command(BaseCommand):
             if doc.fragments.count() > 1:
                 self.stats["joins"] += 1
 
-            footnote = self.get_edition_footnote(doc)
+            footnote = self.get_edition_footnote(doc, tei, xmlfile)
             # if we identified an appropriate footnote, update it
             if footnote:
                 html = tei.text_to_html()
@@ -133,7 +137,7 @@ Updated {footnote_updated:,} footnotes.
             )
         )
 
-    def get_edition_footnote(self, doc):
+    def get_edition_footnote(self, doc, tei, filename):
         # identify the edition footnote to be updated
         # NOTE: still needs to handle multiple editions, no editions
         editions = doc.footnotes.editions()
@@ -156,6 +160,10 @@ Updated {footnote_updated:,} footnotes.
             # debugging output for footnote selection
             # print('no edition for %s' % xmlfile)
             self.stats["no_edition"] += 1
+            if self.verbosity > self.v_normal:
+                self.stdout.write("No edition found for %s" % filename)
+                for line in tei.source:
+                    self.stdout.write("\t%s" % line)
         else:
             self.stats["one_edition"] += 1
             # if only one edition, update the transciption content there
