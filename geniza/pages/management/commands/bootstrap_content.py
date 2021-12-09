@@ -17,7 +17,7 @@ class Command(BaseCommand):
             default="localhost",
             help="hostname from which the app is served (default: localhost)",
         )
-        parser.add_argumet(
+        parser.add_argument(
             "-p",
             "--port",
             default="8000",
