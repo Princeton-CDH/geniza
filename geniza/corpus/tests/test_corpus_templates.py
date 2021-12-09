@@ -70,23 +70,75 @@ class TestDocumentDetailTemplate:
         response = admin_client.get(document.get_absolute_url())
         assertContains(response, edit_url)
 
+    def test_source_location(self, client, document, source):
+        """Document detail template should show footnote location if present"""
+        fn = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            location="p. 25",
+            doc_relation=Footnote.EDITION,
+        )
+        response = client.get(document.get_absolute_url())
+        assertNotContains(response, "p. 25")  # should not show when no content
+        fn.content = "fake content"
+        fn.save()
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "p. 25")  # should show when there is content
+        fn.location = ""
+        fn.save()
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assertNotContains(response, "p. 25")
+
+    def test_editors(self, client, document, source, twoauthor_source):
+        # footnote with no content
+        Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.EDITION
+        )
+        # No digital editions, so no editors
+        response = client.get(document.get_absolute_url())
+        assertNotContains(response, "Editor")
+
+        # footnote with one author, content
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
+            content="A piece of text",
+        )
+
+        # Digital edition with one author, should have one editor but not multiple
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "Editor")
+        assertNotContains(response, "Editors")
+
+        # footnote with two authors, content
+        Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.EDITION,
+            content="B other text",
+        )
+        # Should now be "editors"
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "Editors")
+
 
 class TestDocumentScholarshipTemplate:
-    def test_source_title(self, client, document, source):
+    def test_source_title(self, client, document, twoauthor_source):
         """Document scholarship template should show source titles if present"""
-        Footnote.objects.create(content_object=document, source=source)
+        Footnote.objects.create(content_object=document, source=twoauthor_source)
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertContains(
-            response, '<span class="title">A Nice Cup of Tea</span>', html=True
-        )
-        source.title = ""
-        source.save()
+        assertContains(response, "<em>The C Programming Language</em>")
+        twoauthor_source.title = ""
+        twoauthor_source.save()
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertNotContains(response, '<span class="title">')
+        assertNotContains(response, "<em>The C Programming Language</em>")
 
     def test_source_authors(self, client, document, twoauthor_source):
         """Document scholarship template should show source authors if present"""
@@ -94,18 +146,15 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertContains(
-            response,
-            '<span class="author">Kernighan, Brian; Ritchie, Dennis</span>',
-            html=True,
-        )
+        print(response.content)
+        assertContains(response, "Brian Kernighan and Dennis Ritchie")
         for author in twoauthor_source.authors.all():
             twoauthor_source.authors.remove(author)
         twoauthor_source.save()
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertNotContains(response, '<span class="author">')
+        assertNotContains(response, "Brian Kernighan and Dennis Ritchie")
 
     def test_source_date(self, client, document, article):
         """Document scholarship template should show source pub. year if present"""
@@ -113,29 +162,13 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertContains(response, '<span class="year">1963</span>', html=True)
+        assertContains(response, "(n.p., 1963)")
         article.year = None
         article.save()
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertNotContains(response, '<span class="year">')
-
-    def test_source_location(self, client, document, source):
-        """Document scholarship template should show footnote location if present"""
-        fn = Footnote.objects.create(
-            content_object=document, source=source, location="p. 25"
-        )
-        response = client.get(
-            reverse("corpus:document-scholarship", args=[document.pk])
-        )
-        assertContains(response, '<span class="location">p. 25</span>', html=True)
-        fn.location = ""
-        fn.save()
-        response = client.get(
-            reverse("corpus:document-scholarship", args=[document.pk])
-        )
-        assertNotContains(response, '<span class="location">')
+        assertNotContains(response, "(n.p., 1963)")
 
     def test_source_url(self, client, document, article):
         """Document scholarship template should show source URL if present"""
@@ -145,8 +178,9 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
+        print(response.content)
         assertContains(
-            response, '<a href="https://example.com/">Link to source</a>', html=True
+            response, '<a href="https://example.com/"> "Shemarya,"</a>', html=True
         )
         fn.url = ""
         fn.save()
@@ -163,14 +197,14 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertContains(response, '<span class="relation">Edition</span>', html=True)
+        assertContains(response, '<dd class="relation">Edition</dd>', html=True)
         fn.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
         fn.save()
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
         assertContains(
-            response, '<span class="relation">Edition, Translation</span>', html=True
+            response, '<dd class="relation">Edition, Translation</dd>', html=True
         )
 
 

@@ -16,24 +16,8 @@
 
 {% block main %}
     <!-- document details -->
-
-    {% if perms.corpus.change_document %}
-        <div class="edit-link-container">
-            <a class="edit-link" href="{% url 'admin:corpus_document_change' document.id %}">
-                <i class="ph-pencil"></i>
-                {# Translators: Document edit link for admins #}
-                <span>{% translate 'Edit' %}</span>
-            </a>
-        </div>
-    {% endif %}
-
-    {# title #}
-    <h1>
-        {# Translators: Default label when document does not have a type #}
-        {% translate 'Unknown type' as unknown_type %}
-        <span class="doctype">{{ document.doctype|default:unknown_type }}</span>
-        <span class="shelfmark">{{ document.shelfmark_display }}</span>
-    </h1>
+    <h1 class="sr-only">{{ page_title }}</h1>
+    {% include "corpus/snippets/document_header.html" %}
 
     <div class="container">
         {# tabs #}
@@ -46,11 +30,20 @@
             </h2>
             {# metadata #}
             <dl class="metadata">
-                {% if document.editions %}
-                    {# Translators: Editor label #}
-                    <dt>{% translate 'Editor' %}</dt>  {# optionally pluralize? #}
-                    {% for ed in document.editions %}
-                        <dd>{{ ed.display }}</dd>
+                {% if document.digital_editions %}
+                    <dt>
+                        {# Translators: Editor label #}
+                        {% blocktranslate count counter=document.editors.count trimmed %}
+                            Editor
+                        {% plural %}
+                            Editors
+                        {% endblocktranslate %}
+                    </dt>
+                    {% for ed in document.digital_editions %}
+                        {# ifchanged to avoid showing duplicate editions #}
+                        {% ifchanged %}
+                            <dd>{{ ed.display|safe }}</dd>
+                        {% endifchanged %}
                         {# link ? #}
                     {% endfor %}
                 {% endif %}

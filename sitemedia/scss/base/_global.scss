@@ -108,3 +108,7 @@ p {
 blockquote {
     @include typography.quote;
 }
+
+em {
+    font-style: italic;
+}

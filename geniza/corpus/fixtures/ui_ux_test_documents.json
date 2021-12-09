@@ -2772,7 +2772,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [3],
       "notes": "Created from PGPID 5566",
@@ -2805,7 +2805,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [1],
       "notes": "Created from PGPID 30820",
@@ -2825,7 +2825,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [3],
       "notes": "Created from PGPID 444",
@@ -2845,7 +2845,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [],
       "notes": "",
@@ -2865,7 +2865,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [],
       "notes": "",
@@ -2885,7 +2885,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [],
       "notes": "",
@@ -2905,7 +2905,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [],
       "notes": "Created from PGPID 3504",
@@ -2938,7 +2938,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [3],
       "notes": "Created from PGPID 2519",
@@ -2971,7 +2971,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [1],
       "notes": "Created from PGPID 30961",
@@ -3004,7 +3004,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [1],
       "notes": "Created from PGPID 19732",
@@ -3037,7 +3037,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [3],
       "notes": "Created from PGPID 5558",
@@ -3070,7 +3070,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [3],
       "notes": "",
@@ -3103,7 +3103,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [3],
       "notes": "Created from PGPID 4744",
@@ -3136,7 +3136,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [],
       "notes": "",
@@ -5350,7 +5350,7 @@
   },
   {
     "fields": {
-      "edition": "",
+      "edition": null,
       "journal": "",
       "languages": [],
       "notes": "Source of transcription not noted in original PGP database (or similar)",

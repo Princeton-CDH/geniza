@@ -12,8 +12,10 @@
 @use "components/searchform";
 @use "components/iiif";
 @use "components/pagination";
+@use "components/docheader";
 
 // Page-specific styles
-@use "pages/search";
 @use "pages/content";
 @use "pages/document";
+@use "pages/scholarship";
+@use "pages/search";

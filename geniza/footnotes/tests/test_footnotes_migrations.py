@@ -78,3 +78,47 @@ class MergeIndiaBookSources(TestMigrations):
 
         assert Source.objects.count() == 1
         assert Footnote.objects.count() == 2
+
+
+@pytest.mark.last
+class AlterSourceEdition(TestMigrations):
+
+    app = "footnotes"
+    migrate_from = "0013_add_fields_to_source"
+    migrate_to = "0014_alter_source_edition"
+
+    def setUpBeforeMigration(self, apps):
+        Source = apps.get_model("footnotes", "Source")
+        SourceType = apps.get_model("footnotes", "SourceType")
+        source_type = SourceType.objects.create(type="Unknown")
+        Source.objects.create(
+            title="Book 1", edition="bad data", source_type=source_type
+        )
+        Source.objects.create(title="Book 2", edition="2", source_type=source_type)
+        Source.objects.create(title="Book 3", edition="", source_type=source_type)
+
+    def test_editions_converted_to_int(self):
+        Source = self.apps.get_model("footnotes", "Source")
+        assert not Source.objects.filter(title="Book 1").first().edition
+        assert Source.objects.filter(title="Book 2").first().edition == 2
+        assert not Source.objects.filter(title="Book 3").first().edition
+
+
+@pytest.mark.last
+class AlterSourceEditionReverse(TestMigrations):
+
+    app = "footnotes"
+    migrate_from = "0014_alter_source_edition"
+    migrate_to = "0013_add_fields_to_source"
+
+    def setUpBeforeMigration(self, apps):
+        Source = apps.get_model("footnotes", "Source")
+        SourceType = apps.get_model("footnotes", "SourceType")
+        source_type = SourceType.objects.create(type="Unknown")
+        Source.objects.create(title="Book 1", edition=None, source_type=source_type)
+        Source.objects.create(title="Book 2", edition=2, source_type=source_type)
+
+    def test_editions_converted_to_string(self):
+        Source = self.apps.get_model("footnotes", "Source")
+        assert Source.objects.filter(title="Book 1").first().edition == ""
+        assert Source.objects.filter(title="Book 2").first().edition == "2"

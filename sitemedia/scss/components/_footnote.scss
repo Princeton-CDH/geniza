@@ -2,9 +2,54 @@
 // Bibliographic entry for scholarship on Geniza materials.
 // -----------------------------------------------------------------------------
 
-.footnote {
-    .year::before {
-        content: "/";
-        padding: 0 0.5rem;
+@use "../base/breakpoints";
+@use "../base/colors";
+@use "../base/spacing";
+@use "../base/typography";
+
+.citation {
+    counter-increment: search-counter;
+    padding-bottom: spacing.$spacing-md;
+    font-size: typography.$text-size-2md;
+    padding: 0 0 spacing.$spacing-md spacing.$spacing-xl;
+    margin-left: -#{spacing.$spacing-lg};
+    @include breakpoints.for-desktop-up {
+        font-size: typography.$text-size-lg;
+        padding-left: spacing.$spacing-xl;
+        margin-left: 0;
+    }
+    a {
+        font-size: typography.$text-size-2md;
+        @include breakpoints.for-desktop-up {
+            font-size: typography.$text-size-lg;
+        }
+    }
+    & + .citation {
+        padding-top: spacing.$spacing-md;
+        border-top: 1px solid;
+        @include colors.apply-theme("gray-40-line", "border-top-color");
+    }
+    &::before {
+        content: counter(search-counter);
+        margin-left: -#{spacing.$spacing-xl};
+        text-align: left;
+        float: left;
+        font-weight: bold;
+    }
+    .relation {
+        @include colors.apply-theme("gray-10-background", "background-color");
+        margin-left: -#{spacing.$spacing-xl};
+        padding: spacing.$spacing-4xs 0 spacing.$spacing-4xs spacing.$spacing-xl;
+        font-size: typography.$text-size-md;
+        @include breakpoints.for-desktop-up {
+            font-size: typography.$text-size-2md;
+        }
+        &:is(dt) {
+            margin-top: spacing.$spacing-md;
+            font-style: italic;
+        }
+        &:is(dd) {
+            margin-bottom: spacing.$spacing-2xs;
+        }
     }
 }

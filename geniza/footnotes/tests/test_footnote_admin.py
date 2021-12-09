@@ -139,17 +139,22 @@ class TestSourceAdmin:
         source_admin = SourceAdmin(model=Source, admin_site=admin.site)
         qs = source_admin.get_queryset("rqst")
 
+        # add a url to one of the sources
+        source.url = "http://example.com"
+        source.save()
+
         for source, source_data in zip(qs, source_admin.tabulate_queryset(qs)):
             # test some properties
             assert source.title in source_data
             assert source.journal in source_data
             assert source.year in source_data
+            assert source.url in source_data
 
             # test compiled data
             for authorship in source.authorship_set.all():
                 assert str(authorship.creator) in source_data[1]
             for lang in source.languages.all():
-                assert lang.name in source_data[9]
+                assert lang.name in source_data[12]
 
             # none of the fixtures have footnotes, but count should be included
             assert 0 in source_data
