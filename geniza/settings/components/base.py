@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "wagtail.snippets",
     "wagtail.admin",
     "wagtail.core",
+    "wagtail.locales",
     "modelcluster",
 ]
 
@@ -162,12 +163,13 @@ LANGUAGE_CODE = "en"
 TIME_ZONE = "America/New_York"
 
 USE_I18N = True
+WAGTAIL_I18N_ENABLED = True
 
 USE_L10N = True
 
 USE_TZ = True
 
-LANGUAGES = [
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
     ("en", "English"),
     ("he", "Hebrew"),
     ("ar", "Arabic"),

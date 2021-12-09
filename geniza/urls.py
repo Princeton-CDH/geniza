@@ -35,12 +35,11 @@ urlpatterns = [
 # urls that should be available in multiple languages
 urlpatterns += i18n_patterns(
     path("", include("geniza.corpus.urls", namespace="corpus")),
+    path("", include(wagtail_urls)),
 )
 
 # Media URLs for wagtail
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-urlpatterns += [re_path(r"", include(wagtail_urls))]
 
 if settings.DEBUG:
     try:
