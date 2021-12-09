@@ -38,9 +38,8 @@ class TestCreditsTemplate(WagtailPageTests):
         )
 
         # Response should use credits_page template and contain names and roles of contributors
-        response = self.client.get("/credits/")
+        response = self.client.get("/en/credits/")
         self.assertTemplateUsed(response, template_name="pages/credits_page.html")
-        print(response.content)
         assertContains(response, "<dt>Director</dt>", html=True)
         assertContains(response, "<dd>Marina Rustow</dd>", html=True)
         assertContains(response, "<dt>Project Manager</dt>", html=True)
