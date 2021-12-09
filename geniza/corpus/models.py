@@ -173,6 +173,9 @@ class Fragment(TrackChangesModel):
 
     objects = FragmentManager()
 
+    # NOTE: may want to add optional ForeignKey to djiffy Manifest here
+    # (or property to find by URI if not an actual FK)
+
     class Meta:
         ordering = ["shelfmark"]
 
@@ -223,6 +226,9 @@ class Fragment(TrackChangesModel):
                 self.old_shelfmarks = ";".join(old_shelfmarks - {self.shelfmark})
             else:
                 self.old_shelfmarks = self.initial_value("shelfmark")
+
+        # NOTE: consider triggering manifest import here when iiif url changes
+
         super(Fragment, self).save(*args, **kwargs)
 
 
