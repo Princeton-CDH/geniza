@@ -1,10 +1,11 @@
+import re
+
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.files.images import ImageFile
 from django.core.management.base import BaseCommand
+from django.templatetags.static import static
 from wagtail.core.models import Page
 from wagtail.core.models.i18n import Locale
 from wagtail.core.models.sites import Site
-from wagtail.images.models import Image
 
 from geniza.pages.models import ContentPage, CreditsPage, HomePage
 
@@ -120,25 +121,6 @@ class Command(BaseCommand):
             )
 
     def generate_test_content_page(self):
-        # Create Wagtail embed markup for images
-        images = [
-            "geniza/pages/fixtures/ENA_1052_005_v.jpg",
-            "geniza/pages/fixtures/pgp-tagnetwork-resize.png",
-        ]
-        embeds = []
-        for image in images:
-            with open(image, "rb") as f:
-                image_file = ImageFile(f, name=image.split("/")[-1])
-                image = Image.objects.create(
-                    file=image_file,
-                    title=image_file.name,
-                )
-                alt_text = "A description of %s" % image_file.name
-                embeds.append(
-                    '<embed alt="%s" embedtype="image" format="captioned_fullwidth" id="%d"/>'
-                    % (alt_text, image.id)
-                )
-
         # Create test content page from fixture
         with open(
             "geniza/pages/fixtures/example_content_page.html", "r"
@@ -148,8 +130,10 @@ class Command(BaseCommand):
             title="Page Title",
             description="Example page",
             slug="content",
-            body=content.replace("img1_embed", embeds[0]).replace(
-                "img2_embed", embeds[1]
+            body=re.sub(  # get static URLs for images
+                r'img src="(test-image-)([a-z]+)(\.[a-z]+)"',
+                'img src="' + static(r"\1\2\3") + '"',
+                content,
             ),
             live=True,
         )
