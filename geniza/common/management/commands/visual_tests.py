@@ -29,6 +29,8 @@ class Command(BaseCommand):
 
         # content page
         browser.get("http://localhost:8000/content/")
+        # make a second request to ensure image derivatives generated
+        browser.get("http://localhost:8000/content/")
         percy_snapshot(browser, "Content Page")
 
         # document search with document type filter expanded
