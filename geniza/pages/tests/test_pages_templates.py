@@ -15,7 +15,7 @@ class TestCreditsTemplate(WagtailPageTests):
         # Setup home page and credit page
         default_site = Site.objects.get(is_default_site=True)
         home_page = HomePage(
-            title="Home",
+            title="The Princeton Geniza Project",
             description="Home page",
         )
         credits_page = CreditsPage(

@@ -41,7 +41,7 @@ class Command(BaseCommand):
 
         # Bootstrap empty home page
         home_page = HomePage(
-            title="Home",
+            title="The Princeton Geniza Project",
             description="Home page",
             locale=locale,
         )
