@@ -139,6 +139,7 @@ class Command(BaseCommand):
         return ContentPage(
             title="Page Title",
             description="Example page",
+            slug="content",
             body=content.replace("img1_embed", embeds[0]).replace(
                 "img2_embed", embeds[1]
             ),

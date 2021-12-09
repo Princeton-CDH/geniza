@@ -1,6 +1,7 @@
 from django.contrib.sites.models import Site
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from wagtail.core.models.sites import Site as WagatilSite
 
 
 class Command(BaseCommand):
@@ -13,11 +14,13 @@ class Command(BaseCommand):
         django_site.domain = "localhost:8000"
         django_site.save()
 
+        # set up fake content
+        call_command("bootstrap_content", "-f")
+
         # set wagtail site port so page URL reversing works
-        # TODO uncomment this when wagtail is installed
-        # site = make_wagtail_site()
-        # site.port = 8000
-        # site.save()
+        wagtail_site = WagatilSite.objects.get(is_default_site=True)
+        wagtail_site.port = 8000
+        wagtail_site.save()
 
         # set up test models via JSON fixtures
         call_command("loaddata", "ui_ux_test_documents.json")

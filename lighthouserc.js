@@ -4,8 +4,9 @@ module.exports = {
             // URLs that Lighthouse will visit and test
             url: [
                 "http://localhost:8000/documents/", // doc search
-                // "http://localhost:8000/documents/1/"    // doc detail
                 "http://localhost:8000/documents/2532/", // doc detail — currently with IIIF viewer
+                "http://localhost:8000/documents/2532/scholarship", // doc scholarship
+                "http://localhost:8000/content/", // content page
             ],
             // The following two commands make Lighthouse start up a Django
             // server for us to test against. PYTHONUNBUFFERED is needed to make
