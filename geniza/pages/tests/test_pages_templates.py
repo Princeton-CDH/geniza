@@ -1,5 +1,4 @@
 import pytest
-from django.http.request import HttpRequest
 from pytest_django.asserts import assertContains
 from wagtail.core.models import Page
 from wagtail.core.models.sites import Site
