@@ -1,5 +1,3 @@
-import re
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 from django.templatetags.static import static
@@ -130,10 +128,8 @@ class Command(BaseCommand):
             title="Page Title",
             description="Example page",
             slug="content",
-            body=re.sub(  # get static URLs for images
-                r'img src="(test-image-)([a-z]+)(\.[a-z]+)"',
-                'img src="' + static(r"\1\2\3") + '"',
-                content,
-            ),
+            body=content.replace(  # get static URLs for test images
+                "test-image-fragment.jpg", static("test-image-fragment.jpg")
+            ).replace("test-image-tagnetwork.png", static("test-image-tagnetwork.png")),
             live=True,
         )
