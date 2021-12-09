@@ -38,9 +38,6 @@ urlpatterns += i18n_patterns(
     path("", include(wagtail_urls)),
 )
 
-# Media URLs for wagtail
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 if settings.DEBUG:
     try:
         import debug_toolbar
@@ -50,3 +47,8 @@ if settings.DEBUG:
         )
     except ImportError:
         pass
+
+    # Media URLs for wagtail
+    urlpatterns.append(
+        static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
+    )
