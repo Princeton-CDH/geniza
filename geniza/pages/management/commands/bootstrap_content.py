@@ -17,6 +17,12 @@ class Command(BaseCommand):
             default="localhost",
             help="hostname from which the app is served (default: localhost)",
         )
+        parser.add_argumet(
+            "-p",
+            "--port",
+            default="8000",
+            help="port from which the app is served (default: 8000)",
+        )
         parser.add_argument(
             "-l",
             "--locale",
@@ -36,6 +42,7 @@ class Command(BaseCommand):
 
         include_fixtures = options.get("fixtures")
         hostname = options.get("hostname")
+        port = options.get("port")
         language_code = options.get("locale")
         (locale, _) = Locale.objects.get_or_create(language_code=language_code)
 
@@ -106,6 +113,7 @@ class Command(BaseCommand):
         except ObjectDoesNotExist:
             default_site = Site.objects.create(
                 hostname=hostname,
+                port=port,
                 root_page=home_page,
                 is_default_site=True,
                 site_name="Geniza",
