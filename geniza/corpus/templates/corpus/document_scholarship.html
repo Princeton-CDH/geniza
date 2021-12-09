@@ -14,20 +14,22 @@
             {% for fn in document.footnotes.all %}
                 {% spaceless %}
                     <li class="citation">
-                        <dt class="sr-only">
-                            {# Translators: accessibility label for a footnote source citation in scholarship records view #}
-                            {% translate 'Bibliographic citation' %}
-                        </dt>
-                        <dd>
-                            {{ fn.source.formatted_display|safe }}
-                        </dd>
-                        <dt class="relation">
-                            {# Translators: label for included document relations for a footnote #}
-                            {% translate 'includes' %}
-                        </dt>
-                        <dd class="relation">
-                            {{ fn.doc_relation }}
-                        </dd>
+                        <dl>
+                            <dt class="sr-only">
+                                {# Translators: accessibility label for a footnote source citation in scholarship records view #}
+                                {% translate 'Bibliographic citation' %}
+                            </dt>
+                            <dd>
+                                {{ fn.source.formatted_display|safe }}
+                            </dd>
+                            <dt class="relation">
+                                {# Translators: label for included document relations for a footnote #}
+                                {% translate 'includes' %}
+                            </dt>
+                            <dd class="relation">
+                                {{ fn.doc_relation }}
+                            </dd>
+                        </dl>
                     </li>
                 {% endspaceless %}
             {% endfor %}

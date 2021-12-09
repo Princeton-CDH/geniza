@@ -90,10 +90,6 @@ $text-size-5xl: 3.81rem;
     line-height: 1.5;
 }
 
-@mixin paragraph {
-    margin-bottom: spacing.$spacing-md;
-}
-
 @mixin quote {
     padding-left: spacing.$spacing-lg;
     border-left: 2px solid;

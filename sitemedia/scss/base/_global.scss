@@ -101,10 +101,6 @@ small {
     @include typography.caption;
 }
 
-p {
-    @include typography.paragraph;
-}
-
 blockquote {
     @include typography.quote;
 }

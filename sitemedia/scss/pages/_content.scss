@@ -8,10 +8,12 @@
 
 #content-page {
     .container {
+        // Overall spacing
         padding: spacing.$spacing-md spacing.$spacing-sm;
         @include breakpoints.for-tablet-landscape-up {
             padding: spacing.$spacing-lg 0;
         }
+        // List styles, nested inside container to prevent affecting nav lists
         ul,
         ol {
             margin: spacing.$spacing-md 0 spacing.$spacing-md
@@ -35,6 +37,12 @@
         }
     }
 
+    // Paragraph spacing unique to content pages
+    p {
+        margin-bottom: spacing.$spacing-md;
+    }
+
+    // Image handling unique to content pages
     figure {
         max-width: 100%;
         width: 100%;
