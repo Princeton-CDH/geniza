@@ -134,10 +134,10 @@ class Command(BaseCommand):
                     title=image_file.name,
                 )
                 alt_text = "A description of %s" % image_file.name
-                embeds += [
+                embeds.append(
                     '<embed alt="%s" embedtype="image" format="captioned_fullwidth" id="%d"/>'
                     % (alt_text, image.id)
-                ]
+                )
 
         # Create test content page from fixture
         with open(
