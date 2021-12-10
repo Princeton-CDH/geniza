@@ -111,10 +111,19 @@ section#document-list {
         // document scholarship records
         .scholarship {
             @include typography.meta;
-
+            display: flex;
+            flex-flow: row wrap;
             & span {
                 padding-right: spacing.$spacing-md;
+                & + span {
+                    padding-right: 0;
+                }
             }
+        }
+
+        // document tags
+        ul.tags {
+            margin-top: spacing.$spacing-md;
         }
     }
 
