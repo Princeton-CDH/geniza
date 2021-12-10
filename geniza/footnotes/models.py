@@ -158,15 +158,6 @@ class Source(models.Model):
                 author = author_lastnames[0]
 
         parts = []
-        url = self.url
-
-        if not url:
-            for fn in self.footnote_set.all():
-                if fn.url and not fn.location:
-                    # if fn.location is defined, the URL will be included there in the
-                    # scholarship record template; otherwise, surround the title here
-                    url = fn.url
-                    break
 
         # Ensure that Unicode LTR mark is added after fields when RTL languages present
         rtl_langs = ["Hebrew", "Arabic", "Judaeo-Arabic"]
@@ -197,8 +188,8 @@ class Source(models.Model):
             )
 
         # Wrap title in link to URL
-        if url and work_title:
-            parts.append('<a href="%s">%s</a>' % (url, work_title))
+        if self.url and work_title:
+            parts.append('<a href="%s">%s</a>' % (self.url, work_title))
         elif work_title:
             parts.append(work_title)
 

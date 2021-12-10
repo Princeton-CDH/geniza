@@ -36,8 +36,10 @@
                                 {% blocktranslate with location=fn.location trimmed %}
                                     see {{ location }} for
                                 {% endblocktranslate %}
-                            {% else %}
+                            {% elif fn.url %}
                                 {# Translators: label for included document relations for a footnote #}
+                                <a href="{{ fn.url }}">{% translate 'includes' %}</a>
+                            {% else %}
                                 {% translate 'includes' %}
                             {% endif %}
                         </dt>
