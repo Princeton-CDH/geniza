@@ -58,6 +58,8 @@ body#document {
                 margin-top: spacing.$spacing-xs;
             }
             // hanging "info" phosphor icon before link
+            // disabled for MVP
+            /*
             dd a::before {
                 @include colors.apply-theme("on-background");
                 font-family: "Phosphor" !important;
@@ -67,6 +69,7 @@ body#document {
                 text-align: center;
                 margin-left: -#{spacing.$spacing-xl};
             }
+            */
         }
         // Document tags
         .tags {

@@ -30,11 +30,20 @@
             </h2>
             {# metadata #}
             <dl class="metadata">
-                {% if document.editions %}
-                    {# Translators: Editor label #}
-                    <dt>{% translate 'Editor' %}</dt>  {# optionally pluralize? #}
-                    {% for ed in document.editions %}
-                        <dd>{{ ed.display|safe }}</dd>
+                {% if document.digital_editions %}
+                    <dt>
+                        {# Translators: Editor label #}
+                        {% blocktranslate count counter=document.editors.count trimmed %}
+                            Editor
+                        {% plural %}
+                            Editors
+                        {% endblocktranslate %}
+                    </dt>
+                    {% for ed in document.digital_editions %}
+                        {# ifchanged to avoid showing duplicate editions #}
+                        {% ifchanged %}
+                            <dd>{{ ed.display|safe }}</dd>
+                        {% endifchanged %}
                         {# link ? #}
                     {% endfor %}
                 {% endif %}

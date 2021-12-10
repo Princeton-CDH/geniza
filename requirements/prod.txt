@@ -20,3 +20,5 @@ django-webpack-loader
 django-csp
 gitpython
 eulxml
+# require develop version of djiffy until 0.7 is released
+git+https://github.com/Princeton-CDH/djiffy@develop#egg=djiffy

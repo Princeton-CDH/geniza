@@ -53,7 +53,7 @@ msgid "Document Type"
 msgstr "Document Type"
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:557
+#: geniza/corpus/models.py:566
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr ""
@@ -68,29 +68,33 @@ msgid "Metadata"
 msgstr ""
 
 #. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:35
+#: geniza/corpus/templates/corpus/document_detail.html:36
+#, fuzzy
+#| msgid "Editor"
 msgid "Editor"
-msgstr "Editor"
+msgid_plural "Editors"
+msgstr[0] "Editor"
+msgstr[1] "Editor"
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:42
+#: geniza/corpus/templates/corpus/document_detail.html:50
 #: geniza/corpus/templates/corpus/snippets/document_result.html:29
 msgid "Input date"
 msgstr "Input date"
 
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:46
+#: geniza/corpus/templates/corpus/document_detail.html:54
 msgid "Permalink"
 msgstr ""
 
 #. Translators: label for tags on a document
-#: geniza/corpus/templates/corpus/document_detail.html:56
+#: geniza/corpus/templates/corpus/document_detail.html:64
 #: geniza/corpus/templates/corpus/snippets/document_result.html:19
 msgid "Tags"
 msgstr ""
 
 #. Translators: label for document description
-#: geniza/corpus/templates/corpus/document_detail.html:67
+#: geniza/corpus/templates/corpus/document_detail.html:75
 msgid "Description"
 msgstr ""
 
