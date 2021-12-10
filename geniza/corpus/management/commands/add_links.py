@@ -13,14 +13,6 @@ from parasolr.django.signals import IndexableSignalHandler
 from geniza.corpus.models import Document
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
-"""
-TODO
-- Not all headers are required, look back later and remove unnecessary requirements
-- Reintroduce logging
-- 
-
-"""
-
 
 class Command(BaseCommand):
     """Takes a CSV export of the Geniza v3 database to add footnotes with Goitein
@@ -112,6 +104,7 @@ class Command(BaseCommand):
         footnote.save()
 
     def get_goitein_source(self, doc=None, title=None):
+        # TODO: Add URL?
         volume = Source.get_volume_from_shelfmark(doc.shelfmark)
         source, _ = Source.objects.get_or_create(
             title_en=title, volume=volume, source_type=self.unpublished
@@ -127,7 +120,6 @@ class Command(BaseCommand):
 
     # PROCESS ENTRY --------------------
 
-    # TODO: Start tests here (lookup parametrize test)
     def add_link(self, row):
         if (self.link_type and self.link_type != row["link_type"]) or (
             row["link_type"] in self.skipped_types
@@ -139,6 +131,8 @@ class Command(BaseCommand):
             return
 
         if row["link_type"] == "goitein_note":
+            # ?: Because this function takes up so much space, it may be easier
+            #  to simply just write out the 4-5 lines here. What do you think?
             self.create_footnote(
                 doc=doc,
                 source=self.get_goitein_source(doc=doc, title="typed texts"),

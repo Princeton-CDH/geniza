@@ -58,28 +58,3 @@ def test_handle_file_not_found():
 @pytest.mark.django_db
 def test_add_link():
     pass
-
-
-@pytest.mark.django_db
-def test_parse_goitein_note():
-    pass
-
-
-@pytest.mark.django_db
-def test_get_document():
-    pass
-
-
-@pytest.mark.django_db
-def test_parse_indexcard():
-    pass
-
-
-@pytest.mark.django_db
-def test_parse_jewish_traders():
-    pass
-
-
-@pytest.mark.django_db
-def test_parse_india_traders():
-    pass
