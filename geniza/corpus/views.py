@@ -290,23 +290,16 @@ class DocumentAnnotationList(DocumentDetailView):
         }
         # for now, annotate the first canvas
         # get a list of djiffy manifests
-
-        for b in document.textblock_set.all():
-            print(b.fragment)
-            print(b.fragment.iiif_url)
-            print(b.fragment.manifest)
-
         manifests = [
             b.fragment.manifest
             for b in document.textblock_set.all()
             if b.fragment.iiif_url
         ]
-        print(manifests)
         canvas = None
         if manifests and manifests[0]:
             print(manifests[0].uri)
             canvas = manifests[0].canvases.first()
-
+        # fallback to loading the remote manifest
         if not canvas:
             iiif_urls = [
                 b.fragment.iiif_url

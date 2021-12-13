@@ -9,7 +9,7 @@
 {% block extrascript %}
     {% if document.iiif_urls %} {# mirador is slow, so only include if needed #}
         {# NOTE: referencing specific version avoids an extra render-blocking lookup #}
-        <script defer src="https://unpkg.com/mirador@3.2.0/dist/mirador.min.js" nonce="{{ request.csp_nonce}}"></script>
+        <script defer src="https://unpkg.com/mirador@3.3.0/dist/mirador.min.js" nonce="{{ request.csp_nonce}}"></script>
         <script defer src="{% static 'js/viewer.js' %}" nonce="{{ request.csp_nonce }}"></script>
     {% endif %}
 {% endblock extrascript %}
@@ -83,7 +83,7 @@
     {% with iiif_urls=document.iiif_urls %}
         {% if iiif_urls %}
             <div class="iiif_wrapper">
-                <div id="iiif_viewer" data-iiif-urls="{{ iiif_urls|join:" " }}"></div>
+                <div id="iiif_viewer" data-iiif-url="{% url "corpus:document-manifest" document.id %}" data-has-annotations="{{ document.has_transcription }}"></div>
             </div>
         {% endif %}
     {% endwith %}
