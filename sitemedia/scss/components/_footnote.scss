@@ -52,4 +52,8 @@
             margin-bottom: spacing.$spacing-2xs;
         }
     }
+    span.unpublished {
+        @include colors.apply-theme("on-background-light");
+        font-size: typography.$text-size-md;
+    }
 }
