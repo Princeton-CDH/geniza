@@ -180,7 +180,7 @@ class TestDocumentScholarshipTemplate:
         )
         print(response.content)
         assertContains(
-            response, '<a href="https://example.com/"> "Shemarya,"</a>', html=True
+            response, '<a href="https://example.com/">includes</a>', html=True
         )
         fn.url = ""
         fn.save()
