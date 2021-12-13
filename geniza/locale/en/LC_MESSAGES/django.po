@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-06 14:53-0500\n"
-"PO-Revision-Date: 2021-12-07 21:25\n"
+"POT-Creation-Date: 2021-12-10 09:26-0500\n"
+"PO-Revision-Date: 2021-12-13 15:48\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en_US\n"
@@ -115,8 +115,26 @@ msgstr[1] ""
 msgid "Bibliographic citation"
 msgstr ""
 
-#. Translators: label for included document relations for a footnote
+#. Translators: label for an unpublished scholarship record
 #: geniza/corpus/templates/corpus/document_scholarship.html:26
+msgid "unpublished"
+msgstr ""
+
+#. Translators: label for footnote location within source (with url)
+#: geniza/corpus/templates/corpus/document_scholarship.html:31
+#, python-format
+msgid "see <a href=\"%(url)s\">%(location)s</a> for"
+msgstr ""
+
+#. Translators: label for footnote location within source
+#: geniza/corpus/templates/corpus/document_scholarship.html:36
+#, python-format
+msgid "see %(location)s for"
+msgstr ""
+
+#. Translators: label for included document relations for a footnote
+#: geniza/corpus/templates/corpus/document_scholarship.html:41
+#: geniza/corpus/templates/corpus/document_scholarship.html:43
 msgid "includes"
 msgstr ""
 
@@ -222,15 +240,15 @@ msgid_plural "%(count)d scholarship records for %(doc)s"
 msgstr[0] ""
 msgstr[1] ""
 
-#: geniza/footnotes/models.py:388
+#: geniza/footnotes/models.py:373
 msgid "Edition"
 msgstr ""
 
-#: geniza/footnotes/models.py:389
+#: geniza/footnotes/models.py:374
 msgid "Translation"
 msgstr ""
 
-#: geniza/footnotes/models.py:390
+#: geniza/footnotes/models.py:375
 msgid "Discussion"
 msgstr ""
 
