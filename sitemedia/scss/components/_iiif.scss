@@ -5,7 +5,11 @@
 .iiif_wrapper {
     display: block;
     width: clamp(300px, 75vw, 90vw);
-    padding: spacing.$spacing-md;
+    margin: spacing.$spacing-md auto;
+    // Exception to 60ch max-width limit for mirador
+    * {
+        max-width: none;
+    }
 }
 #iiif_viewer {
     position: relative;

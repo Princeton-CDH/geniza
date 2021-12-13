@@ -1,0 +1,83 @@
+// -----------------------------------------------------------------------------
+// Content page styles
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/spacing";
+@use "../base/typography";
+
+#content-page {
+    .container {
+        // Overall spacing
+        padding: spacing.$spacing-md spacing.$spacing-sm;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: spacing.$spacing-lg 0;
+        }
+        // List styles, nested inside container to prevent affecting nav lists
+        ul,
+        ol {
+            margin: spacing.$spacing-md 0 spacing.$spacing-md
+                spacing.$spacing-lg;
+            li + li {
+                margin-top: spacing.$spacing-md;
+            }
+        }
+        ul {
+            list-style: disc outside;
+        }
+        ol {
+            counter-reset: listitem;
+            li::before {
+                content: counter(listitem);
+                counter-increment: listitem;
+                float: left;
+                padding-left: spacing.$spacing-2xs;
+                margin-left: -#{spacing.$spacing-lg};
+            }
+        }
+    }
+
+    // Paragraph spacing unique to content pages
+    p {
+        margin-bottom: spacing.$spacing-md;
+    }
+
+    // Image handling unique to content pages
+    figure {
+        max-width: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        margin: spacing.$spacing-md 0;
+        figcaption {
+            align-self: flex-start;
+        }
+        img {
+            align-self: center;
+        }
+        &.landscape img {
+            height: auto;
+            max-width: 280px;
+            @include breakpoints.for-tablet-landscape-up {
+                max-width: 400px;
+            }
+        }
+        &.portrait img {
+            width: auto;
+            max-width: 100%;
+            max-height: 200px;
+            @include breakpoints.for-tablet-landscape-up {
+                max-height: 300px;
+            }
+        }
+    }
+
+    // Credits page
+    dd {
+        margin-top: spacing.$spacing-xs;
+        text-decoration: underline;
+        & + dt {
+            margin-top: spacing.$spacing-lg;
+        }
+    }
+}

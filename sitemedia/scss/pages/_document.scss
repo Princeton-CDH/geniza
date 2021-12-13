@@ -85,6 +85,11 @@ body#document {
                 margin-left: 0;
             }
             li {
+                // spacing between tags
+                margin-right: 0;
+                & + li {
+                    margin-left: 0.5rem;
+                }
                 @include breakpoints.for-phone-only {
                     font-size: typography.$text-size-md;
                 }

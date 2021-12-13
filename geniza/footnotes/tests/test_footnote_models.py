@@ -172,6 +172,14 @@ class TestSource:
             not in phd_dissertation.formatted_display()
         )
 
+    def test_formatted_source_url(self, source):
+        # should create link around source title
+        source.url = "http://example.com/"
+        assert (
+            '<a href="http://example.com/">%s</a>' % source.title
+            in source.formatted_display()
+        )
+
 
 class TestFootnote:
     @pytest.mark.django_db

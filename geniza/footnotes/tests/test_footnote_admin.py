@@ -42,7 +42,9 @@ class TestDocumentRelationTypesFilter:
     def test_queryset(self, source):
         footnote_args = {
             "source": source,
-            "content_type_id": ContentType.objects.get(model="document").id,
+            "content_type_id": ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
             "object_id": 0,
         }
 
@@ -110,7 +112,9 @@ class TestSourceAdmin:
         Footnote.objects.create(
             doc_relation=["E"],
             source=source,
-            content_type_id=ContentType.objects.get(model="document").id,
+            content_type_id=ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
             object_id=0,
         )
 
@@ -273,7 +277,9 @@ class TestSourceFootnoteInline:
         footnote = Footnote.objects.create(
             doc_relation=["E"],
             source=source,
-            content_type_id=ContentType.objects.get(model="document").id,
+            content_type_id=ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
             object_id=0,
         )
         doc = Document.objects.create()
