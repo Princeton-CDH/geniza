@@ -52,8 +52,9 @@
             margin-bottom: spacing.$spacing-2xs;
         }
     }
-    span.unpublished {
+    div.unpublished {
         @include colors.apply-theme("on-background-light");
         font-size: typography.$text-size-md;
+        margin-top: spacing.$spacing-3xs;
     }
 }
