@@ -3,6 +3,8 @@
 ## 0.7
 
 -   Update settings to configure **TEI_TRANSCRIPTIONS_LOCAL_PATH** for the deploy environment.
+-   Run `python manage.py bootstrap_content` to create stub pages for all
+    site content needed for main site navigation.
 
 ## 0.3.0
 

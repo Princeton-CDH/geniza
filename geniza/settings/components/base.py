@@ -27,6 +27,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "modeltranslation",  # this has to come before admin config
+    "wagtail.documents",  # this also has to come first to unregister
+    "wagtail.images",  #    this also has to come first to unregister
     "geniza.apps.GenizaAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -49,6 +51,17 @@ INSTALLED_APPS = [
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",
+    "geniza.pages.apps.PagesConfig",
+    "wagtail.contrib.forms",
+    "wagtail.contrib.redirects",
+    "wagtail.embeds",
+    "wagtail.sites",
+    "wagtail.users",
+    "wagtail.snippets",
+    "wagtail.admin",
+    "wagtail.core",
+    "wagtail.locales",
+    "modelcluster",
 ]
 
 MIDDLEWARE = [
@@ -61,6 +74,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # "csp.middleware.CSPMiddleware",
+    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 
 ROOT_URLCONF = "geniza.urls"
@@ -150,12 +164,13 @@ LANGUAGE_CODE = "en"
 TIME_ZONE = "America/New_York"
 
 USE_I18N = True
+WAGTAIL_I18N_ENABLED = True
 
 USE_L10N = True
 
 USE_TZ = True
 
-LANGUAGES = [
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
     ("en", "English"),
     ("he", "Hebrew"),
     ("ar", "Arabic"),
@@ -263,3 +278,12 @@ TEI_TRANSCRIPTIONS_GITREPO = (
 )
 # local path where git repo should be cloned
 TEI_TRANSCRIPTIONS_LOCAL_PATH = "data/tei_xml"
+
+# Media root for user uploads (required by wagtail)
+MEDIA_ROOT = BASE_DIR / "media"
+
+# Media URL for user uploads (required by wagtail)
+MEDIA_URL = "/media/"
+
+# Wagtail site name
+WAGTAIL_SITE_NAME = "GENIZA"

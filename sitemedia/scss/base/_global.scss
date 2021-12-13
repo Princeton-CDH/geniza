@@ -101,6 +101,10 @@ small {
     @include typography.caption;
 }
 
+blockquote {
+    @include typography.quote;
+}
+
 em {
     font-style: italic;
 }

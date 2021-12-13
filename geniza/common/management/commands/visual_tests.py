@@ -27,9 +27,9 @@ class Command(BaseCommand):
         # browser.get("http://localhost:8000/")
         # percy_snapshot(browser, "Home")
 
-        # content page TODO
-        # browser.get("http://localhost:8000/content")
-        # percy_snapshot(browser, "Content Page")
+        # content page
+        browser.get("http://localhost:8000/content/")
+        percy_snapshot(browser, "Content Page")
 
         # document search with document type filter expanded
         # NOTE: revise to capture search filter panel when we implement it
@@ -56,7 +56,7 @@ class Command(BaseCommand):
         browser.get("http://localhost:8000/documents/9469/scholarship/")
         percy_snapshot(browser, "Document Scholarship Records")
 
-        # # mobile menu
+        # mobile menu
         browser.get("http://localhost:8000/documents/2532/#menu")
         percy_snapshot(
             browser,

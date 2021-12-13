@@ -14,38 +14,40 @@
             {% for fn in document.footnotes.all %}
                 {% spaceless %}
                     <li class="citation">
-                        <dt class="sr-only">
-                            {# Translators: accessibility label for a footnote source citation in scholarship records view #}
-                            {% translate 'Bibliographic citation' %}
-                        </dt>
-                        <dd>
-                            {{ fn.source.formatted_display|safe }}
-                        </dd>
-                        {% if fn.source.source_type.type == "Unpublished" %}
-                            {# Translators: label for an unpublished scholarship record #}
-                            <span class="unpublished">{% translate 'unpublished' %}</span>
-                        {% endif %}
-                        <dt class="relation">
-                            {% if fn.location and fn.url %}
-                                {# Translators: label for footnote location within source (with url) #}
-                                {% blocktranslate with location=fn.location url=fn.url trimmed %}
-                                    see <a href="{{ url }}">{{ location }}</a> for
-                                {% endblocktranslate %}
-                            {% elif fn.location %}
-                                {# Translators: label for footnote location within source #}
-                                {% blocktranslate with location=fn.location trimmed %}
-                                    see {{ location }} for
-                                {% endblocktranslate %}
-                            {% elif fn.url %}
-                                {# Translators: label for included document relations for a footnote #}
-                                <a href="{{ fn.url }}">{% translate 'includes' %}</a>
-                            {% else %}
-                                {% translate 'includes' %}
-                            {% endif %}
-                        </dt>
-                        <dd class="relation">
-                            {{ fn.doc_relation }}
-                        </dd>
+                        <dl>
+                            <dt class="sr-only">
+                                {# Translators: accessibility label for a footnote source citation in scholarship records view #}
+                                {% translate 'Bibliographic citation' %}
+                            </dt>
+                            <dd>
+                                {{ fn.source.formatted_display|safe }}
+                                {% if fn.source.source_type.type == "Unpublished" %}
+                                    {# Translators: label for an unpublished scholarship record #}
+                                    <div class="unpublished">{% translate 'unpublished' %}</div>
+                                {% endif %}
+                            </dd>
+                            <dt class="relation">
+                                {% if fn.location and fn.url %}
+                                    {# Translators: label for footnote location within source (with url) #}
+                                    {% blocktranslate with location=fn.location url=fn.url trimmed %}
+                                        see <a href="{{ url }}">{{ location }}</a> for
+                                    {% endblocktranslate %}
+                                {% elif fn.location %}
+                                    {# Translators: label for footnote location within source #}
+                                    {% blocktranslate with location=fn.location trimmed %}
+                                        see {{ location }} for
+                                    {% endblocktranslate %}
+                                {% elif fn.url %}
+                                    {# Translators: label for included document relations for a footnote #}
+                                    <a href="{{ fn.url }}">{% translate 'includes' %}</a>
+                                {% else %}
+                                    {% translate 'includes' %}
+                                {% endif %}
+                            </dt>
+                            <dd class="relation">
+                                {{ fn.doc_relation }}
+                            </dd>
+                        </dl>
                     </li>
                 {% endspaceless %}
             {% endfor %}
