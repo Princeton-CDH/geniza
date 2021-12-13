@@ -1,7 +1,7 @@
 from ast import literal_eval
 
 from django.db.models.query import Prefetch
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect
 from django.urls import reverse
 from django.utils.text import Truncator
@@ -9,6 +9,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormMixin
+from piffle.presentation import IIIFPresentation
 from tabular_export.admin import export_to_csv_response
 
 from geniza.common.utils import absolutize_url
@@ -161,8 +162,9 @@ class DocumentDetailView(DocumentPastIdMixin, DetailView):
     """public display of a single :class:`~geniza.corpus.models.Document`"""
 
     model = Document
-
     context_object_name = "document"
+    #: bound name of this view, for use in generating absolute url for redirect
+    viewname = "corpus:document"
 
     def page_title(self):
         return self.get_object().title
@@ -188,13 +190,14 @@ class DocumentDetailView(DocumentPastIdMixin, DetailView):
 
     def get_absolute_url(self):
         """Get the permalink to this page."""
-        return absolutize_url(reverse("corpus:document", args=[self.kwargs["pk"]]))
+        return absolutize_url(reverse(self.viewname, args=[self.kwargs["pk"]]))
 
 
 class DocumentScholarshipView(DocumentDetailView):
     """List of :class:`~geniza.footnotes.models.Footnote`s for a Document"""
 
     template_name = "corpus/document_scholarship.html"
+    viewname = "corpus:document-scholarship"
 
     def page_title(self):
         # Translators: title of document scholarship page
@@ -225,12 +228,6 @@ class DocumentScholarshipView(DocumentDetailView):
 
         return queryset.filter(footnotes__isnull=False)
 
-    def get_absolute_url(self):
-        """Get the permalink to this page."""
-        return absolutize_url(
-            reverse("corpus:document-scholarship", args=[self.kwargs["pk"]])
-        )
-
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
         context_data.update(
@@ -239,6 +236,111 @@ class DocumentScholarshipView(DocumentDetailView):
             }
         )
         return context_data
+
+
+class DocumentManifest(DocumentDetailView):
+
+    viewname = "corpus:document-manifest"
+
+    def get(self, request, *args, **kwargs):
+        document = self.get_object()
+        # for now, start with the simple case
+        iiif_urls = [
+            b.fragment.iiif_url
+            for b in document.textblock_set.all()
+            if b.fragment.iiif_url
+        ]
+
+        # manifests = [
+        #     b.fragment.manifest
+        #     for b in document.textblock_set.all()
+        #     if b.fragment.iiif_url
+        # ]
+        # TODO: check if we have a transcription first!
+        if len(iiif_urls) == 1:
+            # cheat for a bit here; load from the live version instead of cached copy
+            manifest = IIIFPresentation.from_url(iiif_urls[0])
+            first_canvas = manifest.sequences[0].canvases[0]
+            # associate our the annotation to our copy of the manifest
+            first_canvas["otherContent"] = {
+                "@context": "http://iiif.io/api/presentation/2/context.json",
+                "@id": absolutize_url(
+                    reverse("corpus:document-annotations", args=[document.pk]),
+                    request=request,  # needed for http: in dev
+                ),
+                "@type": "sc:AnnotationList",
+            }
+        return JsonResponse(dict(manifest))
+
+
+class DocumentAnnotationList(DocumentDetailView):
+
+    viewname = "corpus:document-annotations"
+
+    def get(self, request, *args, **kwargs):
+        document = self.get_object()
+        # get absolute url for the current page to use as annotation list id
+        annotation_list_id = self.get_absolute_url()
+        # create outer annotation list structure
+        annotation_list = {
+            "@context": "http://iiif.io/api/presentation/2/context.json",
+            "@id": annotation_list_id,
+            "@type": "sc:AnnotationList",
+            "resources": [],
+        }
+        # for now, annotate the first canvas
+        # get a list of djiffy manifests
+
+        for b in document.textblock_set.all():
+            print(b.fragment)
+            print(b.fragment.iiif_url)
+            print(b.fragment.manifest)
+
+        manifests = [
+            b.fragment.manifest
+            for b in document.textblock_set.all()
+            if b.fragment.iiif_url
+        ]
+        print(manifests)
+        canvas = None
+        if manifests and manifests[0]:
+            print(manifests[0].uri)
+            canvas = manifests[0].canvases.first()
+
+        if not canvas:
+            iiif_urls = [
+                b.fragment.iiif_url
+                for b in document.textblock_set.all()
+                if b.fragment.iiif_url
+            ]
+            manifest = IIIFPresentation.from_url(iiif_urls[0])
+            canvas = manifest.sequences[0].canvases[0]
+
+        # TODO: if transcription and no canvas, generate a local canvas
+        # hard coded canvas id and size for now
+        # canvas_id = 'https://test-geniza.cdh.princteon.edu/iiif/na/canvas/1'
+        # canvas_width = 3200
+        # canvas_height = 4000
+
+        if not canvas:
+            # for now, 404 if we don't have any canvases
+            raise Http404
+
+        resources = []
+        digital_editions = document.digital_editions()
+        for i, transcription in enumerate(digital_editions):
+            annotation = {
+                # uri for this annotation; base on annotation list uri
+                "@id": "%s%d" % (annotation_list_id, i),
+                "@type": "oa:Annotation",
+                "motivation": "sc:painting",
+                "resource": transcription.iiif_annotation_content(),
+                # annotate the entire canvas for now
+                "on": "%s#xywh=0,0,%d,%d" % (canvas.uri, canvas.width, canvas.height),
+            }
+            annotation_list["resources"].append(annotation)
+
+        return JsonResponse(annotation_list)
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #

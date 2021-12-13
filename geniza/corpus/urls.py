@@ -1,21 +1,32 @@
 from django.urls import path
 
-from geniza.corpus.views import (
-    DocumentDetailView,
-    DocumentScholarshipView,
-    DocumentSearchView,
-    pgp_metadata_for_old_site,
-)
+from geniza.corpus import views as corpus_views
 
 app_name = "corpus"
 
 urlpatterns = [
-    path("documents/", DocumentSearchView.as_view(), name="document-search"),
-    path("documents/<int:pk>/", DocumentDetailView.as_view(), name="document"),
+    path(
+        "documents/", corpus_views.DocumentSearchView.as_view(), name="document-search"
+    ),
+    path(
+        "documents/<int:pk>/",
+        corpus_views.DocumentDetailView.as_view(),
+        name="document",
+    ),
     path(
         "documents/<int:pk>/scholarship/",
-        DocumentScholarshipView.as_view(),
+        corpus_views.DocumentScholarshipView.as_view(),
         name="document-scholarship",
     ),
-    path("export/pgp-metadata-old/", pgp_metadata_for_old_site),
+    path(
+        "documents/<int:pk>/iiif/manifest/",
+        corpus_views.DocumentManifest.as_view(),
+        name="document-manifest",
+    ),
+    path(
+        "documents/<int:pk>/iiif/annotations/",
+        corpus_views.DocumentAnnotationList.as_view(),
+        name="document-annotations",
+    ),
+    path("export/pgp-metadata-old/", corpus_views.pgp_metadata_for_old_site),
 ]
