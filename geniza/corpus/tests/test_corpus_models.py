@@ -1,5 +1,5 @@
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from attrdict import AttrDict
@@ -227,6 +227,7 @@ class TestDocumentType:
 
 
 @pytest.mark.django_db
+@patch("geniza.corpus.models.ManifestImporter", Mock())
 class TestDocument:
     def test_shelfmark(self):
         # T-S 8J22.21 + T-S NS J193
