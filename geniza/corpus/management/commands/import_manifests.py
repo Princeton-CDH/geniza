@@ -24,8 +24,18 @@ class Command(BaseCommand):
         parser.add_argument(
             "--update", action="store_true", help="Update previously imported manifests"
         )
+        parser.add_argument(
+            "--associate",
+            action="store_true",
+            help="Only associate fragments with imported manifests (no import)",
+        )
 
     def handle(self, *args, **kwargs):
+        # if fragment-manifest association is requested, run it and bail out
+        if kwargs.get("associate"):
+            self.associate_manifests()
+            return
+
         # use command-line urls if specified
         iiif_urls = kwargs.get("path")
         # otherwise, import all iiif manifests referenced by fragments in the db
@@ -52,3 +62,14 @@ class Command(BaseCommand):
             style=self.style,
             update=kwargs["update"],
         ).import_paths(iiif_urls)
+
+        self.associate_manifests()
+
+    def associate_manifests(self):
+        # update fragments with iiif urls to add foreign keys to the new manifests
+        fragments = Fragment.objects.exclude(iiif_url="").filter(manifest__isnull=True)
+        for fragment in fragments:
+            fragment.manifest = Manifest.objects.filter(uri=fragment.iiif_url).first()
+            if fragment.manifest:
+                fragment.save()
+                # TODO log entry?
