@@ -12,7 +12,7 @@ section#document-list {
     // count of results
     h1 {
         @include container.two-column;
-        @include typography.headline-6;
+        @include typography.caption;
         text-align: center;
         margin: spacing.$spacing-sm 0;
     }
@@ -54,7 +54,6 @@ section#document-list {
 
         // document titles
         .title {
-            @include typography.subtitle;
             position: relative;
             margin-top: spacing.$spacing-md;
             margin-bottom: spacing.$spacing-md;
@@ -103,6 +102,8 @@ section#document-list {
 
         // styles specific to transcription
         .transcription {
+            @include typography.transcription;
+            align-self: flex-end;
             text-align: right;
             direction: rtl;
             white-space: pre-line;
@@ -115,7 +116,7 @@ section#document-list {
             flex-flow: row wrap;
             & span {
                 padding-right: spacing.$spacing-md;
-                & + span {
+                &:last-child {
                     padding-right: 0;
                 }
             }
@@ -133,17 +134,13 @@ section#document-list {
         width: max-content;
         margin-left: auto;
         margin-top: spacing.$spacing-md;
-        font-size: typography.$text-size-md;
-        @include breakpoints.for-tablet-landscape-up {
-            font-size: typography.$text-size-lg;
-        }
+        @include typography.meta;
         i {
-            margin-left: spacing.$spacing-sm;
-            font-size: typography.$text-size-lg;
+            margin-left: spacing.$spacing-2xs;
             @include breakpoints.for-tablet-landscape-up {
-                margin-left: spacing.$spacing-lg;
-                font-size: typography.$text-size-2xl;
+                margin-left: spacing.$spacing-sm;
             }
+            @include typography.headline-2;
         }
     }
 }

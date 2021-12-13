@@ -166,6 +166,12 @@ $text-size-4xl: 1.8rem; //  ~ 29px
     @include meta; // same font+sizes as meta
     line-height: 1.2;
 }
+@mixin filter-count-bold {
+    @include meta; // same sizes as meta
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+    line-height: 1.2;
+}
 
 // links in the navbar
 @mixin nav-link {
@@ -174,7 +180,7 @@ $text-size-4xl: 1.8rem; //  ~ 29px
 }
 @mixin nav-bold {
     @include meta; // same sizes as meta
-    font-family: $primary-bold;
+    font-family: fonts.$primary-bold;
     font-weight: bold;
     line-height: 1.4;
 }
