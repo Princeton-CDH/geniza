@@ -101,13 +101,6 @@ section#document-list {
             }
         }
 
-        // styles specific to transcription
-        .transcription {
-            text-align: right;
-            direction: rtl;
-            white-space: pre-line;
-        }
-
         // document scholarship records
         .scholarship {
             @include typography.meta;
@@ -145,5 +138,21 @@ section#document-list {
                 font-size: typography.$text-size-2xl;
             }
         }
+    }
+}
+
+// styles specific to transcription;
+// appear in search results and in mirador viewer
+.transcription {
+    text-align: right;
+    direction: rtl;
+
+    li {
+        white-space: pre-line;
+    }
+
+    .mirador-viewer & h1 {
+        @include typography.headline-3;
+        text-align: left;
     }
 }
