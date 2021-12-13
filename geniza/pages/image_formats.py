@@ -12,9 +12,13 @@ class CaptionedImageFormat(Format):
     def image_to_html(self, image, alt_text, extra_attributes=None):
         """Wraps supplied image in figure tags, and supplied alt text in figcaption tags."""
         default_html = super().image_to_html(image, alt_text, extra_attributes)
+        class_name = "landscape" if image.width >= image.height else "portrait"
 
         return format_html(
-            "<figure>{}<figcaption>{}</figcaption></figure>", default_html, alt_text
+            '<figure class="{}">{}<figcaption>{}</figcaption></figure>',
+            class_name,
+            default_html,
+            alt_text,
         )
 
 
@@ -26,6 +30,6 @@ unregister_image_format("right")
 # Register our custom image format
 register_image_format(
     CaptionedImageFormat(
-        "captioned_fullwidth", "Full width captioned", "bodytext-image", "width-800"
+        "captioned_center", "Centered captioned", "bodytext-image", "width-800"
     )
 )
