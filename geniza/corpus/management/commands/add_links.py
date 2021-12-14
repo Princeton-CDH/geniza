@@ -42,16 +42,25 @@ class Command(BaseCommand):
 
     v_normal = 1
 
+    # stats used in summary output or other counts
+    stats_fields = [
+        "imported",
+        "ignored",
+        "errored",
+        "document_not_found",
+        "sources_created",
+        "footnotes_created",
+        "footnotes_updated",
+        "total",
+    ]
+
     def add_arguments(self, parser):
         parser.add_argument("csv", type=str)
         parser.add_argument(
             "-t", "--link_type", help="Only process the specified link type (optional)"
         )
 
-    def handle(self, *args, **options):
-        # disconnect solr indexing signals
-        # IndexableSignalHandler.disconnect()
-
+    def setup(self, options):
         # load authors, sources, source types, etc that will be needed
         self.goitein = Creator.objects.get(last_name="Goitein")
         self.unpublished = SourceType.objects.get(type="Unpublished")
@@ -64,19 +73,21 @@ class Command(BaseCommand):
             for source in Source.objects.filter(title__startswith="India Book")
         }
 
-        self.stats = Counter()
-        # initialize some values, since on script re-run they will not be set
-        for val in ["sources_created", "footnotes_created", "footnotes_updated"]:
-            self.stats[val] = 0
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
         self.footnote_contenttype = ContentType.objects.get_for_model(Footnote)
         self.source_contenttype = ContentType.objects.get_for_model(Source)
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
+    def handle(self, *args, **options):
+        # disconnect solr indexing signals
+        # IndexableSignalHandler.disconnect()
+
+        self.setup()
         self.link_type = options.get("link_type")
         self.verbosity = options.get("verbosity", self.v_normal)
-
+        # initialize stats values, since they don't always all get set
+        self.stats = {stat: 0 for stat in self.stats_fields}
         # rough total for progress bar based on current number of rows in links.csv
         # *with* link types we care about (end of the file is largely ignored)
         starting_total = 10000  # 16300 = closer to real total
