@@ -44,12 +44,6 @@ def new_iiif_canvas():
     return IIIFPresentation(base_canvas.copy())
 
 
-def part_of(manifest_id, label):
+def part_of_manifest(manifest_id, label):
     # create the "partOf" structure given an id and label
-    return [
-        {
-            "@id": str(manifest_id),
-            "@type": "sc:Manifest",
-            "label": {"en": [str(label)]},
-        }
-    ]
+    return

@@ -15,7 +15,11 @@ from tabular_export.admin import export_to_csv_response
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus.forms import DocumentSearchForm
-from geniza.corpus.iiif_utils import new_annotation_list, new_iiif_manifest
+from geniza.corpus.iiif_utils import (
+    new_annotation_list,
+    new_iiif_canvas,
+    new_iiif_manifest,
+)
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Footnote
@@ -252,8 +256,10 @@ class DocumentManifest(DocumentDetailView):
         iiif_urls = document.iiif_urls()
         local_manifest_id = self.get_absolute_url()
         first_canvas = None
-        # TODO: also check if we have a transcription ?
+
         # should 404 if no images or no transcription
+        if not document.has_transcription() and not document.has_image():
+            raise Http404
 
         manifest = new_iiif_manifest()
         manifest.id = local_manifest_id
@@ -282,7 +288,7 @@ class DocumentManifest(DocumentDetailView):
                 # to track original source of this canvas
                 local_canvas["partOf"] = [
                     {
-                        "@id": remote_manifest.id,
+                        "@id": str(remote_manifest.id),
                         "@type": "sc:Manifest",
                         "label": {
                             "en": ["original source: %s" % remote_manifest.label]
@@ -309,11 +315,9 @@ class DocumentManifest(DocumentDetailView):
             extra_attrs,
         )
 
-        # TODO: handle case of transcription with no image
-
         # if transcription is available, add an annotation list to first canvas
         if document.has_transcription():
-            first_canvas["otherContent"] = {
+            other_content = {
                 "@context": "http://iiif.io/api/presentation/2/context.json",
                 "@id": absolutize_url(
                     reverse("corpus:document-annotations", args=[document.pk]),
@@ -321,6 +325,20 @@ class DocumentManifest(DocumentDetailView):
                 ),
                 "@type": "sc:AnnotationList",
             }
+            if first_canvas:
+                first_canvas["otherContent"] = other_content
+            else:  # if no canvases available, add transcription in new canvas
+                new_canvas = new_iiif_canvas()
+                new_canvas["@id"] = absolutize_url(
+                    reverse("corpus:document-canvas", args=[document.pk]),
+                    request=request,  # request is needed to avoid getting https:// urls in dev
+                )
+                canvases.append(
+                    {
+                        **new_canvas,
+                        "otherContent": {**other_content},
+                    }
+                )
 
         return JsonResponse(dict(manifest))
 
@@ -379,6 +397,47 @@ class DocumentAnnotationList(DocumentDetailView):
             annotation_list["resources"].append(annotation)
 
         return JsonResponse(dict(annotation_list))
+
+
+class DocumentCanvas(DocumentDetailView):
+    """Generate a placeholder Canvas for a document's IIIF manifest, in the case where
+    a document has a transcription but no image."""
+
+    viewname = "corpus:document-canvas"
+
+    def get(self, request, *args, **kwargs):
+        document = self.get_object()
+        # Raise 404 if there should be an actual canvas and not this placeholder
+        if document.has_image():
+            raise Http404
+        manifest_uri = absolutize_url(
+            reverse("corpus:document-manifest", args=[document.pk]),
+            request=request,  # request is needed to avoid getting https:// urls in dev
+        )
+        # get absolute url for the current page to use as canvas id
+        canvas_id = self.get_absolute_url()
+        # create canvas structure
+        canvas = new_iiif_canvas()
+        canvas["@id"] = canvas_id
+        # Append annotation list ref
+        canvas["otherContent"] = {
+            "@context": "http://iiif.io/api/presentation/2/context.json",
+            "@id": absolutize_url(
+                reverse("corpus:document-annotations", args=[document.pk]),
+                request=request,  # request is needed to avoid getting https:// urls in dev
+            ),
+            "@type": "sc:AnnotationList",
+        }
+        # Link back to manifest
+        canvas["partOf"] = [
+            {
+                "@id": manifest_uri,
+                "@type": "sc:Manifest",
+                "label": {"en": [document.title]},
+            }
+        ]
+
+        return JsonResponse(dict(canvas))
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #

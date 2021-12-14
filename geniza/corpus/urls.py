@@ -28,5 +28,10 @@ urlpatterns = [
         corpus_views.DocumentAnnotationList.as_view(),
         name="document-annotations",
     ),
+    path(
+        "documents/<int:pk>/iiif/canvas/1",
+        corpus_views.DocumentCanvas.as_view(),
+        name="document-canvas",
+    ),
     path("export/pgp-metadata-old/", corpus_views.pgp_metadata_for_old_site),
 ]
