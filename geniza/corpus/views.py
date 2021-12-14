@@ -4,6 +4,7 @@ from django.db.models.query import Prefetch
 from django.http import Http404, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect
 from django.urls import reverse
+from django.utils.html import strip_tags
 from django.utils.text import Truncator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -14,6 +15,7 @@ from tabular_export.admin import export_to_csv_response
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus.forms import DocumentSearchForm
+from geniza.corpus.iiif_utils import new_annotation_list, new_iiif_manifest
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Footnote
@@ -239,41 +241,93 @@ class DocumentScholarshipView(DocumentDetailView):
 
 
 class DocumentManifest(DocumentDetailView):
+    """Generate a IIIF Presentation manifest for a document,
+    incorporating available canvases and attaching transcription
+    content via annotation."""
 
     viewname = "corpus:document-manifest"
 
     def get(self, request, *args, **kwargs):
         document = self.get_object()
-        # for now, start with the simple case
-        iiif_urls = [
-            b.fragment.iiif_url
-            for b in document.textblock_set.all()
-            if b.fragment.iiif_url
-        ]
+        iiif_urls = document.iiif_urls()
+        local_manifest_id = self.get_absolute_url()
+        first_canvas = None
+        # TODO: also check if we have a transcription ?
+        # should 404 if no images or no transcription
 
-        # manifests = [
-        #     b.fragment.manifest
-        #     for b in document.textblock_set.all()
-        #     if b.fragment.iiif_url
-        # ]
-        # TODO: check if we have a transcription first!
-        if len(iiif_urls) == 1:
-            # cheat for a bit here; load from the live version instead of cached copy
-            manifest = IIIFPresentation.from_url(iiif_urls[0])
-            first_canvas = manifest.sequences[0].canvases[0]
-            # associate our the annotation to our copy of the manifest
+        manifest = new_iiif_manifest()
+        manifest.id = local_manifest_id
+        manifest.label = document.title
+        # we probably want other metadata as well...
+        manifest.metadata = [{"label": "PGP ID", "value": str(document.id)}]
+        manifest.description = document.description
+
+        canvases = []
+        # keep track of unique attributions so we can include them all
+        attributions = set()
+        for url in iiif_urls:
+            remote_manifest = IIIFPresentation.from_url(url)
+            # CUDL attribution has some variation in tags;
+            # would be nice to preserve tagged version,
+            # for now, ignore tags so we can easily de-dupe
+            attributions.add(strip_tags(remote_manifest.attribution))
+            for canvas in remote_manifest.sequences[0].canvases:
+                # do we want local canvas id, or rely on remote id?
+                local_canvas = dict(canvas)
+                if first_canvas is None:
+                    first_canvas = local_canvas
+                # TODO: can we build this from djiffy canvas?
+
+                # adding provenance per recommendation from folks on IIIf Slack
+                # to track original source of this canvas
+                local_canvas["partOf"] = [
+                    {
+                        "@id": remote_manifest.id,
+                        "@type": "sc:Manifest",
+                        "label": {
+                            "en": ["original source: %s" % remote_manifest.label]
+                        },
+                    }
+                ]
+
+                # NOTE: would be nice to attach the annotation list to every canvas,
+                # so transcription will be available with any page,
+                # but canvas id needs to match annotation target
+                canvases.append(local_canvas)
+
+        manifest.sequences = [{"@type": "sc:Sequence", "canvases": canvases}]
+        # TODO: add a PGP logo here? combine logos?
+        # NOTE: multiple logos do not seem to work with iiif presentation 2.0;
+        # (or at least, do not display in Mirador)
+        # in 3.0 we can use multiple provider blocks, but no viewer supports it yet
+
+        extra_attrs = "\n".join("<p>%s</p>" % attr for attr in attributions)
+        manifest.attribution = """<div><p>Compilation%s by Princeton Geniza Project.</p>
+        <p>Additional restrictions may apply.</p>%s
+        </div>""" % (
+            " and transcription" if document.has_transcription() else "",
+            extra_attrs,
+        )
+
+        # TODO: handle case of transcription with no image
+
+        # if transcription is available, add an annotation list to first canvas
+        if document.has_transcription():
             first_canvas["otherContent"] = {
                 "@context": "http://iiif.io/api/presentation/2/context.json",
                 "@id": absolutize_url(
                     reverse("corpus:document-annotations", args=[document.pk]),
-                    request=request,  # needed for http: in dev
+                    request=request,  # request is needed to avoid getting https:// urls in dev
                 ),
                 "@type": "sc:AnnotationList",
             }
+
         return JsonResponse(dict(manifest))
 
 
 class DocumentAnnotationList(DocumentDetailView):
+    """Generate a IIIF Annotation List for a document to make transcription
+    content available for inclusion in local IIIF manifest."""
 
     viewname = "corpus:document-annotations"
 
@@ -282,12 +336,8 @@ class DocumentAnnotationList(DocumentDetailView):
         # get absolute url for the current page to use as annotation list id
         annotation_list_id = self.get_absolute_url()
         # create outer annotation list structure
-        annotation_list = {
-            "@context": "http://iiif.io/api/presentation/2/context.json",
-            "@id": annotation_list_id,
-            "@type": "sc:AnnotationList",
-            "resources": [],
-        }
+        annotation_list = new_annotation_list()
+        annotation_list.id = annotation_list_id
         # for now, annotate the first canvas
         # get a list of djiffy manifests
         manifests = [
@@ -297,21 +347,15 @@ class DocumentAnnotationList(DocumentDetailView):
         ]
         canvas = None
         if manifests and manifests[0]:
-            print(manifests[0].uri)
             canvas = manifests[0].canvases.first()
-        # fallback to loading the remote manifest
+        # fallback to loading the remote manifest; (is this needed?)
         if not canvas:
-            iiif_urls = [
-                b.fragment.iiif_url
-                for b in document.textblock_set.all()
-                if b.fragment.iiif_url
-            ]
-            manifest = IIIFPresentation.from_url(iiif_urls[0])
+            manifest = IIIFPresentation.from_url(document.iiif_urls()[0])
             canvas = manifest.sequences[0].canvases[0]
 
         # TODO: if transcription and no canvas, generate a local canvas
-        # hard coded canvas id and size for now
-        # canvas_id = 'https://test-geniza.cdh.princteon.edu/iiif/na/canvas/1'
+        # something like this
+        # canvas_id = 'https://test-geniza.cdh.princeton.edu/iiif/na/canvas/1'
         # canvas_width = 3200
         # canvas_height = 4000
 
@@ -321,6 +365,7 @@ class DocumentAnnotationList(DocumentDetailView):
 
         resources = []
         digital_editions = document.digital_editions()
+        # handle multiple transcriptions
         for i, transcription in enumerate(digital_editions):
             annotation = {
                 # uri for this annotation; base on annotation list uri
@@ -333,7 +378,7 @@ class DocumentAnnotationList(DocumentDetailView):
             }
             annotation_list["resources"].append(annotation)
 
-        return JsonResponse(annotation_list)
+        return JsonResponse(dict(annotation_list))
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #
