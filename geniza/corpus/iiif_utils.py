@@ -33,7 +33,7 @@ def new_annotation_list():
 
 
 # starting point for an empty canvas
-base_manifest = {
+base_canvas = {
     "@context": "http://iiif.io/api/presentation/2/context.json",
     "@type": "sc:Canvas",
 }
@@ -41,7 +41,7 @@ base_manifest = {
 
 def new_iiif_canvas():
     # create IIIF canvas structure
-    return IIIFPresentation(base_manifest.copy())
+    return IIIFPresentation(base_canvas.copy())
 
 
 def part_of(manifest_id, label):
