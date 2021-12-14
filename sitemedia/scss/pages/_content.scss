@@ -7,6 +7,11 @@
 @use "../base/typography";
 
 #content-page {
+    h1 {
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: spacing.$spacing-xl;
+        }
+    }
     .container {
         // Overall spacing
         padding: spacing.$spacing-md spacing.$spacing-sm;

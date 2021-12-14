@@ -116,6 +116,12 @@ $text-size-5xl: 2.025rem; // ~ 32px
     }
     line-height: 1.5;
 }
+// label for unpublished records in scholarship records view
+@mixin unpublished {
+    @include caption;
+    font-style: normal;
+    font-family: fonts.$primary;
+}
 
 // links
 @mixin link {
