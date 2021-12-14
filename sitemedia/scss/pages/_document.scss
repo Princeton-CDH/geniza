@@ -29,17 +29,11 @@ body#document {
         // Document metadata
         .metadata {
             margin: spacing.$spacing-xl spacing.$spacing-xl 0;
-            font-size: typography.$text-size-md;
+            @include typography.meta;
             @include breakpoints.for-desktop-up {
                 flex: 1 0 50%;
                 padding-right: 0;
                 margin: spacing.$spacing-3xl 0 0;
-                font-size: typography.$text-size-2md;
-            }
-            a {
-                @include breakpoints.for-desktop-up {
-                    font-size: typography.$text-size-2md;
-                }
             }
             // Lighter color metadata
             .secondary {
@@ -90,19 +84,16 @@ body#document {
                 & + li {
                     margin-left: 0.5rem;
                 }
-                @include breakpoints.for-phone-only {
-                    font-size: typography.$text-size-md;
-                }
+                @include typography.meta;
             }
         }
         // "Description" header
         h2 {
             margin: spacing.$spacing-xl 0 spacing.$spacing-md;
-            font-size: typography.$text-size-md;
             @include breakpoints.for-desktop-up {
                 margin: spacing.$spacing-3xl 0 spacing.$spacing-md;
-                font-size: typography.$text-size-2md;
             }
+            @include typography.meta;
         }
     }
 }

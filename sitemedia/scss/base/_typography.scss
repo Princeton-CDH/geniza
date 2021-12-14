@@ -8,89 +8,70 @@
 @use "spacing";
 
 // Type scale: generate sizes according to harmonic ratio. This scale is based
-// on the "Major Third" scale, with a scale factor of 1.25. See:
+// on the "Major Second" scale, with a scale factor of 1.125. See:
 // https://baseline.is/tools/type-scale-generator/
-$text-size-xs: 0.64rem;
-$text-size-sm: 0.8rem;
-$text-size-md: 1rem;
-$text-size-2md: 1.15rem;
-$text-size-lg: 1.25rem;
-$text-size-xl: 1.56rem;
-$text-size-2xl: 1.95rem;
-$text-size-3xl: 2.44rem;
-$text-size-4xl: 3.05rem;
-$text-size-5xl: 3.81rem;
+$text-size-xs: 0.79rem; //   ~ 13px
+$text-size-sm: 0.89rem; //   ~ 14px
+$text-size-md: 1rem; //      = 16px
+$text-size-lg: 1.13rem; //   ~ 18px
+$text-size-xl: 1.27rem; //   ~ 20px
+$text-size-2xl: 1.42rem; //  ~ 23px
+$text-size-3xl: 1.6rem; //   ~ 26px
+$text-size-4xl: 1.8rem; //   ~ 29px
+$text-size-5xl: 2.025rem; // ~ 32px
 
 // Mixins to apply typographic styles to text elements.
+
+// H1 — page titles
 @mixin headline-1 {
     font-family: fonts.$primary;
-    font-size: $text-size-lg;
-    font-weight: lighter;
-    line-height: 1.3;
-    margin: spacing.$spacing-md;
-    @include breakpoints.for-tablet-landscape-up {
-        font-size: $text-size-xl;
-        margin: spacing.$spacing-3xl spacing.$spacing-md spacing.$spacing-md;
-    }
-}
-
-@mixin headline-2 {
-    font-family: fonts.$primary;
-    font-size: $text-size-2md;
-    font-weight: lighter;
-    line-height: 1.3;
-    margin-bottom: spacing.$spacing-md;
-    @include breakpoints.for-tablet-landscape-up {
-        font-size: $text-size-lg;
-        margin-bottom: spacing.$spacing-lg;
-    }
-}
-
-@mixin headline-3 {
-    font-family: fonts.$primary;
-    font-size: $text-size-md;
-    line-height: 1.3;
-    margin: spacing.$spacing-xl 0 spacing.$spacing-md;
-    @include breakpoints.for-tablet-landscape-up {
-        font-size: $text-size-2md;
-        margin-bottom: spacing.$spacing-lg;
-    }
-}
-
-@mixin headline-4 {
-    font-family: fonts.$primary;
     font-size: $text-size-2xl;
-    line-height: 1.3;
-}
-
-@mixin headline-5 {
-    font-family: fonts.$primary;
-    font-size: $text-size-xl;
-    line-height: 1.3;
-}
-
-@mixin headline-6 {
-    font-family: fonts.$primary;
-    font-size: $text-size-lg;
-    line-height: 1.3;
-}
-
-@mixin subtitle {
-    font-family: fonts.$secondary;
-    font-size: $text-size-2md;
-    @include breakpoints.for-tablet-landscape-up {
-        font-size: $text-size-lg;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-3xl;
     }
-    line-height: 1.3;
-}
-
-@mixin body {
-    font-family: fonts.$secondary;
-    font-size: $text-size-md;
     line-height: 1.5;
 }
 
+// H2 — section and search result titles
+@mixin headline-2 {
+    font-family: fonts.$primary;
+    font-size: $text-size-xl;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-2xl;
+    }
+    line-height: 1.5;
+}
+
+// H3 — sub-sections only on generic content pages
+@mixin headline-3 {
+    font-family: fonts.$primary;
+    font-size: $text-size-lg;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-xl;
+    }
+    line-height: 1.5;
+}
+
+// body text — descriptions on search + doc detail,
+// citation on scholarship records, all body content
+// on generic content pages
+@mixin body {
+    font-family: fonts.$primary;
+    font-size: $text-size-lg;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-xl;
+    }
+    line-height: 1.5;
+}
+@mixin body-bold {
+    @include body;
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+}
+
+// blockquote
 @mixin quote {
+    font-family: fonts.$primary;
     padding-left: spacing.$spacing-lg;
     border-left: 2px solid;
     margin: spacing.$spacing-2xl 0;
@@ -112,47 +93,123 @@ $text-size-5xl: 3.81rem;
     }
 }
 
+// metadata in search result items + doc detail
 @mixin meta {
-    font-family: fonts.$secondary;
+    font-family: fonts.$primary;
     font-size: $text-size-md;
     @include breakpoints.for-tablet-landscape-up {
-        font-size: $text-size-2md;
+        font-size: $text-size-lg;
     }
-    line-height: 1.3;
+    line-height: 1.5;
 }
 
-@mixin button {
-    font-family: fonts.$secondary;
-    font-size: $text-size-sm;
-    text-transform: uppercase;
-}
-
+// caption - "includes" on scholarship records, image
+// captions on generic content pages, number of results on
+// search
 @mixin caption {
-    font-family: fonts.$secondary;
-    font-size: $text-size-md;
+    font-family: fonts.$primary-italic;
     font-style: italic;
-    margin-top: spacing.$spacing-sm;
     @include colors.apply-theme("on-background-light");
+    font-size: $text-size-md;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-lg;
+    }
+    line-height: 1.5;
+}
+// label for unpublished records in scholarship records view
+@mixin unpublished {
+    @include caption;
+    font-style: normal;
+    font-family: fonts.$primary;
 }
 
+// links
 @mixin link {
     @include colors.apply-theme(
         "secondary",
         $property: "text-decoration-color"
     );
 
-    font-family: fonts.$secondary;
-    font-size: 1rem;
+    font-family: fonts.$primary;
     text-decoration-line: underline;
     text-decoration-style: solid;
     text-decoration-thickness: 0.1rem;
     text-underline-offset: 0.1rem;
 }
 
+// "type" part of document titles
 @mixin doctype {
+    font-family: fonts.$primary-bold;
     font-weight: bold;
     &::after {
         font-weight: normal;
         content: ": ";
     }
+}
+
+// hebrew transcriptions on search results +
+// doc detail
+@mixin transcription {
+    font-family: fonts.$primary;
+    font-size: $text-size-lg;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-xl;
+    }
+    line-height: 1.4;
+}
+// TODO: Use classes to only use this on hebrew transcriptions
+@mixin hebrew {
+    font-family: fonts.$hebrew;
+}
+
+// most form elements
+@mixin form-option {
+    @include body; // same font+sizes as body
+    line-height: 1.2;
+}
+@mixin form-option-bold {
+    @include body-bold;
+    line-height: 1.2;
+}
+
+// counts next to the filter options
+@mixin filter-count {
+    @include meta; // same font+sizes as meta
+    line-height: 1.2;
+}
+@mixin filter-count-bold {
+    @include meta; // same sizes as meta
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+// links in the navbar
+@mixin nav-link {
+    @include meta; // same font+sizes as meta
+    line-height: 1.4;
+}
+@mixin nav-bold {
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+    @include meta; // same sizes as meta
+    line-height: 1.4;
+}
+
+// Mobile nav menu uses big type
+@mixin mobile-menu {
+    font-size: $text-size-2xl;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-lg;
+    }
+}
+
+// Icon buttons
+@mixin icon-button {
+    font-size: $text-size-3xl;
+}
+
+// Temporary until new logo
+@mixin home-button {
+    font-size: $text-size-5xl;
 }

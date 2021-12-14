@@ -25,13 +25,12 @@
         margin-right: 0;
         height: spacing.$spacing-xl;
         padding: spacing.$spacing-sm;
-        font-size: typography.$text-size-md;
-        &::placeholder {
-            font-size: typography.$text-size-md;
-        }
         @include breakpoints.for-tablet-landscape-up {
             border-right: none;
-            font-size: typography.$text-size-2md;
+        }
+        @include typography.form-option;
+        &::placeholder {
+            @include typography.form-option;
         }
     }
     select[name="sort"] {
@@ -46,7 +45,6 @@
         but loses the dropdown arrow...  */
         /* -webkit-appearance: none;  */
         margin-top: spacing.$spacing-sm;
-        font-size: typography.$text-size-md;
         border: 1px solid colors.$gray-50;
         @include colors.apply-theme("on-background");
         @include colors.apply-theme(
@@ -56,18 +54,15 @@
         @include breakpoints.for-tablet-landscape-up {
             width: auto;
             flex: 0 1 auto;
-            font-size: typography.$text-size-lg;
         }
+        @include typography.form-option-bold;
     }
     label[for="sort"] {
         max-width: 100%;
         order: 4;
         flex: 1 0 100%;
         margin-top: spacing.$spacing-lg;
-        font-size: typography.$text-size-md;
-        @include breakpoints.for-tablet-landscape-up {
-            font-size: typography.$text-size-2md;
-        }
+        @include typography.form-option;
     }
     button[type="submit"] {
         order: 2;
@@ -76,7 +71,6 @@
         margin-left: 0;
         background-color: colors.$gray-30;
         border: 1px solid colors.$gray-50;
-        font-size: typography.$text-size-xl;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -91,6 +85,9 @@
                 height: spacing.$spacing-xl;
             }
         }
+        i {
+            @include typography.icon-button;
+        }
     }
     // document type filter
     details {
@@ -99,9 +96,7 @@
         max-width: 100%;
         border: 1px solid colors.$gray-50;
         margin-top: spacing.$spacing-lg;
-        @include breakpoints.for-tablet-landscape-up {
-            font-size: typography.$text-size-2md;
-        }
+        @include typography.form-option;
         // Label for document type filter
         summary {
             max-width: 100%;
@@ -159,13 +154,13 @@
                             @include colors.apply-theme("secondary");
                         }
                     }
-                    &:checked + span,
-                    &:checked + span + .count {
-                        font-weight: bold;
+                    &:checked + span {
+                        @include typography.form-option-bold;
                     }
-                    &:active + span,
+                    &:checked + span + .count {
+                        @include typography.filter-count-bold;
+                    }
                     &:focus + span,
-                    &:active + span + .count,
                     &:focus + span + .count {
                         @include colors.apply-theme(
                             "secondary",
@@ -182,7 +177,9 @@
                     max-width: 100%;
                     display: flex;
                     flex: 1 0 100%;
+                    align-items: center;
                     .count {
+                        @include typography.filter-count;
                         margin-left: auto;
                         padding: 0 spacing.$spacing-xs;
                     }
