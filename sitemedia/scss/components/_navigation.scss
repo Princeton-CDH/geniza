@@ -125,6 +125,7 @@
             border-top: 1px solid;
             @include colors.apply-theme("nav-outline", "border-top-color");
             @include typography.nav-link;
+            @include typography.mobile-menu;
         }
         & + .menu-item a,
         & + #about-menu .menu-item a {
@@ -224,6 +225,7 @@
             display: inline-block;
             flex: 1 0 auto;
             @include typography.nav-link;
+            @include typography.mobile-menu;
         }
         &:target {
             left: 0;
@@ -269,5 +271,6 @@
     // Currently active page
     a[aria-current="page"] {
         @include typography.nav-bold;
+        @include typography.mobile-menu;
     }
 }
