@@ -42,8 +42,3 @@ base_canvas = {
 def new_iiif_canvas():
     # create IIIF canvas structure
     return IIIFPresentation(base_canvas.copy())
-
-
-def part_of_manifest(manifest_id, label):
-    # create the "partOf" structure given an id and label
-    return
