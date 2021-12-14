@@ -13,7 +13,7 @@ nav.pagination {
     align-items: center;
     flex-flow: row wrap;
     margin: spacing.$spacing-lg 0;
-    @include typography.meta;
+    @include typography.nav-link;
     @include breakpoints.for-tablet-landscape-up {
         margin: spacing.$spacing-xl 0;
         justify-content: center;
@@ -28,9 +28,10 @@ nav.pagination {
     }
     a,
     span {
+        @include typography.nav-bold;
         @include typography.link;
-        font-weight: bold;
         &:not(.active) {
+            @include typography.nav-link;
             text-decoration: none;
             font-weight: normal;
         }
