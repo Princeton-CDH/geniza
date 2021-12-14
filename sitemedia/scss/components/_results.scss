@@ -97,6 +97,7 @@ section#document-list {
         // styles specific to transcription
         .transcription {
             @include typography.transcription;
+            @include typography.hebrew;
             align-self: flex-end;
             text-align: right;
             direction: rtl;

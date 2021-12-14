@@ -150,12 +150,16 @@ $text-size-5xl: 2.025rem; // ~ 32px
 // hebrew transcriptions on search results +
 // doc detail
 @mixin transcription {
-    font-family: fonts.$hebrew;
+    font-family: fonts.$primary;
     font-size: $text-size-lg;
     @include breakpoints.for-desktop-up {
         font-size: $text-size-xl;
     }
     line-height: 1.4;
+}
+// TODO: Use classes to only use this on hebrew transcriptions
+@mixin hebrew {
+    font-family: fonts.$hebrew;
 }
 
 // most form elements
