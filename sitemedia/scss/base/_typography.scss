@@ -175,12 +175,19 @@ $text-size-4xl: 1.8rem; //  ~ 29px
 
 // links in the navbar
 @mixin nav-link {
-    @include meta; // same font+sizes as meta
+    font-family: fonts.$primary;
+    font-size: $text-size-2xl; // Mobile menu uses big type
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-lg;
+    }
     line-height: 1.4;
 }
 @mixin nav-bold {
-    @include meta; // same sizes as meta
     font-family: fonts.$primary-bold;
     font-weight: bold;
+    font-size: $text-size-2xl; // Mobile menu uses big type
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-lg;
+    }
     line-height: 1.4;
 }

@@ -13,6 +13,7 @@ nav.pagination {
     align-items: center;
     flex-flow: row wrap;
     margin: spacing.$spacing-lg 0;
+    @include typography.meta;
     @include breakpoints.for-tablet-landscape-up {
         margin: spacing.$spacing-xl 0;
         justify-content: center;
@@ -28,7 +29,6 @@ nav.pagination {
     a,
     span {
         @include typography.link;
-        font-size: typography.$text-size-md;
         font-weight: bold;
         &:not(.active) {
             text-decoration: none;
@@ -36,7 +36,6 @@ nav.pagination {
         }
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 spacing.$spacing-sm;
-            font-size: typography.$text-size-2md;
         }
     }
     a {
