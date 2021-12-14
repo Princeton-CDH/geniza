@@ -10,14 +10,15 @@
 // Type scale: generate sizes according to harmonic ratio. This scale is based
 // on the "Major Second" scale, with a scale factor of 1.125. See:
 // https://baseline.is/tools/type-scale-generator/
-$text-size-xs: 0.79rem; //  ~ 13px
-$text-size-sm: 0.89rem; //  ~ 14px
-$text-size-md: 1rem; //     = 16px
-$text-size-lg: 1.13rem; //  ~ 18px
-$text-size-xl: 1.27rem; //  ~ 20px
-$text-size-2xl: 1.42rem; // ~ 23px
-$text-size-3xl: 1.6rem; //  ~ 26px
-$text-size-4xl: 1.8rem; //  ~ 29px
+$text-size-xs: 0.79rem; //   ~ 13px
+$text-size-sm: 0.89rem; //   ~ 14px
+$text-size-md: 1rem; //      = 16px
+$text-size-lg: 1.13rem; //   ~ 18px
+$text-size-xl: 1.27rem; //   ~ 20px
+$text-size-2xl: 1.42rem; //  ~ 23px
+$text-size-3xl: 1.6rem; //   ~ 26px
+$text-size-4xl: 1.8rem; //   ~ 29px
+$text-size-5xl: 2.025rem; // ~ 32px
 
 // Mixins to apply typographic styles to text elements.
 
@@ -191,4 +192,14 @@ $text-size-4xl: 1.8rem; //  ~ 29px
     @include breakpoints.for-desktop-up {
         font-size: $text-size-lg;
     }
+}
+
+// Icon buttons
+@mixin icon-button {
+    font-size: $text-size-3xl;
+}
+
+// Temporary until new logo
+@mixin home-button {
+    font-size: $text-size-5xl;
 }

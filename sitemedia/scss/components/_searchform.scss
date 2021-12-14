@@ -86,7 +86,7 @@
             }
         }
         i {
-            font-size: typography.$text-size-3xl;
+            @include typography.icon-button;
         }
     }
     // document type filter

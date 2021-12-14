@@ -17,14 +17,13 @@
     }
     // Logotype, links to homepage
     a.home-link {
-        font-size: typography.$text-size-4xl; // Placeholder until new logo
         @include breakpoints.for-tablet-landscape-up {
             @include colors.apply-combo("primary");
         }
-
         display: inline-block;
         flex: none;
         padding: spacing.$spacing-lg spacing.$spacing-md;
+        @include typography.home-button;
     }
     // Mobile-only menu buttons
     li.menu-button {
@@ -32,7 +31,7 @@
         a {
             display: flex;
             text-decoration: none;
-            font-size: typography.$text-size-3xl;
+            @include typography.icon-button;
             @include colors.apply-theme("on-background");
         }
     }
@@ -149,7 +148,7 @@
             &::after {
                 font-family: "Phosphor";
                 content: "\f0c4"; // phosphor caret-right icon
-                font-size: typography.$text-size-3xl;
+                @include typography.icon-button;
             }
             ul {
                 display: none;
@@ -218,7 +217,7 @@
             a#back-to-main-menu::before {
                 font-family: "Phosphor";
                 content: "\f0c3"; // phosphor caret-left icon
-                font-size: typography.$text-size-3xl;
+                @include typography.icon-button;
             }
         }
         li.menu-label {
