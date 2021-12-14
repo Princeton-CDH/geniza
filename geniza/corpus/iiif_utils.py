@@ -30,3 +30,26 @@ def new_annotation_list():
     # this is not strictly a presentation object, but
     # the behavior is useful (@context, @id, attrdict)
     return IIIFPresentation(base_annotation_list.copy())
+
+
+# starting point for an empty canvas
+base_manifest = {
+    "@context": "http://iiif.io/api/presentation/2/context.json",
+    "@type": "sc:Canvas",
+}
+
+
+def new_iiif_canvas():
+    # create IIIF canvas structure
+    return IIIFPresentation(base_manifest.copy())
+
+
+def part_of(manifest_id, label):
+    # create the "partOf" structure given an id and label
+    return [
+        {
+            "@id": str(manifest_id),
+            "@type": "sc:Manifest",
+            "label": {"en": [str(label)]},
+        }
+    ]
