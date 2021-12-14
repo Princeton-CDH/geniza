@@ -33,29 +33,33 @@
 // Greta Sans regular, bold for Hebrew and Latin text
 @font-face {
     font-family: "Greta Sans Hebrew Regular";
-    src: url("../fonts/WF-037420-011833-002518.woff2") format("woff2"),
-        url("../fonts/WF-037420-011833-002518.woff") format("woff");
+    src: url("/static/fonts/WF-037420-011833-002518.woff2") format("woff2"),
+        url("/static/fonts/WF-037420-011833-002518.woff") format("woff");
 }
 
 @font-face {
     font-family: "Greta Sans Hebrew Bold";
-    src: url("../fonts/WF-037420-011833-002521.woff2") format("woff2"),
-        url("../fonts/WF-037420-011833-002521.woff") format("woff");
+    src: url("/static/fonts/WF-037420-011833-002521.woff2") format("woff2"),
+        url("/static/fonts/WF-037420-011833-002521.woff") format("woff");
 }
 
 // Greta Sans italic for Latin text
 @font-face {
     font-family: "Greta Sans Regular Italic";
-    src: url("../fonts/WF-037420-011833-001036.woff2") format("woff2"),
-        url("../fonts/WF-037420-011833-001036.woff") format("woff");
+    src: url("/static/fonts/WF-037420-011833-001036.woff2") format("woff2"),
+        url("/static/fonts/WF-037420-011833-001036.woff") format("woff");
 }
 
 // Frank Ruhl1924 MF Medium for Hebrew text
 @font-face {
     font-family: "FrankRuhl 1924 MF Medium";
-    src: url("../fonts/FrankRuhl1924MFMediumMedium.woff2") format("woff2"),
-        url("../fonts/FrankRuhl1924MFMediumMedium.woff") format("woff");
+    src: url("/static/fonts/FrankRuhl1924MFMediumMedium.woff2") format("woff2"),
+        url("/static/fonts/FrankRuhl1924MFMediumMedium.woff") format("woff");
 }
+
+// TODO: Use remote references to proprietary fonts for Percy in CI
+// @media only percy {
+// }
 
 // Variables containing font stacks go here, for use as "font-family" values.
 // We pick fallback fonts that are reasonably close to the desired webfont and

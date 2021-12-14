@@ -31,6 +31,19 @@ module.exports = (env, options) => ({
     },
     module: {
         rules: [
+            // handle .woff and .woff2 fonts
+            {
+                test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
+                use: [
+                    {
+                        loader: "file-loader",
+                        options: {
+                            name: "[name].[ext]",
+                            outputPath: "fonts/",
+                        },
+                    },
+                ],
+            },
             // styles configuration: handle .sass, .scss, .css files and apply autoprefixer
             {
                 test: /\.(sa|sc|c)ss$/,
@@ -39,7 +52,12 @@ module.exports = (env, options) => ({
                     options.mode == "production"
                         ? MiniCssExtractPlugin.loader
                         : "style-loader",
-                    { loader: "css-loader" },
+                    {
+                        loader: "css-loader",
+                        options: {
+                            url: false, // use resolve-url-loader instead
+                        },
+                    },
                     {
                         loader: "postcss-loader", // postcss used for Autoprefixer
                         options: {
@@ -48,6 +66,7 @@ module.exports = (env, options) => ({
                             },
                         },
                     },
+                    { loader: "resolve-url-loader" }, // used to resolve fonts
                     {
                         loader: "sass-loader",
                         options: {
