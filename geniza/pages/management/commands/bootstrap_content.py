@@ -104,10 +104,13 @@ class Command(BaseCommand):
             test_content_page = self.generate_test_content_page()
             home_page.add_child(instance=test_content_page)
 
-        # Create site or add page tree to site
+        # Create or update site with page tree and other options
         try:
             default_site = Site.objects.get(is_default_site=True)
             default_site.root_page = home_page
+            default_site.port = port
+            default_site.hostname = hostname
+            default_site.site_name = "Geniza"
             default_site.save()
         except ObjectDoesNotExist:
             default_site = Site.objects.create(
