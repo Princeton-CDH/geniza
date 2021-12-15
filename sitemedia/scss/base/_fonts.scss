@@ -61,12 +61,14 @@
 }
 
 // for normal operation, load fonts from /static/fonts
-@include declare-fonts("/static/fonts");
+// @include declare-fonts("/static/fonts");
 
 // Use Percy visual review, load fonts from the production site
-@media only percy {
-    @include declare-fonts("https://geniza.cdh.princeton.edu/static/fonts");
-}
+// @media only percy {
+// @include declare-fonts("https://geniza.cdh.princeton.edu/static/fonts");
+
+@include declare-fonts("http://localhost:8000/static/fonts");
+// }
 
 // Variables containing font stacks go here, for use as "font-family" values.
 // We pick fallback fonts that are reasonably close to the desired webfont and

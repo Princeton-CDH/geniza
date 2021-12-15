@@ -287,3 +287,6 @@ MEDIA_URL = "/media/"
 
 # Wagtail site name
 WAGTAIL_SITE_NAME = "GENIZA"
+
+# default font base url
+FONT_URL_PREFIX = "/static/fonts/"
