@@ -149,6 +149,22 @@
   },
   {
     "fields": {
+      "name": "Qaraite divorce",
+      "slug": "qaraite-divorce"
+    },
+    "model": "taggit.tag",
+    "pk": 2786
+  },
+  {
+    "fields": {
+      "name": "Qaraites",
+      "slug": "qaraites"
+    },
+    "model": "taggit.tag",
+    "pk": 623
+  },
+  {
+    "fields": {
       "name": "excommunication",
       "slug": "excommunication"
     },
@@ -270,6 +286,7 @@
   {
     "fields": {
       "display_name": "Judaeo-Arabic",
+      "iso_code": "jrb",
       "language": "Judaeo-Arabic",
       "script": "Hebrew"
     },
@@ -533,6 +550,7 @@
   {
     "fields": {
       "display_name": "Aramaic",
+      "iso_code": "arc",
       "language": "Aramaic",
       "script": "Hebrew"
     },
@@ -642,6 +660,7 @@
   {
     "fields": {
       "display_name": "Arabic",
+      "iso_code": "ar",
       "language": "Arabic",
       "script": "Arabic"
     },
@@ -681,6 +700,7 @@
   {
     "fields": {
       "display_name": "Hebrew",
+      "iso_code": "he",
       "language": "Hebrew",
       "script": "Hebrew"
     },
@@ -826,6 +846,21 @@
       "old_shelfmarks": "",
       "shelfmark": "T-S 18J1.17",
       "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-00018-J-00001-00017"
+    },
+    "model": "corpus.fragment"
+  },
+  {
+    "fields": {
+      "collection": ["Taylor-Schechter", "Cambridge University Library"],
+      "created": "2021-05-26T20:32:52.120Z",
+      "iiif_url": "",
+      "is_multifragment": false,
+      "last_modified": "2021-05-26T20:32:52.120Z",
+      "needs_review": "",
+      "notes": "",
+      "old_shelfmarks": "",
+      "shelfmark": "T-S 12.70",
+      "url": ""
     },
     "model": "corpus.fragment"
   },
@@ -1465,19 +1500,19 @@
   {
     "fields": {
       "created": "2021-08-14T18:22:39.097Z",
-      "description": "Letter from \u1e62edaqa Nes probably to Moshe b. Yehuda. Dating: Last quarter of the 15th century. Fragment: left half only. In Hebrew, with some Judaeo-Arabic and some Greek/Coptic numerals. Reporting on business matters. Commodities include: cinnamon, nutmeg, indigo, materia medica, d\u0101r filfil, sandalwood. The sender asks for directives, reports that there are rumors of war by land, and prays for the coming of the Messiah.",
+      "description": "Duplicate, see PGPID 34178",
       "doc_date_calendar": "",
       "doc_date_original": "",
       "doc_date_standard": "",
-      "doctype": ["Letter"],
+      "doctype": null,
       "language_note": "",
-      "languages": [["Hebrew", "Hebrew"]],
-      "last_modified": "2021-08-14T18:22:39.097Z",
-      "needs_review": "",
+      "languages": [],
+      "last_modified": "2021-11-08T21:32:36.686Z",
+      "needs_review": "delete or merge",
       "notes": "",
       "old_pgpids": null,
       "secondary_languages": [],
-      "status": "P"
+      "status": "S"
     },
     "model": "corpus.document",
     "pk": 34177
@@ -1501,6 +1536,26 @@
     },
     "model": "corpus.document",
     "pk": 3504
+  },
+  {
+    "fields": {
+      "created": "2021-05-26T20:32:52.123Z",
+      "description": "Bill of divorce, Qaraite. In Hebrew. T-S 12.54 and T-S 12.70 are two very rare examples of Qaraite bills of divorce. Husband: \u02bfAmm\u0101r al-Kh\u0101\u1e6dir\u012b. Witnesses: Yefet Kohen b. \u02bfEli; Mevorakh b. Yehuda ha-Levi.",
+      "doc_date_calendar": "",
+      "doc_date_original": "",
+      "doc_date_standard": "",
+      "doctype": ["Legal"],
+      "language_note": "",
+      "languages": [["Hebrew", "Hebrew"]],
+      "last_modified": "2021-06-26T02:30:36.454Z",
+      "needs_review": "",
+      "notes": "Look for Goitein scan in this folder: https://drive.google.com/drive/folders/1ZAWSK3ILoRyll0FafU61V5zdccx0CgaP?usp=sharing",
+      "old_pgpids": null,
+      "secondary_languages": [],
+      "status": "P"
+    },
+    "model": "corpus.document",
+    "pk": 9469
   },
   {
     "fields": {
@@ -1968,14 +2023,14 @@
   {
     "fields": {
       "created": "2021-05-26T20:24:21.402Z",
-      "description": "Documentary per FGP - needs examination.",
+      "description": "See PGP 19611",
       "doc_date_calendar": "",
       "doc_date_original": "",
       "doc_date_standard": "",
       "doctype": ["Literary"],
       "language_note": "",
       "languages": [],
-      "last_modified": "2021-10-05T08:57:36.424Z",
+      "last_modified": "2021-11-24T20:49:24.748Z",
       "needs_review": "",
       "notes": "FGP stub",
       "old_pgpids": null,
@@ -2171,6 +2226,19 @@
     },
     "model": "corpus.textblock",
     "pk": 17094
+  },
+  {
+    "fields": {
+      "certain": true,
+      "document": 9469,
+      "fragment": ["T-S 12.70"],
+      "multifragment": "",
+      "order": null,
+      "region": "",
+      "side": ""
+    },
+    "model": "corpus.textblock",
+    "pk": 15818
   },
   {
     "fields": {
@@ -2722,17 +2790,32 @@
   },
   {
     "fields": {
-      "code": "en",
-      "name": "English"
+      "type": "Book"
     },
-    "model": "footnotes.sourcelanguage",
+    "model": "footnotes.sourcetype",
     "pk": 1
   },
   {
     "fields": {
-      "type": "Book"
+      "code": "fr",
+      "name": "French"
+    },
+    "model": "footnotes.sourcelanguage",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "type": "Article"
     },
     "model": "footnotes.sourcetype",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "code": "en",
+      "name": "English"
+    },
+    "model": "footnotes.sourcelanguage",
     "pk": 1
   },
   {
@@ -2773,11 +2856,14 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [3],
       "notes": "Created from PGPID 5566",
       "other_info": "PhD diss. Tel Aviv University",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 4,
       "title": "Eleventh Century Arabic Letters of Jewish Merchants from the Cairo Geniza",
       "title_ar": null,
@@ -2806,11 +2892,14 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [1],
       "notes": "Created from PGPID 30820",
       "other_info": "",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 3,
       "title": null,
       "title_ar": null,
@@ -2826,11 +2915,14 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [3],
       "notes": "Created from PGPID 444",
       "other_info": "",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 1,
       "title": "Palestine During the First Muslim Period (634\u20131099)",
       "title_ar": null,
@@ -2846,11 +2938,14 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [],
       "notes": "",
       "other_info": "",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 3,
       "title": "typed texts",
       "title_ar": null,
@@ -2866,11 +2961,14 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [],
       "notes": "",
       "other_info": "",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 3,
       "title": "typed texts",
       "title_ar": null,
@@ -2886,11 +2984,14 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [],
       "notes": "",
       "other_info": "",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 3,
       "title": "typed texts",
       "title_ar": null,
@@ -2906,44 +3007,14 @@
   {
     "fields": {
       "edition": null,
-      "journal": "",
-      "languages": [],
-      "notes": "Created from PGPID 3504",
-      "other_info": "",
-      "page_range": "",
-      "source_type": 3,
-      "title": "",
-      "title_ar": null,
-      "title_en": "",
-      "title_he": null,
-      "url": "",
-      "volume": "",
-      "year": null
-    },
-    "model": "footnotes.source",
-    "pk": 490
-  },
-  {
-    "fields": {
-      "first_name": "Craig",
-      "first_name_ar": null,
-      "first_name_en": "Craig",
-      "first_name_he": null,
-      "last_name": "Perry",
-      "last_name_ar": null,
-      "last_name_en": "Perry",
-      "last_name_he": null
-    },
-    "model": "footnotes.creator"
-  },
-  {
-    "fields": {
-      "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [3],
       "notes": "Created from PGPID 2519",
       "other_info": "",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 1,
       "title": "The Jews of Sicily, 825\u20131068: Documents and Sources",
       "title_ar": null,
@@ -2972,11 +3043,14 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [1],
       "notes": "Created from PGPID 30961",
       "other_info": "",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 3,
       "title": null,
       "title_ar": null,
@@ -3005,11 +3079,14 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [1],
       "notes": "Created from PGPID 19732",
       "other_info": "",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 1,
       "title": "Arabic Legal and Administrative Documents in the Cambridge Genizah Collections",
       "title_ar": null,
@@ -3038,11 +3115,14 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [3],
       "notes": "Created from PGPID 5558",
       "other_info": "",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 1,
       "title": "In the Kingdom of Ishmael",
       "title_ar": null,
@@ -3071,11 +3151,14 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [3],
       "notes": "",
       "other_info": "PhD Dissertation. The Hebrew University of Jerusalem.",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 4,
       "title": "The Musta\u02bfrib Jews in Syria, Palestine and Egypt: 1330-1700",
       "title_ar": null,
@@ -3104,11 +3187,109 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
+      "journal": "",
+      "languages": [],
+      "notes": "Created from PGPID 3504",
+      "other_info": "",
+      "page_range": "",
+      "place_published": "",
+      "publisher": "",
+      "source_type": 3,
+      "title": "",
+      "title_ar": null,
+      "title_en": "",
+      "title_he": null,
+      "url": "",
+      "volume": "",
+      "year": null
+    },
+    "model": "footnotes.source",
+    "pk": 490
+  },
+  {
+    "fields": {
+      "first_name": "Craig",
+      "first_name_ar": null,
+      "first_name_en": "Craig",
+      "first_name_he": null,
+      "last_name": "Perry",
+      "last_name_ar": null,
+      "last_name_en": "Perry",
+      "last_name_he": null
+    },
+    "model": "footnotes.creator"
+  },
+  {
+    "fields": {
+      "edition": null,
+      "issue": null,
+      "journal": "Revue des Etudes Juives",
+      "languages": [4],
+      "notes": "",
+      "other_info": "",
+      "page_range": "",
+      "place_published": "",
+      "publisher": "",
+      "source_type": 2,
+      "title": "La lettre de divorce cara\u00efte et sa place dans les relations entre Cara\u00eftes et Rabbanites au Moyen Age (Une \u00e9tude de manuscrits de la Geniza du Caire)",
+      "title_ar": null,
+      "title_en": "La lettre de divorce cara\u00efte et sa place dans les relations entre Cara\u00eftes et Rabbanites au Moyen Age (Une \u00e9tude de manuscrits de la Geniza du Caire)",
+      "title_he": null,
+      "url": "",
+      "volume": "155:3\u20134",
+      "year": 1996
+    },
+    "model": "footnotes.source",
+    "pk": 768
+  },
+  {
+    "fields": {
+      "first_name": "Judith",
+      "first_name_ar": null,
+      "first_name_en": "Judith",
+      "first_name_he": null,
+      "last_name": "Olszowy-Schlanger",
+      "last_name_ar": null,
+      "last_name_en": "Olszowy-Schlanger",
+      "last_name_he": null
+    },
+    "model": "footnotes.creator"
+  },
+  {
+    "fields": {
+      "edition": null,
+      "issue": null,
+      "journal": "",
+      "languages": [1],
+      "notes": "Created from PGPID 2367",
+      "other_info": "",
+      "page_range": "",
+      "place_published": "",
+      "publisher": "",
+      "source_type": 3,
+      "title": "typed texts",
+      "title_ar": null,
+      "title_en": "typed texts",
+      "title_he": null,
+      "url": "",
+      "volume": "",
+      "year": null
+    },
+    "model": "footnotes.source",
+    "pk": 25
+  },
+  {
+    "fields": {
+      "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [3],
       "notes": "Created from PGPID 4744",
       "other_info": "",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 4,
       "title": "Engagement and Betrothal Documents from the Cairo Geniza",
       "title_ar": null,
@@ -3137,11 +3318,14 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [],
       "notes": "",
       "other_info": "",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 3,
       "title": "typed texts",
       "title_ar": null,
@@ -3232,15 +3416,6 @@
   },
   {
     "fields": {
-      "creator": ["Perry", "Craig"],
-      "sort_order": 1,
-      "source": 490
-    },
-    "model": "footnotes.authorship",
-    "pk": 729
-  },
-  {
-    "fields": {
       "creator": ["Ben-Sasson", "Menahem"],
       "sort_order": 1,
       "source": 65
@@ -3283,6 +3458,33 @@
     },
     "model": "footnotes.authorship",
     "pk": 1171
+  },
+  {
+    "fields": {
+      "creator": ["Perry", "Craig"],
+      "sort_order": 1,
+      "source": 490
+    },
+    "model": "footnotes.authorship",
+    "pk": 729
+  },
+  {
+    "fields": {
+      "creator": ["Olszowy-Schlanger", "Judith"],
+      "sort_order": 1,
+      "source": 768
+    },
+    "model": "footnotes.authorship",
+    "pk": 1169
+  },
+  {
+    "fields": {
+      "creator": ["Goitein", "S. D."],
+      "sort_order": 1,
+      "source": 25
+    },
+    "model": "footnotes.authorship",
+    "pk": 28
   },
   {
     "fields": {
@@ -3612,6 +3814,34 @@
     },
     "model": "footnotes.footnote",
     "pk": 3921
+  },
+  {
+    "fields": {
+      "content": null,
+      "content_type": ["corpus", "document"],
+      "doc_relation": "E",
+      "location": "",
+      "notes": "",
+      "object_id": 9469,
+      "source": 25,
+      "url": ""
+    },
+    "model": "footnotes.footnote",
+    "pk": 6362
+  },
+  {
+    "fields": {
+      "content": null,
+      "content_type": ["corpus", "document"],
+      "doc_relation": "E,T",
+      "location": "348\u201350",
+      "notes": "Translation to French",
+      "object_id": 9469,
+      "source": 768,
+      "url": "https://www.academia.edu/38307649/Judith_Olszowy-Schlanger_La_lettre_de_divorce_cara%C3%AFte_et_sa_place_dans_les_relations_entre_Cara%C3%AFtes_et_Rabbanites_au_Moyen_Age_Une_%C3%A9tude_de_manuscrits_de_la_Geniza_du_Caire_Revue_des_Etudes_Juives_155_3-4_July-December_1996_261-285"
+    },
+    "model": "footnotes.footnote",
+    "pk": 6363
   },
   {
     "fields": {
@@ -5340,7 +5570,7 @@
       "is_active": true,
       "is_staff": true,
       "is_superuser": false,
-      "last_login": "2021-10-10T20:16:22.534Z",
+      "last_login": "2021-10-19T18:38:43.073Z",
       "last_name": "Glickman",
       "password": "",
       "user_permissions": [],
@@ -5351,11 +5581,14 @@
   {
     "fields": {
       "edition": null,
+      "issue": null,
       "journal": "",
       "languages": [],
       "notes": "Source of transcription not noted in original PGP database (or similar)",
       "other_info": "",
       "page_range": "",
+      "place_published": "",
+      "publisher": "",
       "source_type": 3,
       "title": "[unknown source]",
       "title_ar": null,
@@ -5411,7 +5644,7 @@
       "is_active": true,
       "is_staff": true,
       "is_superuser": false,
-      "last_login": "2021-10-08T03:06:23.849Z",
+      "last_login": "2021-11-30T16:46:16.007Z",
       "last_name": "Dudley",
       "password": "",
       "user_permissions": [],
@@ -5428,7 +5661,7 @@
       "is_active": true,
       "is_staff": true,
       "is_superuser": true,
-      "last_login": "2021-09-30T12:13:39.295Z",
+      "last_login": "2021-11-17T15:51:48.440Z",
       "last_name": "Rustow",
       "password": "",
       "user_permissions": [],
@@ -5445,7 +5678,7 @@
       "is_active": true,
       "is_staff": true,
       "is_superuser": false,
-      "last_login": "2021-10-07T05:10:33.304Z",
+      "last_login": "2021-11-26T17:32:17.676Z",
       "last_name": "Ashur",
       "password": "",
       "user_permissions": [],
@@ -5479,7 +5712,7 @@
       "is_active": true,
       "is_staff": true,
       "is_superuser": false,
-      "last_login": "2021-10-01T05:09:39.477Z",
+      "last_login": "2021-11-25T18:32:53.683Z",
       "last_name": "Elbaum",
       "password": "",
       "user_permissions": [],
@@ -5787,6 +6020,32 @@
   },
   {
     "fields": {
+      "action_flag": 2,
+      "action_time": "2021-11-08T21:32:00.921Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Type\", \"Primary Languages\", \"Description\", \"Status\"]}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "34177",
+      "object_repr": "?? (PGPID 34177)",
+      "user": ["ae5677"]
+    },
+    "model": "admin.logentry",
+    "pk": 111503
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-11-08T21:32:36.748Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Needs review\"]}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "34177",
+      "object_repr": "?? (PGPID 34177)",
+      "user": ["ae5677"]
+    },
+    "model": "admin.logentry",
+    "pk": 111504
+  },
+  {
+    "fields": {
       "action_flag": 1,
       "action_time": "2017-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2017",
@@ -5859,6 +6118,76 @@
     },
     "model": "taggit.taggeditem",
     "pk": 17783
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "2017-01-01T05:00:00Z",
+      "change_message": "Initial data entry (spreadsheet), dated 2017",
+      "content_type": ["corpus", "document"],
+      "object_id": "9469",
+      "object_repr": "T-S 12.70 (PGPID 9469)",
+      "user": ["snisenson"]
+    },
+    "model": "admin.logentry",
+    "pk": 50842
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "2021-05-26T20:32:52.141Z",
+      "change_message": "Imported via script",
+      "content_type": ["corpus", "document"],
+      "object_id": "9469",
+      "object_repr": "T-S 12.70 (PGPID 9469)",
+      "user": ["script"]
+    },
+    "model": "admin.logentry",
+    "pk": 50843
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-06-26T02:30:04.815Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Type\", \"Languages\", \"Description\", \"Tags\"]}}, {\"added\": {\"name\": \"footnote\", \"object\": \"Edition of T-S 12.70 (PGPID 9469)\"}}, {\"added\": {\"name\": \"footnote\", \"object\": \"Edition and Translation of T-S 12.70 (PGPID 9469)\"}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "9469",
+      "object_repr": "T-S 12.70 (PGPID 9469)",
+      "user": ["ae5677"]
+    },
+    "model": "admin.logentry",
+    "pk": 104060
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-06-26T02:30:36.615Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Description\"]}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "9469",
+      "object_repr": "T-S 12.70 (PGPID 9469)",
+      "user": ["ae5677"]
+    },
+    "model": "admin.logentry",
+    "pk": 104061
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 9469,
+      "tag": 623
+    },
+    "model": "taggit.taggeditem",
+    "pk": 35314
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 9469,
+      "tag": 2786
+    },
+    "model": "taggit.taggeditem",
+    "pk": 35313
   },
   {
     "fields": {
@@ -7396,6 +7725,32 @@
     },
     "model": "admin.logentry",
     "pk": 109485
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-10-18T05:17:33.641Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Description\"]}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "19612",
+      "object_repr": "Bodl. MS heb. f 58/18 (PGPID 19612)",
+      "user": ["aashur"]
+    },
+    "model": "admin.logentry",
+    "pk": 110383
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-11-24T20:49:24.856Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Description\"]}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "19612",
+      "object_repr": "Bodl. MS heb. f 58/18 (PGPID 19612)",
+      "user": ["aashur"]
+    },
+    "model": "admin.logentry",
+    "pk": 112148
   },
   {
     "fields": {

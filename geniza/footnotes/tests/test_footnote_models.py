@@ -55,11 +55,13 @@ class TestSource:
             ordinal(twoauthor_source.edition),
         )
 
-        # four authors, no title
+        # four authors, no title, unpublished
         lastnames = [
             a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
         ]
-        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s" % tuple(lastnames)
+        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s, %s" % (
+            tuple(lastnames) + (multiauthor_untitledsource.source_type.type.lower(),)
+        )
 
     @pytest.mark.django_db
     def test_str_article(self, article):
@@ -180,6 +182,14 @@ class TestSource:
         assert Source.get_volume_from_shelfmark("T-S 3564.5J") == "T-S 35"
         assert Source.get_volume_from_shelfmark("Bodl. 3563") == "Bodl."
         assert Source.get_volume_from_shelfmark("T-S Miscellan 36") == "T-S Misc"
+
+    def test_formatted_source_url(self, source):
+        # should create link around source title
+        source.url = "http://example.com/"
+        assert (
+            '<a href="http://example.com/">%s</a>' % source.title
+            in source.formatted_display()
+        )
 
 
 class TestFootnote:

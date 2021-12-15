@@ -23,7 +23,7 @@ from taggit_selectize.managers import TaggableManager
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
-from geniza.footnotes.models import Footnote, Source
+from geniza.footnotes.models import Creator, Footnote
 
 logger = logging.getLogger(__name__)
 
@@ -173,6 +173,9 @@ class Fragment(TrackChangesModel):
 
     objects = FragmentManager()
 
+    # NOTE: may want to add optional ForeignKey to djiffy Manifest here
+    # (or property to find by URI if not an actual FK)
+
     class Meta:
         ordering = ["shelfmark"]
 
@@ -223,6 +226,9 @@ class Fragment(TrackChangesModel):
                 self.old_shelfmarks = ";".join(old_shelfmarks - {self.shelfmark})
             else:
                 self.old_shelfmarks = self.initial_value("shelfmark")
+
+        # NOTE: consider triggering manifest import here when iiif url changes
+
         super(Fragment, self).save(*args, **kwargs)
 
 
@@ -321,7 +327,7 @@ class Document(ModelIndexable):
         help_text='Refer to <a href="%s" target="_blank">PGP Document Type Guide</a>'
         % settings.PGP_DOCTYPE_GUIDE,
     )
-    tags = TaggableManager(blank=True)
+    tags = TaggableManager(blank=True, related_name="tagged_document")
     languages = models.ManyToManyField(
         LanguageScript, blank=True, verbose_name="Primary Languages"
     )
@@ -531,6 +537,23 @@ class Document(ModelIndexable):
         return self.footnotes.filter(doc_relation__contains=Footnote.EDITION).order_by(
             "content", "source"
         )
+
+    def digital_editions(self):
+        """All footnotes for this document where the document relation includes
+        edition AND the footnote has content."""
+        return (
+            self.footnotes.filter(doc_relation__contains=Footnote.EDITION)
+            .filter(content__isnull=False)
+            .order_by("content", "source")
+        )
+
+    def editors(self):
+        """All unique authors of digital editions for this document."""
+        return Creator.objects.filter(
+            source__footnote__doc_relation__contains=Footnote.EDITION,
+            source__footnote__content__isnull=False,
+            source__footnote__document=self,
+        ).distinct()
 
     @classmethod
     def items_to_index(cls):

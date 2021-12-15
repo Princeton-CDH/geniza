@@ -29,17 +29,11 @@ body#document {
         // Document metadata
         .metadata {
             margin: spacing.$spacing-xl spacing.$spacing-xl 0;
-            font-size: typography.$text-size-md;
+            @include typography.meta;
             @include breakpoints.for-desktop-up {
                 flex: 1 0 50%;
                 padding-right: 0;
                 margin: spacing.$spacing-3xl 0 0;
-                font-size: typography.$text-size-2md;
-            }
-            a {
-                @include breakpoints.for-desktop-up {
-                    font-size: typography.$text-size-2md;
-                }
             }
             // Lighter color metadata
             .secondary {
@@ -58,6 +52,8 @@ body#document {
                 margin-top: spacing.$spacing-xs;
             }
             // hanging "info" phosphor icon before link
+            // disabled for MVP
+            /*
             dd a::before {
                 @include colors.apply-theme("on-background");
                 font-family: "Phosphor" !important;
@@ -67,6 +63,7 @@ body#document {
                 text-align: center;
                 margin-left: -#{spacing.$spacing-xl};
             }
+            */
         }
         // Document tags
         .tags {
@@ -82,19 +79,21 @@ body#document {
                 margin-left: 0;
             }
             li {
-                @include breakpoints.for-phone-only {
-                    font-size: typography.$text-size-md;
+                // spacing between tags
+                margin-right: 0;
+                & + li {
+                    margin-left: 0.5rem;
                 }
+                @include typography.meta;
             }
         }
         // "Description" header
         h2 {
             margin: spacing.$spacing-xl 0 spacing.$spacing-md;
-            font-size: typography.$text-size-md;
             @include breakpoints.for-desktop-up {
                 margin: spacing.$spacing-3xl 0 spacing.$spacing-md;
-                font-size: typography.$text-size-2md;
             }
+            @include typography.meta;
         }
     }
 }

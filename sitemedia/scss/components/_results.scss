@@ -12,7 +12,7 @@ section#document-list {
     // count of results
     h1 {
         @include container.two-column;
-        @include typography.headline-6;
+        @include typography.caption;
         text-align: center;
         margin: spacing.$spacing-sm 0;
     }
@@ -52,21 +52,9 @@ section#document-list {
         display: flex;
         flex-flow: column;
 
-        // document tags
-        .tags {
-            order: 1;
-        }
-
         // document titles
         .title {
-            @include typography.subtitle;
-            order: 2;
             position: relative;
-            margin-top: spacing.$spacing-md;
-            margin-bottom: spacing.$spacing-md;
-            @include breakpoints.for-tablet-landscape-up {
-                margin-bottom: spacing.$spacing-sm;
-            }
 
             // anchor counter to h2 instead of li, for alignment regardless of tags
             .counter {
@@ -84,16 +72,13 @@ section#document-list {
 
         // other document metadata
         .metadata {
-            order: 3;
             grid-template-columns: auto 1fr;
             column-gap: 1rem;
-            row-gap: spacing.$spacing-xs;
         }
 
         // document description, transcription
         .description,
         .transcription {
-            order: 4;
             margin: spacing.$spacing-md 0;
 
             // keywords in context
@@ -111,6 +96,9 @@ section#document-list {
 
         // styles specific to transcription
         .transcription {
+            @include typography.transcription;
+            @include typography.hebrew;
+            align-self: flex-end;
             text-align: right;
             direction: rtl;
             white-space: pre-line;
@@ -118,12 +106,20 @@ section#document-list {
 
         // document scholarship records
         .scholarship {
-            order: 5;
             @include typography.meta;
-
+            display: flex;
+            flex-flow: row wrap;
             & span {
                 padding-right: spacing.$spacing-md;
+                &:last-child {
+                    padding-right: 0;
+                }
             }
+        }
+
+        // document tags
+        ul.tags {
+            margin-top: spacing.$spacing-md;
         }
     }
 
@@ -133,17 +129,13 @@ section#document-list {
         width: max-content;
         margin-left: auto;
         margin-top: spacing.$spacing-md;
-        font-size: typography.$text-size-md;
-        @include breakpoints.for-tablet-landscape-up {
-            font-size: typography.$text-size-lg;
-        }
+        @include typography.meta;
         i {
-            margin-left: spacing.$spacing-sm;
-            font-size: typography.$text-size-lg;
+            margin-left: spacing.$spacing-2xs;
             @include breakpoints.for-tablet-landscape-up {
-                margin-left: spacing.$spacing-lg;
-                font-size: typography.$text-size-2xl;
+                margin-left: spacing.$spacing-sm;
             }
+            @include typography.headline-2;
         }
     }
 }
