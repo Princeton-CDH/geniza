@@ -31,30 +31,41 @@
 // @font-face declarations
 
 // Greta Sans regular, bold for Hebrew and Latin text
-@font-face {
-    font-family: "Greta Sans Hebrew Regular";
-    src: url("/static/fonts/WF-037420-011833-002518.woff2") format("woff2"),
-        url("/static/fonts/WF-037420-011833-002518.woff") format("woff");
+@mixin declare-fonts($base_url) {
+    @font-face {
+        font-family: "Greta Sans Hebrew Regular";
+        src: url("#{$base_url}/WF-037420-011833-002518.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011833-002518.woff") format("woff");
+    }
+
+    @font-face {
+        font-family: "Greta Sans Hebrew Bold";
+        src: url("#{$base_url}/WF-037420-011833-002521.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011833-002521.woff") format("woff");
+    }
+
+    // Greta Sans italic for Latin text
+    @font-face {
+        font-family: "Greta Sans Regular Italic";
+        src: url("#{$base_url}/WF-037420-011833-001036.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011833-001036.woff") format("woff");
+    }
+
+    // Frank Ruhl1924 MF Medium for Hebrew text
+    @font-face {
+        font-family: "FrankRuhl 1924 MF Medium";
+        src: url("#{$base_url}/FrankRuhl1924MFMediumMedium.woff2")
+                format("woff2"),
+            url("#{$base_url}/FrankRuhl1924MFMediumMedium.woff") format("woff");
+    }
 }
 
-@font-face {
-    font-family: "Greta Sans Hebrew Bold";
-    src: url("/static/fonts/WF-037420-011833-002521.woff2") format("woff2"),
-        url("/static/fonts/WF-037420-011833-002521.woff") format("woff");
-}
+// for normal operation, load fonts from /static/fonts
+@include declare-fonts("/static/fonts");
 
-// Greta Sans italic for Latin text
-@font-face {
-    font-family: "Greta Sans Regular Italic";
-    src: url("/static/fonts/WF-037420-011833-001036.woff2") format("woff2"),
-        url("/static/fonts/WF-037420-011833-001036.woff") format("woff");
-}
-
-// Frank Ruhl1924 MF Medium for Hebrew text
-@font-face {
-    font-family: "FrankRuhl 1924 MF Medium";
-    src: url("/static/fonts/FrankRuhl1924MFMediumMedium.woff2") format("woff2"),
-        url("/static/fonts/FrankRuhl1924MFMediumMedium.woff") format("woff");
+// Use Percy visual review, load fonts from the production site
+@media only percy {
+    @include declare-fonts("https://geniza.cdh.princeton.edu/static/fonts");
 }
 
 // Variables containing font stacks go here, for use as "font-family" values.
