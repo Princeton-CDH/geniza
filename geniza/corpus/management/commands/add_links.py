@@ -3,7 +3,7 @@ import re
 from collections import Counter
 
 from django.conf import settings
-from django.contrib.admin.models import CHANGE, LogEntry
+from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
@@ -131,17 +131,18 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             )
         )
 
-    # HELPERS -------------------------
-
-    def log_change(self, obj, contenttype, message):
+    def log_action(self, obj, action=CHANGE):
         # create log entry so there is a record of adding/updating urls
+        message = "%s by add_links script" % (
+            "Created" if action == ADDITION else "Updated"
+        )
         LogEntry.objects.log_action(
             user_id=self.script_user.id,
-            content_type_id=contenttype,
+            content_type_id=self.content_types[obj.__class__].pk,
             object_id=obj.pk,
             object_repr=str(obj),
             change_message=message,
-            action_flag=CHANGE,
+            action_flag=action,
         )
 
     def set_footnote_url(self, doc, source, url, doc_relation):
@@ -176,6 +177,7 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             # save the change and update the count
             footnote.save()
             self.stats["footnotes_updated"] += 1
+            self.log_action(footnote)
 
         # if an appropriate footnote was not found, create a new one
         else:
@@ -183,6 +185,7 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
                 source=source, content_object=doc, url=url, doc_relation=doc_relation
             )
             self.stats["footnotes_created"] += 1
+            self.log_action(footnote, action=ADDITION)
 
         # return the footnote to indicate success
         return footnote
@@ -209,6 +212,7 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             source.authors.add(self.goitein)
             source.save()
             self.stats["sources_created"] += 1
+            self.log_action(source, action=ADDITION)
 
         return source
 

@@ -3,7 +3,7 @@ from io import StringIO
 from unittest.mock import Mock, mock_open, patch
 
 import pytest
-from django.contrib.admin.models import CHANGE, LogEntry
+from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.db.models.fields.related import ForeignKey
@@ -139,6 +139,9 @@ def test_get_goitein_source_new(typed_texts, jewish_traders, india_book, multifr
     assert source != typed_texts
     assert source.volume == "T-S 16"
     assert cmd.stats["sources_created"] == 1
+    # should create log entry documenting footnote creation
+    log = LogEntry.objects.get(object_id=source.pk)
+    assert log.action_flag == ADDITION
 
 
 def test_get_india_book(typed_texts, jewish_traders, india_book):
@@ -164,6 +167,11 @@ def test_set_footnote_url_create(typed_texts, jewish_traders, india_book, docume
     assert footnote.url == test_url
     assert footnote.doc_relation == Footnote.TRANSLATION
     assert cmd.stats["footnotes_created"] == 1
+    # should create log entry documenting footnote creation
+    log = LogEntry.objects.get(object_id=footnote.pk)
+    assert log.action_flag == ADDITION
+    assert log.change_message == "Created by add_links script"
+    assert log.user_id == cmd.script_user.id
 
     # if we try to set a new url, should not update the same footnote
     second_url = "http://example.com/pgp/another-link/"
@@ -172,6 +180,16 @@ def test_set_footnote_url_create(typed_texts, jewish_traders, india_book, docume
     )
     assert cmd.stats["footnotes_created"] == 2
     assert second_footnote != footnote
+
+    # testing updating footnote
+    second_footnote.url = ""
+    second_footnote.save()
+    cmd.set_footnote_url(
+        document, jewish_traders, url=second_url, doc_relation=Footnote.TRANSLATION
+    )
+    # a change entry should be created
+    log = LogEntry.objects.get(object_id=second_footnote.pk, action_flag=CHANGE)
+    assert log.change_message == "Updated by add_links script"
 
 
 def test_set_footnote_url_update(typed_texts, jewish_traders, india_book, document):
