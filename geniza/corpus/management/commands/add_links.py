@@ -6,9 +6,7 @@ from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
-from django.db import models
 
 # from parasolr.django.signals import IndexableSignalHandler
 from rich.progress import Progress
@@ -147,41 +145,44 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         )
 
     def set_footnote_url(self, doc, source, url, doc_relation):
-        # TODO: revise logic to account for the fact that some document
-        # are discussed on more than one goitein index card
+        """Set the requested url on a footnote for the specified document,
+        associated with the requested source. If an appropriate footnote
+        exists without a url, it will be updated. If not, a new one will
+        be created. If a footnote with the requested url and document
+        relation already exists, no changes are made. Returns the matching
+        footnote to indicate success."""
 
         # look for an existing footnote to update with the new url;
         # get or create doesn't work because not all parameters match (i.e., url)
         source_notes = doc.footnotes.filter(source=source).all()
-        # if a footnote with the requested url and document relation exists
-        # TODO: filter in python instead of making db calls
-        existing_link = source_notes.filter(
-            url=url, doc_relation__contains=[doc_relation]
-        )
-        if existing_link.exists():
-            return existing_link.first()
+        # check if a footnote with the requested url and document relation already exists
+        for note in source_notes:
+            # if url and document relation are already set, nothing needs to be done
+            if note.url == url and doc_relation in note.doc_relation:
+                return note
 
         # otherwise, use the first matching footnote with no url
-        footnote = source_notes.exclude(url="").first()
-        # NOTE: it might be possible for there to be multiple matches,
-        # but that seems to be a data error that has been corrected
-        # Warn if there is more than one match?
-
-        created = False
-        if not footnote:
-            # if a footnote was not found for the requested source, create one
-            footnote = Footnote.objects.create(source=source, content_object=doc)
-            created = True
-            self.stats["footnotes_created"] += 1
-
-        footnote.url = url
-        footnote.doc_relation = doc_relation
-        # only save if changed
-        if footnote.has_changed("url") or footnote.has_changed("doc_relation"):
+        # Don't update any footnotes with existing urls to avoid losing information;
+        # Note that some documents are discussed on more than one index card,
+        # and we don't want to overwrite the url for the first with the second.
+        notes_without_url = [note for note in source_notes if not note.url]
+        if notes_without_url:
+            # NOTE: could warn if there is more than one here...
+            footnote = notes_without_url[0]
+            # set the url
+            footnote.url = url
+            # ensure document relation is set accurately
+            footnote.doc_relation = doc_relation
+            # save the change and update the count
             footnote.save()
-            if not created:
-                # only count as an update if not newly created
-                self.stats["footnotes_updated"] += 1
+            self.stats["footnotes_updated"] += 1
+
+        # if an appropriate footnote was not found, create a new one
+        else:
+            footnote = Footnote.objects.create(
+                source=source, content_object=doc, url=url, doc_relation=doc_relation
+            )
+            self.stats["footnotes_created"] += 1
 
         # return the footnote to indicate success
         return footnote
@@ -218,12 +219,30 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         # sources in the database use the shorthand title "India Book"
         return self.india_book[f"India Book {rn_mapper[book_part]}"]
 
-    # PROCESS ENTRY --------------------
+    # base url target for each supported link type
+    base_url = {
+        "goitein_note": "https://commons.princeton.edu/media/geniza/",
+        "indexcard": "https://geniza.princeton.edu/indexcards/index.php?a=card&id=",
+        "jewish-traders": "https://s3.amazonaws.com/goitein-lmjt/",
+        "india-traders": "https://s3.amazonaws.com/goitein-india-traders/",
+    }
+
+    # document relation is known based on type;
+    # goitein typed texts provide transcriptions, index cards have discussion,
+    # and both jewish and india traders provide translations
+    document_relation = {
+        "goitein_note": Footnote.EDITION,
+        "indexcard": Footnote.DISCUSSION,
+        "jewish-traders": Footnote.TRANSLATION,
+        "india-traders": Footnote.TRANSLATION,
+    }
 
     def add_link(self, row):
         # if a single link type has been specified and this row doesn't match, bail out;
         # if this is an unsupported link type, bail out
-        if (self.link_type and row["link_type"] != self.link_type) or row[
+        link_type = row["link_type"]
+
+        if (self.link_type and link_type != self.link_type) or row[
             "link_type"
         ] in self.ignore_link_types:
             return -1  # return -1 to differentiate ignored instead of skipped
@@ -238,37 +257,26 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
                 )
             return
 
-        if row["link_type"] == "goitein_note":
-            # ?: Because this function takes up so much space, it may be easier
-            #  to simply just write out the 4-5 lines here. What do you think?
-            return self.set_footnote_url(
+        # target url: combine base url for this link type with link target from csv
+        target_url = "".join([self.base_url[link_type], row["link_target"]])
+        # get doc relation for this link type
+        doc_relation = self.document_relation[link_type]
+
+        # get source based on the link type
+        if link_type == "goitein_note":
+            source = self.get_goitein_source(doc=doc, title="typed texts")
+        elif link_type == "indexcard":
+            source = self.get_goitein_source(
                 doc=doc,
-                source=self.get_goitein_source(doc=doc, title="typed texts"),
-                url=f"https://commons.princeton.edu/media/geniza/{row['link_target']}",
-                doc_relation=Footnote.EDITION,
+                title="index cards",
+                url="https://geniza.princeton.edu/indexcards/",
             )
-        if row["link_type"] == "indexcard":
-            return self.set_footnote_url(
-                doc=doc,
-                source=self.get_goitein_source(
-                    doc=doc,
-                    title="index cards",
-                    url="https://geniza.princeton.edu/indexcards/",
-                ),
-                url=f"https://geniza.princeton.edu/indexcards/index.php?a=card&id={row['link_target']}",
-                doc_relation=Footnote.DISCUSSION,
-            )
-        if row["link_type"] == "jewish-traders":
-            return self.set_footnote_url(
-                doc=doc,
-                source=self.jewish_traders,
-                url=f"https://s3.amazonaws.com/goitein-lmjt/{row['link_target']}",
-                doc_relation=Footnote.TRANSLATION,
-            )
-        if row["link_type"] == "india-traders":
-            return self.set_footnote_url(
-                doc=doc,
-                source=self.get_india_book(row["link_title"]),
-                url=f"https://s3.amazonaws.com/goitein-india-traders/{row['link_target']}",
-                doc_relation=Footnote.TRANSLATION,
-            )
+        elif link_type == "jewish-traders":
+            source = self.jewish_traders
+        elif link_type == "india-traders":
+            source = self.get_india_book(row["link_title"])
+
+        # create or update footnote with the target url, beasd on all the other parameters determined
+        return self.set_footnote_url(
+            doc=doc, source=source, url=target_url, doc_relation=doc_relation
+        )

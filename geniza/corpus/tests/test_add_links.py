@@ -166,7 +166,6 @@ def test_set_footnote_url_create(typed_texts, jewish_traders, india_book, docume
     assert cmd.stats["footnotes_created"] == 1
 
     # if we try to set a new url, should not update the same footnote
-    # TODO: fix method logic to handle this case
     second_url = "http://example.com/pgp/another-link/"
     second_footnote = cmd.set_footnote_url(
         document, jewish_traders, url=second_url, doc_relation=Footnote.TRANSLATION
@@ -187,16 +186,11 @@ def test_set_footnote_url_update(typed_texts, jewish_traders, india_book, docume
     footnote = cmd.set_footnote_url(
         document, typed_texts, url=test_url, doc_relation=Footnote.EDITION
     )
-    # TODO: fix logic so this works
     # should update the existing footnote
     assert footnote.pk == existing_note.pk
     assert footnote.url == test_url
-    # TODO: figure out why this is not passing
     assert cmd.stats["footnotes_created"] == 0
     assert cmd.stats["footnotes_updated"] == 1
-
-
-# TODO: fix set_footnote_url logic so tests pass
 
 
 @patch("geniza.corpus.management.commands.add_links.Command.set_footnote_url")
@@ -265,5 +259,4 @@ def test_add_link_ignored():
     assert cmd.add_link({"link_type": "indexcard"}) == -1
 
 
-# refactor/simplify add link
-# add log entry handling
+# TODO: add & test log entry handling
