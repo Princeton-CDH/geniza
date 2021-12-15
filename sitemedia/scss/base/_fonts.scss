@@ -12,49 +12,60 @@
 /**
  * @license
  * MyFonts Webfont Build ID 4233441, 2021-12-03T12:11:09-0500
- * 
+ *
  * The fonts listed in this notice are subject to the End User License
- * Agreement(s) entered into by the website owner. All other parties are 
+ * Agreement(s) entered into by the website owner. All other parties are
  * explicitly restricted from using the Licensed Webfonts(s).
- * 
+ *
  * You may obtain a valid license at the URLs below.
- * 
+ *
  * Webfont: FrankRuhl1924MF-Medium-Medium by Masterfont
  * URL: https://www.myfonts.com/fonts/masterfont/frank-ruhl1924-mf/frank-ruhl1924-mf/
  * Copyright: Masterfont Ltd.
- * 
- * 
- * 
+ *
+ *
+ *
  * © 2021 MyFonts Inc
 */
 
 // @font-face declarations
 
 // Greta Sans regular, bold for Hebrew and Latin text
-@font-face {
-    font-family: "Greta Sans Hebrew Regular";
-    src: url("../fonts/WF-037420-011833-002518.woff2") format("woff2"),
-        url("../fonts/WF-037420-011833-002518.woff") format("woff");
+@mixin declare-fonts($base_url) {
+    @font-face {
+        font-family: "Greta Sans Hebrew Regular";
+        src: url("#{$base_url}/WF-037420-011833-002518.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011833-002518.woff") format("woff");
+    }
+
+    @font-face {
+        font-family: "Greta Sans Hebrew Bold";
+        src: url("#{$base_url}/WF-037420-011833-002521.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011833-002521.woff") format("woff");
+    }
+
+    // Greta Sans italic for Latin text
+    @font-face {
+        font-family: "Greta Sans Regular Italic";
+        src: url("#{$base_url}/WF-037420-011833-001036.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011833-001036.woff") format("woff");
+    }
+
+    // Frank Ruhl1924 MF Medium for Hebrew text
+    @font-face {
+        font-family: "FrankRuhl 1924 MF Medium";
+        src: url("#{$base_url}/FrankRuhl1924MFMediumMedium.woff2")
+                format("woff2"),
+            url("#{$base_url}/FrankRuhl1924MFMediumMedium.woff") format("woff");
+    }
 }
 
-@font-face {
-    font-family: "Greta Sans Hebrew Bold";
-    src: url("../fonts/WF-037420-011833-002521.woff2") format("woff2"),
-        url("../fonts/WF-037420-011833-002521.woff") format("woff");
-}
+// for normal operation, load fonts from /static/fonts
+@include declare-fonts("/static/fonts");
 
-// Greta Sans italic for Latin text
-@font-face {
-    font-family: "Greta Sans Regular Italic";
-    src: url("../fonts/WF-037420-011833-001036.woff2") format("woff2"),
-        url("../fonts/WF-037420-011833-001036.woff") format("woff");
-}
-
-// Frank Ruhl1924 MF Medium for Hebrew text
-@font-face {
-    font-family: "FrankRuhl 1924 MF Medium";
-    src: url("../fonts/FrankRuhl1924MFMediumMedium.woff2") format("woff2"),
-        url("../fonts/FrankRuhl1924MFMediumMedium.woff") format("woff");
+// Use Percy visual review, load fonts from the production site
+@media only percy {
+    @include declare-fonts("https://geniza.cdh.princeton.edu/static/fonts");
 }
 
 // Variables containing font stacks go here, for use as "font-family" values.
