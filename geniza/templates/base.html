@@ -20,6 +20,15 @@
         {% if SHOW_TEST_WARNING %}
             <link rel="stylesheet" type="text/css" href="{% static 'css/test-banner.css' %}"/>
         {% endif %}
+        <!-- resource preloading -->
+        <link rel="preload" as="font" type="font/woff2" href="/static/fonts/WF-037420-011833-002518.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="/static/fonts/WF-037420-011833-002521.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="/static/fonts/WF-037420-011833-001036.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="/static/fonts/FrankRuhl1924MFMediumMedium.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff" href="/static/fonts/WF-037420-011833-002518.woff" crossorigin />
+        <link rel="preload" as="font" type="font/woff" href="/static/fonts/WF-037420-011833-002521.woff" crossorigin />
+        <link rel="preload" as="font" type="font/woff" href="/static/fonts/WF-037420-011833-001036.woff" crossorigin />
+        <link rel="preload" as="font" type="font/woff" href="/static/fonts/FrankRuhl1924MFMediumMedium.woff" crossorigin />
         {# include current phosphor icons as css; check https://unpkg.com/phosphor-icons for latest version #}
         <link rel="stylesheet type="text/css" href="https://unpkg.com/phosphor-icons@1.3.2/src/css/phosphor.css" nonce="{{ reqest.csp_nonce }}"/>
         {% render_bundle "main" "css" %}
