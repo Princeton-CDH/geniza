@@ -1,4 +1,4 @@
-from collections import Counter
+from collections import Counter, defaultdict
 from io import StringIO
 from unittest.mock import Mock, mock_open, patch
 
@@ -6,10 +6,11 @@ import pytest
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.core.management import call_command
 from django.core.management.base import CommandError
+from django.db.models.fields.related import ForeignKey
 
 from geniza.corpus.management.commands import add_links
-from geniza.corpus.models import Fragment
-from geniza.footnotes.models import Source, SourceType
+from geniza.corpus.models import Document
+from geniza.footnotes.models import Footnote, Source, SourceType
 
 
 @pytest.fixture
@@ -45,8 +46,8 @@ class TestAddLinksSkipSetup:
         command.csv_path = "foo.csv"
         csv_data = "\n".join(
             [
-                "object_id,link_type,link_target",
-                "451,goitein_note,link_to_doc.pdf",
+                "object_id,link_type,link_target,link_title",
+                "451,goitein_note,link_to_doc.pdf,goitein",
             ]
         )
         mockfile = mock_open(read_data=csv_data)
@@ -63,6 +64,7 @@ class TestAddLinksSkipSetup:
                     "object_id": "451",
                     "link_type": "goitein_note",
                     "link_target": "link_to_doc.pdf",
+                    "link_title": "goitein",
                 }
             )
 
@@ -92,3 +94,176 @@ class TestAddLinksSkipSetup:
         with pytest.raises(CommandError) as err:
             command.handle(csv="/tmp/example/not-here.csv")
         assert "CSV file not found" in str(err)
+
+
+def test_setup(typed_texts, jewish_traders, india_book):
+    cmd = add_links.Command()
+    cmd.setup()
+    # check that contents are pulled as neded
+    assert cmd.goitein
+    assert cmd.goitein.last_name == "Goitein"
+    assert cmd.unpublished
+    assert cmd.unpublished == typed_texts.source_type
+
+    assert cmd.jewish_traders
+    assert cmd.jewish_traders == jewish_traders
+
+    assert cmd.india_book
+    assert cmd.india_book["India Book 1"] == india_book[0]
+    assert cmd.india_book["India Book 2"] == india_book[1]
+
+    assert cmd.script_user
+    assert cmd.content_types
+
+
+def test_get_goitein_source_existing(typed_texts, jewish_traders, india_book, document):
+    cmd = add_links.Command()
+    # typed text has volume CUL; document shelfmark starts CUL
+    cmd.setup()
+
+    source = cmd.get_goitein_source(document, "typed texts")
+    assert source == typed_texts
+
+
+def test_get_goitein_source_new(typed_texts, jewish_traders, india_book, multifragment):
+    cmd = add_links.Command()
+    # typed text has volume CUL; document shelfmark starts CUL
+    cmd.setup()
+    cmd.stats = {"sources_created": 0}
+    # create document with T-S shelfmark
+    doc = Document.objects.create()
+    doc.fragments.add(multifragment)
+
+    source = cmd.get_goitein_source(doc, "typed texts")
+    # new source, not existing typed texts
+    assert source != typed_texts
+    assert source.volume == "T-S 16"
+    assert cmd.stats["sources_created"] == 1
+
+
+def test_get_india_book(typed_texts, jewish_traders, india_book):
+    cmd = add_links.Command()
+    cmd.setup()
+
+    source = cmd.get_india_book("India Traders of the Middle Ages, II-11b")
+    assert source.title == "India Book 2"
+    assert source == india_book[1]
+
+
+def test_set_footnote_url_create(typed_texts, jewish_traders, india_book, document):
+    cmd = add_links.Command()
+    cmd.setup()
+    cmd.stats = {"footnotes_created": 0, "footnotes_updated": 0}
+
+    test_url = "http://example.com/pgp/link/"
+    footnote = cmd.set_footnote_url(
+        document, jewish_traders, url=test_url, doc_relation=Footnote.TRANSLATION
+    )
+    assert footnote.content_object == document
+    assert footnote.source == jewish_traders
+    assert footnote.url == test_url
+    assert footnote.doc_relation == Footnote.TRANSLATION
+    assert cmd.stats["footnotes_created"] == 1
+
+    # if we try to set a new url, should not update the same footnote
+    # TODO: fix method logic to handle this case
+    second_url = "http://example.com/pgp/another-link/"
+    second_footnote = cmd.set_footnote_url(
+        document, jewish_traders, url=second_url, doc_relation=Footnote.TRANSLATION
+    )
+    assert cmd.stats["footnotes_created"] == 2
+    assert second_footnote != footnote
+
+
+def test_set_footnote_url_update(typed_texts, jewish_traders, india_book, document):
+    cmd = add_links.Command()
+    cmd.setup()
+    cmd.stats = {"footnotes_created": 0, "footnotes_updated": 0}
+
+    # create a typed text footnote on document with no url to update
+    existing_note = Footnote.objects.create(content_object=document, source=typed_texts)
+
+    test_url = "http://example.com/pgp/link/"
+    footnote = cmd.set_footnote_url(
+        document, typed_texts, url=test_url, doc_relation=Footnote.EDITION
+    )
+    # TODO: fix logic so this works
+    # should update the existing footnote
+    assert footnote.pk == existing_note.pk
+    assert footnote.url == test_url
+    # TODO: figure out why this is not passing
+    assert cmd.stats["footnotes_created"] == 0
+    assert cmd.stats["footnotes_updated"] == 1
+
+
+# TODO: fix set_footnote_url logic so tests pass
+
+
+@patch("geniza.corpus.management.commands.add_links.Command.set_footnote_url")
+def test_add_link(mock_set_footnote, typed_texts, jewish_traders, india_book, document):
+    cmd = add_links.Command()
+    cmd.link_type = None
+    cmd.setup()
+    cmd.stats = defaultdict(int)
+
+    test_row = {
+        "object_id": document.pk,
+        "link_type": "jewish-traders",
+        "link_target": "abc123",
+    }
+    cmd.add_link(test_row)
+    mock_set_footnote.assert_called_with(
+        doc=document,
+        source=jewish_traders,
+        url="https://s3.amazonaws.com/goitein-lmjt/abc123",
+        doc_relation=Footnote.TRANSLATION,
+    )
+
+    test_row["link_type"] = "goitein_note"
+    cmd.add_link(test_row)
+    mock_set_footnote.assert_called_with(
+        doc=document,
+        source=typed_texts,
+        url="https://commons.princeton.edu/media/geniza/abc123",
+        doc_relation=Footnote.EDITION,
+    )
+    test_row["link_type"] = "indexcard"
+    cmd.add_link(test_row)
+    indexcard_source = cmd.get_goitein_source(
+        doc=document,
+        title="index cards",
+        url="https://geniza.princeton.edu/indexcards/",
+    )
+    mock_set_footnote.assert_called_with(
+        doc=document,
+        source=indexcard_source,
+        url="https://geniza.princeton.edu/indexcards/index.php?a=card&id=abc123",
+        doc_relation=Footnote.DISCUSSION,
+    )
+    test_row.update(
+        {
+            "link_type": "india-traders",
+            "link_title": "India Traders of the Middle Ages, I-3",
+        }
+    )
+    cmd.add_link(test_row)
+    mock_set_footnote.assert_called_with(
+        doc=document,
+        source=india_book[0],
+        url="https://s3.amazonaws.com/goitein-india-traders/abc123",
+        doc_relation=Footnote.TRANSLATION,
+    )
+
+
+def test_add_link_ignored():
+    cmd = add_links.Command()
+    cmd.link_type = None
+    assert cmd.add_link({"link_type": "transcription"}) == -1
+
+    # specify single link type
+    cmd.link_type = "jewish-traders"
+    assert cmd.add_link({"link_type": "indexcard"}) == -1
+
+
+# refactor/simplify add link
+# add log entry handling

@@ -32,7 +32,7 @@ class Command(BaseCommand):
         # "linkID",
         "object_id",
         "link_type",
-        # "link_title",
+        "link_title",
         "link_target",
         # "link_attribution",
     ]
@@ -60,7 +60,7 @@ class Command(BaseCommand):
             "-t", "--link_type", help="Only process the specified link type (optional)"
         )
 
-    def setup(self, options):
+    def setup(self):
         # load authors, sources, source types, etc that will be needed
         self.goitein = Creator.objects.get(last_name="Goitein")
         self.unpublished = SourceType.objects.get(type="Unpublished")
@@ -73,10 +73,10 @@ class Command(BaseCommand):
             for source in Source.objects.filter(title__startswith="India Book")
         }
 
-        self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
-
-        self.footnote_contenttype = ContentType.objects.get_for_model(Footnote)
-        self.source_contenttype = ContentType.objects.get_for_model(Source)
+        self.content_types = {
+            Footnote: ContentType.objects.get_for_model(Footnote),
+            Source: ContentType.objects.get_for_model(Source),
+        }
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
     def handle(self, *args, **options):
@@ -135,19 +135,6 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
 
     # HELPERS -------------------------
 
-    def get_document(self, pgpid):
-        """Find a document given its new or old PGPID"""
-        pgpid = int(pgpid)
-        try:
-            return Document.objects.get(
-                models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
-            )
-        except Document.DoesNotExist:
-            self.stats["document_not_found"] += 1
-            if self.verbosity > self.v_normal:
-                self.stdout.write("Document %s not found in database" % pgpid)
-            return
-
     def log_change(self, obj, contenttype, message):
         # create log entry so there is a record of adding/updating urls
         LogEntry.objects.log_action(
@@ -159,7 +146,7 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             action_flag=CHANGE,
         )
 
-    def create_footnote(self, doc, source, url, doc_relation):
+    def set_footnote_url(self, doc, source, url, doc_relation):
         # TODO: revise logic to account for the fact that some document
         # are discussed on more than one goitein index card
 
@@ -167,6 +154,7 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         # get or create doesn't work because not all parameters match (i.e., url)
         source_notes = doc.footnotes.filter(source=source).all()
         # if a footnote with the requested url and document relation exists
+        # TODO: filter in python instead of making db calls
         existing_link = source_notes.filter(
             url=url, doc_relation__contains=[doc_relation]
         )
@@ -198,8 +186,7 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         # return the footnote to indicate success
         return footnote
 
-    def get_goitein_source(self, doc=None, title=None, url=None):
-        # TODO: Add URL for index cards?
+    def get_goitein_source(self, doc, title, url=None):
         volume = Source.get_volume_from_shelfmark(doc.shelfmark)
         # common source options used to find or create our new source
         source_opts = {
@@ -241,22 +228,27 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         ] in self.ignore_link_types:
             return -1  # return -1 to differentiate ignored instead of skipped
 
-        # if document is not found, bail out
-        doc = self.get_document(row["object_id"])
+        # get document by id; if not found, bail out
+        doc = Document.get_by_any_pgpid(int(row["object_id"]))
         if not doc:
+            self.stats["document_not_found"] += 1
+            if self.verbosity > self.v_normal:
+                self.stdout.write(
+                    "Document %s not found in database" % row["object_id"]
+                )
             return
 
         if row["link_type"] == "goitein_note":
             # ?: Because this function takes up so much space, it may be easier
             #  to simply just write out the 4-5 lines here. What do you think?
-            return self.create_footnote(
+            return self.set_footnote_url(
                 doc=doc,
                 source=self.get_goitein_source(doc=doc, title="typed texts"),
                 url=f"https://commons.princeton.edu/media/geniza/{row['link_target']}",
-                doc_relation=[Footnote.EDITION],
+                doc_relation=Footnote.EDITION,
             )
         if row["link_type"] == "indexcard":
-            return self.create_footnote(
+            return self.set_footnote_url(
                 doc=doc,
                 source=self.get_goitein_source(
                     doc=doc,
@@ -264,19 +256,19 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
                     url="https://geniza.princeton.edu/indexcards/",
                 ),
                 url=f"https://geniza.princeton.edu/indexcards/index.php?a=card&id={row['link_target']}",
-                doc_relation=[Footnote.DISCUSSION],
+                doc_relation=Footnote.DISCUSSION,
             )
         if row["link_type"] == "jewish-traders":
-            return self.create_footnote(
+            return self.set_footnote_url(
                 doc=doc,
                 source=self.jewish_traders,
                 url=f"https://s3.amazonaws.com/goitein-lmjt/{row['link_target']}",
-                doc_relation=[Footnote.TRANSLATION],
+                doc_relation=Footnote.TRANSLATION,
             )
         if row["link_type"] == "india-traders":
-            return self.create_footnote(
+            return self.set_footnote_url(
                 doc=doc,
                 source=self.get_india_book(row["link_title"]),
                 url=f"https://s3.amazonaws.com/goitein-india-traders/{row['link_target']}",
-                doc_relation=[Footnote.TRANSLATION],
+                doc_relation=Footnote.TRANSLATION,
             )
