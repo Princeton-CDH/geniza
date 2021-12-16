@@ -5,7 +5,7 @@ module.exports = {
             url: [
                 "http://localhost:8000/en/documents/", // doc search
                 "http://localhost:8000/en/documents/2532/", // doc detail — currently with IIIF viewer
-                "http://localhost:8000/en/documents/2532/scholarship", // doc scholarship
+                "http://localhost:8000/en/documents/2532/scholarship/", // doc scholarship
                 "http://localhost:8000/en/content/", // content page
             ],
             // The following two commands make Lighthouse start up a Django
