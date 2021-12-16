@@ -131,9 +131,7 @@ class DocumentSearchView(ListView, FormMixin):
                 "page_title": self.page_title,
                 "page_type": "search",
                 "page_includes_transcriptions": True,  # preload transcription font
-                "highlighting": self.queryset.get_highlighting()
-                if self.queryset
-                else {},
+                "highlighting": highlights,
             }
         )
         return context_data

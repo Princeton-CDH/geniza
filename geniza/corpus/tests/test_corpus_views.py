@@ -346,7 +346,7 @@ class TestDocumentSearchView:
             context_data = docsearch_view.get_context_data()
             assert (
                 context_data["highlighting"]
-                == docsearch_view.queryset.get_highlighting.return_value
+                == context_data["page_obj"].object_list.get_highlighting.return_value
             )
             assert context_data["page_obj"].start_index() == 0
             # NOTE: test paginator isn't initialized properly from queryset count
