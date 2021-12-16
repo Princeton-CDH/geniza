@@ -11,7 +11,15 @@ def add_pp_to_footnote_pages(apps, schema_editor):
     # on the front end
     Footnote = apps.get_model("footnotes", "Footnote")
 
-    # find footnotes to update based on location
+    # find and update footnotes to based on location contents
+
+    # first, find footnotes with purely numeric location (i.e., single page number)
+    # prefix with p.
+    Footnote.objects.filter(location__regex=r"^\d+$").update(
+        location=Concat(Value("p. "), F("location"))
+    )
+
+    # next, find footnotes that start with numeric values
     # - exclude location that starts with numeric followed by a hebrew letter
     #   (currently only one, 49ב) — this is a document location, not a page number
     # - find all other footnotes with locations that start with a number
