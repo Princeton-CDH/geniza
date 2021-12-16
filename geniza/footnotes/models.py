@@ -2,6 +2,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
+from django.utils import html
 from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 from gfklookupwidget.fields import GfkLookupField
@@ -465,3 +466,20 @@ class Footnote(TrackChangesModel):
         "content as plain text, if available"
         if self.content:
             return self.content.get("text")
+
+    def iiif_annotation_content(self):
+        """Return transcription content from this footnote (if any)
+        as a IIIF annotation resource that can be associated with a canvas.
+        """
+        # For now, since we have no block/canvas information, return the
+        # whole thing as a single resource
+        html_content = self.content.get("html")
+        if html_content:
+            # this is the content that should be set as the "resource"
+            # of an annotation
+            return {
+                "@type": "cnt:ContentAsText",
+                "format": "text/html",
+                # language todo
+                "chars": "<div dir='rtl' class='transcription'>%s</div>" % html_content,
+            }

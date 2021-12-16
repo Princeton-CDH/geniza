@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-10 09:26-0500\n"
+"POT-Creation-Date: 2021-12-16 11:15-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -53,7 +53,7 @@ msgid "Document Type"
 msgstr "Document Type"
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:566
+#: geniza/corpus/models.py:601
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr ""
@@ -63,12 +63,12 @@ msgid "Home"
 msgstr "Home"
 
 #. Translators: label for document metadata section (editor, date, input date)
-#: geniza/corpus/templates/corpus/document_detail.html:29
+#: geniza/corpus/templates/corpus/document_detail.html:30
 msgid "Metadata"
 msgstr ""
 
 #. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:36
+#: geniza/corpus/templates/corpus/document_detail.html:37
 #, fuzzy
 #| msgid "Editor"
 msgid "Editor"
@@ -77,24 +77,24 @@ msgstr[0] "Editor"
 msgstr[1] "Editor"
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:50
-#: geniza/corpus/templates/corpus/snippets/document_result.html:29
+#: geniza/corpus/templates/corpus/document_detail.html:52
+#: geniza/corpus/templates/corpus/snippets/document_result.html:18
 msgid "Input date"
 msgstr "Input date"
 
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:54
+#: geniza/corpus/templates/corpus/document_detail.html:56
 msgid "Permalink"
 msgstr ""
 
 #. Translators: label for tags on a document
-#: geniza/corpus/templates/corpus/document_detail.html:64
-#: geniza/corpus/templates/corpus/snippets/document_result.html:19
+#: geniza/corpus/templates/corpus/document_detail.html:66
+#: geniza/corpus/templates/corpus/snippets/document_result.html:95
 msgid "Tags"
 msgstr ""
 
 #. Translators: label for document description
-#: geniza/corpus/templates/corpus/document_detail.html:75
+#: geniza/corpus/templates/corpus/document_detail.html:77
 msgid "Description"
 msgstr ""
 
@@ -112,7 +112,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: accessibility label for a footnote source citation in scholarship records view
-#: geniza/corpus/templates/corpus/document_scholarship.html:19
+#: geniza/corpus/templates/corpus/document_scholarship.html:20
 msgid "Bibliographic citation"
 msgstr ""
 
@@ -122,20 +122,20 @@ msgid "unpublished"
 msgstr ""
 
 #. Translators: label for footnote location within source (with url)
-#: geniza/corpus/templates/corpus/document_scholarship.html:31
+#: geniza/corpus/templates/corpus/document_scholarship.html:32
 #, python-format
 msgid "see <a href=\"%(url)s\">%(location)s</a> for"
 msgstr ""
 
 #. Translators: label for footnote location within source
-#: geniza/corpus/templates/corpus/document_scholarship.html:36
+#: geniza/corpus/templates/corpus/document_scholarship.html:37
 #, python-format
 msgid "see %(location)s for"
 msgstr ""
 
 #. Translators: label for included document relations for a footnote
-#: geniza/corpus/templates/corpus/document_scholarship.html:41
-#: geniza/corpus/templates/corpus/document_scholarship.html:43
+#: geniza/corpus/templates/corpus/document_scholarship.html:42
+#: geniza/corpus/templates/corpus/document_scholarship.html:44
 msgid "includes"
 msgstr ""
 
@@ -146,12 +146,12 @@ msgstr ""
 msgid "Edit"
 msgstr "Editor"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:31
+#: geniza/corpus/templates/corpus/snippets/document_result.html:20
 msgid "PGP ID"
 msgstr ""
 
 #. Translators: number of editions for this document
-#: geniza/corpus/templates/corpus/snippets/document_result.html:71
+#: geniza/corpus/templates/corpus/snippets/document_result.html:60
 #, python-format
 msgid "1 Transcription"
 msgid_plural "%(counter)s Transcriptions"
@@ -159,7 +159,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: number of translations for this document
-#: geniza/corpus/templates/corpus/snippets/document_result.html:81
+#: geniza/corpus/templates/corpus/snippets/document_result.html:70
 #, python-format
 msgid "1 Translation"
 msgid_plural "%(counter)s Translations"
@@ -167,18 +167,18 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: number of sources that discuss this document
-#: geniza/corpus/templates/corpus/snippets/document_result.html:91
+#: geniza/corpus/templates/corpus/snippets/document_result.html:80
 #, python-format
 msgid "1 Discussion"
 msgid_plural "%(counter)s Discussions"
 msgstr[0] ""
 msgstr[1] ""
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:99
+#: geniza/corpus/templates/corpus/snippets/document_result.html:88
 msgid "No Scholarship Records"
 msgstr ""
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:105
+#: geniza/corpus/templates/corpus/snippets/document_result.html:106
 msgid "View document details"
 msgstr ""
 
@@ -197,10 +197,8 @@ msgstr ""
 msgid "Scholarship Records (%(n_records)s)"
 msgstr ""
 
-#. Translators: n_links is number of external links
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:16
-#, python-format
-msgid "External Links (%(n_links)s)"
+msgid "External Links"
 msgstr ""
 
 #. Translators: Label for "previous page" button in search results
@@ -220,37 +218,57 @@ msgid "next page"
 msgstr ""
 
 #. Translators: title of document search page
-#: geniza/corpus/views.py:27
+#: geniza/corpus/views.py:30
 msgid "Search Documents"
 msgstr "Search Documents"
 
 #. Translators: description of document search page, for search engines
-#: geniza/corpus/views.py:29
+#: geniza/corpus/views.py:32
 msgid "Search and browse Geniza documents."
 msgstr ""
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:201
+#: geniza/corpus/views.py:209
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr ""
 
-#: geniza/corpus/views.py:208
+#: geniza/corpus/views.py:216
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
 msgstr[0] ""
 msgstr[1] ""
 
-#: geniza/footnotes/models.py:373
+#. Translators: attribution for local IIIF manifests
+#: geniza/corpus/views.py:313
+msgid "Princeton Geniza Project"
+msgstr ""
+
+#: geniza/corpus/views.py:314
+#, python-format
+msgid "Compilation by %(pgp)s."
+msgstr ""
+
+#: geniza/corpus/views.py:317
+#, python-format
+msgid "Compilation and transcription by %(pgp)s."
+msgstr ""
+
+#. Translators: manifest attribution note that content from other institutions may have restrictions
+#: geniza/corpus/views.py:319
+msgid "Additional restrictions may apply."
+msgstr ""
+
+#: geniza/footnotes/models.py:394
 msgid "Edition"
 msgstr ""
 
-#: geniza/footnotes/models.py:374
+#: geniza/footnotes/models.py:395
 msgid "Translation"
 msgstr ""
 
-#: geniza/footnotes/models.py:375
+#: geniza/footnotes/models.py:396
 msgid "Discussion"
 msgstr ""
 
@@ -258,7 +276,7 @@ msgstr ""
 msgid "Django site admin"
 msgstr ""
 
-#: geniza/templates/base.html:37
+#: geniza/templates/base.html:49
 msgid "Skip to main content"
 msgstr ""
 

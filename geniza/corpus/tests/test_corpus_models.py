@@ -1,5 +1,5 @@
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from attrdict import AttrDict
@@ -11,6 +11,7 @@ from django.core.serializers import serialize
 from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.safestring import SafeString
+from djiffy.models import Manifest
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
@@ -177,12 +178,15 @@ class TestFragment:
         assert isinstance(thumbnails, SafeString)
 
     @pytest.mark.django_db
-    def test_save(self):
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_save(self, mock_manifestimporter):
         frag = Fragment(shelfmark="TS 1")
         frag.save()
         frag.shelfmark = "TS 2"
         frag.save()
         assert frag.old_shelfmarks == "TS 1"
+        # should not try to import when there is no url
+        assert mock_manifestimporter.call_count == 0
 
         frag.shelfmark = "TS 3"
         frag.save()
@@ -202,6 +206,47 @@ class TestFragment:
         assert len(set(frag.old_shelfmarks.split(";"))) == len(
             frag.old_shelfmarks.split(";")
         )
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_save_import_manifest(self, mock_manifestimporter):
+        frag = Fragment(shelfmark="TS 1")
+        frag.save()
+        frag.shelfmark = "TS 2"
+        frag.save()
+        assert frag.old_shelfmarks == "TS 1"
+        # should not try to import when there is no url
+        assert mock_manifestimporter.call_count == 0
+
+        # should import when a iiif url is set
+        frag.iiif_url = "http://example.io/manifests/1"
+        # pre-create manifest that would be imported
+        manifest = Manifest.objects.create(uri=frag.iiif_url, short_id="m1")
+        frag.save()
+        mock_manifestimporter.assert_called_with()
+        mock_manifestimporter.return_value.import_paths.assert_called_with(
+            [frag.iiif_url]
+        )
+        # manifest should be set
+        assert frag.manifest == manifest
+
+        # should import when iiif url changes, even if manifest is set
+        frag.iiif_url = "http://example.io/manifests/2"
+        manifest2 = Manifest.objects.create(uri=frag.iiif_url, short_id="m2")
+        frag.save()
+        mock_manifestimporter.assert_called_with()
+        mock_manifestimporter.return_value.import_paths.assert_called_with(
+            [frag.iiif_url]
+        )
+        # new manifest should be set
+        assert frag.manifest == manifest2
+
+        # should not import and should remove manifest when unset
+        mock_manifestimporter.reset_mock()
+        frag.iiif_url = ""
+        frag.save()
+        assert mock_manifestimporter.call_count == 0
+        assert not frag.manifest
 
 
 @pytest.mark.django_db
@@ -227,6 +272,7 @@ class TestDocumentType:
 
 
 @pytest.mark.django_db
+@patch("geniza.corpus.models.ManifestImporter", Mock())
 class TestDocument:
     def test_shelfmark(self):
         # T-S 8J22.21 + T-S NS J193

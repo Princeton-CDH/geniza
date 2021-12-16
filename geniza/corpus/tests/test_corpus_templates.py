@@ -1,4 +1,5 @@
 import html
+from unittest.mock import Mock, patch
 
 import pytest
 from django.core.paginator import Paginator
@@ -11,6 +12,7 @@ from geniza.corpus.models import TextBlock
 from geniza.footnotes.models import Footnote
 
 
+@patch("geniza.corpus.models.ManifestImporter", Mock())
 class TestDocumentDetailTemplate:
     def test_shelfmark(self, client, document):
         """Document detail template should include shelfmark"""
@@ -41,11 +43,27 @@ class TestDocumentDetailTemplate:
     def test_viewer(self, client, document):
         """Document detail template should include viewer for IIIF content"""
         response = client.get(document.get_absolute_url())
+        local_manifest_url = reverse("corpus:document-manifest", args=[document.id])
         assertContains(
             response,
-            f'<div id="iiif_viewer" data-iiif-urls="https://cudl.lib.cam.ac.uk/iiif/MS-ADD-02586"></div>',
-            html=True,
+            f'<div id="iiif_viewer" data-iiif-url="{local_manifest_url}" ',
         )
+
+    def test_viewer_annotations(self, client, document, typed_texts):
+        """Document detail template should configure IIIF viewer for annotation display"""
+        # fixture does not have annotations
+        response = client.get(document.get_absolute_url())
+        assertContains(response, 'data-has-annotations="False"')
+
+        # add a footnote with a digital edition
+        Footnote.objects.create(
+            content_object=document,
+            source=typed_texts,
+            doc_relation={Footnote.EDITION},
+            content="A piece of text",
+        )
+        response = client.get(document.get_absolute_url())
+        assertContains(response, 'data-has-annotations="True"')
 
     def test_no_viewer(self, client, document):
         """Document with no IIIF shouldn't include viewer in template"""
@@ -55,13 +73,6 @@ class TestDocumentDetailTemplate:
         fragment.save()
         response = client.get(document.get_absolute_url())
         assertNotContains(response, '<div class="wrapper">')
-
-    def test_multi_viewer(self, client, join):
-        """Document with many IIIF urls should add all to viewer in template"""
-        response = client.get(join.get_absolute_url())
-        first_url = join.textblock_set.first().fragment.iiif_url
-        second_url = join.textblock_set.last().fragment.iiif_url
-        assertContains(response, f'data-iiif-urls="{first_url} {second_url}"')
 
     def test_edit_link(self, client, admin_client, document):
         """Edit link should appear if user is admin, otherwise it should not"""

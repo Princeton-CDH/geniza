@@ -15,6 +15,8 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate
 from django.utils.translation import gettext as _
+from djiffy.importer import ManifestImporter
+from djiffy.models import Manifest
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
@@ -168,6 +170,8 @@ class Fragment(TrackChangesModel):
         help_text="Enter text here if an administrator needs to review this fragment.",
     )
 
+    manifest = models.ForeignKey(Manifest, null=True, on_delete=models.SET_NULL)
+
     created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
 
@@ -189,6 +193,7 @@ class Fragment(TrackChangesModel):
         # if there is no iiif for this fragment, bail out
         if not self.iiif_url:
             return None
+        # TODO: switch this to use locally cached version!
         images = []
         labels = []
         manifest = IIIFPresentation.from_url(self.iiif_url)
@@ -227,7 +232,16 @@ class Fragment(TrackChangesModel):
             else:
                 self.old_shelfmarks = self.initial_value("shelfmark")
 
-        # NOTE: consider triggering manifest import here when iiif url changes
+        # if iiif url is set and manifest is not available, or iiif url has changed,
+        # import the manifest
+        if self.iiif_url and not self.manifest or self.has_changed("iiif_url"):
+            # if iiif url has changed and there is a value, import and update
+            if self.iiif_url:
+                ManifestImporter().import_paths([self.iiif_url])
+                self.manifest = Manifest.objects.filter(uri=self.iiif_url).first()
+            else:
+                # otherwise, clear the associated manifest (iiif url has been removed)
+                self.manifest = None
 
         super(Fragment, self).save(*args, **kwargs)
 
