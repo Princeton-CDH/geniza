@@ -1,6 +1,10 @@
 """Local utilities for creating IIIF manifests and annotation lists"""
 
+from attrdict import AttrMap
+from django.core.serializers.json import DjangoJSONEncoder
 from piffle.presentation import IIIFPresentation
+
+from geniza.common.utils import absolutize_url
 
 # some of this could make sense to add to piffle,
 # but let's develop it within this projet for now
@@ -42,3 +46,25 @@ base_canvas = {
 def new_iiif_canvas():
     # create IIIF canvas structure
     return IIIFPresentation(base_canvas.copy())
+
+
+# try using a generic empty canvas id
+EMPTY_CANVAS_ID = "/iiif/canvas/empty/"
+
+
+def empty_iiif_canvas():
+    canvas = new_iiif_canvas()
+    canvas.id = absolutize_url(EMPTY_CANVAS_ID)
+    # set sizes (these are arbitrary)
+    canvas.width = 3200
+    canvas.height = 4000
+    canvas.label = "image unavailable"
+    return canvas
+
+
+class AttrDictEncoder(DjangoJSONEncoder):
+    # make attrdict json-serializable
+    def default(self, obj):
+        if isinstance(obj, AttrMap):
+            return dict(obj)
+        return super().default(obj)

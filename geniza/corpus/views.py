@@ -14,12 +14,8 @@ from piffle.presentation import IIIFPresentation
 from tabular_export.admin import export_to_csv_response
 
 from geniza.common.utils import absolutize_url
+from geniza.corpus import iiif_utils
 from geniza.corpus.forms import DocumentSearchForm
-from geniza.corpus.iiif_utils import (
-    new_annotation_list,
-    new_iiif_canvas,
-    new_iiif_manifest,
-)
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Footnote
@@ -244,7 +240,7 @@ class DocumentScholarshipView(DocumentDetailView):
         return context_data
 
 
-class DocumentManifest(DocumentDetailView):
+class DocumentManifestView(DocumentDetailView):
     """Generate a IIIF Presentation manifest for a document,
     incorporating available canvases and attaching transcription
     content via annotation."""
@@ -253,15 +249,15 @@ class DocumentManifest(DocumentDetailView):
 
     def get(self, request, *args, **kwargs):
         document = self.get_object()
-        iiif_urls = document.iiif_urls()
-        local_manifest_id = self.get_absolute_url()
-        first_canvas = None
-
         # should 404 if no images or no transcription
         if not document.has_transcription() and not document.has_image():
             raise Http404
 
-        manifest = new_iiif_manifest()
+        iiif_urls = document.iiif_urls()
+        local_manifest_id = self.get_absolute_url()
+        first_canvas = None
+
+        manifest = iiif_utils.new_iiif_manifest()
         manifest.id = local_manifest_id
         manifest.label = document.title
         # we probably want other metadata as well...
@@ -308,10 +304,18 @@ class DocumentManifest(DocumentDetailView):
         # in 3.0 we can use multiple provider blocks, but no viewer supports it yet
 
         extra_attrs = "\n".join("<p>%s</p>" % attr for attr in attributions)
-        manifest.attribution = """<div><p>Compilation%s by Princeton Geniza Project.</p>
-        <p>Additional restrictions may apply.</p>%s
-        </div>""" % (
-            " and transcription" if document.has_transcription() else "",
+        # Translators: attribution for local IIIF manifests
+        pgp = _("Princeton Geniza Project")
+        attribution = _("Compilation by %(pgp)s." % {"pgp": pgp})
+        # Translators: attribution for local IIIF manifests that include transcription
+        if document.has_transcription():
+            attribution = _("Compilation and transcription by %(pgp)s." % {"pgp": pgp})
+        # Translators: manifest attribution note that content from other institutions may have restrictions
+        additional_restrictions = _("Additional restrictions may apply.")
+
+        manifest.attribution = """<div><p>%s</p><p>%s</p>%s</div>""" % (
+            attribution,
+            additional_restrictions,
             extra_attrs,
         )
 
@@ -325,25 +329,18 @@ class DocumentManifest(DocumentDetailView):
                 ),
                 "@type": "sc:AnnotationList",
             }
-            if first_canvas:
-                first_canvas["otherContent"] = other_content
-            else:  # if no canvases available, add transcription in new canvas
-                new_canvas = new_iiif_canvas()
-                new_canvas["@id"] = absolutize_url(
-                    reverse("corpus:document-canvas", args=[document.pk]),
-                    request=request,  # request is needed to avoid getting https:// urls in dev
-                )
-                canvases.append(
-                    {
-                        **new_canvas,
-                        "otherContent": {**other_content},
-                    }
-                )
+            # if there are no images available, use an empty canvas
+            if not first_canvas:
+                first_canvas = iiif_utils.empty_iiif_canvas()
+                canvases.append(first_canvas)
 
-        return JsonResponse(dict(manifest))
+            # attach annotation list
+            first_canvas["otherContent"] = other_content
+
+        return JsonResponse(dict(manifest), encoder=iiif_utils.AttrDictEncoder)
 
 
-class DocumentAnnotationList(DocumentDetailView):
+class DocumentAnnotationListView(DocumentDetailView):
     """Generate a IIIF Annotation List for a document to make transcription
     content available for inclusion in local IIIF manifest."""
 
@@ -351,10 +348,18 @@ class DocumentAnnotationList(DocumentDetailView):
 
     def get(self, request, *args, **kwargs):
         document = self.get_object()
+        digital_editions = document.digital_editions()
+        # while sync transcription is in transition, we need to check for
+        # html transcription content
+        digital_editions = [de for de in digital_editions if "html" in de.content]
+        # if there is no transcription content, 404
+        if not digital_editions:
+            raise Http404
+
         # get absolute url for the current page to use as annotation list id
         annotation_list_id = self.get_absolute_url()
         # create outer annotation list structure
-        annotation_list = new_annotation_list()
+        annotation_list = iiif_utils.new_annotation_list()
         annotation_list.id = annotation_list_id
         # for now, annotate the first canvas
         # get a list of djiffy manifests
@@ -367,19 +372,15 @@ class DocumentAnnotationList(DocumentDetailView):
         if manifests and manifests[0]:
             canvas = manifests[0].canvases.first()
         # fallback to loading the remote manifest; (is this needed?)
-        if not canvas:
-            manifest = IIIFPresentation.from_url(document.iiif_urls()[0])
-            canvas = manifest.sequences[0].canvases[0]
-
-        # TODO: if transcription and no canvas, generate a local canvas
-        # something like this
-        # canvas_id = 'https://test-geniza.cdh.princeton.edu/iiif/na/canvas/1'
-        # canvas_width = 3200
-        # canvas_height = 4000
 
         if not canvas:
-            # for now, 404 if we don't have any canvases
-            raise Http404
+            iiif_urls = document.iiif_urls()
+            if iiif_urls:
+                manifest = IIIFPresentation.from_url(iiif_urls[0])
+                canvas = manifest.sequences[0].canvases[0]
+            else:
+                # if there are no images available, use an empty canvas
+                canvas = iiif_utils.empty_iiif_canvas()
 
         resources = []
         digital_editions = document.digital_editions()
@@ -390,54 +391,16 @@ class DocumentAnnotationList(DocumentDetailView):
                 "@id": "%s%d" % (annotation_list_id, i),
                 "@type": "oa:Annotation",
                 "motivation": "sc:painting",
+                # transcribing should be a supported motivation (maybe 3.0?);
+                # but mirador does not displayit
+                # "motivation": "sc:transcribing",
                 "resource": transcription.iiif_annotation_content(),
                 # annotate the entire canvas for now
-                "on": "%s#xywh=0,0,%d,%d" % (canvas.uri, canvas.width, canvas.height),
+                "on": "%s#xywh=0,0,%d,%d" % (canvas.id, canvas.width, canvas.height),
             }
             annotation_list["resources"].append(annotation)
 
-        return JsonResponse(dict(annotation_list))
-
-
-class DocumentCanvas(DocumentDetailView):
-    """Generate a placeholder Canvas for a document's IIIF manifest, in the case where
-    a document has a transcription but no image."""
-
-    viewname = "corpus:document-canvas"
-
-    def get(self, request, *args, **kwargs):
-        document = self.get_object()
-        # Raise 404 if there should be an actual canvas and not this placeholder
-        if document.has_image():
-            raise Http404
-        manifest_uri = absolutize_url(
-            reverse("corpus:document-manifest", args=[document.pk]),
-            request=request,  # request is needed to avoid getting https:// urls in dev
-        )
-        # get absolute url for the current page to use as canvas id
-        canvas_id = self.get_absolute_url()
-        # create canvas structure
-        canvas = new_iiif_canvas()
-        canvas["@id"] = canvas_id
-        # Append annotation list ref
-        canvas["otherContent"] = {
-            "@context": "http://iiif.io/api/presentation/2/context.json",
-            "@id": absolutize_url(
-                reverse("corpus:document-annotations", args=[document.pk]),
-                request=request,  # request is needed to avoid getting https:// urls in dev
-            ),
-            "@type": "sc:AnnotationList",
-        }
-        # Link back to manifest
-        canvas["partOf"] = [
-            {
-                "@id": manifest_uri,
-                "@type": "sc:Manifest",
-                "label": {"en": [document.title]},
-            }
-        ]
-
-        return JsonResponse(dict(canvas))
+        return JsonResponse(dict(annotation_list), encoder=iiif_utils.AttrDictEncoder)
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #

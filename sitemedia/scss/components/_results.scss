@@ -149,10 +149,25 @@ section#document-list {
 
     li {
         white-space: pre-line;
+        margin-right: 2em; /* shift to make space for line numbers */
     }
 
     .mirador-viewer & h1 {
         @include typography.headline-3;
         text-align: left;
+    }
+
+    /* some transcription styles adapted from local admin site css */
+    li::before {
+        /* use pseudo marker to avoid periods for line numbers */
+        content: attr(value);
+        margin-right: -2em; /* shift outside text margin */
+        text-align: right;
+        float: right;
+        font-weight: bold;
+    }
+
+    li::marker {
+        direction: rtl;
     }
 }
