@@ -34,36 +34,44 @@
 @mixin declare-fonts($base_url) {
     @font-face {
         font-family: "Greta Sans Hebrew Regular";
+        font-style: normal;
         src: url("#{$base_url}/WF-037420-011833-002518.woff2") format("woff2"),
             url("#{$base_url}/WF-037420-011833-002518.woff") format("woff");
+        font-display: swap;
     }
 
     @font-face {
         font-family: "Greta Sans Hebrew Bold";
+        font-style: bold;
         src: url("#{$base_url}/WF-037420-011833-002521.woff2") format("woff2"),
             url("#{$base_url}/WF-037420-011833-002521.woff") format("woff");
+        font-display: swap;
     }
 
     // Greta Sans italic for Latin text
     @font-face {
         font-family: "Greta Sans Regular Italic";
+        font-style: italic;
         src: url("#{$base_url}/WF-037420-011833-001036.woff2") format("woff2"),
             url("#{$base_url}/WF-037420-011833-001036.woff") format("woff");
+        font-display: swap;
     }
 
     // Frank Ruhl1924 MF Medium for Hebrew text
     @font-face {
         font-family: "FrankRuhl 1924 MF Medium";
+        font-style: normal;
         src: url("#{$base_url}/FrankRuhl1924MFMediumMedium.woff2")
                 format("woff2"),
             url("#{$base_url}/FrankRuhl1924MFMediumMedium.woff") format("woff");
+        font-display: swap;
     }
 }
 
-// for normal operation, load fonts from /static/fonts
+// for normal operation, load fonts from local url at /static/fonts
 @include declare-fonts("/static/fonts");
 
-// Use Percy visual review, load fonts from the production site
+// For Percy visual review, load fonts from the production site
 @media only percy {
     @include declare-fonts("https://geniza.cdh.princeton.edu/static/fonts");
 }
