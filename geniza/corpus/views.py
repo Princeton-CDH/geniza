@@ -403,7 +403,9 @@ class DocumentAnnotationListView(DocumentDetailView):
                 # annotate the entire canvas for now
                 "on": "%s#xywh=0,0,%d,%d" % (canvas.id, canvas.width, canvas.height),
             }
-            annotation_list["resources"].append(annotation)
+            resources.append(annotation)
+
+        annotation_list["resources"] = resources
 
         return JsonResponse(dict(annotation_list), encoder=iiif_utils.AttrDictEncoder)
 

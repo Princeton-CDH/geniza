@@ -25,7 +25,6 @@ def new_iiif_manifest():
 base_annotation_list = {
     "@context": "http://iiif.io/api/presentation/2/context.json",
     "@type": "sc:AnnotationList",
-    "resources": [],
 }
 
 
