@@ -17,15 +17,13 @@
     }
     // Logotype, links to homepage
     a.home-link {
-        @include typography.headline-5;
         @include breakpoints.for-tablet-landscape-up {
-            @include typography.headline-4;
             @include colors.apply-combo("primary");
         }
-
         display: inline-block;
         flex: none;
         padding: spacing.$spacing-lg spacing.$spacing-md;
+        @include typography.home-button;
     }
     // Mobile-only menu buttons
     li.menu-button {
@@ -33,7 +31,7 @@
         a {
             display: flex;
             text-decoration: none;
-            font-size: typography.$text-size-3xl;
+            @include typography.icon-button;
             @include colors.apply-theme("on-background");
         }
     }
@@ -118,7 +116,6 @@
         // Mobile links which need padding, inline-block, and border-top
         a {
             text-decoration: none;
-            font-size: typography.$text-size-2md;
             padding: spacing.$spacing-2xl spacing.$spacing-sm
                 spacing.$spacing-lg;
             width: 100%;
@@ -126,6 +123,8 @@
             display: inline-block;
             border-top: 1px solid;
             @include colors.apply-theme("nav-outline", "border-top-color");
+            @include typography.nav-link;
+            @include typography.mobile-menu;
         }
         & + .menu-item a,
         & + #about-menu .menu-item a {
@@ -149,7 +148,7 @@
             &::after {
                 font-family: "Phosphor";
                 content: "\f0c4"; // phosphor caret-right icon
-                font-size: typography.$text-size-3xl;
+                @include typography.icon-button;
             }
             ul {
                 display: none;
@@ -206,7 +205,7 @@
         li.menu-button {
             display: inline-block;
             width: auto;
-            padding: spacing.$spacing-sm spacing.$spacing-sm;
+            padding: spacing.$spacing-lg spacing.$spacing-sm;
             height: spacing.$spacing-3xl;
             a {
                 text-decoration: none;
@@ -218,13 +217,14 @@
             a#back-to-main-menu::before {
                 font-family: "Phosphor";
                 content: "\f0c3"; // phosphor caret-left icon
-                font-size: typography.$text-size-3xl;
+                @include typography.icon-button;
             }
         }
         li.menu-label {
             display: inline-block;
             flex: 1 0 auto;
-            font-size: typography.$text-size-2md;
+            @include typography.nav-link;
+            @include typography.mobile-menu;
         }
         &:target {
             left: 0;
@@ -269,7 +269,7 @@
 
     // Currently active page
     a[aria-current="page"] {
-        font-weight: bold;
-        font-size: typography.$text-size-2md;
+        @include typography.nav-bold;
+        @include typography.mobile-menu;
     }
 }

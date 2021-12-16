@@ -84,6 +84,20 @@ Remember to add a ``SECRET_KEY`` setting!
 
     python manage.py index
 
+Fonts
+-----
+
+Fonts are stored in `sitemedia/fonts/`. Since this project uses paid licensed fonts, this directory is ignored by git and not checked into version control.
+
+To install fonts locally:
+
+- Download `.woff` and `.woff2` files from the shared Google Drive folder "Geniza – woff files only".
+
+- Create the `fonts` subdirectory::
+
+    cd sitemedia && mkdir fonts
+
+- Move or copy all the `.woff` and `.woff2` files into that subdirectory.
 
 Static Files
 ------------

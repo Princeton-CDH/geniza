@@ -421,6 +421,13 @@ class Document(ModelIndexable):
     def __str__(self):
         return f"{self.shelfmark_display or '??'} (PGPID {self.id or '??'})"
 
+    @staticmethod
+    def get_by_any_pgpid(pgpid):
+        """Find a document by current or old pgpid"""
+        return Document.objects.filter(
+            models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
+        ).first()
+
     @property
     def shelfmark(self):
         """shelfmarks for associated fragments"""

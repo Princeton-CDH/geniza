@@ -130,6 +130,7 @@ class DocumentSearchView(ListView, FormMixin):
                 "page_description": self.page_description,
                 "page_title": self.page_title,
                 "page_type": "search",
+                "page_includes_transcriptions": True,  # preload transcription font
                 "highlighting": self.queryset.get_highlighting()
                 if self.queryset
                 else {},
@@ -186,6 +187,8 @@ class DocumentDetailView(DocumentPastIdMixin, DetailView):
                 "page_title": self.page_title(),
                 "page_description": self.page_description(),
                 "page_type": "document",
+                # preload transcription font when appropriate
+                "page_includes_transcriptions": self.object.has_transcription(),
             }
         )
         return context_data
@@ -235,6 +238,8 @@ class DocumentScholarshipView(DocumentDetailView):
         context_data.update(
             {
                 "page_type": "scholarship",
+                # transcription font not needed on this page
+                "page_includes_transcriptions": False,
             }
         )
         return context_data

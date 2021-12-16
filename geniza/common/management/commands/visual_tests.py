@@ -28,12 +28,12 @@ class Command(BaseCommand):
         # percy_snapshot(browser, "Home")
 
         # content page
-        browser.get("http://localhost:8000/content/")
+        browser.get("http://localhost:8000/en/content/")
         percy_snapshot(browser, "Content Page")
 
         # document search with document type filter expanded
         # NOTE: revise to capture search filter panel when we implement it
-        browser.get("http://localhost:8000/documents/")
+        browser.get("http://localhost:8000/en/documents/")
         # open document type filter
         browser.find_element_by_css_selector(".doctype-filter summary").click()
         # click the first option
@@ -44,20 +44,20 @@ class Command(BaseCommand):
 
         # document search
         browser.get(
-            "http://localhost:8000/documents/?q=the+writer+Avraham+באנפנא&per_page=2"
+            "http://localhost:8000/en/documents/?q=the+writer+Avraham+באנפנא&per_page=2"
         )
         percy_snapshot(browser, "Document Search")
 
         # document detail
-        browser.get("http://localhost:8000/documents/2532/")
+        browser.get("http://localhost:8000/en/documents/2532/")
         percy_snapshot(browser, "Document Details")
 
         # document scholarship
-        browser.get("http://localhost:8000/documents/9469/scholarship/")
+        browser.get("http://localhost:8000/en/documents/9469/scholarship/")
         percy_snapshot(browser, "Document Scholarship Records")
 
         # mobile menu
-        browser.get("http://localhost:8000/documents/2532/#menu")
+        browser.get("http://localhost:8000/en/documents/2532/#menu")
         percy_snapshot(
             browser,
             "Mobile menu",
@@ -65,7 +65,7 @@ class Command(BaseCommand):
         )
 
         # about submenu open on both desktop and mobile
-        browser.get("http://localhost:8000/documents/2532/#menu")
+        browser.get("http://localhost:8000/en/documents/2532/#menu")
         # open about menu
         browser.find_element_by_id("open-about-menu").send_keys(Keys.ENTER)
         percy_snapshot(

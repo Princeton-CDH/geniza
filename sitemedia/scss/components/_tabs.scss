@@ -10,15 +10,14 @@
     display: flex;
     justify-content: space-between;
     text-align: center;
-    font-size: typography.$text-size-md;
     margin: 0 auto;
+    @include typography.nav-link;
     a,
     span {
         flex: 1 0 auto;
         display: inline-block;
-        font-size: typography.$text-size-md;
+        @include typography.link;
         @include breakpoints.for-tablet-landscape-up {
-            font-size: typography.$text-size-2md;
             padding: spacing.$spacing-2xs spacing.$spacing-lg;
         }
     }
@@ -30,6 +29,6 @@
         }
     }
     a[aria-current="page"] {
-        font-weight: bold;
+        @include typography.nav-bold;
     }
 }
