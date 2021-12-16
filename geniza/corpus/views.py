@@ -390,10 +390,10 @@ class DocumentAnnotationListView(DocumentDetailView):
         resources = []
         digital_editions = document.digital_editions()
         # handle multiple transcriptions
-        for i, transcription in enumerate(digital_editions):
+        for i, transcription in enumerate(digital_editions, start=1):
             annotation = {
                 # uri for this annotation; base on annotation list uri
-                "@id": "%s%d" % (annotation_list_id, i),
+                "@id": "%s#%d" % (annotation_list_id, i),
                 "@type": "oa:Annotation",
                 "motivation": "sc:painting",
                 # transcribing should be a supported motivation (maybe 3.0?);

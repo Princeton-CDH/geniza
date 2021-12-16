@@ -11,7 +11,7 @@ from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.common.utils import absolutize_url
-from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID
+from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import (
@@ -648,3 +648,65 @@ class TestDocumentManifestView:
         assert view.get_absolute_url() == absolutize_url(
             f"{document.get_absolute_url()}iiif/manifest/"
         )
+
+
+@patch("geniza.corpus.views.IIIFPresentation")
+class TestDocumentAnnotationListView:
+    view_name = DocumentAnnotationListView.viewname
+
+    def test_no_transcription(self, mockiifpres, client, document):
+        # no iiif or transcription; should 404
+        response = client.get(reverse(self.view_name, args=[document.pk]))
+        assert response.status_code == 404
+
+    def test_images_transcription(
+        self, mockiifpres, client, document, source, fragment
+    ):
+        # add a footnote with transcription content
+        transcription = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            content={"html": "text"},
+            doc_relation=Footnote.EDITION,
+        )
+        mock_manifest = mockiifpres.from_url.return_value
+        test_canvas = new_iiif_canvas()
+        test_canvas.id = "urn:m1/c1"
+        test_canvas.width = 300
+        test_canvas.height = 250
+        mock_manifest.sequences = [Mock(canvases=[test_canvas])]
+        annotation_list_url = reverse(self.view_name, args=[document.pk])
+        response = client.get(annotation_list_url)
+        assert response.status_code == 200
+        # inspect result
+        data = response.json()
+        # each annotation should have a unique id based on annotation list & sequence
+        assert data["resources"][0]["@id"].endswith("%s#1" % annotation_list_url)
+        # annotation should be attached to canvas by uri with full width & height
+        assert data["resources"][0]["on"] == "urn:m1/c1#xywh=0,0,300,250"
+        assert (
+            data["resources"][0]["resource"] == transcription.iiif_annotation_content()
+        )
+
+    def test_no_images_transcription(
+        self, mockiifpres, client, document, source, fragment
+    ):
+        # remove iiif url from fixture document fragment has iiif
+        fragment.iiif_url = ""
+        fragment.save()
+        # add a footnote with transcription content
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            content={"html": "here is my transcription text"},
+            doc_relation=Footnote.EDITION,
+        )
+        response = client.get(reverse(self.view_name, args=[document.pk]))
+        assert response.status_code == 200
+
+        # should not load any remote manifests
+        assert mockiifpres.from_url.call_count == 0
+        # should use empty canvas id
+        assertContains(response, EMPTY_CANVAS_ID)
+        # should include transcription content
+        assertContains(response, "here is my transcription text")
