@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2021-12-16 16:13-0500\n"
-"PO-Revision-Date: 2021-11-02 18:38\n"
+"PO-Revision-Date: 2021-12-16 21:35\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en_US\n"
@@ -50,7 +50,7 @@ msgstr ""
 #. Translators: label for document type search form filter
 #: geniza/corpus/forms.py:141
 msgid "Document Type"
-msgstr "Document Type"
+msgstr ""
 
 #. Translators: Default label when document does not have a type
 #: geniza/corpus/models.py:601
@@ -69,12 +69,11 @@ msgstr ""
 
 #. Translators: Editor label
 #: geniza/corpus/templates/corpus/document_detail.html:37
-#, fuzzy
 #| msgid "Editor"
 msgid "Editor"
 msgid_plural "Editors"
-msgstr[0] "Editor"
-msgstr[1] "Editor"
+msgstr[0] ""
+msgstr[1] ""
 
 #. Translators: Date document was first added to the PGP
 #: geniza/corpus/templates/corpus/document_detail.html:52
@@ -141,10 +140,9 @@ msgstr ""
 
 #. Translators: Document edit link for admins
 #: geniza/corpus/templates/corpus/snippets/document_header.html:9
-#, fuzzy
 #| msgid "Editor"
 msgid "Edit"
-msgstr "Editor"
+msgstr ""
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:20
 msgid "PGP ID"
@@ -362,3 +360,4 @@ msgstr ""
 
 #~ msgid "Shelfmark"
 #~ msgstr "Shelfmark"
+
