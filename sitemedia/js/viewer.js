@@ -3,7 +3,7 @@ if (target) {
     let windowOpts = {
         allowClose: false, // Prevent the user from closing this window
         allowMaximize: false,
-        allowFullscreen: false, // we should allow, but doesn't work with our current styles
+        allowFullscreen: true,
         defaultSideBarPanel: "info",
         sideBarOpenByDefault: false,
         views: [

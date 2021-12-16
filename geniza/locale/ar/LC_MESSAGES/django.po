@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-16 11:15-0500\n"
+"POT-Creation-Date: 2021-12-16 16:13-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -233,6 +233,13 @@ msgstr "سجل المنح الدراسية (%(n_records)s)"
 #, fuzzy
 #| msgid "External Links (%(n_links)s)"
 msgid "External Links"
+msgstr "الروابط الخارجية (%(n_links)s)"
+
+#. Translators: n_links is number of external links
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:21
+#, fuzzy, python-format
+#| msgid "External Links (%(n_links)s)"
+msgid "External Links (%(n_links)s)"
 msgstr "الروابط الخارجية (%(n_links)s)"
 
 #. Translators: Label for "previous page" button in search results

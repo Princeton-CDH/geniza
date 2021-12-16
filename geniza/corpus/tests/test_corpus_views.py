@@ -710,3 +710,37 @@ class TestDocumentAnnotationListView:
         assertContains(response, EMPTY_CANVAS_ID)
         # should include transcription content
         assertContains(response, "here is my transcription text")
+
+    def test_no_shared_resources(
+        self, mockiifpres, client, document, source, fragment, join
+    ):
+        # a list object initialized once in iiif_utils.base_annotation_list
+        # was getting reused, resulting in annotations being aggregated
+        # and kept every time annotation lists were generated
+
+        # test to confirm the fix
+
+        # remove iiif url from fragment fixture
+        fragment.iiif_url = ""
+        fragment.save()
+        # add a footnote with transcription content to document
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            content={"html": "here is my transcription text"},
+            doc_relation=Footnote.EDITION,
+        )
+        # and another to the join document
+        Footnote.objects.create(
+            content_object=join,
+            source=source,
+            content={"html": "here is completely different transcription text"},
+            doc_relation=Footnote.EDITION,
+        )
+        # request once for document
+        client.get(reverse(self.view_name, args=[document.pk]))
+        # then request for join doc
+        response = client.get(reverse(self.view_name, args=[join.pk]))
+
+        assertNotContains(response, "here is my transcription text")
+        assertContains(response, "completely different transcription text")
