@@ -110,9 +110,7 @@ msgstr ""
 msgid "1 result"
 msgid_plural "%(count_humanized)s total results"
 msgstr[0] "תוצאה אחת"
-msgstr[1] "%(counter)s תוצאות"
-msgstr[2] "%(counter)s תוצאות"
-msgstr[3] "%(counter)s תוצאות"
+msgstr[1] "%(count_humanized)s תוצאות"
 
 #. Translators: accessibility label for a footnote source citation in scholarship records view
 #: geniza/corpus/templates/corpus/document_scholarship.html:20

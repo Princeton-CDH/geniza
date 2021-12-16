@@ -111,12 +111,12 @@ msgstr "إرسال البحث"
 #, python-format
 msgid "1 result"
 msgid_plural "%(count_humanized)s total results"
-msgstr[0] "نتائج %(counter)s"
+msgstr[0] "نتائج %(count_humanized)s"
 msgstr[1] "1 نتيجة"
-msgstr[2] "نتيجتين %(counter)s"
-msgstr[3] "النتائج %(counter)s"
-msgstr[4] "النتائج %(counter)s"
-msgstr[5] "مجموع النتائج %(counter)s"
+msgstr[2] "نتيجتين %(count_humanized)s"
+msgstr[3] "النتائج %(count_humanized)s"
+msgstr[4] "النتائج %(count_humanized)s"
+msgstr[5] "مجموع النتائج %(count_humanized)s"
 
 #. Translators: accessibility label for a footnote source citation in scholarship records view
 #: geniza/corpus/templates/corpus/document_scholarship.html:20
