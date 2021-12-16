@@ -235,8 +235,13 @@ class Fragment(TrackChangesModel):
         # if iiif url is set and manifest is not available, or iiif url has changed,
         # import the manifest
         if self.iiif_url and not self.manifest or self.has_changed("iiif_url"):
-            ManifestImporter().import_paths([self.iiif_url])
-            self.manifest = Manifest.objects.filter(uri=self.iiif_url).first()
+            # if iiif url has changed and there is a value, import and update
+            if self.iiif_url:
+                ManifestImporter().import_paths([self.iiif_url])
+                self.manifest = Manifest.objects.filter(uri=self.iiif_url).first()
+            else:
+                # otherwise, clear the associated manifest (iiif url has been removed)
+                self.manifest = None
 
         super(Fragment, self).save(*args, **kwargs)
 
