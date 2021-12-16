@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-16 11:15-0500\n"
+"POT-Creation-Date: 2021-12-16 16:13-0500\n"
 "PO-Revision-Date: 2021-11-02 18:38\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -199,6 +199,12 @@ msgstr ""
 
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:16
 msgid "External Links"
+msgstr ""
+
+#. Translators: n_links is number of external links
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:21
+#, python-format
+msgid "External Links (%(n_links)s)"
 msgstr ""
 
 #. Translators: Label for "previous page" button in search results
