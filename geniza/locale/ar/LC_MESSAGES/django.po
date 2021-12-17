@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-16 16:13-0500\n"
-"PO-Revision-Date: 2021-12-17 20:57\n"
+"POT-Creation-Date: 2021-12-17 16:35-0500\n"
+"PO-Revision-Date: 2021-12-17 22:06\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -69,7 +69,6 @@ msgstr "بيانات التعريف"
 
 #. Translators: Editor label
 #: geniza/corpus/templates/corpus/document_detail.html:37
-#| msgid "Editor"
 msgid "Editor"
 msgid_plural "Editors"
 msgstr[0] "المحررون"
@@ -113,10 +112,10 @@ msgid "1 result"
 msgid_plural "%(count_humanized)s total results"
 msgstr[0] "نتائج %(count_humanized)s"
 msgstr[1] "1 نتيجة"
-msgstr[2] "نتيجتين %(counter)s"
-msgstr[3] "النتائج %(counter)s"
+msgstr[2] "نتيجتين %(count_humanized)s"
+msgstr[3] "النتائج %(count_humanized)s"
 msgstr[4] "النتائج %(counter)s"
-msgstr[5] "مجموع النتائج %(counter)s"
+msgstr[5] "مجموع النتائج %(count_humanized)s"
 
 #. Translators: accessibility label for a footnote source citation in scholarship records view
 #: geniza/corpus/templates/corpus/document_scholarship.html:20
@@ -148,7 +147,6 @@ msgstr "يشمل"
 
 #. Translators: Document edit link for admins
 #: geniza/corpus/templates/corpus/snippets/document_header.html:9
-#| msgid "Editor"
 msgid "Edit"
 msgstr "تحرير"
 
@@ -252,12 +250,12 @@ msgid "Search and browse Geniza documents."
 msgstr "البحث في وثائق جنيزا وتصفحها."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:209
+#: geniza/corpus/views.py:207
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "منحة في %(doc)s"
 
-#: geniza/corpus/views.py:216
+#: geniza/corpus/views.py:214
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
@@ -269,22 +267,22 @@ msgstr[4] "%(count)d سجل منح دراسية لـ %(doc)s"
 msgstr[5] "%(count)d سجل منح دراسية لـ %(doc)s"
 
 #. Translators: attribution for local IIIF manifests
-#: geniza/corpus/views.py:313
+#: geniza/corpus/views.py:311
 msgid "Princeton Geniza Project"
 msgstr "مشروع برنستون جينيزا"
 
-#: geniza/corpus/views.py:314
+#: geniza/corpus/views.py:312
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr "تجميع بواسطة %(pgp)s."
 
-#: geniza/corpus/views.py:317
+#: geniza/corpus/views.py:315
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr "التجميع والنسخ بواسطة %(pgp)s."
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: geniza/corpus/views.py:319
+#: geniza/corpus/views.py:317
 msgid "Additional restrictions may apply."
 msgstr "ويجوز تطبيق قيود إضافية."
 
@@ -381,6 +379,18 @@ msgstr "فني"
 #: geniza/templates/nav.html:94
 msgid "FAQ"
 msgstr "أسئلة متكررة"
+
+#. Translators: label for language choices in navigation
+#: geniza/templates/snippets/language_switcher.html:13
+#, python-format
+msgid "read this page in %(language_name)s (%(language_code)s)"
+msgstr "قراءة هذه الصفحة في %(language_name)s (%(language_code)s)"
+
+#. Translators: button on language chooser in navigation
+#: geniza/templates/snippets/language_switcher.html:20
+msgctxt "choose this option"
+msgid "go"
+msgstr "اذهب"
 
 #~ msgid "Shelfmark"
 #~ msgstr "Shelfmark"
