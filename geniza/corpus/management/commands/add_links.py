@@ -1,6 +1,5 @@
 import csv
-import re
-from collections import Counter
+from urllib.parse import quote
 
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
@@ -226,7 +225,8 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
     # base url target for each supported link type
     base_url = {
         "goitein_note": "https://commons.princeton.edu/media/geniza/",
-        "indexcard": "https://geniza.princeton.edu/indexcards/index.php?a=card&id=",
+        "indexcard": "https://geniza.princeton.edu/indexcards/"
+        + quote("index.php?a=card&id="),
         "jewish-traders": "https://s3.amazonaws.com/goitein-lmjt/",
         "india-traders": "https://s3.amazonaws.com/goitein-india-traders/",
     }
@@ -262,7 +262,7 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             return
 
         # target url: combine base url for this link type with link target from csv
-        target_url = "".join([self.base_url[link_type], row["link_target"]])
+        target_url = "".join([self.base_url[link_type], quote(row["link_target"])])
         # get doc relation for this link type
         doc_relation = self.document_relation[link_type]
 

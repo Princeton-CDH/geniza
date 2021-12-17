@@ -1,12 +1,12 @@
 from collections import Counter, defaultdict
 from io import StringIO
 from unittest.mock import Mock, mock_open, patch
+from urllib.parse import quote
 
 import pytest
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.db.models.fields.related import ForeignKey
 
 from geniza.corpus.management.commands import add_links
 from geniza.corpus.models import Document
@@ -249,7 +249,8 @@ def test_add_link(mock_set_footnote, typed_texts, jewish_traders, india_book, do
     mock_set_footnote.assert_called_with(
         doc=document,
         source=indexcard_source,
-        url="https://geniza.princeton.edu/indexcards/index.php?a=card&id=abc123",
+        url="https://geniza.princeton.edu/indexcards/"
+        + quote("index.php?a=card&id=abc123"),
         doc_relation=Footnote.DISCUSSION,
     )
     test_row.update(
