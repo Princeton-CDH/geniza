@@ -223,14 +223,14 @@ def test_set_footnote_location_update(
     cmd.stats = {"footnotes_created": 0, "footnotes_updated": 0}
 
     # create a typed text footnote on document with no location to update
+    test_url = "http://example.com/pgp/link/"
     existing_note = Footnote.objects.create(
         content_object=document,
         source=typed_texts,
-        url="http://example.com/pgp/link/",
+        url=test_url,
         doc_relation=Footnote.EDITION,
     )
 
-    test_url = "http://example.com/pgp/link/"
     footnote = cmd.set_footnote_url(
         document,
         typed_texts,
