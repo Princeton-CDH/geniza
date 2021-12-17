@@ -244,7 +244,6 @@ def test_add_link(mock_set_footnote, typed_texts, jewish_traders, india_book, do
     indexcard_source = cmd.get_goitein_source(
         doc=document,
         title="index cards",
-        url="https://geniza.princeton.edu/indexcards/",
     )
     mock_set_footnote.assert_called_with(
         doc=document,

@@ -189,17 +189,13 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         # return the footnote to indicate success
         return footnote
 
-    def get_goitein_source(self, doc, title, url=None):
-        volume = Source.get_volume_from_shelfmark(doc.shelfmark)
+    def get_goitein_source(self, doc, title):
         # common source options used to find or create our new source
         source_opts = {
             "title_en": title,
             "volume": Source.get_volume_from_shelfmark(doc.shelfmark),
             "source_type": self.unpublished,
         }
-        # set url if specified
-        if url:
-            source_opts["url"] = url
         # we can't filter by author on get_or_create, so check first
         source = Source.objects.filter(
             authors__last_name="Goitein", **source_opts
@@ -273,7 +269,6 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             source = self.get_goitein_source(
                 doc=doc,
                 title="index cards",
-                url="https://geniza.princeton.edu/indexcards/",
             )
         elif link_type == "jewish-traders":
             source = self.jewish_traders
