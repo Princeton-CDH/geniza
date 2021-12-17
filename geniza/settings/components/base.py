@@ -60,7 +60,8 @@ INSTALLED_APPS = [
     "wagtail.snippets",
     "wagtail.admin",
     "wagtail.core",
-    "wagtail.locales",
+    "wagtail_localize",
+    "wagtail_localize.locales",
     "modelcluster",
 ]
 

@@ -23,12 +23,6 @@ class Command(BaseCommand):
             help="port from which the app is served (default: 8000)",
         )
         parser.add_argument(
-            "-l",
-            "--locale",
-            default="en",
-            help="language code for content pages (default: en)",
-        )
-        parser.add_argument(
             "-f",
             "--fixtures",
             action="store_true",
@@ -42,8 +36,7 @@ class Command(BaseCommand):
         include_fixtures = options.get("fixtures")
         hostname = options.get("hostname")
         port = options.get("port")
-        language_code = options.get("locale")
-        (locale, _) = Locale.objects.get_or_create(language_code=language_code)
+        (locale, _) = Locale.objects.get_or_create(language_code="en")
 
         # Bootstrap empty home page
         home_page = HomePage(
