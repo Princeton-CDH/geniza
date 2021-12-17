@@ -59,7 +59,8 @@ class GenizaTei(teimap.Tei):
             elif line.name == "l":
                 # use language codes? unreliable in the xml
                 # append tuple of line number, text
-                lines.append((line.number, str(line)))
+                # TODO: test line with no attribute; currently resulting in label "None"
+                lines.append((line.number or "", str(line)))
 
         # append the last block
         if lines:
