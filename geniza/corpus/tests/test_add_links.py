@@ -344,3 +344,4 @@ def test_add_link_ignored():
 
 
 # TODO: add & test log entry handling
+# TODO: test report generation

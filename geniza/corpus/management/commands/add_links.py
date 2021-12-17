@@ -1,6 +1,6 @@
 import csv
 import re
-from os.path import basename
+from os.path import basename, dirname
 from urllib.parse import quote
 
 from django.conf import settings
@@ -87,6 +87,8 @@ class Command(BaseCommand):
         self.verbosity = options.get("verbosity", self.v_normal)
         # initialize stats values, since they don't always all get set
         self.stats = {stat: 0 for stat in self.stats_fields}
+        # initialize report of not found documents
+        self.not_found_documents = []
         # rough total for progress bar based on current number of rows in links.csv
         # *with* link types we care about (end of the file is largely ignored)
         starting_total = 10000  # 16300 = closer to real total
@@ -131,6 +133,28 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
                 **self.stats
             )
         )
+
+        # generate CSV report of documents that could not be found
+        if len(self.not_found_documents) > 0:
+            # save in same directory as original CSV
+            nf_report_path = dirname(csv_path) + "/not_found_report.csv"
+            with open(nf_report_path, "w+") as f:
+                fieldnames = [
+                    "linkID",
+                    "object_id",
+                    "link_type",
+                    "link_title",
+                    "link_target",
+                    "link_attribution",
+                ]
+                csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
+                csv_writer.writeheader()
+                for not_found_row in self.not_found_documents:
+                    csv_writer.writerow(not_found_row)
+
+            self.stdout.write(
+                "Saved report of not found documents to %s." % nf_report_path
+            )
 
     def log_action(self, obj, action=CHANGE):
         # create log entry so there is a record of adding/updating urls
@@ -264,6 +288,7 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         doc = Document.get_by_any_pgpid(int(row["object_id"]))
         if not doc:
             self.stats["document_not_found"] += 1
+            self.not_found_documents += [row]
             if self.verbosity > self.v_normal:
                 self.stdout.write(
                     "Document %s not found in database" % row["object_id"]
