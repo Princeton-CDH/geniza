@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-17 13:12-0500\n"
+"POT-Creation-Date: 2021-12-17 16:35-0500\n"
 "PO-Revision-Date: 2021-12-16 21:35\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -381,8 +381,14 @@ msgstr "فني"
 msgid "FAQ"
 msgstr "أسئلة متكررة"
 
+#. Translators: label for language choices in navigation
+#: geniza/templates/snippets/language_switcher.html:13
+#, python-format
+msgid "read this page in %(language_name)s (%(language_code)s)"
+msgstr ""
+
 #. Translators: button on language chooser in navigation
-#: geniza/templates/snippets/language_switcher.html:17
+#: geniza/templates/snippets/language_switcher.html:20
 msgctxt "choose this option"
 msgid "go"
 msgstr ""
