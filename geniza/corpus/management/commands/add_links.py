@@ -1,4 +1,6 @@
 import csv
+import re
+from os.path import basename
 from urllib.parse import quote
 
 from django.conf import settings
@@ -144,21 +146,26 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             action_flag=action,
         )
 
-    def set_footnote_url(self, doc, source, url, doc_relation):
+    def set_footnote_url(self, doc, source, url, doc_relation, location=""):
         """Set the requested url on a footnote for the specified document,
         associated with the requested source. If an appropriate footnote
         exists without a url, it will be updated. If not, a new one will
         be created. If a footnote with the requested url and document
-        relation already exists, no changes are made. Returns the matching
-        footnote to indicate success."""
+        relation already exists, no changes are made, unless a location
+        needs to be set. Returns the matching footnote to indicate success."""
 
         # look for an existing footnote to update with the new url;
         # get or create doesn't work because not all parameters match (i.e., url)
         source_notes = doc.footnotes.filter(source=source).all()
         # check if a footnote with the requested url and document relation already exists
         for note in source_notes:
-            # if url and document relation are already set, nothing needs to be done
+            # if url and document relation are already set, only update location (if blank)
             if note.url == url and doc_relation in note.doc_relation:
+                if not note.location:
+                    note.location = location
+                    note.save()
+                    self.stats["footnotes_updated"] += 1
+                    self.log_action(note)
                 return note
 
         # otherwise, use the first matching footnote with no url
@@ -173,6 +180,8 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             footnote.url = url
             # ensure document relation is set accurately
             footnote.doc_relation = doc_relation
+            # set the location
+            footnote.location = location
             # save the change and update the count
             footnote.save()
             self.stats["footnotes_updated"] += 1
@@ -181,7 +190,11 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         # if an appropriate footnote was not found, create a new one
         else:
             footnote = Footnote.objects.create(
-                source=source, content_object=doc, url=url, doc_relation=doc_relation
+                source=source,
+                content_object=doc,
+                url=url,
+                doc_relation=doc_relation,
+                location=location,
             )
             self.stats["footnotes_created"] += 1
             self.log_action(footnote, action=ADDITION)
@@ -262,20 +275,46 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         # get doc relation for this link type
         doc_relation = self.document_relation[link_type]
 
-        # get source based on the link type
+        # get source and location based on the link type
         if link_type == "goitein_note":
             source = self.get_goitein_source(doc=doc, title="typed texts")
+            base_name = basename(row["link_target"])
+            try:  # use base name up to PGPID for goitein texts
+                end_index = base_name.index("(PGPID")
+            except ValueError:  # if PGPID not present, use base name up to extension
+                end_index = base_name.rindex(".") if "." in base_name else 0
+            # use string up to end_index and strip whitespace for location
+            location = base_name[:end_index].strip() if end_index else base_name.strip()
         elif link_type == "indexcard":
             source = self.get_goitein_source(
                 doc=doc,
                 title="index cards",
             )
+            # use card #target for location
+            location = "card #%s" % row["link_target"]
         elif link_type == "jewish-traders":
             source = self.jewish_traders
+            # use document number without extension (e.g. "01.pdf" becomes "01") for location
+            base_name = row["link_target"]
+            no_ext = (
+                base_name[: base_name.rindex(".")] if "." in base_name else base_name
+            )
+            m = re.search(r"(\d+)", no_ext)
+            location = ("document #%s" % m.groups(0)) if m else no_ext
         elif link_type == "india-traders":
             source = self.get_india_book(row["link_title"])
+            # use filename without extension (e.g. "I-27-28.pdf" becomes "I-27-28") for location
+            base_name = row["link_target"]
+            no_ext = (
+                base_name[: base_name.rindex(".")] if "." in base_name else base_name
+            )
+            location = no_ext.strip()
 
         # create or update footnote with the target url, beasd on all the other parameters determined
         return self.set_footnote_url(
-            doc=doc, source=source, url=target_url, doc_relation=doc_relation
+            doc=doc,
+            source=source,
+            url=target_url,
+            doc_relation=doc_relation,
+            location=location,
         )

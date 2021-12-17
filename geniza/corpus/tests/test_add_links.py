@@ -160,7 +160,11 @@ def test_set_footnote_url_create(typed_texts, jewish_traders, india_book, docume
 
     test_url = "http://example.com/pgp/link/"
     footnote = cmd.set_footnote_url(
-        document, jewish_traders, url=test_url, doc_relation=Footnote.TRANSLATION
+        document,
+        jewish_traders,
+        url=test_url,
+        doc_relation=Footnote.TRANSLATION,
+        location="document #123",
     )
     assert footnote.content_object == document
     assert footnote.source == jewish_traders
@@ -211,6 +215,36 @@ def test_set_footnote_url_update(typed_texts, jewish_traders, india_book, docume
     assert cmd.stats["footnotes_updated"] == 1
 
 
+def test_set_footnote_location_update(
+    typed_texts, jewish_traders, india_book, document
+):
+    cmd = add_links.Command()
+    cmd.setup()
+    cmd.stats = {"footnotes_created": 0, "footnotes_updated": 0}
+
+    # create a typed text footnote on document with no location to update
+    existing_note = Footnote.objects.create(
+        content_object=document,
+        source=typed_texts,
+        url="http://example.com/pgp/link/",
+        doc_relation=Footnote.EDITION,
+    )
+
+    test_url = "http://example.com/pgp/link/"
+    footnote = cmd.set_footnote_url(
+        document,
+        typed_texts,
+        url=test_url,
+        doc_relation=Footnote.EDITION,
+        location="new location",
+    )
+    # should update the existing footnote
+    assert footnote.pk == existing_note.pk
+    assert footnote.url == test_url
+    assert cmd.stats["footnotes_created"] == 0
+    assert cmd.stats["footnotes_updated"] == 1
+
+
 @patch("geniza.corpus.management.commands.add_links.Command.set_footnote_url")
 def test_add_link(mock_set_footnote, typed_texts, jewish_traders, india_book, document):
     cmd = add_links.Command()
@@ -218,28 +252,12 @@ def test_add_link(mock_set_footnote, typed_texts, jewish_traders, india_book, do
     cmd.setup()
     cmd.stats = defaultdict(int)
 
+    # test index cards
     test_row = {
         "object_id": document.pk,
-        "link_type": "jewish-traders",
+        "link_type": "indexcard",
         "link_target": "abc123",
     }
-    cmd.add_link(test_row)
-    mock_set_footnote.assert_called_with(
-        doc=document,
-        source=jewish_traders,
-        url="https://s3.amazonaws.com/goitein-lmjt/abc123",
-        doc_relation=Footnote.TRANSLATION,
-    )
-
-    test_row["link_type"] = "goitein_note"
-    cmd.add_link(test_row)
-    mock_set_footnote.assert_called_with(
-        doc=document,
-        source=typed_texts,
-        url="https://commons.princeton.edu/media/geniza/abc123",
-        doc_relation=Footnote.EDITION,
-    )
-    test_row["link_type"] = "indexcard"
     cmd.add_link(test_row)
     indexcard_source = cmd.get_goitein_source(
         doc=document,
@@ -251,7 +269,54 @@ def test_add_link(mock_set_footnote, typed_texts, jewish_traders, india_book, do
         url="https://geniza.princeton.edu/indexcards/"
         + quote("index.php?a=card&id=abc123"),
         doc_relation=Footnote.DISCUSSION,
+        location="card #abc123",
     )
+
+    # test goitein note (and add pdf extension)
+    test_row.update(
+        {
+            "link_type": "goitein_note",
+            "link_target": "abc123 (PGPID 1234).pdf",
+        }
+    )
+    cmd.add_link(test_row)
+    mock_set_footnote.assert_called_with(
+        doc=document,
+        source=typed_texts,
+        url="https://commons.princeton.edu/media/geniza/"
+        + quote("abc123 (PGPID 1234).pdf"),
+        doc_relation=Footnote.EDITION,
+        location="abc123",
+    )
+
+    # test goitein note (without PGPID in filename)
+    test_row.update(
+        {
+            "link_type": "goitein_note",
+            "link_target": "abc123.pdf",
+        }
+    )
+    cmd.add_link(test_row)
+    mock_set_footnote.assert_called_with(
+        doc=document,
+        source=typed_texts,
+        url="https://commons.princeton.edu/media/geniza/abc123.pdf",
+        doc_relation=Footnote.EDITION,
+        location="abc123",
+    )
+
+    # test jewish traders
+    test_row["link_type"] = "jewish-traders"
+    cmd.add_link(test_row)
+    mock_set_footnote.assert_called_with(
+        doc=document,
+        source=jewish_traders,
+        url="https://s3.amazonaws.com/goitein-lmjt/abc123.pdf",
+        doc_relation=Footnote.TRANSLATION,
+        location="document #123",
+    )
+
+    # test india traders
     test_row.update(
         {
             "link_type": "india-traders",
@@ -262,8 +327,9 @@ def test_add_link(mock_set_footnote, typed_texts, jewish_traders, india_book, do
     mock_set_footnote.assert_called_with(
         doc=document,
         source=india_book[0],
-        url="https://s3.amazonaws.com/goitein-india-traders/abc123",
+        url="https://s3.amazonaws.com/goitein-india-traders/abc123.pdf",
         doc_relation=Footnote.TRANSLATION,
+        location="abc123",
     )
 
 
