@@ -13,6 +13,7 @@
 @use "components/iiif";
 @use "components/pagination";
 @use "components/docheader";
+@use "components/langswitcher";
 
 // Page-specific styles
 @use "pages/content";

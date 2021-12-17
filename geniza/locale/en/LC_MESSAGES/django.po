@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-16 16:13-0500\n"
+"POT-Creation-Date: 2021-12-17 13:12-0500\n"
 "PO-Revision-Date: 2021-12-16 21:35\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -69,7 +69,6 @@ msgstr ""
 
 #. Translators: Editor label
 #: geniza/corpus/templates/corpus/document_detail.html:37
-#| msgid "Editor"
 msgid "Editor"
 msgid_plural "Editors"
 msgstr[0] ""
@@ -140,7 +139,6 @@ msgstr ""
 
 #. Translators: Document edit link for admins
 #: geniza/corpus/templates/corpus/snippets/document_header.html:9
-#| msgid "Editor"
 msgid "Edit"
 msgstr ""
 
@@ -232,12 +230,12 @@ msgid "Search and browse Geniza documents."
 msgstr ""
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:209
+#: geniza/corpus/views.py:207
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr ""
 
-#: geniza/corpus/views.py:216
+#: geniza/corpus/views.py:214
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
@@ -245,22 +243,22 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: attribution for local IIIF manifests
-#: geniza/corpus/views.py:313
+#: geniza/corpus/views.py:311
 msgid "Princeton Geniza Project"
 msgstr ""
 
-#: geniza/corpus/views.py:314
+#: geniza/corpus/views.py:312
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr ""
 
-#: geniza/corpus/views.py:317
+#: geniza/corpus/views.py:315
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr ""
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: geniza/corpus/views.py:319
+#: geniza/corpus/views.py:317
 msgid "Additional restrictions may apply."
 msgstr ""
 
@@ -358,6 +356,11 @@ msgstr ""
 msgid "FAQ"
 msgstr ""
 
+#. Translators: button on language chooser in navigation
+#: geniza/templates/snippets/language_switcher.html:17
+msgctxt "choose this option"
+msgid "go"
+msgstr ""
+
 #~ msgid "Shelfmark"
 #~ msgstr "Shelfmark"
-

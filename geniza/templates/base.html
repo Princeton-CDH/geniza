@@ -47,7 +47,10 @@
         {% endif %}
         {% block body %}
             <a id="skip" class="sr-only-focusable" href="#main-content">{% translate "Skip to main content" %}</a>
-            <header>{% include "nav.html" %}</header>
+            <header>
+                {% include "snippets/language_switcher.html" %}
+                {% include "nav.html" %}
+            </header>
             <main id="main-content">{% block main %}{% endblock main %}</main>
             <footer></footer>
         {% endblock body %}
