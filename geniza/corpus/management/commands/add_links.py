@@ -136,8 +136,16 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
 
         # generate CSV report of documents that could not be found
         if len(self.not_found_documents) > 0:
+            # basename without extension
+            original_csv = (
+                basename(csv_path)[: basename(csv_path).rindex(".")]
+                if "." in csv_path
+                else basename(csv_path)
+            )
             # save in same directory as original CSV
-            nf_report_path = dirname(csv_path) + "/not_found_report.csv"
+            nf_report_path = dirname(csv_path) + (
+                "/documents_not_found_in_%s.csv" % original_csv
+            )
             with open(nf_report_path, "w+") as f:
                 fieldnames = [
                     "linkID",
@@ -153,7 +161,7 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
                     csv_writer.writerow(not_found_row)
 
             self.stdout.write(
-                "Saved report of not found documents to %s." % nf_report_path
+                "Saved report of documents not found to %s." % nf_report_path
             )
 
     def log_action(self, obj, action=CHANGE):
