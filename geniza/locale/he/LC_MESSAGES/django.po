@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2021-12-17 16:35-0500\n"
-"PO-Revision-Date: 2021-12-19 20:04\n"
+"PO-Revision-Date: 2021-12-19 21:02\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -139,12 +139,12 @@ msgstr ""
 #: geniza/corpus/templates/corpus/document_scholarship.html:42
 #: geniza/corpus/templates/corpus/document_scholarship.html:44
 msgid "includes"
-msgstr ""
+msgstr "כלול"
 
 #. Translators: Document edit link for admins
 #: geniza/corpus/templates/corpus/snippets/document_header.html:9
 msgid "Edit"
-msgstr ""
+msgstr "עריכה"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:20
 msgid "PGP ID"
@@ -155,10 +155,10 @@ msgstr "מזהה PGP"
 #, python-format
 msgid "1 Transcription"
 msgid_plural "%(counter)s Transcriptions"
-msgstr[0] ""
+msgstr[0] "תעתוק אחד"
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
+msgstr[3] "%(counter)s תעתוקים"
 
 #. Translators: number of translations for this document
 #: geniza/corpus/templates/corpus/snippets/document_result.html:70
@@ -168,21 +168,21 @@ msgid_plural "%(counter)s Translations"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
+msgstr[3] "%(counter)s תעתוקים"
 
 #. Translators: number of sources that discuss this document
 #: geniza/corpus/templates/corpus/snippets/document_result.html:80
 #, python-format
 msgid "1 Discussion"
 msgid_plural "%(counter)s Discussions"
-msgstr[0] ""
+msgstr[0] "דיון אחד"
 msgstr[1] ""
 msgstr[2] ""
-msgstr[3] ""
+msgstr[3] "%(counter)s דיונים"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:88
 msgid "No Scholarship Records"
-msgstr ""
+msgstr "אין רשומות קשורות"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:106
 msgid "View document details"
@@ -191,7 +191,7 @@ msgstr "הצגת פרטי מסמך"
 #. Translators: accessibility text label for document detail view tabs navigation
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:4
 msgid "tabs"
-msgstr ""
+msgstr "כרטיסיות"
 
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:7
 msgid "Document Details"
@@ -205,7 +205,7 @@ msgstr "רשומות קשורות (%(n_records)s)"
 
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:16
 msgid "External Links"
-msgstr ""
+msgstr "קישורים חיצוניים"
 
 #. Translators: n_links is number of external links
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:21
@@ -216,18 +216,18 @@ msgstr "קישורים חיצוניים (%(n_links)s)"
 #. Translators: Label for "previous page" button in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:5
 msgid "previous page"
-msgstr ""
+msgstr "לעמוד הקודם"
 
 #. Translators: Title for link to page number in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:19
 #, python-format
 msgid "page %(number)s"
-msgstr ""
+msgstr "%(number)s עמודים"
 
 #. Translators: Label for "next page" button in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:56
 msgid "next page"
-msgstr ""
+msgstr "לעמוד הבא"
 
 #. Translators: title of document search page
 #: geniza/corpus/views.py:30
@@ -257,22 +257,22 @@ msgstr[3] "%(count)d רשומות קשורות ל %(doc)s"
 #. Translators: attribution for local IIIF manifests
 #: geniza/corpus/views.py:311
 msgid "Princeton Geniza Project"
-msgstr ""
+msgstr "פרוייקט הגניזה של פרינסטון"
 
 #: geniza/corpus/views.py:312
 #, python-format
 msgid "Compilation by %(pgp)s."
-msgstr ""
+msgstr "קובץ על-ידי %(pgp)s."
 
 #: geniza/corpus/views.py:315
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
-msgstr ""
+msgstr "קובץ ותועתק על-ידי %(pgp)s."
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
 #: geniza/corpus/views.py:317
 msgid "Additional restrictions may apply."
-msgstr ""
+msgstr "קיימות מגבלות נוספות."
 
 #: geniza/footnotes/models.py:394
 msgid "Edition"
@@ -292,12 +292,12 @@ msgstr "ניהול האתר"
 
 #: geniza/templates/base.html:49
 msgid "Skip to main content"
-msgstr ""
+msgstr "דילוג לתוכן"
 
 #. Translators: accessibility text label for site navigation
 #: geniza/templates/nav.html:8
 msgid "main navigation"
-msgstr ""
+msgstr "ניווט"
 
 #. Translators: accessibility label for 'home' button in main navigation
 #: geniza/templates/nav.html:14
@@ -312,12 +312,12 @@ msgstr "גניזה"
 #. Translators: label for 'menu' open button for mobile navigation
 #: geniza/templates/nav.html:22
 msgid "Open main navigation menu"
-msgstr ""
+msgstr "פתיחת תפריט ניווט"
 
 #. Translators: label for 'menu' close button for mobile navigation
 #: geniza/templates/nav.html:35
 msgid "Close main navigation menu"
-msgstr ""
+msgstr "סגירת תפריט ניווט"
 
 #. Translators: label for link to 'Search' page in main navigation
 #: geniza/templates/nav.html:42
@@ -336,49 +336,49 @@ msgstr "אודות"
 #. Translators: accessibility label for 'about' menu in navigation
 #: geniza/templates/nav.html:59
 msgid "about menu"
-msgstr ""
+msgstr "תפריט אודות"
 
 #. Translators: label for main menu back button for mobile navigation
 #: geniza/templates/nav.html:64
 msgid "Return to main menu"
-msgstr ""
+msgstr "חזרה לתפריט הראשי"
 
 #. Translators: label for link to 'Credits' page in main navigation
 #: geniza/templates/nav.html:78
 msgid "Credits"
-msgstr ""
+msgstr "תודות"
 
 #. Translators: label for link to 'How to Cite' page in main navigation
 #: geniza/templates/nav.html:82
 msgid "How to Cite"
-msgstr ""
+msgstr "כיצד לצטט נתונים"
 
 #. Translators: label for link to 'Data Exports' page in main navigation
 #: geniza/templates/nav.html:86
 msgid "Data Exports"
-msgstr ""
+msgstr "ייצוא מידע"
 
 #. Translators: label for link to 'Technical' page in main navigation
 #: geniza/templates/nav.html:90
 msgid "Technical"
-msgstr ""
+msgstr "פרטים טכניים"
 
 #. Translators: label for link to 'FAQ' page in main navigation
 #: geniza/templates/nav.html:94
 msgid "FAQ"
-msgstr ""
+msgstr "שאלות נפוצות"
 
 #. Translators: label for language choices in navigation
 #: geniza/templates/snippets/language_switcher.html:13
 #, python-format
 msgid "read this page in %(language_name)s (%(language_code)s)"
-msgstr ""
+msgstr "קריאת העמוד ב-%(language_name)s (%(language_code)s)"
 
 #. Translators: button on language chooser in navigation
 #: geniza/templates/snippets/language_switcher.html:20
 msgctxt "choose this option"
 msgid "go"
-msgstr ""
+msgstr "שינוי שפה"
 
 #~ msgid "Shelfmark"
 #~ msgstr "Shelfmark"
