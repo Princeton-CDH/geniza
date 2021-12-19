@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2021-12-17 16:35-0500\n"
-"PO-Revision-Date: 2021-12-17 22:07\n"
+"PO-Revision-Date: 2021-12-19 20:04\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -20,32 +20,32 @@ msgstr ""
 #. Translators: placeholder for keyword search input
 #: geniza/corpus/forms.py:109
 msgid "search by keyword"
-msgstr ""
+msgstr "חיפוש לפי מילת מפתח"
 
 #. Translators: accessible label for keyword search input
 #: geniza/corpus/forms.py:111
 msgid "Keyword or Phrase"
-msgstr ""
+msgstr "מילת מפתח או ביטוי"
 
 #. Translators: label for sort by relevance
 #: geniza/corpus/forms.py:119
 msgid "Relevance"
-msgstr ""
+msgstr "רלוונטיות"
 
 #. Translators: label for descending sort by number of scholarship records
 #: geniza/corpus/forms.py:122
 msgid "Scholarship Records (Most–Least)"
-msgstr ""
+msgstr "רשומות קשורות (מהגדול לקטן)"
 
 #. Translators: label for ascending sort by number of scholarship records
 #: geniza/corpus/forms.py:124
 msgid "Scholarship Records (Least–Most)"
-msgstr ""
+msgstr "רשומות קשורות (מהקטן לגדול)"
 
 #. Translators: label for form sort field
 #: geniza/corpus/forms.py:133
 msgid "Sort by"
-msgstr ""
+msgstr "מיון לפי"
 
 #. Translators: label for document type search form filter
 #: geniza/corpus/forms.py:141
@@ -56,7 +56,7 @@ msgstr "סוג המסמך"
 #: geniza/corpus/models.py:601
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
-msgstr ""
+msgstr "סוג לא ידוע"
 
 #: geniza/corpus/templates/admin/corpus/app_index.html:9
 msgid "Home"
@@ -65,7 +65,7 @@ msgstr "דף הבית"
 #. Translators: label for document metadata section (editor, date, input date)
 #: geniza/corpus/templates/corpus/document_detail.html:30
 msgid "Metadata"
-msgstr ""
+msgstr "מטא-דאטא"
 
 #. Translators: Editor label
 #: geniza/corpus/templates/corpus/document_detail.html:37
@@ -85,7 +85,7 @@ msgstr "תאריך קלט"
 #. Translators: label for permanent link to a document
 #: geniza/corpus/templates/corpus/document_detail.html:56
 msgid "Permalink"
-msgstr ""
+msgstr "קישור קבוע"
 
 #. Translators: label for tags on a document
 #: geniza/corpus/templates/corpus/document_detail.html:66
@@ -96,12 +96,12 @@ msgstr "תגים"
 #. Translators: label for document description
 #: geniza/corpus/templates/corpus/document_detail.html:77
 msgid "Description"
-msgstr ""
+msgstr "תיאור"
 
 #. Translators: Search submit button
 #: geniza/corpus/templates/corpus/document_list.html:22
 msgid "Submit search"
-msgstr ""
+msgstr "חיפוש"
 
 #. Translators: number of search results
 #: geniza/corpus/templates/corpus/document_list.html:38
@@ -116,12 +116,12 @@ msgstr[3] "%(count_humanized)s תוצאות"
 #. Translators: accessibility label for a footnote source citation in scholarship records view
 #: geniza/corpus/templates/corpus/document_scholarship.html:20
 msgid "Bibliographic citation"
-msgstr ""
+msgstr "ציטוט"
 
 #. Translators: label for an unpublished scholarship record
 #: geniza/corpus/templates/corpus/document_scholarship.html:26
 msgid "unpublished"
-msgstr ""
+msgstr "לא פורסם"
 
 #. Translators: label for footnote location within source (with url)
 #: geniza/corpus/templates/corpus/document_scholarship.html:32
