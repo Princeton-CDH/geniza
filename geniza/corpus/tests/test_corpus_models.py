@@ -7,10 +7,10 @@ from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.core.serializers import serialize
 from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.safestring import SafeString
+from django.utils.translation import activate, deactivate_all, get_language
 from djiffy.models import Manifest
 
 from geniza.common.utils import absolutize_url
@@ -394,12 +394,24 @@ class TestDocument:
 
     def test_permalink(self):
         """permalink property should be constructed from base url and absolute url, without any language code"""
+        current_lang = get_language()
+
+        # if non-default language is active, should stay activate
+        activate("he")
         doc = Document.objects.create(id=1)
         site_domain = Site.objects.get_current().domain.rstrip("/")
+        # document url should follow directly after site domain,
+        # with no language code
         assert f"{site_domain}/documents/1/" in doc.permalink
-        assert doc.permalink == absolutize_url(doc.get_absolute_url()).replace(
-            "/en/", "/"
-        )
+        # activated language code should persist
+        assert get_language() == "he"
+
+        # handle case whre no language active
+        deactivate_all()
+        assert f"{site_domain}/documents/1/" in doc.permalink
+
+        # reactivate previous default (in case it matters for other tests)
+        activate(current_lang)
 
     def test_iiif_urls(self):
         # create example doc with two fragments with URLs

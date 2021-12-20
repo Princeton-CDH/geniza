@@ -10,7 +10,7 @@
 @use "../base/typography";
 
 // search form
-#search form fieldset {
+#search main form fieldset {
     @include container.two-column;
     max-width: 100%;
     display: flex;

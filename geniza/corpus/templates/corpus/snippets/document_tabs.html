@@ -14,7 +14,7 @@
 
         {# for MVP: external links is disabled; don't show a count #}
         {% blocktranslate asvar elink_text %}External Links{% endblocktranslate %}
-        <li class="disabled">{{ elink_text }}</li>
+        <li class="disabled"><span>{{ elink_text }}</span></li>
         {# preserving so we can get the text translation #}
         {% with n_links=document.fragment_urls|length %}
             {# Translators: n_links is number of external links #}

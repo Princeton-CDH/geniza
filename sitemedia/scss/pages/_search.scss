@@ -8,7 +8,7 @@
 
 #search {
     // Overall page layout
-    form {
+    main form {
         @include container.two-column;
         display: flex;
         flex-direction: column;
