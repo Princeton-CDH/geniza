@@ -25,10 +25,10 @@
         {% include "corpus/snippets/document_tabs.html" %}
 
         <section>
-            <h2 class="sr-only">
+            <h3 class="sr-only">
                 {# Translators: label for document metadata section (editor, date, input date) #}
                 {% translate 'Metadata' %}
-            </h2>
+            </h3>
             {# metadata #}
             <dl class="metadata">
                 {% if document.digital_editions %}
@@ -72,10 +72,10 @@
             {% endif %}
         </section>
         <section>
-            <h2>
+            <h3>
                 {# Translators: label for document description #}
                 {% translate 'Description' %}
-            </h2>
+            </h3>
             <p>{{ document.description }}</p>
         </section>
     </div>

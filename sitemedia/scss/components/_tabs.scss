@@ -16,10 +16,12 @@
     span {
         flex: 1 0 auto;
         display: inline-block;
-        @include typography.link;
         @include breakpoints.for-tablet-landscape-up {
             padding: spacing.$spacing-2xs spacing.$spacing-lg;
         }
+    }
+    a {
+        @include typography.link;
     }
     // Center tab padding boost
     li:nth-child(2) a,

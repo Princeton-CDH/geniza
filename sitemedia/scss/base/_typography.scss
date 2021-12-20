@@ -7,24 +7,23 @@
 @use "fonts";
 @use "spacing";
 
-// Type scale: generate sizes according to harmonic ratio. This scale is based
-// on the "Major Second" scale, with a scale factor of 1.125. See:
-// https://baseline.is/tools/type-scale-generator/
-$text-size-xs: 0.79rem; //   ~ 13px
-$text-size-sm: 0.89rem; //   ~ 14px
+// Type sizes, scaled relative to 1rem (by default 16px)
+$text-size-xs: 0.75rem; //   = 12px
+$text-size-sm: 0.875rem; //  = 14px
 $text-size-md: 1rem; //      = 16px
-$text-size-lg: 1.13rem; //   ~ 18px
-$text-size-xl: 1.27rem; //   ~ 20px
-$text-size-2xl: 1.42rem; //  ~ 23px
-$text-size-3xl: 1.6rem; //   ~ 26px
-$text-size-4xl: 1.8rem; //   ~ 29px
-$text-size-5xl: 2.025rem; // ~ 32px
+$text-size-lg: 1.125rem; //  = 18px
+$text-size-xl: 1.25rem; //   = 20px
+$text-size-2xl: 1.375rem; // = 22px
+$text-size-3xl: 1.5rem; //   = 24px
+$text-size-4xl: 1.75rem; //  = 28px
+$text-size-5xl: 2rem; //     = 32px
 
 // Mixins to apply typographic styles to text elements.
 
 // H1 — page titles
 @mixin headline-1 {
-    font-family: fonts.$primary;
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
     font-size: $text-size-2xl;
     @include breakpoints.for-desktop-up {
         font-size: $text-size-3xl;
@@ -34,7 +33,8 @@ $text-size-5xl: 2.025rem; // ~ 32px
 
 // H2 — section and search result titles
 @mixin headline-2 {
-    font-family: fonts.$primary;
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
     font-size: $text-size-xl;
     @include breakpoints.for-desktop-up {
         font-size: $text-size-2xl;
@@ -44,7 +44,8 @@ $text-size-5xl: 2.025rem; // ~ 32px
 
 // H3 — sub-sections only on generic content pages
 @mixin headline-3 {
-    font-family: fonts.$primary;
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
     font-size: $text-size-lg;
     @include breakpoints.for-desktop-up {
         font-size: $text-size-xl;
@@ -102,6 +103,11 @@ $text-size-5xl: 2.025rem; // ~ 32px
     }
     line-height: 1.5;
 }
+@mixin meta-bold {
+    @include meta;
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+}
 
 // caption - "includes" on scholarship records, image
 // captions on generic content pages, number of results on
@@ -109,6 +115,7 @@ $text-size-5xl: 2.025rem; // ~ 32px
 @mixin caption {
     font-family: fonts.$primary-italic;
     font-style: italic;
+    font-weight: normal;
     @include colors.apply-theme("on-background-light");
     font-size: $text-size-md;
     @include breakpoints.for-tablet-landscape-up {
@@ -137,10 +144,14 @@ $text-size-5xl: 2.025rem; // ~ 32px
     text-underline-offset: 0.1rem;
 }
 
+// "shelfmark" part of document titles
+@mixin shelfmark {
+    font-family: fonts.$primary;
+    font-weight: normal;
+}
+
 // "type" part of document titles
 @mixin doctype {
-    font-family: fonts.$primary-bold;
-    font-weight: bold;
     &::after {
         font-weight: normal;
         content: ": ";
@@ -168,7 +179,7 @@ $text-size-5xl: 2.025rem; // ~ 32px
     line-height: 1.2;
 }
 @mixin form-option-bold {
-    @include body-bold;
+    @include meta-bold; // same font+sizes as meta-bold
     line-height: 1.2;
 }
 
@@ -178,9 +189,7 @@ $text-size-5xl: 2.025rem; // ~ 32px
     line-height: 1.2;
 }
 @mixin filter-count-bold {
-    @include meta; // same sizes as meta
-    font-family: fonts.$primary-bold;
-    font-weight: bold;
+    @include meta-bold; // same font+sizes as meta-bold
     line-height: 1.2;
 }
 
@@ -190,9 +199,7 @@ $text-size-5xl: 2.025rem; // ~ 32px
     line-height: 1.4;
 }
 @mixin nav-bold {
-    font-family: fonts.$primary-bold;
-    font-weight: bold;
-    @include meta; // same sizes as meta
+    @include meta-bold; // same font+sizes as meta-bold
     line-height: 1.4;
 }
 

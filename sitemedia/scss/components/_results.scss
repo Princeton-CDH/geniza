@@ -68,6 +68,9 @@ section#document-list {
             .doctype {
                 @include typography.doctype;
             }
+            .shelfmark {
+                @include typography.shelfmark;
+            }
         }
 
         // other document metadata
