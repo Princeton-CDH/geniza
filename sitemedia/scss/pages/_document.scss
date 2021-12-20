@@ -88,12 +88,11 @@ body#document {
             }
         }
         // "Description" header
-        h2 {
+        h3 {
             margin: spacing.$spacing-xl 0 spacing.$spacing-md;
             @include breakpoints.for-desktop-up {
                 margin: spacing.$spacing-3xl 0 spacing.$spacing-md;
             }
-            @include typography.meta;
         }
     }
 }
