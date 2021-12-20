@@ -1,6 +1,7 @@
+import csv
 from collections import Counter, defaultdict
 from io import StringIO
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import Mock, call, mock_open, patch
 from urllib.parse import quote
 
 import pytest
@@ -343,5 +344,36 @@ def test_add_link_ignored():
     assert cmd.add_link({"link_type": "indexcard"}) == -1
 
 
+@patch("builtins.open", new_callable=mock_open)
+class TestGenerateCSVReport:
+    cmd = add_links.Command()
+    cmd.not_found_documents = [
+        {"link_type": "indexcard", "link_title": "index cards"},
+        {
+            "link_type": "india-traders",
+            "link_title": "India Traders of the Middle Ages, I-3",
+        },
+    ]
+
+    def test_file_name(self, mocked_open):
+        # Should generate a file name for not found documents based on the original
+        self.cmd.generate_csv_report("/path/to/fake.csv", ["link_type", "link_title"])
+        mocked_open.assert_called_with("/path/to/documents_not_found_in_fake.csv", "w+")
+
+    @patch("csv.DictWriter")
+    def test_dictwriter_created(self, mocked_dictwriter, mocked_open):
+        # Should create a dictwriter with the correct file and headers passed
+        headers = ["link_type", "link_title"]
+        self.cmd.generate_csv_report("/path/to/fake.csv", headers)
+        file = mocked_open("/path/to/documents_not_found_in_fake.csv", "w+")
+        mocked_dictwriter.assert_called_with(file, fieldnames=headers)
+
+    @patch("csv.DictWriter.writerow")
+    def test_writerow_called(self, mocked_writerow, _):
+        # Should write the rows from not_found_documents
+        self.cmd.generate_csv_report("/path/to/fake.csv", ["link_type", "link_title"])
+        assert call(self.cmd.not_found_documents[0]) in mocked_writerow.call_args_list
+        assert call(self.cmd.not_found_documents[1]) in mocked_writerow.call_args_list
+
+
 # TODO: add & test log entry handling
-# TODO: test report generation
