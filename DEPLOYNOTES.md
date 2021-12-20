@@ -3,9 +3,10 @@
 ## 0.7
 
 -   Update settings to configure **TEI_TRANSCRIPTIONS_LOCAL_PATH** for the deploy environment.
--   Run `python manage.py bootstrap_content` to create stub pages for all site content needed for main site navigation.
--   After running the above, in the Wagtail CMS, go to "Settings" -> "Locales" and choose each non-English language. Enable
-    syncing to them from English. This should auto-populate each other locale with a new home page and set of subpages.
+-   Run `python manage.py bootstrap_content -h HOSTNAME -p PORt` to create stub pages for all site content needed for main site navigation.
+-   After running the boostrap content, in the Wagtail CMS, go to "Settings" -> "Locales" and choose each non-English language. Enable syncing to them from English. This should auto-populate each other locale with a new home page and set of subpages.
+-   Run `python manage.py add_links` with a csv file exported from PGP v3 links database.
+-   Run `python manage.py sync_transcriptions` to synchronize TEI transcription content to footnotes for search and display.
 
 ## 0.3.0
 
