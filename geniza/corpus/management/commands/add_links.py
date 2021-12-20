@@ -89,6 +89,7 @@ class Command(BaseCommand):
         self.stats = {stat: 0 for stat in self.stats_fields}
         # initialize report of not found documents
         self.not_found_documents = []
+        original_headers = []
         # rough total for progress bar based on current number of rows in links.csv
         # *with* link types we care about (end of the file is largely ignored)
         starting_total = 10000  # 16300 = closer to real total
@@ -109,6 +110,7 @@ class Command(BaseCommand):
                                 raise CommandError(
                                     f"CSV is missing required fields: {self.required_headers}"
                                 )
+                            original_headers = list(row.keys())
                         imported = self.add_link(row)
                         if imported == -1:  # -1 indicates ignored on purpose
                             self.stats["ignored"] += 1
@@ -136,33 +138,7 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
 
         # generate CSV report of documents that could not be found
         if len(self.not_found_documents) > 0:
-            # basename without extension
-            original_csv = (
-                basename(csv_path)[: basename(csv_path).rindex(".")]
-                if "." in csv_path
-                else basename(csv_path)
-            )
-            # save in same directory as original CSV
-            nf_report_path = dirname(csv_path) + (
-                "/documents_not_found_in_%s.csv" % original_csv
-            )
-            with open(nf_report_path, "w+") as f:
-                fieldnames = [
-                    "linkID",
-                    "object_id",
-                    "link_type",
-                    "link_title",
-                    "link_target",
-                    "link_attribution",
-                ]
-                csv_writer = csv.DictWriter(f, fieldnames=fieldnames)
-                csv_writer.writeheader()
-                for not_found_row in self.not_found_documents:
-                    csv_writer.writerow(not_found_row)
-
-            self.stdout.write(
-                "Saved report of documents not found to %s." % nf_report_path
-            )
+            self.generate_csv_report(csv_path=csv_path, csv_headers=original_headers)
 
     def log_action(self, obj, action=CHANGE):
         # create log entry so there is a record of adding/updating urls
@@ -351,3 +327,27 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             doc_relation=doc_relation,
             location=location,
         )
+
+    def generate_csv_report(self, csv_path, csv_headers):
+        """Generate a CSV containing the rows of the original CSV for which a document
+        could not be found."""
+
+        # basename without extension
+        original_csv = (
+            basename(csv_path)[: basename(csv_path).rindex(".")]
+            if "." in csv_path
+            else basename(csv_path)
+        )
+        # save in same directory as original CSV
+        nf_report_path = dirname(csv_path) + (
+            "/documents_not_found_in_%s.csv" % original_csv
+        )
+        # reconstruct CSV header and write rows
+        with open(nf_report_path, "w+") as f:
+            csv_writer = csv.DictWriter(f, fieldnames=csv_headers)
+            csv_writer.writeheader()
+            # append each row saved in not_found_documents
+            for not_found_row in self.not_found_documents:
+                csv_writer.writerow(not_found_row)
+
+        self.stdout.write("Saved report of documents not found to %s." % nf_report_path)
