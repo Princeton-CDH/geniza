@@ -13,7 +13,7 @@ from django.db.models.functions.text import Lower
 from django.db.models.query import Prefetch
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from django.utils.translation import activate
+from django.utils.translation import activate, get_language
 from django.utils.translation import gettext as _
 from djiffy.importer import ManifestImporter
 from djiffy.models import Manifest
@@ -505,8 +505,9 @@ class Document(ModelIndexable):
     def permalink(self):
         # generate permalink without language url so that all versions
         # have the same link and users will be directed preferred language
-        activate("en")
-        return absolutize_url(self.get_absolute_url().replace("/en/", "/"))
+        # - get current active language, or default langue if not active
+        lang = get_language() or settings.LANGUAGE_CODE
+        return absolutize_url(self.get_absolute_url().replace(f"/{lang}/", "/"))
 
     def iiif_urls(self):
         """List of IIIF urls for images of the Document's Fragments."""
