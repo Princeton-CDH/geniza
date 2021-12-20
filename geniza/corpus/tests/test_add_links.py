@@ -1,4 +1,3 @@
-import csv
 from collections import Counter, defaultdict
 from io import StringIO
 from unittest.mock import Mock, call, mock_open, patch
@@ -95,6 +94,41 @@ class TestAddLinksSkipSetup:
         with pytest.raises(CommandError) as err:
             command.handle(csv="/tmp/example/not-here.csv")
         assert "CSV file not found" in str(err)
+
+    @patch("geniza.corpus.management.commands.add_links.Command.generate_csv_report")
+    def test_handle_bad_documents(self, mock_gen_csv_report):
+        # Test a document that cannot be found in the database
+        command = add_links.Command(stdout=StringIO())
+        command.csv_path = "foo.csv"
+        csv_data = "\n".join(
+            [
+                "object_id,link_type,link_target,link_title",
+                "451,goitein_note,link_to_doc.pdf,goitein",
+            ]
+        )
+        mockfile = mock_open(read_data=csv_data)
+
+        # populate fields expected by summary
+        command.stats = Counter()
+        for stat in ["ignored", "errored", "document_not_found", "sources_created"]:
+            command.stats[stat] = 0
+
+        with patch("geniza.corpus.management.commands.add_links.open", mockfile):
+            command.handle(csv="foo.csv")
+        # Should add 1 to document_not_found stat
+        assert command.stats["document_not_found"] == 1
+        # Should add row to not_found_documents
+        assert {
+            "object_id": "451",
+            "link_type": "goitein_note",
+            "link_target": "link_to_doc.pdf",
+            "link_title": "goitein",
+        } in command.not_found_documents
+        # Should call generate csv report of not found documents
+        mock_gen_csv_report.assert_called_with(
+            csv_path="foo.csv",
+            csv_headers=["object_id", "link_type", "link_target", "link_title"],
+        )
 
 
 def test_setup(typed_texts, jewish_traders, india_book):
