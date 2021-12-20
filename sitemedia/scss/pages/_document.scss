@@ -37,7 +37,7 @@ body#document {
             }
             // Lighter color metadata
             .secondary {
-                @include colors.apply-theme("on-background-light");
+                color: colors.$gray;
             }
             dt {
                 margin-bottom: spacing.$spacing-3xs;

@@ -96,7 +96,7 @@
                 margin-left: spacing.$spacing-2xl;
             }
         }
-        @include colors.apply-theme("nav-outline", "outline-color");
+        @include colors.apply-theme("primary", "outline-color");
         @include colors.apply-theme("background", "background-color");
     }
     li.menu-button,
@@ -122,14 +122,14 @@
             max-width: 100%;
             display: inline-block;
             border-top: 1px solid;
-            @include colors.apply-theme("nav-outline", "border-top-color");
+            @include colors.apply-theme("primary", "border-top-color");
             @include typography.nav-link;
             @include typography.mobile-menu;
         }
         & + .menu-item a,
         & + #about-menu .menu-item a {
             padding-top: spacing.$spacing-lg;
-            border-top-color: colors.$gray-50;
+            @include colors.apply-theme("primary", "border-top-color");
             @include breakpoints.for-tablet-landscape-up {
                 padding-top: 0;
                 border: none;
@@ -244,7 +244,7 @@
             height: auto;
             border: 1px solid;
             border-top: none;
-            @include colors.apply-theme("nav-outline", "border-color");
+            @include colors.apply-theme("primary", "border-color");
             li.menu-button,
             li.menu-label {
                 display: none;
