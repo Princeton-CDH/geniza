@@ -103,6 +103,11 @@ $text-size-5xl: 2rem; //     = 32px
     }
     line-height: 1.5;
 }
+@mixin meta-bold {
+    @include meta;
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+}
 
 // caption - "includes" on scholarship records, image
 // captions on generic content pages, number of results on
@@ -174,7 +179,7 @@ $text-size-5xl: 2rem; //     = 32px
     line-height: 1.2;
 }
 @mixin form-option-bold {
-    @include body-bold;
+    @include meta-bold; // same font+sizes as meta-bold
     line-height: 1.2;
 }
 
@@ -184,9 +189,7 @@ $text-size-5xl: 2rem; //     = 32px
     line-height: 1.2;
 }
 @mixin filter-count-bold {
-    @include meta; // same sizes as meta
-    font-family: fonts.$primary-bold;
-    font-weight: bold;
+    @include meta-bold; // same font+sizes as meta-bold
     line-height: 1.2;
 }
 
@@ -196,9 +199,7 @@ $text-size-5xl: 2rem; //     = 32px
     line-height: 1.4;
 }
 @mixin nav-bold {
-    font-family: fonts.$primary-bold;
-    font-weight: bold;
-    @include meta; // same sizes as meta
+    @include meta-bold; // same font+sizes as meta-bold
     line-height: 1.4;
 }
 
