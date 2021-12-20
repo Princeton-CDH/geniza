@@ -8,6 +8,7 @@
 -   Run `python manage.py add_links` with a csv file exported from PGP v3 links database.
 -   Run `python manage.py sync_transcriptions` to synchronize TEI transcription content to footnotes for search and display.
 -   Solr indexing has changed significantly since the last release. All content should be reindexed: `python manage.py index`
+-   Run `python manage.py import_manifests` to cache IIIF manifests in the database and link to fragment records.
 
 ## 0.3.0
 
