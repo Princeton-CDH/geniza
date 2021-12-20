@@ -45,8 +45,7 @@ html {
 
 // Body setup: vertical stack that always takes at least the full page height.
 body {
-    @include colors.apply-theme("on-background");
-    @include colors.apply-theme("background", $property: "background-color");
+    @include colors.apply-combo("background");
     @include typography.body;
 
     display: flex;

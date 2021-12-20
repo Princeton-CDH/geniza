@@ -8,59 +8,42 @@
 
 // Basics
 $white: #ffffff;
-$black: #000000;
+$black: #161616;
+$blue: #146feb;
 $transparent: transparent;
 
-// Grays (warm)
-$gray-5: #fafaf9;
-$gray-10: #f5f5f4;
-$gray-20: #e7e5e4;
-$gray-30: #d6d3d1;
-$gray-40: #a8a29e;
-$gray-50: #78716c;
-$gray-60: #57534e;
-$gray-70: #44403c;
-$gray-80: #292524;
-$gray-90: #1c1917;
-
-// Cool grays
-$cool-gray-5: #f9fafb;
-$cool-gray-10: #f3f4f6;
-$cool-gray-20: #e5e7eb;
-$cool-gray-30: #d1d5db;
-$cool-gray-40: #9ca3af;
-$cool-gray-50: #6b7280;
-$cool-gray-60: #4b5563;
-$cool-gray-70: #374151;
-$cool-gray-80: #1f2937;
-$cool-gray-90: #111827;
+// Grays
+$dark-gray: #3d3d3d;
+$gray: #9e9e9e;
+$light-gray: #ebebeb;
+$off-white: #f7f7f7;
 
 // Theme colors
 $theme: (
-    "primary": #223c97,
-    "secondary": #5bbbc1,
-    "on-background": #292524,
-    "on-background-light": #646464,
-    "background": #ffffff,
-    "gray-10-background": $gray-10,
-    "gray-40-line": $gray-40,
-    "nav-outline": $gray-40,
-    "on-primary": #ffffff,
-    "on-secondary": #000000,
+    "primary": #436043,
+    "secondary": #567856,
+    "tertiary": #7bac7b,
+    "on-primary": $white,
+    "on-secondary": $white,
+    "on-tertiary": $black,
+    "background": $white,
+    "background-light": $off-white,
+    "on-background": $black,
+    "on-background-light": $black,
 );
 
 // Dark mode theme colors
 $dark-theme: (
-    "primary": #223c97,
-    "secondary": #5bbbc1,
-    "on-background": #d6d3d1,
-    "on-background-light": rgba(214, 211, 209, 0.66),
-    "nav-outline": $gray-60,
-    "background": #1f2937,
-    "gray-10-background": rgba(255, 255, 255, 0.1),
-    "gray-40-line": rgba(255, 255, 255, 0.4),
-    "on-primary": #ffffff,
-    "on-secondary": #000000,
+    "primary": #c37f97,
+    "secondary": #b76680,
+    "tertiary": #b76680,
+    "on-primary": $black,
+    "on-secondary": $black,
+    "on-tertiary": $black,
+    "background": $black,
+    "background-light": $dark-gray,
+    "on-background": $white,
+    "on-background-light": $white,
 );
 
 /*
