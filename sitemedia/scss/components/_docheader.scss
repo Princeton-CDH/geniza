@@ -14,6 +14,9 @@ span#formatted-title {
     .doctype {
         @include typography.doctype;
     }
+    .shelfmark {
+        @include typography.shelfmark;
+    }
     margin: spacing.$spacing-xl 0 spacing.$spacing-md;
     @include breakpoints.for-desktop-up {
         margin: spacing.$spacing-3xl 0 spacing.$spacing-2xl;
