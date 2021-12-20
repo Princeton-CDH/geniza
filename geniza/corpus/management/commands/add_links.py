@@ -1,6 +1,6 @@
 import csv
 import re
-from os.path import basename, dirname
+from os.path import basename, dirname, join, splitext
 from urllib.parse import quote
 
 from django.conf import settings
@@ -282,41 +282,30 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         target_url = "".join([self.base_url[link_type], quote(row["link_target"])])
         # get doc relation for this link type
         doc_relation = self.document_relation[link_type]
+        # get link target without extension
+        link_target_extless = splitext(row["link_target"])[0]
 
         # get source and location based on the link type
         if link_type == "goitein_note":
             source = self.get_goitein_source(doc=doc, title="typed texts")
-            base_name = basename(row["link_target"])
-            try:  # use base name up to PGPID for goitein texts
-                end_index = base_name.index("(PGPID")
-            except ValueError:  # if PGPID not present, use base name up to extension
-                end_index = base_name.rindex(".") if "." in base_name else 0
-            # use string up to end_index and strip whitespace for location
-            location = base_name[:end_index].strip() if end_index else base_name.strip()
+            location = link_target_extless.split("(PGPID")[0].strip()
         elif link_type == "indexcard":
             source = self.get_goitein_source(
                 doc=doc,
                 title="index cards",
             )
             # use card #target for location
-            location = "card #%s" % row["link_target"]
+            location = "card #%s" % link_target_extless
         elif link_type == "jewish-traders":
             source = self.jewish_traders
-            # use document number without extension (e.g. "01.pdf" becomes "01") for location
-            base_name = row["link_target"]
-            no_ext = (
-                base_name[: base_name.rindex(".")] if "." in base_name else base_name
-            )
-            m = re.search(r"(\d+)", no_ext)
-            location = ("document #%s" % m.groups(0)) if m else no_ext
+            # use document number without extension (e.g. "01.pdf" becomes "01") for location,
+            # if a set of digits is present in the basename; else, just use the whole basename
+            m = re.search(r"(\d+)", link_target_extless)
+            location = ("document #%s" % m.groups(0)) if m else link_target_extless
         elif link_type == "india-traders":
             source = self.get_india_book(row["link_title"])
             # use filename without extension (e.g. "I-27-28.pdf" becomes "I-27-28") for location
-            base_name = row["link_target"]
-            no_ext = (
-                base_name[: base_name.rindex(".")] if "." in base_name else base_name
-            )
-            location = no_ext.strip()
+            location = link_target_extless
 
         # create or update footnote with the target url, beasd on all the other parameters determined
         return self.set_footnote_url(
@@ -332,12 +321,11 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         could not be found."""
 
         # basename without extension
-        original_csv = (
-            basename(csv_path)[: basename(csv_path).rindex(".")]
-            if "." in csv_path
-            else basename(csv_path)
-        )
+        original_csv = splitext(basename(csv_path))[0]
         # save in same directory as original CSV
+        nf_report_path = join(
+            dirname(csv_path) or ".", "documents_not_found_in_%s.csv" % original_csv
+        )
         nf_report_path = dirname(csv_path) + (
             "/documents_not_found_in_%s.csv" % original_csv
         )
