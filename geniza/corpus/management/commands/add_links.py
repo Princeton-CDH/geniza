@@ -242,8 +242,7 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
     # base url target for each supported link type
     base_url = {
         "goitein_note": "https://commons.princeton.edu/media/geniza/",
-        "indexcard": "https://geniza.princeton.edu/indexcards/"
-        + quote("index.php?a=card&id="),
+        "indexcard": "https://geniza.princeton.edu/indexcards/index.php?a=card&id=",
         "jewish-traders": "https://s3.amazonaws.com/goitein-lmjt/",
         "india-traders": "https://s3.amazonaws.com/goitein-india-traders/",
     }
