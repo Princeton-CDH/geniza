@@ -9,6 +9,9 @@ if DEBUG:
 
 # enable fixture_magic for generating test fixtures
 INSTALLED_APPS.append("fixture_magic")
+# enable django-dbml for generating dbdocs
+INSTALLED_APPS.append("django_dbml")
+
 # custom dump for fixture_magic
 CUSTOM_DUMPS = {
     "document": {  # Initiate dump with: ./manage.py custom_dump document id1 id2 id3 ...
