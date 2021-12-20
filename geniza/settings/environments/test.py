@@ -13,6 +13,13 @@ DATABASES["default"].update(
     }
 )
 
+SOLR_CONNECTIONS["default"].update(
+    {
+        # set aggressive commitWithin for test
+        "COMMITWITHIN": 750,
+    }
+)
+
 # turn off debug so we see 404s when testing
 DEBUG = False
 
@@ -21,3 +28,8 @@ ALLOWED_HOSTS = ["*"]
 
 # enable django-dbml for generating dbdocs
 INSTALLED_APPS.append("django_dbml")
+
+# when running in CI, load fonts from production by overriding font base url
+# (needed for Percy and Lighthouse)
+if os.environ.get("CI"):
+    FONT_URL_PREFIX = "https://geniza.cdh.princeton.edu/static/fonts/"

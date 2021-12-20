@@ -25,6 +25,10 @@ Python 3.8 / Django 3.2 / Node 12 / Postgresql / Solr 8.6
     :target: https://dbdocs.io/princetoncdh/geniza
     :alt: dbdocs build
 
+.. image:: https://percy.io/static/images/percy-badge.svg
+    :target: https://percy.io/3201ecb4/geniza
+    :alt: Visual regression tests
+
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
     :alt: code style: Black
@@ -80,6 +84,20 @@ Remember to add a ``SECRET_KEY`` setting!
 
     python manage.py index
 
+Fonts
+-----
+
+Fonts are stored in `sitemedia/fonts/`. Since this project uses paid licensed fonts, this directory is ignored by git and not checked into version control.
+
+To install fonts locally:
+
+- Download `.woff` and `.woff2` files from the shared Google Drive folder "Geniza – woff files only".
+
+- Create the `fonts` subdirectory::
+
+    cd sitemedia && mkdir fonts
+
+- Move or copy all the `.woff` and `.woff2` files into that subdirectory.
 
 Static Files
 ------------
@@ -121,6 +139,14 @@ Unit Tests
 Python unit tests are written with `py.test <http://doc.pytest.org/>`_
 and should be run with `pytest`.
 
+End-to-end Tests
+----------------
+
+Performance, accessibility, SEO and more are audited via `Lighthouse <https://developers.google.com/web/tools/lighthouse>`_. The tool runs in a GitHub actions workflow (`lighthouse.yml`).
+
+Lighthouse runs several checks by visiting a list of URLs and averaging the results. If new pages are adding to the site, a corresponding URL should be added to the configuration file `lighthouserc.js`.
+
+If the Lighthouse build is generating errors that need to be temporarily or permanently ignored, the corresponding error code can be set to "off" or "warn" in `lighthouserc.js`.
 
 Setup Black
 -----------

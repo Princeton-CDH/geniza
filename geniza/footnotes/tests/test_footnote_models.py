@@ -1,8 +1,15 @@
 from unittest.mock import patch
 
 import pytest
+from django.contrib.humanize.templatetags.humanize import ordinal
 
-from geniza.footnotes.models import Creator, Footnote, SourceLanguage, SourceType
+from geniza.footnotes.models import (
+    Creator,
+    Footnote,
+    Source,
+    SourceLanguage,
+    SourceType,
+)
 
 
 class TestSourceType:
@@ -20,7 +27,7 @@ class TestSourceLanguage:
 class TestSource:
     @pytest.mark.django_db
     def test_str(self, source, twoauthor_source, multiauthor_untitledsource):
-        # source has no year; str should be creator lastname, title,
+        # source has no year; str should be creator lastname, title, (n.p., n.d.)
         assert str(source) == "%s, %s" % (
             source.authors.first().firstname_lastname(),
             source.title,
@@ -39,37 +46,66 @@ class TestSource:
             twoauthor_source.title,
         )
 
-        # four authors, no title
+        # set an edition
+        twoauthor_source.edition = 3
+        assert str(twoauthor_source) == "%s and %s, %s, %s ed." % (
+            twoauthor_source.authors.first().firstname_lastname(),
+            twoauthor_source.authors.all()[1].firstname_lastname(),
+            twoauthor_source.title,
+            ordinal(twoauthor_source.edition),
+        )
+
+        # four authors, no title, unpublished
         lastnames = [
             a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
         ]
-        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s" % tuple(lastnames)
+        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s, %s" % (
+            tuple(lastnames) + (multiauthor_untitledsource.source_type.type.lower(),)
+        )
 
     @pytest.mark.django_db
     def test_str_article(self, article):
 
         # article with title, journal title, volume, year
-        assert str(article) == '%s, "%s" %s %s (%s)' % (
+        assert str(article) == '%s, "%s," %s %s, no. %d (%s)' % (
             article.authors.first().firstname_lastname(),
             article.title,
             article.journal,
             article.volume,
+            article.issue,
             article.year,
         )
         # article with no title
         article.title = ""
-        assert str(article) == "%s, %s %s (%s)" % (
+        assert str(article) == "%s, %s %s, no. %d (%s)" % (
             article.authors.first().firstname_lastname(),
             article.journal,
             article.volume,
+            article.issue,
             article.year,
         )
-        # no volume
+        # no volume or issue
         article.volume = ""
+        article.issue = None
         assert str(article) == "%s, %s (%s)" % (
             article.authors.first().firstname_lastname(),
             article.journal,
             article.year,
+        )
+
+    def test_str_language(self, article):
+        article.languages.add(SourceLanguage.objects.get(name="Hebrew"))
+        assert "(in Hebrew)" in str(article)
+
+    def test_str_book_section(self, book_section):
+        # book section with authors, title, book title, edition, year, volume no.
+        assert str(book_section) == '%s, "%s," in %s, %s ed. (%s), vol. %s' % (
+            book_section.authors.first().firstname_lastname(),
+            book_section.title,
+            book_section.journal,
+            ordinal(book_section.edition),
+            book_section.year,
+            book_section.volume,
         )
 
     def test_all_authors(self, twoauthor_source):
@@ -77,6 +113,82 @@ class TestSource:
         assert twoauthor_source.all_authors() == "%s; %s" % (
             author1.creator,
             author2.creator,
+        )
+
+    def test_str_unpublished_vol(self, typed_texts):
+        # displays without volume
+        assert str(typed_texts) == "S. D. Goitein, typed texts"
+
+    def test_formatted_display(self, book_section):
+        # should display proper publisher info, page range for book section fixture
+        assert (
+            "(%s: %s, %s), %s:%s"
+            % (
+                book_section.place_published,
+                book_section.publisher,
+                book_section.year,
+                book_section.volume,
+                book_section.page_range,
+            )
+            in book_section.formatted_display()
+        )
+
+        # should display page range without volume
+        book_section.volume = ""
+        assert (
+            "(%s: %s, %s), %s"
+            % (
+                book_section.place_published,
+                book_section.publisher,
+                book_section.year,
+                book_section.page_range,
+            )
+            in book_section.formatted_display()
+        )
+
+        # should dispaly n.p.: Publisher when no place published
+        book_section.place_published = ""
+        assert (
+            "(n.p.: %s, %s)"
+            % (
+                book_section.publisher,
+                book_section.year,
+            )
+            in book_section.formatted_display()
+        )
+
+    def test_formatted_phd_diss(self, phd_dissertation):
+        # should include "PhD diss." and degree-granting institution;
+        # should surround title in double quotes;
+        # should not include publication place;
+        # should end in a period
+        assert (
+            phd_dissertation.formatted_display()
+            == '%s, "%s" (PhD diss., %s, %s).'
+            % (
+                phd_dissertation.authors.first().firstname_lastname(),
+                phd_dissertation.title,
+                phd_dissertation.publisher,
+                phd_dissertation.year,
+            )
+        )
+        assert (
+            phd_dissertation.place_published
+            and phd_dissertation.place_published
+            not in phd_dissertation.formatted_display()
+        )
+
+    def test_get_volume_from_shelfmark(self):
+        assert Source.get_volume_from_shelfmark("T-S 3564.5J") == "T-S 35"
+        assert Source.get_volume_from_shelfmark("Bodl. 3563") == "Bodl."
+        assert Source.get_volume_from_shelfmark("T-S Miscellan 36") == "T-S Misc"
+
+    def test_formatted_source_url(self, source):
+        # should create link around source title
+        source.url = "http://example.com/"
+        assert (
+            '<a href="http://example.com/">%s</a>' % source.title
+            in source.formatted_display()
         )
 
 
@@ -199,6 +311,29 @@ class TestFootnoteQuerySet:
             )
             == footnote1
         )
+
+    def test_editions(self, source, twoauthor_source, document):
+        # same source, content object, location
+        footnote1 = Footnote.objects.create(
+            source=source,
+            content_object=document,
+            location="p.1",
+            doc_relation=Footnote.EDITION,
+        )
+        footnote2 = Footnote.objects.create(
+            source=source,
+            content_object=document,
+            location="p.1",
+            doc_relation=Footnote.TRANSLATION,
+        )
+        editions = Footnote.objects.editions()
+        assert footnote1 in editions
+        assert footnote2 not in editions
+
+        # test filter with multiple document relations
+        footnote2.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
+        footnote2.save()
+        assert footnote2 in Footnote.objects.editions()
 
 
 class TestCreator:

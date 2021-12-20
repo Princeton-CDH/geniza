@@ -5,40 +5,40 @@
 {% endblock %}
 
 {% block field_sets %}
-{% if original.iiif_url %}
-    <div class="wrapper">
-        <div id="change_form">{{ block.super }}</div>
-        <div id="iiif_viewer" class="image-viewer" style="position: relative; height:375px;"></div>
-        <script type="text/javascript">
-          Mirador.viewer({
-            id: "iiif_viewer",
-            window: {
-              allowClose: false, // Prevent the user from closing this window
-              allowMaximize: false,
-              defaultSideBarPanel: 'info',
-              sideBarOpenByDefault: false,
-              views: [ // Only allow the user to select single and gallery view
-                { key: 'single' },
-                { key: 'gallery' },
-              ],
-            defaultView: 'single',
-            },
-            galleryView: {
-                height: 250
-            },
-            thumbnailNavigation: {
-                defaultPosition: 'far-right'
-            },
-            windows: [{
-                loadedManifest: '{{ original.iiif_url }}',
-            }],
-            workspaceControlPanel: {
-                enabled: false, // Remove extra workspace settings,
-            }
-          });
-        </script>
-    </div>
-{% else %}
-	{{ block.super }}
-{% endif %}
+    {% if original.iiif_url %}
+        <div class="wrapper">
+            <div id="change_form">{{ block.super }}</div>
+            <div id="iiif_viewer" class="image-viewer" style="position: relative; height:375px;"></div>
+            <script type="text/javascript">
+                Mirador.viewer({
+                    id: "iiif_viewer",
+                    window: {
+                        allowClose: false, // Prevent the user from closing this window
+                        allowMaximize: false,
+                        defaultSideBarPanel: 'info',
+                        sideBarOpenByDefault: false,
+                        views: [ // Only allow the user to select single and gallery view
+                            { key: 'single' },
+                            { key: 'gallery' },
+                        ],
+                        defaultView: 'single',
+                    },
+                    galleryView: {
+                        height: 250
+                    },
+                    thumbnailNavigation: {
+                        defaultPosition: 'far-right'
+                    },
+                    windows: [{
+                        loadedManifest: '{{ original.iiif_url }}',
+                    }],
+                    workspaceControlPanel: {
+                        enabled: false, // Remove extra workspace settings,
+                    }
+                });
+            </script>
+        </div>
+    {% else %}
+        {{ block.super }}
+    {% endif %}
 {% endblock %}

@@ -2,10 +2,14 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
+from django.utils import html
+from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager
 from multiselectfield import MultiSelectField
+
+from geniza.common.models import TrackChangesModel
 
 
 class SourceType(models.Model):
@@ -83,11 +87,16 @@ class Source(models.Model):
     authors = models.ManyToManyField(Creator, through=Authorship)
     title = models.CharField(max_length=255, blank=True, null=True)
     year = models.PositiveIntegerField(blank=True, null=True)
-    edition = models.CharField(max_length=255, blank=True)
+    edition = models.PositiveIntegerField(blank=True, null=True)
     volume = models.CharField(
         max_length=255,
         blank=True,
         help_text="Volume of a multivolume book, or journal volume for an article",
+    )
+    issue = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Issue number for a journal article",
     )
     journal = models.CharField(
         "Journal / Book",
@@ -98,6 +107,14 @@ class Source(models.Model):
     page_range = models.CharField(
         max_length=255, blank=True, help_text="Page range for article or book section."
     )
+    publisher = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Publisher name, or degree granting institution for a dissertation",
+    )
+    place_published = models.CharField(
+        max_length=255, blank=True, help_text="Place where the work was published"
+    )
     other_info = models.TextField(
         blank=True, help_text="Additional citation information, if any"
     )
@@ -105,7 +122,7 @@ class Source(models.Model):
     languages = models.ManyToManyField(
         SourceLanguage, help_text="The language(s) the source is written in"
     )
-    url = models.URLField(blank=True, max_length=300)
+    url = models.URLField(blank=True, max_length=300, verbose_name="URL")
     # preliminary place to store transcription text; should not be editable
     notes = models.TextField(blank=True)
 
@@ -115,17 +132,17 @@ class Source(models.Model):
         ordering = ["title", "year"]
 
     def __str__(self):
-        # generate simple string representation similar to
-        # how records were listed in the metadata spreadsheet
-        # author lastname, title (year)
+        """strip HTML tags and trailing period from formatted display"""
+        return strip_tags(self.formatted_display(extra_fields=False))[:-1]
 
-        # author
-        # author, title
-        # author, title (year)
-        # author (year)
-        # author, "title" journal vol (year)
+    def all_authors(self):
+        """semi-colon delimited list of authors in order"""
+        return "; ".join([str(c.creator) for c in self.authorship_set.all()])
 
-        # TODO: include language if not English
+    def formatted_display(self, extra_fields=True):
+        """Format source for display; used on document scholarship page.
+        To omit publisher, place_published, and page_range fields,
+        specify `extra_fields=False`."""
 
         author = ""
         if self.authorship_set.exists():
@@ -143,35 +160,192 @@ class Source(models.Model):
 
         parts = []
 
+        # Ensure that Unicode LTR mark is added after fields when RTL languages present
+        rtl_langs = ["Hebrew", "Arabic", "Judaeo-Arabic"]
+        source_langs = [str(lang) for lang in self.languages.all()]
+        source_contains_rtl = set(source_langs).intersection(set(rtl_langs))
+        ltr_mark = chr(8206) if source_contains_rtl else ""
+
+        # Types that should receive double quotes around title
+        doublequoted_types = ["Article", "Dissertation", "Book Section"]
+
+        # Handle title
+        work_title = ""
         if self.title:
-            # if this is an article, wrap title in quotes
-            if self.source_type.type == "Article":
-                parts.append('"%s"' % self.title)
+            # if this is a book, italicize title
+            if self.source_type.type == "Book":
+                work_title = "<em>%s%s</em>" % (self.title, ltr_mark)
+            # if this is a doublequoted type, wrap title in quotes
+            elif self.source_type.type in doublequoted_types:
+                stripped_title = self.title.strip("\"'")
+                work_title = '"%s%s"' % (stripped_title, ltr_mark)
+            # otherwise, just leave unformatted
             else:
-                parts.append(self.title)
+                work_title = self.title + ltr_mark
+        elif self.source_type and (
+            extra_fields or not author or self.source_type.type == "Unpublished"
+        ):
+            # Use type as descriptive title when no title available, per CMS
+            # Only when extra_fields enabled, or there is no author, or "unpublished" should appear
+            # in brief citation
+            work_title = (
+                self.source_type.type if not author else self.source_type.type.lower()
+            )
 
-        # TODO: formatted version with italics for book/journal title
+        # Wrap title in link to URL
+        if self.url and work_title:
+            parts.append('<a href="%s">%s</a>' % (self.url, work_title))
+        elif work_title:
+            parts.append(work_title)
+
+        # Add edition for Book type if present
+        if self.edition:
+            edition_str = "%s ed." % ordinal(self.edition)
+            if self.source_type.type == "Book" and self.title:
+                parts[-1] += ","
+                parts.append(edition_str)
+
+        # Add non-English languages as parenthetical
+        non_english_langs = 0
+        if self.languages.count():
+            for lang in self.languages.all():
+                if "English" not in str(lang):
+                    non_english_langs += 1
+                    parts.append("(in %s)" % lang)
+
+        # Handling presence of book/journal title
         if self.journal:
-            parts.append(self.journal)
-        if self.volume:
-            parts.append(self.volume)
-        if self.year:
-            parts.append("(%d)" % self.year)
-        if self.other_info:
-            parts.append(self.other_info)
+            # add comma inside doublequotes when they are present, if no language parenthetical
+            # examples:
+            #   "Title"                 --> "Title,"
+            #   NOT "Title" (in Hebrew) --> "Title," (in Hebrew)
+            if self.title and (
+                self.source_type.type in doublequoted_types
+                and not non_english_langs  # put comma after language even when doublequotes present
+            ):
+                # find rightmost doublequote
+                formatted_title = parts[-1]
+                last_dq = formatted_title.rindex('"')
+                # add comma directly before it
+                parts[-1] = formatted_title[:last_dq] + "," + formatted_title[last_dq:]
+            # otherwise, simply add the comma at the end of the title (or language)
+            # examples:
+            #   <em>Title</em>      --> <em>Title</em>,
+            #   "Title" (in Hebrew) --> "Title" (in Hebrew),
+            elif len(parts):
+                parts[-1] += ","
 
-        # title, journal, etc should be joined by spaces only
+            # CMS needs "in" before book title
+            if self.source_type.type == "Book Section":
+                parts.append("in")
+
+            # italicize book/journal title
+            parts.append("<em>%s%s</em>" % (self.journal, ltr_mark))
+
+            if self.source_type.type == "Book Section" and self.edition:
+                parts[-1] += ","
+                parts.append(edition_str)
+
+        # Unlike other work types, journal articles' volume/issue numbers
+        # appear before the publisher info and date
+        if self.source_type.type == "Article":
+            if self.volume:
+                parts.append(self.volume)
+            if self.issue:
+                parts[-1] += ","
+                parts.append("no. %d" % self.issue)
+
+        if extra_fields:
+            # Location, publisher, and date (omit for unpublished, unless it has a year)
+            # examples:
+            #   (n.p., n.d.)
+            #   (n.p., 2013)
+            #   (Oxford: n.p., 2013)
+            #   (n.p.: Oxford University Press, 2013)
+            #   (Oxford: Oxford University Press, 2013)
+            #   (PhD diss., n.p., n.d.)
+            #   (PhD diss., n.p., 2013)
+            #   (PhD diss., Oxford University, 2013)
+            if not (self.source_type.type == "Unpublished" and not self.year):
+                # If publisher name present, assign it to "pubname", otherwise assign n.p.
+                pub_name = "n.p." if not self.publisher else self.publisher
+                if self.source_type.type == "Dissertation":
+                    # Add "PhD diss." and degree granting institution for dissertation
+                    # (do not include place published here)
+                    pub_data = "PhD diss., %s" % pub_name
+                elif self.place_published or self.publisher:
+                    # Add publisher information for all other works, if available
+                    if self.place_published:
+                        pub_data = "%s: %s" % (self.place_published, pub_name)
+                    else:
+                        pub_data = "n.p.: %s" % pub_name
+                else:
+                    # If not a dissertation and no publisher info, then just use n.p.
+                    pub_data = pub_name
+
+                pub_year = "n.d." if not self.year else str(self.year)
+                parts.append("(%s, %s)" % (pub_data, pub_year))
+        elif self.year:
+            # when extra fields disabled, show year only
+            parts.append("(%s)" % str(self.year))
+
+        # omit volumes for unpublished sources
+        # (those volumes are an admin convienence for managing Goitein content)
+        # and for articles (appears earlier in citation)
+        needs_volume = bool(
+            self.volume and self.source_type.type not in ["Article", "Unpublished"]
+        )
+
+        if extra_fields and self.page_range:
+            # Page range and/or volume at end of citation
+            parts[-1] += ","
+            if needs_volume:
+                parts.append("%s:%s" % (self.volume, self.page_range))
+            else:
+                parts.append(self.page_range)
+        elif needs_volume:
+            # Just volume at end of citation
+            parts[-1] += ","
+            if "Book" in self.source_type.type:
+                parts.append("vol.")
+            parts.append(self.volume)
+
+        # title and other metadata should be joined by spaces
         ref = " ".join(parts)
 
-        # delimit with comma whichever values are set
-        return ", ".join([val for val in (author, ref) if val])
+        # use comma delimiter after authors when it does not break citation;
+        # i.e. extra_fields is true, source has a title, or source has a journal
+        # and no non-english languages to list.
+        # examples:
+        #   Allony (in Hebrew), Journal 6 (1964)    (no comma)
+        #   L. B. Yarbrough (in Hebrew)             (no comma)
+        #   Author (1964)                           (no comma)
+        #   Author, Journal 6 (1964)                (comma)
+        #   Author, unpublished                     (comma)
+        use_comma = (
+            extra_fields
+            or self.title
+            or (self.journal and not non_english_langs)
+            or self.source_type.type == "Unpublished"
+        )
+        delimiter = ", " if use_comma else " "
 
-    def all_authors(self):
-        """semi-colon delimited list of authors in order"""
-        return "; ".join([str(c.creator) for c in self.authorship_set.all()])
+        return delimiter.join([val for val in (author, ref) if val]) + "."
 
     all_authors.short_description = "Authors"
     all_authors.admin_order_field = "first_author"  # set in admin queryset
+
+    @classmethod
+    def get_volume_from_shelfmark(cls, shelfmark):
+        """Given a shelfmark, get our volume label. This logic was determined in
+        migration 0011_split_goitein_typedtexts.py
+        """
+        if shelfmark.startswith("T-S"):
+            volume = shelfmark[0:6]
+            volume = "T-S Misc" if volume == "T-S Mi" else volume
+        else:
+            volume = shelfmark.split(" ")[0]
+        return volume
 
 
 class FootnoteQuerySet(models.QuerySet):
@@ -199,8 +373,12 @@ class FootnoteQuerySet(models.QuerySet):
 
         return False
 
+    def editions(self):
+        """Filter to all footnotes that provide editions/transcriptions."""
+        return self.filter(doc_relation__contains=Footnote.EDITION)
 
-class Footnote(models.Model):
+
+class Footnote(TrackChangesModel):
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
     location = models.CharField(
         max_length=255,
@@ -263,15 +441,18 @@ class Footnote(models.Model):
     def display(self):
         """format footnote for display; used on document detail page
         and metdata export for old pgp site"""
-        # source, location. notes
-        # source. notes
+        # source, location. notes.
+        # source. notes.
         # source, location.
         parts = [str(self.source)]
         if self.location:
             parts.extend([", ", self.location])
         parts.append(".")
         if self.notes:
-            parts.extend([" ", self.notes])
+            # uppercase first letter of notes if not capitalized
+            notes = self.notes[0].upper() + self.notes[1:]
+            # append period to notes if not present
+            parts.extend([" ", notes.strip("."), "."])
         return "".join(parts)
 
     def has_url(self):
@@ -280,3 +461,25 @@ class Footnote(models.Model):
 
     has_url.boolean = True
     has_url.admin_order_field = "url"
+
+    def content_text(self):
+        "content as plain text, if available"
+        if self.content:
+            return self.content.get("text")
+
+    def iiif_annotation_content(self):
+        """Return transcription content from this footnote (if any)
+        as a IIIF annotation resource that can be associated with a canvas.
+        """
+        # For now, since we have no block/canvas information, return the
+        # whole thing as a single resource
+        html_content = self.content.get("html")
+        if html_content:
+            # this is the content that should be set as the "resource"
+            # of an annotation
+            return {
+                "@type": "cnt:ContentAsText",
+                "format": "text/html",
+                # language todo
+                "chars": "<div dir='rtl' class='transcription'>%s</div>" % html_content,
+            }

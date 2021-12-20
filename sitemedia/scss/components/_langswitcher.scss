@@ -1,0 +1,16 @@
+// -----------------------------------------------------------------------------
+// Language switcher form.
+// -----------------------------------------------------------------------------
+
+@use "../base/spacing";
+
+form#language {
+    position: absolute;
+    top: spacing.$spacing-xs;
+    right: spacing.$spacing-sm;
+
+    option[value="he"],
+    option[value="ar"] {
+        direction: rtl;
+    }
+}

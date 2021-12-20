@@ -10,6 +10,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
     #: map readable field names to actual solr fields
     field_aliases = {
+        "id": "id",  # needed to match results with highlighting
         "type": "type_s",
         "status": "status_s",
         "shelfmark": "shelfmark_ss",
@@ -27,6 +28,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "num_discussions": "num_discussions_i",
         "scholarship_count": "scholarship_count_i",
         "scholarship": "scholarship_t",
+        "transcription": "transcription_t",
+        "language_code": "language_code_ss",
     }
 
     # (adapted from mep)

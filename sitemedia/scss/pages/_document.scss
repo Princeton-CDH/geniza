@@ -1,0 +1,98 @@
+// -----------------------------------------------------------------------------
+// Document detail page.
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/colors";
+@use "../base/container";
+@use "../base/spacing";
+@use "../base/typography";
+
+body#document {
+    // Primary container
+    .container {
+        display: flex;
+        flex-direction: column;
+        padding: spacing.$spacing-md;
+        margin-bottom: spacing.$spacing-md;
+        @include breakpoints.for-desktop-up {
+            margin-bottom: spacing.$spacing-xl;
+        }
+        section:first-of-type {
+            display: flex;
+            flex-direction: column;
+            @include breakpoints.for-desktop-up {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+        // Document metadata
+        .metadata {
+            margin: spacing.$spacing-xl spacing.$spacing-xl 0;
+            @include typography.meta;
+            @include breakpoints.for-desktop-up {
+                flex: 1 0 50%;
+                padding-right: 0;
+                margin: spacing.$spacing-3xl 0 0;
+            }
+            // Lighter color metadata
+            .secondary {
+                @include colors.apply-theme("on-background-light");
+            }
+            dt {
+                margin-bottom: spacing.$spacing-3xs;
+            }
+            dd + dt {
+                margin-top: spacing.$spacing-sm;
+                @include breakpoints.for-desktop-up {
+                    margin-top: spacing.$spacing-md;
+                }
+            }
+            dd + dd {
+                margin-top: spacing.$spacing-xs;
+            }
+            // hanging "info" phosphor icon before link
+            // disabled for MVP
+            /*
+            dd a::before {
+                @include colors.apply-theme("on-background");
+                font-family: "Phosphor" !important;
+                content: "\f1e0";
+                font-feature-settings: "liga";
+                float: left;
+                text-align: center;
+                margin-left: -#{spacing.$spacing-xl};
+            }
+            */
+        }
+        // Document tags
+        .tags {
+            margin: spacing.$spacing-xl spacing.$spacing-xl 0;
+            align-self: flex-end;
+            text-align: right;
+            @include breakpoints.for-desktop-up {
+                flex: 1 0 50%;
+                padding-left: 0;
+                margin: spacing.$spacing-3xl 0 0;
+                align-self: flex-start;
+                justify-self: flex-end;
+                margin-left: 0;
+            }
+            li {
+                // spacing between tags
+                margin-right: 0;
+                & + li {
+                    margin-left: 0.5rem;
+                }
+                @include typography.meta;
+            }
+        }
+        // "Description" header
+        h3 {
+            margin: spacing.$spacing-xl 0 spacing.$spacing-md;
+            @include breakpoints.for-desktop-up {
+                margin: spacing.$spacing-3xl 0 spacing.$spacing-md;
+            }
+        }
+    }
+}

@@ -42,15 +42,27 @@ class TestDocumentRelationTypesFilter:
     def test_queryset(self, source):
         footnote_args = {
             "source": source,
-            "content_type_id": ContentType.objects.get(model="document").id,
+            "content_type_id": ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
             "object_id": 0,
         }
 
         Footnote.objects.bulk_create(
             [
-                Footnote(doc_relation=["E"], **footnote_args),
-                Footnote(doc_relation=["E", "T"], **footnote_args),
-                Footnote(doc_relation=["E", "D", "T"], **footnote_args),
+                Footnote(doc_relation=[Footnote.EDITION], **footnote_args),
+                Footnote(
+                    doc_relation=[Footnote.EDITION, Footnote.TRANSLATION],
+                    **footnote_args,
+                ),
+                Footnote(
+                    doc_relation=[
+                        Footnote.EDITION,
+                        Footnote.TRANSLATION,
+                        Footnote.DISCUSSION,
+                    ],
+                    **footnote_args,
+                ),
             ]
         )
 
@@ -100,7 +112,9 @@ class TestSourceAdmin:
         Footnote.objects.create(
             doc_relation=["E"],
             source=source,
-            content_type_id=ContentType.objects.get(model="document").id,
+            content_type_id=ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
             object_id=0,
         )
 
@@ -125,17 +139,22 @@ class TestSourceAdmin:
         source_admin = SourceAdmin(model=Source, admin_site=admin.site)
         qs = source_admin.get_queryset("rqst")
 
+        # add a url to one of the sources
+        source.url = "http://example.com"
+        source.save()
+
         for source, source_data in zip(qs, source_admin.tabulate_queryset(qs)):
             # test some properties
             assert source.title in source_data
             assert source.journal in source_data
             assert source.year in source_data
+            assert source.url in source_data
 
             # test compiled data
             for authorship in source.authorship_set.all():
                 assert str(authorship.creator) in source_data[1]
             for lang in source.languages.all():
-                assert lang.name in source_data[9]
+                assert lang.name in source_data[12]
 
             # none of the fixtures have footnotes, but count should be included
             assert 0 in source_data
@@ -258,7 +277,9 @@ class TestSourceFootnoteInline:
         footnote = Footnote.objects.create(
             doc_relation=["E"],
             source=source,
-            content_type_id=ContentType.objects.get(model="document").id,
+            content_type_id=ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
             object_id=0,
         )
         doc = Document.objects.create()

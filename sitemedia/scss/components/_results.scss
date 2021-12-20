@@ -1,0 +1,169 @@
+// -----------------------------------------------------------------------------
+// Lists of search results for documents.
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/container";
+@use "../base/spacing";
+@use "../base/typography";
+@use "../base/colors";
+
+section#document-list {
+    // count of results
+    h1 {
+        @include container.two-column;
+        @include typography.caption;
+        text-align: center;
+        margin: spacing.$spacing-sm 0;
+    }
+    // list of results
+    ol {
+        list-style: none;
+        @include container.two-column;
+        margin-top: spacing.$spacing-2xl;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: spacing.$spacing-4xl;
+        }
+    }
+    nav.pagination + ol {
+        margin-top: 0;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: spacing.$spacing-md;
+        }
+    }
+}
+
+// single result
+.search-result {
+    margin-left: spacing.$spacing-2xl;
+    @include container.two-column;
+    display: flex;
+    justify-content: space-between;
+    flex-flow: column;
+
+    // spacing in between results
+    & + .search-result {
+        margin-top: spacing.$spacing-lg;
+    }
+
+    // First row on mobile, left column on larger
+    section:first-of-type {
+        max-width: container.$measure;
+        display: flex;
+        flex-flow: column;
+
+        // document titles
+        .title {
+            position: relative;
+
+            // anchor counter to h2 instead of li, for alignment regardless of tags
+            .counter {
+                margin-left: -#{spacing.$spacing-2xl};
+                text-align: left;
+                float: left;
+                font-weight: bold;
+            }
+
+            // document type, inside title
+            .doctype {
+                @include typography.doctype;
+            }
+            .shelfmark {
+                @include typography.shelfmark;
+            }
+        }
+
+        // other document metadata
+        .metadata {
+            grid-template-columns: auto 1fr;
+            column-gap: 1rem;
+        }
+
+        // document description, transcription
+        .description,
+        .transcription {
+            margin: spacing.$spacing-md 0;
+
+            // keywords in context
+            em {
+                @include colors.apply-theme("primary");
+                font-weight: bold;
+            }
+            /* solr returns multiple matches in text without space between */
+            em + em {
+                &::before {
+                    content: " ";
+                }
+            }
+        }
+
+        // document scholarship records
+        .scholarship {
+            @include typography.meta;
+            display: flex;
+            flex-flow: row wrap;
+            & span {
+                padding-right: spacing.$spacing-md;
+                &:last-child {
+                    padding-right: 0;
+                }
+            }
+        }
+
+        // document tags
+        ul.tags {
+            margin-top: spacing.$spacing-md;
+        }
+    }
+
+    .view-link {
+        display: flex;
+        align-items: center;
+        width: max-content;
+        margin-left: auto;
+        margin-top: spacing.$spacing-md;
+        @include typography.meta;
+        i {
+            margin-left: spacing.$spacing-2xs;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-left: spacing.$spacing-sm;
+            }
+            @include typography.headline-2;
+        }
+    }
+}
+
+// styles specific to transcription;
+// appear in search results and in mirador viewer
+.transcription {
+    @include typography.transcription;
+    @include typography.hebrew;
+    align-self: flex-end;
+
+    text-align: right;
+    direction: rtl;
+
+    li {
+        white-space: pre-line;
+        margin-right: 2em; /* shift to make space for line numbers */
+    }
+
+    .mirador-viewer & h1 {
+        @include typography.headline-3;
+        text-align: left;
+    }
+
+    /* some transcription styles adapted from local admin site css */
+    li::before {
+        /* use pseudo marker to avoid periods for line numbers */
+        content: attr(value);
+        margin-right: -2em; /* shift outside text margin */
+        text-align: right;
+        float: right;
+        font-weight: bold;
+    }
+
+    li::marker {
+        direction: rtl;
+    }
+}

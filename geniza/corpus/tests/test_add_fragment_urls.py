@@ -1,5 +1,5 @@
 from collections import defaultdict
-from unittest.mock import mock_open, patch
+from unittest.mock import Mock, mock_open, patch
 
 import pytest
 from attrdict import AttrMap
@@ -12,6 +12,7 @@ from geniza.corpus.models import Fragment
 
 
 @pytest.mark.django_db
+@patch("geniza.corpus.models.ManifestImporter", Mock())
 def test_handle():
     fragment = Fragment.objects.create(shelfmark="T-S NS 305.65")
 
@@ -113,6 +114,7 @@ def test_view_to_iiif_url():
 
 @pytest.mark.django_db
 @patch("geniza.corpus.management.commands.add_fragment_urls.Command.log_change")
+@patch("geniza.corpus.models.ManifestImporter", Mock())
 def test_add_fragment_urls(mock_log_change):
     # Ensure shelfmark not existing is properly handled.
     command = add_fragment_urls.Command()

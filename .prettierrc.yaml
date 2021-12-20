@@ -1,0 +1,11 @@
+# prettier config file
+trailingComma: "es5"
+tabWidth: 4
+overrides:
+  # use 2 spaces for yml & json indentation
+  - files:
+      - "*.yml"
+      - "*.yaml"
+      - "*.json"
+    options:
+      tabWidth: 2

@@ -1,0 +1,36 @@
+// -----------------------------------------------------------------------------
+// Tabbed navigation that appears in the header of some pages.
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/spacing";
+@use "../base/typography";
+
+.tabs {
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    margin: 0 auto;
+    @include typography.nav-link;
+    a,
+    span {
+        flex: 1 0 auto;
+        display: inline-block;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: spacing.$spacing-2xs spacing.$spacing-lg;
+        }
+    }
+    a {
+        @include typography.link;
+    }
+    // Center tab padding boost
+    li:nth-child(2) a,
+    li:nth-child(2) span {
+        @include breakpoints.for-tablet-landscape-up {
+            padding: spacing.$spacing-2xs spacing.$spacing-2xl;
+        }
+    }
+    a[aria-current="page"] {
+        @include typography.nav-bold;
+    }
+}

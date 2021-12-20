@@ -1,50 +1,89 @@
 {% extends 'base.html' %}
 {% load static i18n %}
 
-{% block title %}{{ document.title }}{% endblock title %}
-
-{% block extrahead %}
-<script src="https://unpkg.com/mirador@latest/dist/mirador.min.js"></script>
-<script src="{% static 'js/viewer.js' %}" defer></script>
-{% endblock extrahead %}
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block meta_description %}{{ page_description }}{% endblock meta_description %}
+{% block extrameta %}
+    <link rel="canonical" href="{{ document.permalink }}" />
+{% endblock extrameta %}
+{% block extrascript %}
+    {# mirador is slow, so only include if needed #}
+    {% if document.has_transcription or document.iiif_urls %}
+        {# NOTE: referencing specific version avoids an extra render-blocking lookup #}
+        <script defer src="https://unpkg.com/mirador@3.3.0/dist/mirador.min.js" nonce="{{ request.csp_nonce}}"></script>
+        <script defer src="{% static 'js/viewer.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    {% endif %}
+{% endblock extrascript %}
 
 {% block main %}
-<!-- document details -->
-<div class="container">
-    <h1>{{ document.title }}</h1>
-    {% include "corpus/snippets/document_tabs.html" %}
-    <dl>
-        <dt class="sr-only">{% translate 'Shelfmark' %}</dt>
-        <dd>{{ document.shelfmark }}</dd>
-        {% if document.doctype %}
-        <dt class="sr-only">{% translate 'Document Type' %}</dt>
-        <dd>{{ document.doctype }}</dd>
-        {% endif %}
-        {# Translators: Date document was first added to the PGP #}
-        <dt class="inline">{% translate 'Input date' %}</dt>
-        <dd>{{ document.log_entries.last.action_time.year }}</dd>
-        {% if document.editions %}
-        {# Translators: Editor label #}
-        <dt>{% translate 'Editor' %}</dt>  {# optionally pluralize? #}
-        {% for ed in document.editions %}
-        <dd>{{ ed.display }}</dd>
-        {# link ? #}
-        {% endfor %}
-        {% endif %}
-    </dl>
-    <dl class="tags">
-        <dt class="sr-only">{% translate 'Tags' %}</dt>
-        {% for tag in document.tags.all %}
-        <dd class="tag">#{{ tag }}</dd>
-        {% endfor %}
-    </dl>
-    <p>{{ document.description }}</p>
-</div>
-{% with iiif_urls=document.iiif_urls %}
-{% if iiif_urls %}
-<div class="wrapper">
-    <div id="iiif_viewer" data-iiif-urls="{{ iiif_urls|join:" " }}"></div>
-</div>
-{% endif %}
-{% endwith %}
+    <!-- document details -->
+    <h1 class="sr-only">{{ page_title }}</h1>
+    {% include "corpus/snippets/document_header.html" %}
+
+    <div class="container">
+        {# tabs #}
+        {% include "corpus/snippets/document_tabs.html" %}
+
+        <section>
+            <h3 class="sr-only">
+                {# Translators: label for document metadata section (editor, date, input date) #}
+                {% translate 'Metadata' %}
+            </h3>
+            {# metadata #}
+            <dl class="metadata">
+                {% if document.digital_editions %}
+                    <dt>
+                        {# Translators: Editor label #}
+                        {% blocktranslate count counter=document.editors.count trimmed %}
+                            Editor
+                        {% plural %}
+                            Editors
+                        {% endblocktranslate %}
+                    </dt>
+                    {% for ed in document.digital_editions %}
+                        {# ifchanged to avoid showing duplicate editions #}
+                        {% ifchanged %}
+                            <dd>{{ ed.display|safe }}</dd>
+                        {% endifchanged %}
+                        {# link ? #}
+                    {% endfor %}
+                {% endif %}
+                {# Translators: Date document was first added to the PGP #}
+                <dt class="secondary">{% translate 'Input date' %}</dt>
+                <dd class="secondary">{{ document.log_entries.last.action_time.year }}</dd>
+                <dt class="secondary">
+                    {# Translators: label for permanent link to a document #}
+                    {% translate 'Permalink' %}
+                </dt>
+                <dd class="secondary">
+                    <a href="{{ document.permalink }}" rel="bookmark">
+                        {{ document.permalink }}
+                    </a>
+                </dd>
+            </dl>
+            {% if document.tags.exists %}
+                {# Translators: label for tags on a document #}
+                <h3 class="sr-only">{% translate 'Tags' %}</h3>
+                <ul class="tags">
+                    {% for tag in document.alphabetized_tags %}
+                        <li>{{ tag }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+        <section>
+            <h3>
+                {# Translators: label for document description #}
+                {% translate 'Description' %}
+            </h3>
+            <p>{{ document.description }}</p>
+        </section>
+    </div>
+
+    {# viewer #}
+    {% if document.has_transcription or document.iiif_urls %}
+        <div class="iiif_wrapper">
+            <div id="iiif_viewer" data-iiif-url="{% url "corpus:document-manifest" document.id %}" data-has-annotations="{{ document.has_transcription }}"></div>
+        </div>
+    {% endif %}
 {% endblock main %}

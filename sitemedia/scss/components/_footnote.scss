@@ -1,0 +1,54 @@
+// -----------------------------------------------------------------------------
+// Bibliographic entry for scholarship on Geniza materials.
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/colors";
+@use "../base/spacing";
+@use "../base/typography";
+
+.citation {
+    counter-increment: search-counter;
+    padding-bottom: spacing.$spacing-md;
+    padding: 0 0 spacing.$spacing-md spacing.$spacing-xl;
+    margin-left: -#{spacing.$spacing-lg};
+    @include breakpoints.for-desktop-up {
+        padding-left: spacing.$spacing-xl;
+        margin-left: 0;
+    }
+    @include typography.body;
+    a {
+        @include typography.link;
+    }
+    & + .citation {
+        padding-top: spacing.$spacing-md;
+        border-top: 1px solid;
+        @include colors.apply-theme("gray-40-line", "border-top-color");
+    }
+    &::before {
+        content: counter(search-counter);
+        margin-left: -#{spacing.$spacing-xl};
+        text-align: left;
+        float: left;
+        @include typography.body-bold;
+    }
+    .relation {
+        max-width: none; // required to span the whole width
+        @include colors.apply-theme("gray-10-background", "background-color");
+        margin-left: -#{spacing.$spacing-xl};
+        padding: spacing.$spacing-4xs 0 spacing.$spacing-4xs spacing.$spacing-xl;
+        &:is(dt) {
+            margin-top: spacing.$spacing-md;
+            @include typography.caption;
+        }
+        &:is(dd) {
+            margin-bottom: spacing.$spacing-2xs;
+            @include typography.meta;
+        }
+    }
+    div.unpublished {
+        @include colors.apply-theme("on-background-light");
+        margin-top: spacing.$spacing-3xs;
+        @include typography.unpublished;
+    }
+}

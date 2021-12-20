@@ -27,6 +27,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "modeltranslation",  # this has to come before admin config
+    "wagtail.documents",  # this also has to come first to unregister
+    "wagtail.images",  #    this also has to come first to unregister
     "geniza.apps.GenizaAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -45,9 +47,22 @@ INSTALLED_APPS = [
     "admin_log_entries",
     "parasolr",
     "webpack_loader",
+    "djiffy",
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",
+    "geniza.pages.apps.PagesConfig",
+    "wagtail.contrib.forms",
+    "wagtail.contrib.redirects",
+    "wagtail.embeds",
+    "wagtail.sites",
+    "wagtail.users",
+    "wagtail.snippets",
+    "wagtail.admin",
+    "wagtail.core",
+    "wagtail_localize",
+    "wagtail_localize.locales",
+    "modelcluster",
 ]
 
 MIDDLEWARE = [
@@ -59,6 +74,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # "csp.middleware.CSPMiddleware",
+    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 
 ROOT_URLCONF = "geniza.urls"
@@ -143,17 +160,18 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en"
 
 TIME_ZONE = "America/New_York"
 
 USE_I18N = True
+WAGTAIL_I18N_ENABLED = True
 
 USE_L10N = True
 
 USE_TZ = True
 
-LANGUAGES = [
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
     ("en", "English"),
     ("he", "Hebrew"),
     ("ar", "Arabic"),
@@ -213,3 +231,63 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # documentation links
 PGP_DOCTYPE_GUIDE = "https://docs.google.com/document/d/1FHr1iS_JD5h-y5O1rv5JNNw1OqEVQFb-vSTGr3hoiF4/edit"
+
+# django-csp configuration for content security policy definition and
+# violation reporting - https://github.com/mozilla/django-csp
+#
+# uses lighthouse recommended strict CSP config with nonce for scripts. this
+# is the "modern" CSP config that doesn't use a whitelist and is instead based
+# on nonces generated on the server. For more info: https://web.dev/strict-csp
+CSP_INCLUDE_NONCE_IN = ("script-src",)
+CSP_SCRIPT_SRC = ["'strict-dynamic'", "https: 'unsafe-inline'"]
+CSP_OBJECT_SRC = ("'none'",)
+CSP_BASE_URI = ("'none'",)
+
+# allow XMLHttpRequest or Fetch requests locally (for search), iiif manifests
+CSP_CONNECT_SRC = [
+    "'self'",
+    "*.google-analytics.com",
+    "*.lib.cam.ac.uk",
+    "*.example.com",
+    "iiif-cloud.princeton.edu",
+]
+
+# allow loading css locally & via inline styles
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")  # , 'unpkg.com')
+
+# whitelisted image sources - analytics (tracking pixel?), IIIF, maps, etc.
+CSP_IMG_SRC = (
+    "'self'",
+    "iiif.princeton.edu",
+    "figgy.princeton.edu",
+    "iiif-cloud.princeton.edu",
+    "*.lib.cam.ac.uk",
+    "data:",
+)
+
+# exclude admin and cms urls from csp directives since they're authenticated
+CSP_EXCLUDE_URL_PREFIXES = ("/admin", "/cms")
+
+# use jpg instead of png since some providers only support jpg
+DJIFFY_THUMBNAIL_FORMAT = "jpg"
+# disable djiffy import check, since we are not using djiffy views
+# DJIFFY_IMPORT_CHECK_SUPPORTED = False
+
+# URL for git repository of TEI transcriptions
+TEI_TRANSCRIPTIONS_GITREPO = (
+    "https://bitbucket.org/benjohnston/princeton-geniza-project.git"
+)
+# local path where git repo should be cloned
+TEI_TRANSCRIPTIONS_LOCAL_PATH = "data/tei_xml"
+
+# Media root for user uploads (required by wagtail)
+MEDIA_ROOT = BASE_DIR / "media"
+
+# Media URL for user uploads (required by wagtail)
+MEDIA_URL = "/media/"
+
+# Wagtail site name
+WAGTAIL_SITE_NAME = "GENIZA"
+
+# default font base url
+FONT_URL_PREFIX = "/static/fonts/"

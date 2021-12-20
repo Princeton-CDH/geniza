@@ -1,0 +1,15 @@
+// -----------------------------------------------------------------------------
+// Lists of detailed metadata about Geniza documents.
+// -----------------------------------------------------------------------------
+
+@use "../base/spacing";
+@use "../base/typography";
+
+.metadata {
+    display: grid;
+    @include typography.meta;
+    dd,
+    dt {
+        word-break: break-word;
+    }
+}

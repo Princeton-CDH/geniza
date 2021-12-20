@@ -1,0 +1,190 @@
+// -----------------------------------------------------------------------------
+// Document search form.
+// -----------------------------------------------------------------------------
+
+@use "../base/a11y";
+@use "../base/breakpoints";
+@use "../base/colors";
+@use "../base/container";
+@use "../base/spacing";
+@use "../base/typography";
+
+// search form
+#search main form fieldset {
+    @include container.two-column;
+    max-width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: flex-start;
+    input[type="search"] {
+        max-width: 100%;
+        order: 1;
+        flex: 1 0 auto;
+        border: 1px solid colors.$gray-50;
+        margin-right: 0;
+        height: spacing.$spacing-xl;
+        padding: spacing.$spacing-sm;
+        @include breakpoints.for-tablet-landscape-up {
+            border-right: none;
+        }
+        @include typography.form-option;
+        &::placeholder {
+            @include typography.form-option;
+        }
+    }
+    select[name="sort"] {
+        width: 100%;
+        max-width: 100%;
+        order: 5;
+        flex: 1 1 auto;
+        border-radius: 0;
+        height: spacing.$spacing-xl;
+        padding: spacing.$spacing-2xs spacing.$spacing-xs;
+        /*  NOTE: this will disable background gloss and curved borders on Safari,
+        but loses the dropdown arrow...  */
+        /* -webkit-appearance: none;  */
+        margin-top: spacing.$spacing-sm;
+        border: 1px solid colors.$gray-50;
+        @include colors.apply-theme("on-background");
+        @include colors.apply-theme(
+            "background",
+            $property: "background-color"
+        );
+        @include breakpoints.for-tablet-landscape-up {
+            width: auto;
+            flex: 0 1 auto;
+        }
+        @include typography.form-option-bold;
+    }
+    label[for="sort"] {
+        max-width: 100%;
+        order: 4;
+        flex: 1 0 100%;
+        margin-top: spacing.$spacing-lg;
+        @include typography.form-option;
+    }
+    button[type="submit"] {
+        order: 2;
+        flex: 0 0 40px;
+        border-radius: 0;
+        margin-left: 0;
+        background-color: colors.$gray-30;
+        border: 1px solid colors.$gray-50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        @include a11y.sr-only-focusable;
+        @include breakpoints.for-tablet-landscape-up {
+            width: auto;
+            height: spacing.$spacing-xl;
+            position: relative;
+            &:active,
+            &:focus {
+                width: auto;
+                height: spacing.$spacing-xl;
+            }
+        }
+        i {
+            @include typography.icon-button;
+        }
+    }
+    // document type filter
+    details {
+        order: 3;
+        flex: 1 0 100%;
+        max-width: 100%;
+        border: 1px solid colors.$gray-50;
+        margin-top: spacing.$spacing-lg;
+        @include typography.form-option;
+        // Label for document type filter
+        summary {
+            max-width: 100%;
+            padding: spacing.$spacing-sm;
+            @include breakpoints.for-tablet-landscape-up {
+                padding: spacing.$spacing-sm spacing.$spacing-md;
+            }
+            list-style-type: none;
+            // Suppress default details marker
+            &::-webkit-details-marker {
+                display: none;
+            }
+            &::after {
+                font-family: "Phosphor";
+                content: "\f82b"; // phosphor caret-down-fill icon
+                transition: transform 0.75s ease;
+                float: right;
+                margin: 0;
+                padding: 0;
+            }
+        }
+        &[open] summary {
+            border-bottom: 1px solid colors.$gray-50;
+            // Expanded details marker
+            &::after {
+                transform: rotate(-180deg);
+            }
+        }
+
+        // List of filter options
+        ul#id_doctype {
+            max-width: 100%;
+            list-style-type: none;
+            padding: spacing.$spacing-sm spacing.$spacing-lg;
+            @include breakpoints.for-tablet-landscape-up {
+                padding: spacing.$spacing-md spacing.$spacing-lg;
+            }
+            li {
+                max-width: 100%;
+                input[type="checkbox"] {
+                    @include a11y.sr-only;
+                    & + span {
+                        display: flex;
+                        align-items: center;
+                        padding-right: spacing.$spacing-xs;
+                        &::before {
+                            opacity: 0%;
+                            font-family: "Phosphor";
+                            content: "\f851";
+                            font-feature-settings: "liga";
+                            float: left;
+                            text-align: center;
+                            margin-left: -#{spacing.$spacing-lg};
+                            padding: 0 spacing.$spacing-xs;
+                            @include colors.apply-theme("secondary");
+                        }
+                    }
+                    &:checked + span {
+                        @include typography.form-option-bold;
+                    }
+                    &:checked + span + .count {
+                        @include typography.filter-count-bold;
+                    }
+                    &:focus + span,
+                    &:focus + span + .count {
+                        @include colors.apply-theme(
+                            "secondary",
+                            "outline-color"
+                        );
+                        outline-width: 1px;
+                        outline-style: dashed;
+                    }
+                    &:checked + span::before {
+                        opacity: 100%;
+                    }
+                }
+                label {
+                    max-width: 100%;
+                    display: flex;
+                    flex: 1 0 100%;
+                    align-items: center;
+                    .count {
+                        @include typography.filter-count;
+                        margin-left: auto;
+                        padding: 0 spacing.$spacing-xs;
+                    }
+                }
+            }
+        }
+    }
+}

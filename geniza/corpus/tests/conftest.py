@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest.mock import Mock, patch
 
 import pytest
 from django.conf import settings
@@ -6,13 +7,12 @@ from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.utils.timezone import get_current_timezone, make_aware
-from taggit.models import Tag
 
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 
 
-@pytest.fixture
-def fragment(db):
+@patch("geniza.corpus.models.ManifestImporter", Mock())
+def make_fragment():
     """A real fragment from CUL, with URLs for testing."""
     return Fragment.objects.create(
         shelfmark="CUL Add.2586",
@@ -21,8 +21,8 @@ def fragment(db):
     )
 
 
-@pytest.fixture
-def multifragment(db):
+@patch("geniza.corpus.models.ManifestImporter", Mock())
+def make_multifragment():
     """A real multifragment object, with fake URLs for testing."""
     return Fragment.objects.create(
         shelfmark="T-S 16.377",
@@ -32,8 +32,7 @@ def multifragment(db):
     )
 
 
-@pytest.fixture
-def document(db, fragment):
+def make_document(fragment):
     """A real legal document from the PGP."""
     doc = Document.objects.create(
         id=3951,
@@ -73,8 +72,7 @@ def document(db, fragment):
     return doc
 
 
-@pytest.fixture
-def join(db, fragment, multifragment):
+def make_join(fragment, multifragment):
     """A fake letter document that occurs on two different fragments."""
     doc = Document.objects.create(
         description="testing description",
@@ -83,3 +81,23 @@ def join(db, fragment, multifragment):
     TextBlock.objects.create(document=doc, fragment=fragment, order=1)
     TextBlock.objects.create(document=doc, fragment=multifragment, order=2)
     return doc
+
+
+@pytest.fixture
+def fragment(db):
+    return make_fragment()
+
+
+@pytest.fixture
+def multifragment(db):
+    return make_multifragment()
+
+
+@pytest.fixture
+def document(db, fragment):
+    return make_document(fragment)
+
+
+@pytest.fixture
+def join(db, fragment, multifragment):
+    return make_join(fragment, multifragment)

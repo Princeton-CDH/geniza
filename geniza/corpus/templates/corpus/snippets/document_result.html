@@ -1,0 +1,110 @@
+{% load i18n corpus_extras %}
+{% spaceless %}
+    <li class="search-result">
+        <section>
+            {# title #}
+            <h2 class="title">
+                {# result number #}
+                <span class="counter">
+                    {{ forloop.counter0|add:page_obj.start_index }}
+                </span>
+                {# type and shelfmark #}
+                <span class="doctype">{{ document.type }}</span>
+                <span class="shelfmark">{{ document.shelfmark|join:" + " }}</span>
+            </h2>
+
+            {# metadata #}
+            <dl class="metadata">
+                <dt>{% translate 'Input date' %}</dt>
+                <dd>{{ document.input_year|default:'unknown' }}</dd>
+                <dt>{% translate 'PGP ID' %}</dt>
+                <dd>{{ document.pgpid }}</dd>
+            </dl>
+
+            {# description #}
+            <p class="description">
+                {# display keywords in context if any #}
+                {% with document_highlights=highlighting|dict_item:document.id %}
+                    {% if document_highlights.description %}
+                        {% for snippet in document_highlights.description %}
+                            {{ snippet|safe }}
+                        {% endfor %}
+                    {% else %}
+                        {# otherwise, display truncated description #}
+                        {{ document.description.0|truncatewords:25 }}
+                    {% endif %}
+                {% endwith %}
+            </p>
+
+            {# transcription: keywords in context if any, or excerpt #}
+            {% with document_highlights=highlighting|dict_item:document.id lang=document.language_code.0 %}
+                {# use first language code, if any; otherwise empty lang attribute to indicate unknown language #}
+                {# NOTE: this is problematic for documents with multiple primary languages #}
+                {% if document_highlights.transcription %}
+                    <p class="transcription" lang="{{ lang }}">{% for snippet in document_highlights.transcription %}
+                        {{ snippet|safe }}
+                    {% endfor %}</p>
+                {% elif document.transcription %}
+                    {# otherwise, display truncated transcription #}
+                    {# NOTE: might be nice to display N lines instead of using truncatechars #}
+                    <p class="transcription" lang="{{ lang }}">{{ document.transcription.0|truncatechars:75 }}</p>
+                {% endif %}
+            {% endwith %}
+
+            {# scholarship records #}
+            <p class="scholarship">
+                {% if document.scholarship_count %}
+                    {% if document.num_editions %}
+                        <span>
+                            {% comment %}Translators: number of editions for this document{% endcomment %}
+                            {% blocktranslate count counter=document.num_editions trimmed %}
+                                1 Transcription
+                            {% plural %}
+                                {{ counter }} Transcriptions
+                            {% endblocktranslate %}
+                        </span>
+                    {% endif %}
+                    {% if document.num_translations %}
+                        <span>
+                            {% comment %}Translators: number of translations for this document{% endcomment %}
+                            {% blocktranslate count counter=document.num_translations trimmed %}
+                                1 Translation
+                            {% plural %}
+                                {{ counter }} Translations
+                            {% endblocktranslate %}
+                        </span>
+                    {% endif %}
+                    {% if document.num_discussions %}
+                        <span>
+                            {% comment %}Translators: number of sources that discuss this document{% endcomment %}
+                            {% blocktranslate count counter=document.num_discussions trimmed %}
+                                1 Discussion
+                            {% plural %}
+                                {{ counter }} Discussions
+                            {% endblocktranslate %}
+                        </span>
+                    {% endif %}
+                {% else %}
+                    {% translate 'No Scholarship Records' %}
+                {% endif %}
+            </p>
+
+            {# tags #}
+            {% if document.tags %}
+                {# Translators: label for tags on a document #}
+                <h3 class="sr-only">{% translate 'Tags' %}</h3>
+                <ul class="tags">
+                    {% for tag in document.tags|alphabetize|slice:":5" %}
+                        <li>{{ tag }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+        </section>
+        {# view link #}
+        <a class="view-link" href="{% url 'corpus:document' document.pgpid %}">
+            {% translate 'View document details' %}
+            <i class="ph-arrow-right"></i>
+        </a>
+    </li>
+{% endspaceless %}

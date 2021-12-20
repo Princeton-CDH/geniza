@@ -1,0 +1,91 @@
+// -----------------------------------------------------------------------------
+// Project fonts, including font face declarations and font stacks.
+// -----------------------------------------------------------------------------
+
+@charset "UTF-8";
+
+// Usage counter and license for myfonts
+
+// !!! TODO: enable counter, but only in production !!!
+// @import url("//hello.myfonts.net/count/4098e1");
+
+/**
+ * @license
+ * MyFonts Webfont Build ID 4233441, 2021-12-03T12:11:09-0500
+ *
+ * The fonts listed in this notice are subject to the End User License
+ * Agreement(s) entered into by the website owner. All other parties are
+ * explicitly restricted from using the Licensed Webfonts(s).
+ *
+ * You may obtain a valid license at the URLs below.
+ *
+ * Webfont: FrankRuhl1924MF-Medium-Medium by Masterfont
+ * URL: https://www.myfonts.com/fonts/masterfont/frank-ruhl1924-mf/frank-ruhl1924-mf/
+ * Copyright: Masterfont Ltd.
+ *
+ *
+ *
+ * © 2021 MyFonts Inc
+*/
+
+// @font-face declarations
+
+// Greta Sans regular, bold for Hebrew and Latin text
+@mixin declare-fonts($base_url) {
+    @font-face {
+        font-family: "Greta Sans Hebrew Regular";
+        font-style: normal;
+        src: url("#{$base_url}/WF-037420-011833-002518.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011833-002518.woff") format("woff");
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: "Greta Sans Hebrew Bold";
+        font-style: bold;
+        src: url("#{$base_url}/WF-037420-011833-002521.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011833-002521.woff") format("woff");
+        font-display: swap;
+    }
+
+    // Greta Sans italic for Latin text
+    @font-face {
+        font-family: "Greta Sans Regular Italic";
+        font-style: italic;
+        src: url("#{$base_url}/WF-037420-011833-001036.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011833-001036.woff") format("woff");
+        font-display: swap;
+    }
+
+    // Frank Ruhl1924 MF Medium for Hebrew text
+    @font-face {
+        font-family: "FrankRuhl 1924 MF Medium";
+        font-style: normal;
+        src: url("#{$base_url}/FrankRuhl1924MFMediumMedium.woff2")
+                format("woff2"),
+            url("#{$base_url}/FrankRuhl1924MFMediumMedium.woff") format("woff");
+        font-display: swap;
+    }
+}
+
+// for normal operation, load fonts from local url at /static/fonts
+@include declare-fonts("/static/fonts");
+
+// For Percy visual review, load fonts from the production site
+@media only percy {
+    @include declare-fonts("https://geniza.cdh.princeton.edu/static/fonts");
+}
+
+// Variables containing font stacks go here, for use as "font-family" values.
+// We pick fallback fonts that are reasonably close to the desired webfont and
+// also likely to be installed on the user's machine. For more, see:
+// https://meowni.ca/font-style-matcher/
+// https://www.cssfontstack.com/
+
+// Primary font family: all Latin text, all Hebrew except transcriptions
+$primary: ("Greta Sans Hebrew Regular", Arial, sans-serif);
+$primary-bold: ("Greta Sans Hebrew Bold", Arial, sans-serif);
+$primary-italic: ("Greta Sans Regular Italic", Arial, sans-serif);
+
+// Secondary font family: Hebrew transcriptions
+$hebrew: ("FrankRuhl 1924 MF Medium", Georgia, serif);

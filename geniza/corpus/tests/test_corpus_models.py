@@ -1,15 +1,19 @@
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from attrdict import AttrDict
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.safestring import SafeString
+from django.utils.translation import activate, deactivate_all, get_language
+from djiffy.models import Manifest
 
+from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
@@ -174,12 +178,15 @@ class TestFragment:
         assert isinstance(thumbnails, SafeString)
 
     @pytest.mark.django_db
-    def test_save(self):
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_save(self, mock_manifestimporter):
         frag = Fragment(shelfmark="TS 1")
         frag.save()
         frag.shelfmark = "TS 2"
         frag.save()
         assert frag.old_shelfmarks == "TS 1"
+        # should not try to import when there is no url
+        assert mock_manifestimporter.call_count == 0
 
         frag.shelfmark = "TS 3"
         frag.save()
@@ -200,14 +207,72 @@ class TestFragment:
             frag.old_shelfmarks.split(";")
         )
 
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_save_import_manifest(self, mock_manifestimporter):
+        frag = Fragment(shelfmark="TS 1")
+        frag.save()
+        frag.shelfmark = "TS 2"
+        frag.save()
+        assert frag.old_shelfmarks == "TS 1"
+        # should not try to import when there is no url
+        assert mock_manifestimporter.call_count == 0
 
-class TestDocumentType:
-    def test_str(self):
-        doctype = DocumentType(name="Legal")
-        assert str(doctype) == doctype.name
+        # should import when a iiif url is set
+        frag.iiif_url = "http://example.io/manifests/1"
+        # pre-create manifest that would be imported
+        manifest = Manifest.objects.create(uri=frag.iiif_url, short_id="m1")
+        frag.save()
+        mock_manifestimporter.assert_called_with()
+        mock_manifestimporter.return_value.import_paths.assert_called_with(
+            [frag.iiif_url]
+        )
+        # manifest should be set
+        assert frag.manifest == manifest
+
+        # should import when iiif url changes, even if manifest is set
+        frag.iiif_url = "http://example.io/manifests/2"
+        manifest2 = Manifest.objects.create(uri=frag.iiif_url, short_id="m2")
+        frag.save()
+        mock_manifestimporter.assert_called_with()
+        mock_manifestimporter.return_value.import_paths.assert_called_with(
+            [frag.iiif_url]
+        )
+        # new manifest should be set
+        assert frag.manifest == manifest2
+
+        # should not import and should remove manifest when unset
+        mock_manifestimporter.reset_mock()
+        frag.iiif_url = ""
+        frag.save()
+        assert mock_manifestimporter.call_count == 0
+        assert not frag.manifest
 
 
 @pytest.mark.django_db
+class TestDocumentType:
+    def test_str(self):
+        """Should use doctype.display_label if available, else use doctype.name"""
+        doctype = DocumentType(name="Legal")
+        assert str(doctype) == doctype.name
+        doctype.display_label = "Legal document"
+        assert str(doctype) == "Legal document"
+
+    def test_natural_key(self):
+        """Should use name as natural key"""
+        doc_type = DocumentType(name="SomeType")
+        assert len(doc_type.natural_key()) == 1
+        assert "SomeType" in doc_type.natural_key()
+
+    def test_get_by_natural_key(self):
+        """Should find DocumentType object by name"""
+        doc_type = DocumentType(name="SomeType")
+        doc_type.save()
+        assert DocumentType.objects.get_by_natural_key("SomeType") == doc_type
+
+
+@pytest.mark.django_db
+@patch("geniza.corpus.models.ManifestImporter", Mock())
 class TestDocument:
     def test_shelfmark(self):
         # T-S 8J22.21 + T-S NS J193
@@ -302,6 +367,21 @@ class TestDocument:
         assert "marriage" in tag_list
         assert ", " in tag_list
 
+    def test_alphabetized_tags(self):
+        doc = Document.objects.create()
+        # two lowercase tags
+        doc.tags.add("women", "marriage")
+        alphabetical_tag_list = doc.alphabetized_tags()
+        assert alphabetical_tag_list.first().name == "marriage"
+        # throw in an uppercase tag
+        doc.tags.add("Betical", "alphabet")
+        alphabetical_tag_list = doc.alphabetized_tags()
+        assert alphabetical_tag_list.first().name == "alphabet"
+        assert alphabetical_tag_list[1].name == "Betical"
+        # doc with no tags
+        doc_no_tags = Document.objects.create()
+        assert len(doc_no_tags.alphabetized_tags()) == 0
+
     def test_is_public(self):
         doc = Document.objects.create()
         assert doc.is_public()
@@ -310,7 +390,28 @@ class TestDocument:
 
     def test_get_absolute_url(self):
         doc = Document.objects.create(id=1)
-        assert doc.get_absolute_url() == "/documents/1/"
+        assert doc.get_absolute_url() == "/en/documents/1/"
+
+    def test_permalink(self):
+        """permalink property should be constructed from base url and absolute url, without any language code"""
+        current_lang = get_language()
+
+        # if non-default language is active, should stay activate
+        activate("he")
+        doc = Document.objects.create(id=1)
+        site_domain = Site.objects.get_current().domain.rstrip("/")
+        # document url should follow directly after site domain,
+        # with no language code
+        assert f"{site_domain}/documents/1/" in doc.permalink
+        # activated language code should persist
+        assert get_language() == "he"
+
+        # handle case whre no language active
+        deactivate_all()
+        assert f"{site_domain}/documents/1/" in doc.permalink
+
+        # reactivate previous default (in case it matters for other tests)
+        activate(current_lang)
 
     def test_iiif_urls(self):
         # create example doc with two fragments with URLs
@@ -356,14 +457,14 @@ class TestDocument:
 
     def test_title(self):
         doc = Document.objects.create()
-        assert doc.title == "Unknown: ??"
+        assert doc.title == "Unknown type: ??"
         legal = DocumentType.objects.get_or_create(name="Legal")[0]
         doc.doctype = legal
         doc.save()
-        assert doc.title == "Legal: ??"
+        assert doc.title == "Legal document: ??"
         frag = Fragment.objects.create(shelfmark="s1")
         TextBlock.objects.create(document=doc, fragment=frag, order=1)
-        assert doc.title == "Legal: s1"
+        assert doc.title == "Legal document: s1"
 
     def test_shelfmark_display(self):
         # T-S 8J22.21 + T-S NS J193
@@ -470,7 +571,10 @@ class TestDocument:
     def test_index_data_footnotes(self, document, source):
         # footnote with no content
         edition = Footnote.objects.create(
-            content_object=document, source=source, doc_relation=Footnote.EDITION
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.EDITION,
+            content={"text": "transcription lines"},
         )
         edition2 = Footnote.objects.create(
             content_object=document,
@@ -486,6 +590,7 @@ class TestDocument:
         assert index_data["num_editions_i"] == 2
         assert index_data["num_translations_i"] == 2
         assert index_data["scholarship_count_i"] == 4
+        assert index_data["transcription_t"] == ["transcription lines"]
 
         for note in [edition, edition2, translation]:
             assert note.display() in index_data["scholarship_t"]
@@ -517,6 +622,70 @@ class TestDocument:
         assert translation.pk not in doc_edition_pks
         # check that edition with content is sorted first
         assert edition2.pk == doc_edition_pks[0]
+
+    def test_digital_editions(self, document, source, twoauthor_source):
+        # test filter by content
+
+        # footnote with no content
+        edition = Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.EDITION
+        )
+        # footnote with content
+        edition2 = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
+            content="A piece of text",
+        )
+        # footnote with different source
+        edition3 = Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.EDITION,
+            content="B other text",
+        )
+        digital_edition_pks = [ed.pk for ed in document.digital_editions()]
+
+        # No content, should not appear in digital editions
+        assert edition.pk not in digital_edition_pks
+        # Has content, should appear in digital editions
+        assert edition2.pk in digital_edition_pks
+        assert edition3.pk in digital_edition_pks
+        # Edition 2 should be alphabetically first based on its content
+        assert edition2.pk == digital_edition_pks[0]
+
+    def test_editors(self, document, source, twoauthor_source):
+        # footnote with no content
+        Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.EDITION
+        )
+        # No digital editions, so editors count should be 0
+        assert document.editors().count() == 0
+
+        # footnote with one author, content
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
+            content="A piece of text",
+        )
+
+        # Digital edition with one author, editor should be author of source
+        assert document.editors().count() == 1
+        assert document.editors().first() == source.authors.first()
+
+        # footnote with two authors, content
+        Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.EDITION,
+            content="B other text",
+        )
+        # Should now be three editors, since this edition's source had two authors
+        assert document.editors().count() == 3
+        assert twoauthor_source.authors.first().pk in [
+            editor.pk for editor in document.editors().all()
+        ]
 
 
 def test_document_merge_with(document, join):
@@ -692,6 +861,20 @@ def test_document_merge_with_log_entries(document, join):
     # reassociated log entry should include old pgpid
     moved_log = document.log_entries.all()[1]
     assert " [PGPID %s]" % join_pk in moved_log.change_message
+
+
+def test_document_get_by_any_pgpid(document):
+    # get by current pk
+    assert Document.get_by_any_pgpid(document.pk) == document
+
+    # add old ids
+    document.old_pgpids = [345, 678]
+    document.save()
+
+    assert Document.get_by_any_pgpid(345) == document
+    assert Document.get_by_any_pgpid(678) == document
+
+    assert not Document.get_by_any_pgpid(1234)
 
 
 @pytest.mark.django_db

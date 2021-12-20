@@ -1,0 +1,45 @@
+// -----------------------------------------------------------------------------
+// Shared document header content (title and edit link).
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/container";
+@use "../base/spacing";
+@use "../base/typography";
+
+// Document title
+span#formatted-title {
+    @include typography.headline-1;
+    // document type, inside title
+    .doctype {
+        @include typography.doctype;
+    }
+    .shelfmark {
+        @include typography.shelfmark;
+    }
+    margin: spacing.$spacing-xl 0 spacing.$spacing-md;
+    @include breakpoints.for-desktop-up {
+        margin: spacing.$spacing-3xl 0 spacing.$spacing-2xl;
+    }
+}
+
+// Edit link for admins
+.edit-link-container {
+    @include container.measure;
+    position: absolute;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    a.edit-link {
+        span {
+            @include typography.link;
+        }
+        i {
+            text-decoration: none;
+        }
+        margin-right: spacing.$spacing-xl;
+        @include breakpoints.for-desktop-up {
+            margin: spacing.$spacing-xl spacing.$spacing-md;
+        }
+    }
+}

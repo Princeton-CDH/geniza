@@ -1,6 +1,11 @@
 from django import forms
 
-from geniza.corpus.forms import DocumentSearchForm, SelectWithDisabled
+from geniza.corpus.forms import (
+    CheckboxSelectWithCount,
+    DocumentSearchForm,
+    FacetChoiceField,
+    SelectWithDisabled,
+)
 
 
 class TestSelectedWithDisabled:
@@ -24,25 +29,50 @@ class TestSelectedWithDisabled:
         assert '<option value="yes">' in rendered
 
 
-class TestDocumentSearch:
+class TestFacetChoiceField:
+    # test adapted from ppa-django
+
     def test_init(self):
-        data = {"query": "illness"}
-        # has query, relevance enabled
-        form = DocumentSearchForm(data)
-        assert form.fields["sort"].widget.choices[0] == form.SORT_CHOICES[0]
+        fcf = FacetChoiceField(legend="Document type")
+        # uses RadioSelectWithCount
+        fcf.widget == CheckboxSelectWithCount
+        # not required by default
+        assert not fcf.required
+        # still can override required with a kwarg
+        fcf = FacetChoiceField(required=True)
+        assert fcf.required
 
-        # empty query, relevance disabled
-        data["query"] = ""
-        form = DocumentSearchForm(data)
-        assert form.fields["sort"].widget.choices[0] == (
-            "relevance",
-            {"label": "Relevance", "disabled": True},
-        )
+    def test_valid_value(self):
+        fcf = FacetChoiceField()
+        # valid_value should return true
+        assert fcf.valid_value("foo")
 
-        # no query, also relevance disabled
-        del data["query"]
-        form = DocumentSearchForm(data)
-        assert form.fields["sort"].widget.choices[0] == (
-            "relevance",
-            {"label": "Relevance", "disabled": True},
+
+class TestDocumentSearchForm:
+    # test adapted from ppa-django
+
+    def test_choices_from_facets(self):
+        """A facet dict should produce correct choice labels"""
+        fake_facets = {"doctype": {"foo": 1, "bar": 2, "baz": 3}}
+        form = DocumentSearchForm()
+        # call the method to configure choices based on facets
+        form.set_choices_from_facets(fake_facets)
+        for choice in form.fields["doctype"].widget.choices:
+            # choice is index id, label
+            choice_label = choice[1]
+            assert isinstance(choice_label, str)
+            assert "<span>" in choice_label
+
+    def test_radio_select_get_context(self):
+        form = DocumentSearchForm()
+        fake_facets = {"doctype": {"foo": 1, "bar": 2, "baz": 3}}
+        form.set_choices_from_facets(fake_facets)
+        context = form.fields["doctype"].widget.get_context(
+            "doctype", "all", {"id": "id_doctype"}
         )
+        optgroup = context["widget"].get("optgroups", [])[0][1]
+        for option in optgroup:
+            if option["value"] in fake_facets["doctype"]:
+                assert int(option["attrs"]["data-count"]) == fake_facets["doctype"].get(
+                    option["value"]
+                )

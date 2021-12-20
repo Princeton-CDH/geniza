@@ -1,0 +1,25 @@
+// -----------------------------------------------------------------------------
+// Document scholarship records page.
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/spacing";
+
+body#scholarship {
+    // Primary container
+    div.container {
+        display: flex;
+        flex-direction: column;
+        padding: spacing.$spacing-md spacing.$spacing-sm;
+        @include breakpoints.for-desktop-up {
+            padding: spacing.$spacing-md;
+        }
+    }
+    ol {
+        counter-reset: search-counter;
+        margin: spacing.$spacing-2xl 0 spacing.$spacing-xl spacing.$spacing-lg;
+        @include breakpoints.for-desktop-up {
+            margin: spacing.$spacing-3xl 0 0;
+        }
+    }
+}

@@ -1,0 +1,57 @@
+// -----------------------------------------------------------------------------
+// Page navigation for the document search view
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/spacing";
+@use "../base/typography";
+
+nav.pagination {
+    max-width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-flow: row wrap;
+    margin: spacing.$spacing-lg 0;
+    @include typography.nav-link;
+    @include breakpoints.for-tablet-landscape-up {
+        margin: spacing.$spacing-xl 0;
+        justify-content: center;
+    }
+    // special styling for nav at bottom of page
+    &:last-of-type {
+        margin: spacing.$spacing-2xl 0 0;
+        @include breakpoints.for-tablet-landscape-up {
+            margin: spacing.$spacing-3xl 0 spacing.$spacing-xl;
+            justify-content: center;
+        }
+    }
+    a,
+    span {
+        @include typography.nav-bold;
+        @include typography.link;
+        &:not(.active) {
+            @include typography.nav-link;
+            text-decoration: none;
+            font-weight: normal;
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0 spacing.$spacing-sm;
+        }
+    }
+    a {
+        display: flex;
+        min-width: 48px;
+        min-height: 48px;
+        align-items: center;
+        justify-content: center;
+    }
+    // special styling for fewer than 5 pages on mobile
+    &.compressed {
+        justify-content: center;
+        a,
+        span {
+            padding: 0 spacing.$spacing-xs;
+        }
+    }
+}

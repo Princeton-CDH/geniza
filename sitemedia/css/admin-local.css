@@ -1,80 +1,107 @@
-
 /* customize headings for Language+Script to handle long labels */
-th.column-documents, th.column-secondary_documents {
-	max-width: 5em;
+th.column-documents,
+th.column-secondary_documents {
+    max-width: 5em;
 }
 .model-languagescript.change-list #changelist table thead th,
 .model-document.change-list #changelist table thead th,
 .model-footnote.change-list #changelist table thead th {
-	vertical-align: bottom;
+    vertical-align: bottom;
 }
 .model-languagescript.change-list #changelist table thead .text,
 .model-document.change-list #changelist table thead .text,
 .model-footnote.change-list #changelist table thead .text {
-	white-space: break-spaces;
+    white-space: break-spaces;
 }
 /* customize headings for Documents to adjust width and long labels */
 th.column-last_modified {
-	max-width: 10em;
+    max-width: 10em;
 }
 
 .model-document th.column-has_transcription {
-	max-width: 6em;
-	overflow-wrap: break-word;
+    max-width: 6em;
+    overflow-wrap: break-word;
 }
 .model-document .field-last_modified.nowrap {
-	white-space: break-spaces !important;  /* override nowrap */
+    white-space: break-spaces !important; /* override nowrap */
 }
 .model-footnote th.column-has_transcription {
-	max-width: 7em;
-	overflow-wrap: break-word;
+    max-width: 7em;
+    overflow-wrap: break-word;
 }
 
-
-
 #content-related {
-	clear: right;
+    clear: right;
 }
 
 /* tweak footnote document relation display for better use of space */
 .field-doc_relation ul {
-	margin-left: 0;
+    margin-left: 0;
 }
 .field-doc_relation li {
-	list-style-type: none;
+    list-style-type: none;
 }
 
 /* align gfklookup magnifying glass with footnote field */
 .field-object_id {
-	position: relative;
-	padding-left: 24px;
+    position: relative;
+    padding-left: 24px;
 }
 .gfklookup {
-	position: absolute;
-	bottom: 16px;
-	left: 0;
-	cursor: pointer;
+    position: absolute;
+    bottom: 16px;
+    left: 0;
+    cursor: pointer;
 }
 
 /* make first/last revision dates look like actual fields */
 .module + .module {
-	margin-top: -30px;
+    margin-top: -30px;
 }
 
 /* customize display of first/last revision info */
-.action-time::after { content: ", by "}
-.action-user::after { content: " — "}
-.action-msg { font-style: italic; }
+.action-time::after {
+    content: ", by ";
+}
+.action-user::after {
+    content: " — ";
+}
+.action-msg {
+    font-style: italic;
+}
 
 /* left-aligned transcriptions; rtl is controlled thru html "dir=" attribute */
 .transcription {
-	display: inline-block;
-	margin-right: auto;
+    display: inline-block;
+    margin-right: auto;
+    direction: rtl;
 }
-.transcription h3 { text-align: left; }
+.transcription h3,
+.transcription section h1 {
+    text-align: left;
+    direction: ltr;
+    font-size: 115%;
+}
 
+.transcription li {
+    white-space: pre;
+    list-style: none; /* suppress default line numbers */
+}
+
+.transcription li::before {
+    /* use pseudo marker to avoid periods for line numbers */
+    content: attr(value);
+    margin-left: 1em;
+    text-align: right;
+    float: right;
+    font-weight: bold;
+}
+
+.transcription li::marker {
+    direction: rtl;
+}
 
 /* keep document relationship choices labels in line with checkboxes */
 .field-doc_relation {
-	white-space: nowrap;
+    white-space: nowrap;
 }

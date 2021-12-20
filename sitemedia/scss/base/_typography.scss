@@ -1,0 +1,222 @@
+// -----------------------------------------------------------------------------
+// Typographic styles (size, weight, etc.) used across the project.
+// -----------------------------------------------------------------------------
+
+@use "breakpoints";
+@use "colors";
+@use "fonts";
+@use "spacing";
+
+// Type sizes, scaled relative to 1rem (by default 16px)
+$text-size-xs: 0.75rem; //   = 12px
+$text-size-sm: 0.875rem; //  = 14px
+$text-size-md: 1rem; //      = 16px
+$text-size-lg: 1.125rem; //  = 18px
+$text-size-xl: 1.25rem; //   = 20px
+$text-size-2xl: 1.375rem; // = 22px
+$text-size-3xl: 1.5rem; //   = 24px
+$text-size-4xl: 1.75rem; //  = 28px
+$text-size-5xl: 2rem; //     = 32px
+
+// Mixins to apply typographic styles to text elements.
+
+// H1 — page titles
+@mixin headline-1 {
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+    font-size: $text-size-2xl;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-3xl;
+    }
+    line-height: 1.5;
+}
+
+// H2 — section and search result titles
+@mixin headline-2 {
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+    font-size: $text-size-xl;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-2xl;
+    }
+    line-height: 1.5;
+}
+
+// H3 — sub-sections only on generic content pages
+@mixin headline-3 {
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+    font-size: $text-size-lg;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-xl;
+    }
+    line-height: 1.5;
+}
+
+// body text — descriptions on search + doc detail,
+// citation on scholarship records, all body content
+// on generic content pages
+@mixin body {
+    font-family: fonts.$primary;
+    font-size: $text-size-lg;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-xl;
+    }
+    line-height: 1.5;
+}
+@mixin body-bold {
+    @include body;
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+}
+
+// blockquote
+@mixin quote {
+    font-family: fonts.$primary;
+    padding-left: spacing.$spacing-lg;
+    border-left: 2px solid;
+    margin: spacing.$spacing-2xl 0;
+    @include colors.apply-theme(
+        "on-background",
+        $property: "border-left-color"
+    );
+    &::before {
+        content: "\201C";
+        font-size: $text-size-4xl;
+        position: absolute;
+        margin-top: -#{spacing.$spacing-2xl};
+    }
+    &::after {
+        content: "\201D";
+        font-size: $text-size-4xl;
+        position: absolute;
+        display: block;
+    }
+}
+
+// metadata in search result items + doc detail
+@mixin meta {
+    font-family: fonts.$primary;
+    font-size: $text-size-md;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-lg;
+    }
+    line-height: 1.5;
+}
+@mixin meta-bold {
+    @include meta;
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+}
+
+// caption - "includes" on scholarship records, image
+// captions on generic content pages, number of results on
+// search
+@mixin caption {
+    font-family: fonts.$primary-italic;
+    font-style: italic;
+    font-weight: normal;
+    @include colors.apply-theme("on-background-light");
+    font-size: $text-size-md;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-lg;
+    }
+    line-height: 1.5;
+}
+// label for unpublished records in scholarship records view
+@mixin unpublished {
+    @include caption;
+    font-style: normal;
+    font-family: fonts.$primary;
+}
+
+// links
+@mixin link {
+    @include colors.apply-theme(
+        "secondary",
+        $property: "text-decoration-color"
+    );
+
+    font-family: fonts.$primary;
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-thickness: 0.1rem;
+    text-underline-offset: 0.1rem;
+}
+
+// "shelfmark" part of document titles
+@mixin shelfmark {
+    font-family: fonts.$primary;
+    font-weight: normal;
+}
+
+// "type" part of document titles
+@mixin doctype {
+    &::after {
+        font-weight: normal;
+        content: ": ";
+    }
+}
+
+// hebrew transcriptions on search results +
+// doc detail
+@mixin transcription {
+    font-family: fonts.$primary;
+    font-size: $text-size-lg;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-xl;
+    }
+    line-height: 1.4;
+}
+// TODO: Use classes to only use this on hebrew transcriptions
+@mixin hebrew {
+    font-family: fonts.$hebrew;
+}
+
+// most form elements
+@mixin form-option {
+    @include body; // same font+sizes as body
+    line-height: 1.2;
+}
+@mixin form-option-bold {
+    @include meta-bold; // same font+sizes as meta-bold
+    line-height: 1.2;
+}
+
+// counts next to the filter options
+@mixin filter-count {
+    @include meta; // same font+sizes as meta
+    line-height: 1.2;
+}
+@mixin filter-count-bold {
+    @include meta-bold; // same font+sizes as meta-bold
+    line-height: 1.2;
+}
+
+// links in the navbar
+@mixin nav-link {
+    @include meta; // same font+sizes as meta
+    line-height: 1.4;
+}
+@mixin nav-bold {
+    @include meta-bold; // same font+sizes as meta-bold
+    line-height: 1.4;
+}
+
+// Mobile nav menu uses big type
+@mixin mobile-menu {
+    font-size: $text-size-2xl;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-lg;
+    }
+}
+
+// Icon buttons
+@mixin icon-button {
+    font-size: $text-size-3xl;
+}
+
+// Temporary until new logo
+@mixin home-button {
+    font-size: $text-size-5xl;
+}
