@@ -301,8 +301,7 @@ def test_add_link(mock_set_footnote, typed_texts, jewish_traders, india_book, do
     mock_set_footnote.assert_called_with(
         doc=document,
         source=indexcard_source,
-        url="https://geniza.princeton.edu/indexcards/"
-        + quote("index.php?a=card&id=abc123"),
+        url="https://geniza.princeton.edu/indexcards/index.php?a=card&id=abc123",
         doc_relation=Footnote.DISCUSSION,
         location="card #abc123",
     )
@@ -318,8 +317,7 @@ def test_add_link(mock_set_footnote, typed_texts, jewish_traders, india_book, do
     mock_set_footnote.assert_called_with(
         doc=document,
         source=typed_texts,
-        url="https://commons.princeton.edu/media/geniza/"
-        + quote("abc123 (PGPID 1234).pdf"),
+        url="https://commons.princeton.edu/media/geniza/abc123%20%28PGPID%201234%29.pdf",
         doc_relation=Footnote.EDITION,
         location="abc123",
     )
