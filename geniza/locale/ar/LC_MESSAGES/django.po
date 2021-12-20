@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2021-12-17 16:35-0500\n"
-"PO-Revision-Date: 2021-12-16 21:35\n"
+"PO-Revision-Date: 2021-12-17 22:06\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -115,7 +115,7 @@ msgstr[0] "نتائج %(count_humanized)s"
 msgstr[1] "1 نتيجة"
 msgstr[2] "نتيجتين %(count_humanized)s"
 msgstr[3] "النتائج %(count_humanized)s"
-msgstr[4] "النتائج %(count_humanized)s"
+msgstr[4] "النتائج %(counter)s"
 msgstr[5] "مجموع النتائج %(count_humanized)s"
 
 #. Translators: accessibility label for a footnote source citation in scholarship records view
@@ -385,13 +385,13 @@ msgstr "أسئلة متكررة"
 #: geniza/templates/snippets/language_switcher.html:13
 #, python-format
 msgid "read this page in %(language_name)s (%(language_code)s)"
-msgstr ""
+msgstr "قراءة هذه الصفحة في %(language_name)s (%(language_code)s)"
 
 #. Translators: button on language chooser in navigation
 #: geniza/templates/snippets/language_switcher.html:20
 msgctxt "choose this option"
 msgid "go"
-msgstr ""
+msgstr "اذهب"
 
 #~ msgid "Shelfmark"
 #~ msgstr "Shelfmark"
