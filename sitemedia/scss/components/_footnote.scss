@@ -43,11 +43,12 @@
         }
         &:is(dd) {
             margin-bottom: spacing.$spacing-2xs;
+            @include typography.meta;
         }
     }
     div.unpublished {
         @include colors.apply-theme("on-background-light");
         margin-top: spacing.$spacing-3xs;
-        @include typography.caption;
+        @include typography.unpublished;
     }
 }
