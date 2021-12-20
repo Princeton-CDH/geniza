@@ -1,6 +1,7 @@
 import csv
 import re
-from collections import Counter
+from os.path import basename, dirname, join, splitext
+from urllib.parse import quote
 
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
@@ -86,6 +87,9 @@ class Command(BaseCommand):
         self.verbosity = options.get("verbosity", self.v_normal)
         # initialize stats values, since they don't always all get set
         self.stats = {stat: 0 for stat in self.stats_fields}
+        # initialize report of not found documents
+        self.not_found_documents = []
+        original_headers = []
         # rough total for progress bar based on current number of rows in links.csv
         # *with* link types we care about (end of the file is largely ignored)
         starting_total = 10000  # 16300 = closer to real total
@@ -106,6 +110,7 @@ class Command(BaseCommand):
                                 raise CommandError(
                                     f"CSV is missing required fields: {self.required_headers}"
                                 )
+                            original_headers = list(row.keys())
                         imported = self.add_link(row)
                         if imported == -1:  # -1 indicates ignored on purpose
                             self.stats["ignored"] += 1
@@ -131,6 +136,10 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             )
         )
 
+        # generate CSV report of documents that could not be found
+        if len(self.not_found_documents) > 0:
+            self.generate_csv_report(csv_path=csv_path, csv_headers=original_headers)
+
     def log_action(self, obj, action=CHANGE):
         # create log entry so there is a record of adding/updating urls
         message = "%s by add_links script" % (
@@ -145,21 +154,26 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             action_flag=action,
         )
 
-    def set_footnote_url(self, doc, source, url, doc_relation):
+    def set_footnote_url(self, doc, source, url, doc_relation, location=""):
         """Set the requested url on a footnote for the specified document,
         associated with the requested source. If an appropriate footnote
         exists without a url, it will be updated. If not, a new one will
         be created. If a footnote with the requested url and document
-        relation already exists, no changes are made. Returns the matching
-        footnote to indicate success."""
+        relation already exists, no changes are made, unless a location
+        needs to be set. Returns the matching footnote to indicate success."""
 
         # look for an existing footnote to update with the new url;
         # get or create doesn't work because not all parameters match (i.e., url)
         source_notes = doc.footnotes.filter(source=source).all()
         # check if a footnote with the requested url and document relation already exists
         for note in source_notes:
-            # if url and document relation are already set, nothing needs to be done
+            # if url and document relation are already set, only update location (if blank)
             if note.url == url and doc_relation in note.doc_relation:
+                if not note.location:
+                    note.location = location
+                    note.save()
+                    self.stats["footnotes_updated"] += 1
+                    self.log_action(note)
                 return note
 
         # otherwise, use the first matching footnote with no url
@@ -174,6 +188,8 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             footnote.url = url
             # ensure document relation is set accurately
             footnote.doc_relation = doc_relation
+            # set the location
+            footnote.location = location
             # save the change and update the count
             footnote.save()
             self.stats["footnotes_updated"] += 1
@@ -182,7 +198,11 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         # if an appropriate footnote was not found, create a new one
         else:
             footnote = Footnote.objects.create(
-                source=source, content_object=doc, url=url, doc_relation=doc_relation
+                source=source,
+                content_object=doc,
+                url=url,
+                doc_relation=doc_relation,
+                location=location,
             )
             self.stats["footnotes_created"] += 1
             self.log_action(footnote, action=ADDITION)
@@ -190,17 +210,13 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         # return the footnote to indicate success
         return footnote
 
-    def get_goitein_source(self, doc, title, url=None):
-        volume = Source.get_volume_from_shelfmark(doc.shelfmark)
+    def get_goitein_source(self, doc, title):
         # common source options used to find or create our new source
         source_opts = {
             "title_en": title,
             "volume": Source.get_volume_from_shelfmark(doc.shelfmark),
             "source_type": self.unpublished,
         }
-        # set url if specified
-        if url:
-            source_opts["url"] = url
         # we can't filter by author on get_or_create, so check first
         source = Source.objects.filter(
             authors__last_name="Goitein", **source_opts
@@ -255,6 +271,7 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
         doc = Document.get_by_any_pgpid(int(row["object_id"]))
         if not doc:
             self.stats["document_not_found"] += 1
+            self.not_found_documents += [row]
             if self.verbosity > self.v_normal:
                 self.stdout.write(
                     "Document %s not found in database" % row["object_id"]
@@ -262,25 +279,62 @@ Created {footnotes_created:,} new footnotes; updated {footnotes_updated:,}.
             return
 
         # target url: combine base url for this link type with link target from csv
-        target_url = "".join([self.base_url[link_type], row["link_target"]])
+        target_url = "".join([self.base_url[link_type], quote(row["link_target"])])
         # get doc relation for this link type
         doc_relation = self.document_relation[link_type]
+        # get link target without extension
+        link_target_extless = splitext(row["link_target"])[0]
 
-        # get source based on the link type
+        # get source and location based on the link type
         if link_type == "goitein_note":
             source = self.get_goitein_source(doc=doc, title="typed texts")
+            location = link_target_extless.split("(PGPID")[0].strip()
         elif link_type == "indexcard":
             source = self.get_goitein_source(
                 doc=doc,
                 title="index cards",
-                url="https://geniza.princeton.edu/indexcards/",
             )
+            # use card #target for location
+            location = "card #%s" % link_target_extless
         elif link_type == "jewish-traders":
             source = self.jewish_traders
+            # use document number without extension (e.g. "01.pdf" becomes "01") for location,
+            # if a set of digits is present in the basename; else, just use the whole basename
+            m = re.search(r"(\d+)", link_target_extless)
+            location = ("document #%s" % m.groups(0)) if m else link_target_extless
         elif link_type == "india-traders":
             source = self.get_india_book(row["link_title"])
+            # use filename without extension (e.g. "I-27-28.pdf" becomes "I-27-28") for location
+            location = link_target_extless
 
         # create or update footnote with the target url, beasd on all the other parameters determined
         return self.set_footnote_url(
-            doc=doc, source=source, url=target_url, doc_relation=doc_relation
+            doc=doc,
+            source=source,
+            url=target_url,
+            doc_relation=doc_relation,
+            location=location,
         )
+
+    def generate_csv_report(self, csv_path, csv_headers):
+        """Generate a CSV containing the rows of the original CSV for which a document
+        could not be found."""
+
+        # basename without extension
+        original_csv = splitext(basename(csv_path))[0]
+        # save in same directory as original CSV
+        nf_report_path = join(
+            dirname(csv_path) or ".", "documents_not_found_in_%s.csv" % original_csv
+        )
+        nf_report_path = dirname(csv_path) + (
+            "/documents_not_found_in_%s.csv" % original_csv
+        )
+        # reconstruct CSV header and write rows
+        with open(nf_report_path, "w+") as f:
+            csv_writer = csv.DictWriter(f, fieldnames=csv_headers)
+            csv_writer.writeheader()
+            # append each row saved in not_found_documents
+            for not_found_row in self.not_found_documents:
+                csv_writer.writerow(not_found_row)
+
+        self.stdout.write("Saved report of documents not found to %s." % nf_report_path)
