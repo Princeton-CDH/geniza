@@ -258,7 +258,9 @@ class TestDocumentTabsSnippet:
         response = client.get(document.get_absolute_url())
 
         # disabled (not yet implemented) for MVP
-        assertContains(response, "<li class='disabled'>External Links</li>", html=True)
+        assertContains(
+            response, "<li class='disabled'><span>External Links</span></li>", html=True
+        )
 
     @pytest.mark.skip("non-MVP feature")
     def test_no_links(self, client, document, fragment):
