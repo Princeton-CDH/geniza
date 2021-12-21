@@ -47,12 +47,14 @@ class Command(BaseCommand):
         self.verbosity = options["verbosity"]
 
         # make sure we have latest tei content from git repository
-        # self.sync_git(gitrepo_url, gitrepo_path)
+        self.sync_git(gitrepo_url, gitrepo_path)
 
         if not options["noact"]:
             # get content type and user for log entries, unless in no-act mode
             self.footnote_contenttype = ContentType.objects.get_for_model(Footnote)
             self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
+
+        self.verbosity = options["verbosity"]
 
         self.stats = defaultdict(int)
         # keep track of document ids with multiple digitized editions (likely merged records/joins)
@@ -67,7 +69,8 @@ class Command(BaseCommand):
             # some files are stubs with no content
             # check if there is no text content; report and skip
             if tei.no_content():
-                self.stdout.write("%s has no text content, skipping" % xmlfile)
+                if self.verbosity >= self.v_normal:
+                    self.stdout.write("%s has no text content, skipping" % xmlfile)
                 self.stats["empty_tei"] += 1
                 continue
 
@@ -77,7 +80,10 @@ class Command(BaseCommand):
             try:
                 pgpid = int(pgpid.strip("b"))
             except ValueError:
-                self.stderr.write("Failed to generate integer PGPID from %s" % pgpid)
+                if self.verbosity >= self.v_normal:
+                    self.stderr.write(
+                        "Failed to generate integer PGPID from %s" % pgpid
+                    )
                 continue
             # can we rely on pgpid from xml?
             # but in some cases, it looks like a join 12047 + 12351
@@ -89,7 +95,8 @@ class Command(BaseCommand):
                 )
             except Document.DoesNotExist:
                 self.stats["document_not_found"] += 1
-                self.stdout.write("Document %s not found in database" % pgpid)
+                if self.verbosity >= self.v_normal:
+                    self.stdout.write("Document %s not found in database" % pgpid)
                 continue
 
             if doc.fragments.count() > 1:
@@ -114,7 +121,8 @@ class Command(BaseCommand):
                         # count as a change whether in no-act mode or not
                         self.stats["footnote_updated"] += 1
                 else:
-                    self.stderr.write("No html generated for %s" % doc.id)
+                    if self.verbosity >= self.v_normal:
+                        self.stderr.write("No html generated for %s" % doc.id)
 
             # NOTE: in *one* case there is a TEI file with translation content and
             # no transcription; will get reported as empty, but that's ok — it's out of scope
@@ -174,9 +182,10 @@ Updated {footnote_updated:,} footnotes.
 
         # if directory does not yet exist, clone repository
         if not os.path.isdir(local_path):
-            self.stdout.write(
-                "Cloning TEI transcriptions repository to %s" % local_path
-            )
+            if self.verbosity >= self.v_normal:
+                self.stdout.write(
+                    "Cloning TEI transcriptions repository to %s" % local_path
+                )
             Repo.clone_from(url=gitrepo_url, to_path=local_path)
         else:
             # pull any changes since the last run
