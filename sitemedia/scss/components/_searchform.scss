@@ -67,7 +67,7 @@
             width: auto;
             flex: 0 1 auto;
         }
-        @include typography.form-option-bold;
+        @include typography.form-option-bold-sm;
     }
     label[for="sort"] {
         max-width: 100%;
@@ -93,7 +93,7 @@
         @include colors.apply-theme("secondary");
         &:focus {
             outline: none;
-            @include colors.apply-theme-box-shadow("primary-80%");
+            @include colors.apply-theme-box-shadow("secondary-80%");
         }
         &:hover {
             box-shadow: none;
@@ -125,37 +125,58 @@
         order: 3;
         flex: 1 0 100%;
         max-width: 100%;
-        border: 1px solid;
-        @include colors.apply-theme("primary", "border-color");
         margin-top: spacing.$spacing-lg;
         @include typography.form-option;
+        @include colors.apply-combo("background-light");
+        @include colors.apply-theme-box-shadow("on-background-25%");
+        transition: box-shadow 0.15s ease;
         // Label for document type filter
         summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 2.9375rem;
             max-width: 100%;
-            padding: spacing.$spacing-sm;
+            padding: 0 spacing.$spacing-sm;
             @include breakpoints.for-tablet-landscape-up {
-                padding: spacing.$spacing-sm spacing.$spacing-md;
+                padding: 0 spacing.$spacing-md;
             }
             list-style-type: none;
+            cursor: pointer;
             // Suppress default details marker
             &::-webkit-details-marker {
                 display: none;
             }
             &::after {
                 font-family: "Phosphor";
-                content: "\f82b"; // phosphor caret-down-fill icon
+                content: "\f0c2"; // phosphor caret-down icon
+                @include typography.icon-button;
                 transition: transform 0.75s ease;
                 float: right;
-                margin: 0;
-                padding: 0;
+                // margin: 0;
+                // padding: 0;
+            }
+            transition: box-shadow 0.15s ease;
+            &:focus {
+                outline: none;
+                @include colors.apply-theme-box-shadow("secondary-80%");
             }
         }
         &[open] summary {
-            border-bottom: 1px solid;
-            @include colors.apply-theme("primary", "border-bottom-color");
+            @include colors.apply-theme-box-shadow("on-background-25%");
             // Expanded details marker
             &::after {
                 transform: rotate(-180deg);
+            }
+            &:focus {
+                outline: none;
+                @include colors.apply-theme-box-shadow("secondary-80%");
+            }
+        }
+        &:active {
+            @include colors.apply-theme-box-shadow("secondary-80%");
+            &[open] summary {
+                @include colors.apply-theme-box-shadow("secondary-80%");
             }
         }
 
@@ -163,58 +184,46 @@
         ul#id_doctype {
             max-width: 100%;
             list-style-type: none;
-            padding: spacing.$spacing-sm spacing.$spacing-lg;
-            @include breakpoints.for-tablet-landscape-up {
-                padding: spacing.$spacing-md spacing.$spacing-lg;
-            }
+            padding: 0.25rem 0 0;
             li {
                 max-width: 100%;
-                input[type="checkbox"] {
-                    @include a11y.sr-only;
-                    & + span {
-                        display: flex;
-                        align-items: center;
-                        padding-right: spacing.$spacing-xs;
-                        &::before {
-                            opacity: 0%;
-                            font-family: "Phosphor";
-                            content: "\f851";
-                            font-feature-settings: "liga";
-                            float: left;
-                            text-align: center;
-                            margin-left: -#{spacing.$spacing-lg};
-                            padding: 0 spacing.$spacing-xs;
-                            @include colors.apply-theme("secondary");
-                        }
-                    }
-                    &:checked + span {
-                        @include typography.form-option-bold;
-                    }
-                    &:checked + span + .count {
-                        @include typography.filter-count-bold;
-                    }
-                    &:focus + span,
-                    &:focus + span + .count {
-                        @include colors.apply-theme(
-                            "secondary",
-                            "outline-color"
-                        );
-                        outline-width: 1px;
-                        outline-style: dashed;
-                    }
-                    &:checked + span::before {
-                        opacity: 100%;
-                    }
-                }
                 label {
                     max-width: 100%;
                     display: flex;
-                    flex: 1 0 100%;
-                    align-items: center;
+                    span {
+                        display: flex;
+                        align-items: center;
+                        max-width: 100%;
+                        flex: 1 0 auto;
+                        padding: 0 spacing.$spacing-md;
+                        height: 2.25rem;
+                        @include breakpoints.for-tablet-landscape-up {
+                            height: 2.5rem;
+                        }
+                        transition: background-color 0.15s ease,
+                            color 0.15s ease;
+                    }
                     .count {
                         @include typography.filter-count;
+                        flex: 0 1 auto;
                         margin-left: auto;
-                        padding: 0 spacing.$spacing-xs;
+                        padding: 0 spacing.$spacing-md;
+                        height: auto;
+                    }
+                    &:hover span,
+                    &:focus-within span {
+                        @include colors.apply-combo("background-gray");
+                    }
+                    &:hover input[type="checkbox"]:checked + span,
+                    &:hover input[type="checkbox"]:checked + span + .count {
+                        @include colors.apply-combo("secondary");
+                    }
+                    input[type="checkbox"] {
+                        @include a11y.sr-only;
+                        &:checked + span,
+                        &:checked + span + .count {
+                            @include colors.apply-combo("tertiary");
+                        }
                     }
                 }
             }

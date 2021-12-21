@@ -30,10 +30,12 @@ $theme: (
     "on-tertiary": $black,
     "background": $white,
     "background-light": $off-white,
+    "background-gray": $light-gray,
     "on-background": $black,
     "on-background-25%": rgba(0, 0, 0, 0.25),
     "on-background-light": $black,
     "on-background-light-alt": $dark-gray,
+    "on-background-gray": $black,
 );
 
 // Dark mode theme colors
@@ -48,10 +50,12 @@ $dark-theme: (
     "on-tertiary": $black,
     "background": $black,
     "background-light": $dark-gray,
+    "background-gray": $dark-gray,
     "on-background": $white,
     "on-background-25%": rgba(255, 255, 255, 0.25),
     "on-background-light": $white,
     "on-background-light-alt": $light-gray,
+    "on-background-gray": $white,
 );
 
 /*

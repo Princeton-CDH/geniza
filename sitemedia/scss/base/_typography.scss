@@ -179,6 +179,11 @@ $text-size-5xl: 2rem; //     = 32px
     line-height: 1.2;
 }
 @mixin form-option-bold {
+    @include body-bold; // same font+sizes as body-bold
+    line-height: 1.2;
+}
+
+@mixin form-option-bold-sm {
     @include meta-bold; // same font+sizes as meta-bold
     line-height: 1.2;
 }
