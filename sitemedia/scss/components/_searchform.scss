@@ -9,6 +9,46 @@
 @use "../base/spacing";
 @use "../base/typography";
 
+/* 
+ * Mixin for form button colors in all four states:
+ * default, focus, hover, active.
+ */
+@mixin form-button-colors {
+    @include colors.apply-theme("secondary");
+    @include colors.apply-theme("background-light", "background-color");
+    @include colors.apply-theme-box-shadow("on-background-25%");
+    &:focus {
+        outline: none;
+        @include colors.apply-theme-box-shadow("secondary-80%");
+    }
+    &:hover {
+        box-shadow: none;
+        @include colors.apply-combo("secondary");
+    }
+    &:active {
+        box-shadow: none;
+        @include colors.apply-combo("primary");
+    }
+    transition: background-color 0.15s ease-in-out, color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+/* 
+ * Mixin for form drop shadow in three states:
+ * default, focus, active.
+ */
+@mixin form-drop-shadow {
+    transition: box-shadow 0.15s ease;
+    @include colors.apply-theme-box-shadow("on-background-25%");
+    &:focus {
+        outline: none;
+        @include colors.apply-theme-box-shadow("secondary-80%");
+    }
+    &:active {
+        @include colors.apply-theme-box-shadow("primary-80%");
+    }
+}
+
 // search form
 #search main form fieldset {
     @include container.two-column;
@@ -25,23 +65,15 @@
         margin-right: spacing.$spacing-sm;
         height: 2.5rem;
         padding: spacing.$spacing-sm;
-        @include colors.apply-combo("background-light");
-        @include colors.apply-theme-box-shadow("on-background-25%");
-        transition: box-shadow 0.15s ease;
         @include typography.form-option;
+        @include colors.apply-combo("background-light");
+        @include form-drop-shadow;
         &::placeholder {
             @include colors.apply-theme("on-background");
         }
         &:hover::placeholder,
         &:active::placeholder {
             @include colors.apply-theme("on-background-light-alt");
-        }
-        &:focus {
-            outline: none;
-            @include colors.apply-theme-box-shadow("secondary-80%");
-        }
-        &:active {
-            @include colors.apply-theme-box-shadow("primary-80%");
         }
     }
     select[name="sort"] {
@@ -50,19 +82,15 @@
         order: 5;
         flex: 1 1 auto;
         border-radius: 0;
+        border: none;
         height: spacing.$spacing-xl;
         padding: spacing.$spacing-2xs spacing.$spacing-xs;
         /*  NOTE: this will disable background gloss and curved borders on Safari,
         but loses the dropdown arrow...  */
         /* -webkit-appearance: none;  */
         margin-top: spacing.$spacing-sm;
-        border: 1px solid;
-        @include colors.apply-theme("primary", "border-color");
-        @include colors.apply-theme("on-background");
-        @include colors.apply-theme(
-            "background",
-            $property: "background-color"
-        );
+        @include colors.apply-combo("background-light");
+        @include form-drop-shadow;
         @include breakpoints.for-tablet-landscape-up {
             width: auto;
             flex: 0 1 auto;
@@ -88,23 +116,7 @@
         align-items: center;
         justify-content: center;
         border: none;
-        @include colors.apply-theme("background-light", "background-color");
-        @include colors.apply-theme-box-shadow("on-background-25%");
-        @include colors.apply-theme("secondary");
-        &:focus {
-            outline: none;
-            @include colors.apply-theme-box-shadow("secondary-80%");
-        }
-        &:hover {
-            box-shadow: none;
-            @include colors.apply-combo("secondary");
-        }
-        &:active {
-            box-shadow: none;
-            @include colors.apply-combo("primary");
-        }
-        transition: background-color 0.15s ease-in-out, color 0.15s ease,
-            box-shadow 0.15s ease;
+        @include form-button-colors;
         @include breakpoints.for-tablet-landscape-up {
             flex-basis: 3rem;
             height: 2.5rem;
