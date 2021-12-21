@@ -21,7 +21,9 @@ $off-white: #f7f7f7;
 // Theme colors
 $theme: (
     "primary": #436043,
+    "primary-80%": rgba(67, 96, 67, 0.8),
     "secondary": #567856,
+    "secondary-80%": rgba(86, 120, 86, 0.8),
     "tertiary": #7bac7b,
     "on-primary": $white,
     "on-secondary": $white,
@@ -29,21 +31,27 @@ $theme: (
     "background": $white,
     "background-light": $off-white,
     "on-background": $black,
+    "on-background-25%": rgba(0, 0, 0, 0.25),
     "on-background-light": $black,
+    "on-background-light-alt": $dark-gray,
 );
 
 // Dark mode theme colors
 $dark-theme: (
     "primary": #c37f97,
+    "primary-80%": rgba(195, 127, 151, 0.8),
     "secondary": #b76680,
-    "tertiary": #b76680,
+    "secondary-80%": rgba(183, 102, 128, 0.8),
+    "tertiary": #b05070,
     "on-primary": $black,
     "on-secondary": $black,
     "on-tertiary": $black,
     "background": $black,
     "background-light": $dark-gray,
     "on-background": $white,
+    "on-background-25%": rgba(255, 255, 255, 0.25),
     "on-background-light": $white,
+    "on-background-light-alt": $light-gray,
 );
 
 /*
@@ -78,5 +86,22 @@ $dark-theme: (
     @media (prefers-color-scheme: dark) {
         color: map.get($dark-theme, "on-#{$background}");
         background-color: map.get($dark-theme, $background);
+    }
+}
+
+/*
+ * Mixin for applying theme colors to a box-shadow. Same as apply-theme,
+ * but since box-shadow is defined in a single line and does not have
+ * a separate color property, it needs a separate mixin.
+ *
+ * @param {string} $color - The color name to look up in the theme
+ * @param {string} $property - The CSS property to set; default "color"
+ *
+ */
+@mixin apply-theme-box-shadow($color) {
+    box-shadow: 0px 2px 4px map.get($theme, $color);
+
+    @media (prefers-color-scheme: dark) {
+        box-shadow: 0px 2px 4px map.get($dark-theme, $color);
     }
 }

@@ -21,17 +21,30 @@
         max-width: 100%;
         order: 1;
         flex: 1 0 auto;
-        border: 1px solid;
-        @include colors.apply-theme("primary", "border-color");
+        border: none;
         margin-right: 0;
-        height: spacing.$spacing-xl;
+        height: 2.5rem;
         padding: spacing.$spacing-sm;
+        @include colors.apply-combo("background-light");
+        @include colors.apply-theme-box-shadow("on-background-25%");
+        transition: box-shadow 0.15s ease;
         @include breakpoints.for-tablet-landscape-up {
-            border-right: none;
+            margin-right: spacing.$spacing-sm;
         }
         @include typography.form-option;
         &::placeholder {
-            @include typography.form-option;
+            @include colors.apply-theme("on-background");
+        }
+        &:hover::placeholder,
+        &:active::placeholder {
+            @include colors.apply-theme("on-background-light-alt");
+        }
+        &:focus {
+            outline: none;
+            @include colors.apply-theme-box-shadow("secondary-80%");
+        }
+        &:active {
+            @include colors.apply-theme-box-shadow("primary-80%");
         }
     }
     select[name="sort"] {
@@ -68,24 +81,40 @@
     }
     button[type="submit"] {
         order: 2;
-        flex: 0 0 40px;
+        flex: 0 0 3rem;
         border-radius: 0;
         margin-left: 0;
-        @include colors.apply-theme("background-light", "background-color");
-        border: 1px solid;
-        @include colors.apply-theme("primary", "border-color");
         display: flex;
         align-items: center;
         justify-content: center;
         @include a11y.sr-only-focusable;
+        border: none;
+        @include colors.apply-theme("background-light", "background-color");
+        @include colors.apply-theme-box-shadow("on-background-25%");
+        @include colors.apply-theme("secondary");
+        transition: background-color 0.15s ease-in-out, color 0.15s ease,
+            box-shadow 0.15s ease;
         @include breakpoints.for-tablet-landscape-up {
             width: auto;
-            height: spacing.$spacing-xl;
+            height: 2.5rem;
             position: relative;
-            &:active,
             &:focus {
                 width: auto;
-                height: spacing.$spacing-xl;
+                height: 2.5rem;
+                outline: none;
+                @include colors.apply-theme-box-shadow("primary-80%");
+            }
+            &:hover {
+                width: auto;
+                height: 2.5rem;
+                box-shadow: none;
+                @include colors.apply-combo("secondary");
+            }
+            &:active {
+                width: auto;
+                height: 2.5rem;
+                box-shadow: none;
+                @include colors.apply-combo("primary");
             }
         }
         i {
