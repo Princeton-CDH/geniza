@@ -22,15 +22,12 @@
         order: 1;
         flex: 1 0 auto;
         border: none;
-        margin-right: 0;
+        margin-right: spacing.$spacing-sm;
         height: 2.5rem;
         padding: spacing.$spacing-sm;
         @include colors.apply-combo("background-light");
         @include colors.apply-theme-box-shadow("on-background-25%");
         transition: box-shadow 0.15s ease;
-        @include breakpoints.for-tablet-landscape-up {
-            margin-right: spacing.$spacing-sm;
-        }
         @include typography.form-option;
         &::placeholder {
             @include colors.apply-theme("on-background");
@@ -81,44 +78,46 @@
     }
     button[type="submit"] {
         order: 2;
-        flex: 0 0 3rem;
+        position: relative;
+        flex: 0 0 2.5rem;
+        width: auto;
+        height: 2.5rem;
         border-radius: 0;
         margin-left: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        @include a11y.sr-only-focusable;
         border: none;
         @include colors.apply-theme("background-light", "background-color");
         @include colors.apply-theme-box-shadow("on-background-25%");
         @include colors.apply-theme("secondary");
+        &:focus {
+            outline: none;
+            @include colors.apply-theme-box-shadow("primary-80%");
+        }
+        &:hover {
+            box-shadow: none;
+            @include colors.apply-combo("secondary");
+        }
+        &:active {
+            box-shadow: none;
+            @include colors.apply-combo("primary");
+        }
         transition: background-color 0.15s ease-in-out, color 0.15s ease,
             box-shadow 0.15s ease;
         @include breakpoints.for-tablet-landscape-up {
-            width: auto;
+            flex-basis: 3rem;
             height: 2.5rem;
-            position: relative;
-            &:focus {
-                width: auto;
-                height: 2.5rem;
-                outline: none;
-                @include colors.apply-theme-box-shadow("primary-80%");
-            }
-            &:hover {
-                width: auto;
-                height: 2.5rem;
-                box-shadow: none;
-                @include colors.apply-combo("secondary");
-            }
-            &:active {
-                width: auto;
-                height: 2.5rem;
-                box-shadow: none;
-                @include colors.apply-combo("primary");
-            }
         }
-        i {
-            @include typography.icon-button;
+        // Magnifying glass icon
+        &::after {
+            font-family: "Phosphor";
+            content: "\f5e6"; // phosphor magnifying glass bold icon
+            @include typography.icon-button-sm;
+            @include breakpoints.for-tablet-landscape-up {
+                content: "\f20a"; // phosphor magnifying glass icon
+                @include typography.icon-button;
+            }
         }
     }
     // document type filter

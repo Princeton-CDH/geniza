@@ -215,6 +215,9 @@ $text-size-5xl: 2rem; //     = 32px
 @mixin icon-button {
     font-size: $text-size-3xl;
 }
+@mixin icon-button-sm {
+    font-size: $text-size-lg;
+}
 
 // Temporary until new logo
 @mixin home-button {
