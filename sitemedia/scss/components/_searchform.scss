@@ -61,7 +61,7 @@
     input[type="search"] {
         max-width: 100%;
         order: 1;
-        flex: 1 0 auto;
+        flex: 1 1 auto;
         border: none;
         margin-right: spacing.$spacing-sm;
         height: 2.5rem;
@@ -93,6 +93,10 @@
             cursor: pointer;
             margin-top: spacing.$spacing-sm;
             display: flex;
+            // Suppress default details marker
+            &::-webkit-details-marker {
+                display: none;
+            }
             span,
             button {
                 cursor: pointer;
@@ -190,7 +194,7 @@
     button[type="submit"] {
         order: 2;
         position: relative;
-        flex: 0 0 2.5rem;
+        flex: 0 1 2.5rem;
         width: auto;
         height: 2.5rem;
         border-radius: 0;
