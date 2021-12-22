@@ -59,13 +59,13 @@
     align-items: center;
     justify-content: flex-start;
     input[type="search"] {
-        max-width: 100%;
+        max-width: calc(100% - 2.5rem - #{spacing.$spacing-sm});
         order: 1;
         flex: 1 1 auto;
         border: none;
         margin-right: spacing.$spacing-sm;
         height: 2.5rem;
-        padding: spacing.$spacing-sm;
+        padding: 0 0 0 spacing.$spacing-sm;
         @include typography.form-option;
         @include colors.apply-combo("background-light");
         @include form-drop-shadow;
