@@ -40,22 +40,22 @@ $theme: (
 
 // Dark mode theme colors
 $dark-theme: (
-    "primary": #c37f97,
-    "primary-80%": rgba(195, 127, 151, 0.8),
-    "secondary": #b76680,
-    "secondary-80%": rgba(183, 102, 128, 0.8),
+    "primary": #b76680,
+    "primary-80%": rgba(183, 102, 128, 0.8),
+    "secondary": #c37f97,
+    "secondary-80%": rgba(195, 127, 151, 0.8),
     "tertiary": #b05070,
     "on-primary": $black,
     "on-secondary": $black,
-    "on-tertiary": $black,
+    "on-tertiary": $white,
     "background": $black,
     "background-light": $dark-gray,
-    "background-gray": $dark-gray,
+    "background-gray": $gray,
     "on-background": $white,
     "on-background-25%": rgba(255, 255, 255, 0.25),
     "on-background-light": $white,
     "on-background-light-alt": $light-gray,
-    "on-background-gray": $white,
+    "on-background-gray": $black,
 );
 
 /*
