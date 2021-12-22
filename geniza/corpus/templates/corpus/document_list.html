@@ -23,14 +23,18 @@
             <label for="{{ form.sort.html_name }}">
                 {{ form.sort.label }}
             </label>
-            <details class="sort-select">
+            <details class="sort-select" aria-expanded="false">
                 <summary class="sort-select-trigger">
                     {% for choice in form.sort.field.choices %}
                         {% if form.sort.value == choice.0 %}
                             {{ choice.1 }}
                         {% endif %}
                     {% endfor %}
-                    <div role="button" tabindex="-1" />
+                    {# Translators: Button to open or close sort options menu #}
+                    {% translate 'Toggle sort options menu' as toggle_label %}
+                    <div role="button" tabindex="-1" aria-pressed="false" aria-expanded="false" aria-label="{{ toggle_label }}">
+                        <span class="sr-only">{{ toggle_label }}</span>
+                    </div>
                 </summary>
                 {{ form.sort }}
             </details>
