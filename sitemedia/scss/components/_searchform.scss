@@ -59,7 +59,7 @@
     align-items: center;
     justify-content: flex-start;
     input[type="search"] {
-        max-width: calc(100% - 2.5rem - #{spacing.$spacing-sm});
+        max-width: calc(100% - 2.75rem - #{spacing.$spacing-sm});
         order: 1;
         flex: 1 1 auto;
         border: none;
@@ -103,7 +103,7 @@
                 @include colors.apply-combo("background-light");
             }
             span {
-                flex: 1 0 auto;
+                flex: 1 1 auto;
                 display: flex;
                 align-items: center;
                 padding: spacing.$spacing-2xs 0.7rem;
@@ -141,14 +141,11 @@
         }
         ul {
             padding: spacing.$spacing-sm 0;
+            max-width: calc(100% - 2.0625rem - #{spacing.$spacing-sm});
             @include form-drop-shadow;
             @include colors.apply-theme("background-light", "background-color");
             li {
                 display: flex;
-                height: 2.25rem;
-                @include breakpoints.for-tablet-landscape-up {
-                    height: 2.5rem;
-                }
                 label {
                     width: 100%;
                     flex: 0 1 100%;
@@ -159,7 +156,7 @@
                         align-items: center;
                         width: 100%;
                         flex: 0 1 100%;
-                        padding: 0 spacing.$spacing-md 0 spacing.$spacing-sm;
+                        padding: spacing.$spacing-sm;
                         transition: background-color 0.15s ease,
                             color 0.15s ease;
                     }
@@ -232,6 +229,7 @@
         // Label for document type filter
         summary {
             display: flex;
+            flex-flow: row nowrap;
             align-items: center;
             justify-content: space-between;
             height: 2.9375rem;
