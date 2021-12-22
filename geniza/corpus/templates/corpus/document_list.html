@@ -3,6 +3,9 @@
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
+{% block extrascript %}
+    <script defer src="{% static 'js/sort-select.js' %}" nonce="{{ request.csp_nonce }}"></script>
+{% endblock %}
 
 {% block main %}
     <h1 class="sr-only">{{ page_title }}</h1>
@@ -16,8 +19,22 @@
                 </summary>
                 {{ form.doctype }}
             </details>
-            {{ form.sort }}
-            <label for="sort">{{ form.sort.label }}</label>
+
+            <label for="{{ form.sort.html_name }}">
+                {{ form.sort.label }}
+            </label>
+            <details class="sort-select">
+                <summary class="sort-select-trigger">
+                    {% for choice in form.sort.field.choices %}
+                        {% if form.sort.value == choice.0 %}
+                            {{ choice.1 }}
+                        {% endif %}
+                    {% endfor %}
+                    <div role="button" tabindex="-1" />
+                </summary>
+                {{ form.sort }}
+            </details>
+
             {# Translators: Search submit button #}
             {% translate 'Submit search' as search_label %}
             <button type="submit" aria-label="{{ search_label }}" />

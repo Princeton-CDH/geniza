@@ -37,10 +37,11 @@
  * Mixin for form drop shadow in three states:
  * default, focus, active.
  */
-@mixin form-drop-shadow {
+@mixin form-drop-shadow($with-default: "true") {
     transition: box-shadow 0.15s ease;
     @include colors.apply-theme-box-shadow("on-background-25%");
-    &:focus {
+    &:focus,
+    &:focus-within {
         outline: none;
         @include colors.apply-theme-box-shadow("secondary-80%");
     }
@@ -76,26 +77,108 @@
             @include colors.apply-theme("on-background-light-alt");
         }
     }
-    select[name="sort"] {
-        width: 100%;
-        max-width: 100%;
+    details.sort-select {
+        position: relative;
         order: 5;
-        flex: 1 1 auto;
-        border-radius: 0;
-        border: none;
-        height: spacing.$spacing-xl;
-        padding: spacing.$spacing-2xs spacing.$spacing-xs;
-        /*  NOTE: this will disable background gloss and curved borders on Safari,
-        but loses the dropdown arrow...  */
-        /* -webkit-appearance: none;  */
-        margin-top: spacing.$spacing-sm;
-        @include colors.apply-combo("background-light");
-        @include form-drop-shadow;
+        flex: 1 0 auto;
+        height: 2.5rem;
+        max-width: 100%;
         @include breakpoints.for-tablet-landscape-up {
-            width: auto;
-            flex: 0 1 auto;
+            flex: 1 1 auto;
+            min-width: auto;
+            max-width: 20rem;
         }
-        @include typography.form-option-bold-sm;
+        summary {
+            height: 2.5rem;
+            cursor: pointer;
+            margin-top: spacing.$spacing-sm;
+            display: flex;
+            span,
+            button {
+                cursor: pointer;
+                @include colors.apply-combo("background-light");
+            }
+            span {
+                flex: 1 0 auto;
+                display: flex;
+                align-items: center;
+                padding: spacing.$spacing-2xs 0.7rem;
+                margin-right: spacing.$spacing-sm;
+                @include typography.form-option-sm;
+                @include form-drop-shadow;
+            }
+            div[role="button"] {
+                @include form-button-colors;
+                flex: 1 1 2.0625rem;
+                width: auto;
+                max-width: 2.0625rem;
+                padding-top: 0.15rem;
+                text-align: center;
+                &::after {
+                    font-family: "Phosphor";
+                    content: "\f0c2"; // phosphor caret-down icon
+                    @include typography.icon-button;
+                }
+            }
+            &:focus {
+                outline: none;
+            }
+            &:focus span,
+            &:focus div[role="button"],
+            &:focus-within span,
+            &:focus-within div[role="button"],
+            &:focus + ul,
+            &:focus-within + ul {
+                @include colors.apply-theme-box-shadow("secondary-80%");
+            }
+            &:focus-within + ul:active {
+                @include colors.apply-theme-box-shadow("primary-80%");
+            }
+        }
+        ul {
+            padding: spacing.$spacing-sm 0;
+            @include form-drop-shadow;
+            @include colors.apply-theme("background-light", "background-color");
+            li {
+                display: flex;
+                height: 2.25rem;
+                @include breakpoints.for-tablet-landscape-up {
+                    height: 2.5rem;
+                }
+                label {
+                    width: 100%;
+                    flex: 0 1 100%;
+                    display: flex;
+                    cursor: pointer;
+                    span {
+                        display: flex;
+                        align-items: center;
+                        width: 100%;
+                        flex: 0 1 100%;
+                        padding: 0 spacing.$spacing-md 0 spacing.$spacing-sm;
+                        transition: background-color 0.15s ease,
+                            color 0.15s ease;
+                    }
+                    &:hover,
+                    &:focus-within {
+                        @include colors.apply-combo("background-gray");
+                    }
+                    &:hover input[name="sort"]:focus + span {
+                        @include colors.apply-combo("tertiary");
+                    }
+                    input[name="sort"] {
+                        @include a11y.sr-only;
+                        &:checked + span {
+                            @include typography.form-option-sm-bold;
+                        }
+                        &:active + span {
+                            @include colors.apply-combo("secondary");
+                        }
+                    }
+                    @include typography.form-option-sm;
+                }
+            }
+        }
     }
     label[for="sort"] {
         max-width: 100%;
@@ -133,7 +216,7 @@
         }
     }
     // document type filter
-    details {
+    details.doctype-filter {
         order: 3;
         flex: 1 0 100%;
         max-width: 100%;
@@ -165,8 +248,6 @@
                 @include typography.icon-button;
                 transition: transform 0.75s ease;
                 float: right;
-                // margin: 0;
-                // padding: 0;
             }
             transition: box-shadow 0.15s ease;
             &:focus {
@@ -227,7 +308,9 @@
                         @include colors.apply-combo("background-gray");
                     }
                     &:hover input[type="checkbox"]:checked + span,
-                    &:hover input[type="checkbox"]:checked + span + .count {
+                    &:hover input[type="checkbox"]:checked + span + .count,
+                    input[type="checkbox"]:checked:focus + span,
+                    input[type="checkbox"]:checked:focus + span + .count {
                         @include colors.apply-combo("secondary");
                     }
                     input[type="checkbox"] {
