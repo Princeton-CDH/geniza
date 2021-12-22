@@ -80,19 +80,18 @@
     details.sort-select {
         position: relative;
         order: 5;
-        flex: 1 0 auto;
-        height: 2.5rem;
+        flex: 1 1 auto;
+        min-height: 2.5rem;
         max-width: 100%;
         @include breakpoints.for-tablet-landscape-up {
-            flex: 1 1 auto;
             min-width: auto;
             max-width: 20rem;
         }
         summary {
-            height: 2.5rem;
+            display: flex;
+            min-height: 2.5rem;
             cursor: pointer;
             margin-top: spacing.$spacing-sm;
-            display: flex;
             // Suppress default details marker
             &::-webkit-details-marker {
                 display: none;
@@ -105,6 +104,7 @@
             span {
                 flex: 1 1 auto;
                 display: flex;
+                max-width: 100%;
                 align-items: center;
                 padding: spacing.$spacing-2xs 0.7rem;
                 margin-right: spacing.$spacing-sm;
