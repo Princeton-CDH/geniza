@@ -30,6 +30,10 @@ $theme: (
     "background-light": $off-white,
     "on-background": $black,
     "on-background-light": $black,
+    "disabled": $gray,
+    "tabs-bottom": $light-gray,
+    "tabs-bottom-hover": $dark-gray,
+    "tabs-focus": #567856,
 );
 
 // Dark mode theme colors
@@ -44,6 +48,10 @@ $dark-theme: (
     "background-light": $dark-gray,
     "on-background": $white,
     "on-background-light": $white,
+    "disabled": $gray,
+    "tabs-bottom": $dark-gray,
+    "tabs-bottom-hover": $light-gray,
+    "tabs-focus": $blue,
 );
 
 /*

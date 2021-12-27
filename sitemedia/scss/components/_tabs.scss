@@ -2,15 +2,32 @@
 // Tabbed navigation that appears in the header of some pages.
 // -----------------------------------------------------------------------------
 
+@use "../base/colors";
 @use "../base/breakpoints";
 @use "../base/spacing";
 @use "../base/typography";
+
+@mixin underline($color) {
+    &::after {
+        display: block;
+        content: " ";
+        height: 0.25rem;
+        @include colors.apply-theme($color, "background-color");
+        @include breakpoints.for-tablet-landscape-up {
+            margin-left: -10%;
+            width: 120%;
+            margin-top: 0.35rem;
+        }
+    }
+}
 
 .tabs {
     display: flex;
     justify-content: space-between;
     text-align: center;
     margin: 0 auto;
+    border-bottom: 0.25rem solid;
+    @include colors.apply-theme("tabs-bottom", "border-bottom-color");
     @include typography.nav-link;
     a,
     span {
@@ -21,7 +38,18 @@
         }
     }
     a {
-        @include typography.link;
+        text-decoration: none;
+        &:focus-visible {
+            outline: 0.1rem solid;
+            @include colors.apply-theme("tabs-focus", "outline-color");
+            outline-offset: -0.33rem;
+            @include breakpoints.for-tablet-landscape-up {
+                outline-offset: -0.5rem;
+            }
+        }
+    }
+    .disabled {
+        @include colors.apply-theme("disabled");
     }
     // Center tab padding boost
     li:nth-child(2) a,
@@ -32,5 +60,12 @@
     }
     a[aria-current="page"] {
         @include typography.nav-bold;
+        margin-bottom: -0.5rem;
+        @include underline("secondary");
+    }
+    a:active,
+    a:hover {
+        margin-bottom: -0.5rem;
+        @include underline("tabs-bottom-hover");
     }
 }
