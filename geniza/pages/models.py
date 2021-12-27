@@ -1,4 +1,5 @@
 from django.db import models
+from django.http import Http404
 from wagtail.admin.edit_handlers import FieldPanel, RichTextFieldPanel
 from wagtail.core.fields import RichTextField
 from wagtail.core.models import Page
@@ -39,6 +40,19 @@ class HomePage(Page):
         verbose_name = "homepage"
 
 
+class AboutPage(Page):
+    """An empty :class:`Page` type that has :class:`ContentPage` instances
+    as its subpages."""
+
+    # can only be child of HomePage
+    parent_page_types = [HomePage]
+    subpage_types = ["pages.ContentPage"]
+
+    # should not ever actually render
+    def serve(self, _):
+        raise Http404
+
+
 class ContentPage(Page):
     """A simple :class:`Page` type for content pages."""
 
@@ -62,7 +76,8 @@ class ContentPage(Page):
         ],
         blank=True,
     )
-    parent_page_types = [HomePage]
+    # can be child of Home or About page
+    parent_page_types = [HomePage, AboutPage]
     content_panels = Page.content_panels + [
         FieldPanel("description"),
         RichTextFieldPanel("body"),

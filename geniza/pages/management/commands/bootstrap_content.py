@@ -5,7 +5,7 @@ from wagtail.core.models import Page
 from wagtail.core.models.i18n import Locale
 from wagtail.core.models.sites import Site
 
-from geniza.pages.models import ContentPage, HomePage
+from geniza.pages.models import AboutPage, ContentPage, HomePage
 
 
 class Command(BaseCommand):
@@ -38,23 +38,35 @@ class Command(BaseCommand):
         port = options.get("port")
         (locale, _) = Locale.objects.get_or_create(language_code="en")
 
-        # Bootstrap empty home page
+        # Bootstrap empty home page, about page
         home_page = HomePage(
             title="The Princeton Geniza Project",
             description="Home page",
             locale=locale,
         )
+
         root = Page.get_first_root_node()
         root.add_child(instance=home_page)
 
-        # Bootstrap other empty pages
-        empty_pages = [
+        about_page = AboutPage(title="About", slug="about", locale=locale)
+        home_page.add_child(instance=about_page)
+
+        # Bootstrap other empty content pages
+
+        # Pages for main navigation menu
+        root_pages = [
             ContentPage(
                 title="Contact Us",
                 slug="contact",
                 description="Contact information",
                 locale=locale,
             ),
+        ]
+        for page in root_pages:
+            home_page.add_child(instance=page)
+
+        # Pages for About sub-navigation menu
+        about_pages = [
             ContentPage(
                 title="Credits",
                 slug="credits",
@@ -86,8 +98,8 @@ class Command(BaseCommand):
                 locale=locale,
             ),
         ]
-        for page in empty_pages:
-            home_page.add_child(instance=page)
+        for page in about_pages:
+            about_page.add_child(instance=page)
 
         if include_fixtures:
             # Create test page
