@@ -135,7 +135,7 @@ $text-size-5xl: 2rem; //     = 32px
     text-decoration-line: underline;
     text-decoration-style: solid;
     text-decoration-thickness: 0.1875rem;
-    text-underline-offset: 0.1rem;
+    text-underline-offset: 0.2rem;
     @include colors.apply-theme(
         "link-primary",
         $property: "text-decoration-color"
