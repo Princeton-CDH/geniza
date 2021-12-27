@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-17 16:35-0500\n"
+"POT-Creation-Date: 2021-12-27 13:12-0500\n"
 "PO-Revision-Date: 2021-12-20 18:31\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -53,7 +53,7 @@ msgid "Document Type"
 msgstr ""
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:601
+#: geniza/corpus/models.py:602
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr ""
@@ -312,62 +312,27 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: geniza/templates/nav.html:46
-msgid "Contact Us"
-msgstr ""
-
-#. Translators: label for 'about' link in main navigation
-#: geniza/templates/nav.html:50
-msgid "About"
-msgstr ""
-
 #. Translators: accessibility label for 'about' menu in navigation
-#: geniza/templates/nav.html:59
+#: geniza/templates/nav.html:61
 msgid "about menu"
 msgstr ""
 
 #. Translators: label for main menu back button for mobile navigation
-#: geniza/templates/nav.html:64
+#: geniza/templates/nav.html:66
 msgid "Return to main menu"
 msgstr ""
 
-#. Translators: label for link to 'Credits' page in main navigation
-#: geniza/templates/nav.html:78
-msgid "Credits"
-msgstr ""
-
-#. Translators: label for link to 'How to Cite' page in main navigation
-#: geniza/templates/nav.html:82
-msgid "How to Cite"
-msgstr ""
-
-#. Translators: label for link to 'Data Exports' page in main navigation
-#: geniza/templates/nav.html:86
-msgid "Data Exports"
-msgstr ""
-
-#. Translators: label for link to 'Technical' page in main navigation
-#: geniza/templates/nav.html:90
-msgid "Technical"
-msgstr ""
-
-#. Translators: label for link to 'FAQ' page in main navigation
-#: geniza/templates/nav.html:94
-msgid "FAQ"
-msgstr ""
-
 #. Translators: label for language choices in navigation
-#: geniza/templates/snippets/language_switcher.html:13
+#: geniza/templates/snippets/language_switcher.html:14
 #, python-format
 msgid "read this page in %(language_name)s (%(language_code)s)"
 msgstr ""
 
 #. Translators: button on language chooser in navigation
-#: geniza/templates/snippets/language_switcher.html:20
+#: geniza/templates/snippets/language_switcher.html:22
 msgctxt "choose this option"
 msgid "go"
 msgstr ""
 
 #~ msgid "Shelfmark"
 #~ msgstr "Shelfmark"
-

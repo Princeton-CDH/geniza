@@ -63,6 +63,7 @@ class Command(BaseCommand):
             ),
         ]
         for page in root_pages:
+            page.show_in_menus = True
             home_page.add_child(instance=page)
 
         # Pages for About sub-navigation menu
@@ -99,6 +100,7 @@ class Command(BaseCommand):
             ),
         ]
         for page in about_pages:
+            page.show_in_menus = True
             about_page.add_child(instance=page)
 
         if include_fixtures:
