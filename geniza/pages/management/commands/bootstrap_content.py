@@ -5,7 +5,7 @@ from wagtail.core.models import Page
 from wagtail.core.models.i18n import Locale
 from wagtail.core.models.sites import Site
 
-from geniza.pages.models import ContentPage, CreditsPage, HomePage
+from geniza.pages.models import ContentPage, HomePage
 
 
 class Command(BaseCommand):
@@ -47,21 +47,18 @@ class Command(BaseCommand):
         root = Page.get_first_root_node()
         root.add_child(instance=home_page)
 
-        # Create credits page
-        credits_page = CreditsPage(
-            title="Credits",
-            slug="credits",
-            description="List of Geniza Project contributors and their roles",
-            locale=locale,
-        )
-        home_page.add_child(instance=credits_page)
-
         # Bootstrap other empty pages
         empty_pages = [
             ContentPage(
                 title="Contact Us",
                 slug="contact",
                 description="Contact information",
+                locale=locale,
+            ),
+            ContentPage(
+                title="Credits",
+                slug="credits",
+                description="List of Geniza Project contributors and their roles",
                 locale=locale,
             ),
             ContentPage(
