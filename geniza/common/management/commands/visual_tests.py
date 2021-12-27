@@ -22,16 +22,18 @@ class Command(BaseCommand):
             options.add_argument("--force-dark-mode")
         return webdriver.Chrome(options=options)
 
-    def take_snapshots(self, browser):
+    def take_snapshots(self, browser, dark_mode=False):
         """Take DOM snapshots of a set of URLs and upload to Percy."""
 
         # homepage TODO
         # browser.get("http://localhost:8000/")
-        # percy_snapshot(browser, "Home")
+        # percy_snapshot(browser, "Home (%s)" % mode)
+
+        mode = "Dark" if dark_mode else "Light"
 
         # content page
         browser.get("http://localhost:8000/en/content/")
-        percy_snapshot(browser, "Content Page")
+        percy_snapshot(browser, "Content Page (%s)" % mode)
 
         # document search with document type filter expanded
         # NOTE: revise to capture search filter panel when we implement it
@@ -42,27 +44,27 @@ class Command(BaseCommand):
         browser.find_element_by_css_selector(
             ".doctype-filter li:nth-child(1) label"
         ).click()
-        percy_snapshot(browser, "Document Search filter")
+        percy_snapshot(browser, "Document Search filter (%s)" % mode)
 
         # document search
         browser.get(
             "http://localhost:8000/en/documents/?q=the+writer+Avraham+באנפנא&per_page=2"
         )
-        percy_snapshot(browser, "Document Search")
+        percy_snapshot(browser, "Document Search (%s)" % mode)
 
         # document detail
         browser.get("http://localhost:8000/en/documents/2532/")
-        percy_snapshot(browser, "Document Details")
+        percy_snapshot(browser, "Document Details (%s)" % mode)
 
         # document scholarship
         browser.get("http://localhost:8000/en/documents/9469/scholarship/")
-        percy_snapshot(browser, "Document Scholarship Records")
+        percy_snapshot(browser, "Document Scholarship Records (%s)" % mode)
 
         # mobile menu
         browser.get("http://localhost:8000/en/documents/2532/#menu")
         percy_snapshot(
             browser,
-            "Mobile menu",
+            "Mobile menu (%s)" % mode,
             percy_css="ul#menu { left: 0 !important; transition: none !important; }",
         )
 
@@ -72,25 +74,25 @@ class Command(BaseCommand):
         browser.find_element_by_id("open-about-menu").send_keys(Keys.ENTER)
         percy_snapshot(
             browser,
-            "About submenu",
+            "About submenu (%s)" % mode,
             percy_css="ul#about-menu { left: 0 !important; transition: none !important; } @media (min-width: 900px) { ul#about-menu { left: auto !important; } }",
         )
 
         # 404 page TODO
         # browser.get("http://localhost:8000/bad-url")
-        # percy_snapshot(browser, "404 Page")
+        # percy_snapshot(browser, "404 Page (%s)" % mode)
 
         # 500 page TODO
         # browser.get("http://localhost:8000/500")
-        # percy_snapshot(browser, "500 Page")
+        # percy_snapshot(browser, "500 Page (%s)" % mode)
 
     def handle(self, *args, **options):
         # spin up browser and take snapshots; shut down when finished
-        browser = self.get_browser()
-        self.take_snapshots(browser)
-        browser.quit()
+        light_browser = self.get_browser()
+        self.take_snapshots(browser=light_browser)
+        light_browser.quit()
 
         # spin up dark mode browser and take snapshots, then shut down
         dark_browser = self.get_browser(dark_mode=True)
-        self.take_snapshots(dark_browser)
+        self.take_snapshots(browser=dark_browser, dark_mode=True)
         dark_browser.quit()
