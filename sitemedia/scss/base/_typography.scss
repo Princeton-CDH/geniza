@@ -132,16 +132,21 @@ $text-size-5xl: 2rem; //     = 32px
 
 // links
 @mixin link {
-    @include colors.apply-theme(
-        "secondary",
-        $property: "text-decoration-color"
-    );
-
-    font-family: fonts.$primary;
     text-decoration-line: underline;
     text-decoration-style: solid;
-    text-decoration-thickness: 0.167rem;
+    text-decoration-thickness: 0.1875rem;
     text-underline-offset: 0.1rem;
+    @include colors.apply-theme(
+        "link-primary",
+        $property: "text-decoration-color"
+    );
+    &:hover,
+    &:active {
+        @include colors.apply-theme(
+            "link-secondary",
+            $property: "text-decoration-color"
+        );
+    }
 }
 
 // "shelfmark" part of document titles
