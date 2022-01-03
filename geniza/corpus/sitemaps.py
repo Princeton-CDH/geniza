@@ -10,6 +10,9 @@ class DocumentSitemap(Sitemap):
     def items(self):
         return Document.objects.filter(status=Document.PUBLIC)
 
+    def lastmod(self, obj):
+        return obj.last_modified
+
 
 class DocumentScholarshipSitemap(Sitemap):
     def items(self):
@@ -18,14 +21,5 @@ class DocumentScholarshipSitemap(Sitemap):
     def location(self, obj):
         return obj.get_absolute_url() + "scholarship/"
 
-
-"""
-https://docs.djangoproject.com/en/4.0/ref/contrib/sitemaps/#django.contrib.sitemaps.Sitemap.paginator
-
-paginator¶
-
-    Optional.
-
-    This property returns a Paginator for items(). If you generate sitemaps in a batch you may want to override this as a cached property in order to avoid multiple items() calls.
-
-"""
+    def lastmod(self, obj):
+        return obj.last_modified
