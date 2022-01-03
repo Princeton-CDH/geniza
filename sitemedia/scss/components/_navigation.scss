@@ -7,10 +7,11 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-@mixin header-background {
+@mixin header-background-mobile {
     background: url("/static/img/header-base-mobile-lightmode.svg"),
         linear-gradient(to right, rgba(255, 255, 255, 0), white 20rem),
         url("/static/img/header-image-mobile-lightmode.png");
+    background-repeat: no-repeat, no-repeat, no-repeat;
     @media (prefers-color-scheme: dark) {
         background: url("/static/img/header-base-mobile-darkmode.svg"),
             linear-gradient(
@@ -21,18 +22,39 @@
             url("/static/img/header-image-mobile-darkmode.png");
         background-repeat: no-repeat, no-repeat, no-repeat;
     }
+    @include breakpoints.for-tablet-landscape-up {
+        background: none;
+    }
+}
+@mixin header-background-desktop {
+    background: url("/static/img/header-base-desktop-lightmode.svg"),
+        linear-gradient(to right, rgba(255, 255, 255, 0), white 90rem),
+        url("/static/img/header-image-desktop-lightmode.png");
     background-repeat: no-repeat, no-repeat, no-repeat;
+    @media (prefers-color-scheme: dark) {
+        background: url("/static/img/header-base-desktop-darkmode.svg"),
+            linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0),
+                colors.$black 90rem
+            ),
+            url("/static/img/header-image-desktop-darkmode.png");
+        background-repeat: no-repeat, no-repeat, no-repeat;
+    }
 }
 
 .site-nav {
     // background image and gradient
-    @include header-background;
+    @include header-background-mobile;
     display: flex;
     flex-flow: row wrap;
     @include breakpoints.for-tablet-landscape-up {
+        @include header-background-desktop;
         flex-flow: row nowrap;
-        align-items: flex-end;
+        align-items: center;
         justify-content: space-between;
+        height: 12rem;
+        padding-bottom: 4rem;
     }
     // Logotype, links to homepage
     a.home-link {
@@ -73,7 +95,9 @@
         height: 9rem;
         margin-left: spacing.$spacing-md;
         @include breakpoints.for-tablet-landscape-up {
-            margin: spacing.$spacing-md 0 0 spacing.$spacing-lg;
+            height: auto;
+            margin: spacing.$spacing-2xl 0 0 spacing.$spacing-lg;
+            padding-top: spacing.$spacing-sm;
         }
         li {
             margin-top: -#{spacing.$spacing-3xl};
@@ -88,7 +112,7 @@
     }
     // List of links
     ul#menu {
-        @include header-background;
+        @include header-background-mobile;
         display: flex;
         left: calc(-100vw);
         transition: left 0.5s;
@@ -127,7 +151,6 @@
             flex: 1 0 auto;
             flex-flow: row nowrap;
             justify-content: flex-end;
-            outline: 1px solid;
             width: auto;
             margin: 0 spacing.$spacing-sm 0 spacing.$spacing-xl;
             pointer-events: all;
@@ -228,7 +251,7 @@
         }
     }
     #about-menu {
-        @include header-background;
+        @include header-background-mobile;
         display: flex;
         left: calc(100vw);
         transition: left 0.5s;
@@ -280,9 +303,8 @@
             top: 100%;
             width: auto;
             height: auto;
-            border: 1px solid;
-            border-top: none;
-            @include colors.apply-theme("primary", "border-color");
+            background: colors.$white;
+            box-shadow: 0px 2px 4px rgba(86, 120, 86, 0.8);
             li.menu-button,
             li.menu-label {
                 display: none;
