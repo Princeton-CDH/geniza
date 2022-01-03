@@ -409,7 +409,13 @@ class Document(ModelIndexable):
     )
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
-    log_entries = GenericRelation(LogEntry, related_query_name="document")
+
+    @property
+    def log_entries(self):
+        return LogEntry.objects.filter(
+            object_id=self.id,
+            content_type_id=ContentType.objects.get_for_model(Document),
+        ).distinct()
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution
@@ -580,7 +586,6 @@ class Document(ModelIndexable):
             "tags",
             "languages",
             "footnotes",
-            "log_entries",
             Prefetch(
                 "textblock_set",
                 queryset=TextBlock.objects.select_related(
@@ -806,9 +811,11 @@ class Document(ModelIndexable):
                 log_entry.change_message,
                 doc.pk,
             )
-            log_entry.save()
+
             # - associate with the primary document
-            self.log_entries.add(log_entry)
+            log_entry.object_id = self.id
+            log_entry.content_type_id = ContentType.objects.get_for_model(Document)
+            log_entry.save()
 
 
 class TextBlock(models.Model):
