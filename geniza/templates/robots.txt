@@ -1,3 +1,4 @@
+{# logic copied from princeton-cdh/mep-django #}
 User-agent: *
 Disallow: {% if SHOW_TEST_WARNING %}/{% else %}/admin{% endif %}
 {# Link to sitemap #}
