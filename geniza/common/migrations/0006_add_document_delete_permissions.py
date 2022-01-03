@@ -8,7 +8,7 @@ CONTENT_ADMIN = "Content Admin"
 content_admin_perms = ["delete_logentry", "change_logentry"]
 
 
-def update_content_editor_groups(apps, schema_editor):
+def update_content_admin_groups(apps, schema_editor):
     Group = apps.get_model("auth", "Group")
     Permission = apps.get_model("auth", "Permission")
 
@@ -36,6 +36,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-            update_content_editor_groups, reverse_code=migrations.RunPython.noop
+            update_content_admin_groups, reverse_code=migrations.RunPython.noop
         )
     ]
