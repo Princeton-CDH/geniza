@@ -142,7 +142,6 @@ class TestDocumentDetailTemplate:
         # TODO: This is fragile, consider something better
         assertNotContains(response, "Shelfmark", html=True)
 
-        # add a shelfmark
         response = client.get(join.get_absolute_url())
         assertContains(response, "Shelfmark", html=True)
         assertContains(response, join.shelfmark, html=True)
