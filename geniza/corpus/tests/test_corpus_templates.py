@@ -136,6 +136,17 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertContains(response, "Editors")
 
+    def test_multiple_shelfmarks(self, client, document, join):
+        """Document detail template should show multiple shelfmarks"""
+        response = client.get(document.get_absolute_url())
+        # TODO: This is fragile, consider something better
+        assertNotContains(response, "Shelfmark", html=True)
+
+        # add a shelfmark
+        response = client.get(join.get_absolute_url())
+        assertContains(response, "Shelfmark", html=True)
+        assertContains(response, join.shelfmark, html=True)
+
 
 class TestDocumentScholarshipTemplate:
     def test_source_title(self, client, document, twoauthor_source):
