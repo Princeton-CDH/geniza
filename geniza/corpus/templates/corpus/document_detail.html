@@ -48,6 +48,10 @@
                         {# link ? #}
                     {% endfor %}
                 {% endif %}
+                {% if document.fragments.count > 1 %}
+                    <dt class="secondary">{% translate 'Shelfmark' %}</dt>
+                    <dd class="secondary">{{ document.shelfmark }}</dd>
+                {% endif %}
                 {# Translators: Date document was first added to the PGP #}
                 <dt class="secondary">{% translate 'Input date' %}</dt>
                 <dd class="secondary">{{ document.log_entries.last.action_time.year }}</dd>
