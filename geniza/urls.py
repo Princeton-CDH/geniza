@@ -21,6 +21,7 @@ from django.urls import include, path
 from django.urls.conf import re_path
 from django.views.generic.base import RedirectView
 from wagtail.admin import urls as wagtailadmin_urls
+from wagtail.contrib.sitemaps.views import sitemap
 from wagtail.core import urls as wagtail_urls
 
 urlpatterns = [
@@ -29,6 +30,8 @@ urlpatterns = [
     path("accounts/", include("pucas.cas_urls")),
     path("i18n/", include("django.conf.urls.i18n")),
     path("taggit/", include("taggit_selectize.urls")),
+    # sitemaps
+    path("sitemap.xml", sitemap),  # NOTE: Sitemap most occur before wagtail urls
     path("cms/", include(wagtailadmin_urls)),
 ]
 

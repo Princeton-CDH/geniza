@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "wagtail_localize",
     "wagtail_localize.locales",
     "modelcluster",
+    "django.contrib.sitemaps",
 ]
 
 MIDDLEWARE = [
