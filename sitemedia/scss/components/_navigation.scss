@@ -7,7 +7,26 @@
 @use "../base/spacing";
 @use "../base/typography";
 
+@mixin header-background {
+    background: url("/static/img/header-base-mobile-lightmode.svg"),
+        linear-gradient(to right, rgba(255, 255, 255, 0), white 20rem),
+        url("/static/img/header-image-mobile-lightmode.png");
+    @media (prefers-color-scheme: dark) {
+        background: url("/static/img/header-base-mobile-darkmode.svg"),
+            linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0),
+                colors.$black 20rem
+            ),
+            url("/static/img/header-image-mobile-darkmode.png");
+        background-repeat: no-repeat, no-repeat, no-repeat;
+    }
+    background-repeat: no-repeat, no-repeat, no-repeat;
+}
+
 .site-nav {
+    // background image and gradient
+    @include header-background;
     display: flex;
     flex-flow: row wrap;
     @include breakpoints.for-tablet-landscape-up {
@@ -51,27 +70,32 @@
         display: flex;
         flex-flow: row wrap;
         align-items: center;
-        margin: spacing.$spacing-md 0 0 spacing.$spacing-md;
+        height: 9rem;
+        margin-left: spacing.$spacing-md;
         @include breakpoints.for-tablet-landscape-up {
             margin: spacing.$spacing-md 0 0 spacing.$spacing-lg;
         }
-        li.menu-button {
-            margin-left: spacing.$spacing-md;
+        li {
+            margin-top: -#{spacing.$spacing-3xl};
         }
-        li.menu-button a::before {
-            font-family: "Phosphor";
-            content: "\f1fa";
+        li.menu-button {
+            margin-left: spacing.$spacing-sm;
+            a::before {
+                font-family: "Phosphor";
+                content: "\f1fa";
+            }
         }
     }
     // List of links
     ul#menu {
+        @include header-background;
         display: flex;
         left: calc(-100vw);
         transition: left 0.5s;
         position: fixed;
         flex-flow: row wrap;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-end;
         padding: 0;
         max-width: 100%;
         width: 100%;
@@ -79,10 +103,7 @@
         z-index: 100;
         & > li.menu-button {
             display: flex;
-            margin-right: spacing.$spacing-sm;
-            @include breakpoints.for-tablet-landscape-up {
-                display: none;
-            }
+            margin-right: spacing.$spacing-xs;
         }
         li.menu-button a::before {
             font-family: "Phosphor";
@@ -117,19 +138,12 @@
         @include colors.apply-theme("primary", "outline-color");
         @include colors.apply-theme("background", "background-color");
     }
-    li.menu-button,
-    ul#menu li.home,
-    ul#menu:target li.menu-button,
-    ul#menu:target li.menu-label {
-        @include breakpoints.for-tablet-landscape-up {
-            display: none;
-        }
-    }
-    ul#menu li.home {
-        height: 5.0625rem;
-        svg {
-            margin: spacing.$spacing-md spacing.$spacing-md;
-        }
+    ul#menu li.menu-button,
+    ul#menu li.menu-label {
+        height: 4rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
     }
 
     // Individual menu items
@@ -145,19 +159,20 @@
             width: 100%;
             max-width: 100%;
             display: inline-block;
-            border-top: 1px solid;
-            @include colors.apply-theme("primary", "border-top-color");
             @include typography.nav-link;
             @include typography.mobile-menu;
         }
         & + .menu-item a,
         & + #about-menu .menu-item a {
             padding-top: spacing.$spacing-lg;
-            @include colors.apply-theme("primary", "border-top-color");
+            border-top: 1px solid colors.$gray;
             @include breakpoints.for-tablet-landscape-up {
                 padding-top: 0;
                 border: none;
             }
+        }
+        .menu-button + .menu-item a {
+            border-top: none;
         }
         &:last-child {
             height: 100%;
@@ -213,6 +228,7 @@
         }
     }
     #about-menu {
+        @include header-background;
         display: flex;
         left: calc(100vw);
         transition: left 0.5s;
@@ -229,13 +245,11 @@
         li.menu-button {
             display: inline-block;
             width: auto;
-            padding: spacing.$spacing-lg spacing.$spacing-sm;
-            height: spacing.$spacing-3xl;
+            padding: 0 spacing.$spacing-sm 0 spacing.$spacing-2xs;
             a {
                 text-decoration: none;
                 padding: 0;
                 width: auto;
-                display: inline;
                 border: none;
             }
             a#back-to-main-menu::before {
@@ -295,5 +309,18 @@
     a[aria-current="page"] {
         @include typography.nav-bold;
         @include typography.mobile-menu;
+    }
+    // Hide mobile menu buttons and labels in desktop
+    li.menu-button,
+    li.menu-label,
+    ul#menu li.menu-button,
+    ul#menu li.menu-label,
+    ul#menu:target li.menu-button,
+    ul#menu:target li.menu-label,
+    ul#about-menu:target li.menu-button,
+    ul#about-menu:target li.menu-label {
+        @include breakpoints.for-tablet-landscape-up {
+            display: none;
+        }
     }
 }

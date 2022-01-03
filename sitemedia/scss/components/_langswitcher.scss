@@ -8,8 +8,7 @@
 form#language {
     position: absolute;
     right: spacing.$spacing-sm;
-    top: spacing.$spacing-2xl;
-    margin-top: spacing.$spacing-md;
+    top: spacing.$spacing-4xl;
 
     @include breakpoints.for-tablet-landscape-up {
         top: spacing.$spacing-xs;

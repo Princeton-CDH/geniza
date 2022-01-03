@@ -29,13 +29,6 @@
         </ul>
         {% url "corpus:document-search" as search_url %}
         <ul id="menu" role="menu" aria-label="{{ main_nav_label }}">
-            <li class="home" role="none">
-                <a class="home-link" href="/" aria-label="{{ aria_home }}" role="button">
-                    <svg>
-                        <use href="{% static 'img/pgp-logo.svg' %}#logo" />
-                    </svg>
-                </a>
-            </li>
             <li class="menu-button" role="none">
                 <a href="#" role="button">
                     {# Translators: label for 'menu' close button for mobile navigation #}
