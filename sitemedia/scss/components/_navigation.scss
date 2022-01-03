@@ -17,13 +17,20 @@
     }
     // Logotype, links to homepage
     a.home-link {
-        @include breakpoints.for-tablet-landscape-up {
-            @include colors.apply-combo("primary");
-        }
         display: inline-block;
-        flex: none;
-        padding: spacing.$spacing-lg spacing.$spacing-md;
-        @include typography.home-button;
+        vertical-align: bottom;
+        svg {
+            @include colors.apply-theme("logo", "fill");
+        }
+    }
+    a.home-link,
+    a.home-link svg {
+        width: 6.25rem;
+        height: 2.8rem;
+        @include breakpoints.for-tablet-landscape-up {
+            width: 12.5rem;
+            height: 5.625rem;
+        }
     }
     // Mobile-only menu buttons
     li.menu-button {
@@ -40,6 +47,13 @@
         display: flex;
         flex-flow: row wrap;
         align-items: center;
+        margin: spacing.$spacing-md 0 0 spacing.$spacing-md;
+        @include breakpoints.for-tablet-landscape-up {
+            margin: spacing.$spacing-md 0 0 spacing.$spacing-lg;
+        }
+        li.menu-button {
+            margin-left: spacing.$spacing-md;
+        }
         li.menu-button a::before {
             font-family: "Phosphor";
             content: "\f1fa";
@@ -105,6 +119,12 @@
     ul#menu:target li.menu-label {
         @include breakpoints.for-tablet-landscape-up {
             display: none;
+        }
+    }
+    ul#menu li.home {
+        height: 5.0625rem;
+        svg {
+            margin: spacing.$spacing-md spacing.$spacing-md;
         }
     }
 

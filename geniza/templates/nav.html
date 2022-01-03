@@ -13,8 +13,12 @@
                 {# Translators: accessibility label for 'home' button in main navigation #}
                 {% translate "home" as aria_home %}
                 {# Translators: site name label for 'home' button in main navigation #}
-                {% translate "GENIZA" as site_name %}
-                <a class="home-link" href="/" aria-label="{{ aria_home }}" role="button">{{ site_name }}</a>
+                {% translate "The Princeton Geniza Project" as site_name %}
+                <a class="home-link" href="/" aria-label="{{ aria_home }}" role="button">
+                    <svg>
+                        <use href="{% static 'img/pgp-logo.svg' %}#logo" />
+                    </svg>
+                </a>
             </li>
             <li class="menu-button">
                 <a id="open-main-menu" href="#menu" role="button">
@@ -26,8 +30,11 @@
         {% url "corpus:document-search" as search_url %}
         <ul id="menu" role="menu" aria-label="{{ main_nav_label }}">
             <li class="home" role="none">
-                {# Translators: label for 'home' button in main navigation #}
-                <a class="home-link" href="/" aria-label="{{ aria_home }}" role="button">{{ site_name }}</a>
+                <a class="home-link" href="/" aria-label="{{ aria_home }}" role="button">
+                    <svg>
+                        <use href="{% static 'img/pgp-logo.svg' %}#logo" />
+                    </svg>
+                </a>
             </li>
             <li class="menu-button" role="none">
                 <a href="#" role="button">
