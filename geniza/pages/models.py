@@ -38,6 +38,11 @@ class HomePage(Page):
     class Meta:
         verbose_name = "homepage"
 
+    def get_context(self, request):
+        context = super(HomePage, self).get_context(request)
+        context["page_type"] = "homepage"
+        return context
+
 
 class ContentPage(Page):
     """A simple :class:`Page` type for content pages."""

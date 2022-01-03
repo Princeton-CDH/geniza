@@ -2,12 +2,18 @@
 // Language switcher form.
 // -----------------------------------------------------------------------------
 
+@use "../base/breakpoints";
 @use "../base/spacing";
 
 form#language {
     position: absolute;
-    top: spacing.$spacing-xs;
     right: spacing.$spacing-sm;
+    top: spacing.$spacing-2xl;
+    margin-top: spacing.$spacing-md;
+
+    @include breakpoints.for-tablet-landscape-up {
+        top: spacing.$spacing-xs;
+    }
 
     option[value="he"],
     option[value="ar"] {

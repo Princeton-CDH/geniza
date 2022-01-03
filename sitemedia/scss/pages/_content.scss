@@ -6,11 +6,10 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-#content-page {
+#content-page,
+#homepage {
     h1 {
-        @include breakpoints.for-tablet-landscape-up {
-            margin-top: spacing.$spacing-xl;
-        }
+        margin-top: spacing.$spacing-xl;
     }
     .container {
         // Overall spacing

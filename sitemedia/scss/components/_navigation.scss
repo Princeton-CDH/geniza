@@ -38,6 +38,10 @@
         a {
             display: flex;
             text-decoration: none;
+            width: 3rem;
+            height: 3rem;
+            align-items: center;
+            justify-content: center;
             @include typography.icon-button;
             @include colors.apply-theme("on-background");
         }
@@ -104,7 +108,7 @@
             justify-content: flex-end;
             outline: 1px solid;
             width: auto;
-            margin: 0 spacing.$spacing-sm 0 spacing.$spacing-2xl;
+            margin: 0 spacing.$spacing-sm 0 spacing.$spacing-xl;
             pointer-events: all;
             & > li.menu-item + li.menu-item {
                 margin-left: spacing.$spacing-2xl;
