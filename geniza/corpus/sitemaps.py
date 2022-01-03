@@ -1,7 +1,4 @@
-from datetime import date
-
 from django.contrib.sitemaps import Sitemap
-from django.db.models import F
 
 from geniza.corpus.models import Document
 
