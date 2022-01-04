@@ -7,7 +7,7 @@ class TestDocumentSitemap:
         # Ensure that documents are supressed if they aren't public
         assert document.status == Document.PUBLIC
         sitemap = DocumentSitemap()
-        assert len(sitemap.items()) == 1
+        assert document in sitemap.items()
 
         document.status = Document.SUPPRESSED
         document.save()
@@ -27,7 +27,7 @@ class TestDocumentScholarshipSitemap:
         document.status = Document.PUBLIC
         document.save()
         sitemap = DocumentScholarshipSitemap()
-        assert len(sitemap.items()) == 1
+        assert document in sitemap.items()
 
         document.footnotes.all().delete()
         sitemap = DocumentScholarshipSitemap()
