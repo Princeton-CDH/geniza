@@ -63,7 +63,7 @@ class Command(BaseCommand):
         percy_snapshot(browser, "Document Scholarship Records%s" % dark_mode_str)
 
         # mobile menu
-        browser.get("http://localhost:8000/en/documents/2532/#menu")
+        browser.get("http://localhost:8000/en/documents/9469/#menu")
         # custom CSS to ensure that on mobile, the menu transition is disabled and the menu
         # is in the correct position
         mobile_menu_css = "ul#menu { left: 0 !important; transition: none !important; }"
