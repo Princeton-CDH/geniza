@@ -16,6 +16,10 @@ class TestDocumentSitemap:
         sitemap = DocumentSitemap()
         assert len(sitemap.items()) == 0
 
+    def test_lastmod(self, document):
+        sitemap = DocumentScholarshipSitemap()
+        assert sitemap.lastmod(document) == document.last_modified
+
 
 class TestDocumentScholarshipSitemap:
     def test_items(self, document, footnote):
@@ -43,3 +47,7 @@ class TestDocumentScholarshipSitemap:
             "corpus:document-scholarship", args=[document.id]
         )
         assert sitemap.location(document) == "/en/documents/3951/scholarship/"
+
+    def test_lastmod(self, document):
+        sitemap = DocumentScholarshipSitemap()
+        assert sitemap.lastmod(document) == document.last_modified
