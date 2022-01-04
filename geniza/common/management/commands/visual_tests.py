@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     help = __doc__
 
-    def get_browser(self, dark_mode=False):
+    def get_browser(self):
         """Initialize a browser driver to use for taking snapshots."""
         options = webdriver.ChromeOptions()
         options.add_argument("--no-sandbox")
@@ -18,8 +18,6 @@ class Command(BaseCommand):
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-setuid-sandbox")
         options.add_argument("--headless")
-        if dark_mode:
-            options.add_argument("--force-dark-mode")
         return webdriver.Chrome(options=options)
 
     def take_snapshots(self, browser):
@@ -89,8 +87,3 @@ class Command(BaseCommand):
         browser = self.get_browser()
         self.take_snapshots(browser)
         browser.quit()
-
-        # spin up dark mode browser and take snapshots, then shut down
-        dark_browser = self.get_browser(dark_mode=True)
-        self.take_snapshots(dark_browser)
-        dark_browser.quit()
