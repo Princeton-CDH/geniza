@@ -4,6 +4,7 @@ from adminsortable2.admin import SortableInlineAdminMixin
 from django import forms
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.sites.models import Site
@@ -434,7 +435,6 @@ class DocumentAdmin(admin.ModelAdmin):
         # not needed for admin list view
         queryset = queryset.order_by("id").prefetch_related(
             "secondary_languages",
-            "log_entries",
         )
 
         return export_to_csv_response(
