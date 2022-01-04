@@ -1,3 +1,5 @@
+from django.urls import reverse
+
 from geniza.corpus.models import Document
 from geniza.corpus.sitemaps import DocumentScholarshipSitemap, DocumentSitemap
 
@@ -37,4 +39,7 @@ class TestDocumentScholarshipSitemap:
         document.footnotes.add(footnote)
         document.save()
         sitemap = DocumentScholarshipSitemap()
-        assert sitemap.location(sitemap.items()[0]).endswith("scholarship/")
+        assert sitemap.location(document) == reverse(
+            "corpus:document-scholarship", args=[document.id]
+        )
+        assert sitemap.location(document) == "/en/documents/3951/scholarship/"
