@@ -65,6 +65,7 @@ class TestCommonUtils(TestCase):
 
     def test_custom_tag_string(self):
         assert custom_tag_string("foo") == ["foo"]
+        assert custom_tag_string("multi-word tag") == ["multi-word tag"]
         assert custom_tag_string('"legal query", responsa') == [
             "legal query",
             "responsa",
