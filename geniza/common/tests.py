@@ -6,7 +6,7 @@ from django.contrib.sites.models import Site
 from django.test import TestCase, override_settings
 
 from geniza.common.admin import LocalUserAdmin, custom_empty_field_list_filter
-from geniza.common.utils import absolutize_url
+from geniza.common.utils import absolutize_url, custom_tag_string
 
 
 @pytest.mark.django_db
@@ -62,6 +62,17 @@ class TestCommonUtils(TestCase):
                 absolutize_url(local_path, mockrqst)
                 == "http://example.org/sub/foo/bar/"
             )
+
+    def test_custom_tag_string(self):
+        assert custom_tag_string("foo") == ["foo"]
+        assert custom_tag_string('"legal query", responsa') == [
+            "legal query",
+            "responsa",
+        ]
+        assert custom_tag_string("") == []
+        assert custom_tag_string(
+            '"Arabic script", "fiscal document",foods,Ḥalfon b. Menashshe'
+        ) == ["Arabic script", "fiscal document", "foods", "Ḥalfon b. Menashshe"]
 
 
 class TestCustomEmptyFieldListFilter:
