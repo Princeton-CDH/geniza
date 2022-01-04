@@ -139,11 +139,10 @@ class TestDocumentDetailTemplate:
     def test_multiple_shelfmarks(self, client, document, join):
         """Document detail template should show multiple shelfmarks"""
         response = client.get(document.get_absolute_url())
-        # TODO: This is fragile, consider something better
-        assertNotContains(response, "Shelfmark", html=True)
+        assertNotContains(response, "<dt>Shelfmark</dt>", html=True)
 
         response = client.get(join.get_absolute_url())
-        assertContains(response, "Shelfmark", html=True)
+        assertContains(response, "<dt>Shelfmark</dt>", html=True)
         assertContains(response, join.shelfmark, html=True)
 
 
