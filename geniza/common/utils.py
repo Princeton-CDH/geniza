@@ -36,15 +36,12 @@ def absolutize_url(local_url, request=None):
 
 def custom_tag_string(tag_string):
     """
-    A custom tag string parser for taggit so that we can have multi-word
-    tags. Django-taggit allows for multi-word tags, but TaggableManager does not
-    encourage users to input them correctly.
+    Custom tag parsing for taggit to better support multi-word tags.
 
-    TaggableManager does not have an intuitive string output. If there are
-    no tags, it will return a comma-delimited string. It will wrap existing
-    tags in quotes. So if a user wants to add a tag "Arabic script" to a document
-    with the existing tag "fiscal document" it will send the value:
-    `"fiscal document", Arabic script` to be parsed.
+    Expected parsing:
+    - 'legal document' -> ["legal document"]
+    - '"fiscal document", Arabic script' -> ["fiscal document", "Arabic script"]
+    - '"fiscal document", "Arabic script"' -> ["fiscal document", "Arabic script"]
 
     This is configured in settings with TAGGIT_TAGS_FROM_STRING.
     """
