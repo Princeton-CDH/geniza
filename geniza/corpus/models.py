@@ -410,11 +410,13 @@ class Document(ModelIndexable):
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
 
+    CONTENT_TYPE_ID = ContentType.objects.get(app_label="corpus", model="document").id
+
     @property
     def log_entries(self):
         return LogEntry.objects.filter(
             object_id=self.id,
-            content_type_id=ContentType.objects.get_for_model(Document),
+            content_type_id=self.CONTENT_TYPE_ID,
         ).distinct()
 
     # NOTE: default ordering disabled for now because it results in duplicates
