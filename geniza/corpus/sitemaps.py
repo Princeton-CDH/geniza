@@ -14,6 +14,8 @@ class DocumentSitemap(Sitemap):
 
 class DocumentScholarshipSitemap(Sitemap):
     def items(self):
+        # Only return documents with footnotes. A document scholarship page returns
+        #  a 404 if there are no footnotes.
         return Document.objects.filter(status=Document.PUBLIC, footnotes__isnull=False)
 
     def location(self, obj):
