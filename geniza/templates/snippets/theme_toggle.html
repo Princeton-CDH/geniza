@@ -1,0 +1,12 @@
+{% load i18n static webpack_loader %}
+
+{% block extrascript %}
+    <script defer src="{% static 'js/theme-toggle.js' %}" nonce="{{ request.csp_nonce }}"></script>
+{% endblock %}
+
+<label id="theme-toggle" for="theme-toggle-checkbox" tabindex="0">
+    {# Translators: label for dark mode/light mode theme switcher #}
+    <span class="sr-only">{% translate "Enable dark mode" %}</span>
+    <input type="checkbox" id="theme-toggle-checkbox" />
+    <span aria-hidden="true"></span>
+</label>

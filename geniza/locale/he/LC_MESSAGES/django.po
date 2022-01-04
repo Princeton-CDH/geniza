@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-17 16:35-0500\n"
+"POT-Creation-Date: 2022-01-04 10:31-0500\n"
 "PO-Revision-Date: 2021-12-20 18:31\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -10,7 +10,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
+"%100==4 ? 2 : 3;\n"
 "X-Crowdin-Project: geniza\n"
 "X-Crowdin-Project-ID: 457634\n"
 "X-Crowdin-Language: he\n"
@@ -53,7 +54,7 @@ msgid "Document Type"
 msgstr "סוג המסמך"
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:601
+#: geniza/corpus/models.py:602
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr "סוג לא ידוע"
@@ -369,17 +370,21 @@ msgid "FAQ"
 msgstr "שאלות נפוצות"
 
 #. Translators: label for language choices in navigation
-#: geniza/templates/snippets/language_switcher.html:13
+#: geniza/templates/snippets/language_switcher.html:14
 #, python-format
 msgid "read this page in %(language_name)s (%(language_code)s)"
 msgstr "קריאת העמוד ב-%(language_name)s (%(language_code)s)"
 
 #. Translators: button on language chooser in navigation
-#: geniza/templates/snippets/language_switcher.html:20
+#: geniza/templates/snippets/language_switcher.html:22
 msgctxt "choose this option"
 msgid "go"
 msgstr "שינוי שפה"
 
+#. Translators: label for dark mode/light mode theme switcher
+#: geniza/templates/snippets/theme_toggle.html:9
+msgid "Enable dark mode"
+msgstr ""
+
 #~ msgid "Shelfmark"
 #~ msgstr "Shelfmark"
-

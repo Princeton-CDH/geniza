@@ -1,0 +1,49 @@
+// -----------------------------------------------------------------------------
+// Control panel for language switcher form and theme toggle checkbox.
+// -----------------------------------------------------------------------------
+
+@use "../base/spacing";
+
+div.controls {
+    display: flex;
+    align-items: flex-start;
+    position: absolute;
+    top: spacing.$spacing-xs;
+    right: spacing.$spacing-sm;
+
+    // Language switcher form
+    form#language {
+        option[value="he"],
+        option[value="ar"] {
+            direction: rtl;
+        }
+    }
+    // Light mode/dark mode theme toggle checkbox
+
+    label#theme-toggle {
+        margin-right: spacing.$spacing-md;
+        &::before {
+            content: "\f2fe";
+            font-family: "Phosphor" !important;
+            color: var(--on-background);
+        }
+        &::after {
+            content: "\f21f";
+            font-family: "Phosphor" !important;
+            color: var(--on-background);
+        }
+        input + span::before {
+            content: "\f32a";
+            font-family: "Phosphor" !important;
+            color: var(--on-background);
+        }
+        input:checked + span::before {
+            content: "\f32b";
+            font-family: "Phosphor" !important;
+            color: var(--on-background);
+        }
+        input {
+            @include a11y.sr-only;
+        }
+    }
+}
