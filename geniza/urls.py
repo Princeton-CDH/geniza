@@ -31,7 +31,7 @@ from geniza.corpus.sitemaps import DocumentScholarshipSitemap, DocumentSitemap
 
 SITEMAPS = {
     "pages": WagtailSitemap,
-    "document-detail": DocumentSitemap,
+    "documents": DocumentSitemap,
     "document-scholarship": DocumentScholarshipSitemap,
 }
 
