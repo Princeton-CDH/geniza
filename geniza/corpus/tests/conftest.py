@@ -111,18 +111,6 @@ def join(db, fragment, multifragment):
 
 
 @pytest.fixture
-def source(db):
-    # fixture to create and return a source with one authors
-    orwell = Creator.objects.create(last_name="Orwell", first_name="George")
-    essay = SourceType.objects.create(type="Essay")
-    english = SourceLanguage.objects.get(name="English")
-    cup_of_tea = Source.objects.create(title="A Nice Cup of Tea", source_type=essay)
-    cup_of_tea.languages.add(english)
-    cup_of_tea.authors.add(orwell)
-    return cup_of_tea
-
-
-@pytest.fixture
 def footnote(db, source, document):
     return Footnote.objects.create(
         source=source,
