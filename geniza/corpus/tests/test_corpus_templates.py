@@ -138,9 +138,12 @@ class TestDocumentDetailTemplate:
 
     def test_multiple_shelfmarks(self, client, document, join):
         """Document detail template should show multiple shelfmarks"""
+        # Ensure that document with one shelfmark does not repeat its
+        #  shelfmark metadata
         response = client.get(document.get_absolute_url())
         assertNotContains(response, "<dt>Shelfmark</dt>", html=True)
 
+        # Ensure that document with multiple shelfmarks includes all joins
         response = client.get(join.get_absolute_url())
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
         assertContains(response, join.shelfmark, html=True)
