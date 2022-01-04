@@ -31,6 +31,10 @@
             </h3>
             {# metadata #}
             <dl class="metadata">
+                {% if document.fragments.count > 1 %}
+                    <dt>{% translate 'Shelfmark' %}</dt>
+                    <dd>{{ document.shelfmark }}</dd>
+                {% endif %}
                 {% if document.digital_editions %}
                     <dt>
                         {# Translators: Editor label #}
@@ -47,10 +51,6 @@
                         {% endifchanged %}
                         {# link ? #}
                     {% endfor %}
-                {% endif %}
-                {% if document.fragments.count > 1 %}
-                    <dt class="secondary">{% translate 'Shelfmark' %}</dt>
-                    <dd class="secondary">{{ document.shelfmark }}</dd>
                 {% endif %}
                 {# Translators: Date document was first added to the PGP #}
                 <dt class="secondary">{% translate 'Input date' %}</dt>
