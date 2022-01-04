@@ -46,5 +46,6 @@ def custom_tag_string(tag_string):
     This is configured in settings with TAGGIT_TAGS_FROM_STRING.
     """
     # Stack overflow solution: https://stackoverflow.com/questions/30513783/django-taggit-how-to-allow-multi-word-tags
+    # Our github issue for taggit: https://github.com/jazzband/django-taggit/issues/783
 
     return [t.strip(' "') for t in tag_string.split(",") if t.strip(' "')]
