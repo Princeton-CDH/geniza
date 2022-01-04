@@ -11,12 +11,12 @@
     &::after {
         display: block;
         content: " ";
-        height: 0.25rem;
+        height: 4px;
         @include colors.apply-theme($color, "background-color");
         @include breakpoints.for-tablet-landscape-up {
             margin-left: -10%;
             width: 120%;
-            margin-top: 0.35rem;
+            margin-top: 4.5px;
         }
     }
 }
@@ -26,7 +26,7 @@
     justify-content: space-between;
     text-align: center;
     margin: 0 auto;
-    border-bottom: 0.25rem solid;
+    border-bottom: 4px solid;
     @include colors.apply-theme("tabs-bottom", "border-bottom-color");
     @include typography.nav-link;
     a,
@@ -60,12 +60,12 @@
     }
     a[aria-current="page"] {
         @include typography.nav-bold;
-        margin-bottom: -0.5rem;
+        margin-bottom: -8px;
         @include underline("secondary");
     }
     a:active,
     a:hover {
-        margin-bottom: -0.5rem;
+        margin-bottom: -8px;
         @include underline("tabs-bottom-hover");
     }
 }
