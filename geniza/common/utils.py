@@ -34,7 +34,7 @@ def absolutize_url(local_url, request=None):
     return root + local_url
 
 
-def custom_tag_string(tag_string: str) -> list:
+def custom_tag_string(tag_string):
     """
     A custom tag string parser for taggit so that we can have multi-word
     tags. Django-taggit allows for multi-word tags, but TaggableManager does not
