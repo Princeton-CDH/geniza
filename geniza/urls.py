@@ -45,7 +45,6 @@ urlpatterns = [
     path("accounts/", include("pucas.cas_urls")),
     path("i18n/", include("django.conf.urls.i18n")),
     path("taggit/", include("taggit_selectize.urls")),
-    # NOTE: Sitemap most occur before wagtail urls
     url(
         "sitemap.xml",
         sitemap_views.index,
