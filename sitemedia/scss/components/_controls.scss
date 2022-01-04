@@ -2,6 +2,8 @@
 // Control panel for language switcher form and theme toggle checkbox.
 // -----------------------------------------------------------------------------
 
+@use "../base/a11y";
+@use "../base/breakpoints";
 @use "../base/spacing";
 
 div.controls {
@@ -21,7 +23,10 @@ div.controls {
     // Light mode/dark mode theme toggle checkbox
 
     label#theme-toggle {
-        margin-right: spacing.$spacing-md;
+        margin-right: spacing.$spacing-xs;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-right: spacing.$spacing-md;
+        }
         &::before {
             content: "\f2fe";
             font-family: "Phosphor" !important;
