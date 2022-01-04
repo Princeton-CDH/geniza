@@ -1,4 +1,5 @@
 from django.contrib.sitemaps import Sitemap
+from django.urls import reverse
 
 from geniza.corpus.models import Document
 
@@ -16,7 +17,7 @@ class DocumentScholarshipSitemap(Sitemap):
         return Document.objects.filter(status=Document.PUBLIC, footnotes__isnull=False)
 
     def location(self, obj):
-        return obj.get_absolute_url() + "scholarship/"
+        return reverse("corpus:document-scholarship", args=[obj.id])
 
     def lastmod(self, obj):
         return obj.last_modified
