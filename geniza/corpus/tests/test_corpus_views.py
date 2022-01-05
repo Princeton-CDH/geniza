@@ -203,6 +203,24 @@ def test_pgp_metadata_for_old_site():
 
 
 class TestDocumentSearchView:
+    def test_document_suppression(self, document, suppressed_document):
+        SolrClient().update.index(
+            [
+                document.index_data(),  # no scholarship records
+                suppressed_document.index_data(),  # one scholarship record
+            ],
+            commit=True,
+        )
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+
+        # keyword search param
+        docsearch_view.request.GET = {"q": ""}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+        assert document.id in [obj["pgpid"] for obj in qs]
+        assert suppressed_document.id not in [obj["pgpid"] for obj in qs]
+
     def test_get_form_kwargs(self):
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()

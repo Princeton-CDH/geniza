@@ -65,7 +65,7 @@ class DocumentSearchView(ListView, FormMixin):
         return kwargs
 
     def get_queryset(self):
-        documents = DocumentSolrQuerySet()
+        documents = DocumentSolrQuerySet().filter(status="Public")
         form = self.get_form()
         # return empty queryset if not valid
         if not form.is_valid():
