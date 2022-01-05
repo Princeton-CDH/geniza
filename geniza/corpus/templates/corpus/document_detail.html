@@ -49,6 +49,9 @@
                         {% ifchanged %}
                             <dd>{{ ed.display|safe }}</dd>
                         {% endifchanged %}
+                        {% if ed.content.text %}
+                            <a style="text-align:right" href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">download as text</a>
+                        {% endif %}
                         {# link ? #}
                     {% endfor %}
                 {% endif %}
