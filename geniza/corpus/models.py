@@ -819,6 +819,16 @@ class Document(ModelIndexable):
             log_entry.save()
 
 
+class DocumentPrefetchableProxy(Document):
+    """Proxy model for :class:`Document` that overrides the `log_entries` property
+    in order to make it a :class:`GenericRelation`."""
+
+    class Meta:
+        proxy = True
+
+    log_entries = GenericRelation(LogEntry, related_query_name="document")
+
+
 class TextBlock(models.Model):
     """The portion of a document that appears on a particular fragment."""
 

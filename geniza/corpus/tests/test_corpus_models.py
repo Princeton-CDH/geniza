@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db import IntegrityError
+from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
@@ -17,6 +18,7 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
+    DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -902,3 +904,20 @@ class TestTextBlock:
         block = TextBlock.objects.create(document=doc, fragment=frag, side="r")
         with patch.object(frag, "iiif_thumbnails") as mock_frag_thumbnails:
             assert block.thumbnail() == mock_frag_thumbnails.return_value
+
+
+class TestDocumentPrefetchableProxy:
+    def test_log_entries(self, document):
+        # docment.log_entries should be a QuerySet of two log entries, which cannot be modified
+        assert isinstance(document.log_entries, QuerySet)
+        assert document.log_entries.count() == 2
+        le = document.log_entries.first()
+        with pytest.raises(AttributeError):
+            document.log_entries.remove(le)
+
+        # Now use proxy model
+        document.__class__ = DocumentPrefetchableProxy
+
+        # Should now be able to remove, since it is a GenericRelation
+        document.log_entries.remove(le)
+        assert document.log_entries.count() == 1

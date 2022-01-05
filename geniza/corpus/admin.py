@@ -11,7 +11,7 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db.models import CharField, Count, F, Q
 from django.db.models.functions import Concat
-from django.db.models.query import Prefetch
+from django.db.models.query import Prefetch, QuerySet
 from django.forms.widgets import Textarea, TextInput
 from django.urls import path, resolve, reverse
 from django.utils import timezone
@@ -23,6 +23,7 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
+    DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -234,7 +235,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return (
-            super()
+            DocumentPrefetchableProxyAdmin(DocumentPrefetchableProxy, self.admin_site)
             .get_queryset(request)
             .select_related(
                 "doctype",
@@ -433,8 +434,10 @@ class DocumentAdmin(admin.ModelAdmin):
         queryset = queryset or self.get_queryset(request)
         # additional prefetching needed to optimize csv export but
         # not needed for admin list view
+        print(queryset)
         queryset = queryset.order_by("id").prefetch_related(
             "secondary_languages",
+            "log_entries",
         )
 
         return export_to_csv_response(
@@ -458,6 +461,14 @@ class DocumentAdmin(admin.ModelAdmin):
     # -------------------------------------------------------------------------
 
     actions = (export_to_csv,)
+
+
+class DocumentPrefetchableProxyAdmin(admin.ModelAdmin):
+    """Proxy model admin for :class:`DocumentPrefetchableProxy` that intercepts `get_queryset`
+    in order to prefetch the :class:`GenericRelation` `log_entries`."""
+
+    def get_queryset(self, request):
+        return super().get_queryset(request)
 
 
 @admin.register(DocumentType)
