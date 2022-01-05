@@ -43,47 +43,49 @@
                 </a>
             </li>
             {% for top_level_page in site.root_page.get_children.live.in_menu %}
-                <li class="menu-item" role="none">
-                    <a href="/{{ top_level_page.localized.slug }}/" role="menuitem">
-                        {{ top_level_page.localized.title }}
-                    </a>
-                </li>
+                {% if top_level_page.get_children|length > 0 %}
+                    <li class="menu-item has-submenu" role="none">
+                        <a id="open-{{ top_level_page.slug }}-menu"
+                            class="open-sub-menu"
+                            href="#{{ top_level_page.slug }}"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            role="button">
+                            {{ top_level_page.localized.title }}
+                        </a>
+                        <ul class="sub-menu" id="{{ top_level_page.slug }}" role="menu" aria-label="{{ top_level_page.localized.slug }}">
+                            <li class="menu-button" role="none">
+                                <a id="back-to-main-menu" href="#menu" role="button">
+                                    {# Translators: label for main menu back button for mobile navigation #}
+                                    {% translate "Return to main menu" as back_button %}
+                                    <span class="sr-only">{{ back_button }}</span>
+                                </a>
+                            </li>
+                            <li class="menu-label" role="none">
+                                <span>{{ top_level_page.localized.title }}</span>
+                            </li>
+                            <li class="menu-button" role="none">
+                                <a href="#" role="button">
+                                    <span class="sr-only">{{ close_button }}</span>
+                                </a>
+                            </li>
+                            {% for child_page in top_level_page.localized.get_children.live.in_menu %}
+                                <li class="menu-item" role="none">
+                                    <a href="{% pageurl child_page.localized %}" role="menuitem">
+                                        {{ child_page.localized.title }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="menu-item" role="none">
+                        <a href="/{{ top_level_page.localized.slug }}/" role="menuitem">
+                            {{ top_level_page.localized.title }}
+                        </a>
+                    </li>
+                {% endif %}
             {% endfor %}
-            <li class="menu-item has-submenu" role="none">
-                <a id="open-about-menu"
-                    href="#about-menu"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                    role="button">
-                    {{ about_page.localized.title }}
-                </a>
-                {# Translators: accessibility label for 'about' menu in navigation #}
-                {% translate "about menu" as about_menu_label %}
-                <ul id="about-menu" role="menu" aria-label="{{ about_menu_label }}">
-                    <li class="menu-button" role="none">
-                        <a id="back-to-main-menu" href="#menu" role="button">
-                            {# Translators: label for main menu back button for mobile navigation #}
-                            {% translate "Return to main menu" as back_button %}
-                            <span class="sr-only">{{ back_button }}</span>
-                        </a>
-                    </li>
-                    <li class="menu-label" role="none">
-                        <span>{{ about_page.localized.title }}</span>
-                    </li>
-                    <li class="menu-button" role="none">
-                        <a href="#" role="button">
-                            <span class="sr-only">{{ close_button }}</span>
-                        </a>
-                    </li>
-                    {% for child_page in about_page.localized.get_children.live.in_menu %}
-                        <li class="menu-item" role="none">
-                            <a href="{% pageurl child_page.localized %}" role="menuitem">
-                                {{ child_page.localized.title }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </li>
         </ul>
     {% endspaceless %}
 </nav>

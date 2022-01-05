@@ -71,7 +71,7 @@ class Command(BaseCommand):
         percy_snapshot(
             browser,
             "About submenu",
-            percy_css="ul#about-menu { left: 0 !important; transition: none !important; } @media (min-width: 900px) { ul#about-menu { left: auto !important; } }",
+            percy_css="ul.sub-menu { left: 0 !important; transition: none !important; } @media (min-width: 900px) { ul.sub-menu { left: auto !important; } }",
         )
 
         # 404 page TODO
