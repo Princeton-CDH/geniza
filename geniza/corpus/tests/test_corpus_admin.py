@@ -28,6 +28,7 @@ from geniza.corpus.admin import (
 from geniza.corpus.models import (
     Collection,
     Document,
+    DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -305,6 +306,12 @@ class TestDocumentAdmin:
         # display multiple ids
         doc = Document(old_pgpids=[460, 990])
         assert doc_admin.view_old_pgpids(doc) == "460,990"
+
+    def test_get_queryset(self):
+        # should use DocumentPrefetchableProxyAdmin for get_queryset
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        qs = doc_admin.get_queryset("rqst")
+        assert qs.model == DocumentPrefetchableProxy
 
 
 @pytest.mark.django_db

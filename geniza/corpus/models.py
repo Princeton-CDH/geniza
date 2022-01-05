@@ -302,7 +302,7 @@ class DocumentSignalHandlers:
             return
 
         doc_filter = {"%s__pk" % doc_attr: instance.pk}
-        docs = Document.items_to_index().filter(**doc_filter)
+        docs = DocumentPrefetchableProxy.items_to_index().filter(**doc_filter)
         if docs.exists():
             logger.debug(
                 "%s %s, reindexing %d related document(s)",
@@ -409,7 +409,14 @@ class Document(ModelIndexable):
     )
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
-    log_entries = GenericRelation(LogEntry, related_query_name="document")
+
+    @property
+    def log_entries(self):
+        return LogEntry.objects.filter(
+            object_id=self.id,
+            content_type__app_label="corpus",
+            content_type__model="document",
+        ).distinct()
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution
@@ -806,9 +813,21 @@ class Document(ModelIndexable):
                 log_entry.change_message,
                 doc.pk,
             )
-            log_entry.save()
+
             # - associate with the primary document
-            self.log_entries.add(log_entry)
+            log_entry.object_id = self.id
+            log_entry.content_type_id = ContentType.objects.get_for_model(Document)
+            log_entry.save()
+
+
+class DocumentPrefetchableProxy(Document):
+    """Proxy model for :class:`Document` that overrides the `log_entries` property
+    in order to make it a :class:`GenericRelation`."""
+
+    class Meta:
+        proxy = True
+
+    log_entries = GenericRelation(LogEntry, related_query_name="document")
 
 
 class TextBlock(models.Model):
