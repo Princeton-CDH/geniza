@@ -30,7 +30,7 @@ class HomePage(Page):
     )
     # can only be child of Root
     parent_page_types = [Page]
-    subpage_types = ["pages.ContentPage", "pages.SubMenuPage"]
+    subpage_types = ["pages.ContentPage", "pages.ContainerPage"]
     content_panels = Page.content_panels + [
         FieldPanel("description"),
         RichTextFieldPanel("body"),
@@ -40,7 +40,7 @@ class HomePage(Page):
         verbose_name = "homepage"
 
 
-class SubMenuPage(Page):
+class ContainerPage(Page):
     """An empty :class:`Page` type that has :class:`ContentPage` instances
     as its subpages."""
 
@@ -81,8 +81,8 @@ class ContentPage(Page):
         ],
         blank=True,
     )
-    # can be child of Home or SubMenu page
-    parent_page_types = [HomePage, SubMenuPage]
+    # can be child of Home or Container page
+    parent_page_types = [HomePage, ContainerPage]
     content_panels = Page.content_panels + [
         FieldPanel("description"),
         RichTextFieldPanel("body"),

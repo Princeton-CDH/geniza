@@ -2,8 +2,8 @@
 
 ## 0.8
 
--   In order to set up About menu structure, go into the Wagtail CMS admin. Create and publish a new Sub Menu Page as a child of the English home page ("The Princeton Geniza Project"), and give it a title "About" and slug "about".
--   Once the Sub Menu Page is created, move all desired Content Pages into the Sub Menu Page as children (click "More" > "Move", click the right arrow button next to the home page, then click on the title of the About page)
+-   In order to set up About menu structure, go into the Wagtail CMS admin. Create and publish a new Container Page as a child of the English home page ("The Princeton Geniza Project"), and give it a title "About" and slug "about".
+-   Once the Container Page is created, move all desired Content Pages into the Container Page as children (click "More" > "Move", click the right arrow button next to the home page, then click on the title of the Container page)
 -   Ensure that each Content Page is set up to appear in the menu ("Promote" > check "Show in menus"), then re-publish each one
 
 ## 0.7

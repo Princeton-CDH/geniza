@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="SubMenuPage",
+            name="ContainerPage",
             fields=[
                 (
                     "page_ptr",
