@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
+from taggit.utils import _parse_tags
 
 
 def absolutize_url(local_url, request=None):
@@ -47,5 +48,6 @@ def custom_tag_string(tag_string):
     """
     # Stack overflow solution: https://stackoverflow.com/questions/30513783/django-taggit-how-to-allow-multi-word-tags
     # Our github issue for taggit: https://github.com/jazzband/django-taggit/issues/783
-
-    return [t.strip(' "') for t in tag_string.split(",") if t.strip(' "')]
+    if "," not in tag_string:
+        tag_string += ","
+    return _parse_tags(tag_string)
