@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-27 13:12-0500\n"
+"POT-Creation-Date: 2022-01-05 13:53-0500\n"
 "PO-Revision-Date: 2021-12-20 18:31\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -325,13 +325,8 @@ msgstr "סגירת תפריט ניווט"
 msgid "Search"
 msgstr "חיפוש"
 
-#. Translators: accessibility label for 'about' menu in navigation
-#: geniza/templates/nav.html:61
-msgid "about menu"
-msgstr "תפריט אודות"
-
 #. Translators: label for main menu back button for mobile navigation
-#: geniza/templates/nav.html:66
+#: geniza/templates/nav.html:60
 msgid "Return to main menu"
 msgstr "חזרה לתפריט הראשי"
 
@@ -346,6 +341,9 @@ msgstr "קריאת העמוד ב-%(language_name)s (%(language_code)s)"
 msgctxt "choose this option"
 msgid "go"
 msgstr "שינוי שפה"
+
+#~ msgid "about menu"
+#~ msgstr "תפריט אודות"
 
 #~ msgid "Contact Us"
 #~ msgstr "יצירת קשר"
