@@ -1,8 +1,18 @@
+from datetime import date
+
 from django.urls import reverse
 
 from geniza.corpus.models import Document
-from geniza.corpus.sitemaps import DocumentScholarshipSitemap, DocumentSitemap
+from geniza.corpus.sitemaps import (
+    DocumentScholarshipSitemap,
+    DocumentSitemap,
+    solr_timestamp_to_date,
+)
 from geniza.footnotes.models import Footnote
+
+
+def test_solr_timestamp_to_date():
+    assert solr_timestamp_to_date("2020-05-12T15:46:20.341Z") == date(2020, 5, 12)
 
 
 class TestDocumentSitemap:
@@ -10,7 +20,7 @@ class TestDocumentSitemap:
         # Ensure that documents are supressed if they aren't public
         assert document.status == Document.PUBLIC
         sitemap = DocumentSitemap()
-        assert document in sitemap.items()
+        assert document.id in [obj["id"] for obj in sitemap.items()]
 
         document.status = Document.SUPPRESSED
         document.save()
@@ -36,7 +46,7 @@ class TestDocumentScholarshipSitemap:
             doc_relation=Footnote.EDITION,
         )
         sitemap = DocumentScholarshipSitemap()
-        assert document in sitemap.items()
+        assert document.id in [obj["id"] for obj in sitemap.items()]
 
         # Ensure that documents are supressed if they aren't public
         document.status = Document.SUPPRESSED
