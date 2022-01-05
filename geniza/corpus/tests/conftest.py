@@ -39,10 +39,10 @@ def make_multifragment():
     )
 
 
-def make_document(fragment):
+def make_document(fragment, id=3951):
     """A real legal document from the PGP."""
     doc = Document.objects.create(
-        id=3951,
+        id=id,
         description="""Deed of sale in which a father sells to his son a quarter
          of the apartment belonging to him in a house in the al- Mu'tamid
          passage of the Tujib quarter for seventeen dinars. Dated 1233.
@@ -118,3 +118,11 @@ def footnote(db, source, document):
         location="p.1",
         doc_relation=Footnote.EDITION,
     )
+
+
+@pytest.fixture
+def suppressed_document(fragment):
+    document = make_document(fragment, id=400)
+    document.status = Document.SUPPRESSED
+    document.save()
+    return document

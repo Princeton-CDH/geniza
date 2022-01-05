@@ -1,6 +1,8 @@
 from datetime import date
+from unittest.mock import patch
 
 from django.urls import reverse
+from parasolr.django import SolrClient
 
 from geniza.corpus.models import Document
 from geniza.corpus.sitemaps import (
@@ -16,20 +18,29 @@ def test_solr_timestamp_to_date():
 
 
 class TestDocumentSitemap:
-    def test_items(self, document):
+    def test_items(self, document, suppressed_document):
         # Ensure that documents are supressed if they aren't public
         assert document.status == Document.PUBLIC
+        SolrClient().update.index(
+            [
+                document.index_data(),  # no scholarship records
+                suppressed_document.index_data(),  # suppressed
+            ],
+            commit=True,
+        )
         sitemap = DocumentSitemap()
-        assert document.id in [obj["id"] for obj in sitemap.items()]
+        assert document.id in [obj["pgpid"] for obj in sitemap.items()]
+        assert suppressed_document.id not in [obj["pgpid"] for obj in sitemap.items()]
 
-        document.status = Document.SUPPRESSED
-        document.save()
-        sitemap = DocumentSitemap()
-        assert len(sitemap.items()) == 0
+    def test_location(self):
+        assert DocumentSitemap().location(
+            {"pgpid": "444", "last_modified": "2020-05-12T15:46:20.341Z"}
+        ) == reverse("corpus:document", args=["444"])
 
-    def test_lastmod(self, document):
-        sitemap = DocumentScholarshipSitemap()
-        assert sitemap.lastmod(document) == document.last_modified
+    def test_lastmod(self):
+        assert DocumentSitemap().lastmod(
+            {"last_modified": "2020-05-12T15:46:20.341Z"}
+        ) == date(2020, 5, 12)
 
 
 class TestDocumentScholarshipSitemap:
@@ -46,7 +57,7 @@ class TestDocumentScholarshipSitemap:
             doc_relation=Footnote.EDITION,
         )
         sitemap = DocumentScholarshipSitemap()
-        assert document.id in [obj["id"] for obj in sitemap.items()]
+        assert document in sitemap.items()
 
         # Ensure that documents are supressed if they aren't public
         document.status = Document.SUPPRESSED

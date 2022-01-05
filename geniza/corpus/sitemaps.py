@@ -22,7 +22,7 @@ class DocumentSitemap(Sitemap):
             .filter(
                 status="Public"
             )  # ?: It's not saved as "Document.PUBLIC" which is "P"
-            .only("last_modified", "pgpid", "slug")
+            .only("last_modified", "pgpid")
         )
 
     def lastmod(self, obj):
