@@ -71,25 +71,11 @@ class TestDocumentScholarshipSitemap:
         assert document.id not in [obj["pgpid"] for obj in sitemap.items()]
 
     def test_location(self, document, source):
-        footnote = Footnote.objects.create(
-            source=source,
-            content_object=document,
-            location="p.1",
-            doc_relation=Footnote.EDITION,
-        )
-        document.save()
-        sitemap = DocumentScholarshipSitemap()
-        assert sitemap.location(document) == reverse(
-            "corpus:document-scholarship", args=[document.id]
-        )
-        assert sitemap.location(document) == "/en/documents/3951/scholarship/"
+        assert DocumentScholarshipSitemap().location(
+            {"pgpid": "444", "last_modified": "2020-05-12T15:46:20.341Z"}
+        ) == reverse("corpus:document-scholarship", args=["444"])
 
-    def test_lastmod(self, document, source):
-        footnote = Footnote.objects.create(
-            source=source,
-            content_object=document,
-            location="p.1",
-            doc_relation=Footnote.EDITION,
-        )
-        sitemap = DocumentScholarshipSitemap()
-        assert sitemap.lastmod(document) == document.last_modified
+    def test_lastmod(self):
+        assert DocumentScholarshipSitemap().lastmod(
+            {"last_modified": "2020-05-12T15:46:20.341Z"}
+        ) == date(2020, 5, 12)

@@ -38,7 +38,7 @@ class DocumentScholarshipSitemap(Sitemap):
         #  a 404 if there are no footnotes.
         return (
             DocumentSolrQuerySet()
-            .filter(status="Public", footnotes__isnull=False)
+            .filter(status="Public", scholarship_count__range=(1, None))
             .only("pgpid", "last_modified")
         )
 
