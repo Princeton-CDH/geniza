@@ -80,7 +80,7 @@
                     </li>
                 {% else %}
                     <li class="menu-item" role="none">
-                        <a href="/{{ top_level_page.localized.slug }}/" role="menuitem">
+                        <a href="{% pageurl top_level_page.localized %}" role="menuitem">
                             {{ top_level_page.localized.title }}
                         </a>
                     </li>
