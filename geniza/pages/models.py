@@ -1,5 +1,5 @@
 from django.db import models
-from django.http import Http404
+from django.http.response import HttpResponseRedirect
 from wagtail.admin.edit_handlers import FieldPanel, RichTextFieldPanel
 from wagtail.core.fields import RichTextField
 from wagtail.core.models import Page
@@ -30,7 +30,7 @@ class HomePage(Page):
     )
     # can only be child of Root
     parent_page_types = [Page]
-    subpage_types = ["pages.ContentPage", "pages.AboutPage"]
+    subpage_types = ["pages.ContentPage", "pages.SubMenuPage"]
     content_panels = Page.content_panels + [
         FieldPanel("description"),
         RichTextFieldPanel("body"),
@@ -40,7 +40,7 @@ class HomePage(Page):
         verbose_name = "homepage"
 
 
-class AboutPage(Page):
+class SubMenuPage(Page):
     """An empty :class:`Page` type that has :class:`ContentPage` instances
     as its subpages."""
 
@@ -48,9 +48,14 @@ class AboutPage(Page):
     parent_page_types = [HomePage]
     subpage_types = ["pages.ContentPage"]
 
+    # show in menu by default
+    show_in_menus_default = True
+
     # should not ever actually render
-    def serve(self, _):
-        raise Http404
+    def serve(self, request):
+        # redirect to parent page instead
+        if self.get_parent():
+            return HttpResponseRedirect(self.get_parent().get_url(request))
 
 
 class ContentPage(Page):
@@ -76,8 +81,8 @@ class ContentPage(Page):
         ],
         blank=True,
     )
-    # can be child of Home or About page
-    parent_page_types = [HomePage, AboutPage]
+    # can be child of Home or SubMenu page
+    parent_page_types = [HomePage, SubMenuPage]
     content_panels = Page.content_panels + [
         FieldPanel("description"),
         RichTextFieldPanel("body"),
