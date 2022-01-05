@@ -77,8 +77,7 @@
                     </li>
                     {% for child_page in about_page.localized.get_children.live.in_menu %}
                         <li class="menu-item" role="none">
-                            {# Translators: label for link to 'Credits' page in main navigation #}
-                            <a href="/{{ about_page.localized.slug }}/{{ child_page.localized.slug }}/" role="menuitem">
+                            <a href="{% pageurl child_page.localized %}" role="menuitem">
                                 {{ child_page.localized.title }}
                             </a>
                         </li>
