@@ -302,7 +302,7 @@ class DocumentSignalHandlers:
             return
 
         doc_filter = {"%s__pk" % doc_attr: instance.pk}
-        docs = Document.items_to_index().filter(**doc_filter)
+        docs = DocumentPrefetchableProxy.items_to_index().filter(**doc_filter)
         if docs.exists():
             logger.debug(
                 "%s %s, reindexing %d related document(s)",
@@ -587,6 +587,7 @@ class Document(ModelIndexable):
             "tags",
             "languages",
             "footnotes",
+            "log_entries",
             Prefetch(
                 "textblock_set",
                 queryset=TextBlock.objects.select_related(
