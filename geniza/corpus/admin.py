@@ -434,7 +434,6 @@ class DocumentAdmin(admin.ModelAdmin):
         queryset = queryset or self.get_queryset(request)
         # additional prefetching needed to optimize csv export but
         # not needed for admin list view
-        print(queryset)
         queryset = queryset.order_by("id").prefetch_related(
             "secondary_languages",
             "log_entries",
