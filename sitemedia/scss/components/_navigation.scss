@@ -147,6 +147,14 @@
             display: flex;
             align-items: center;
         }
+        // First item after menu button should get extra space, and no border-top
+        li.menu-button + li.menu-item a {
+            padding-top: spacing.$spacing-2xl;
+            border-top: none;
+            @include breakpoints.for-tablet-landscape-up {
+                padding-top: 0;
+            }
+        }
         // Move into view on :target with link to #ID
         &:target {
             left: 0;
@@ -185,8 +193,7 @@
         // Mobile links which need padding, inline-block, and border-top
         a {
             text-decoration: none;
-            padding: spacing.$spacing-2xl spacing.$spacing-sm
-                spacing.$spacing-lg;
+            padding: spacing.$spacing-lg spacing.$spacing-sm spacing.$spacing-lg;
             width: 100%;
             max-width: 100%;
             display: inline-block;
@@ -195,16 +202,11 @@
         }
         & + li.menu-item a,
         & + ul.sub-menu li.menu-item a {
-            padding-top: spacing.$spacing-lg;
             border-top: 1px solid colors.$gray;
             @include breakpoints.for-tablet-landscape-up {
                 padding-top: 0;
                 border: none;
             }
-        }
-        // First item in list should not have border-top
-        li.menu-button + li.menu-item a {
-            border-top: none;
         }
         // Last item in list should take up entire remaining vertical space
         &:last-child {
@@ -281,10 +283,12 @@
             width: auto;
             padding: 0 spacing.$spacing-sm 0 spacing.$spacing-2xs;
             a {
+                display: flex;
                 text-decoration: none;
                 padding: 0;
                 width: auto;
                 border: none;
+                @include typography.icon-button;
             }
             a#back-to-main-menu::before {
                 font-family: "Phosphor";
@@ -374,8 +378,9 @@
         }
     }
 
-    // Currently active page
-    a[aria-current="page"] {
+    // Currently active (or clicked) page
+    a[aria-current="page"],
+    a:active {
         @include typography.nav-bold;
         @include typography.mobile-menu;
     }
@@ -413,6 +418,17 @@
     a[aria-current="page"] + span.hover-indicator {
         @include breakpoints.for-tablet-landscape-up {
             opacity: 100%;
+        }
+    }
+    // Gets cluttered in sub-menu, so only show when hovering
+    ul.sub-menu {
+        @include breakpoints.for-tablet-landscape-up {
+            a[aria-current="page"] + span.hover-indicator {
+                opacity: 0%;
+            }
+            a:hover + span.hover-indicator {
+                opacity: 100%;
+            }
         }
     }
 }
