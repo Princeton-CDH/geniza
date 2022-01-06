@@ -329,7 +329,7 @@
             // TODO: Replace with mixin/vars
             box-shadow: 0px 2px 4px rgba(86, 120, 86, 0.8);
             @media (prefers-color-scheme: dark) {
-                box-shadow: 0px 2px 4px rgba(255, 255, 255, 0.3);
+                box-shadow: 0px 2px 4px rgba(195, 127, 151, 0.8);
             }
             li.menu-item {
                 padding: 0;
@@ -355,8 +355,8 @@
         opacity: 0;
         display: block;
         width: 100%;
-        height: 32px;
-        margin-bottom: -31.5px;
+        height: 40px;
+        margin-bottom: -40px;
     }
 
     // Keep sub menu open on desktop when hovering
@@ -408,17 +408,17 @@
     a:hover + span.hover-indicator,
     a[aria-current="page"] + span.hover-indicator {
         @include breakpoints.for-tablet-landscape-up {
-            opacity: 100%;
+            opacity: 100% !important;
         }
     }
     // Gets cluttered in sub-menu, so only show when hovering
     ul.sub-menu {
         @include breakpoints.for-tablet-landscape-up {
             a[aria-current="page"] + span.hover-indicator {
-                opacity: 0%;
+                opacity: 0% !important;
             }
             a:hover + span.hover-indicator {
-                opacity: 100%;
+                opacity: 100% !important;
             }
         }
     }
