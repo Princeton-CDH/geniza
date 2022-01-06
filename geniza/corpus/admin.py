@@ -468,14 +468,25 @@ class DocumentNeedsReviewAdmin(DocumentAdmin):
     ordering = ("needs_review",)
 
     list_display = (
-        "needs_review",
         "id",
+        "needs_review",
         "shelfmark",
         "description",
         "doctype",
         "all_languages",
         "last_modified",
         "is_public",
+    )
+
+    search_fields = (
+        "fragments__shelfmark",
+        "tags__name",
+        "description",
+        "notes",
+        "needs_review",
+        "id",
+        "old_pgpids",
+        "needs_review",
     )
 
     def get_queryset(self, request):
