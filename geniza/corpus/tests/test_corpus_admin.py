@@ -21,6 +21,7 @@ from pytest_django.asserts import assertContains
 from geniza.corpus.admin import (
     DocumentAdmin,
     DocumentForm,
+    DocumentNeedsReviewAdmin,
     FragmentAdmin,
     FragmentTextBlockInline,
     LanguageScriptAdmin,
@@ -28,6 +29,7 @@ from geniza.corpus.admin import (
 from geniza.corpus.models import (
     Collection,
     Document,
+    DocumentNeedsReview,
     DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
@@ -310,6 +312,17 @@ class TestDocumentAdmin:
     def test_get_queryset(self):
         # should use DocumentPrefetchableProxyAdmin for get_queryset
         doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        qs = doc_admin.get_queryset("rqst")
+        assert qs.model == DocumentPrefetchableProxy
+
+
+@pytest.mark.django_db
+class TestDocumentNeedsReviewAdmin:
+    def test_get_queryset(self):
+        # should use DocumentPrefetchableProxyAdmin for get_queryset
+        doc_admin = DocumentNeedsReviewAdmin(
+            model=DocumentNeedsReview, admin_site=admin.site
+        )
         qs = doc_admin.get_queryset("rqst")
         assert qs.model == DocumentPrefetchableProxy
 
