@@ -31,10 +31,8 @@
             </h3>
             {# metadata #}
             <dl class="metadata">
-                {% if document.fragments.count > 1 %}
-                    <dt>{% translate 'Shelfmark' %}</dt>
-                    <dd>{{ document.shelfmark }}</dd>
-                {% endif %}
+                <dt>{% translate 'Shelfmark' %}</dt>
+                <dd>{{ document.shelfmark }}</dd>
                 {% if document.digital_editions %}
                     <dt>
                         {# Translators: Editor label #}
