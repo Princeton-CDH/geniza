@@ -34,6 +34,30 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "language_code": "language_code_ss",
     }
 
+    # regex to convert field aliases used in search to actual solr fields
+    # resulting regex will look something like: ((shelfmark|tags|decription|...):
+    # adapted from https://stackoverflow.com/a/15448887
+    re_solr_fields = re.compile(
+        r"(%s):" % "|".join(key for key, val in field_aliases.items() if key != val),
+        flags=re.DOTALL,
+    )
+
+    def _search_term_cleanup(self, search_term):
+        # adjust user search string before sending to solr
+
+        # ignore " + " in search strings, so users can search on shelfmark joins
+        search_term = search_term.replace(" + ", " ")
+
+        # convert any field aliases used in search terms to actual solr fields
+        # (i.e. "pgpid:950 shelfmark:ena" -> "pgpid_i:950 shelfmark_t:ena")
+        if ":" in search_term:
+            # if any of the field aliases occur with a colon, replace with actual solr field
+            search_term = self.re_solr_fields.sub(
+                lambda x: "%s:" % self.field_aliases[x.group(1)], search_term
+            )
+
+        return search_term
+
     # (adapted from mep)
     # edismax alias for searching on admin document pseudo-field
     admin_doc_qf = "{!edismax qf=$admin_doc_qf pf=$admin_doc_pf v=$doc_query}"
@@ -41,28 +65,12 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     def admin_search(self, search_term):
         # remove " + " from search string to allow searching on shelfmark joins
         return self.search(self.admin_doc_qf).raw_query_parameters(
-            doc_query=search_term.replace(" + ", " ")
+            doc_query=self._search_term_cleanup(search_term)
         )
 
     keyword_search_qf = "{!type=edismax qf=$keyword_qf pf=$keyword_pf v=$keyword_query}"
 
-    # regex to convert field aliases to actual solr fields
-    # adapted from https://stackoverflow.com/a/15448887
-    re_solr_fields = re.compile(
-        r"(%s):" % "|".join(key for key, val in field_aliases.items() if key != val),
-        flags=re.DOTALL,
-    )
-
     def keyword_search(self, search_term):
-        # ignore " + " in search strings here too, for search on shelfmark joins
-
-        # to support advanced search, convert field aliases to actual solr fields
-        if ":" in search_term:
-            # if any of the field aliases occur with a colon, replace with actual solr field
-            search_term = self.re_solr_fields.sub(
-                lambda x: "%s:" % self.field_aliases[x.group(1)], search_term
-            )
-
         return self.search(self.keyword_search_qf).raw_query_parameters(
-            keyword_query=search_term.replace(" + ", " ")
+            keyword_query=self._search_term_cleanup(search_term)
         )
