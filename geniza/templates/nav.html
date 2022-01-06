@@ -41,6 +41,7 @@
                     {# Translators: label for link to 'Search' page in main navigation #}
                     {% translate "Search" %}
                 </a>
+                <span class="hover-indicator" aria-hidden="true"></span>
             </li>
             {% for top_level_page in site.root_page.get_children.live.in_menu %}
                 {% if top_level_page.get_children|length > 0 %}
@@ -53,6 +54,8 @@
                             role="button">
                             {{ top_level_page.localized.title }}
                         </a>
+                        <span class="hover-indicator" aria-hidden="true"></span>
+                        <div class="sub-menu-overlay" aria-hidden="true"></div>
                         <ul class="sub-menu" id="{{ top_level_page.slug }}" role="menu" aria-label="{{ top_level_page.localized.slug }}">
                             <li class="menu-button" role="none">
                                 <a id="back-to-main-menu" href="#menu" role="button">
@@ -74,6 +77,7 @@
                                     <a href="{% pageurl child_page.localized %}" role="menuitem">
                                         {{ child_page.localized.title }}
                                     </a>
+                                    <span class="hover-indicator" aria-hidden="true"></span>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -83,6 +87,7 @@
                         <a href="{% pageurl top_level_page.localized %}" role="menuitem">
                             {{ top_level_page.localized.title }}
                         </a>
+                        <span class="hover-indicator" aria-hidden="true"></span>
                     </li>
                 {% endif %}
             {% endfor %}

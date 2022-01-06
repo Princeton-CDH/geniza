@@ -7,6 +7,7 @@
 @use "../base/spacing";
 @use "../base/typography";
 
+// Header backgrounds for light and dark mode, mobile
 @mixin header-background-mobile {
     background: url("/static/img/header-base-mobile-lightmode.svg"),
         linear-gradient(to right, rgba(255, 255, 255, 0), white 20rem),
@@ -26,6 +27,8 @@
         background: none;
     }
 }
+
+// Header backgrounds for light and dark mode, desktop
 @mixin header-background-desktop {
     background: url("/static/img/header-base-desktop-lightmode.svg"),
         linear-gradient(to right, rgba(255, 255, 255, 0), white 90rem),
@@ -110,8 +113,9 @@
             }
         }
     }
-    // List of links
+    // List of links in main nav bar
     ul#menu {
+        // Takes up full screen on mobile
         @include header-background-mobile;
         display: flex;
         left: calc(-100vw);
@@ -125,14 +129,25 @@
         width: 100%;
         height: 100vh;
         z-index: 100;
+        @include colors.apply-theme("background", "background-color");
+        // Direct descendent menu buttons (mobile)
         & > li.menu-button {
             display: flex;
             margin-right: spacing.$spacing-xs;
         }
         li.menu-button a::before {
             font-family: "Phosphor";
-            content: "\f36d";
+            content: "\f36d"; // phosphor X icon
         }
+        // All descendent menu buttons/labels (mobile)
+        li.menu-button,
+        li.menu-label {
+            height: 4rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        // Move into view on :target with link to #ID
         &:target {
             left: 0;
             pointer-events: all;
@@ -142,8 +157,10 @@
                 transition: none;
             }
         }
+        // Positioning for desktop
         @include breakpoints.for-tablet-landscape-up {
             display: flex;
+            background: none;
             height: auto;
             transition: none;
             left: auto;
@@ -152,29 +169,17 @@
             flex-flow: row nowrap;
             justify-content: flex-end;
             width: auto;
-            margin: 0 spacing.$spacing-sm 0 spacing.$spacing-xl;
+            margin: 0 spacing.$spacing-4xl 0 spacing.$spacing-xl;
             pointer-events: all;
             & > li.menu-item + li.menu-item {
-                margin-left: spacing.$spacing-2xl;
-            }
-            & > li.menu-item:last-child {
-                margin-right: spacing.$spacing-4xl;
+                margin-left: spacing.$spacing-lg;
             }
         }
-        @include colors.apply-theme("primary", "outline-color");
-        @include colors.apply-theme("background", "background-color");
-    }
-    ul#menu li.menu-button,
-    ul#menu li.menu-label {
-        height: 4rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
     }
 
     // Individual menu items
-    .menu-item,
-    .sub-menu .menu-item {
+    li.menu-item,
+    ul.sub-menu li.menu-item {
         flex: 1 0 100%;
         max-width: 100%;
         // Mobile links which need padding, inline-block, and border-top
@@ -188,8 +193,8 @@
             @include typography.nav-link;
             @include typography.mobile-menu;
         }
-        & + .menu-item a,
-        & + .sub-menu .menu-item a {
+        & + li.menu-item a,
+        & + ul.sub-menu li.menu-item a {
             padding-top: spacing.$spacing-lg;
             border-top: 1px solid colors.$gray;
             @include breakpoints.for-tablet-landscape-up {
@@ -197,14 +202,16 @@
                 border: none;
             }
         }
-        .menu-button + .menu-item a {
+        // First item in list should not have border-top
+        li.menu-button + li.menu-item a {
             border-top: none;
         }
+        // Last item in list should take up entire remaining vertical space
         &:last-child {
             height: 100%;
         }
+        // "Open sub-menu" style on mobile
         &.has-submenu a.open-sub-menu {
-            // Icon for sub-menu dropdown
             display: flex;
             flex-flow: row nowrap;
             align-items: center;
@@ -226,32 +233,35 @@
         @include breakpoints.for-tablet-landscape-up {
             // desktop links (strip some mobile styles)
             flex: 0 0 auto;
-            padding: spacing.$spacing-xs 0;
+            padding: spacing.$spacing-lg 0 spacing.$spacing-xs;
+            min-width: 117px; // Width of the hover indicator
             a {
-                display: inline;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
                 border: none;
-                padding: 0;
+                padding: 0 spacing.$spacing-md 0 0;
             }
+            // "Open sub-menu" link on desktop
             &.has-submenu {
                 height: auto;
-                &::after {
-                    font-family: "Phosphor";
-                    content: "\f0c2"; // phosphor caret-down icon
-                    float: right;
-                    margin-left: spacing.$spacing-xs;
-                    padding: 0;
-                }
                 a.open-sub-menu {
-                    display: inline;
-                    padding-top: 0;
+                    justify-content: flex-end;
+                    padding: 0 spacing.$spacing-sm 0 0;
                     &::after {
-                        display: none;
+                        font-family: "Phosphor";
+                        content: "\f0c2"; // phosphor caret-down icon
+                        margin-left: spacing.$spacing-xs;
+                        padding: 0;
+                        font-size: typography.$text-size-2xl;
                     }
                 }
             }
         }
     }
-    .sub-menu {
+    // Sub-navigation menus (i.e. nested list)
+    ul.sub-menu {
+        // Sub menu mobile view
         @include header-background-mobile;
         display: flex;
         left: calc(100vw);
@@ -295,36 +305,72 @@
                 left: auto;
             }
         }
+        // Sub menu (floating) desktop view
         @include breakpoints.for-tablet-landscape-up {
             display: none;
             left: auto;
             transition: none;
             flex: 1 0 auto;
             position: absolute;
-            top: 100%;
+            white-space: nowrap;
             width: auto;
             height: auto;
-            background: colors.$white;
-            box-shadow: 0px 2px 4px rgba(86, 120, 86, 0.8);
-            li.menu-button,
-            li.menu-label {
-                display: none;
+            padding: spacing.$spacing-xl 0 spacing.$spacing-sm;
+            // Hack to look like submenu is layered underneath the menu
+            top: 104px;
+            background: linear-gradient(
+                to bottom,
+                rgba(86, 120, 86, 0.05),
+                rgba(255, 255, 255, 0.2) 1rem
+            );
+            @media (prefers-color-scheme: dark) {
+                background: linear-gradient(
+                    to bottom,
+                    rgba(255, 255, 255, 0.2),
+                    colors.$black 1rem
+                );
             }
-            a[role="menuitem"] {
-                padding: 0 spacing.$spacing-md;
+            // TODO: Replace with mixin/vars
+            box-shadow: 0px 2px 4px rgba(86, 120, 86, 0.8);
+            @media (prefers-color-scheme: dark) {
+                box-shadow: 0px 2px 4px rgba(255, 255, 255, 0.3);
+            }
+            li.menu-item {
+                padding: 0;
+                a[role="menuitem"] {
+                    padding: 0 spacing.$spacing-md;
+                    margin-bottom: -#{spacing.$spacing-2xs};
+                    justify-content: flex-start;
+                }
             }
         }
         @include colors.apply-theme("background", "background-color");
     }
-    a.open-sub-menu:hover + .sub-menu,
-    li:hover .sub-menu,
-    .sub-menu:hover,
-    li.has-submenu.open .sub-menu {
+    div.sub-menu-overlay {
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            display: none;
+        }
+    }
+    // Overlay to keep sub menu open on desktop when moving mouse
+    a.open-sub-menu:hover + span + div.sub-menu-overlay,
+    li:hover div.sub-menu-overlay,
+    li.has-submenu.open div.sub-menu-overlay {
+        opacity: 0;
+        display: block;
+        width: 100%;
+        height: 32px;
+        margin-bottom: -31.5px;
+    }
+
+    // Keep sub menu open on desktop when hovering
+    a.open-sub-menu:hover + span + div + ul.sub-menu,
+    div.sub-menu-overlay:hover + ul.sub-menu,
+    li:hover ul.sub-menu,
+    ul.sub-menu:hover,
+    li.has-submenu.open ul.sub-menu {
         @include breakpoints.for-tablet-landscape-up {
             display: block;
-            li.menu-item {
-                display: block;
-            }
         }
     }
 
@@ -344,6 +390,29 @@
     ul#about-menu:target li.menu-label {
         @include breakpoints.for-tablet-landscape-up {
             display: none;
+        }
+    }
+    // Hover indicator for nav links
+    a + span.hover-indicator {
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            display: block;
+            width: 100%;
+            height: 16px;
+            background: url("/static/img/hover-main-menu-desktop-lightmode.svg")
+                top;
+            opacity: 0;
+            transition: opacity 0.2s;
+            @media (prefers-color-scheme: dark) {
+                background: url("/static/img/hover-main-menu-desktop-darkmode.svg")
+                    top;
+            }
+        }
+    }
+    a:hover + span.hover-indicator,
+    a[aria-current="page"] + span.hover-indicator {
+        @include breakpoints.for-tablet-landscape-up {
+            opacity: 100%;
         }
     }
 }
