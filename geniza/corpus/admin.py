@@ -23,7 +23,7 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
-    DocumentNeedsReviewProxy,
+    DocumentNeedsReview,
     DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
@@ -463,8 +463,8 @@ class DocumentAdmin(admin.ModelAdmin):
     actions = (export_to_csv,)
 
 
-@admin.register(DocumentNeedsReviewProxy)
-class DocumentNeedsReviewProxyAdmin(DocumentAdmin):
+@admin.register(DocumentNeedsReview)
+class DocumentNeedsReviewAdmin(DocumentAdmin):
     ordering = ("needs_review",)
 
     list_display = (
