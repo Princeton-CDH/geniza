@@ -15,11 +15,7 @@
     background-repeat: no-repeat, no-repeat, no-repeat;
     @media (prefers-color-scheme: dark) {
         background: url("/static/img/header-base-mobile-darkmode.svg"),
-            linear-gradient(
-                to right,
-                rgba(255, 255, 255, 0),
-                colors.$black 20rem
-            ),
+            linear-gradient(to right, rgba(22, 22, 22, 0), colors.$black 20rem),
             url("/static/img/header-image-mobile-darkmode.png");
         background-repeat: no-repeat, no-repeat, no-repeat;
     }
@@ -36,11 +32,7 @@
     background-repeat: no-repeat, no-repeat, no-repeat;
     @media (prefers-color-scheme: dark) {
         background: url("/static/img/header-base-desktop-darkmode.svg"),
-            linear-gradient(
-                to right,
-                rgba(255, 255, 255, 0),
-                colors.$black 90rem
-            ),
+            linear-gradient(to right, rgba(22, 22, 22, 0), colors.$black 90rem),
             url("/static/img/header-image-desktop-darkmode.png");
         background-repeat: no-repeat, no-repeat, no-repeat;
     }
@@ -330,8 +322,8 @@
             @media (prefers-color-scheme: dark) {
                 background: linear-gradient(
                     to bottom,
-                    rgba(255, 255, 255, 0.2),
-                    colors.$black 1rem
+                    rgba(255, 255, 255, 0.16),
+                    rgba(255, 255, 255, 0) 17px
                 );
             }
             // TODO: Replace with mixin/vars
@@ -378,9 +370,8 @@
         }
     }
 
-    // Currently active (or clicked) page
-    a[aria-current="page"],
-    a:active {
+    // Currently active page
+    a[aria-current="page"] {
         @include typography.nav-bold;
         @include typography.mobile-menu;
     }
