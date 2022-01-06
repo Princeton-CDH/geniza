@@ -23,6 +23,7 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
+    DocumentNeedsReviewProxy,
     DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
@@ -104,7 +105,7 @@ class LanguageScriptAdmin(admin.ModelAdmin):
 
     @admin.display(
         ordering="secondary_document__count",
-        description="# documents where this is a secondary langaug",
+        description="# documents where this is a secondary language",
     )
     def secondary_documents(self, obj):
         return format_html(
@@ -462,12 +463,36 @@ class DocumentAdmin(admin.ModelAdmin):
     actions = (export_to_csv,)
 
 
+@admin.register(DocumentNeedsReviewProxy)
+class DocumentNeedsReviewProxyAdmin(DocumentAdmin):
+    ordering = ("needs_review",)
+
+    list_display = (
+        "needs_review",
+        "id",
+        "shelfmark",
+        "description",
+        "doctype",
+        "all_languages",
+        "last_modified",
+        "is_public",
+    )
+
+    def get_queryset(self, request):
+        # ?: We often use `needs_review__is_empty` but I got this error. Is that expected?
+        #      Unsupported lookup 'isempty' for TextField or join on the field not permitted.
+        return super().get_queryset(request).exclude(needs_review="")
+
+
 class DocumentPrefetchableProxyAdmin(admin.ModelAdmin):
     """Proxy model admin for :class:`DocumentPrefetchableProxy` that intercepts `get_queryset`
     in order to prefetch the :class:`GenericRelation` `log_entries`."""
 
     def get_queryset(self, request):
         return super().get_queryset(request)
+
+    def filter(self, request):
+        return super().filter(request)
 
 
 @admin.register(DocumentType)
