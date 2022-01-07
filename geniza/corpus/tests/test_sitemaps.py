@@ -5,11 +5,7 @@ from django.urls import reverse
 from parasolr.django import SolrClient
 
 from geniza.corpus.models import Document
-from geniza.corpus.sitemaps import (
-    DocumentScholarshipSitemap,
-    DocumentSitemap,
-    solr_timestamp_to_date,
-)
+from geniza.corpus.sitemaps import DocumentScholarshipSitemap, DocumentSitemap
 from geniza.corpus.tests.conftest import make_document
 from geniza.footnotes.models import Footnote
 
