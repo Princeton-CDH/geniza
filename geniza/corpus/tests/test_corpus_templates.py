@@ -136,6 +136,14 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertContains(response, "Editors")
 
+    def test_shelfmarks(self, client, document, join):
+        # Ensure that shelfmarks are displayed on the page.
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "<dt>Shelfmark</dt>", html=True)
+        response = client.get(join.get_absolute_url())
+        assertContains(response, "<dt>Shelfmark</dt>", html=True)
+        assertContains(response, join.shelfmark, html=True)
+
 
 class TestDocumentScholarshipTemplate:
     def test_source_title(self, client, document, twoauthor_source):

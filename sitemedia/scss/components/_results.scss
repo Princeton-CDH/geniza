@@ -86,7 +86,7 @@ section#document-list {
 
             // keywords in context
             em {
-                @include colors.apply-theme("secondary");
+                color: var(--secondary);
                 font-weight: bold;
             }
             /* solr returns multiple matches in text without space between */
@@ -123,7 +123,7 @@ section#document-list {
         margin-left: auto;
         margin-top: spacing.$spacing-md;
         @include typography.meta;
-        @include colors.apply-theme("secondary");
+        color: var(--secondary);
         i {
             margin-left: spacing.$spacing-2xs;
             @include breakpoints.for-tablet-landscape-up {

@@ -7,12 +7,11 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-@mixin underline($color) {
+@mixin underline {
     &::after {
         display: block;
         content: " ";
         height: 4px;
-        @include colors.apply-theme($color, "background-color");
         @include breakpoints.for-tablet-landscape-up {
             margin-left: -10%;
             width: 120%;
@@ -26,8 +25,7 @@
     justify-content: space-between;
     text-align: center;
     margin: 0 auto;
-    border-bottom: 4px solid;
-    @include colors.apply-theme("tabs-bottom", "border-bottom-color");
+    border-bottom: 4px solid var(--tabs-bottom);
     @include typography.nav-link;
     a,
     span {
@@ -40,8 +38,7 @@
     a {
         text-decoration: none;
         &:focus-visible {
-            outline: 0.1rem solid;
-            @include colors.apply-theme("tabs-focus", "outline-color");
+            outline: 0.1rem solid var(--tabs-focus);
             outline-offset: -0.33rem;
             @include breakpoints.for-tablet-landscape-up {
                 outline-offset: -0.5rem;
@@ -49,7 +46,7 @@
         }
     }
     .disabled {
-        @include colors.apply-theme("disabled");
+        color: var(--disabled);
     }
     // Center tab padding boost
     li:nth-child(2) a,
@@ -61,11 +58,17 @@
     a[aria-current="page"] {
         @include typography.nav-bold;
         margin-bottom: -8px;
-        @include underline("secondary");
+        @include underline;
+        &::after {
+            background-color: var(--secondary);
+        }
     }
     a:active,
     a:hover {
         margin-bottom: -8px;
-        @include underline("tabs-bottom-hover");
+        @include underline;
+        &::after {
+            background-color: var(--tabs-bottom-hover);
+        }
     }
 }

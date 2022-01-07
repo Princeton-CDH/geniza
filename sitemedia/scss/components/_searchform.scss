@@ -21,8 +21,7 @@
         max-width: 100%;
         order: 1;
         flex: 1 0 auto;
-        border: 1px solid;
-        @include colors.apply-theme("primary", "border-color");
+        border: 1px solid var(--primary);
         margin-right: 0;
         height: spacing.$spacing-xl;
         padding: spacing.$spacing-sm;
@@ -46,13 +45,9 @@
         but loses the dropdown arrow...  */
         /* -webkit-appearance: none;  */
         margin-top: spacing.$spacing-sm;
-        border: 1px solid;
-        @include colors.apply-theme("primary", "border-color");
-        @include colors.apply-theme("on-background");
-        @include colors.apply-theme(
-            "background",
-            $property: "background-color"
-        );
+        border: 1px solid var(--primary);
+        color: var(--on-background);
+        background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             width: auto;
             flex: 0 1 auto;
@@ -71,9 +66,8 @@
         flex: 0 0 40px;
         border-radius: 0;
         margin-left: 0;
-        @include colors.apply-theme("background-light", "background-color");
-        border: 1px solid;
-        @include colors.apply-theme("primary", "border-color");
+        background-color: var(--background-light);
+        border: 1px solid var(--primary);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -97,8 +91,7 @@
         order: 3;
         flex: 1 0 100%;
         max-width: 100%;
-        border: 1px solid;
-        @include colors.apply-theme("primary", "border-color");
+        border: 1px solid var(--primary);
         margin-top: spacing.$spacing-lg;
         @include typography.form-option;
         // Label for document type filter
@@ -123,8 +116,7 @@
             }
         }
         &[open] summary {
-            border-bottom: 1px solid;
-            @include colors.apply-theme("primary", "border-bottom-color");
+            border-bottom: 1px solid var(--primary);
             // Expanded details marker
             &::after {
                 transform: rotate(-180deg);
@@ -156,7 +148,7 @@
                             text-align: center;
                             margin-left: -#{spacing.$spacing-lg};
                             padding: 0 spacing.$spacing-xs;
-                            @include colors.apply-theme("secondary");
+                            color: var(--secondary);
                         }
                     }
                     &:checked + span {
@@ -167,10 +159,7 @@
                     }
                     &:focus + span,
                     &:focus + span + .count {
-                        @include colors.apply-theme(
-                            "secondary",
-                            "outline-color"
-                        );
+                        outline-color: var(--secondary);
                         outline-width: 1px;
                         outline-style: dashed;
                     }
