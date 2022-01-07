@@ -1,11 +1,11 @@
 from ast import literal_eval
 
 from django.db.models.query import Prefetch
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect
 from django.urls import reverse
 from django.utils.html import strip_tags
-from django.utils.text import Truncator
+from django.utils.text import Truncator, slugify
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views.generic import DetailView, ListView
@@ -241,6 +241,31 @@ class DocumentScholarshipView(DocumentDetailView):
             }
         )
         return context_data
+
+
+class DocumentTranscriptionText(DocumentDetailView):
+    """Return transcription as plain text for download"""
+
+    viewname = "corpus:document-transcription-text"
+
+    def get(self, request, *args, **kwargs):
+        document = self.get_object()
+        try:
+            edition = document.editions().get(pk=self.kwargs["transcription_pk"])
+            authors = [slugify(a.last_name) for a in edition.source.authors.all()]
+            filename = "PGP_%d_%s.txt" % (document.id, "_".join(authors))
+
+            return HttpResponse(
+                edition.content["text"],
+                headers={
+                    "Content-Type": "text/plain; charset=UTF-8",
+                    # prompt download with filename including pgpid & authors
+                    "Content-Disposition": 'attachment; filename="%s"' % filename,
+                },
+            )
+        except (Footnote.DoesNotExist, KeyError):
+            # if there is no footnote, or no plain text content, return 404
+            raise Http404
 
 
 class DocumentManifestView(DocumentDetailView):

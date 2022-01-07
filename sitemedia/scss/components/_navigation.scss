@@ -18,7 +18,8 @@
     // Logotype, links to homepage
     a.home-link {
         @include breakpoints.for-tablet-landscape-up {
-            @include colors.apply-combo("primary");
+            color: var(--primary);
+            background-color: var(--on-primary);
         }
         display: inline-block;
         flex: none;
@@ -32,7 +33,7 @@
             display: flex;
             text-decoration: none;
             @include typography.icon-button;
-            @include colors.apply-theme("on-background");
+            color: var(--on-background);
         }
     }
     // Top-left corner links: home and open menu button
@@ -95,9 +96,12 @@
             & > li.menu-item + li.menu-item {
                 margin-left: spacing.$spacing-2xl;
             }
+            & > li.menu-item:last-child {
+                margin-right: spacing.$spacing-4xl;
+            }
         }
-        @include colors.apply-theme("primary", "outline-color");
-        @include colors.apply-theme("background", "background-color");
+        outline-color: var(--primary);
+        background-color: var(--background);
     }
     li.menu-button,
     ul#menu li.home,
@@ -110,7 +114,7 @@
 
     // Individual menu items
     .menu-item,
-    #about-menu .menu-item {
+    .sub-menu .menu-item {
         flex: 1 0 100%;
         max-width: 100%;
         // Mobile links which need padding, inline-block, and border-top
@@ -121,15 +125,14 @@
             width: 100%;
             max-width: 100%;
             display: inline-block;
-            border-top: 1px solid;
-            @include colors.apply-theme("primary", "border-top-color");
+            border-top: 1px solid var(--primary);
             @include typography.nav-link;
             @include typography.mobile-menu;
         }
         & + .menu-item a,
-        & + #about-menu .menu-item a {
+        & + .sub-menu .menu-item a {
             padding-top: spacing.$spacing-lg;
-            @include colors.apply-theme("primary", "border-top-color");
+            border-top-color: var(--primary);
             @include breakpoints.for-tablet-landscape-up {
                 padding-top: 0;
                 border: none;
@@ -138,8 +141,8 @@
         &:last-child {
             height: 100%;
         }
-        &.has-submenu a#open-about-menu {
-            // Icon for "About" dropdown
+        &.has-submenu a.open-sub-menu {
+            // Icon for sub-menu dropdown
             display: flex;
             flex-flow: row nowrap;
             align-items: center;
@@ -168,9 +171,7 @@
                 padding: 0;
             }
             &.has-submenu {
-                margin-right: spacing.$spacing-4xl;
                 height: auto;
-                // NOTE: Icon for "About" link, may need to be moved around if order changes
                 &::after {
                     font-family: "Phosphor";
                     content: "\f0c2"; // phosphor caret-down icon
@@ -178,7 +179,7 @@
                     margin-left: spacing.$spacing-xs;
                     padding: 0;
                 }
-                a#open-about-menu {
+                a.open-sub-menu {
                     display: inline;
                     padding-top: 0;
                     &::after {
@@ -188,7 +189,7 @@
             }
         }
     }
-    #about-menu {
+    .sub-menu {
         display: flex;
         left: calc(100vw);
         transition: left 0.5s;
@@ -242,9 +243,8 @@
             top: 100%;
             width: auto;
             height: auto;
-            border: 1px solid;
+            border: 1px solid var(--primary);
             border-top: none;
-            @include colors.apply-theme("primary", "border-color");
             li.menu-button,
             li.menu-label {
                 display: none;
@@ -253,12 +253,12 @@
                 padding: 0 spacing.$spacing-md;
             }
         }
-        @include colors.apply-theme("background", "background-color");
+        background-color: var(--background);
     }
-    a#open-about-menu:hover + #about-menu,
-    li:hover #about-menu,
-    #about-menu:hover,
-    li.has-submenu.open #about-menu {
+    a.open-sub-menu:hover + .sub-menu,
+    li:hover .sub-menu,
+    .sub-menu:hover,
+    li.has-submenu.open .sub-menu {
         @include breakpoints.for-tablet-landscape-up {
             display: block;
             li.menu-item {

@@ -122,6 +122,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         "journal",
         "volume",
         "issue",
+        "page_range",
         "url",
         "other_info",
         "languages",

@@ -55,7 +55,7 @@ body#document {
             // disabled for MVP
             /*
             dd a::before {
-                @include colors.apply-theme("on-background");
+                color: var(--on-background);
                 font-family: "Phosphor" !important;
                 content: "\f1e0";
                 font-feature-settings: "liga";

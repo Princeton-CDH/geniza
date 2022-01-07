@@ -4,13 +4,14 @@ from adminsortable2.admin import SortableInlineAdminMixin
 from django import forms
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db.models import CharField, Count, F, Q
 from django.db.models.functions import Concat
-from django.db.models.query import Prefetch
+from django.db.models.query import Prefetch, QuerySet
 from django.forms.widgets import Textarea, TextInput
 from django.urls import path, resolve, reverse
 from django.utils import timezone
@@ -22,6 +23,7 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
+    DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -233,7 +235,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return (
-            super()
+            DocumentPrefetchableProxyAdmin(DocumentPrefetchableProxy, self.admin_site)
             .get_queryset(request)
             .select_related(
                 "doctype",
@@ -458,6 +460,14 @@ class DocumentAdmin(admin.ModelAdmin):
     # -------------------------------------------------------------------------
 
     actions = (export_to_csv,)
+
+
+class DocumentPrefetchableProxyAdmin(admin.ModelAdmin):
+    """Proxy model admin for :class:`DocumentPrefetchableProxy` that intercepts `get_queryset`
+    in order to prefetch the :class:`GenericRelation` `log_entries`."""
+
+    def get_queryset(self, request):
+        return super().get_queryset(request)
 
 
 @admin.register(DocumentType)

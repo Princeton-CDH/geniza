@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2021-12-17 16:35-0500\n"
+"POT-Creation-Date: 2022-01-04 10:31-0500\n"
 "PO-Revision-Date: 2021-12-20 18:36\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -10,7 +10,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 "X-Crowdin-Project: geniza\n"
 "X-Crowdin-Project-ID: 457634\n"
 "X-Crowdin-Language: ar\n"
@@ -53,7 +54,7 @@ msgid "Document Type"
 msgstr "نوع المستند"
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:601
+#: geniza/corpus/models.py:602
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr "نوع غير معروف"
@@ -336,62 +337,51 @@ msgstr "إغلاق قائمة التنقل الرئيسية"
 msgid "Search"
 msgstr "البحث"
 
-#: geniza/templates/nav.html:46
-msgid "Contact Us"
-msgstr "اتصل بنا"
-
-#. Translators: label for 'about' link in main navigation
-#: geniza/templates/nav.html:50
-msgid "About"
-msgstr "حول"
-
-#. Translators: accessibility label for 'about' menu in navigation
-#: geniza/templates/nav.html:59
-msgid "about menu"
-msgstr "حول القائمة"
-
 #. Translators: label for main menu back button for mobile navigation
-#: geniza/templates/nav.html:64
+#: geniza/templates/nav.html:60
 msgid "Return to main menu"
 msgstr "العودة إلى القائمة الرئيسية"
 
-#. Translators: label for link to 'Credits' page in main navigation
-#: geniza/templates/nav.html:78
-msgid "Credits"
-msgstr "الاعتمادات"
-
-#. Translators: label for link to 'How to Cite' page in main navigation
-#: geniza/templates/nav.html:82
-msgid "How to Cite"
-msgstr "كيف نسيت"
-
-#. Translators: label for link to 'Data Exports' page in main navigation
-#: geniza/templates/nav.html:86
-msgid "Data Exports"
-msgstr "تصدير البيانات"
-
-#. Translators: label for link to 'Technical' page in main navigation
-#: geniza/templates/nav.html:90
-msgid "Technical"
-msgstr "فني"
-
-#. Translators: label for link to 'FAQ' page in main navigation
-#: geniza/templates/nav.html:94
-msgid "FAQ"
-msgstr "أسئلة متكررة"
-
 #. Translators: label for language choices in navigation
-#: geniza/templates/snippets/language_switcher.html:13
+#: geniza/templates/snippets/language_switcher.html:14
 #, python-format
 msgid "read this page in %(language_name)s (%(language_code)s)"
 msgstr "قراءة هذه الصفحة في %(language_name)s (%(language_code)s)"
 
 #. Translators: button on language chooser in navigation
-#: geniza/templates/snippets/language_switcher.html:20
+#: geniza/templates/snippets/language_switcher.html:22
 msgctxt "choose this option"
 msgid "go"
 msgstr "اذهب"
 
+#. Translators: label for dark mode/light mode theme switcher
+#: geniza/templates/snippets/theme_toggle.html:9
+msgid "Enable dark mode"
+msgstr ""
+
+#~ msgid "about menu"
+#~ msgstr "حول القائمة"
+
+#~ msgid "Contact Us"
+#~ msgstr "اتصل بنا"
+
+#~ msgid "About"
+#~ msgstr "حول"
+
+#~ msgid "Credits"
+#~ msgstr "الاعتمادات"
+
+#~ msgid "How to Cite"
+#~ msgstr "كيف نسيت"
+
+#~ msgid "Data Exports"
+#~ msgstr "تصدير البيانات"
+
+#~ msgid "Technical"
+#~ msgstr "فني"
+
+#~ msgid "FAQ"
+#~ msgstr "أسئلة متكررة"
+
 #~ msgid "Shelfmark"
 #~ msgstr "Shelfmark"
-
