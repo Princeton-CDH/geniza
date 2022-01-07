@@ -12,9 +12,7 @@ class DocumentSitemap(Sitemap):
     def items(self):
         return (
             DocumentSolrQuerySet()
-            .filter(
-                status="Public"
-            )  # ?: It's not saved as "Document.PUBLIC" which is "P"
+            .filter(status=Document.PUBLIC_LABEL)
             .only("last_modified", "pgpid")
         )
 

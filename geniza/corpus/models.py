@@ -366,6 +366,7 @@ class Document(ModelIndexable):
         (PUBLIC, "Public"),
         (SUPPRESSED, "Suppressed"),
     )
+    PUBLIC_LABEL = "Public"
     #: status of record; currently choices are public or suppressed
     status = models.CharField(
         max_length=2,
