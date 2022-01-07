@@ -137,9 +137,6 @@
             & > li.menu-item + li.menu-item {
                 margin-left: spacing.$spacing-lg;
             }
-            & > li.menu-item:last-child {
-                margin-right: spacing.$spacing-4xl;
-            }
         }
         outline-color: var(--primary);
     }
