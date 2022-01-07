@@ -74,12 +74,8 @@ $text-size-5xl: 2rem; //     = 32px
 @mixin quote {
     font-family: fonts.$primary;
     padding-left: spacing.$spacing-lg;
-    border-left: 2px solid;
+    border-left: 2px solid var(--on-background);
     margin: spacing.$spacing-2xl 0;
-    @include colors.apply-theme(
-        "on-background",
-        $property: "border-left-color"
-    );
     &::before {
         content: "\201C";
         font-size: $text-size-4xl;
@@ -132,14 +128,10 @@ $text-size-5xl: 2rem; //     = 32px
 
 // links
 @mixin link {
-    @include colors.apply-theme(
-        "secondary",
-        $property: "text-decoration-color"
-    );
-
     font-family: fonts.$primary;
     text-decoration-line: underline;
     text-decoration-style: solid;
+    text-decoration-color: var(--secondary);
     text-decoration-thickness: 0.167rem;
     text-underline-offset: 0.1rem;
 }

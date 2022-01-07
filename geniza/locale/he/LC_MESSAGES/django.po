@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-01-05 13:53-0500\n"
+"POT-Creation-Date: 2022-01-04 10:31-0500\n"
 "PO-Revision-Date: 2021-12-20 18:31\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -341,6 +341,11 @@ msgstr "קריאת העמוד ב-%(language_name)s (%(language_code)s)"
 msgctxt "choose this option"
 msgid "go"
 msgstr "שינוי שפה"
+
+#. Translators: label for dark mode/light mode theme switcher
+#: geniza/templates/snippets/theme_toggle.html:9
+msgid "Enable dark mode"
+msgstr ""
 
 #~ msgid "about menu"
 #~ msgstr "תפריט אודות"

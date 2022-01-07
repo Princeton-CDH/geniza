@@ -26,7 +26,7 @@ Python 3.8 / Django 3.2 / Node 12 / Postgresql / Solr 8.6
     :alt: dbdocs build
 
 .. image:: https://percy.io/static/images/percy-badge.svg
-    :target: https://percy.io/3201ecb4/geniza
+    :target: https://percy.io/2cf28a24/geniza
     :alt: Visual regression tests
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
