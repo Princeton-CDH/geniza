@@ -21,6 +21,7 @@ from pytest_django.asserts import assertContains
 from geniza.corpus.admin import (
     DocumentAdmin,
     DocumentForm,
+    DocumentNeedsReview,
     DocumentNeedsReviewAdmin,
     FragmentAdmin,
     FragmentTextBlockInline,
@@ -29,7 +30,6 @@ from geniza.corpus.admin import (
 from geniza.corpus.models import (
     Collection,
     Document,
-    DocumentNeedsReview,
     DocumentPrefetchableProxy,
     DocumentType,
     Fragment,

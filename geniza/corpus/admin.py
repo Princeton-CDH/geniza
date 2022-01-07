@@ -23,7 +23,6 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
-    DocumentNeedsReview,
     DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
@@ -461,6 +460,14 @@ class DocumentAdmin(admin.ModelAdmin):
     # -------------------------------------------------------------------------
 
     actions = (export_to_csv,)
+
+
+class DocumentNeedsReview(Document):
+    """Proxy model for Document to give a separate view for documents that need review"""
+
+    class Meta:
+        proxy = True
+        verbose_name_plural = "Documents for Review"
 
 
 @admin.register(DocumentNeedsReview)

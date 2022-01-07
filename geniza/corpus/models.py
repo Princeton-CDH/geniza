@@ -886,11 +886,3 @@ class TextBlock(models.Model):
 
     def thumbnail(self):
         return self.fragment.iiif_thumbnails()
-
-
-class DocumentNeedsReview(Document):
-    """Proxy model for Document to give a separate view for documents that need review"""
-
-    class Meta:
-        proxy = True
-        verbose_name_plural = "Documents needing review"
