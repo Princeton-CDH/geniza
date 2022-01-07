@@ -500,9 +500,6 @@ class DocumentPrefetchableProxyAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request)
 
-    def filter(self, request):
-        return super().filter(request)
-
 
 @admin.register(DocumentType)
 class DocumentTypeAdmin(admin.ModelAdmin):
