@@ -49,6 +49,7 @@ $off-white: #f7f7f7;
     --on-background-light: #ffffff;
     --logo: #f7f7f7;
 }
+
 body {
     @include light-mode;
     @media (prefers-color-scheme: dark) {
