@@ -14,6 +14,7 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
+from geniza.corpus.tests.conftest import suppressed_document
 from geniza.corpus.views import (
     DocumentAnnotationListView,
     DocumentDetailView,
@@ -203,7 +204,9 @@ def test_pgp_metadata_for_old_site():
 
 
 class TestDocumentSearchView:
-    def test_document_suppression(self, document, suppressed_document):
+    def test_document_suppression(self, document):
+        suppressed_document = Document.objects.create(status=Document.SUPPRESSED)
+
         SolrClient().update.index(
             [
                 document.index_data(),  # no scholarship records
@@ -217,7 +220,6 @@ class TestDocumentSearchView:
         # keyword search param
         docsearch_view.request.GET = {"q": ""}
         qs = docsearch_view.get_queryset()
-        assert qs.count() == 1
         resulting_pgpids = [obj["pgpid"] for obj in qs]
         assert document.id in resulting_pgpids
         assert suppressed_document.id not in resulting_pgpids
