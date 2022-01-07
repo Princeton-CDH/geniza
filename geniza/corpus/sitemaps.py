@@ -10,12 +10,19 @@ from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 
 class DocumentSitemap(Sitemap):
     url_name = "corpus:document"
+    i18n = True
 
     def get_queryset(self):
         return DocumentSolrQuerySet().filter(status=Document.PUBLIC_LABEL)
 
     def items(self):
-        return self.get_queryset().only("last_modified", "pgpid")
+        return (
+            self.get_queryset()
+            .only("last_modified", "pgpid")
+            .get_results(
+                rows=100_000
+            )  # Solr defaults to a low number of rows, ask for effectively all of them.
+        )
 
     def lastmod(self, obj):
         return solr_timestamp_to_datetime(obj["last_modified"]).date()
