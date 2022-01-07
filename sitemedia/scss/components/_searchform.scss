@@ -9,25 +9,35 @@
 @use "../base/spacing";
 @use "../base/typography";
 
+/*
+ * Mixin to add a box-shadow given a color.
+ * @param {color} $color - The color variable
+*/
+@mixin box-shadow($color) {
+    box-shadow: 0px 2px 4px $color;
+}
+
 /* 
  * Mixin for form button colors in all four states:
  * default, focus, hover, active.
  */
 @mixin form-button-colors {
-    @include colors.apply-theme("secondary");
-    @include colors.apply-theme("background-light", "background-color");
-    @include colors.apply-theme-box-shadow("on-background-25%");
+    color: var(--secondary);
+    background-color: var(--background-light);
+    @include box-shadow(var(--on-background-25));
     &:focus {
         outline: none;
-        @include colors.apply-theme-box-shadow("secondary-80%");
+        @include box-shadow(var(--secondary-80));
     }
     &:hover {
         box-shadow: none;
-        @include colors.apply-combo("secondary");
+        color: var(--on-secondary);
+        background-color: var(--secondary);
     }
     &:active {
         box-shadow: none;
-        @include colors.apply-combo("primary");
+        color: var(--on-primary);
+        background-color: var(--primary);
     }
     transition: background-color 0.15s ease-in-out, color 0.15s ease,
         box-shadow 0.15s ease;
@@ -39,14 +49,14 @@
  */
 @mixin form-drop-shadow($with-default: "true") {
     transition: box-shadow 0.15s ease;
-    @include colors.apply-theme-box-shadow("on-background-25%");
+    @include box-shadow(var(--on-background-25));
     &:focus,
     &:focus-within {
         outline: none;
-        @include colors.apply-theme-box-shadow("secondary-80%");
+        @include box-shadow(var(--secondary-80));
     }
     &:active {
-        @include colors.apply-theme-box-shadow("primary-80%");
+        @include box-shadow(var(--primary-80));
     }
 }
 
@@ -67,14 +77,15 @@
         height: 2.5rem;
         padding: 0 0 0 spacing.$spacing-sm;
         @include typography.form-option;
-        @include colors.apply-combo("background-light");
+        background-color: var(--background-light);
+        color: var(--on-background-light);
         @include form-drop-shadow;
         &::placeholder {
-            @include colors.apply-theme("on-background");
+            color: var(--on-background);
         }
         &:hover::placeholder,
         &:active::placeholder {
-            @include colors.apply-theme("on-background-light-alt");
+            color: var(--on-background-light-alt);
         }
     }
     details.sort-select {
@@ -99,7 +110,8 @@
             span,
             button {
                 cursor: pointer;
-                @include colors.apply-combo("background-light");
+                background-color: var(--background-light);
+                color: var(--on-background-light);
             }
             span {
                 flex: 1 1 auto;
@@ -133,17 +145,17 @@
             &:focus-within div[role="button"],
             &:focus + ul,
             &:focus-within + ul {
-                @include colors.apply-theme-box-shadow("secondary-80%");
+                @include box-shadow(var(--secondary-80));
             }
             &:focus-within + ul:active {
-                @include colors.apply-theme-box-shadow("primary-80%");
+                @include box-shadow(var(--primary-80));
             }
         }
         ul {
             padding: spacing.$spacing-sm 0;
             max-width: calc(100% - 2.0625rem - #{spacing.$spacing-sm});
             @include form-drop-shadow;
-            @include colors.apply-theme("background-light", "background-color");
+            background-color: var(--background-light);
             li {
                 display: flex;
                 label {
@@ -162,10 +174,12 @@
                     }
                     &:hover,
                     &:focus-within {
-                        @include colors.apply-combo("background-gray");
+                        background-color: var(--background-gray);
+                        color: var(--on-background-gray);
                     }
                     &:hover input[name="sort"]:focus + span {
-                        @include colors.apply-combo("tertiary");
+                        background-color: var(--tertiary);
+                        color: var(--on-tertiary);
                     }
                     input[name="sort"] {
                         @include a11y.sr-only;
@@ -173,7 +187,8 @@
                             @include typography.form-option-sm-bold;
                         }
                         &:active + span {
-                            @include colors.apply-combo("secondary");
+                            background-color: var(--secondary);
+                            color: var(--on-secondary);
                         }
                     }
                     @include typography.form-option-sm;
@@ -223,8 +238,9 @@
         max-width: 100%;
         margin-top: spacing.$spacing-lg;
         @include typography.form-option;
-        @include colors.apply-combo("background-light");
-        @include colors.apply-theme-box-shadow("on-background-25%");
+        background-color: var(--background-light);
+        color: var(--on-background-light);
+        @include box-shadow(var(--on-background-25));
         transition: box-shadow 0.15s ease;
         // Label for document type filter
         summary {
@@ -254,24 +270,24 @@
             transition: box-shadow 0.15s ease;
             &:focus {
                 outline: none;
-                @include colors.apply-theme-box-shadow("secondary-80%");
+                @include box-shadow(var(--secondary-80));
             }
         }
         &[open] summary {
-            @include colors.apply-theme-box-shadow("on-background-25%");
+            @include box-shadow(var(--on-background-25));
             // Expanded details marker
             &::after {
                 transform: rotate(-180deg);
             }
             &:focus {
                 outline: none;
-                @include colors.apply-theme-box-shadow("secondary-80%");
+                @include box-shadow(var(--secondary-80));
             }
         }
         &:active {
-            @include colors.apply-theme-box-shadow("secondary-80%");
+            @include box-shadow(var(--secondary-80));
             &[open] summary {
-                @include colors.apply-theme-box-shadow("secondary-80%");
+                @include box-shadow(var(--secondary-80));
             }
         }
 
@@ -307,19 +323,22 @@
                     }
                     &:hover span,
                     &:focus-within span {
-                        @include colors.apply-combo("background-gray");
+                        background-color: var(--background-gray);
+                        color: var(--on-background-gray);
                     }
                     &:hover input[type="checkbox"]:checked + span,
                     &:hover input[type="checkbox"]:checked + span + .count,
                     input[type="checkbox"]:checked:focus + span,
                     input[type="checkbox"]:checked:focus + span + .count {
-                        @include colors.apply-combo("secondary");
+                        background-color: var(--secondary);
+                        color: var(--on-secondary);
                     }
                     input[type="checkbox"] {
                         @include a11y.sr-only;
                         &:checked + span,
                         &:checked + span + .count {
-                            @include colors.apply-combo("tertiary");
+                            background-color: var(--tertiary);
+                            color: var(--on-tertiary);
                         }
                     }
                 }

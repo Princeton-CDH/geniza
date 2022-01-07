@@ -86,7 +86,7 @@ section#document-list {
 
             // keywords in context
             em {
-                @include colors.apply-theme("secondary");
+                color: var(--secondary);
                 font-weight: bold;
                 font-style: normal;
             }
@@ -124,7 +124,7 @@ section#document-list {
         margin-left: auto;
         margin-top: spacing.$spacing-md;
         @include typography.meta;
-        @include colors.apply-theme("secondary");
+        color: var(--secondary);
         i {
             margin-left: spacing.$spacing-2xs;
             @include breakpoints.for-tablet-landscape-up {

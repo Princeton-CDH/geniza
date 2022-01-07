@@ -76,13 +76,4 @@
             }
         }
     }
-
-    // Credits page
-    dd {
-        margin-top: spacing.$spacing-xs;
-        text-decoration: underline;
-        & + dt {
-            margin-top: spacing.$spacing-lg;
-        }
-    }
 }

@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.8
+
+-   Removed add_links manage command frmo version 0.7 (one-time import)
+
 ## 0.7
 
 -   document search
