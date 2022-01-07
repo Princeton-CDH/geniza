@@ -56,7 +56,6 @@ class TestDocumentScholarshipSitemap:
         sitemap = DocumentScholarshipSitemap()
         assert document_with_footnote.id in [obj["pgpid"] for obj in sitemap.items()]
         assert suppressed_document.id not in [obj["pgpid"] for obj in sitemap.items()]
-        # TEST FAILURE: How do you filter by footnotes__isnull for a solr queryset?
         assert document.id not in [obj["pgpid"] for obj in sitemap.items()]
 
     def test_location(self, document, source):
