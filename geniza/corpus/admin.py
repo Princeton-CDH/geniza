@@ -490,8 +490,6 @@ class DocumentNeedsReviewAdmin(DocumentAdmin):
     )
 
     def get_queryset(self, request):
-        # ?: We often use `needs_review__is_empty` but I got this error. Is that expected?
-        #      Unsupported lookup 'isempty' for TextField or join on the field not permitted.
         return super().get_queryset(request).exclude(needs_review="")
 
 
