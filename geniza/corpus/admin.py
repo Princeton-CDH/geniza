@@ -485,17 +485,6 @@ class DocumentNeedsReviewAdmin(DocumentAdmin):
         "is_public",
     )
 
-    search_fields = (
-        "fragments__shelfmark",
-        "tags__name",
-        "description",
-        "notes",
-        "needs_review",
-        "id",
-        "old_pgpids",
-        "needs_review",
-    )
-
     def get_queryset(self, request):
         return super().get_queryset(request).exclude(needs_review="")
 
