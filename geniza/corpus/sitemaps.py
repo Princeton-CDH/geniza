@@ -9,32 +9,25 @@ from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 
 
 class DocumentSitemap(Sitemap):
+    url_name = "corpus:document"
+
+    def get_queryset(self):
+        return DocumentSolrQuerySet().filter(status=Document.PUBLIC_LABEL)
+
     def items(self):
-        return (
-            DocumentSolrQuerySet()
-            .filter(status=Document.PUBLIC_LABEL)
-            .only("last_modified", "pgpid")
-        )
+        return self.get_queryset().only("last_modified", "pgpid")
 
     def lastmod(self, obj):
         return solr_timestamp_to_datetime(obj["last_modified"]).date()
 
     def location(self, obj):
-        return reverse("corpus:document", args=[obj["pgpid"]])
+        return reverse(self.url_name, args=[obj["pgpid"]])
 
 
-class DocumentScholarshipSitemap(Sitemap):
-    def items(self):
+class DocumentScholarshipSitemap(DocumentSitemap):
+    url_name = "corpus:document-scholarship"
+
+    def get_queryset(self):
         # Only return documents with footnotes. A document scholarship page returns
         #  a 404 if there are no footnotes.
-        return (
-            DocumentSolrQuerySet()
-            .filter(status="Public", scholarship_count__range=(1, None))
-            .only("pgpid", "last_modified")
-        )
-
-    def location(self, obj):
-        return reverse("corpus:document-scholarship", args=[obj["pgpid"]])
-
-    def lastmod(self, obj):
-        return solr_timestamp_to_datetime(obj["last_modified"]).date()
+        return super().get_queryset().filter(scholarship_count__range=(1, None))
