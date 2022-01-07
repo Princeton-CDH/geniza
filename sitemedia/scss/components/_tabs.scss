@@ -7,19 +7,6 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-@mixin underline {
-    &::after {
-        display: block;
-        content: " ";
-        height: 4px;
-        @include breakpoints.for-tablet-landscape-up {
-            margin-left: -10%;
-            width: 120%;
-            margin-top: 4.5px;
-        }
-    }
-}
-
 .tabs {
     display: flex;
     justify-content: space-between;
@@ -31,8 +18,10 @@
     span {
         flex: 1 0 auto;
         display: inline-block;
+        padding-bottom: spacing.$spacing-xs;
         @include breakpoints.for-tablet-landscape-up {
-            padding: spacing.$spacing-2xs spacing.$spacing-lg;
+            padding-left: spacing.$spacing-lg;
+            padding-right: spacing.$spacing-lg;
         }
     }
     a {
@@ -40,9 +29,6 @@
         &:focus-visible {
             outline: 0.1rem solid var(--tabs-focus);
             outline-offset: -0.33rem;
-            @include breakpoints.for-tablet-landscape-up {
-                outline-offset: -0.5rem;
-            }
         }
     }
     .disabled {
@@ -52,22 +38,31 @@
     li:nth-child(2) a,
     li:nth-child(2) span {
         @include breakpoints.for-tablet-landscape-up {
-            padding: spacing.$spacing-2xs spacing.$spacing-2xl;
+            padding-left: spacing.$spacing-2xl;
+            padding-right: spacing.$spacing-2xl;
+        }
+    }
+
+    // Tab underlines
+    .tab-underline {
+        text-align: center;
+        display: block;
+        height: 4px;
+        margin-bottom: -4px;
+        @include breakpoints.for-tablet-landscape-up {
+            width: 80%;
+            margin-left: 10%;
         }
     }
     a[aria-current="page"] {
         @include typography.nav-bold;
-        margin-bottom: -8px;
-        @include underline;
-        &::after {
+        & + .tab-underline {
             background-color: var(--secondary);
         }
     }
     a:active,
     a:hover {
-        margin-bottom: -8px;
-        @include underline;
-        &::after {
+        & + .tab-underline {
             background-color: var(--tabs-bottom-hover);
         }
     }
