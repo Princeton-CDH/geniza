@@ -19,7 +19,7 @@ class DocumentSitemap(Sitemap):
         )
 
     def lastmod(self, obj):
-        return solr_timestamp_to_datetime(obj["last_modified"]).date
+        return solr_timestamp_to_datetime(obj["last_modified"]).date()
 
     def location(self, obj):
         return reverse("corpus:document", args=[obj["pgpid"]])
@@ -39,4 +39,4 @@ class DocumentScholarshipSitemap(Sitemap):
         return reverse("corpus:document-scholarship", args=[obj["pgpid"]])
 
     def lastmod(self, obj):
-        return solr_timestamp_to_datetime(obj["last_modified"]).date
+        return solr_timestamp_to_datetime(obj["last_modified"]).date()

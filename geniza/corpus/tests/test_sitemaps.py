@@ -15,7 +15,10 @@ class TestDocumentSitemap:
         # Ensure that documents are supressed if they aren't public
         assert document.status == Document.PUBLIC
         SolrClient().update.index(
-            [document, suppressed_document],
+            [
+                document.index_data(),  # no scholarship records
+                suppressed_document.index_data(),  # one scholarship record
+            ],
             commit=True,
         )
         sitemap = DocumentSitemap()
