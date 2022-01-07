@@ -118,11 +118,3 @@ def footnote(db, source, document):
         location="p.1",
         doc_relation=Footnote.EDITION,
     )
-
-
-@pytest.fixture
-def suppressed_document():
-    document = Document.objects.create()
-    document.status = Document.SUPPRESSED
-    document.save()
-    return document

@@ -10,7 +10,8 @@ from geniza.footnotes.models import Footnote
 
 
 class TestDocumentSitemap:
-    def test_items(self, document, suppressed_document):
+    def test_items(self, document):
+        suppressed_document = Document.objects.create(status=Document.SUPPRESSED)
         # Ensure that documents are supressed if they aren't public
         assert document.status == Document.PUBLIC
         SolrClient().update.index(
