@@ -303,7 +303,6 @@ class TestDocumentSearchView:
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_not_called()
-            mock_sqs.filter.assert_not_called()
             mock_sqs.order_by.assert_called_with("-score")
 
             # keyword, sort, and doctype filter search params

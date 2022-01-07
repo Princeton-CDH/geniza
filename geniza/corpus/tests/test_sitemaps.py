@@ -6,7 +6,6 @@ from parasolr.django import SolrClient
 
 from geniza.corpus.models import Document
 from geniza.corpus.sitemaps import DocumentScholarshipSitemap, DocumentSitemap
-from geniza.corpus.tests.conftest import make_document
 from geniza.footnotes.models import Footnote
 
 
@@ -15,11 +14,7 @@ class TestDocumentSitemap:
         # Ensure that documents are supressed if they aren't public
         assert document.status == Document.PUBLIC
         SolrClient().update.index(
-            [
-                document.index_data(),  # no scholarship records
-                suppressed_document.index_data(),  # one scholarship record
-            ],
-            commit=True,
+            [document.index_data(), suppressed_document.index_data()], commit=True
         )
         sitemap = DocumentSitemap()
         assert document.id in [obj["pgpid"] for obj in sitemap.items()]
@@ -38,7 +33,7 @@ class TestDocumentSitemap:
 
 class TestDocumentScholarshipSitemap:
     def test_items(self, document, source, suppressed_document, fragment):
-        document_with_footnote = make_document(fragment, id=41)
+        document_with_footnote = Document.objects.create()
         Footnote.objects.create(
             source=source,
             content_object=document_with_footnote,
@@ -48,9 +43,9 @@ class TestDocumentScholarshipSitemap:
 
         SolrClient().update.index(
             [
-                document.index_data(),  # no scholarship records
-                suppressed_document.index_data(),  # suppressed
-                document_with_footnote.index_data(),  # has scholarship
+                document.index_data(),
+                suppressed_document.index_data(),
+                document_with_footnote.index_data(),
             ],
             commit=True,
         )
