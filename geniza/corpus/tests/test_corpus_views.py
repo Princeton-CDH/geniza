@@ -218,8 +218,9 @@ class TestDocumentSearchView:
         docsearch_view.request.GET = {"q": ""}
         qs = docsearch_view.get_queryset()
         assert qs.count() == 1
-        assert document.id in [obj["pgpid"] for obj in qs]
-        assert suppressed_document.id not in [obj["pgpid"] for obj in qs]
+        resulting_pgpids = [obj["pgpid"] for obj in qs]
+        assert document.id in resulting_pgpids
+        assert suppressed_document.id not in resulting_pgpids
 
     def test_get_form_kwargs(self):
         docsearch_view = DocumentSearchView()
