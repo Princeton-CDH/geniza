@@ -14,7 +14,6 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
-from geniza.corpus.tests.conftest import suppressed_document
 from geniza.corpus.views import (
     DocumentAnnotationListView,
     DocumentDetailView,
