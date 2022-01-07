@@ -18,7 +18,8 @@
     // Logotype, links to homepage
     a.home-link {
         @include breakpoints.for-tablet-landscape-up {
-            @include colors.apply-combo("primary");
+            color: var(--primary);
+            background-color: var(--on-primary);
         }
         display: inline-block;
         flex: none;
@@ -32,7 +33,7 @@
             display: flex;
             text-decoration: none;
             @include typography.icon-button;
-            @include colors.apply-theme("on-background");
+            color: var(--on-background);
         }
     }
     // Top-left corner links: home and open menu button
@@ -99,8 +100,8 @@
                 margin-right: spacing.$spacing-4xl;
             }
         }
-        @include colors.apply-theme("primary", "outline-color");
-        @include colors.apply-theme("background", "background-color");
+        outline-color: var(--primary);
+        background-color: var(--background);
     }
     li.menu-button,
     ul#menu li.home,
@@ -124,15 +125,14 @@
             width: 100%;
             max-width: 100%;
             display: inline-block;
-            border-top: 1px solid;
-            @include colors.apply-theme("primary", "border-top-color");
+            border-top: 1px solid var(--primary);
             @include typography.nav-link;
             @include typography.mobile-menu;
         }
         & + .menu-item a,
         & + .sub-menu .menu-item a {
             padding-top: spacing.$spacing-lg;
-            @include colors.apply-theme("primary", "border-top-color");
+            border-top-color: var(--primary);
             @include breakpoints.for-tablet-landscape-up {
                 padding-top: 0;
                 border: none;
@@ -243,9 +243,8 @@
             top: 100%;
             width: auto;
             height: auto;
-            border: 1px solid;
+            border: 1px solid var(--primary);
             border-top: none;
-            @include colors.apply-theme("primary", "border-color");
             li.menu-button,
             li.menu-label {
                 display: none;
@@ -254,7 +253,7 @@
                 padding: 0 spacing.$spacing-md;
             }
         }
-        @include colors.apply-theme("background", "background-color");
+        background-color: var(--background);
     }
     a.open-sub-menu:hover + .sub-menu,
     li:hover .sub-menu,

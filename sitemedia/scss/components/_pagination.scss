@@ -14,7 +14,8 @@ nav.pagination {
     align-items: center;
     flex-flow: row wrap;
     margin: spacing.$spacing-lg 0;
-    @include colors.apply-combo("background-light");
+    background-color: var(--background-light);
+    color: var(--on-background-light);
     @include typography.nav-link;
     @include breakpoints.for-tablet-landscape-up {
         margin: spacing.$spacing-xl 0;

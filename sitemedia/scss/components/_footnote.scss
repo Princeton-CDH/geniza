@@ -33,7 +33,7 @@
     }
     .relation {
         max-width: none; // required to span the whole width
-        @include colors.apply-theme("background-light", "background-color");
+        background-color: var(--background-light);
         margin-left: -#{spacing.$spacing-xl};
         padding: spacing.$spacing-4xs 0 spacing.$spacing-4xs spacing.$spacing-xl;
         &:is(dt) {
