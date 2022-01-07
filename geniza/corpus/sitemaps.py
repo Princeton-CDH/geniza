@@ -2,17 +2,10 @@ from datetime import date
 
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
+from parasolr.utils import solr_timestamp_to_datetime
 
 from geniza.corpus.models import Document
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
-
-
-def solr_timestamp_to_date(timestamp):
-    """Convert solr isoformat date time string to python date."""
-    # format: 2020-05-12T15:46:20.341Z
-    # django sitemap only includes date, so strip off time
-    yearmonthday = timestamp.split("T")[0]
-    return date(*[int(val) for val in yearmonthday.split("-")])
 
 
 class DocumentSitemap(Sitemap):
@@ -26,7 +19,7 @@ class DocumentSitemap(Sitemap):
         )
 
     def lastmod(self, obj):
-        return solr_timestamp_to_date(obj["last_modified"])
+        return solr_timestamp_to_datetime(obj["last_modified"]).date
 
     def location(self, obj):
         return reverse("corpus:document", args=[obj["pgpid"]])
@@ -46,4 +39,4 @@ class DocumentScholarshipSitemap(Sitemap):
         return reverse("corpus:document-scholarship", args=[obj["pgpid"]])
 
     def lastmod(self, obj):
-        return solr_timestamp_to_date(obj["last_modified"])
+        return solr_timestamp_to_datetime(obj["last_modified"]).date

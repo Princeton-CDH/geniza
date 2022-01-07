@@ -14,10 +14,6 @@ from geniza.corpus.tests.conftest import make_document
 from geniza.footnotes.models import Footnote
 
 
-def test_solr_timestamp_to_date():
-    assert solr_timestamp_to_date("2020-05-12T15:46:20.341Z") == date(2020, 5, 12)
-
-
 class TestDocumentSitemap:
     def test_items(self, document, suppressed_document):
         # Ensure that documents are supressed if they aren't public
