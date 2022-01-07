@@ -312,48 +312,9 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: geniza/templates/nav.html:46
-msgid "Contact Us"
-msgstr ""
-
-#. Translators: label for 'about' link in main navigation
-#: geniza/templates/nav.html:50
-msgid "About"
-msgstr ""
-
-#. Translators: accessibility label for 'about' menu in navigation
-#: geniza/templates/nav.html:59
-msgid "about menu"
-msgstr ""
-
 #. Translators: label for main menu back button for mobile navigation
-#: geniza/templates/nav.html:64
+#: geniza/templates/nav.html:60
 msgid "Return to main menu"
-msgstr ""
-
-#. Translators: label for link to 'Credits' page in main navigation
-#: geniza/templates/nav.html:78
-msgid "Credits"
-msgstr ""
-
-#. Translators: label for link to 'How to Cite' page in main navigation
-#: geniza/templates/nav.html:82
-msgid "How to Cite"
-msgstr ""
-
-#. Translators: label for link to 'Data Exports' page in main navigation
-#: geniza/templates/nav.html:86
-msgid "Data Exports"
-msgstr ""
-
-#. Translators: label for link to 'Technical' page in main navigation
-#: geniza/templates/nav.html:90
-msgid "Technical"
-msgstr ""
-
-#. Translators: label for link to 'FAQ' page in main navigation
-#: geniza/templates/nav.html:94
-msgid "FAQ"
 msgstr ""
 
 #. Translators: label for language choices in navigation

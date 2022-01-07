@@ -19,6 +19,11 @@ urlpatterns = [
         name="document-scholarship",
     ),
     path(
+        "documents/<int:pk>/transcription/<int:transcription_pk>/",
+        corpus_views.DocumentTranscriptionText.as_view(),
+        name="document-transcription-text",
+    ),
+    path(
         "documents/<int:pk>/iiif/manifest/",
         corpus_views.DocumentManifestView.as_view(),
         name="document-manifest",

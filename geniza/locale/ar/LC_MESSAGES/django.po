@@ -337,49 +337,10 @@ msgstr "إغلاق قائمة التنقل الرئيسية"
 msgid "Search"
 msgstr "البحث"
 
-#: geniza/templates/nav.html:46
-msgid "Contact Us"
-msgstr "اتصل بنا"
-
-#. Translators: label for 'about' link in main navigation
-#: geniza/templates/nav.html:50
-msgid "About"
-msgstr "حول"
-
-#. Translators: accessibility label for 'about' menu in navigation
-#: geniza/templates/nav.html:59
-msgid "about menu"
-msgstr "حول القائمة"
-
 #. Translators: label for main menu back button for mobile navigation
-#: geniza/templates/nav.html:64
+#: geniza/templates/nav.html:60
 msgid "Return to main menu"
 msgstr "العودة إلى القائمة الرئيسية"
-
-#. Translators: label for link to 'Credits' page in main navigation
-#: geniza/templates/nav.html:78
-msgid "Credits"
-msgstr "الاعتمادات"
-
-#. Translators: label for link to 'How to Cite' page in main navigation
-#: geniza/templates/nav.html:82
-msgid "How to Cite"
-msgstr "كيف نسيت"
-
-#. Translators: label for link to 'Data Exports' page in main navigation
-#: geniza/templates/nav.html:86
-msgid "Data Exports"
-msgstr "تصدير البيانات"
-
-#. Translators: label for link to 'Technical' page in main navigation
-#: geniza/templates/nav.html:90
-msgid "Technical"
-msgstr "فني"
-
-#. Translators: label for link to 'FAQ' page in main navigation
-#: geniza/templates/nav.html:94
-msgid "FAQ"
-msgstr "أسئلة متكررة"
 
 #. Translators: label for language choices in navigation
 #: geniza/templates/snippets/language_switcher.html:14
@@ -397,6 +358,30 @@ msgstr "اذهب"
 #: geniza/templates/snippets/theme_toggle.html:9
 msgid "Enable dark mode"
 msgstr ""
+
+#~ msgid "about menu"
+#~ msgstr "حول القائمة"
+
+#~ msgid "Contact Us"
+#~ msgstr "اتصل بنا"
+
+#~ msgid "About"
+#~ msgstr "حول"
+
+#~ msgid "Credits"
+#~ msgstr "الاعتمادات"
+
+#~ msgid "How to Cite"
+#~ msgstr "كيف نسيت"
+
+#~ msgid "Data Exports"
+#~ msgstr "تصدير البيانات"
+
+#~ msgid "Technical"
+#~ msgstr "فني"
+
+#~ msgid "FAQ"
+#~ msgstr "أسئلة متكررة"
 
 #~ msgid "Shelfmark"
 #~ msgstr "Shelfmark"

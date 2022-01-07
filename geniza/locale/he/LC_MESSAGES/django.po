@@ -325,49 +325,10 @@ msgstr "סגירת תפריט ניווט"
 msgid "Search"
 msgstr "חיפוש"
 
-#: geniza/templates/nav.html:46
-msgid "Contact Us"
-msgstr "יצירת קשר"
-
-#. Translators: label for 'about' link in main navigation
-#: geniza/templates/nav.html:50
-msgid "About"
-msgstr "אודות"
-
-#. Translators: accessibility label for 'about' menu in navigation
-#: geniza/templates/nav.html:59
-msgid "about menu"
-msgstr "תפריט אודות"
-
 #. Translators: label for main menu back button for mobile navigation
-#: geniza/templates/nav.html:64
+#: geniza/templates/nav.html:60
 msgid "Return to main menu"
 msgstr "חזרה לתפריט הראשי"
-
-#. Translators: label for link to 'Credits' page in main navigation
-#: geniza/templates/nav.html:78
-msgid "Credits"
-msgstr "תודות"
-
-#. Translators: label for link to 'How to Cite' page in main navigation
-#: geniza/templates/nav.html:82
-msgid "How to Cite"
-msgstr "כיצד לצטט נתונים"
-
-#. Translators: label for link to 'Data Exports' page in main navigation
-#: geniza/templates/nav.html:86
-msgid "Data Exports"
-msgstr "ייצוא מידע"
-
-#. Translators: label for link to 'Technical' page in main navigation
-#: geniza/templates/nav.html:90
-msgid "Technical"
-msgstr "פרטים טכניים"
-
-#. Translators: label for link to 'FAQ' page in main navigation
-#: geniza/templates/nav.html:94
-msgid "FAQ"
-msgstr "שאלות נפוצות"
 
 #. Translators: label for language choices in navigation
 #: geniza/templates/snippets/language_switcher.html:14
@@ -385,6 +346,30 @@ msgstr "שינוי שפה"
 #: geniza/templates/snippets/theme_toggle.html:9
 msgid "Enable dark mode"
 msgstr ""
+
+#~ msgid "about menu"
+#~ msgstr "תפריט אודות"
+
+#~ msgid "Contact Us"
+#~ msgstr "יצירת קשר"
+
+#~ msgid "About"
+#~ msgstr "אודות"
+
+#~ msgid "Credits"
+#~ msgstr "תודות"
+
+#~ msgid "How to Cite"
+#~ msgstr "כיצד לצטט נתונים"
+
+#~ msgid "Data Exports"
+#~ msgstr "ייצוא מידע"
+
+#~ msgid "Technical"
+#~ msgstr "פרטים טכניים"
+
+#~ msgid "FAQ"
+#~ msgstr "שאלות נפוצות"
 
 #~ msgid "Shelfmark"
 #~ msgstr "Shelfmark"

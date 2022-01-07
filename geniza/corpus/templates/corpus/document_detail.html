@@ -31,6 +31,8 @@
             </h3>
             {# metadata #}
             <dl class="metadata">
+                <dt>{% translate 'Shelfmark' %}</dt>
+                <dd>{{ document.shelfmark }}</dd>
                 {% if document.digital_editions %}
                     <dt>
                         {# Translators: Editor label #}
@@ -45,6 +47,9 @@
                         {% ifchanged %}
                             <dd>{{ ed.display|safe }}</dd>
                         {% endifchanged %}
+                        {% if ed.content.text %}
+                            <a style="text-align:right" href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">download as text</a>
+                        {% endif %}
                         {# link ? #}
                     {% endfor %}
                 {% endif %}
