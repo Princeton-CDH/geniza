@@ -33,7 +33,8 @@ class TestDocumentSitemap:
 
 
 class TestDocumentScholarshipSitemap:
-    def test_items(self, document, source, suppressed_document, fragment):
+    def test_items(self, document, source, fragment):
+        suppressed_document = Document.objects.create(status=Document.SUPPRESSED)
         document_with_footnote = Document.objects.create()
         Footnote.objects.create(
             source=source,
