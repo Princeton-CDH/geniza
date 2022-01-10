@@ -128,8 +128,9 @@
                 flex: 1 1 2.0625rem;
                 width: auto;
                 max-width: 2.0625rem;
-                padding-top: 0.15rem;
-                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 &::after {
                     font-family: "Phosphor";
                     content: "\f0c2"; // phosphor caret-down icon
