@@ -379,29 +379,29 @@
 
 // Header backgrounds for light and dark mode, mobile
 @mixin header-background-mobile-dark {
-    background: url("/static/img/header-base-mobile-darkmode.svg"),
+    background: url("/static/img/ui/mobile/dark/header-base.svg"),
         linear-gradient(to right, rgba(22, 22, 22, 0), colors.$black 20rem),
-        url("/static/img/header-image-mobile-darkmode.png");
+        url("/static/img/ui/mobile/dark/header-image.png");
     background-repeat: no-repeat, no-repeat, no-repeat;
 }
 @mixin header-background-mobile-light {
-    background: url("/static/img/header-base-mobile-lightmode.svg"),
+    background: url("/static/img/ui/mobile/light/header-base.svg"),
         linear-gradient(to right, rgba(255, 255, 255, 0), white 20rem),
-        url("/static/img/header-image-mobile-lightmode.png");
+        url("/static/img/ui/mobile/light/header-image.png");
     background-repeat: no-repeat, no-repeat, no-repeat;
 }
 
 // Header backgrounds for light and dark mode, desktop
 @mixin header-background-desktop-dark {
-    background: url("/static/img/header-base-desktop-darkmode.svg"),
+    background: url("/static/img/ui/desktop/dark/header-base.svg"),
         linear-gradient(to right, rgba(22, 22, 22, 0), colors.$black 90rem),
-        url("/static/img/header-image-desktop-darkmode.png");
+        url("/static/img/ui/desktop/dark/header-image.png");
     background-repeat: no-repeat, no-repeat, no-repeat;
 }
 @mixin header-background-desktop-light {
-    background: url("/static/img/header-base-desktop-lightmode.svg"),
+    background: url("/static/img/ui/desktop/light/header-base.svg"),
         linear-gradient(to right, rgba(255, 255, 255, 0), white 90rem),
-        url("/static/img/header-image-desktop-lightmode.png");
+        url("/static/img/ui/desktop/light/header-image.png");
     background-repeat: no-repeat, no-repeat, no-repeat;
 }
 
@@ -431,7 +431,7 @@
         }
     }
     a + span.hover-indicator {
-        background: url("/static/img/hover-main-menu-desktop-lightmode.svg") top;
+        background: url("/static/img/ui/desktop/light/menu-hover.svg") top;
     }
 }
 
@@ -461,7 +461,7 @@
         }
     }
     a + span.hover-indicator {
-        background: url("/static/img/hover-main-menu-desktop-darkmode.svg") top;
+        background: url("/static/img/ui/desktop/dark/menu-hover.svg") top;
     }
 }
 
