@@ -8,20 +8,24 @@
 @use "../base/typography";
 
 .tabs {
-    display: flex;
-    justify-content: space-between;
-    text-align: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-content: stretch;
+    justify-content: center;
     margin: 0 auto;
-    border-bottom: 4px solid var(--tabs-bottom);
     @include typography.nav-link;
     a,
     span {
-        flex: 1 0 auto;
-        display: inline-block;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        height: 100%;
         padding-bottom: spacing.$spacing-xs;
+        border-bottom: 4px solid var(--tabs-bottom);
         @include breakpoints.for-tablet-landscape-up {
-            padding-left: spacing.$spacing-lg;
-            padding-right: spacing.$spacing-lg;
+            padding-left: spacing.$spacing-xl;
+            padding-right: spacing.$spacing-xl;
         }
     }
     a {
@@ -34,36 +38,20 @@
     .disabled {
         color: var(--disabled);
     }
-    // Center tab padding boost
-    li:nth-child(2) a,
-    li:nth-child(2) span {
+
+    a[aria-current="page"] {
+        @include typography.nav-bold;
+        border-bottom-color: var(--secondary);
+    }
+    li:last-child a,
+    li:last-child span {
         @include breakpoints.for-tablet-landscape-up {
             padding-left: spacing.$spacing-2xl;
             padding-right: spacing.$spacing-2xl;
         }
     }
-
-    // Tab underlines
-    .tab-underline {
-        text-align: center;
-        display: block;
-        height: 4px;
-        margin-bottom: -4px;
-        @include breakpoints.for-tablet-landscape-up {
-            width: 80%;
-            margin-left: 10%;
-        }
-    }
-    a[aria-current="page"] {
-        @include typography.nav-bold;
-        & + .tab-underline {
-            background-color: var(--secondary);
-        }
-    }
     a:active,
     a:hover {
-        & + .tab-underline {
-            background-color: var(--tabs-bottom-hover);
-        }
+        border-bottom-color: var(--tabs-bottom-hover);
     }
 }
