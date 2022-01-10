@@ -23,6 +23,7 @@ from geniza.corpus.admin import (
     DocumentForm,
     FragmentAdmin,
     FragmentTextBlockInline,
+    HasTranscriptionListFilter,
     LanguageScriptAdmin,
 )
 from geniza.corpus.models import (
@@ -370,3 +371,45 @@ class TestFragmentAdmin:
         fragment.collection = cul
         frag_admin = FragmentAdmin(model=Fragment, admin_site=admin.site)
         assert frag_admin.collection_display(fragment) == cul
+
+
+class TestHasTranscriptionListFilter:
+    def init_filter(self):
+        # request, params, model, admin_site
+        return HasTranscriptionListFilter(Mock(), {}, Document, DocumentAdmin)
+
+    def test_lookups(self):
+        assert self.init_filter().lookups(Mock(), Mock()) == (
+            ("yes", "Has transcription"),
+            ("no", "No transcription"),
+        )
+
+    @pytest.mark.django_db
+    def test_queryset(self, document, join, typed_texts):
+        filter = self.init_filter()
+
+        # no transcription: all documents should be returned
+        all_docs = Document.objects.all()
+        # no transcription: all documents should be returned
+        with patch.object(filter, "value", return_value="no"):
+            assert filter.queryset(Mock(), all_docs).count() == 2
+        # has transcription: no documents should be returned
+        with patch.object(filter, "value", return_value="yes"):
+            assert filter.queryset(Mock(), all_docs).count() == 0
+
+        # add a transcription
+        footnote = Footnote.objects.create(
+            doc_relation=["E"],
+            source=typed_texts,
+            content_type_id=ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
+            object_id=document.id,
+            content={"html": "some text"},
+        )
+        # no transcription: one document should be returned
+        with patch.object(filter, "value", return_value="no"):
+            assert filter.queryset(Mock(), all_docs).count() == 1
+        # has transcription: one document should be returned
+        with patch.object(filter, "value", return_value="yes"):
+            assert filter.queryset(Mock(), all_docs).count() == 1
