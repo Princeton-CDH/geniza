@@ -361,10 +361,12 @@ class Document(ModelIndexable):
     old_pgpids = ArrayField(models.IntegerField(), null=True, verbose_name="Old PGPIDs")
 
     PUBLIC = "P"
+    STATUS_PUBLIC = "Public"
     SUPPRESSED = "S"
+    STATUS_SUPPRESSED = "Suppressed"
     STATUS_CHOICES = (
-        (PUBLIC, "Public"),
-        (SUPPRESSED, "Suppressed"),
+        (PUBLIC, STATUS_PUBLIC),
+        (SUPPRESSED, STATUS_SUPPRESSED),
     )
     #: status of record; currently choices are public or suppressed
     status = models.CharField(
