@@ -131,9 +131,13 @@ $text-size-5xl: 2rem; //     = 32px
     font-family: fonts.$primary;
     text-decoration-line: underline;
     text-decoration-style: solid;
-    text-decoration-color: var(--secondary);
-    text-decoration-thickness: 0.167rem;
-    text-underline-offset: 0.1rem;
+    text-decoration-thickness: 0.1875rem;
+    text-underline-offset: 0.2rem;
+    text-decoration-color: var(--link-primary);
+    &:hover,
+    &:active {
+        text-decoration-color: var(--link-secondary);
+    }
 }
 
 // "shelfmark" part of document titles

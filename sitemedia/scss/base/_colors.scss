@@ -18,11 +18,12 @@ $gray: #9e9e9e;
 $light-gray: #ebebeb;
 $off-white: #f7f7f7;
 
-// Theme colors
 @mixin light-mode {
     --primary: #436043;
     --secondary: #567856;
     --tertiary: #7bac7b;
+    --link-primary: #567856;
+    --link-secondary: #436043;
     --on-primary: #ffffff;
     --on-secondary: #ffffff;
     --on-tertiary: #161616;
@@ -37,6 +38,8 @@ $off-white: #f7f7f7;
     --primary: #c37f97;
     --secondary: #b76680;
     --tertiary: #b05070;
+    --link-primary: #c37f97;
+    --link-secondary: #b76680;
     --on-primary: #161616;
     --on-secondary: #161616;
     --on-tertiary: #161616;
@@ -45,6 +48,7 @@ $off-white: #f7f7f7;
     --on-background: #ffffff;
     --on-background-light: #ffffff;
 }
+
 body {
     @include light-mode;
     @media (prefers-color-scheme: dark) {
