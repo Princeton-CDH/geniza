@@ -45,6 +45,8 @@
     }
     li:last-child a,
     li:last-child span {
+        padding-left: spacing.$spacing-sm;
+        padding-right: spacing.$spacing-sm;
         @include breakpoints.for-tablet-landscape-up {
             padding-left: spacing.$spacing-2xl;
             padding-right: spacing.$spacing-2xl;
