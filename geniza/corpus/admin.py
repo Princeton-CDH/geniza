@@ -155,6 +155,25 @@ class DocumentForm(forms.ModelForm):
             )
 
 
+class HasTranscriptionListFilter(admin.SimpleListFilter):
+    """Custom list filter for documents with associated transcription content"""
+
+    title = "Transcription"
+    parameter_name = "transcription"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", "Has transcription"),
+            ("no", "No transcription"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.filter(footnotes__content__html__regex=r".*").distinct()
+        if self.value() == "no":
+            return queryset.exclude(footnotes__content__html__regex=r".*").distinct()
+
+
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
     form = DocumentForm
@@ -194,12 +213,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
     list_filter = (
         "doctype",
-        (
-            "footnotes__content",
-            custom_empty_field_list_filter(
-                "transcription", "Has transcription", "No transcription"
-            ),
-        ),
+        HasTranscriptionListFilter,
         (
             "textblock__fragment__iiif_url",
             custom_empty_field_list_filter("IIIF image", "Has image", "No image"),
