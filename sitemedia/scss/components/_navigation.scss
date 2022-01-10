@@ -183,10 +183,23 @@
             align-items: center;
             justify-content: space-between;
             padding-top: spacing.$spacing-sm;
+            // Desktop overrides
+            @include breakpoints.for-tablet-landscape-up {
+                flex-flow: row wrap;
+                justify-content: flex-end;
+            }
             &::after {
+                display: block;
+                background: none;
                 font-family: "Phosphor";
                 content: "\f0c4"; // phosphor caret-right icon
                 @include typography.icon-button;
+                // Desktop overrides
+                @include breakpoints.for-tablet-landscape-up {
+                    display: block;
+                    content: "\00000a";
+                    height: 16px;
+                }
             }
             ul {
                 display: none;
@@ -200,21 +213,22 @@
             // desktop links (strip some mobile styles)
             flex: 0 0 auto;
             padding: spacing.$spacing-lg 0 spacing.$spacing-xs;
-            min-width: 117px; // Width of the hover indicator
             a {
+                min-width: 117px; // Width of the hover indicator
                 display: flex;
+                flex-flow: row wrap;
                 align-items: center;
                 justify-content: flex-end;
                 border: none;
-                padding: 0 spacing.$spacing-md 0 0;
+                padding: 0;
             }
             // "Open sub-menu" link on desktop
             &.has-submenu {
                 height: auto;
                 a.open-sub-menu {
-                    justify-content: flex-end;
-                    padding: 0 spacing.$spacing-md 0 0;
-                    &::after {
+                    padding: 0;
+                    &::before {
+                        order: 1;
                         font-family: "Phosphor";
                         content: "\f0c2"; // phosphor caret-down icon
                         margin-left: spacing.$spacing-xs;
@@ -224,8 +238,8 @@
                     }
                 }
                 // Rotate caret up
-                &.open a.open-sub-menu::after,
-                a[aria-expanded="true"].open-sub-menu::after {
+                &.open a.open-sub-menu::before,
+                a[aria-expanded="true"].open-sub-menu::before {
                     transform: rotate(-180deg);
                 }
             }
@@ -295,7 +309,6 @@
                 padding: 0;
                 a[role="menuitem"] {
                     padding: 0 spacing.$spacing-md;
-                    margin-bottom: -#{spacing.$spacing-2xs};
                     justify-content: flex-start;
                 }
             }
@@ -348,18 +361,22 @@
         }
     }
     // Hover indicator for nav links
-    a + span.hover-indicator {
+    a::after {
         display: none;
         @include breakpoints.for-tablet-landscape-up {
+            content: "\00000a"; // Newline
+            white-space: pre;
+            order: 2;
+            flex: 1 0 117px;
             display: block;
-            width: 100%;
             height: 16px;
             opacity: 0;
             transition: opacity 0.2s;
+            margin-right: -#{spacing.$spacing-xl};
         }
     }
-    a:hover + span.hover-indicator,
-    a[aria-current="page"] + span.hover-indicator {
+    a:hover::after,
+    a[aria-current="page"]::after {
         @include breakpoints.for-tablet-landscape-up {
             opacity: 100% !important;
         }
@@ -367,10 +384,14 @@
     // Gets cluttered in sub-menu, so only show when hovering
     ul.sub-menu {
         @include breakpoints.for-tablet-landscape-up {
-            a[aria-current="page"] + span.hover-indicator {
+            a::after {
+                position: relative;
+                right: spacing.$spacing-md;
+            }
+            a[aria-current="page"]::after {
                 opacity: 0% !important;
             }
-            a:hover + span.hover-indicator {
+            a:hover::after {
                 opacity: 100% !important;
             }
         }
@@ -430,8 +451,12 @@
             );
         }
     }
-    a + span.hover-indicator {
-        background: url("/static/img/ui/desktop/light/menu-hover.svg") top;
+    a::after {
+        @include breakpoints.for-tablet-landscape-up {
+            background: url("/static/img/ui/desktop/light/menu-hover.svg")
+                center !important;
+            background-repeat: no-repeat !important;
+        }
     }
 }
 
@@ -460,8 +485,11 @@
             );
         }
     }
-    a + span.hover-indicator {
-        background: url("/static/img/ui/desktop/dark/menu-hover.svg") top;
+    a::after {
+        @include breakpoints.for-tablet-landscape-up {
+            background: url("/static/img/ui/desktop/dark/menu-hover.svg") center !important;
+            background-repeat: no-repeat !important;
+        }
     }
 }
 

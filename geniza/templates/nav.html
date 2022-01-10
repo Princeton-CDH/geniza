@@ -41,7 +41,6 @@
                     {# Translators: label for link to 'Search' page in main navigation #}
                     {% translate "Search" %}
                 </a>
-                <span class="hover-indicator" style="opacity: 0" aria-hidden="true"></span>
             </li>
             {% for top_level_page in site.root_page.get_children.live.in_menu %}
                 {% if top_level_page.get_children|length > 0 %}
@@ -59,7 +58,6 @@
                         >
                             {{ top_level_page.localized.title }}
                         </a>
-                        <span class="hover-indicator" style="opacity: 0" aria-hidden="true"></span>
                         <div class="sub-menu-overlay" aria-hidden="true"></div>
                         {% include "snippets/sub_menu.html" %}
                     </li>
@@ -73,7 +71,6 @@
                         >
                             {{ top_level_page.localized.title }}
                         </a>
-                        <span class="hover-indicator" style="opacity: 0" aria-hidden="true"></span>
                     </li>
                 {% endif %}
             {% endfor %}
