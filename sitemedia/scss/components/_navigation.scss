@@ -85,7 +85,7 @@
         max-width: 100%;
         width: 100%;
         height: 100vh;
-        z-index: 100;
+        z-index: 2;
         // Direct descendent menu buttons (mobile)
         & > li.menu-button {
             display: flex;
@@ -124,7 +124,7 @@
         // Positioning for desktop
         @include breakpoints.for-tablet-landscape-up {
             display: flex;
-            height: auto;
+            height: 100%;
             transition: none;
             left: auto;
             position: relative;
@@ -211,8 +211,11 @@
         }
         @include breakpoints.for-tablet-landscape-up {
             // desktop links (strip some mobile styles)
+            height: 100%;
             flex: 0 0 auto;
-            padding: spacing.$spacing-lg 0 spacing.$spacing-xs;
+            align-items: center;
+            display: flex;
+            margin: spacing.$spacing-sm spacing.$spacing-xs 0 0;
             a {
                 min-width: 117px; // Width of the hover indicator
                 display: flex;
@@ -224,7 +227,6 @@
             }
             // "Open sub-menu" link on desktop
             &.has-submenu {
-                height: auto;
                 a.open-sub-menu {
                     padding: 0;
                     &::before {
@@ -303,10 +305,11 @@
             width: auto;
             height: auto;
             padding: spacing.$spacing-xl 0 spacing.$spacing-sm;
-            top: 104px;
+            top: 100%;
             box-shadow: 0px 2px 4px var(--secondary-80);
             li.menu-item {
                 padding: 0;
+                margin-top: 0;
                 a[role="menuitem"] {
                     padding: 0 spacing.$spacing-md;
                     justify-content: flex-start;
@@ -314,26 +317,9 @@
             }
         }
     }
-    div.sub-menu-overlay {
-        display: none;
-        @include breakpoints.for-tablet-landscape-up {
-            display: none;
-        }
-    }
-    // Overlay to keep sub menu open on desktop when moving mouse
-    a.open-sub-menu:hover + span + div.sub-menu-overlay,
-    li:hover div.sub-menu-overlay,
-    li.has-submenu.open div.sub-menu-overlay {
-        opacity: 0;
-        display: block;
-        width: 100%;
-        height: 40px;
-        margin-bottom: -40px;
-    }
 
     // Keep sub menu open on desktop when hovering
-    a.open-sub-menu:hover + span + div + ul.sub-menu,
-    div.sub-menu-overlay:hover + ul.sub-menu,
+    a.open-sub-menu:hover + ul.sub-menu,
     li:hover ul.sub-menu,
     ul.sub-menu:hover,
     li.has-submenu.open ul.sub-menu {
@@ -373,6 +359,7 @@
             opacity: 0;
             transition: opacity 0.2s;
             margin-right: -#{spacing.$spacing-xl};
+            margin-top: spacing.$spacing-3xs;
         }
     }
     a:hover::after,
@@ -387,6 +374,7 @@
             a::after {
                 position: relative;
                 right: spacing.$spacing-md;
+                margin-top: 0;
             }
             a[aria-current="page"]::after {
                 opacity: 0% !important;

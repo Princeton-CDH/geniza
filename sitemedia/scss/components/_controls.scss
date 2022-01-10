@@ -17,12 +17,14 @@ div.controls {
     align-items: center;
     @include breakpoints.for-tablet-landscape-up {
         // Controls desktop layout: top right corner
+        z-index: 3;
         width: auto;
         flex-direction: row;
         align-items: flex-start;
         margin-top: auto;
         right: spacing.$spacing-sm;
-        top: spacing.$spacing-xs;
+        top: 0;
+        padding-top: spacing.$spacing-xs;
     }
 
     // Language switcher form
