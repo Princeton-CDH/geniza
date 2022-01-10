@@ -135,7 +135,7 @@
             margin: 0 spacing.$spacing-4xl 0 spacing.$spacing-xl;
             pointer-events: all;
             & > li.menu-item + li.menu-item {
-                margin-left: spacing.$spacing-lg;
+                margin-left: spacing.$spacing-sm;
             }
         }
         outline-color: var(--primary);
@@ -213,7 +213,7 @@
                 height: auto;
                 a.open-sub-menu {
                     justify-content: flex-end;
-                    padding: 0 spacing.$spacing-sm 0 0;
+                    padding: 0 spacing.$spacing-md 0 0;
                     &::after {
                         font-family: "Phosphor";
                         content: "\f0c2"; // phosphor caret-down icon
