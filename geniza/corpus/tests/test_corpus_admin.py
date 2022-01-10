@@ -393,7 +393,7 @@ class TestHasTranscriptionListFilter:
         # no transcription: all documents should be returned
         with patch.object(filter, "value", return_value="no"):
             assert filter.queryset(Mock(), all_docs).count() == 2
-        # ahs transcription: no documents should be returned
+        # has transcription: no documents should be returned
         with patch.object(filter, "value", return_value="yes"):
             assert filter.queryset(Mock(), all_docs).count() == 0
 
@@ -410,6 +410,6 @@ class TestHasTranscriptionListFilter:
         # no transcription: one document should be returned
         with patch.object(filter, "value", return_value="no"):
             assert filter.queryset(Mock(), all_docs).count() == 1
-        # ahs transcription: one documents should be returned
+        # has transcription: one document should be returned
         with patch.object(filter, "value", return_value="yes"):
             assert filter.queryset(Mock(), all_docs).count() == 1
