@@ -203,23 +203,25 @@ def test_pgp_metadata_for_old_site():
 
 
 class TestDocumentSearchView:
-    def test_document_suppression(self, document, suppressed_document):
-        SolrClient().update.index(
-            [
-                document.index_data(),  # no scholarship records
-                suppressed_document.index_data(),  # one scholarship record
-            ],
-            commit=True,
-        )
-        docsearch_view = DocumentSearchView()
-        docsearch_view.request = Mock()
+    def test_ignore_suppressed_documents(self, document, empty_solr):
+        suppressed_document = Document.objects.create(status=Document.SUPPRESSED)
+        Document.index_items([document, suppressed_document])
+        SolrClient().update.index([], commit=True)
+        # [d.index_data() for d in [document, suppressed_document]], commit=True
+        # )
+        print(suppressed_document.index_data())
 
-        # keyword search param
+        docsearch_view = DocumentSearchView()
+        # mock request with empty keyword search
+        docsearch_view.request = Mock()
         docsearch_view.request.GET = {"q": ""}
         qs = docsearch_view.get_queryset()
+        result_pgpids = [obj["pgpid"] for obj in qs]
+        print(result_pgpids)
+        print(qs)
         assert qs.count() == 1
-        assert document.id in [obj["pgpid"] for obj in qs]
-        assert suppressed_document.id not in [obj["pgpid"] for obj in qs]
+        assert document.id in result_pgpids
+        assert suppressed_document.id not in result_pgpids
 
     def test_get_form_kwargs(self):
         docsearch_view = DocumentSearchView()
@@ -302,7 +304,9 @@ class TestDocumentSearchView:
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_not_called()
-            mock_sqs.filter.assert_not_called()
+            # filter called once to limit by status
+            assert mock_sqs.filter.call_count == 1
+            mock_sqs.filter.assert_called_with(status=Document.STATUS_PUBLIC)
             mock_sqs.order_by.assert_called_with("-score")
 
             # keyword, sort, and doctype filter search params
