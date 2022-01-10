@@ -265,14 +265,10 @@ class TestDocumentTabsSnippet:
         fragment.save()
         response = client.get(document.get_absolute_url())
 
-        underline_div = (
-            "<div class='tab-underline' tabindex='-1' aria-hidden='true'></div>"
-        )
-
         # disabled (not yet implemented) for MVP
         assertContains(
             response,
-            "<li class='disabled'><span>External Links</span>%s</li>" % underline_div,
+            "<li class='disabled'><span>External Links</span></li>",
             html=True,
         )
 
