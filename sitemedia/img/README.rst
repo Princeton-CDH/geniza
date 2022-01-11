@@ -62,5 +62,6 @@ One level deeper, the ``dark`` and ``light`` subfolders differentiate between im
 Notes
 ~~~~~
 - Images that are meant to be swapped out between screen sizes, or between dark/light themes, should have the **same filename** as each other. They are differentiated by their folder, rather than their filename.
-- ``svg`` images that are filled with a solid color, such as ``separator.svg``, may optionally be placed in only one directory per screen size, as they can be recolored in CSS to the appropriate light or dark mode color
-- ``png`` images that are colored differently in light and dark mode must be uploaded separately in their appropriate folders, as they cannot be recolored in CSS
+- ``svg`` images that are filled with a solid color, such as ``separator.svg``, may optionally be placed in only one directory per screen size, as they can be recolored in CSS to the appropriate light or dark mode color.
+- ``png`` images that are colored differently in light and dark mode must be uploaded separately in their appropriate folders, as they cannot be recolored in CSS.
+- Images that appear the same in light and dark mode can be placed directly in the appropriate folder, `desktop` or `mobile`, outside of the `dark` and `light` subfolders.
