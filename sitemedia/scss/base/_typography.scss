@@ -175,6 +175,16 @@ $text-size-5xl: 2rem; //     = 32px
     line-height: 1.2;
 }
 @mixin form-option-bold {
+    @include body-bold; // same font+sizes as body-bold
+    line-height: 1.2;
+}
+
+@mixin form-option-sm {
+    @include meta; // same font+sizes as meta-bold
+    line-height: 1.2;
+}
+
+@mixin form-option-sm-bold {
     @include meta-bold; // same font+sizes as meta-bold
     line-height: 1.2;
 }
@@ -210,6 +220,9 @@ $text-size-5xl: 2rem; //     = 32px
 // Icon buttons
 @mixin icon-button {
     font-size: $text-size-3xl;
+}
+@mixin icon-button-sm {
+    font-size: $text-size-lg;
 }
 
 // Temporary until new logo

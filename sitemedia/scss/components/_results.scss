@@ -88,6 +88,7 @@ section#document-list {
             em {
                 color: var(--secondary);
                 font-weight: bold;
+                font-style: normal;
             }
             /* solr returns multiple matches in text without space between */
             em + em {

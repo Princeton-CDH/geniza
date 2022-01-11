@@ -49,7 +49,7 @@ msgid "Sort by"
 msgstr "מיון לפי"
 
 #. Translators: label for document type search form filter
-#: geniza/corpus/forms.py:141
+#: geniza/corpus/forms.py:144
 msgid "Document Type"
 msgstr "סוג המסמך"
 
@@ -99,13 +99,18 @@ msgstr "תגים"
 msgid "Description"
 msgstr "תיאור"
 
+#. Translators: Button to open or close sort options menu
+#: geniza/corpus/templates/corpus/document_list.html:34
+msgid "Toggle sort options menu"
+msgstr ""
+
 #. Translators: Search submit button
-#: geniza/corpus/templates/corpus/document_list.html:22
+#: geniza/corpus/templates/corpus/document_list.html:43
 msgid "Submit search"
 msgstr "חיפוש"
 
 #. Translators: number of search results
-#: geniza/corpus/templates/corpus/document_list.html:38
+#: geniza/corpus/templates/corpus/document_list.html:57
 #, python-format
 msgid "1 result"
 msgid_plural "%(count_humanized)s total results"
