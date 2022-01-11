@@ -44,7 +44,7 @@
             height: 3rem;
             align-items: center;
             justify-content: center;
-            @include typography.icon-button;
+            @include typography.icon-button-lg;
             color: var(--on-background);
         }
     }
@@ -193,7 +193,7 @@
                 background: none;
                 font-family: "Phosphor";
                 content: "\f0c4"; // phosphor caret-right icon
-                @include typography.icon-button;
+                @include typography.icon-button-lg;
                 // Desktop overrides
                 @include breakpoints.for-tablet-landscape-up {
                     display: block;
@@ -273,12 +273,12 @@
                 padding: 0;
                 width: auto;
                 border: none;
-                @include typography.icon-button;
+                @include typography.icon-button-lg;
             }
             a#back-to-main-menu::before {
                 font-family: "Phosphor";
                 content: "\f0c3"; // phosphor caret-left icon
-                @include typography.icon-button;
+                @include typography.icon-button-lg;
             }
         }
         li.menu-label {
