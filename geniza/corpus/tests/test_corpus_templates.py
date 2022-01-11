@@ -267,7 +267,9 @@ class TestDocumentTabsSnippet:
 
         # disabled (not yet implemented) for MVP
         assertContains(
-            response, "<li class='disabled'><span>External Links</span></li>", html=True
+            response,
+            "<li class='disabled'><span>External Links</span></li>",
+            html=True,
         )
 
     @pytest.mark.skip("non-MVP feature")
