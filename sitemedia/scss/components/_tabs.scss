@@ -30,9 +30,20 @@
     }
     a {
         text-decoration: none;
+      position: relative;
+       /* use ::after for focus outline */
+        &::after {
+            content: "";
+            width: 80%;
+            height: 80%;
+            position: absolute;
+        }
         &:focus-visible {
+            outline: none;
+        }
+        &:focus-visible::after {
             outline: 0.1rem solid var(--tabs-focus);
-            outline-offset: -0.33rem;
+        }
         }
     }
     .disabled {
