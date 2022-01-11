@@ -155,6 +155,25 @@ class DocumentForm(forms.ModelForm):
             )
 
 
+class HasTranscriptionListFilter(admin.SimpleListFilter):
+    """Custom list filter for documents with associated transcription content"""
+
+    title = "Transcription"
+    parameter_name = "transcription"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", "Has transcription"),
+            ("no", "No transcription"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.filter(footnotes__content__has_key="html").distinct()
+        if self.value() == "no":
+            return queryset.exclude(footnotes__content__has_key="html").distinct()
+
+
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
     form = DocumentForm
@@ -194,12 +213,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
     list_filter = (
         "doctype",
-        (
-            "footnotes__content",
-            custom_empty_field_list_filter(
-                "transcription", "Has transcription", "No transcription"
-            ),
-        ),
+        HasTranscriptionListFilter,
         (
             "textblock__fragment__iiif_url",
             custom_empty_field_list_filter("IIIF image", "Has image", "No image"),
@@ -291,6 +305,14 @@ class DocumentAdmin(admin.ModelAdmin):
 
         # return queryset, use distinct not needed
         return queryset, False
+
+    def get_deleted_objects(self, objs, request):
+        # override delete to use *Document* instead of the Document proxy object;
+        # this avoids the delete permission problem caused by the generic relation
+        # for log entries (which cannot be deleted) on the proxy model
+        return super().get_deleted_objects(
+            Document.objects.filter(pk__in=[obj.pk for obj in objs]), request
+        )
 
     def save_model(self, request, obj, form, change):
         """Customize this model's save_model function and then execute the

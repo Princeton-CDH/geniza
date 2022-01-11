@@ -131,9 +131,13 @@ $text-size-5xl: 2rem; //     = 32px
     font-family: fonts.$primary;
     text-decoration-line: underline;
     text-decoration-style: solid;
-    text-decoration-color: var(--secondary);
-    text-decoration-thickness: 0.167rem;
-    text-underline-offset: 0.1rem;
+    text-decoration-thickness: 0.1875rem;
+    text-underline-offset: 0.2rem;
+    text-decoration-color: var(--link-primary);
+    &:hover,
+    &:active {
+        text-decoration-color: var(--link-secondary);
+    }
 }
 
 // "shelfmark" part of document titles
@@ -171,6 +175,16 @@ $text-size-5xl: 2rem; //     = 32px
     line-height: 1.2;
 }
 @mixin form-option-bold {
+    @include body-bold; // same font+sizes as body-bold
+    line-height: 1.2;
+}
+
+@mixin form-option-sm {
+    @include meta; // same font+sizes as meta-bold
+    line-height: 1.2;
+}
+
+@mixin form-option-sm-bold {
     @include meta-bold; // same font+sizes as meta-bold
     line-height: 1.2;
 }
@@ -206,6 +220,9 @@ $text-size-5xl: 2rem; //     = 32px
 // Icon buttons
 @mixin icon-button {
     font-size: 2.5rem;
+}
+@mixin icon-button-sm {
+    font-size: $text-size-lg;
 }
 
 // Temporary until new logo
