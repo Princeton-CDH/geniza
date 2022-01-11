@@ -19,6 +19,7 @@ jobs:
   # Get commit message, using HEAD if the event is "push", and HEAD^2 if the event is "pull_request".
   # From https://github.community/t/accessing-commit-message-in-pull-request-event/17158/15
   get_commit_msg:
+    name: Get commit message for key phrase
     runs-on: ubuntu-latest
     steps:
       - name: Checkout commits up to and including HEAD^2
@@ -34,7 +35,6 @@ jobs:
           elif [[ '${{ github.event_name }}' == 'pull_request' ]]; then
             echo ::set-output name=commit_message::$(git log --format=%B -n 1 HEAD^2)
           fi
-
     outputs:
       commit_message: echo "${{ steps.get_commit_message.outputs.commit_message }}"
 
