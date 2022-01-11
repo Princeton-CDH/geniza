@@ -19,7 +19,9 @@ jobs:
   visual-tests:
     name: Visual regression tests
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' || contains(github.event.head_commit.message, '[run percy]') }}
+    # on pull request: only run if the phrase "[run percy]" (including brackets) is present in the commit message
+    # on push to develop: run if the phrase "[skip percy]" (including brackets) is NOT present in the commit message
+    if: ${{ (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip percy]')) || contains(github.event.head_commit.message, '[run percy]') }}
     services:
       postgres:
         image: postgres:12
