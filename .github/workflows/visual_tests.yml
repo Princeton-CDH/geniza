@@ -19,6 +19,7 @@ jobs:
   visual-tests:
     name: Visual regression tests
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || contains(github.event.head_commit.message, '[run percy]') }}
     services:
       postgres:
         image: postgres:12
