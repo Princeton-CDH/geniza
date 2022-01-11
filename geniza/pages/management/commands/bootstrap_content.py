@@ -136,7 +136,11 @@ class Command(BaseCommand):
             description="Example page",
             slug="content",
             body=content.replace(  # get static URLs for test images
-                "test-image-fragment.jpg", static("test-image-fragment.jpg")
-            ).replace("test-image-tagnetwork.png", static("test-image-tagnetwork.png")),
+                "test-image-fragment.jpg",
+                static("img/fixtures/test-image-fragment.jpg"),
+            ).replace(
+                "test-image-tagnetwork.png",
+                static("img/fixtures/test-image-tagnetwork.png"),
+            ),
             live=True,
         )

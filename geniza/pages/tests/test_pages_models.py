@@ -7,6 +7,13 @@ from wagtail.core.models.sites import Site
 from geniza.pages.models import ContainerPage, ContentPage, HomePage
 
 
+class TestHomePage:
+    @pytest.mark.django_db
+    def test_get_context(self):
+        home_page = HomePage()
+        assert home_page.get_context(HttpRequest())["page_type"] == "homepage"
+
+
 class TestContentPage:
     @pytest.mark.django_db
     def test_get_context(self):

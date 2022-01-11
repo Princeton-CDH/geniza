@@ -13,8 +13,12 @@
                 {# Translators: accessibility label for 'home' button in main navigation #}
                 {% translate "home" as aria_home %}
                 {# Translators: site name label for 'home' button in main navigation #}
-                {% translate "GENIZA" as site_name %}
-                <a class="home-link" href="/" aria-label="{{ aria_home }}" role="button">{{ site_name }}</a>
+                {% translate "The Princeton Geniza Project" as site_name %}
+                <a class="home-link" href="/" aria-label="{{ aria_home }}" role="button">
+                    <svg>
+                        <use href="{% static 'img/logos/pgp-logo.svg' %}#logo" />
+                    </svg>
+                </a>
             </li>
             <li class="menu-button">
                 <a id="open-main-menu" href="#menu" role="button">
@@ -25,10 +29,6 @@
         </ul>
         {% url "corpus:document-search" as search_url %}
         <ul id="menu" role="menu" aria-label="{{ main_nav_label }}">
-            <li class="home" role="none">
-                {# Translators: label for 'home' button in main navigation #}
-                <a class="home-link" href="/" aria-label="{{ aria_home }}" role="button">{{ site_name }}</a>
-            </li>
             <li class="menu-button" role="none">
                 <a href="#" role="button">
                     {# Translators: label for 'menu' close button for mobile navigation #}
@@ -50,37 +50,24 @@
                             href="#{{ top_level_page.slug }}"
                             aria-haspopup="true"
                             aria-expanded="false"
-                            role="button">
+                            role="button"
+                            {% for child_page in top_level_page.localized.get_children.live.in_menu %}
+                                {% pageurl child_page.localized as child_page_url %}
+                                {% if request.path == child_page_url %}aria-current="page"{% endif %}
+                            {% endfor %}
+                        >
                             {{ top_level_page.localized.title }}
                         </a>
-                        <ul class="sub-menu" id="{{ top_level_page.slug }}" role="menu" aria-label="{{ top_level_page.localized.slug }}">
-                            <li class="menu-button" role="none">
-                                <a id="back-to-main-menu" href="#menu" role="button">
-                                    {# Translators: label for main menu back button for mobile navigation #}
-                                    {% translate "Return to main menu" as back_button %}
-                                    <span class="sr-only">{{ back_button }}</span>
-                                </a>
-                            </li>
-                            <li class="menu-label" role="none">
-                                <span>{{ top_level_page.localized.title }}</span>
-                            </li>
-                            <li class="menu-button" role="none">
-                                <a href="#" role="button">
-                                    <span class="sr-only">{{ close_button }}</span>
-                                </a>
-                            </li>
-                            {% for child_page in top_level_page.localized.get_children.live.in_menu %}
-                                <li class="menu-item" role="none">
-                                    <a href="{% pageurl child_page.localized %}" role="menuitem">
-                                        {{ child_page.localized.title }}
-                                    </a>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                        {% include "snippets/sub_menu.html" %}
                     </li>
                 {% else %}
                     <li class="menu-item" role="none">
-                        <a href="{% pageurl top_level_page.localized %}" role="menuitem">
+                        {% pageurl top_level_page.localized as top_level_page_url %}
+                        <a
+                            href="{{ top_level_page_url }}"
+                            role="menuitem"
+                            {% if request.path == top_level_page_url %}aria-current="page"{% endif %}
+                        >
                             {{ top_level_page.localized.title }}
                         </a>
                     </li>

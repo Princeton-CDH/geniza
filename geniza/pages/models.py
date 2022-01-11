@@ -39,6 +39,11 @@ class HomePage(Page):
     class Meta:
         verbose_name = "homepage"
 
+    def get_context(self, request):
+        context = super(HomePage, self).get_context(request)
+        context["page_type"] = "homepage"
+        return context
+
 
 class ContainerPage(Page):
     """An empty :class:`Page` type that has :class:`ContentPage` instances

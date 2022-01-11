@@ -12,19 +12,27 @@
     flex-flow: row wrap;
     @include breakpoints.for-tablet-landscape-up {
         flex-flow: row nowrap;
-        align-items: flex-end;
+        align-items: center;
         justify-content: space-between;
+        height: 12rem;
+        padding-bottom: 4rem;
     }
     // Logotype, links to homepage
     a.home-link {
-        @include breakpoints.for-tablet-landscape-up {
-            color: var(--primary);
-            background-color: var(--on-primary);
-        }
         display: inline-block;
-        flex: none;
-        padding: spacing.$spacing-lg spacing.$spacing-md;
-        @include typography.home-button;
+        vertical-align: bottom;
+        svg {
+            fill: var(--logo);
+        }
+    }
+    a.home-link,
+    a.home-link svg {
+        width: 6.25rem;
+        height: 2.8rem;
+        @include breakpoints.for-tablet-landscape-up {
+            width: 12.5rem;
+            height: 5.625rem;
+        }
     }
     // Mobile-only menu buttons
     li.menu-button {
@@ -32,7 +40,11 @@
         a {
             display: flex;
             text-decoration: none;
-            @include typography.icon-button;
+            width: 3rem;
+            height: 3rem;
+            align-items: center;
+            justify-content: center;
+            @include typography.icon-button-lg;
             color: var(--on-background);
         }
     }
@@ -41,36 +53,65 @@
         display: flex;
         flex-flow: row wrap;
         align-items: center;
-        li.menu-button a::before {
-            font-family: "Phosphor";
-            content: "\f1fa";
+        height: 9rem;
+        margin-left: spacing.$spacing-md;
+        @include breakpoints.for-tablet-landscape-up {
+            height: auto;
+            margin: spacing.$spacing-2xl 0 0 spacing.$spacing-lg;
+            padding-top: spacing.$spacing-sm;
+        }
+        li {
+            margin-top: -#{spacing.$spacing-3xl};
+        }
+        li.menu-button {
+            margin-left: spacing.$spacing-sm;
+            a::before {
+                font-family: "Phosphor";
+                content: "\f1fa";
+            }
         }
     }
-    // List of links
+    // List of links in main nav bar
     ul#menu {
+        // Takes up full screen on mobile
         display: flex;
         left: calc(-100vw);
         transition: left 0.5s;
         position: fixed;
         flex-flow: row wrap;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-end;
         padding: 0;
         max-width: 100%;
         width: 100%;
         height: 100vh;
-        z-index: 100;
+        z-index: 2;
+        // Direct descendent menu buttons (mobile)
         & > li.menu-button {
             display: flex;
-            margin-right: spacing.$spacing-sm;
-            @include breakpoints.for-tablet-landscape-up {
-                display: none;
-            }
+            margin-right: spacing.$spacing-xs;
         }
         li.menu-button a::before {
             font-family: "Phosphor";
-            content: "\f36d";
+            content: "\f36d"; // phosphor X icon
         }
+        // All descendent menu buttons/labels (mobile)
+        li.menu-button,
+        li.menu-label {
+            height: 4rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        // First item after menu button should get extra space, and no border-top
+        li.menu-button + li.menu-item a {
+            padding-top: spacing.$spacing-2xl;
+            border-top: none;
+            @include breakpoints.for-tablet-landscape-up {
+                padding-top: 0;
+            }
+        }
+        // Move into view on :target with link to #ID
         &:target {
             left: 0;
             pointer-events: all;
@@ -80,28 +121,24 @@
                 transition: none;
             }
         }
+        // Positioning for desktop
         @include breakpoints.for-tablet-landscape-up {
             display: flex;
-            height: auto;
+            height: 100%;
             transition: none;
             left: auto;
             position: relative;
             flex: 1 0 auto;
             flex-flow: row nowrap;
             justify-content: flex-end;
-            outline: 1px solid;
             width: auto;
-            margin: 0 spacing.$spacing-sm 0 spacing.$spacing-2xl;
+            margin: 0 spacing.$spacing-4xl 0 spacing.$spacing-xl;
             pointer-events: all;
             & > li.menu-item + li.menu-item {
-                margin-left: spacing.$spacing-2xl;
-            }
-            & > li.menu-item:last-child {
-                margin-right: spacing.$spacing-4xl;
+                margin-left: spacing.$spacing-sm;
             }
         }
         outline-color: var(--primary);
-        background-color: var(--background);
     }
     li.menu-button,
     ul#menu li.home,
@@ -113,45 +150,56 @@
     }
 
     // Individual menu items
-    .menu-item,
-    .sub-menu .menu-item {
+    li.menu-item,
+    ul.sub-menu li.menu-item {
         flex: 1 0 100%;
         max-width: 100%;
         // Mobile links which need padding, inline-block, and border-top
         a {
             text-decoration: none;
-            padding: spacing.$spacing-2xl spacing.$spacing-sm
-                spacing.$spacing-lg;
+            padding: spacing.$spacing-lg spacing.$spacing-sm spacing.$spacing-lg;
             width: 100%;
             max-width: 100%;
             display: inline-block;
-            border-top: 1px solid var(--primary);
             @include typography.nav-link;
             @include typography.mobile-menu;
         }
-        & + .menu-item a,
-        & + .sub-menu .menu-item a {
-            padding-top: spacing.$spacing-lg;
-            border-top-color: var(--primary);
+        & + li.menu-item a,
+        & + ul.sub-menu li.menu-item a {
+            border-top: 1px solid colors.$gray;
             @include breakpoints.for-tablet-landscape-up {
                 padding-top: 0;
                 border: none;
             }
         }
+        // Last item in list should take up entire remaining vertical space
         &:last-child {
             height: 100%;
         }
+        // "Open sub-menu" style on mobile
         &.has-submenu a.open-sub-menu {
-            // Icon for sub-menu dropdown
             display: flex;
             flex-flow: row nowrap;
             align-items: center;
             justify-content: space-between;
             padding-top: spacing.$spacing-sm;
+            // Desktop overrides
+            @include breakpoints.for-tablet-landscape-up {
+                flex-flow: row wrap;
+                justify-content: flex-end;
+            }
             &::after {
+                display: block;
+                background: none;
                 font-family: "Phosphor";
                 content: "\f0c4"; // phosphor caret-right icon
-                @include typography.icon-button;
+                @include typography.icon-button-lg;
+                // Desktop overrides
+                @include breakpoints.for-tablet-landscape-up {
+                    display: block;
+                    content: "\00000a";
+                    height: 16px;
+                }
             }
             ul {
                 display: none;
@@ -163,33 +211,45 @@
         }
         @include breakpoints.for-tablet-landscape-up {
             // desktop links (strip some mobile styles)
+            height: 100%;
             flex: 0 0 auto;
-            padding: spacing.$spacing-xs 0;
+            align-items: center;
+            display: flex;
+            margin: spacing.$spacing-sm spacing.$spacing-xs 0 0;
             a {
-                display: inline;
+                min-width: 117px; // Width of the hover indicator
+                display: flex;
+                flex-flow: row wrap;
+                align-items: center;
+                justify-content: flex-end;
                 border: none;
                 padding: 0;
             }
+            // "Open sub-menu" link on desktop
             &.has-submenu {
-                height: auto;
-                &::after {
-                    font-family: "Phosphor";
-                    content: "\f0c2"; // phosphor caret-down icon
-                    float: right;
-                    margin-left: spacing.$spacing-xs;
-                    padding: 0;
-                }
                 a.open-sub-menu {
-                    display: inline;
-                    padding-top: 0;
-                    &::after {
-                        display: none;
+                    padding: 0;
+                    &::before {
+                        order: 1;
+                        font-family: "Phosphor";
+                        content: "\f0c2"; // phosphor caret-down icon
+                        margin-left: spacing.$spacing-xs;
+                        padding: 0;
+                        font-size: typography.$text-size-2xl;
+                        transition: transform 0.75s ease;
                     }
+                }
+                // Rotate caret up
+                &.open a.open-sub-menu::before,
+                a[aria-expanded="true"].open-sub-menu::before {
+                    transform: rotate(-180deg);
                 }
             }
         }
     }
-    .sub-menu {
+    // Sub-navigation menus (i.e. nested list)
+    ul.sub-menu {
+        // Sub menu mobile view
         display: flex;
         left: calc(100vw);
         transition: left 0.5s;
@@ -206,19 +266,19 @@
         li.menu-button {
             display: inline-block;
             width: auto;
-            padding: spacing.$spacing-lg spacing.$spacing-sm;
-            height: spacing.$spacing-3xl;
+            padding: 0 spacing.$spacing-sm 0 spacing.$spacing-2xs;
             a {
+                display: flex;
                 text-decoration: none;
                 padding: 0;
                 width: auto;
-                display: inline;
                 border: none;
+                @include typography.icon-button-lg;
             }
             a#back-to-main-menu::before {
                 font-family: "Phosphor";
                 content: "\f0c3"; // phosphor caret-left icon
-                @include typography.icon-button;
+                @include typography.icon-button-lg;
             }
         }
         li.menu-label {
@@ -234,36 +294,37 @@
                 left: auto;
             }
         }
+        // Sub menu (floating) desktop view
         @include breakpoints.for-tablet-landscape-up {
             display: none;
             left: auto;
             transition: none;
             flex: 1 0 auto;
             position: absolute;
-            top: 100%;
+            white-space: nowrap;
             width: auto;
             height: auto;
-            border: 1px solid var(--primary);
-            border-top: none;
-            li.menu-button,
-            li.menu-label {
-                display: none;
-            }
-            a[role="menuitem"] {
-                padding: 0 spacing.$spacing-md;
+            padding: spacing.$spacing-xl 0 spacing.$spacing-sm;
+            top: 100%;
+            box-shadow: 0px 2px 4px var(--secondary-80);
+            li.menu-item {
+                padding: 0;
+                margin-top: 0;
+                a[role="menuitem"] {
+                    padding: 0 spacing.$spacing-md;
+                    justify-content: flex-start;
+                }
             }
         }
-        background-color: var(--background);
     }
-    a.open-sub-menu:hover + .sub-menu,
-    li:hover .sub-menu,
-    .sub-menu:hover,
-    li.has-submenu.open .sub-menu {
+
+    // Keep sub menu open on desktop when hovering
+    a.open-sub-menu:hover + ul.sub-menu,
+    li:hover ul.sub-menu,
+    ul.sub-menu:hover,
+    li.has-submenu.open ul.sub-menu {
         @include breakpoints.for-tablet-landscape-up {
             display: block;
-            li.menu-item {
-                display: block;
-            }
         }
     }
 
@@ -272,4 +333,166 @@
         @include typography.nav-bold;
         @include typography.mobile-menu;
     }
+    // Hide mobile menu buttons and labels in desktop
+    li.menu-button,
+    li.menu-label,
+    ul#menu li.menu-button,
+    ul#menu li.menu-label,
+    ul#menu:target li.menu-button,
+    ul#menu:target li.menu-label,
+    ul#about-menu:target li.menu-button,
+    ul#about-menu:target li.menu-label {
+        @include breakpoints.for-tablet-landscape-up {
+            display: none;
+        }
+    }
+    // Hover indicator for nav links
+    a::after {
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            content: "\00000a"; // Newline
+            white-space: pre;
+            order: 2;
+            flex: 1 0 117px;
+            display: block;
+            height: 16px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            margin-right: -#{spacing.$spacing-xl};
+            margin-top: spacing.$spacing-3xs;
+        }
+    }
+    a:hover::after,
+    a[aria-current="page"]::after {
+        @include breakpoints.for-tablet-landscape-up {
+            opacity: 100% !important;
+        }
+    }
+    // Gets cluttered in sub-menu, so only show when hovering
+    ul.sub-menu {
+        @include breakpoints.for-tablet-landscape-up {
+            a::after {
+                position: relative;
+                right: spacing.$spacing-md;
+                margin-top: 0;
+            }
+            a[aria-current="page"]::after {
+                opacity: 0% !important;
+            }
+            a:hover::after {
+                opacity: 100% !important;
+            }
+        }
+    }
+}
+
+// Header backgrounds for light and dark mode, mobile
+@mixin header-background-mobile-dark {
+    background: url("/static/img/ui/mobile/dark/header-base.svg"),
+        linear-gradient(to right, rgba(22, 22, 22, 0), colors.$black 20rem),
+        url("/static/img/ui/mobile/dark/header-image.png");
+    background-repeat: no-repeat, no-repeat, no-repeat;
+}
+@mixin header-background-mobile-light {
+    background: url("/static/img/ui/mobile/light/header-base.svg"),
+        linear-gradient(to right, rgba(255, 255, 255, 0), white 20rem),
+        url("/static/img/ui/mobile/light/header-image.png");
+    background-repeat: no-repeat, no-repeat, no-repeat;
+}
+
+// Header backgrounds for light and dark mode, desktop
+@mixin header-background-desktop-dark {
+    background: url("/static/img/ui/desktop/dark/header-base.svg"),
+        linear-gradient(to right, rgba(22, 22, 22, 0), colors.$black 90rem),
+        url("/static/img/ui/desktop/dark/header-image.png");
+    background-repeat: no-repeat, no-repeat, no-repeat;
+}
+@mixin header-background-desktop-light {
+    background: url("/static/img/ui/desktop/light/header-base.svg"),
+        linear-gradient(to right, rgba(255, 255, 255, 0), white 90rem),
+        url("/static/img/ui/desktop/light/header-image.png");
+    background-repeat: no-repeat, no-repeat, no-repeat;
+}
+
+// Nav theme overrides for light mode
+@mixin light-nav {
+    @include header-background-mobile-light;
+    @include breakpoints.for-tablet-landscape-up {
+        @include header-background-desktop-light;
+    }
+    ul#menu,
+    ul.sub-menu {
+        @include header-background-mobile-light;
+        background-color: var(--background);
+        @include breakpoints.for-tablet-landscape-up {
+            background: none;
+        }
+    }
+    ul.sub-menu {
+        background-color: var(--background);
+        @include breakpoints.for-tablet-landscape-up {
+            // Hack to look like submenu is layered underneath the menu
+            background: linear-gradient(
+                to bottom,
+                rgba(86, 120, 86, 0.05),
+                rgba(255, 255, 255, 0.2) 1rem
+            );
+        }
+    }
+    a::after {
+        @include breakpoints.for-tablet-landscape-up {
+            background: url("/static/img/ui/desktop/light/menu-hover.svg")
+                center !important;
+            background-repeat: no-repeat !important;
+        }
+    }
+}
+
+// Nav theme overrides for dark mode
+@mixin dark-nav {
+    @include header-background-mobile-dark;
+    @include breakpoints.for-tablet-landscape-up {
+        @include header-background-desktop-dark;
+    }
+    ul#menu,
+    ul.sub-menu {
+        @include header-background-mobile-dark;
+        background-color: var(--background);
+        @include breakpoints.for-tablet-landscape-up {
+            background: none;
+        }
+    }
+    ul.sub-menu {
+        background-color: var(--background);
+        @include breakpoints.for-tablet-landscape-up {
+            // Hack to look like submenu is layered underneath the menu
+            background: linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0.01),
+                rgba(255, 255, 255, 0) 17px
+            );
+        }
+    }
+    a::after {
+        @include breakpoints.for-tablet-landscape-up {
+            background: url("/static/img/ui/desktop/dark/menu-hover.svg") center !important;
+            background-repeat: no-repeat !important;
+        }
+    }
+}
+
+// Applying background image and gradient per system theme
+.site-nav {
+    @include light-nav;
+    @media (prefers-color-scheme: dark) {
+        @include dark-nav;
+    }
+}
+
+// Manual (body-class based) theme overrides
+body.light-mode .site-nav {
+    @include light-nav;
+}
+body.dark-mode .site-nav {
+    @include dark-nav;
 }

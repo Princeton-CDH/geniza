@@ -7,11 +7,25 @@
 @use "../base/spacing";
 
 div.controls {
+    // Controls mobile layout: centered, below header
     display: flex;
-    align-items: flex-start;
     position: absolute;
-    top: spacing.$spacing-xs;
-    right: spacing.$spacing-sm;
+    top: spacing.$spacing-4xl;
+    margin-top: -#{spacing.$spacing-sm};
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    @include breakpoints.for-tablet-landscape-up {
+        // Controls desktop layout: top right corner
+        z-index: 3;
+        width: auto;
+        flex-direction: row;
+        align-items: flex-start;
+        margin-top: auto;
+        right: spacing.$spacing-sm;
+        top: 0;
+        padding-top: spacing.$spacing-xs;
+    }
 
     // Language switcher form
     form#language {
@@ -20,30 +34,30 @@ div.controls {
             direction: rtl;
         }
     }
-    // Light mode/dark mode theme toggle checkbox
 
+    // Light mode/dark mode theme toggle checkbox
     label#theme-toggle {
         margin-right: spacing.$spacing-xs;
         @include breakpoints.for-tablet-landscape-up {
             margin-right: spacing.$spacing-md;
         }
         &::before {
-            content: "\f2fe";
+            content: "\f2fe"; // phosphor sun icon
             font-family: "Phosphor" !important;
             color: var(--on-background);
         }
         &::after {
-            content: "\f21f";
+            content: "\f21f"; // phosphor moon icon
             font-family: "Phosphor" !important;
             color: var(--on-background);
         }
         input + span::before {
-            content: "\f32a";
+            content: "\f32a"; // phosphor toggle-left icon
             font-family: "Phosphor" !important;
             color: var(--on-background);
         }
         input:checked + span::before {
-            content: "\f32b";
+            content: "\f32b"; // phosphor toggle-right icon
             font-family: "Phosphor" !important;
             color: var(--on-background);
         }

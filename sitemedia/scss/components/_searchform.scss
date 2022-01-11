@@ -134,7 +134,7 @@
                 &::after {
                     font-family: "Phosphor";
                     content: "\f0c2"; // phosphor caret-down icon
-                    @include typography.icon-button;
+                    @include typography.icon-button-md;
                 }
             }
             &:focus {
@@ -228,7 +228,7 @@
             @include typography.icon-button-sm;
             @include breakpoints.for-tablet-landscape-up {
                 content: "\f20a"; // phosphor magnifying glass icon
-                @include typography.icon-button;
+                @include typography.icon-button-md;
             }
         }
     }
@@ -264,7 +264,7 @@
             &::after {
                 font-family: "Phosphor";
                 content: "\f0c2"; // phosphor caret-down icon
-                @include typography.icon-button;
+                @include typography.icon-button-md;
                 transition: transform 0.75s ease;
                 float: right;
             }
