@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-01-04 10:31-0500\n"
-"PO-Revision-Date: 2022-01-07 15:42\n"
+"PO-Revision-Date: 2022-01-11 15:05\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en_US\n"
@@ -48,7 +48,7 @@ msgid "Sort by"
 msgstr ""
 
 #. Translators: label for document type search form filter
-#: geniza/corpus/forms.py:141
+#: geniza/corpus/forms.py:144
 msgid "Document Type"
 msgstr ""
 
@@ -96,13 +96,18 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
+#. Translators: Button to open or close sort options menu
+#: geniza/corpus/templates/corpus/document_list.html:34
+msgid "Toggle sort options menu"
+msgstr ""
+
 #. Translators: Search submit button
-#: geniza/corpus/templates/corpus/document_list.html:22
+#: geniza/corpus/templates/corpus/document_list.html:43
 msgid "Submit search"
 msgstr ""
 
 #. Translators: number of search results
-#: geniza/corpus/templates/corpus/document_list.html:38
+#: geniza/corpus/templates/corpus/document_list.html:57
 #, python-format
 msgid "1 result"
 msgid_plural "%(count_humanized)s total results"
