@@ -30,8 +30,8 @@
     }
     a {
         text-decoration: none;
-      position: relative;
-       /* use ::after for focus outline */
+        position: relative;
+        /* use ::after for focus outline */
         &::after {
             content: "";
             width: 80%;
@@ -43,7 +43,6 @@
         }
         &:focus-visible::after {
             outline: 0.1rem solid var(--tabs-focus);
-        }
         }
     }
     .disabled {
