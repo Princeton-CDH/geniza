@@ -1,0 +1,34 @@
+{% load i18n static %}
+
+{# Translators: accessibility text label for footer site navigation #}
+{% translate "footer navigation" as footer_nav_label %}
+<nav id="footer-nav">
+    <ul id="footer-links">
+        <li class="menu-item" role="none">
+            {# Translators: label for 'home' link in footer navigation #}
+            <a href="/">{% translate "Home" %}</a>
+        </li>
+        {% include "snippets/menu.html" %}
+        <li class="external-link" role="none">
+            <a href="https://genizalab.princeton.edu/" aria-label="{% translate 'Princeton Geniza Lab homepage' %}">
+                <svg>
+                    <use href="{% static 'img/logos/pgl-logo.svg' %}#pgl-logo" />
+                </svg>
+            </a>
+        </li>
+        <li class="external-link" role="none">
+            <a href="https://cdh.princeton.edu/" aria-label="{% translate 'Princeton Center for Digital Humanities homepage' %}">
+                <svg>
+                    <use href="{% static 'img/logos/cdh-logo.svg' %}#cdh-logo" />
+                </svg>
+            </a>
+        </li>
+        <li class="external-link" role="none">
+            <a href="https://princeton.edu/" aria-label="{% translate 'Princeton University homepage' %}">
+                <svg>
+                    <use href="{% static 'img/logos/princeton-logo.svg' %}#princeton-logo" />
+                </svg>
+            </a>
+        </li>
+    </ul>
+</nav>

@@ -1,0 +1,21 @@
+// -----------------------------------------------------------------------------
+// Site footer that appears on every page.
+// -----------------------------------------------------------------------------
+
+footer {
+    height: 885px;
+
+    // footer background
+    background: url("/static/img/ui/mobile/dark/footer-gradient.svg") top,
+        url("/static/img/ui/mobile/dark/footer-image.png") top,
+        url("/static/img/ui/mobile/dark/footer-base.svg") top;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-size: 100% auto, 100% auto, 100% auto;
+
+    // footer site navigation
+    nav#footer-nav {
+        svg {
+            fill: var(--logo);
+        }
+    }
+}

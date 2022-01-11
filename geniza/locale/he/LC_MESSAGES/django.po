@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-01-04 10:31-0500\n"
+"POT-Creation-Date: 2022-01-11 14:00-0500\n"
 "PO-Revision-Date: 2021-12-20 18:31\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -54,12 +54,14 @@ msgid "Document Type"
 msgstr "סוג המסמך"
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:602
+#: geniza/corpus/models.py:611
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr "סוג לא ידוע"
 
+#. Translators: label for 'home' link in footer navigation
 #: geniza/corpus/templates/admin/corpus/app_index.html:9
+#: geniza/templates/footer.html:9
 msgid "Home"
 msgstr "דף הבית"
 
@@ -68,8 +70,12 @@ msgstr "דף הבית"
 msgid "Metadata"
 msgstr "מטא-דאטא"
 
+#: geniza/corpus/templates/corpus/document_detail.html:34
+msgid "Shelfmark"
+msgstr "Shelfmark"
+
 #. Translators: Editor label
-#: geniza/corpus/templates/corpus/document_detail.html:37
+#: geniza/corpus/templates/corpus/document_detail.html:39
 msgid "Editor"
 msgid_plural "Editors"
 msgstr[0] "עורך"
@@ -78,24 +84,24 @@ msgstr[2] ""
 msgstr[3] ""
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:52
+#: geniza/corpus/templates/corpus/document_detail.html:57
 #: geniza/corpus/templates/corpus/snippets/document_result.html:18
 msgid "Input date"
 msgstr "תאריך קלט"
 
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:56
+#: geniza/corpus/templates/corpus/document_detail.html:61
 msgid "Permalink"
 msgstr "קישור קבוע"
 
 #. Translators: label for tags on a document
-#: geniza/corpus/templates/corpus/document_detail.html:66
+#: geniza/corpus/templates/corpus/document_detail.html:71
 #: geniza/corpus/templates/corpus/snippets/document_result.html:95
 msgid "Tags"
 msgstr "תגים"
 
 #. Translators: label for document description
-#: geniza/corpus/templates/corpus/document_detail.html:77
+#: geniza/corpus/templates/corpus/document_detail.html:82
 msgid "Description"
 msgstr "תיאור"
 
@@ -246,12 +252,12 @@ msgid "Search and browse Geniza documents."
 msgstr "חיפוש וצפיה במסמכי הגניזה."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:207
+#: geniza/corpus/views.py:208
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "רשומה קשורה ל-%(doc)s"
 
-#: geniza/corpus/views.py:214
+#: geniza/corpus/views.py:215
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
@@ -261,22 +267,22 @@ msgstr[2] "%(count)d רשומות קשורות ל %(doc)s"
 msgstr[3] "%(count)d רשומות קשורות ל %(doc)s"
 
 #. Translators: attribution for local IIIF manifests
-#: geniza/corpus/views.py:311
+#: geniza/corpus/views.py:337
 msgid "Princeton Geniza Project"
 msgstr "פרוייקט הגניזה של פרינסטון"
 
-#: geniza/corpus/views.py:312
+#: geniza/corpus/views.py:338
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr "קובץ על-ידי %(pgp)s."
 
-#: geniza/corpus/views.py:315
+#: geniza/corpus/views.py:341
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr "קובץ ותועתק על-ידי %(pgp)s."
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: geniza/corpus/views.py:317
+#: geniza/corpus/views.py:343
 msgid "Additional restrictions may apply."
 msgstr "קיימות מגבלות נוספות."
 
@@ -300,6 +306,13 @@ msgstr "ניהול האתר"
 msgid "Skip to main content"
 msgstr "דילוג לתוכן"
 
+#. Translators: accessibility text label for footer site navigation
+#: geniza/templates/footer.html:4
+#, fuzzy
+#| msgid "main navigation"
+msgid "footer navigation"
+msgstr "ניווט"
+
 #. Translators: accessibility text label for site navigation
 #: geniza/templates/nav.html:8
 msgid "main navigation"
@@ -312,11 +325,13 @@ msgstr "דף הבית"
 
 #. Translators: site name label for 'home' button in main navigation
 #: geniza/templates/nav.html:16
-msgid "GENIZA"
-msgstr "גניזה"
+#, fuzzy
+#| msgid "Princeton Geniza Project"
+msgid "The Princeton Geniza Project"
+msgstr "פרוייקט הגניזה של פרינסטון"
 
 #. Translators: label for 'menu' open button for mobile navigation
-#: geniza/templates/nav.html:22
+#: geniza/templates/nav.html:26
 msgid "Open main navigation menu"
 msgstr "פתיחת תפריט ניווט"
 
@@ -324,16 +339,6 @@ msgstr "פתיחת תפריט ניווט"
 #: geniza/templates/nav.html:35
 msgid "Close main navigation menu"
 msgstr "סגירת תפריט ניווט"
-
-#. Translators: label for link to 'Search' page in main navigation
-#: geniza/templates/nav.html:42
-msgid "Search"
-msgstr "חיפוש"
-
-#. Translators: label for main menu back button for mobile navigation
-#: geniza/templates/nav.html:60
-msgid "Return to main menu"
-msgstr "חזרה לתפריט הראשי"
 
 #. Translators: label for language choices in navigation
 #: geniza/templates/snippets/language_switcher.html:14
@@ -347,10 +352,23 @@ msgctxt "choose this option"
 msgid "go"
 msgstr "שינוי שפה"
 
+#. Translators: label for link to 'Search' page in main navigation
+#: geniza/templates/snippets/menu.html:6
+msgid "Search"
+msgstr "חיפוש"
+
+#. Translators: label for main menu back button for mobile navigation
+#: geniza/templates/snippets/sub_menu.html:8
+msgid "Return to main menu"
+msgstr "חזרה לתפריט הראשי"
+
 #. Translators: label for dark mode/light mode theme switcher
 #: geniza/templates/snippets/theme_toggle.html:9
 msgid "Enable dark mode"
 msgstr ""
+
+#~ msgid "GENIZA"
+#~ msgstr "גניזה"
 
 #~ msgid "about menu"
 #~ msgstr "תפריט אודות"
@@ -375,6 +393,3 @@ msgstr ""
 
 #~ msgid "FAQ"
 #~ msgstr "שאלות נפוצות"
-
-#~ msgid "Shelfmark"
-#~ msgstr "Shelfmark"
