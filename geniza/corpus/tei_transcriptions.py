@@ -85,14 +85,41 @@ class GenizaTei(teimap.Tei):
 
         return "\n".join(html)
 
+    rtl_mark = "\u200F"
+    ltr_mark = "\u200E"
+
     def text_to_plaintext(self):
         lines = []
         # because blocks are indicated by labels without containing elements,
         # iterate over all lines and create blocks based on the labels
+
+        if not self.text.lines:
+            print("no lines here? pgpid %s " % (self.pgpid,))
+
+        # determine longest line so we can pad the text
+        longest_line = max(len(str(line)) for line in self.text.lines)
+        # some files have descriptions that are making lines much too long,
+        # so set a limit on line length
+        if longest_line > 100:
+            longest_line = 100
         for line in self.text.lines:
             if line.name == "label":
                 # blank line to indicate breaks between blocks
                 lines.append("")
+                lines.append("%s%s" % (self.ltr_mark, line))
             elif line.name == "l":
-                lines.append(str(line))
+                line_num = line.number or ""
+                # combine line text with line number and right justify;
+                # right justify line number
+                lines.append(
+                    " ".join(
+                        [
+                            self.rtl_mark,
+                            str(line).rjust(longest_line),
+                            self.ltr_mark,
+                            line_num.rjust(3),
+                        ]
+                    )
+                )
+
         return "\n".join(lines)
