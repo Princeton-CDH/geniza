@@ -441,11 +441,10 @@
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             // Hack to look like submenu is layered underneath the menu
-            background: linear-gradient(
-                to bottom,
-                rgba(86, 120, 86, 0.05),
-                rgba(255, 255, 255, 0.2) 1rem
-            );
+            background: url("/static/img/ui/desktop/light/header-base.svg"),
+                linear-gradient(to bottom, var(--background), var(--background))
+                    top;
+            background-attachment: fixed, local;
         }
     }
     a::after {
@@ -475,11 +474,10 @@
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             // Hack to look like submenu is layered underneath the menu
-            background: linear-gradient(
-                to bottom,
-                rgba(255, 255, 255, 0.01),
-                rgba(255, 255, 255, 0) 17px
-            );
+            background: url("/static/img/ui/desktop/dark/header-base.svg"),
+                linear-gradient(to bottom, var(--background), var(--background))
+                    top;
+            background-attachment: fixed, local;
         }
     }
     a::after {
