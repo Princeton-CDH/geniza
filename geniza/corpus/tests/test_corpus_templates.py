@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 from django.core.paginator import Paginator
 from django.http.request import HttpRequest, QueryDict
+from django.template.defaultfilters import linebreaks
 from django.template.loader import get_template
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
@@ -426,10 +427,10 @@ class TestDocumentResult:
             "page_obj": self.page_obj,
         }
 
-        # template currently has truncate chars 75; just check that the beginning
+        # template currently has truncate chars 150; just check that the beginning
         # of the transcription is there
         rendered = self.template.render(context)
-        assert transcription_txt[:75] in rendered
+        assert linebreaks(transcription_txt)[:150] in rendered
         # language not specified
         assert 'lang=""' in rendered
 

@@ -93,7 +93,7 @@ class DocumentSearchView(ListView, FormMixin):
                     .highlight(
                         "transcription",
                         method="unified",
-                        fragsize=50,
+                        fragsize=150,  # try including more context
                         requireFieldMatch=True,
                     )
                     .also("score")
