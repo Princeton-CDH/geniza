@@ -340,10 +340,19 @@
     ul#menu li.menu-label,
     ul#menu:target li.menu-button,
     ul#menu:target li.menu-label,
-    ul#about-menu:target li.menu-button,
-    ul#about-menu:target li.menu-label {
+    ul[id$="-menu"]:target li.menu-button,
+    ul[id$="-menu"]:target li.menu-label {
         @include breakpoints.for-tablet-landscape-up {
             display: none;
+        }
+    }
+    // Don't let anchor target jump around on desktop
+    ul[id$="-menu"]:target::before {
+        @include breakpoints.for-tablet-landscape-up {
+            content: "";
+            display: block;
+            height: 1px;
+            margin-top: -1px;
         }
     }
     // Hover indicator for nav links
