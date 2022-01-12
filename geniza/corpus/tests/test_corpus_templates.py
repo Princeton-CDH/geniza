@@ -32,8 +32,13 @@ class TestDocumentDetailTemplate:
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<li>bill of sale</li>", html=True)
-        assertContains(response, "<li>real estate</li>", html=True)
+        for tag in ["bill of sale", "real estate"]:
+            assertContains(
+                response,
+                "<li><a href='/en/documents/?q=tag:\"%(tag)s\"' rel='tag'>%(tag)s</li>"
+                % {"tag": tag},
+                html=True,
+            )
 
     def test_description(self, client, document):
         """Document detail template should include document description"""
@@ -335,6 +340,22 @@ class TestDocumentResult:
         assert "15 Transcriptions" in result
         assert "Translation" not in result
         assert "Discusion" not in result
+
+    def test_tags(self):
+        tags = ["bill of sale", "real estate"]
+        result = self.template.render(
+            context={
+                "document": {"pgpid": 1, "id": "document.1", "tags": tags},
+                "highlighting": {},
+                "page_obj": self.page_obj,
+            }
+        )
+        for tag in tags:
+            assert (
+                "<li><a href='/en/documents/?q=tag:\"%(tag)s\"'>%(tag)s</a></li>"
+                % {"tag": tag}
+                in result
+            )
 
     def test_multiple_scholarship_types(self):
         result = self.template.render(

@@ -95,7 +95,7 @@
                 <h3 class="sr-only">{% translate 'Tags' %}</h3>
                 <ul class="tags">
                     {% for tag in document.tags|alphabetize|slice:":5" %}
-                        <li>{{ tag }}</li>
+                        <li><a href='{% url "corpus:document-search" %}?q=tag:"{{ tag }}"'>{{ tag }}</a></li>
                     {% endfor %}
                 </ul>
             {% endif %}
