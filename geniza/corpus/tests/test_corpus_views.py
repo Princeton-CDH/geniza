@@ -292,7 +292,7 @@ class TestDocumentSearchView:
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_called_with("six apartments")
             mock_sqs.keyword_search.return_value.highlight.assert_any_call(
-                "description", snippets=3, method="unified"
+                "description", snippets=3, method="unified", requireFieldMatch=True
             )
             mock_sqs.also.assert_called_with("score")
             mock_sqs.also.return_value.order_by.assert_called_with("-score")
