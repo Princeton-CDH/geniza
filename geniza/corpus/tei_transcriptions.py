@@ -98,8 +98,10 @@ class GenizaTei(teimap.Tei):
         # because blocks are indicated by labels without containing elements,
         # iterate over all lines and create blocks based on the labels
 
+        # errors if there are no lines; sync transcription now checks
+        # and won't call in that case
         if not self.text.lines:
-            print("no lines here? pgpid %s " % (self.pgpid,))
+            return
 
         # determine longest line so we can pad the text
         longest_line = max(len(str(line)) for line in self.text.lines)
