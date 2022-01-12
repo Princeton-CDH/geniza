@@ -2,8 +2,11 @@
 // Site footer that appears on every page.
 // -----------------------------------------------------------------------------
 
+@use "../base/typography";
+
 footer {
     height: 885px;
+    @include typography.meta;
 
     // footer background
     background: url("/static/img/ui/mobile/dark/footer-gradient.svg") top,
@@ -14,8 +17,61 @@ footer {
 
     // footer site navigation
     nav#footer-nav {
+        padding: 5rem 3.5rem 1rem;
+        ul {
+            display: grid;
+            grid-template-rows: repeat(3, auto);
+            grid-auto-flow: column dense;
+            grid-auto-columns: 1fr 1fr;
+            a {
+                text-decoration: none;
+            }
+            li {
+                margin-bottom: 0.5rem;
+            }
+            li.has-submenu {
+                grid-row-end: span 20; // Hack to get tight grid
+                ul {
+                    display: flex;
+                    flex-flow: column;
+                    a {
+                        margin-left: 1rem;
+                    }
+                }
+            }
+        }
+    }
+
+    ul#footer-links {
+        text-align: center;
         svg {
             fill: var(--logo);
+            &#pgl-logo {
+                width: 177px;
+                height: 85px;
+            }
+        }
+    }
+
+    // copyright text
+    li.copyright {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        span {
+            margin: 0 0 0.1rem 0.3rem;
+        }
+        &::before {
+            @include typography.icon-button-md;
+            content: "\f115"; // phosphor copyright icon
+            font-family: "Phosphor" !important;
+        }
+    }
+
+    li.license {
+        text-align: center;
+        img {
+            width: 2rem;
         }
     }
 }

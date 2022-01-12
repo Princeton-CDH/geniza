@@ -3,38 +3,45 @@
 {# Translators: accessibility text label for footer site navigation #}
 {% translate "footer navigation" as footer_nav_label %}
 <nav id="footer-nav">
-    <ul id="footer-links">
+    <ul>
         <li class="menu-item" role="none">
             {# Translators: label for 'home' link in footer navigation #}
             <a href="/">{% translate "Home" %}</a>
         </li>
         {% include "snippets/menu.html" %}
-        <li class="external-link" role="none">
-            <a href="https://genizalab.princeton.edu/" aria-label="{% translate 'Princeton Geniza Lab homepage' %}">
-                <svg>
-                    <use href="{% static 'img/logos/pgl-logo.svg' %}#pgl-logo" />
-                </svg>
-            </a>
-        </li>
-        <li class="external-link" role="none">
-            <a href="https://cdh.princeton.edu/" aria-label="{% translate 'Princeton Center for Digital Humanities homepage' %}">
-                <svg>
-                    <use href="{% static 'img/logos/cdh-logo.svg' %}#cdh-logo" />
-                </svg>
-            </a>
-        </li>
-        <li class="external-link" role="none">
-            {% translate 'Creative Commons CC-BY license' as license_text %}
-            <a href="https://creativecommons.org/licenses/by/2.0/" aria-label="{{ license_text }}">
-                <img src="{% static 'img/icons/license-icon.svg' %}" alt="{{ license_text }}" />
-            </a>
-        </li>
-        <li class="external-link" role="none">
-            <a href="https://princeton.edu/" aria-label="{% translate 'Princeton University homepage' %}">
-                <svg>
-                    <use href="{% static 'img/logos/princeton-logo.svg' %}#princeton-logo" />
-                </svg>
-            </a>
-        </li>
     </ul>
 </nav>
+
+<ul id="footer-links">
+    <li class="external-link" role="none">
+        <a href="https://genizalab.princeton.edu/" aria-label="{% translate 'Princeton Geniza Lab homepage' %}">
+            <svg id="pgl-logo">
+                <use href="{% static 'img/logos/pgl-logo.svg' %}#pgl-logo" />
+            </svg>
+        </a>
+    </li>
+    <li class="external-link" role="none">
+        <a href="https://cdh.princeton.edu/" aria-label="{% translate 'Princeton Center for Digital Humanities homepage' %}">
+            <svg>
+                <use href="{% static 'img/logos/cdh-logo.svg' %}#cdh-logo" />
+            </svg>
+        </a>
+    </li>
+    <li class="copyright" role="none">
+        {# Translators: Official name of Princeton University's board of trustees, for footer #}
+        <span>{% now 'Y' %} {% translate 'The Trustees of Princeton University' %}</span>
+    </li>
+    <li class="license" role="none">
+        {% translate 'Creative Commons CC-BY license' as license_text %}
+        <a href="https://creativecommons.org/licenses/by/2.0/" aria-label="{{ license_text }}">
+            <img src="{% static 'img/icons/license-icon.svg' %}" alt="{{ license_text }}" />
+        </a>
+    </li>
+    <li class="external-link" role="none">
+        <a href="https://princeton.edu/" aria-label="{% translate 'Princeton University homepage' %}">
+            <svg>
+                <use href="{% static 'img/logos/princeton-logo.svg' %}#princeton-logo" />
+            </svg>
+        </a>
+    </li>
+</ul>
