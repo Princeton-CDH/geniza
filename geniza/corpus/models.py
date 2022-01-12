@@ -302,7 +302,7 @@ class DocumentSignalHandlers:
             return
 
         doc_filter = {"%s__pk" % doc_attr: instance.pk}
-        docs = DocumentPrefetchableProxy.items_to_index().filter(**doc_filter)
+        docs = Document.items_to_index().filter(**doc_filter)
         if docs.exists():
             logger.debug(
                 "%s %s, reindexing %d related document(s)",
@@ -580,22 +580,35 @@ class Document(ModelIndexable):
         ).distinct()
 
     @classmethod
+    def total_to_index(cls):
+        # quick count for parasolr indexing (don't do prefetching just to get the total!)
+        return cls.objects.count()
+
+    @classmethod
     def items_to_index(cls):
         """Custom logic for finding items to be indexed when indexing in
         bulk."""
-        # TODO: can we share common/reused prefetching logic
-        # in a custom qureyset filter or similar? (adapted here from admin)
-        return cls.objects.select_related("doctype").prefetch_related(
-            "tags",
-            "languages",
-            "footnotes",
-            "log_entries",
-            Prefetch(
-                "textblock_set",
-                queryset=TextBlock.objects.select_related(
-                    "fragment", "fragment__collection"
+        # NOTE: some overlap with prefetching used for django admin
+        return (
+            DocumentPrefetchableProxy.objects.select_related("doctype")
+            .prefetch_related(
+                "tags",
+                "languages",
+                "footnotes",
+                "footnotes__source",
+                "footnotes__source__authorship",
+                "footnotes__source__authorship__creator",
+                "footnotes__source__source_type",
+                "footnotes__source__languages",
+                "log_entries",
+                Prefetch(
+                    "textblock_set",
+                    queryset=TextBlock.objects.select_related(
+                        "fragment", "fragment__collection"
+                    ),
                 ),
-            ),
+            )
+            .distinct()
         )
 
     def index_data(self):
@@ -830,6 +843,17 @@ class DocumentPrefetchableProxy(Document):
         proxy = True
 
     log_entries = GenericRelation(LogEntry, related_query_name="document")
+
+    @classmethod
+    def items_to_index(cls):
+        # parasolr is picking this up as an indexable since it extends Document,
+        # but we don't actually want to index it!
+        return []
+
+    @staticmethod
+    def total_to_index():
+        # tell parasolr, nothing to index here
+        return 0
 
 
 class TextBlock(models.Model):
