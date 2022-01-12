@@ -4,8 +4,18 @@
 
 @use "../base/typography";
 
+// Mixin used for icons to the left of text (span or link)
+@mixin icon-and-text {
+    a::before,
+    span::before {
+        @include typography.icon-button-md;
+        font-family: "Phosphor" !important;
+        margin: 0 0.2rem 0 0;
+        vertical-align: middle;
+    }
+}
+
 footer {
-    height: 885px;
     @include typography.meta;
 
     // footer background
@@ -17,7 +27,7 @@ footer {
 
     // footer site navigation
     nav#footer-nav {
-        padding: 5rem 3.5rem 1rem;
+        padding: 5rem 3.5rem 0;
         ul {
             display: grid;
             grid-template-rows: repeat(3, auto);
@@ -34,7 +44,7 @@ footer {
                 ul {
                     display: flex;
                     flex-flow: column;
-                    a {
+                    li.menu-item {
                         margin-left: 1rem;
                     }
                 }
@@ -42,33 +52,50 @@ footer {
         }
     }
 
+    // footer links to PGL, Princeton, etc
     ul#footer-links {
         text-align: center;
         svg {
             fill: var(--logo);
+            margin-top: 1.5rem;
             &#pgl-logo {
                 width: 177px;
                 height: 85px;
+            }
+            &#cdh-logo {
+                width: 108px;
+                height: 80px;
+            }
+            &#princeton-logo {
+                margin-top: 0;
+                width: 185px;
+                height: 63px;
+            }
+        }
+
+        // social links
+        ul.social li {
+            @include icon-and-text;
+            a.twitter::before {
+                content: "\f341"; // phosphor twitter-logo icon
+            }
+            a.instagram::before {
+                content: "\f1e1"; // phosphor instagram-logo icon
             }
         }
     }
 
     // copyright text
     li.copyright {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        span {
-            margin: 0 0 0.1rem 0.3rem;
-        }
-        &::before {
-            @include typography.icon-button-md;
+        @include icon-and-text;
+        span::before {
             content: "\f115"; // phosphor copyright icon
-            font-family: "Phosphor" !important;
         }
     }
 
+    // CC-BY license icon
     li.license {
+        margin: 0.5rem 0;
         text-align: center;
         img {
             width: 2rem;
