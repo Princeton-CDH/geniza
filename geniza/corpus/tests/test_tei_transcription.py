@@ -48,9 +48,14 @@ def test_html():
 def test_text_to_plaintext():
     tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
     plaintext = tei.text_to_plaintext()
-    assert plaintext.count("\n") == 39
+    assert plaintext.count("\n") == 43
     # two section breaks
-    assert plaintext.count("\n\n") == 2
-    assert "Right Margin" not in plaintext
+    assert plaintext.count("\n\n") == 4
+    # includes labels
+    assert "Right Margin" in plaintext
     assert "מא" in plaintext
     assert "الحسن بن ابرهيم" in plaintext
+    # includes line numbers and ltr/rtl marks
+    assert (
+        "\u200f        כתאבי אטאל אללה בקא מולי אלשיך ואדאם \u200e   1\n" in plaintext
+    )
