@@ -42,7 +42,9 @@ class TestDocumentRelationTypesFilter:
     def test_queryset(self, source):
         footnote_args = {
             "source": source,
-            "content_type_id": ContentType.objects.get(model="document").id,
+            "content_type_id": ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
             "object_id": 0,
         }
 
@@ -110,7 +112,9 @@ class TestSourceAdmin:
         Footnote.objects.create(
             doc_relation=["E"],
             source=source,
-            content_type_id=ContentType.objects.get(model="document").id,
+            content_type_id=ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
             object_id=0,
         )
 
@@ -135,11 +139,16 @@ class TestSourceAdmin:
         source_admin = SourceAdmin(model=Source, admin_site=admin.site)
         qs = source_admin.get_queryset("rqst")
 
+        # add a url to one of the sources
+        source.url = "http://example.com"
+        source.save()
+
         for source, source_data in zip(qs, source_admin.tabulate_queryset(qs)):
             # test some properties
             assert source.title in source_data
             assert source.journal in source_data
             assert source.year in source_data
+            assert source.url in source_data
 
             # test compiled data
             for authorship in source.authorship_set.all():
@@ -268,7 +277,9 @@ class TestSourceFootnoteInline:
         footnote = Footnote.objects.create(
             doc_relation=["E"],
             source=source,
-            content_type_id=ContentType.objects.get(model="document").id,
+            content_type_id=ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
             object_id=0,
         )
         doc = Document.objects.create()

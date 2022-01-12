@@ -1,17 +1,20 @@
 from ast import literal_eval
 
 from django.db.models.query import Prefetch
-from django.http import Http404
+from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect
 from django.urls import reverse
-from django.utils.text import Truncator
+from django.utils.html import strip_tags
+from django.utils.text import Truncator, slugify
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormMixin
+from piffle.presentation import IIIFPresentation
 from tabular_export.admin import export_to_csv_response
 
 from geniza.common.utils import absolutize_url
+from geniza.corpus import iiif_utils
 from geniza.corpus.forms import DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
@@ -62,7 +65,8 @@ class DocumentSearchView(ListView, FormMixin):
         return kwargs
 
     def get_queryset(self):
-        documents = DocumentSolrQuerySet()
+        # limit to documents with published status (i.e., no suppressed documents)
+        documents = DocumentSolrQuerySet().filter(status=Document.STATUS_PUBLIC)
         form = self.get_form()
         # return empty queryset if not valid
         if not form.is_valid():
@@ -73,12 +77,25 @@ class DocumentSearchView(ListView, FormMixin):
             search_opts = form.cleaned_data
 
             if search_opts["q"]:
+                # NOTE: using requireFieldMatch so that field-specific search
+                # terms will NOT be usind for highlighting text matches
+                # (unless they are in the appropriate field)
                 documents = (
                     documents.keyword_search(search_opts["q"])
-                    .highlight("description", snippets=3, method="unified")
+                    .highlight(
+                        "description",
+                        snippets=3,
+                        method="unified",
+                        requireFieldMatch=True,
+                    )
                     # return smaller chunk of highlighted text for transcriptions
                     # since the lines are often shorter, resulting in longer text
-                    .highlight("transcription", method="unified", fragsize=50)
+                    .highlight(
+                        "transcription",
+                        method="unified",
+                        fragsize=50,
+                        requireFieldMatch=True,
+                    )
                     .also("score")
                 )  # include relevance score in results
 
@@ -127,9 +144,8 @@ class DocumentSearchView(ListView, FormMixin):
                 "page_description": self.page_description,
                 "page_title": self.page_title,
                 "page_type": "search",
-                "highlighting": self.queryset.get_highlighting()
-                if self.queryset
-                else {},
+                "page_includes_transcriptions": True,  # preload transcription font
+                "highlighting": highlights,
             }
         )
         return context_data
@@ -161,8 +177,9 @@ class DocumentDetailView(DocumentPastIdMixin, DetailView):
     """public display of a single :class:`~geniza.corpus.models.Document`"""
 
     model = Document
-
     context_object_name = "document"
+    #: bound name of this view, for use in generating absolute url for redirect
+    viewname = "corpus:document"
 
     def page_title(self):
         return self.get_object().title
@@ -182,19 +199,22 @@ class DocumentDetailView(DocumentPastIdMixin, DetailView):
                 "page_title": self.page_title(),
                 "page_description": self.page_description(),
                 "page_type": "document",
+                # preload transcription font when appropriate
+                "page_includes_transcriptions": self.object.has_transcription(),
             }
         )
         return context_data
 
     def get_absolute_url(self):
         """Get the permalink to this page."""
-        return absolutize_url(reverse("corpus:document", args=[self.kwargs["pk"]]))
+        return absolutize_url(reverse(self.viewname, args=[self.kwargs["pk"]]))
 
 
 class DocumentScholarshipView(DocumentDetailView):
     """List of :class:`~geniza.footnotes.models.Footnote`s for a Document"""
 
     template_name = "corpus/document_scholarship.html"
+    viewname = "corpus:document-scholarship"
 
     def page_title(self):
         # Translators: title of document scholarship page
@@ -225,20 +245,206 @@ class DocumentScholarshipView(DocumentDetailView):
 
         return queryset.filter(footnotes__isnull=False)
 
-    def get_absolute_url(self):
-        """Get the permalink to this page."""
-        return absolutize_url(
-            reverse("corpus:document-scholarship", args=[self.kwargs["pk"]])
-        )
-
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
         context_data.update(
             {
                 "page_type": "scholarship",
+                # transcription font not needed on this page
+                "page_includes_transcriptions": False,
             }
         )
         return context_data
+
+
+class DocumentTranscriptionText(DocumentDetailView):
+    """Return transcription as plain text for download"""
+
+    viewname = "corpus:document-transcription-text"
+
+    def get(self, request, *args, **kwargs):
+        document = self.get_object()
+        try:
+            edition = document.editions().get(pk=self.kwargs["transcription_pk"])
+            authors = [slugify(a.last_name) for a in edition.source.authors.all()]
+            filename = "PGP_%d_%s.txt" % (document.id, "_".join(authors))
+
+            return HttpResponse(
+                edition.content["text"],
+                headers={
+                    "Content-Type": "text/plain; charset=UTF-8",
+                    # prompt download with filename including pgpid & authors
+                    "Content-Disposition": 'attachment; filename="%s"' % filename,
+                },
+            )
+        except (Footnote.DoesNotExist, KeyError):
+            # if there is no footnote, or no plain text content, return 404
+            raise Http404
+
+
+class DocumentManifestView(DocumentDetailView):
+    """Generate a IIIF Presentation manifest for a document,
+    incorporating available canvases and attaching transcription
+    content via annotation."""
+
+    viewname = "corpus:document-manifest"
+
+    def get(self, request, *args, **kwargs):
+        document = self.get_object()
+        # should 404 if no images or no transcription
+        if not document.has_transcription() and not document.has_image():
+            raise Http404
+
+        iiif_urls = document.iiif_urls()
+        local_manifest_id = self.get_absolute_url()
+        first_canvas = None
+
+        manifest = iiif_utils.new_iiif_manifest()
+        manifest.id = local_manifest_id
+        manifest.label = document.title
+        # we probably want other metadata as well...
+        manifest.metadata = [{"label": "PGP ID", "value": str(document.id)}]
+        manifest.description = document.description
+
+        canvases = []
+        # keep track of unique attributions so we can include them all
+        attributions = set()
+        for url in iiif_urls:
+            remote_manifest = IIIFPresentation.from_url(url)
+            # CUDL attribution has some variation in tags;
+            # would be nice to preserve tagged version,
+            # for now, ignore tags so we can easily de-dupe
+            attributions.add(strip_tags(remote_manifest.attribution))
+            for canvas in remote_manifest.sequences[0].canvases:
+                # do we want local canvas id, or rely on remote id?
+                local_canvas = dict(canvas)
+                if first_canvas is None:
+                    first_canvas = local_canvas
+                # TODO: can we build this from djiffy canvas?
+
+                # adding provenance per recommendation from folks on IIIf Slack
+                # to track original source of this canvas
+                local_canvas["partOf"] = [
+                    {
+                        "@id": str(remote_manifest.id),
+                        "@type": "sc:Manifest",
+                        "label": {
+                            "en": ["original source: %s" % remote_manifest.label]
+                        },
+                    }
+                ]
+
+                # NOTE: would be nice to attach the annotation list to every canvas,
+                # so transcription will be available with any page,
+                # but canvas id needs to match annotation target
+                canvases.append(local_canvas)
+
+        manifest.sequences = [{"@type": "sc:Sequence", "canvases": canvases}]
+        # TODO: add a PGP logo here? combine logos?
+        # NOTE: multiple logos do not seem to work with iiif presentation 2.0;
+        # (or at least, do not display in Mirador)
+        # in 3.0 we can use multiple provider blocks, but no viewer supports it yet
+
+        extra_attrs = "\n".join("<p>%s</p>" % attr for attr in attributions)
+        # Translators: attribution for local IIIF manifests
+        pgp = _("Princeton Geniza Project")
+        attribution = _("Compilation by %(pgp)s." % {"pgp": pgp})
+        # Translators: attribution for local IIIF manifests that include transcription
+        if document.has_transcription():
+            attribution = _("Compilation and transcription by %(pgp)s." % {"pgp": pgp})
+        # Translators: manifest attribution note that content from other institutions may have restrictions
+        additional_restrictions = _("Additional restrictions may apply.")
+
+        manifest.attribution = """<div><p>%s</p><p>%s</p>%s</div>""" % (
+            attribution,
+            additional_restrictions,
+            extra_attrs,
+        )
+
+        # if transcription is available, add an annotation list to first canvas
+        if document.has_transcription():
+            other_content = {
+                "@context": "http://iiif.io/api/presentation/2/context.json",
+                "@id": absolutize_url(
+                    reverse("corpus:document-annotations", args=[document.pk]),
+                    request=request,  # request is needed to avoid getting https:// urls in dev
+                ),
+                "@type": "sc:AnnotationList",
+            }
+            # if there are no images available, use an empty canvas
+            if not first_canvas:
+                first_canvas = iiif_utils.empty_iiif_canvas()
+                canvases.append(first_canvas)
+
+            # attach annotation list
+            first_canvas["otherContent"] = other_content
+
+        return JsonResponse(dict(manifest), encoder=iiif_utils.AttrDictEncoder)
+
+
+class DocumentAnnotationListView(DocumentDetailView):
+    """Generate a IIIF Annotation List for a document to make transcription
+    content available for inclusion in local IIIF manifest."""
+
+    viewname = "corpus:document-annotations"
+
+    def get(self, request, *args, **kwargs):
+        document = self.get_object()
+        digital_editions = document.digital_editions()
+        # while sync transcription is in transition, we need to check for
+        # html transcription content
+        digital_editions = [de for de in digital_editions if "html" in de.content]
+        # if there is no transcription content, 404
+        if not digital_editions:
+            raise Http404
+
+        # get absolute url for the current page to use as annotation list id
+        annotation_list_id = self.get_absolute_url()
+        # create outer annotation list structure
+        annotation_list = iiif_utils.new_annotation_list()
+        annotation_list.id = annotation_list_id
+        # for now, annotate the first canvas
+        # get a list of djiffy manifests
+        manifests = [
+            b.fragment.manifest
+            for b in document.textblock_set.all()
+            if b.fragment.iiif_url
+        ]
+        canvas = None
+        if manifests and manifests[0]:
+            canvas = manifests[0].canvases.first()
+        # fallback to loading the remote manifest; (is this needed?)
+
+        if not canvas:
+            iiif_urls = document.iiif_urls()
+            if iiif_urls:
+                manifest = IIIFPresentation.from_url(iiif_urls[0])
+                canvas = manifest.sequences[0].canvases[0]
+            else:
+                # if there are no images available, use an empty canvas
+                canvas = iiif_utils.empty_iiif_canvas()
+
+        resources = []
+        digital_editions = document.digital_editions()
+        # handle multiple transcriptions
+        for i, transcription in enumerate(digital_editions, start=1):
+            annotation = {
+                # uri for this annotation; base on annotation list uri
+                "@id": "%s#%d" % (annotation_list_id, i),
+                "@type": "oa:Annotation",
+                "motivation": "sc:painting",
+                # transcribing should be a supported motivation (maybe 3.0?);
+                # but mirador does not displayit
+                # "motivation": "sc:transcribing",
+                "resource": transcription.iiif_annotation_content(),
+                # annotate the entire canvas for now
+                "on": "%s#xywh=0,0,%d,%d" % (canvas.id, canvas.width, canvas.height),
+            }
+            resources.append(annotation)
+
+        annotation_list["resources"] = resources
+
+        return JsonResponse(dict(annotation_list), encoder=iiif_utils.AttrDictEncoder)
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #

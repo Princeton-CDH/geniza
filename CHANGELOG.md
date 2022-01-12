@@ -1,5 +1,45 @@
 # Change Log
 
+## 0.8
+
+-   Removed add_links manage command frmo version 0.7 (one-time import)
+
+## 0.7
+
+-   document search
+    -   As a user I would like to know explicitly when a search result does not have any scholarship records so that I don't have to compare with results that do.
+    -   As a user I would like to see transcription excerpts in my search results so I can tell which records have a transcription and can see some of the content.
+    -   As a user I would like to see which page I'm on when viewing search results and navigate between pages so I can see more results.
+    -   As a user I would like to filter my search by document type so that I can view specific types of documents.
+    -   As a user, I want to sort search results by the number of scholarship records so I can easily find documents with scholarly work available or that have not been written about.
+    -   As a user, when I search on shelfmark I want to see documents associated directly with that fragment before documents that include the shelfmark in a description or notes, so I can easily find documents by shelfmark.
+    -   As a user viewing search results, when my search terms occur in the description I want to see keywords in context so that I can see why the document was included in the search results.
+    -   As a user, I want to see document titles that include shelfmark and type so I can distinguish documents at a glance.
+-   document details
+    -   As a user, if I try to access a document by an old PGPID, I want to be automatically redirected to the correct page so that I can find the record I'm looking for.
+    -   As a user I would like to see a permalink for each document so that I can easily document, remember and share links.
+    -   As a user I would like to see scholarship records for each document so that I can learn more about research that has been done about each document
+    -   As a front-end user, I want to see brief citations in the Document Detail view, more concise than those in Scholarship Records.
+    -   Scholarship reference citations should include language if it is specified and not English
+    -   As a front-end user, I want to be able to quickly see the section a footnote is referencing in a particular source.
+    -   As a user, I want to see images and transcription, if any, for all fragments associated with a document so I can see the full contents that are available.
+-   As an admin, I want data from PGP v3 links database imported into the new database so that I can manage links from the main admin site.
+-   As an admin, I want an easy way to get from the public document view to the edit view on the admin site, so I can make edits and correct errors.
+-   As an admin, I want numeric footnote locations automatically prefixed with 'pp.' so the meaning of the numbers will be clear to public site users.
+-   As an admin, I want TEI transcription content regularly synchronized to the new database so that transcriptions are updated with changes in the current system.
+-   As a content editor, I want to create and edit content pages on the site so that I can update text on the site when information changes.
+-   As a content editor, I want to to download a list of sources which have footnote “editions” so that we can determine which books have yet to be mined for transcriptions.
+-   As a user, I want to change site language so that I can switch languages when I don't want to use the browser-detected default.
+-   bugfix: scholarship counts should always be displayed in search results
+-   bugfix: omit volume when outputting footnote/source string for unpublished sources (i.e. Goitein "typed texts")
+-   Design and UI:
+    -   Update sitewide type to use purchased fonts, new styles
+    -   Implement sites styles for navigation on desktop and mobile
+    -   Implement designs for search form
+-   Configured Lighthouse CI testing with GitHub Actions
+-   Implemented visual review workflow with Percy and GitHub Actions
+-   Configured and applied `djhtml` commmit hook for consistent formatting in django templates
+
 ## 0.6
 
 -   As a content editor, I want duplicate joined documents to be automatically merged without losing their unique metadata, so that I don't have to merge them manually.

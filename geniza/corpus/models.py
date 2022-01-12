@@ -13,8 +13,10 @@ from django.db.models.functions.text import Lower
 from django.db.models.query import Prefetch
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from django.utils.translation import activate
+from django.utils.translation import activate, get_language
 from django.utils.translation import gettext as _
+from djiffy.importer import ManifestImporter
+from djiffy.models import Manifest
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
@@ -168,10 +170,15 @@ class Fragment(TrackChangesModel):
         help_text="Enter text here if an administrator needs to review this fragment.",
     )
 
+    manifest = models.ForeignKey(Manifest, null=True, on_delete=models.SET_NULL)
+
     created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
 
     objects = FragmentManager()
+
+    # NOTE: may want to add optional ForeignKey to djiffy Manifest here
+    # (or property to find by URI if not an actual FK)
 
     class Meta:
         ordering = ["shelfmark"]
@@ -186,6 +193,7 @@ class Fragment(TrackChangesModel):
         # if there is no iiif for this fragment, bail out
         if not self.iiif_url:
             return None
+        # TODO: switch this to use locally cached version!
         images = []
         labels = []
         manifest = IIIFPresentation.from_url(self.iiif_url)
@@ -223,6 +231,18 @@ class Fragment(TrackChangesModel):
                 self.old_shelfmarks = ";".join(old_shelfmarks - {self.shelfmark})
             else:
                 self.old_shelfmarks = self.initial_value("shelfmark")
+
+        # if iiif url is set and manifest is not available, or iiif url has changed,
+        # import the manifest
+        if self.iiif_url and not self.manifest or self.has_changed("iiif_url"):
+            # if iiif url has changed and there is a value, import and update
+            if self.iiif_url:
+                ManifestImporter().import_paths([self.iiif_url])
+                self.manifest = Manifest.objects.filter(uri=self.iiif_url).first()
+            else:
+                # otherwise, clear the associated manifest (iiif url has been removed)
+                self.manifest = None
+
         super(Fragment, self).save(*args, **kwargs)
 
 
@@ -282,7 +302,7 @@ class DocumentSignalHandlers:
             return
 
         doc_filter = {"%s__pk" % doc_attr: instance.pk}
-        docs = Document.items_to_index().filter(**doc_filter)
+        docs = DocumentPrefetchableProxy.items_to_index().filter(**doc_filter)
         if docs.exists():
             logger.debug(
                 "%s %s, reindexing %d related document(s)",
@@ -321,7 +341,7 @@ class Document(ModelIndexable):
         help_text='Refer to <a href="%s" target="_blank">PGP Document Type Guide</a>'
         % settings.PGP_DOCTYPE_GUIDE,
     )
-    tags = TaggableManager(blank=True)
+    tags = TaggableManager(blank=True, related_name="tagged_document")
     languages = models.ManyToManyField(
         LanguageScript, blank=True, verbose_name="Primary Languages"
     )
@@ -341,10 +361,12 @@ class Document(ModelIndexable):
     old_pgpids = ArrayField(models.IntegerField(), null=True, verbose_name="Old PGPIDs")
 
     PUBLIC = "P"
+    STATUS_PUBLIC = "Public"
     SUPPRESSED = "S"
+    STATUS_SUPPRESSED = "Suppressed"
     STATUS_CHOICES = (
-        (PUBLIC, "Public"),
-        (SUPPRESSED, "Suppressed"),
+        (PUBLIC, STATUS_PUBLIC),
+        (SUPPRESSED, STATUS_SUPPRESSED),
     )
     #: status of record; currently choices are public or suppressed
     status = models.CharField(
@@ -389,7 +411,14 @@ class Document(ModelIndexable):
     )
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
-    log_entries = GenericRelation(LogEntry, related_query_name="document")
+
+    @property
+    def log_entries(self):
+        return LogEntry.objects.filter(
+            object_id=self.id,
+            content_type__app_label="corpus",
+            content_type__model="document",
+        ).distinct()
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution
@@ -400,6 +429,13 @@ class Document(ModelIndexable):
 
     def __str__(self):
         return f"{self.shelfmark_display or '??'} (PGPID {self.id or '??'})"
+
+    @staticmethod
+    def get_by_any_pgpid(pgpid):
+        """Find a document by current or old pgpid"""
+        return Document.objects.filter(
+            models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
+        ).first()
 
     @property
     def shelfmark(self):
@@ -478,8 +514,9 @@ class Document(ModelIndexable):
     def permalink(self):
         # generate permalink without language url so that all versions
         # have the same link and users will be directed preferred language
-        activate("en")
-        return absolutize_url(self.get_absolute_url().replace("/en/", "/"))
+        # - get current active language, or default langue if not active
+        lang = get_language() or settings.LANGUAGE_CODE
+        return absolutize_url(self.get_absolute_url().replace(f"/{lang}/", "/"))
 
     def iiif_urls(self):
         """List of IIIF urls for images of the Document's Fragments."""
@@ -778,9 +815,21 @@ class Document(ModelIndexable):
                 log_entry.change_message,
                 doc.pk,
             )
-            log_entry.save()
+
             # - associate with the primary document
-            self.log_entries.add(log_entry)
+            log_entry.object_id = self.id
+            log_entry.content_type_id = ContentType.objects.get_for_model(Document)
+            log_entry.save()
+
+
+class DocumentPrefetchableProxy(Document):
+    """Proxy model for :class:`Document` that overrides the `log_entries` property
+    in order to make it a :class:`GenericRelation`."""
+
+    class Meta:
+        proxy = True
+
+    log_entries = GenericRelation(LogEntry, related_query_name="document")
 
 
 class TextBlock(models.Model):

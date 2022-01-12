@@ -27,6 +27,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "modeltranslation",  # this has to come before admin config
+    "wagtail.documents",  # this also has to come first to unregister
+    "wagtail.images",  #    this also has to come first to unregister
     "geniza.apps.GenizaAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -45,9 +47,22 @@ INSTALLED_APPS = [
     "admin_log_entries",
     "parasolr",
     "webpack_loader",
+    "djiffy",
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",
+    "geniza.pages.apps.PagesConfig",
+    "wagtail.contrib.forms",
+    "wagtail.contrib.redirects",
+    "wagtail.embeds",
+    "wagtail.sites",
+    "wagtail.users",
+    "wagtail.snippets",
+    "wagtail.admin",
+    "wagtail.core",
+    "wagtail_localize",
+    "wagtail_localize.locales",
+    "modelcluster",
 ]
 
 MIDDLEWARE = [
@@ -60,6 +75,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # "csp.middleware.CSPMiddleware",
+    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 
 ROOT_URLCONF = "geniza.urls"
@@ -149,12 +165,13 @@ LANGUAGE_CODE = "en"
 TIME_ZONE = "America/New_York"
 
 USE_I18N = True
+WAGTAIL_I18N_ENABLED = True
 
 USE_L10N = True
 
 USE_TZ = True
 
-LANGUAGES = [
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
     ("en", "English"),
     ("he", "Hebrew"),
     ("ar", "Arabic"),
@@ -251,9 +268,31 @@ CSP_IMG_SRC = (
 # exclude admin and cms urls from csp directives since they're authenticated
 CSP_EXCLUDE_URL_PREFIXES = ("/admin", "/cms")
 
+# use jpg instead of png since some providers only support jpg
+DJIFFY_THUMBNAIL_FORMAT = "jpg"
+# disable djiffy import check, since we are not using djiffy views
+# DJIFFY_IMPORT_CHECK_SUPPORTED = False
+
 # URL for git repository of TEI transcriptions
 TEI_TRANSCRIPTIONS_GITREPO = (
     "https://bitbucket.org/benjohnston/princeton-geniza-project.git"
 )
 # local path where git repo should be cloned
 TEI_TRANSCRIPTIONS_LOCAL_PATH = "data/tei_xml"
+
+# Media root for user uploads (required by wagtail)
+MEDIA_ROOT = BASE_DIR / "media"
+
+# Media URL for user uploads (required by wagtail)
+MEDIA_URL = "/media/"
+
+# Wagtail site name
+WAGTAIL_SITE_NAME = "GENIZA"
+
+# default font base url
+FONT_URL_PREFIX = "/static/fonts/"
+
+# Taggit customization
+TAGGIT_TAGS_FROM_STRING = "geniza.common.utils.custom_tag_string"
+# See issue #499
+# TAGGIT_CASE_INSENSITIVE = True

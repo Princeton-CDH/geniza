@@ -7,9 +7,10 @@
     <link rel="canonical" href="{{ document.permalink }}" />
 {% endblock extrameta %}
 {% block extrascript %}
-    {% if document.iiif_urls %} {# mirador is slow, so only include if needed #}
+    {# mirador is slow, so only include if needed #}
+    {% if document.has_transcription or document.iiif_urls %}
         {# NOTE: referencing specific version avoids an extra render-blocking lookup #}
-        <script defer src="https://unpkg.com/mirador@3.2.0/dist/mirador.min.js" nonce="{{ request.csp_nonce}}"></script>
+        <script defer src="https://unpkg.com/mirador@3.3.0/dist/mirador.min.js" nonce="{{ request.csp_nonce}}"></script>
         <script defer src="{% static 'js/viewer.js' %}" nonce="{{ request.csp_nonce }}"></script>
     {% endif %}
 {% endblock extrascript %}
@@ -24,12 +25,14 @@
         {% include "corpus/snippets/document_tabs.html" %}
 
         <section>
-            <h2 class="sr-only">
+            <h3 class="sr-only">
                 {# Translators: label for document metadata section (editor, date, input date) #}
                 {% translate 'Metadata' %}
-            </h2>
+            </h3>
             {# metadata #}
             <dl class="metadata">
+                <dt>{% translate 'Shelfmark' %}</dt>
+                <dd>{{ document.shelfmark }}</dd>
                 {% if document.digital_editions %}
                     <dt>
                         {# Translators: Editor label #}
@@ -44,6 +47,9 @@
                         {% ifchanged %}
                             <dd>{{ ed.display|safe }}</dd>
                         {% endifchanged %}
+                        {% if ed.content.text %}
+                            <a style="text-align:right" href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">download as text</a>
+                        {% endif %}
                         {# link ? #}
                     {% endfor %}
                 {% endif %}
@@ -71,20 +77,18 @@
             {% endif %}
         </section>
         <section>
-            <h2>
+            <h3>
                 {# Translators: label for document description #}
                 {% translate 'Description' %}
-            </h2>
+            </h3>
             <p>{{ document.description }}</p>
         </section>
     </div>
 
     {# viewer #}
-    {% with iiif_urls=document.iiif_urls %}
-        {% if iiif_urls %}
-            <div class="iiif_wrapper">
-                <div id="iiif_viewer" data-iiif-urls="{{ iiif_urls|join:" " }}"></div>
-            </div>
-        {% endif %}
-    {% endwith %}
+    {% if document.has_transcription or document.iiif_urls %}
+        <div class="iiif_wrapper">
+            <div id="iiif_viewer" data-iiif-url="{% url "corpus:document-manifest" document.id %}" data-has-annotations="{{ document.has_transcription }}"></div>
+        </div>
+    {% endif %}
 {% endblock main %}

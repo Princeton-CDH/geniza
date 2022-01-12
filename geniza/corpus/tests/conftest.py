@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest.mock import Mock, patch
 
 import pytest
 from django.conf import settings
@@ -10,6 +11,7 @@ from django.utils.timezone import get_current_timezone, make_aware
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 
 
+@patch("geniza.corpus.models.ManifestImporter", Mock())
 def make_fragment():
     """A real fragment from CUL, with URLs for testing."""
     return Fragment.objects.create(
@@ -19,6 +21,7 @@ def make_fragment():
     )
 
 
+@patch("geniza.corpus.models.ManifestImporter", Mock())
 def make_multifragment():
     """A real multifragment object, with fake URLs for testing."""
     return Fragment.objects.create(

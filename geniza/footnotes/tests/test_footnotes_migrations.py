@@ -122,3 +122,59 @@ class AlterSourceEditionReverse(TestMigrations):
         Source = self.apps.get_model("footnotes", "Source")
         assert Source.objects.filter(title="Book 1").first().edition == ""
         assert Source.objects.filter(title="Book 2").first().edition == "2"
+
+
+@pytest.mark.last
+class TestFootnoteLocationPpMigration(TestMigrations):
+
+    app = "footnotes"
+    migrate_from = "0014_alter_source_edition"
+    migrate_to = "0015_add_footnote_location_pp"
+
+    def setUpBeforeMigration(self, apps):
+        Source = apps.get_model("footnotes", "Source")
+        SourceType = apps.get_model("footnotes", "SourceType")
+        Footnote = apps.get_model("footnotes", "Footnote")
+        ContentType = apps.get_model("contenttypes", "ContentType")
+
+        source_type = SourceType.objects.create(type="Unknown")
+        source = Source.objects.create(title="Book", source_type=source_type)
+        source_ctype = ContentType.objects.get(
+            app_label="footnotes", model="sourcetype"
+        )
+
+        # footnotes require a content object; use source type object as a stand-in
+        fn_opts = {
+            "source": source,
+            "object_id": source_type.pk,
+            "content_type": source_ctype,
+        }
+
+        # create footnotes with a variety of locations to update
+        Footnote.objects.bulk_create(
+            [
+                # single page
+                Footnote(location="5", **fn_opts),
+                Footnote(location="74", **fn_opts),
+                # page ranges (presumed)
+                Footnote(location="55-74", **fn_opts),
+                Footnote(location="23ff.", **fn_opts),
+                Footnote(location="44, doc 3", **fn_opts),
+                # don't prefix these
+                Footnote(location="49ב", **fn_opts),
+                Footnote(location="doc 5", **fn_opts),
+            ]
+        )
+
+    def test_locations_prefixed_pp(self):
+        Footnote = self.apps.get_model("footnotes", "Footnote")
+        # check for locations we expect to be modified / unmodified
+        # - single page
+        for page_loc in ["5", "74"]:
+            assert Footnote.objects.filter(location="p. %s" % page_loc).exists()
+        # - page range
+        for page_loc in ["55-74", "23ff.", "44, doc 3"]:
+            assert Footnote.objects.filter(location="pp. %s" % page_loc).exists()
+        # unmodified
+        for page_loc in ["doc 5", "49ב"]:
+            assert Footnote.objects.filter(location=page_loc).exists()

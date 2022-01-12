@@ -2,6 +2,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
+from django.utils import html
 from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 from gfklookupwidget.fields import GfkLookupField
@@ -158,13 +159,6 @@ class Source(models.Model):
                 author = author_lastnames[0]
 
         parts = []
-        url = self.url
-
-        if not url:
-            for fn in self.footnote_set.all():
-                if fn.url:
-                    url = fn.url
-                    break
 
         # Ensure that Unicode LTR mark is added after fields when RTL languages present
         rtl_langs = ["Hebrew", "Arabic", "Judaeo-Arabic"]
@@ -199,8 +193,8 @@ class Source(models.Model):
             )
 
         # Wrap title in link to URL
-        if url and work_title:
-            parts.append('<a href="%s">%s</a>' % (url, work_title))
+        if self.url and work_title:
+            parts.append('<a href="%s">%s</a>' % (self.url, work_title))
         elif work_title:
             parts.append(work_title)
 
@@ -341,6 +335,18 @@ class Source(models.Model):
     all_authors.short_description = "Authors"
     all_authors.admin_order_field = "first_author"  # set in admin queryset
 
+    @classmethod
+    def get_volume_from_shelfmark(cls, shelfmark):
+        """Given a shelfmark, get our volume label. This logic was determined in
+        migration 0011_split_goitein_typedtexts.py
+        """
+        if shelfmark.startswith("T-S"):
+            volume = shelfmark[0:6]
+            volume = "T-S Misc" if volume == "T-S Mi" else volume
+        else:
+            volume = shelfmark.split(" ")[0]
+        return volume
+
 
 class FootnoteQuerySet(models.QuerySet):
     def includes_footnote(self, other, include_content=True):
@@ -460,3 +466,20 @@ class Footnote(TrackChangesModel):
         "content as plain text, if available"
         if self.content:
             return self.content.get("text")
+
+    def iiif_annotation_content(self):
+        """Return transcription content from this footnote (if any)
+        as a IIIF annotation resource that can be associated with a canvas.
+        """
+        # For now, since we have no block/canvas information, return the
+        # whole thing as a single resource
+        html_content = self.content.get("html")
+        if html_content:
+            # this is the content that should be set as the "resource"
+            # of an annotation
+            return {
+                "@type": "cnt:ContentAsText",
+                "format": "text/html",
+                # language todo
+                "chars": "<div dir='rtl' class='transcription'>%s</div>" % html_content,
+            }

@@ -10,46 +10,44 @@
 .citation {
     counter-increment: search-counter;
     padding-bottom: spacing.$spacing-md;
-    font-size: typography.$text-size-2md;
     padding: 0 0 spacing.$spacing-md spacing.$spacing-xl;
     margin-left: -#{spacing.$spacing-lg};
     @include breakpoints.for-desktop-up {
-        font-size: typography.$text-size-lg;
         padding-left: spacing.$spacing-xl;
         margin-left: 0;
     }
+    @include typography.body;
     a {
-        font-size: typography.$text-size-2md;
-        @include breakpoints.for-desktop-up {
-            font-size: typography.$text-size-lg;
-        }
+        @include typography.link;
     }
     & + .citation {
         padding-top: spacing.$spacing-md;
-        border-top: 1px solid;
-        @include colors.apply-theme("gray-40-line", "border-top-color");
+        border-top: 0.1rem solid colors.$gray;
     }
     &::before {
         content: counter(search-counter);
         margin-left: -#{spacing.$spacing-xl};
         text-align: left;
         float: left;
-        font-weight: bold;
+        @include typography.body-bold;
     }
     .relation {
-        @include colors.apply-theme("gray-10-background", "background-color");
+        max-width: none; // required to span the whole width
+        background-color: var(--background-light);
         margin-left: -#{spacing.$spacing-xl};
         padding: spacing.$spacing-4xs 0 spacing.$spacing-4xs spacing.$spacing-xl;
-        font-size: typography.$text-size-md;
-        @include breakpoints.for-desktop-up {
-            font-size: typography.$text-size-2md;
-        }
         &:is(dt) {
             margin-top: spacing.$spacing-md;
-            font-style: italic;
+            @include typography.caption;
         }
         &:is(dd) {
             margin-bottom: spacing.$spacing-2xs;
+            @include typography.meta;
         }
+    }
+    div.unpublished {
+        color: colors.$gray;
+        margin-top: spacing.$spacing-3xs;
+        @include typography.unpublished;
     }
 }

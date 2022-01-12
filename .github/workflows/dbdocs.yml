@@ -3,10 +3,10 @@ name: dbdocs
 on:
   push:
     branches:
-      - develop # dev for now! switch to main later
+      - main
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [develop]
+    branches: [main]
 
 env:
   NODE_VERSION: 10
@@ -46,7 +46,7 @@ jobs:
 
       # Build and publish dbdocs
       - name: Generate DBML
-        run: python manage.py dbml corpus common > geniza.dbml
+        run: python manage.py dbml corpus common footnotes djiffy contenttypes > geniza.dbml
       - name: Push to dbdocs
         env:
           DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}

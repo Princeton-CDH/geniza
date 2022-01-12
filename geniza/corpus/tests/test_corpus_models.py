@@ -1,5 +1,5 @@
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from attrdict import AttrDict
@@ -7,15 +7,18 @@ from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.core.serializers import serialize
 from django.db import IntegrityError
+from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.utils.safestring import SafeString
+from django.utils.translation import activate, deactivate_all, get_language
+from djiffy.models import Manifest
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
+    DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -177,12 +180,15 @@ class TestFragment:
         assert isinstance(thumbnails, SafeString)
 
     @pytest.mark.django_db
-    def test_save(self):
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_save(self, mock_manifestimporter):
         frag = Fragment(shelfmark="TS 1")
         frag.save()
         frag.shelfmark = "TS 2"
         frag.save()
         assert frag.old_shelfmarks == "TS 1"
+        # should not try to import when there is no url
+        assert mock_manifestimporter.call_count == 0
 
         frag.shelfmark = "TS 3"
         frag.save()
@@ -202,6 +208,47 @@ class TestFragment:
         assert len(set(frag.old_shelfmarks.split(";"))) == len(
             frag.old_shelfmarks.split(";")
         )
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_save_import_manifest(self, mock_manifestimporter):
+        frag = Fragment(shelfmark="TS 1")
+        frag.save()
+        frag.shelfmark = "TS 2"
+        frag.save()
+        assert frag.old_shelfmarks == "TS 1"
+        # should not try to import when there is no url
+        assert mock_manifestimporter.call_count == 0
+
+        # should import when a iiif url is set
+        frag.iiif_url = "http://example.io/manifests/1"
+        # pre-create manifest that would be imported
+        manifest = Manifest.objects.create(uri=frag.iiif_url, short_id="m1")
+        frag.save()
+        mock_manifestimporter.assert_called_with()
+        mock_manifestimporter.return_value.import_paths.assert_called_with(
+            [frag.iiif_url]
+        )
+        # manifest should be set
+        assert frag.manifest == manifest
+
+        # should import when iiif url changes, even if manifest is set
+        frag.iiif_url = "http://example.io/manifests/2"
+        manifest2 = Manifest.objects.create(uri=frag.iiif_url, short_id="m2")
+        frag.save()
+        mock_manifestimporter.assert_called_with()
+        mock_manifestimporter.return_value.import_paths.assert_called_with(
+            [frag.iiif_url]
+        )
+        # new manifest should be set
+        assert frag.manifest == manifest2
+
+        # should not import and should remove manifest when unset
+        mock_manifestimporter.reset_mock()
+        frag.iiif_url = ""
+        frag.save()
+        assert mock_manifestimporter.call_count == 0
+        assert not frag.manifest
 
 
 @pytest.mark.django_db
@@ -227,6 +274,7 @@ class TestDocumentType:
 
 
 @pytest.mark.django_db
+@patch("geniza.corpus.models.ManifestImporter", Mock())
 class TestDocument:
     def test_shelfmark(self):
         # T-S 8J22.21 + T-S NS J193
@@ -348,12 +396,24 @@ class TestDocument:
 
     def test_permalink(self):
         """permalink property should be constructed from base url and absolute url, without any language code"""
+        current_lang = get_language()
+
+        # if non-default language is active, should stay activate
+        activate("he")
         doc = Document.objects.create(id=1)
         site_domain = Site.objects.get_current().domain.rstrip("/")
+        # document url should follow directly after site domain,
+        # with no language code
         assert f"{site_domain}/documents/1/" in doc.permalink
-        assert doc.permalink == absolutize_url(doc.get_absolute_url()).replace(
-            "/en/", "/"
-        )
+        # activated language code should persist
+        assert get_language() == "he"
+
+        # handle case whre no language active
+        deactivate_all()
+        assert f"{site_domain}/documents/1/" in doc.permalink
+
+        # reactivate previous default (in case it matters for other tests)
+        activate(current_lang)
 
     def test_iiif_urls(self):
         # create example doc with two fragments with URLs
@@ -805,6 +865,20 @@ def test_document_merge_with_log_entries(document, join):
     assert " [PGPID %s]" % join_pk in moved_log.change_message
 
 
+def test_document_get_by_any_pgpid(document):
+    # get by current pk
+    assert Document.get_by_any_pgpid(document.pk) == document
+
+    # add old ids
+    document.old_pgpids = [345, 678]
+    document.save()
+
+    assert Document.get_by_any_pgpid(345) == document
+    assert Document.get_by_any_pgpid(678) == document
+
+    assert not Document.get_by_any_pgpid(1234)
+
+
 @pytest.mark.django_db
 class TestTextBlock:
     def test_str(self):
@@ -830,3 +904,20 @@ class TestTextBlock:
         block = TextBlock.objects.create(document=doc, fragment=frag, side="r")
         with patch.object(frag, "iiif_thumbnails") as mock_frag_thumbnails:
             assert block.thumbnail() == mock_frag_thumbnails.return_value
+
+
+class TestDocumentPrefetchableProxy:
+    def test_log_entries(self, document):
+        # docment.log_entries should be a QuerySet of two log entries, which cannot be modified
+        assert isinstance(document.log_entries, QuerySet)
+        assert document.log_entries.count() == 2
+        le = document.log_entries.first()
+        with pytest.raises(AttributeError):
+            document.log_entries.remove(le)
+
+        # Now use proxy model
+        document.__class__ = DocumentPrefetchableProxy
+
+        # Should now be able to remove, since it is a GenericRelation
+        document.log_entries.remove(le)
+        assert document.log_entries.count() == 1

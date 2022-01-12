@@ -1,6 +1,6 @@
 from time import sleep
 from unittest import mock
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, mock_open, patch
 
 import pytest
 from django.db.models.fields import related
@@ -8,13 +8,16 @@ from django.http.response import Http404
 from django.urls import reverse
 from django.utils.text import Truncator
 from parasolr.django import SolrClient
-from pytest_django.asserts import assertContains
+from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.common.utils import absolutize_url
+from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import (
+    DocumentAnnotationListView,
     DocumentDetailView,
+    DocumentManifestView,
     DocumentScholarshipView,
     DocumentSearchView,
     old_pgp_edition,
@@ -200,6 +203,26 @@ def test_pgp_metadata_for_old_site():
 
 
 class TestDocumentSearchView:
+    def test_ignore_suppressed_documents(self, document, empty_solr):
+        suppressed_document = Document.objects.create(status=Document.SUPPRESSED)
+        Document.index_items([document, suppressed_document])
+        SolrClient().update.index([], commit=True)
+        # [d.index_data() for d in [document, suppressed_document]], commit=True
+        # )
+        print(suppressed_document.index_data())
+
+        docsearch_view = DocumentSearchView()
+        # mock request with empty keyword search
+        docsearch_view.request = Mock()
+        docsearch_view.request.GET = {"q": ""}
+        qs = docsearch_view.get_queryset()
+        result_pgpids = [obj["pgpid"] for obj in qs]
+        print(result_pgpids)
+        print(qs)
+        assert qs.count() == 1
+        assert document.id in result_pgpids
+        assert suppressed_document.id not in result_pgpids
+
     def test_get_form_kwargs(self):
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()
@@ -269,7 +292,7 @@ class TestDocumentSearchView:
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_called_with("six apartments")
             mock_sqs.keyword_search.return_value.highlight.assert_any_call(
-                "description", snippets=3, method="unified"
+                "description", snippets=3, method="unified", requireFieldMatch=True
             )
             mock_sqs.also.assert_called_with("score")
             mock_sqs.also.return_value.order_by.assert_called_with("-score")
@@ -281,7 +304,9 @@ class TestDocumentSearchView:
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_not_called()
-            mock_sqs.filter.assert_not_called()
+            # filter called once to limit by status
+            assert mock_sqs.filter.call_count == 1
+            mock_sqs.filter.assert_called_with(status=Document.STATUS_PUBLIC)
             mock_sqs.order_by.assert_called_with("-score")
 
             # keyword, sort, and doctype filter search params
@@ -343,7 +368,7 @@ class TestDocumentSearchView:
             context_data = docsearch_view.get_context_data()
             assert (
                 context_data["highlighting"]
-                == docsearch_view.queryset.get_highlighting.return_value
+                == context_data["page_obj"].object_list.get_highlighting.return_value
             )
             assert context_data["page_obj"].start_index() == 0
             # NOTE: test paginator isn't initialized properly from queryset count
@@ -554,3 +579,190 @@ class TestDocumentScholarshipView:
         docsearch_view.request.GET = {"per_page": "2"}
         qs = docsearch_view.get_queryset()
         assert docsearch_view.get_paginate_by(qs) == 2
+
+
+@patch("geniza.corpus.views.IIIFPresentation")
+class TestDocumentManifestView:
+    view_name = "corpus:document-manifest"
+
+    def test_no_images_no_transcription(
+        self, mockiifpres, client, document, source, fragment
+    ):
+        # fixture document fragment has iiif, so remove it to test
+        fragment.iiif_url = ""
+        fragment.save()
+        # no iiif or transcription; should 404
+        response = client.get(reverse(self.view_name, args=[document.pk]))
+        assert response.status_code == 404
+
+    def test_images_no_transcription(
+        self, mockiifpres, client, document, source, fragment
+    ):
+        # document fragment has iiif, but no transcription; should return a manifest
+
+        mock_manifest = mockiifpres.from_url.return_value
+        mock_manifest.label = "Remote content"
+        mock_manifest.id = "http://example.io/manifest/1"
+        mock_manifest.attribution = (
+            "Metadata is public domain; restrictions apply to images."
+        )
+        mock_manifest.sequences = [
+            Mock(canvases=[{"@type": "sc:Canvas", "@id": "urn:m1/c1"}])
+        ]
+
+        response = client.get(reverse(self.view_name, args=[document.pk]))
+        assert response.status_code == 200
+
+        assert mockiifpres.from_url.called_with(fragment.iiif_url)
+
+        # should not contain annotation list, since there is no transcription
+        assertNotContains(response, "otherContent")
+        assertNotContains(response, "sc:AnnotationList")
+        # inspect the result as json
+        result = response.json()
+        assert "Compilation by Princeton Geniza Project." in result["attribution"]
+        assert "Additional restrictions may apply." in result["attribution"]
+        assert mock_manifest.attribution in result["attribution"]
+        # includes canvas from remote manifest
+        canvas_1 = result["sequences"][0]["canvases"][0]
+        assert canvas_1["@id"] == "urn:m1/c1"
+        # includes provenance for canvas
+        assert canvas_1["partOf"][0]["@id"] == mock_manifest.id
+        assert (
+            canvas_1["partOf"][0]["label"]["en"][0]
+            == "original source: %s" % mock_manifest.label
+        )
+
+    def test_no_images_transcription(
+        self, mockiifpres, client, document, source, fragment
+    ):
+        # remove iiif url from fixture document fragment has iiif
+        fragment.iiif_url = ""
+        fragment.save()
+        # add a footnote with transcription content
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            content={"html": "text"},
+            doc_relation=Footnote.EDITION,
+        )
+        response = client.get(reverse(self.view_name, args=[document.pk]))
+        assert response.status_code == 200
+
+        # should not load any remote manifests
+        assert mockiifpres.from_url.call_count == 0
+        # should use empty canvas id
+        assertContains(response, EMPTY_CANVAS_ID)
+        # should include annotations
+        assertContains(response, "otherContent")
+        assertContains(response, "sc:AnnotationList")
+        # includes url for annotation list
+        assertContains(
+            response, reverse("corpus:document-annotations", args=[document.pk])
+        )
+
+    def test_get_absolute_url(self, mockiifpres, document, source):
+        """should return manifest permalink"""
+
+        view = DocumentManifestView()
+        view.object = document
+        view.kwargs = {"pk": document.pk}
+        assert view.get_absolute_url() == absolutize_url(
+            f"{document.get_absolute_url()}iiif/manifest/"
+        )
+
+
+@patch("geniza.corpus.views.IIIFPresentation")
+class TestDocumentAnnotationListView:
+    view_name = DocumentAnnotationListView.viewname
+
+    def test_no_transcription(self, mockiifpres, client, document):
+        # no iiif or transcription; should 404
+        response = client.get(reverse(self.view_name, args=[document.pk]))
+        assert response.status_code == 404
+
+    def test_images_transcription(
+        self, mockiifpres, client, document, source, fragment
+    ):
+        # add a footnote with transcription content
+        transcription = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            content={"html": "text"},
+            doc_relation=Footnote.EDITION,
+        )
+        mock_manifest = mockiifpres.from_url.return_value
+        test_canvas = new_iiif_canvas()
+        test_canvas.id = "urn:m1/c1"
+        test_canvas.width = 300
+        test_canvas.height = 250
+        mock_manifest.sequences = [Mock(canvases=[test_canvas])]
+        annotation_list_url = reverse(self.view_name, args=[document.pk])
+        response = client.get(annotation_list_url)
+        assert response.status_code == 200
+        # inspect result
+        data = response.json()
+        # each annotation should have a unique id based on annotation list & sequence
+        assert data["resources"][0]["@id"].endswith("%s#1" % annotation_list_url)
+        # annotation should be attached to canvas by uri with full width & height
+        assert data["resources"][0]["on"] == "urn:m1/c1#xywh=0,0,300,250"
+        assert (
+            data["resources"][0]["resource"] == transcription.iiif_annotation_content()
+        )
+
+    def test_no_images_transcription(
+        self, mockiifpres, client, document, source, fragment
+    ):
+        # remove iiif url from fixture document fragment has iiif
+        fragment.iiif_url = ""
+        fragment.save()
+        # add a footnote with transcription content
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            content={"html": "here is my transcription text"},
+            doc_relation=Footnote.EDITION,
+        )
+        response = client.get(reverse(self.view_name, args=[document.pk]))
+        assert response.status_code == 200
+
+        # should not load any remote manifests
+        assert mockiifpres.from_url.call_count == 0
+        # should use empty canvas id
+        assertContains(response, EMPTY_CANVAS_ID)
+        # should include transcription content
+        assertContains(response, "here is my transcription text")
+
+    def test_no_shared_resources(
+        self, mockiifpres, client, document, source, fragment, join
+    ):
+        # a list object initialized once in iiif_utils.base_annotation_list
+        # was getting reused, resulting in annotations being aggregated
+        # and kept every time annotation lists were generated
+
+        # test to confirm the fix
+
+        # remove iiif url from fragment fixture
+        fragment.iiif_url = ""
+        fragment.save()
+        # add a footnote with transcription content to document
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            content={"html": "here is my transcription text"},
+            doc_relation=Footnote.EDITION,
+        )
+        # and another to the join document
+        Footnote.objects.create(
+            content_object=join,
+            source=source,
+            content={"html": "here is completely different transcription text"},
+            doc_relation=Footnote.EDITION,
+        )
+        # request once for document
+        client.get(reverse(self.view_name, args=[document.pk]))
+        # then request for join doc
+        response = client.get(reverse(self.view_name, args=[join.pk]))
+
+        assertNotContains(response, "here is my transcription text")
+        assertContains(response, "completely different transcription text")

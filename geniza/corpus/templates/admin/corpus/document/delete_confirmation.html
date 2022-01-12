@@ -1,0 +1,9 @@
+{% extends "admin/delete_confirmation.html" %}
+
+{% block content %}
+    <p>Please only delete documents created in error.
+        Non-documentary sources should be suppressed. Duplicates should be merged.
+        Thanks for keeping our database safe and clean!</p>
+
+    {{ block.super }}
+{% endblock %}

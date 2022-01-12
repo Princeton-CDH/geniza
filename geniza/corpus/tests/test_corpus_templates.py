@@ -1,5 +1,7 @@
 import html
+from unittest.mock import Mock, patch
 
+import pytest
 from django.core.paginator import Paginator
 from django.http.request import HttpRequest, QueryDict
 from django.template.loader import get_template
@@ -10,6 +12,7 @@ from geniza.corpus.models import TextBlock
 from geniza.footnotes.models import Footnote
 
 
+@patch("geniza.corpus.models.ManifestImporter", Mock())
 class TestDocumentDetailTemplate:
     def test_shelfmark(self, client, document):
         """Document detail template should include shelfmark"""
@@ -40,11 +43,27 @@ class TestDocumentDetailTemplate:
     def test_viewer(self, client, document):
         """Document detail template should include viewer for IIIF content"""
         response = client.get(document.get_absolute_url())
+        local_manifest_url = reverse("corpus:document-manifest", args=[document.id])
         assertContains(
             response,
-            f'<div id="iiif_viewer" data-iiif-urls="https://cudl.lib.cam.ac.uk/iiif/MS-ADD-02586"></div>',
-            html=True,
+            f'<div id="iiif_viewer" data-iiif-url="{local_manifest_url}" ',
         )
+
+    def test_viewer_annotations(self, client, document, typed_texts):
+        """Document detail template should configure IIIF viewer for annotation display"""
+        # fixture does not have annotations
+        response = client.get(document.get_absolute_url())
+        assertContains(response, 'data-has-annotations="False"')
+
+        # add a footnote with a digital edition
+        Footnote.objects.create(
+            content_object=document,
+            source=typed_texts,
+            doc_relation={Footnote.EDITION},
+            content="A piece of text",
+        )
+        response = client.get(document.get_absolute_url())
+        assertContains(response, 'data-has-annotations="True"')
 
     def test_no_viewer(self, client, document):
         """Document with no IIIF shouldn't include viewer in template"""
@@ -54,13 +73,6 @@ class TestDocumentDetailTemplate:
         fragment.save()
         response = client.get(document.get_absolute_url())
         assertNotContains(response, '<div class="wrapper">')
-
-    def test_multi_viewer(self, client, join):
-        """Document with many IIIF urls should add all to viewer in template"""
-        response = client.get(join.get_absolute_url())
-        first_url = join.textblock_set.first().fragment.iiif_url
-        second_url = join.textblock_set.last().fragment.iiif_url
-        assertContains(response, f'data-iiif-urls="{first_url} {second_url}"')
 
     def test_edit_link(self, client, admin_client, document):
         """Edit link should appear if user is admin, otherwise it should not"""
@@ -124,6 +136,14 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertContains(response, "Editors")
 
+    def test_shelfmarks(self, client, document, join):
+        # Ensure that shelfmarks are displayed on the page.
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "<dt>Shelfmark</dt>", html=True)
+        response = client.get(join.get_absolute_url())
+        assertContains(response, "<dt>Shelfmark</dt>", html=True)
+        assertContains(response, join.shelfmark, html=True)
+
 
 class TestDocumentScholarshipTemplate:
     def test_source_title(self, client, document, twoauthor_source):
@@ -180,7 +200,7 @@ class TestDocumentScholarshipTemplate:
         )
         print(response.content)
         assertContains(
-            response, '<a href="https://example.com/"> "Shemarya,"</a>', html=True
+            response, '<a href="https://example.com/">includes</a>', html=True
         )
         fn.url = ""
         fn.save()
@@ -238,6 +258,21 @@ class TestDocumentTabsSnippet:
         # count should be 2
         assertContains(response, "Scholarship Records (2)")
 
+    def test_external_link_disabled(self, client, document, fragment):
+        """document nav should render external links as disabled (for MVP)"""
+        # remove default URL from fragment
+        fragment.url = ""
+        fragment.save()
+        response = client.get(document.get_absolute_url())
+
+        # disabled (not yet implemented) for MVP
+        assertContains(
+            response,
+            "<li class='disabled'><span>External Links</span></li>",
+            html=True,
+        )
+
+    @pytest.mark.skip("non-MVP feature")
     def test_no_links(self, client, document, fragment):
         """document nav should render inert links tab if no external links"""
         # remove default URL from fragment
@@ -248,6 +283,7 @@ class TestDocumentTabsSnippet:
         # uses span, not link
         assertContains(response, "<span>External Links (0)</span>", html=True)
 
+    @pytest.mark.skip("non-MVP feature")
     def test_with_links(self, client, document, multifragment):
         """document nav should render external links link with link counter"""
         response = client.get(document.get_absolute_url())

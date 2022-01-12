@@ -13,8 +13,10 @@
 @use "components/iiif";
 @use "components/pagination";
 @use "components/docheader";
+@use "components/controls";
 
 // Page-specific styles
+@use "pages/content";
 @use "pages/document";
 @use "pages/scholarship";
 @use "pages/search";

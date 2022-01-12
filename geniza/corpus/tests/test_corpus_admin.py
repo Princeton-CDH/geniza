@@ -23,11 +23,13 @@ from geniza.corpus.admin import (
     DocumentForm,
     FragmentAdmin,
     FragmentTextBlockInline,
+    HasTranscriptionListFilter,
     LanguageScriptAdmin,
 )
 from geniza.corpus.models import (
     Collection,
     Document,
+    DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -234,7 +236,9 @@ class TestDocumentAdmin:
         footnote = Footnote.objects.create(
             doc_relation=["E"],
             source=source,
-            content_type_id=ContentType.objects.get(model="document").id,
+            content_type_id=ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
             object_id=0,
         )
         doc.footnotes.add(footnote)
@@ -304,6 +308,22 @@ class TestDocumentAdmin:
         doc = Document(old_pgpids=[460, 990])
         assert doc_admin.view_old_pgpids(doc) == "460,990"
 
+    def test_get_queryset(self):
+        # should use DocumentPrefetchableProxyAdmin for get_queryset
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        qs = doc_admin.get_queryset("rqst")
+        assert qs.model == DocumentPrefetchableProxy
+
+    def test_get_deleted_objects(self, document):
+        # should use Document instead of DocumentPrefetchableProxy for deletion
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        objs = DocumentPrefetchableProxy.objects.all()
+        (deleted_objects, _, _, _) = doc_admin.get_deleted_objects(objs, Mock())
+        # doesn't return the actual objects, but a list of items for display on the delete view
+        # check that the correct model was used based on the output of deleted_objects,
+        # which looks like Document: <a href="/admin/corpus/document/3951/change/">CUL Add.2586 (PGPID 3951)</a>
+        assert deleted_objects[0].startswith("Document: ")
+
 
 @pytest.mark.django_db
 class TestDocumentForm:
@@ -361,3 +381,45 @@ class TestFragmentAdmin:
         fragment.collection = cul
         frag_admin = FragmentAdmin(model=Fragment, admin_site=admin.site)
         assert frag_admin.collection_display(fragment) == cul
+
+
+class TestHasTranscriptionListFilter:
+    def init_filter(self):
+        # request, params, model, admin_site
+        return HasTranscriptionListFilter(Mock(), {}, Document, DocumentAdmin)
+
+    def test_lookups(self):
+        assert self.init_filter().lookups(Mock(), Mock()) == (
+            ("yes", "Has transcription"),
+            ("no", "No transcription"),
+        )
+
+    @pytest.mark.django_db
+    def test_queryset(self, document, join, typed_texts):
+        filter = self.init_filter()
+
+        # no transcription: all documents should be returned
+        all_docs = Document.objects.all()
+        # no transcription: all documents should be returned
+        with patch.object(filter, "value", return_value="no"):
+            assert filter.queryset(Mock(), all_docs).count() == 2
+        # has transcription: no documents should be returned
+        with patch.object(filter, "value", return_value="yes"):
+            assert filter.queryset(Mock(), all_docs).count() == 0
+
+        # add a transcription
+        footnote = Footnote.objects.create(
+            doc_relation=["E"],
+            source=typed_texts,
+            content_type_id=ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
+            object_id=document.id,
+            content={"html": "some text"},
+        )
+        # no transcription: one document should be returned
+        with patch.object(filter, "value", return_value="no"):
+            assert filter.queryset(Mock(), all_docs).count() == 1
+        # has transcription: one document should be returned
+        with patch.object(filter, "value", return_value="yes"):
+            assert filter.queryset(Mock(), all_docs).count() == 1

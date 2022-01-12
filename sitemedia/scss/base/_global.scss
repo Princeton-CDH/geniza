@@ -45,8 +45,8 @@ html {
 
 // Body setup: vertical stack that always takes at least the full page height.
 body {
-    @include colors.apply-theme("on-background");
-    @include colors.apply-theme("background", $property: "background-color");
+    color: var(--on-background);
+    background-color: var(--background);
     @include typography.body;
 
     display: flex;
@@ -74,22 +74,6 @@ h3 {
     @include typography.headline-3;
 }
 
-h4 {
-    @include typography.headline-4;
-}
-
-h5 {
-    @include typography.headline-5;
-}
-
-h6 {
-    @include typography.headline-6;
-}
-
-button {
-    @include typography.button;
-}
-
 // Any links without a class (i.e. in body text) get the default link style;
 // if other links need it they can extend the same mixin.
 a:not([class]) {
@@ -99,6 +83,10 @@ a:not([class]) {
 figcaption,
 small {
     @include typography.caption;
+}
+
+blockquote {
+    @include typography.quote;
 }
 
 em {

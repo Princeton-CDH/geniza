@@ -1,4 +1,4 @@
-{% load static webpack_loader i18n %}
+{% load static webpack_loader i18n wagtailuserbar %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
     <head>
@@ -7,11 +7,11 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block meta_title %}{% endblock meta_title %}</title>
-        <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
-        <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/icons/apple-touch-icon.png' %}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/icons/favicon-32x32.png' %}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/icons/favicon-16x16.png' %}">
         <link rel="manifest" href="{% static 'site.webmanifest' %}">
-        <link rel="mask-icon" href="{% static 'safari-pinned-tab.svg' %}" color="#6b59c1">
+        <link rel="mask-icon" href="{% static 'img/icons/safari-pinned-tab.svg' %}" color="#6b59c1">
         <meta name="msapplication-TileColor" content="#603cba">
         <meta name="theme-color" content="#6b59c1">
         <meta name="description" content="{% block meta_description %}{% endblock meta_description %}">
@@ -19,6 +19,17 @@
         <!-- styles -->
         {% if SHOW_TEST_WARNING %}
             <link rel="stylesheet" type="text/css" href="{% static 'css/test-banner.css' %}"/>
+        {% endif %}
+        <!-- resource preloading -->
+        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011833-002518.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011833-002521.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011833-001036.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011833-002518.woff" crossorigin />
+        <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011833-002521.woff" crossorigin />
+        <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011833-001036.woff" crossorigin />
+        {% if page_includes_transcriptions %} {# only preload transcription font when needed #}
+            <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}FrankRuhl1924MFMediumMedium.woff2" crossorigin />
+            <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}FrankRuhl1924MFMediumMedium.woff" crossorigin />
         {% endif %}
         {# include current phosphor icons as css; check https://unpkg.com/phosphor-icons for latest version #}
         <link rel="stylesheet type="text/css" href="https://unpkg.com/phosphor-icons@1.3.2/src/css/phosphor.css" nonce="{{ reqest.csp_nonce }}"/>
@@ -30,12 +41,19 @@
         {% block extrascript %}{% endblock extrascript %}
     </head>
     <body id="{{ page_type }}">
+        {% wagtailuserbar 'bottom-left' %}
         {% if SHOW_TEST_WARNING %}
             {% include 'snippets/test_banner.html' %}
         {% endif %}
         {% block body %}
             <a id="skip" class="sr-only-focusable" href="#main-content">{% translate "Skip to main content" %}</a>
-            <header>{% include "nav.html" %}</header>
+            <header>
+                <div class="controls">
+                    {% include "snippets/theme_toggle.html" %}
+                    {% include "snippets/language_switcher.html" %}
+                </div>
+                {% include "nav.html" %}
+            </header>
             <main id="main-content">{% block main %}{% endblock main %}</main>
             <footer></footer>
         {% endblock body %}

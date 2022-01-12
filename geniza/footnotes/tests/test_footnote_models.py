@@ -3,7 +3,13 @@ from unittest.mock import patch
 import pytest
 from django.contrib.humanize.templatetags.humanize import ordinal
 
-from geniza.footnotes.models import Creator, Footnote, SourceLanguage, SourceType
+from geniza.footnotes.models import (
+    Creator,
+    Footnote,
+    Source,
+    SourceLanguage,
+    SourceType,
+)
 
 
 class TestSourceType:
@@ -170,6 +176,19 @@ class TestSource:
             phd_dissertation.place_published
             and phd_dissertation.place_published
             not in phd_dissertation.formatted_display()
+        )
+
+    def test_get_volume_from_shelfmark(self):
+        assert Source.get_volume_from_shelfmark("T-S 3564.5J") == "T-S 35"
+        assert Source.get_volume_from_shelfmark("Bodl. 3563") == "Bodl."
+        assert Source.get_volume_from_shelfmark("T-S Miscellan 36") == "T-S Misc"
+
+    def test_formatted_source_url(self, source):
+        # should create link around source title
+        source.url = "http://example.com/"
+        assert (
+            '<a href="http://example.com/">%s</a>' % source.title
+            in source.formatted_display()
         )
 
 
