@@ -73,6 +73,10 @@ class Command(BaseCommand):
                     self.stdout.write("%s has no text content, skipping" % xmlfile)
                 self.stats["empty_tei"] += 1
                 continue
+            elif not tei.text.lines:
+                self.stdout.write("%s has no lines (translation?), skipping" % xmlfile)
+                self.stats["empty_tei"] += 1
+                continue
 
             # get the document id from the filename (####.xml)
             pgpid = os.path.splitext(xmlfile_basename)[0]
@@ -133,7 +137,7 @@ class Command(BaseCommand):
         # documents with transcriptions, number of fragments, and how how many joins
         self.stats["multi_edition_docs"] = len(self.multiedition_docs)
         self.stdout.write(
-            """Processed {xml:,} TEI/XML files; skipped {empty_tei:,} TEI files with no text content.
+            """Processed {xml:,} TEI/XML files; skipped {empty_tei:,} TEI files with no transcription content.
 {document_not_found:,} documents not found in database.
 {joins:,} documents with multiple fragments.
 {multiple_editions:,} documents with multiple editions; {multiple_editions_with_content} multiple editions with content ({multi_edition_docs} unique documents).
