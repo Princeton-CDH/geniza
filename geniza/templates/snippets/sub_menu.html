@@ -1,6 +1,6 @@
 {% load i18n wagtailcore_tags %}
 
-<ul class="sub-menu" id="{{ top_level_page.slug }}" role="menu" aria-label="{{ top_level_page.localized.slug }}">
+<ul class="sub-menu" id="{{ top_level_page.slug }}-menu" role="menu" aria-label="{{ top_level_page.localized.slug }}">
     <li class="menu-button" role="none">
         <a id="back-to-main-menu" href="#menu" role="button">
             {# Translators: label for main menu back button for mobile navigation #}
@@ -24,7 +24,7 @@
                 role="menuitem"
                 {% if request.path == child_page_url %}aria-current="page"{% endif %}
             >
-                {{ child_page.localized.title }}
+                <span>{{ child_page.localized.title }}</span>
             </a>
         </li>
     {% endfor %}
