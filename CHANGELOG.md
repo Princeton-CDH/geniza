@@ -2,7 +2,28 @@
 
 ## 0.8
 
--   Removed add_links manage command frmo version 0.7 (one-time import)
+-   public site search and document display
+    -   As a front-end user, I want to use fields in my keyword searches so I can make my searches more specific and targeted.
+    -   As a front-end user, I want to see all shelfmarks associated with a document, so that I can identify and find the supporting information from its various sources.
+    -   bugfix: suppressed documents shouldn't be included in public document search
+    -   As a frontend user, I want all tags to be clickable so I can easily view all documents with those tags. [TBD]
+    -   As a scholar, I want to get a copy of transcription text so that I can easily reference it and use it elsewhere. [TBD]
+    -   As a front-end user, I want to be able to switch between dark and light mode manually with a toggle or button so that I am not stuck viewing the site in the mode that matches my OS preference.
+-   content/data admin
+-   bugfix: permissions error trying to delete a document because it wants to delete the associated log entry
+-   As a content editor, I want to be able to manage pages and page order in the site navigation menu or about submenu, so that I can update the site as content changes.
+-   As a content admin, I want to add and edit page ranges in Source records so I can document where in a book or journal the content appears.
+-   bugfix: multi-word tags get broken up into single-word tags
+-   bugfix: django admin document filter by "has transcription" reports inaccurate numbers [TBD]
+-   public site visual design implementation
+    -   header & main menu visuals and interactions
+    -   search form styles and interactions
+    -   fonts and type styles
+    -   tab styles on document detail page
+-   maintenance
+-   Removed add_links manage command from version 0.7 (one-time import)
+-   made percy visual review workflow opt-in to avoid paying for excessive screenshots
+-   image files used in site design organized in site media, and organization documented
 
 ## 0.7
 
