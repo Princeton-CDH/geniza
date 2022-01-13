@@ -112,7 +112,6 @@ $text-size-5xl: 2rem; //     = 32px
     font-family: fonts.$primary-italic;
     font-style: italic;
     font-weight: normal;
-    color: colors.$gray;
     font-size: $text-size-md;
     @include breakpoints.for-tablet-landscape-up {
         font-size: $text-size-lg;
@@ -132,8 +131,9 @@ $text-size-5xl: 2rem; //     = 32px
     text-decoration-line: underline;
     text-decoration-style: solid;
     text-decoration-thickness: 0.1875rem;
-    text-underline-offset: 0.2rem;
+    text-underline-offset: 0.375rem;
     text-decoration-color: var(--link-primary);
+    text-decoration-skip-ink: none;
     &:hover,
     &:active {
         text-decoration-color: var(--link-secondary);
