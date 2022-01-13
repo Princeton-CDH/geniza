@@ -48,10 +48,17 @@
     .disabled {
         color: var(--disabled);
     }
-
+    a:hover {
+        @include breakpoints.for-tablet-landscape-up {
+            border-bottom-color: var(--tabs-bottom-hover);
+        }
+    }
     a[aria-current="page"] {
         @include typography.nav-bold;
         border-bottom-color: var(--secondary);
+        &:hover {
+            border-bottom-color: var(--secondary);
+        }
     }
     li:last-child a,
     li:last-child span {
@@ -61,9 +68,5 @@
             padding-left: spacing.$spacing-2xl;
             padding-right: spacing.$spacing-2xl;
         }
-    }
-    a:active,
-    a:hover {
-        border-bottom-color: var(--tabs-bottom-hover);
     }
 }
