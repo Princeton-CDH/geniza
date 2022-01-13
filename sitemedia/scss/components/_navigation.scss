@@ -241,7 +241,8 @@
                 }
                 // Rotate caret up
                 &.open a.open-sub-menu::before,
-                a[aria-expanded="true"].open-sub-menu::before {
+                a[aria-expanded="true"].open-sub-menu::before,
+                &:hover a.open-sub-menu::before {
                     transform: rotate(-180deg);
                 }
             }
