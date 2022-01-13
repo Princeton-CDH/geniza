@@ -14,6 +14,7 @@
     justify-content: center;
     margin: 0 auto;
     @include typography.nav-link;
+    // Tabs styling
     a,
     span {
         display: flex;
@@ -28,6 +29,7 @@
             padding-right: spacing.$spacing-xl;
         }
     }
+    // Link-specific tabs styling
     a {
         text-decoration: none;
         position: relative;
@@ -56,10 +58,12 @@
     a[aria-current="page"] {
         @include typography.nav-bold;
         border-bottom-color: var(--secondary);
+        // Don't show hover color on current page tab
         &:hover {
             border-bottom-color: var(--secondary);
         }
     }
+    // Extra padding to get External Links on two lines
     li:last-child a,
     li:last-child span {
         padding-left: spacing.$spacing-sm;
