@@ -265,7 +265,9 @@ class DocumentTranscriptionText(DocumentDetailView):
     def get(self, request, *args, **kwargs):
         document = self.get_object()
         try:
-            edition = document.editions().get(pk=self.kwargs["transcription_pk"])
+            edition = document.digital_editions().get(
+                pk=self.kwargs["transcription_pk"]
+            )
             shelfmark = slugify(document.textblock_set.first().fragment.shelfmark)
             authors = [slugify(a.last_name) for a in edition.source.authors.all()]
             filename = "PGP%d_%s_%s.txt" % (document.id, shelfmark, "_".join(authors))

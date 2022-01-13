@@ -84,7 +84,7 @@
             <section class="transcription-link">
                 {% for ed in document.digital_editions %}
                     {% if ed.content.text %}
-                        <p><a href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">Download {% for auth in ed.source.authorship_set.all %}{{ auth.creator.last_name }}{% include "snippets/comma.html" %}{% endfor %}'s edition.</a></p>
+                        <p><a href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">Download {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% endfor %}'s edition.</a></p>
                     {% endif %}
                 {% endfor %}
             </section>

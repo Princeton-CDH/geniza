@@ -6,7 +6,7 @@ import pytest
 from django.db.models.fields import related
 from django.http.response import Http404
 from django.urls import reverse
-from django.utils.text import Truncator
+from django.utils.text import Truncator, slugify
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
 
@@ -20,6 +20,7 @@ from geniza.corpus.views import (
     DocumentManifestView,
     DocumentScholarshipView,
     DocumentSearchView,
+    DocumentTranscriptionText,
     old_pgp_edition,
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
@@ -766,3 +767,93 @@ class TestDocumentAnnotationListView:
 
         assertNotContains(response, "here is my transcription text")
         assertContains(response, "completely different transcription text")
+
+
+@pytest.mark.django_db
+class TestDocumentTranscriptionText:
+    view_name = DocumentTranscriptionText.viewname
+
+    def test_nonexesistent_pgpid(self, client):
+        # non-existent pgpid should 404
+        assert (
+            client.get(
+                reverse(self.view_name, kwargs={"pk": 123, "transcription_pk": 456})
+            ).status_code
+            == 404
+        )
+
+    def test_nonexesistent_footnote_id(self, client, document):
+        # valid pgpid but non-existent footnote id should 404
+        assert (
+            client.get(
+                reverse(
+                    self.view_name, kwargs={"pk": document.pk, "transcription_pk": 123}
+                )
+            ).status_code
+            == 404
+        )
+
+    def test_not_edition(self, client, document, source):
+        # valid pgpid, valid footnote, but not an edition should 404
+        discussion = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DISCUSSION,
+        )
+        assert (
+            client.get(
+                reverse(
+                    self.view_name,
+                    kwargs={"pk": document.pk, "transcription_pk": discussion.pk},
+                )
+            ).status_code
+            == 404
+        )
+
+    def test_no_content(self, client, document, source):
+        # valid pgpid, valid footnote, but not an edition should 404
+        edition = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.EDITION,
+        )
+        assert (
+            client.get(
+                reverse(
+                    self.view_name,
+                    kwargs={"pk": document.pk, "transcription_pk": edition.pk},
+                )
+            ).status_code
+            == 404
+        )
+
+    def test_success(self, client, document, source):
+        # valid pgpid, valid footnote, but not an edition should 404
+        edition = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.EDITION,
+            content={
+                "html": "some transcription text",
+                "text": "some transcription text",
+            },
+        )
+        response = client.get(
+            reverse(
+                self.view_name,
+                kwargs={"pk": document.pk, "transcription_pk": edition.pk},
+            )
+        )
+        assert response.status_code == 200
+        assert response.headers["Content-Type"] == "text/plain; charset=UTF-8"
+        content_disposition = response.headers["Content-Disposition"]
+        assert content_disposition.startswith("attachment; filename=")
+        assert content_disposition.endswith('.txt"')
+        # check filename format
+        filename = content_disposition.split("=")[1]
+        # filename is wrapped in quotes; includes pgpid, shelfmark, author last name
+        assert filename.startswith('"PGP%d' % document.pk)
+        assert slugify(document.shelfmark) in filename
+        assert slugify(source.authorship_set.first().creator.last_name) in filename
+
+        assert response.content == b"some transcription text"
