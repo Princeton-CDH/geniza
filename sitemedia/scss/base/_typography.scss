@@ -112,7 +112,6 @@ $text-size-5xl: 2rem; //     = 32px
     font-family: fonts.$primary-italic;
     font-style: italic;
     font-weight: normal;
-    color: colors.$gray;
     font-size: $text-size-md;
     @include breakpoints.for-tablet-landscape-up {
         font-size: $text-size-lg;

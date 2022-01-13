@@ -46,8 +46,8 @@
         }
     }
     div.unpublished {
-        color: colors.$gray;
         margin-top: spacing.$spacing-3xs;
         @include typography.unpublished;
+        color: var(--on-background-alt);
     }
 }

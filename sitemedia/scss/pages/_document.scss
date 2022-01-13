@@ -37,7 +37,7 @@ body#document {
             }
             // Lighter color metadata
             .secondary {
-                color: colors.$gray;
+                color: var(--on-background-alt);
             }
             dt {
                 margin-bottom: spacing.$spacing-3xs;
