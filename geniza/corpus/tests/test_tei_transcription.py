@@ -3,7 +3,7 @@ import os.path
 from django.db.models.functions import text
 from eulxml import xmlmap
 
-from geniza.corpus.tei_transcriptions import GenizaTei
+from geniza.corpus.tei_transcriptions import GenizaTei, GenizaTeiLine
 
 fixture_dir = os.path.join(os.path.dirname(__file__), "fixtures")
 
@@ -59,3 +59,24 @@ def test_text_to_plaintext():
     assert (
         "\u200f        כתאבי אטאל אללה בקא מולי אלשיך ואדאם \u200e   1\n" in plaintext
     )
+
+
+def test_text_to_plaintext_nolines():
+    tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
+    # delete all the lines
+    tei.text.lines = []
+    # should bail out when no lines are present
+    assert tei.text_to_plaintext() is None
+
+
+def test_text_to_plaintext_longlines():
+    tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
+    # replace the text of the last line with an excessively long line
+    # - because the xmlobject isn't configured with an eye to updates,
+    #   update the lxml node text directly
+    tei.lines[-1].node.text = "superlongline" * 100
+    plaintext = tei.text_to_plaintext()
+    plaintext_lines = plaintext.split("\n")
+    # line is slightly more than 100 because of ltr/rtl marks & line number
+    # but should NOT be padded to match the superlongline
+    assert len(plaintext_lines[1]) < 110

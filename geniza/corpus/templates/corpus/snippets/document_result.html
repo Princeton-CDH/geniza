@@ -41,13 +41,11 @@
                 {# use first language code, if any; otherwise empty lang attribute to indicate unknown language #}
                 {# NOTE: this is problematic for documents with multiple primary languages #}
                 {% if document_highlights.transcription %}
-                    <p class="transcription" lang="{{ lang }}">{% for snippet in document_highlights.transcription %}
-                        {{ snippet|safe }}
-                    {% endfor %}</p>
+                    <div class="transcription" lang="{{ lang }}">{% for snippet in document_highlights.transcription %}{{ snippet.strip|safe|linebreaks }}{% endfor %}</div>
                 {% elif document.transcription %}
                     {# otherwise, display truncated transcription #}
                     {# NOTE: might be nice to display N lines instead of using truncatechars #}
-                    <p class="transcription" lang="{{ lang }}">{{ document.transcription.0|truncatechars:75 }}</p>
+                    <div class="transcription" lang="{{ lang }}">{{ document.transcription.0|linebreaks|truncatechars:150 }}</div>
                 {% endif %}
             {% endwith %}
 
@@ -95,7 +93,7 @@
                 <h3 class="sr-only">{% translate 'Tags' %}</h3>
                 <ul class="tags">
                     {% for tag in document.tags|alphabetize|slice:":5" %}
-                        <li>{{ tag }}</li>
+                        <li><a href='{% url "corpus:document-search" %}?q=tag:"{{ tag }}"'>{{ tag }}</a></li>
                     {% endfor %}
                 </ul>
             {% endif %}

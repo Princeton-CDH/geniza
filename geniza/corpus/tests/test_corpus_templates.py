@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 from django.core.paginator import Paginator
 from django.http.request import HttpRequest, QueryDict
+from django.template.defaultfilters import linebreaks
 from django.template.loader import get_template
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
@@ -32,8 +33,13 @@ class TestDocumentDetailTemplate:
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<li>bill of sale</li>", html=True)
-        assertContains(response, "<li>real estate</li>", html=True)
+        for tag in ["bill of sale", "real estate"]:
+            assertContains(
+                response,
+                "<li><a href='/en/documents/?q=tag:\"%(tag)s\"' rel='tag'>%(tag)s</li>"
+                % {"tag": tag},
+                html=True,
+            )
 
     def test_description(self, client, document):
         """Document detail template should include document description"""
@@ -336,6 +342,22 @@ class TestDocumentResult:
         assert "Translation" not in result
         assert "Discusion" not in result
 
+    def test_tags(self):
+        tags = ["bill of sale", "real estate"]
+        result = self.template.render(
+            context={
+                "document": {"pgpid": 1, "id": "document.1", "tags": tags},
+                "highlighting": {},
+                "page_obj": self.page_obj,
+            }
+        )
+        for tag in tags:
+            assert (
+                "<li><a href='/en/documents/?q=tag:\"%(tag)s\"'>%(tag)s</a></li>"
+                % {"tag": tag}
+                in result
+            )
+
     def test_multiple_scholarship_types(self):
         result = self.template.render(
             context={
@@ -405,10 +427,10 @@ class TestDocumentResult:
             "page_obj": self.page_obj,
         }
 
-        # template currently has truncate chars 75; just check that the beginning
+        # template currently has truncate chars 150; just check that the beginning
         # of the transcription is there
         rendered = self.template.render(context)
-        assert transcription_txt[:75] in rendered
+        assert linebreaks(transcription_txt)[:150] in rendered
         # language not specified
         assert 'lang=""' in rendered
 
