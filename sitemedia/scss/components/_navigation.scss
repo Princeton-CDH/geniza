@@ -347,12 +347,12 @@
         }
     }
     // Don't let anchor target jump around on desktop
-    ul[id$="-menu"]:target::before {
+    ul[id$="-menu"]::before {
         @include breakpoints.for-tablet-landscape-up {
             content: "";
             display: block;
-            height: 1px;
-            margin-top: -1px;
+            height: 140px;
+            margin-top: -140px;
         }
     }
     // Hover indicator for nav links
@@ -372,7 +372,8 @@
         }
     }
     a:hover::after,
-    a[aria-current="page"]::after {
+    a[aria-current="page"]::after,
+    li.has-submenu:hover a.open-sub-menu::after {
         @include breakpoints.for-tablet-landscape-up {
             opacity: 100% !important;
         }
@@ -380,9 +381,14 @@
     // Gets cluttered in sub-menu, so only show when hovering
     ul.sub-menu {
         @include breakpoints.for-tablet-landscape-up {
+            a {
+                display: flex;
+                flex-flow: column;
+                span {
+                    flex: 1 0 100%;
+                }
+            }
             a::after {
-                position: relative;
-                right: spacing.$spacing-md;
                 margin-top: 0;
             }
             a[aria-current="page"]::after {
@@ -435,23 +441,21 @@
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             background: none;
+            a::after {
+                background: url("/static/img/ui/desktop/light/menu-hover.svg")
+                    center !important;
+                background-repeat: no-repeat !important;
+            }
         }
     }
     ul.sub-menu {
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             // Hack to look like submenu is layered underneath the menu
-            background: url("/static/img/ui/desktop/light/header-base.svg"),
+            background: url("/static/img/ui/desktop/light/submenu-base.svg") top
+                    repeat-x,
                 linear-gradient(to bottom, var(--background), var(--background))
                     top;
-            background-attachment: fixed, local;
-        }
-    }
-    a::after {
-        @include breakpoints.for-tablet-landscape-up {
-            background: url("/static/img/ui/desktop/light/menu-hover.svg")
-                center !important;
-            background-repeat: no-repeat !important;
         }
     }
 }
@@ -468,22 +472,21 @@
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             background: none;
+            a::after {
+                background: url("/static/img/ui/desktop/dark/menu-hover.svg")
+                    center !important;
+                background-repeat: no-repeat !important;
+            }
         }
     }
     ul.sub-menu {
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             // Hack to look like submenu is layered underneath the menu
-            background: url("/static/img/ui/desktop/dark/header-base.svg"),
+            background: url("/static/img/ui/desktop/dark/submenu-base.svg") top
+                    repeat-x,
                 linear-gradient(to bottom, var(--background), var(--background))
                     top;
-            background-attachment: fixed, local;
-        }
-    }
-    a::after {
-        @include breakpoints.for-tablet-landscape-up {
-            background: url("/static/img/ui/desktop/dark/menu-hover.svg") center !important;
-            background-repeat: no-repeat !important;
         }
     }
 }

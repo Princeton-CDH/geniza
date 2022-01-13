@@ -24,7 +24,7 @@
                 role="menuitem"
                 {% if request.path == child_page_url %}aria-current="page"{% endif %}
             >
-                {{ child_page.localized.title }}
+                <span>{{ child_page.localized.title }}</span>
             </a>
         </li>
     {% endfor %}
