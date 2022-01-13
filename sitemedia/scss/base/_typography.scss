@@ -133,6 +133,7 @@ $text-size-5xl: 2rem; //     = 32px
     text-decoration-thickness: 0.1875rem;
     text-underline-offset: 0.375rem;
     text-decoration-color: var(--link-primary);
+    text-decoration-skip-ink: none;
     &:hover,
     &:active {
         text-decoration-color: var(--link-secondary);
