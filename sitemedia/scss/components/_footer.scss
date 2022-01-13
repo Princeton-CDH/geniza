@@ -2,6 +2,7 @@
 // Site footer that appears on every page.
 // -----------------------------------------------------------------------------
 
+@use "../base/breakpoints";
 @use "../base/spacing";
 @use "../base/typography";
 
@@ -17,20 +18,16 @@
 }
 
 footer {
-    @include typography.meta;
     * {
         max-width: 100%;
     }
+    @include typography.meta;
     text-align: center;
+    @include breakpoints.for-tablet-landscape-up {
+        margin-top: spacing.$spacing-2xl;
+    }
 
-    // footer background
-    background: url("/static/img/ui/mobile/dark/footer-gradient.svg") top,
-        url("/static/img/ui/mobile/dark/footer-image.png") top,
-        url("/static/img/ui/mobile/dark/footer-base.svg") top;
-    background-repeat: no-repeat, no-repeat, no-repeat;
-    background-size: 100% auto, 100% auto, 100% auto;
-
-    // footer site navigation
+    // footer site navigation (mobile)
     nav#footer-nav {
         padding: 25% 17.5% 0; // Use percentages to scale with background
         text-align: left;
@@ -55,6 +52,10 @@ footer {
                     }
                 }
             }
+        }
+        // footer site navigation (desktop)
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0;
         }
     }
 
@@ -127,4 +128,63 @@ footer {
             height: 63px;
         }
     }
+}
+// Footer backgrounds for light and dark mode, mobile
+@mixin footer-background-mobile-dark {
+    background: url("/static/img/ui/mobile/dark/footer-gradient.svg") top,
+        url("/static/img/ui/mobile/dark/footer-image.png") top,
+        url("/static/img/ui/mobile/dark/footer-base.svg") top;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-size: 100% auto, 100% auto, 100% auto;
+}
+@mixin footer-background-mobile-light {
+    background: url("/static/img/ui/mobile/light/footer-gradient.svg") top,
+        url("/static/img/ui/mobile/light/footer-image.png") top,
+        url("/static/img/ui/mobile/light/footer-base.svg") top;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-size: 100% auto, 100% auto, 100% auto;
+}
+
+// Footer backgrounds for light and dark mode, desktop
+@mixin footer-background-desktop-dark {
+    background: url("/static/img/ui/desktop/dark/footer-gradient.svg") top,
+        url("/static/img/ui/desktop/dark/footer-image.png") top,
+        url("/static/img/ui/desktop/dark/footer-base.svg") top;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+}
+@mixin footer-background-desktop-light {
+    background: //url("/static/img/ui/desktop/light/footer-gradient.svg") top,
+        url("/static/img/ui/desktop/light/footer-image.png") top,
+        url("/static/img/ui/desktop/light/footer-base.svg") top;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+}
+
+// Nav theme overrides for light mode
+@mixin light-footer {
+    @include footer-background-mobile-light;
+    @include breakpoints.for-tablet-landscape-up {
+        @include footer-background-desktop-light;
+    }
+}
+// Nav theme overrides for dark mode
+@mixin dark-footer {
+    @include footer-background-mobile-dark;
+    @include breakpoints.for-tablet-landscape-up {
+        @include footer-background-desktop-dark;
+    }
+}
+// Applying background image and gradient per system theme
+footer {
+    @include light-footer;
+    @media (prefers-color-scheme: dark) {
+        @include dark-footer;
+    }
+}
+
+// Manual (body-class based) theme overrides
+body.light-mode footer {
+    @include light-footer;
+}
+body.dark-mode footer {
+    @include dark-footer;
 }
