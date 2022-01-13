@@ -47,10 +47,6 @@
                         {% ifchanged %}
                             <dd>{{ ed.display|safe }}</dd>
                         {% endifchanged %}
-                        {% if ed.content.text %}
-                            <a style="text-align:right" href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">download as text</a>
-                        {% endif %}
-                        {# link ? #}
                     {% endfor %}
                 {% endif %}
                 {# Translators: Date document was first added to the PGP #}
@@ -83,6 +79,16 @@
             </h3>
             <p>{{ document.description }}</p>
         </section>
+        {# link to download transcription if available #}
+        {% if document.has_transcription %}
+            <section class="transcription-link">
+                {% for ed in document.digital_editions %}
+                    {% if ed.content.text %}
+                        <p><a href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">Download {% for auth in ed.source.authorship_set.all %}{{ auth.creator.last_name }}{% include "snippets/comma.html" %}{% endfor %}'s edition.</a></p>
+                    {% endif %}
+                {% endfor %}
+            </section>
+        {% endif %}
     </div>
 
     {# viewer #}

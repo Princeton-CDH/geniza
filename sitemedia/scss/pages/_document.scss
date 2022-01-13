@@ -94,5 +94,12 @@ body#document {
                 margin: spacing.$spacing-3xl 0 spacing.$spacing-md;
             }
         }
+
+        section.transcription-link {
+            margin-top: spacing.$spacing-md;
+            @include breakpoints.for-desktop-up {
+                margin-top: spacing.$spacing-xl;
+            }
+        }
     }
 }
