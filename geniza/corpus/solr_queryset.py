@@ -17,12 +17,12 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "status": "status_s",
         "shelfmark": "shelfmark_t",
         "collection": "collection_ss",
-        "tags": "tags_ss",
+        "tags": "tags_ss_lower",
         "description": "description_t",
         "notes": "notes_t",
         "needs_review": "needs_review_t",
         "pgpid": "pgpid_i",
-        "old_pgpids": "old_pgpid_is",
+        "old_pgpids": "old_pgpids_is",
         "input_year": "input_year_i",
         "input_date": "input_date_dt",
         "num_editions": "num_editions_i",
@@ -37,8 +37,17 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # regex to convert field aliases used in search to actual solr fields
     # resulting regex will look something like: ((shelfmark|tags|decription|...):
     # adapted from https://stackoverflow.com/a/15448887
+    # - define additional search aliases for site users
+    search_aliases = {
+        # when searching, singular makes more sense for tags & old pgpids
+        "old_pgpid": field_aliases["old_pgpids"],
+        "tag": field_aliases["tags"],
+    }
+    # - update to include all default aliases
+    search_aliases.update(field_aliases)
+
     re_solr_fields = re.compile(
-        r"(%s):" % "|".join(key for key, val in field_aliases.items() if key != val),
+        r"(%s):" % "|".join(key for key, val in search_aliases.items() if key != val),
         flags=re.DOTALL,
     )
 
@@ -53,7 +62,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         if ":" in search_term:
             # if any of the field aliases occur with a colon, replace with actual solr field
             search_term = self.re_solr_fields.sub(
-                lambda x: "%s:" % self.field_aliases[x.group(1)], search_term
+                lambda x: "%s:" % self.search_aliases[x.group(1)], search_term
             )
 
         return search_term

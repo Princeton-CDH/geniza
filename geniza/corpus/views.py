@@ -77,12 +77,25 @@ class DocumentSearchView(ListView, FormMixin):
             search_opts = form.cleaned_data
 
             if search_opts["q"]:
+                # NOTE: using requireFieldMatch so that field-specific search
+                # terms will NOT be usind for highlighting text matches
+                # (unless they are in the appropriate field)
                 documents = (
                     documents.keyword_search(search_opts["q"])
-                    .highlight("description", snippets=3, method="unified")
+                    .highlight(
+                        "description",
+                        snippets=3,
+                        method="unified",
+                        requireFieldMatch=True,
+                    )
                     # return smaller chunk of highlighted text for transcriptions
                     # since the lines are often shorter, resulting in longer text
-                    .highlight("transcription", method="unified", fragsize=50)
+                    .highlight(
+                        "transcription",
+                        method="unified",
+                        fragsize=150,  # try including more context
+                        requireFieldMatch=True,
+                    )
                     .also("score")
                 )  # include relevance score in results
 
@@ -252,15 +265,18 @@ class DocumentTranscriptionText(DocumentDetailView):
     def get(self, request, *args, **kwargs):
         document = self.get_object()
         try:
-            edition = document.editions().get(pk=self.kwargs["transcription_pk"])
+            edition = document.digital_editions().get(
+                pk=self.kwargs["transcription_pk"]
+            )
+            shelfmark = slugify(document.textblock_set.first().fragment.shelfmark)
             authors = [slugify(a.last_name) for a in edition.source.authors.all()]
-            filename = "PGP_%d_%s.txt" % (document.id, "_".join(authors))
+            filename = "PGP%d_%s_%s.txt" % (document.id, shelfmark, "_".join(authors))
 
             return HttpResponse(
                 edition.content["text"],
                 headers={
                     "Content-Type": "text/plain; charset=UTF-8",
-                    # prompt download with filename including pgpid & authors
+                    # prompt download with filename including pgpid, shelfmark, & authors
                     "Content-Disposition": 'attachment; filename="%s"' % filename,
                 },
             )

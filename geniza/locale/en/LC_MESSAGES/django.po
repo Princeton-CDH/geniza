@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-01-11 14:00-0500\n"
-"PO-Revision-Date: 2021-12-20 18:31\n"
+"POT-Creation-Date: 2022-01-04 10:31-0500\n"
+"PO-Revision-Date: 2022-01-12 17:32\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en_US\n"
@@ -349,3 +349,7 @@ msgstr ""
 #: geniza/templates/snippets/theme_toggle.html:9
 msgid "Enable dark mode"
 msgstr ""
+
+#~ msgid "Shelfmark"
+#~ msgstr "Shelfmark"
+

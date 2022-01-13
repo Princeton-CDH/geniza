@@ -169,9 +169,9 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == "yes":
-            return queryset.filter(footnotes__content__has_key="html").distinct()
+            return queryset.filter(footnotes__content__has_key="html")
         if self.value() == "no":
-            return queryset.exclude(footnotes__content__has_key="html").distinct()
+            return queryset.exclude(footnotes__content__has_key="html")
 
 
 @admin.register(Document)

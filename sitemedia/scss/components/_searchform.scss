@@ -68,6 +68,7 @@
     flex-flow: row wrap;
     align-items: center;
     justify-content: flex-start;
+    // search box
     input[type="search"] {
         max-width: calc(100% - 2.75rem - #{spacing.$spacing-sm});
         order: 1;
@@ -88,6 +89,7 @@
             color: var(--on-background-light-alt);
         }
     }
+    // sort options select (uses details/summary)
     details.sort-select {
         position: relative;
         order: 5;
@@ -140,6 +142,7 @@
             &:focus {
                 outline: none;
             }
+            // Focus styles using box-shadow
             &:focus span,
             &:focus div[role="button"],
             &:focus-within span,
@@ -152,6 +155,7 @@
                 @include box-shadow(var(--primary-80));
             }
         }
+        // List of sort options
         ul {
             padding: spacing.$spacing-sm 0;
             max-width: calc(100% - 2.0625rem - #{spacing.$spacing-sm});
@@ -182,8 +186,10 @@
                         background-color: var(--tertiary);
                         color: var(--on-tertiary);
                     }
+                    // Checkboxes only visible to screen readers
                     input[name="sort"] {
                         @include a11y.sr-only;
+                        // Selected option
                         &:checked + span {
                             @include typography.form-option-sm-bold;
                         }
@@ -192,6 +198,7 @@
                             color: var(--on-secondary);
                         }
                     }
+                    // Non-selected options
                     @include typography.form-option-sm;
                 }
             }

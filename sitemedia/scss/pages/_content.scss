@@ -55,6 +55,7 @@
         margin: spacing.$spacing-md 0;
         figcaption {
             align-self: flex-start;
+            color: var(--on-background-alt);
         }
         img {
             align-self: center;

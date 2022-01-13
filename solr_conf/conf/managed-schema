@@ -95,16 +95,17 @@
   <field name="_version_" type="long" indexed="false" stored="false"/>
   <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <!-- local fields -->
-  <field name="last_modified" type="pdate" multiValued="false" indexed="true" required="true" stored="true" default="NOW"/>    
+  <field name="last_modified" type="pdate" multiValued="false" indexed="true" required="true" stored="true" default="NOW"/>
 
   <copyField source="shelfmark_ss" dest="shelfmark_t" maxChars="30000" />
-  <copyField source="tags_ss" dest="tags_t" maxChars="30000" />
+  <copyField source="tags_ss_lower" dest="tags_t" maxChars="30000" />
   <copyField source="type_s" dest="type_t" maxChars="300" />
 
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
   <dynamicField name="ignored_*" type="ignored" multiValued="true"/>
   <dynamicField name="*_s_lower" type="lowercase" indexed="true" stored="true"/>
+  <dynamicField name="*_ss_lower" type="lowercase" indexed="true" stored="true" multiValued="true"/>
   <dynamicField name="random_*" type="random"/>
   <dynamicField name="*_point" type="point" indexed="true" stored="true"/>
   <dynamicField name="*_srpt" type="location_rpt" indexed="true" stored="true"/>

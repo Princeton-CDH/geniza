@@ -29,6 +29,8 @@ from geniza.footnotes.models import Footnote
 class Command(BaseCommand):
     """Synchronize TEI transcriptions to edition footnote content"""
 
+    v_normal = 1  # default verbosity
+
     def add_arguments(self, parser):
         parser.add_argument(
             "-n",
@@ -42,13 +44,17 @@ class Command(BaseCommand):
         gitrepo_url = settings.TEI_TRANSCRIPTIONS_GITREPO
         gitrepo_path = settings.TEI_TRANSCRIPTIONS_LOCAL_PATH
 
+        self.verbosity = options["verbosity"]
+
         # make sure we have latest tei content from git repository
-        # self.sync_git(gitrepo_url, gitrepo_path)
+        self.sync_git(gitrepo_url, gitrepo_path)
 
         if not options["noact"]:
             # get content type and user for log entries, unless in no-act mode
             self.footnote_contenttype = ContentType.objects.get_for_model(Footnote)
             self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
+
+        self.verbosity = options["verbosity"]
 
         self.stats = defaultdict(int)
         # keep track of document ids with multiple digitized editions (likely merged records/joins)
@@ -63,7 +69,12 @@ class Command(BaseCommand):
             # some files are stubs with no content
             # check if there is no text content; report and skip
             if tei.no_content():
-                self.stdout.write("%s has no text content, skipping" % xmlfile)
+                if self.verbosity >= self.v_normal:
+                    self.stdout.write("%s has no text content, skipping" % xmlfile)
+                self.stats["empty_tei"] += 1
+                continue
+            elif not tei.text.lines:
+                self.stdout.write("%s has no lines (translation?), skipping" % xmlfile)
                 self.stats["empty_tei"] += 1
                 continue
 
@@ -73,7 +84,10 @@ class Command(BaseCommand):
             try:
                 pgpid = int(pgpid.strip("b"))
             except ValueError:
-                self.stderr.write("Failed to generate integer PGPID from %s" % pgpid)
+                if self.verbosity >= self.v_normal:
+                    self.stderr.write(
+                        "Failed to generate integer PGPID from %s" % pgpid
+                    )
                 continue
             # can we rely on pgpid from xml?
             # but in some cases, it looks like a join 12047 + 12351
@@ -85,13 +99,14 @@ class Command(BaseCommand):
                 )
             except Document.DoesNotExist:
                 self.stats["document_not_found"] += 1
-                self.stdout.write("Document %s not found in database" % pgpid)
+                if self.verbosity >= self.v_normal:
+                    self.stdout.write("Document %s not found in database" % pgpid)
                 continue
 
             if doc.fragments.count() > 1:
                 self.stats["joins"] += 1
 
-            footnote = self.get_edition_footnote(doc)
+            footnote = self.get_edition_footnote(doc, tei, xmlfile)
             # if we identified an appropriate footnote, update it
             if footnote:
                 html = tei.text_to_html()
@@ -110,7 +125,8 @@ class Command(BaseCommand):
                         # count as a change whether in no-act mode or not
                         self.stats["footnote_updated"] += 1
                 else:
-                    self.stderr.write("No html generated for %s" % doc.id)
+                    if self.verbosity >= self.v_normal:
+                        self.stderr.write("No html generated for %s" % doc.id)
 
             # NOTE: in *one* case there is a TEI file with translation content and
             # no transcription; will get reported as empty, but that's ok — it's out of scope
@@ -121,7 +137,7 @@ class Command(BaseCommand):
         # documents with transcriptions, number of fragments, and how how many joins
         self.stats["multi_edition_docs"] = len(self.multiedition_docs)
         self.stdout.write(
-            """Processed {xml:,} TEI/XML files; skipped {empty_tei:,} TEI files with no text content.
+            """Processed {xml:,} TEI/XML files; skipped {empty_tei:,} TEI files with no transcription content.
 {document_not_found:,} documents not found in database.
 {joins:,} documents with multiple fragments.
 {multiple_editions:,} documents with multiple editions; {multiple_editions_with_content} multiple editions with content ({multi_edition_docs} unique documents).
@@ -133,7 +149,7 @@ Updated {footnote_updated:,} footnotes.
             )
         )
 
-    def get_edition_footnote(self, doc):
+    def get_edition_footnote(self, doc, tei, filename):
         # identify the edition footnote to be updated
         # NOTE: still needs to handle multiple editions, no editions
         editions = doc.footnotes.editions()
@@ -156,6 +172,10 @@ Updated {footnote_updated:,} footnotes.
             # debugging output for footnote selection
             # print('no edition for %s' % xmlfile)
             self.stats["no_edition"] += 1
+            if self.verbosity > self.v_normal:
+                self.stdout.write("No edition found for %s" % filename)
+                for line in tei.source:
+                    self.stdout.write("\t%s" % line)
         else:
             self.stats["one_edition"] += 1
             # if only one edition, update the transciption content there
@@ -166,9 +186,10 @@ Updated {footnote_updated:,} footnotes.
 
         # if directory does not yet exist, clone repository
         if not os.path.isdir(local_path):
-            self.stdout.write(
-                "Cloning TEI transcriptions repository to %s" % local_path
-            )
+            if self.verbosity >= self.v_normal:
+                self.stdout.write(
+                    "Cloning TEI transcriptions repository to %s" % local_path
+                )
             Repo.clone_from(url=gitrepo_url, to_path=local_path)
         else:
             # pull any changes since the last run

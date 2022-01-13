@@ -143,11 +143,19 @@ section#document-list {
     align-self: flex-end;
 
     text-align: right;
-    direction: rtl;
+    // direction: rtl; /* search results ae mixed rtl/ltr and include unicode order mark characters */
+
+    .search-result & p {
+        white-space: pre-line;
+        text-align: right;
+        // disable site default max character width for reading
+        max-width: none;
+    }
 
     li {
         white-space: pre-line;
         margin-right: 2em; /* shift to make space for line numbers */
+        direction: rtl;
     }
 
     .mirador-viewer & h1 {

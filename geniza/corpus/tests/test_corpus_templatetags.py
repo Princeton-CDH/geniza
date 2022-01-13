@@ -45,7 +45,7 @@ def test_dict_item():
     # integer key
     assert corpus_extras.dict_item({13: "lucky"}, 13) == "lucky"
     # integer value
-    assert corpus_extras.dict_item({13: 7}, 13) is 7
+    assert corpus_extras.dict_item({13: 7}, 13) == 7
 
 
 def test_querystring_replace():

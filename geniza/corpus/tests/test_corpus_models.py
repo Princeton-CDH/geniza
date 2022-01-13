@@ -536,7 +536,7 @@ class TestDocument:
         for frag in document.fragments.all():
             assert frag.shelfmark in index_data["shelfmark_ss"]
         for tag in document.tags.all():
-            assert tag.name in index_data["tags_ss"]
+            assert tag.name in index_data["tags_ss_lower"]
         assert index_data["status_s"] == "Public"
         assert not index_data["old_pgpids_is"]
 
@@ -688,6 +688,9 @@ class TestDocument:
         assert twoauthor_source.authors.first().pk in [
             editor.pk for editor in document.editors().all()
         ]
+
+    def test_total_to_index(self, join, document):
+        assert Document.total_to_index() == 2
 
 
 def test_document_merge_with(document, join):
@@ -921,3 +924,9 @@ class TestDocumentPrefetchableProxy:
         # Should now be able to remove, since it is a GenericRelation
         document.log_entries.remove(le)
         assert document.log_entries.count() == 1
+
+    def test_total_to_index(self):
+        assert DocumentPrefetchableProxy.total_to_index() == 0
+
+    def test_items_to_index(self):
+        assert DocumentPrefetchableProxy.items_to_index() == []
