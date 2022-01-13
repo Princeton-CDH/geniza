@@ -628,7 +628,7 @@ class Document(ModelIndexable):
                 "shelfmark_ss": [f.shelfmark for f in fragments],
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
-                "tags_ss": [t.name for t in self.tags.all()],
+                "tags_ss_lower": [t.name for t in self.tags.all()],
                 "status_s": self.get_status_display(),
                 "old_pgpids_is": self.old_pgpids,
                 "language_code_ss": [lang.iso_code for lang in self.languages.all()],

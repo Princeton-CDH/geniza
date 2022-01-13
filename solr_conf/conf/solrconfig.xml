@@ -741,7 +741,7 @@
         shelfmark_t^80
         shelfmark_ss^100
         tags_t
-        tags_ss
+        tags_ss_lower
         scholarship_t
         old_pgpids_is
         transcription_t
@@ -760,7 +760,7 @@
         shelfmark_t
         shelfmark_ss
         tags_t
-        tags_ss
+        tags_ss_lower
         description_t
         notes_t
         needs_review_t
