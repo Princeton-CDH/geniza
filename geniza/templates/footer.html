@@ -12,13 +12,14 @@
     </ul>
 </nav>
 
-{# Translators: Text for Twitter links in footer #}
+{# Translators: label for Twitter links in footer #}
 {% translate 'Twitter' as twitter_text %}
-{# Translators: Text for Instagram links in footer #}
+{# Translators: label for Instagram links in footer #}
 {% translate 'Instagram' as instagram_text %}
 
 <ul id="footer-links">
-    <li class="external-link">
+    <li>
+        {# Translators: accessibility label for Princeton Geniza Lab homepage, for footer #}
         <a href="https://genizalab.princeton.edu/" aria-label="{% translate 'Princeton Geniza Lab homepage' %}">
             <svg id="pgl-logo">
                 <use href="{% static 'img/logos/pgl-logo.svg' %}#pgl-logo" />
@@ -30,7 +31,8 @@
             </li>
         </ul>
     </li>
-    <li class="external-link">
+    <li>
+        {# Translators: accessibility label for Princeton CDH homepage, for footer #}
         <a href="https://cdh.princeton.edu/" aria-label="{% translate 'Princeton Center for Digital Humanities homepage' %}">
             <svg id="cdh-logo">
                 <use href="{% static 'img/logos/cdh-logo.svg' %}#cdh-logo" />
@@ -45,17 +47,27 @@
             </li>
         </ul>
     </li>
-    <li class="copyright">
-        {# Translators: Official name of Princeton University's board of trustees, for footer #}
+</ul>
+<ul id="legal">
+    <li>
+        <a href="https://accessibility.princeton.edu/help" id="accessibility">
+            {# Translators: link label for Princeton accessibility assistance page, for footer #}
+            {% translate 'Accessibility' %}
+        </a>
+    </li>
+    <li id="copyright">
+        {# Translators: official name of Princeton University's board of trustees, for footer #}
         <span>{% now 'Y' %} {% translate 'The Trustees of Princeton University' %}</span>
     </li>
-    <li class="license">
+    <li id="license">
+        {# Translators: Creative Commons license text, for footer #}
         {% translate 'Creative Commons CC-BY license' as license_text %}
         <a href="https://creativecommons.org/licenses/by/2.0/" aria-label="{{ license_text }}">
             <img src="{% static 'img/icons/license-icon.svg' %}" alt="{{ license_text }}" />
         </a>
     </li>
-    <li class="external-link">
+    <li>
+        {# Translators: official name of Princeton University, for footer #}
         <a href="https://princeton.edu/" aria-label="{% translate 'Princeton University homepage' %}">
             <svg id="princeton-logo">
                 <use href="{% static 'img/logos/princeton-logo.svg' %}#princeton-logo" />
