@@ -536,7 +536,7 @@ class TestDocument:
         for frag in document.fragments.all():
             assert frag.shelfmark in index_data["shelfmark_ss"]
         for tag in document.tags.all():
-            assert tag.name in index_data["tags_ss"]
+            assert tag.name in index_data["tags_ss_lower"]
         assert index_data["status_s"] == "Public"
         assert not index_data["old_pgpids_is"]
 

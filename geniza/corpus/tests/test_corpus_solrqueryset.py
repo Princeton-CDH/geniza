@@ -36,5 +36,5 @@ class TestDocumentSolrQuerySet:
         with patch.object(dqs, "search") as mocksearch:
             dqs.keyword_search("pgpid:950 shelfmark:ena tag:state")
             mocksearch.return_value.raw_query_parameters.assert_called_with(
-                keyword_query="pgpid_i:950 shelfmark_t:ena tags_ss:state"
+                keyword_query="pgpid_i:950 shelfmark_t:ena tags_ss_lower:state"
             )
