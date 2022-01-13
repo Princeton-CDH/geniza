@@ -266,14 +266,15 @@ class DocumentTranscriptionText(DocumentDetailView):
         document = self.get_object()
         try:
             edition = document.editions().get(pk=self.kwargs["transcription_pk"])
+            shelfmark = slugify(document.textblock_set.first().fragment.shelfmark)
             authors = [slugify(a.last_name) for a in edition.source.authors.all()]
-            filename = "PGP_%d_%s.txt" % (document.id, "_".join(authors))
+            filename = "PGP%d_%s_%s.txt" % (document.id, shelfmark, "_".join(authors))
 
             return HttpResponse(
                 edition.content["text"],
                 headers={
                     "Content-Type": "text/plain; charset=UTF-8",
-                    # prompt download with filename including pgpid & authors
+                    # prompt download with filename including pgpid, shelfmark, & authors
                     "Content-Disposition": 'attachment; filename="%s"' % filename,
                 },
             )
