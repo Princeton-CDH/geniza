@@ -689,6 +689,9 @@ class TestDocument:
             editor.pk for editor in document.editors().all()
         ]
 
+    def test_total_to_index(self, join, document):
+        assert Document.total_to_index() == 2
+
 
 def test_document_merge_with(document, join):
     doc_id = document.id
@@ -921,3 +924,9 @@ class TestDocumentPrefetchableProxy:
         # Should now be able to remove, since it is a GenericRelation
         document.log_entries.remove(le)
         assert document.log_entries.count() == 1
+
+    def test_total_to_index(self):
+        assert DocumentPrefetchableProxy.total_to_index() == 0
+
+    def test_items_to_index(self):
+        assert DocumentPrefetchableProxy.items_to_index() == []
