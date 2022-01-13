@@ -129,6 +129,7 @@ footer {
         }
     }
 }
+
 // Footer backgrounds for light and dark mode, mobile
 @mixin footer-background-mobile-dark {
     background: url("/static/img/ui/mobile/dark/footer-gradient.svg") top,
@@ -147,15 +148,16 @@ footer {
 
 // Footer backgrounds for light and dark mode, desktop
 @mixin footer-background-desktop-dark {
-    background: url("/static/img/ui/desktop/dark/footer-gradient.svg") top,
-        url("/static/img/ui/desktop/dark/footer-image.png") top,
-        url("/static/img/ui/desktop/dark/footer-base.svg") top;
+    background: url("/static/img/ui/desktop/dark/footer-gradient.svg") top right,
+        url("/static/img/ui/desktop/dark/footer-image.png") top right,
+        url("/static/img/ui/desktop/dark/footer-base.svg") top right;
     background-repeat: no-repeat, no-repeat, no-repeat;
 }
 @mixin footer-background-desktop-light {
-    background: //url("/static/img/ui/desktop/light/footer-gradient.svg") top,
-        url("/static/img/ui/desktop/light/footer-image.png") top,
-        url("/static/img/ui/desktop/light/footer-base.svg") top;
+    background: url("/static/img/ui/desktop/light/footer-gradient.svg") top
+            right,
+        url("/static/img/ui/desktop/light/footer-image.png") top right,
+        url("/static/img/ui/desktop/light/footer-base.svg") top right;
     background-repeat: no-repeat, no-repeat, no-repeat;
 }
 
