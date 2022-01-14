@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-01-04 10:31-0500\n"
+"POT-Creation-Date: 2022-01-14 13:27-0500\n"
 "PO-Revision-Date: 2022-01-12 17:31\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -10,7 +10,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
+"%100==4 ? 2 : 3;\n"
 "X-Crowdin-Project: geniza\n"
 "X-Crowdin-Project-ID: 457634\n"
 "X-Crowdin-Language: he\n"
@@ -53,7 +54,7 @@ msgid "Document Type"
 msgstr "סוג המסמך"
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:611
+#: geniza/corpus/models.py:624
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr "סוג לא ידוע"
@@ -83,24 +84,24 @@ msgstr[2] ""
 msgstr[3] ""
 
 #. Translators: Date document was first added to the PGP
-#: geniza/corpus/templates/corpus/document_detail.html:57
+#: geniza/corpus/templates/corpus/document_detail.html:53
 #: geniza/corpus/templates/corpus/snippets/document_result.html:18
 msgid "Input date"
 msgstr "תאריך קלט"
 
 #. Translators: label for permanent link to a document
-#: geniza/corpus/templates/corpus/document_detail.html:61
+#: geniza/corpus/templates/corpus/document_detail.html:57
 msgid "Permalink"
 msgstr "קישור קבוע"
 
 #. Translators: label for tags on a document
-#: geniza/corpus/templates/corpus/document_detail.html:71
-#: geniza/corpus/templates/corpus/snippets/document_result.html:95
+#: geniza/corpus/templates/corpus/document_detail.html:67
+#: geniza/corpus/templates/corpus/snippets/document_result.html:93
 msgid "Tags"
 msgstr "תגים"
 
 #. Translators: label for document description
-#: geniza/corpus/templates/corpus/document_detail.html:82
+#: geniza/corpus/templates/corpus/document_detail.html:78
 msgid "Description"
 msgstr "תיאור"
 
@@ -162,7 +163,7 @@ msgid "PGP ID"
 msgstr "מזהה PGP"
 
 #. Translators: number of editions for this document
-#: geniza/corpus/templates/corpus/snippets/document_result.html:60
+#: geniza/corpus/templates/corpus/snippets/document_result.html:58
 #, python-format
 msgid "1 Transcription"
 msgid_plural "%(counter)s Transcriptions"
@@ -172,7 +173,7 @@ msgstr[2] ""
 msgstr[3] "%(counter)s תעתוקים"
 
 #. Translators: number of translations for this document
-#: geniza/corpus/templates/corpus/snippets/document_result.html:70
+#: geniza/corpus/templates/corpus/snippets/document_result.html:68
 #, python-format
 msgid "1 Translation"
 msgid_plural "%(counter)s Translations"
@@ -182,7 +183,7 @@ msgstr[2] ""
 msgstr[3] "%(counter)s תעתוקים"
 
 #. Translators: number of sources that discuss this document
-#: geniza/corpus/templates/corpus/snippets/document_result.html:80
+#: geniza/corpus/templates/corpus/snippets/document_result.html:78
 #, python-format
 msgid "1 Discussion"
 msgid_plural "%(counter)s Discussions"
@@ -191,11 +192,11 @@ msgstr[1] ""
 msgstr[2] ""
 msgstr[3] "%(counter)s דיונים"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:88
+#: geniza/corpus/templates/corpus/snippets/document_result.html:86
 msgid "No Scholarship Records"
 msgstr "אין רשומות קשורות"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:106
+#: geniza/corpus/templates/corpus/snippets/document_result.html:104
 msgid "View document details"
 msgstr "הצגת פרטי מסמך"
 
@@ -251,12 +252,12 @@ msgid "Search and browse Geniza documents."
 msgstr "חיפוש וצפיה במסמכי הגניזה."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:208
+#: geniza/corpus/views.py:221
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "רשומה קשורה ל-%(doc)s"
 
-#: geniza/corpus/views.py:215
+#: geniza/corpus/views.py:228
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
@@ -266,22 +267,22 @@ msgstr[2] "%(count)d רשומות קשורות ל %(doc)s"
 msgstr[3] "%(count)d רשומות קשורות ל %(doc)s"
 
 #. Translators: attribution for local IIIF manifests
-#: geniza/corpus/views.py:337
+#: geniza/corpus/views.py:353
 msgid "Princeton Geniza Project"
 msgstr "פרוייקט הגניזה של פרינסטון"
 
-#: geniza/corpus/views.py:338
+#: geniza/corpus/views.py:354
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr "קובץ על-ידי %(pgp)s."
 
-#: geniza/corpus/views.py:341
+#: geniza/corpus/views.py:357
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr "קובץ ותועתק על-ידי %(pgp)s."
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: geniza/corpus/views.py:343
+#: geniza/corpus/views.py:359
 msgid "Additional restrictions may apply."
 msgstr "קיימות מגבלות נוספות."
 
@@ -311,6 +312,48 @@ msgstr "דילוג לתוכן"
 #| msgid "main navigation"
 msgid "footer navigation"
 msgstr "ניווט"
+
+#. Translators: label for Twitter links in footer
+#: geniza/templates/footer.html:16
+msgid "Twitter"
+msgstr ""
+
+#. Translators: label for Instagram links in footer
+#: geniza/templates/footer.html:18
+msgid "Instagram"
+msgstr ""
+
+#. Translators: accessibility label for Princeton Geniza Lab homepage, for footer
+#: geniza/templates/footer.html:23
+#, fuzzy
+#| msgid "Princeton Geniza Project"
+msgid "Princeton Geniza Lab homepage"
+msgstr "פרוייקט הגניזה של פרינסטון"
+
+#. Translators: accessibility label for Princeton CDH homepage, for footer
+#: geniza/templates/footer.html:36
+msgid "Princeton Center for Digital Humanities homepage"
+msgstr ""
+
+#. Translators: link label for Princeton accessibility assistance page, for footer
+#: geniza/templates/footer.html:55
+msgid "Accessibility"
+msgstr ""
+
+#. Translators: official name of Princeton University's board of trustees, for footer
+#: geniza/templates/footer.html:60
+msgid "The Trustees of Princeton University"
+msgstr ""
+
+#. Translators: Creative Commons license text, for footer
+#: geniza/templates/footer.html:64
+msgid "Creative Commons CC-BY license"
+msgstr ""
+
+#. Translators: official name of Princeton University, for footer
+#: geniza/templates/footer.html:71
+msgid "Princeton University homepage"
+msgstr ""
 
 #. Translators: accessibility text label for site navigation
 #: geniza/templates/nav.html:8
@@ -365,7 +408,3 @@ msgstr "חזרה לתפריט הראשי"
 #: geniza/templates/snippets/theme_toggle.html:9
 msgid "Enable dark mode"
 msgstr ""
-
-#~ msgid "Shelfmark"
-#~ msgstr "Shelfmark"
-
