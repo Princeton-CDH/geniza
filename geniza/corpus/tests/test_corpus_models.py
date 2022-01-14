@@ -930,3 +930,7 @@ class TestDocumentPrefetchableProxy:
 
     def test_items_to_index(self):
         assert DocumentPrefetchableProxy.items_to_index() == []
+
+    def test_index_data(self, document):
+        prefetch_doc = DocumentPrefetchableProxy.objects.get(pk=document.pk)
+        assert prefetch_doc.index_data() == document.index_data()
