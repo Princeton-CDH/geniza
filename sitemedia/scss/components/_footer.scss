@@ -47,6 +47,9 @@ footer {
             grid-auto-columns: 1fr 1fr;
             a {
                 text-decoration: none;
+                &[aria-current="page"] {
+                    @include typography.nav-bold;
+                }
             }
             li {
                 margin-bottom: 0.5rem;

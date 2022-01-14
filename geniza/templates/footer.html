@@ -1,12 +1,13 @@
-{% load i18n static %}
+{% load i18n static wagtailcore_tags %}
 
 {# Translators: accessibility text label for footer site navigation #}
 {% translate "footer navigation" as footer_nav_label %}
 <nav id="footer-nav">
     <ul>
         <li class="menu-item">
+            {% pageurl site.root_page.localized as root_url %}
             {# Translators: label for 'home' link in footer navigation #}
-            <a href="/">{% translate "Home" %}</a>
+            <a href="{{ root_url }}"{% if request.path == root_url %} aria-current="page"{% endif %}>{% translate "Home" %}</a>
         </li>
         {% include "snippets/menu.html" %}
     </ul>
