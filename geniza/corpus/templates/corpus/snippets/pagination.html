@@ -2,15 +2,15 @@
 {% spaceless %}
     <nav class="pagination {% if page_obj.paginator.num_pages < 5 %} compressed {% endif %}">
         {# Translators: Label for "previous page" button in search results #}
-        {% translate 'previous page' as previous_page %}
+        {% translate 'Previous' as previous_page %}
         {% if page_obj.has_previous %}
             <a name="{{ previous_page }}" title="{{ previous_page }}" rel="prev" href="?{% querystring_replace page=page_obj.previous_page_number %}">
-                <i class="ph-caret-left"></i>
+                {{ previous_page }}
             </a>
         {% else %}
-            <a name="{{ previous_page }}" title="{{ previous_page }}" class="disabled">
-                <i class="ph-caret-left"></i>
-            </a>
+            <span class="disabled prev">
+                {{ previous_page }}
+            </span>
         {% endif %}
 
         {% for number in page_obj.paginator.page_range %}
@@ -53,15 +53,15 @@
         {% endfor %}
 
         {# Translators: Label for "next page" button in search results #}
-        {% translate 'next page' as next_page %}
+        {% translate 'Next' as next_page %}
         {% if page_obj.has_next %}
             <a name="{{ next_page }}" title="{{ next_page }}" rel="next" href="?{% querystring_replace page=page_obj.next_page_number %}">
-                <i class="ph-caret-right"></i>
+                {{ next_page }}
             </a>
         {% else %}
-            <a name="{{ next_page }}" title="{{ next_page }}" class="disabled">
-                <i class="ph-caret-right"></i>
-            </a>
+            <span class="disabled next">
+                {{ next_page }}
+            </span>
         {% endif %}
     </nav>
 {% endspaceless %}
