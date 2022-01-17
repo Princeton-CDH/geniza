@@ -44,17 +44,18 @@ section#document-list {
     // spacing in between results
     & + .search-result {
         margin-top: spacing.$spacing-2xl;
-        // Separator image
+        // separator image (mobile)
         &::before {
             content: "";
             display: block;
-            position: absolute;
+            position: absolute; // needs to be absolute to prevent overflow
             background-color: var(--link-primary);
             left: 0;
             margin-top: -#{spacing.$spacing-lg};
             width: 300px;
             height: 6px;
             mask-image: url("/static/img/ui/mobile/light/separator.svg");
+            // separator image (desktop)
             @include breakpoints.for-tablet-landscape-up {
                 position: relative;
                 left: auto;
