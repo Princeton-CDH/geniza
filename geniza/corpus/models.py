@@ -855,6 +855,11 @@ class DocumentPrefetchableProxy(Document):
         # tell parasolr, nothing to index here
         return 0
 
+    @classmethod
+    def index_item_type(cls):
+        # when indexing in bulk with prefetching, index exactly like a document
+        return Document.index_item_type()
+
 
 class TextBlock(models.Model):
     """The portion of a document that appears on a particular fragment."""
