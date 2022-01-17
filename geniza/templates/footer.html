@@ -2,9 +2,9 @@
 
 {# Translators: accessibility text label for footer site navigation #}
 {% translate "footer navigation" as footer_nav_label %}
-<nav id="footer-nav">
+<nav id="footer-nav" role="menu">
     <ul>
-        <li class="menu-item">
+        <li class="menu-item" role="menuitem">
             {% pageurl site.root_page.localized as root_url %}
             {# Translators: label for 'home' link in footer navigation #}
             <a href="{{ root_url }}"{% if request.path == root_url %} aria-current="page"{% endif %}>{% translate "Home" %}</a>
@@ -64,7 +64,7 @@
         {# Translators: Creative Commons license text, for footer #}
         {% translate 'Creative Commons CC-BY license' as license_text %}
         <a href="https://creativecommons.org/licenses/by/2.0/" aria-label="{{ license_text }}">
-            <img src="{% static 'img/icons/license-icon.svg' %}" alt="{{ license_text }}" />
+            <img src="{% static 'img/icons/license-icon.svg' %}" width="32" height="16" alt="{{ license_text }}" />
         </a>
     </li>
     <li>
