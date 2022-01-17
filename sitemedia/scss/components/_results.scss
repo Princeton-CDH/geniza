@@ -43,7 +43,26 @@ section#document-list {
 
     // spacing in between results
     & + .search-result {
-        margin-top: spacing.$spacing-lg;
+        margin-top: spacing.$spacing-2xl;
+        // Separator image
+        &::before {
+            content: "";
+            display: block;
+            position: absolute;
+            background-color: var(--link-primary);
+            left: 0;
+            margin-top: -#{spacing.$spacing-lg};
+            width: 300px;
+            height: 6px;
+            mask-image: url("/static/img/ui/mobile/light/separator.svg");
+            @include breakpoints.for-tablet-landscape-up {
+                position: relative;
+                left: auto;
+                width: 100%;
+                height: 47px;
+                mask-image: url("/static/img/ui/desktop/light/separator.svg");
+            }
+        }
     }
 
     // First row on mobile, left column on larger
