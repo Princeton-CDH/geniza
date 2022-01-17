@@ -117,20 +117,44 @@ section#document-list {
         }
     }
 
+    // "view document details" link
     .view-link {
         display: flex;
         align-items: center;
         width: max-content;
+        height: 1.75rem;
         margin-left: auto;
         margin-top: spacing.$spacing-md;
         @include typography.meta;
         color: var(--secondary);
-        i {
+        // focus styles
+        &:focus {
+            outline: 0.125rem solid var(--tabs-focus);
+            outline-offset: 0.66rem;
+        }
+        // hover and active styles
+        @include breakpoints.for-tablet-landscape-up {
+            &:hover,
+            &:active {
+                margin-bottom: -0.1875rem;
+                height: calc(1.75rem + 0.1875rem);
+                border-bottom: 0.1875rem solid var(--viewlink-bottom-hover);
+                outline: none; // keeping focus and hover/active styles distinct
+            }
+            &:active {
+                border-bottom-color: var(--primary);
+            }
+        }
+        // icon to the right
+        &:after {
+            font-family: "Phosphor" !important;
+            content: "\f044"; // phosphor arrow-right icon
             margin-left: spacing.$spacing-2xs;
+            font-size: typography.$text-size-xl;
             @include breakpoints.for-tablet-landscape-up {
                 margin-left: spacing.$spacing-sm;
+                font-size: typography.$text-size-2xl;
             }
-            @include typography.headline-2;
         }
     }
 }
