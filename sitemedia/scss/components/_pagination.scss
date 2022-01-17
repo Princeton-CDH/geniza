@@ -10,7 +10,7 @@
 nav.pagination {
     max-width: 100%;
     display: flex;
-    justify-content: space-evenly;
+    justify-content: center;
     align-items: center;
     flex-flow: row wrap;
     margin: spacing.$spacing-lg 0;
@@ -20,7 +20,7 @@ nav.pagination {
         margin: spacing.$spacing-xl 0;
         justify-content: center;
     }
-    // special styling for nav at bottom of page
+    // special styling for pagination at bottom of page
     &:last-of-type {
         margin: spacing.$spacing-2xl 0 0;
         @include breakpoints.for-tablet-landscape-up {
@@ -28,63 +28,68 @@ nav.pagination {
             justify-content: center;
         }
     }
+    // spacing and style for page links, ellipsis, and disabled
     a,
     span {
-        @include typography.link;
         @include typography.nav-bold;
-        &:not(.active) {
+        &:not([aria-current="page"]) {
             @include typography.nav-link;
             text-decoration: none;
             font-weight: normal;
         }
-        @include breakpoints.for-tablet-landscape-up {
-            padding: 0 spacing.$spacing-sm;
-        }
-    }
-    a,
-    span.disabled {
         display: flex;
-        min-width: 48px;
-        min-height: 48px;
         align-items: center;
         justify-content: center;
+        padding: 0 spacing.$spacing-xs;
+        margin: spacing.$spacing-xs 0;
         @include breakpoints.for-tablet-landscape-up {
-            &:not(.active):not(.disabled):not([rel="next"]):not([rel="prev"]):hover {
-                text-decoration: underline;
-                text-decoration-color: var(--on-background-light);
-                text-decoration-thickness: 0.1875rem;
-                text-underline-offset: 0.375rem;
-            }
-            &[rel="next"]:hover,
-            &[rel="prev"]:hover {
+            padding: 0 spacing.$spacing-sm;
+            margin: 0;
+        }
+    }
+    // link-specific styling
+    a {
+        // current page styling
+        &[aria-current="page"] {
+            text-decoration: none;
+            border-bottom: 0.1875rem solid var(--link-primary);
+            margin-bottom: -0.1875rem;
+            margin-top: 0;
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            // hover underline
+            &:hover {
                 text-decoration: none;
-                margin: -1.2rem spacing.$spacing-sm -0.1875rem;
-                padding: 1.2rem 0 0;
                 border-bottom: 0.1875rem solid var(--on-background-light);
+                margin-bottom: -0.1875rem;
+            }
+            // current page underline color
+            &[aria-current="page"]:hover {
+                border-bottom-color: var(--link-secondary);
             }
         }
     }
+    // prev/next link, span styling
+    .prev,
+    .next {
+        flex: 1 0 100%;
+        @include breakpoints.for-tablet-landscape-up {
+            flex: 0 0 auto;
+        }
+    }
+    // disabled prev/next
     span.disabled {
         color: var(--disabled);
     }
-    a[rel="prev"]::before,
-    span.disabled.prev::before {
+    // button icons
+    .prev::before {
         margin: 0.1rem spacing.$spacing-xs 0 0;
         font-family: "Phosphor";
         content: "\f03b"; // phosphor arrow-left icon
     }
-    a[rel="next"]::after,
-    span.disabled.next::after {
+    .next::after {
         margin: 0.1rem 0 0 spacing.$spacing-xs;
         font-family: "Phosphor";
         content: "\f044"; // phosphor arrow-right icon
-    }
-    // special styling for fewer than 5 pages on mobile
-    &.compressed {
-        justify-content: center;
-        a,
-        span {
-            padding: 0 spacing.$spacing-xs;
-        }
     }
 }
