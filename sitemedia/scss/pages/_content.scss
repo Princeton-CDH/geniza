@@ -27,7 +27,19 @@
             }
         }
         ul {
-            list-style: disc outside;
+            li {
+                position: relative;
+                &::before {
+                    content: "";
+                    width: 16px;
+                    height: 18px;
+                    position: absolute;
+                    left: -#{spacing.$spacing-lg};
+                    display: block;
+                    background-color: var(--link-primary);
+                    mask-image: url("/static/img/ui/mobile/light/bullet.svg");
+                }
+            }
         }
         ol {
             counter-reset: listitem;

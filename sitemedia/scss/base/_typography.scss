@@ -73,20 +73,27 @@ $text-size-5xl: 2rem; //     = 32px
 // blockquote
 @mixin quote {
     font-family: fonts.$primary;
-    padding-left: spacing.$spacing-lg;
-    border-left: 2px solid var(--on-background);
-    margin: spacing.$spacing-2xl 0;
+    padding-left: spacing.$spacing-md;
+    border-left: 0.125rem solid var(--link-primary);
+    margin: 3rem 0;
     &::before {
-        content: "\201C";
-        font-size: $text-size-4xl;
+        content: "";
+        width: 30px;
+        height: 24px;
         position: absolute;
-        margin-top: -#{spacing.$spacing-2xl};
+        margin-top: -#{spacing.$spacing-xl};
+        background-color: var(--link-primary);
+        mask-image: url("/static/img/ui/mobile/light/left-double-quote.svg");
     }
     &::after {
-        content: "\201D";
-        font-size: $text-size-4xl;
+        content: "";
+        width: 30px;
+        height: 24px;
         position: absolute;
         display: block;
+        margin-top: #{spacing.$spacing-sm};
+        background-color: var(--link-primary);
+        mask-image: url("/static/img/ui/mobile/light/right-double-quote.svg");
     }
 }
 
