@@ -2,12 +2,12 @@
 
 {# Translators: accessibility text label for footer site navigation #}
 {% translate "footer navigation" as footer_nav_label %}
-<nav id="footer-nav" role="menu">
-    <ul>
-        <li class="menu-item" role="menuitem">
+<nav id="footer-nav">
+    <ul role="menu">
+        <li class="menu-item" role="none">
             {% pageurl site.root_page.localized as root_url %}
             {# Translators: label for 'home' link in footer navigation #}
-            <a href="{{ root_url }}"{% if request.path == root_url %} aria-current="page"{% endif %}>{% translate "Home" %}</a>
+            <a href="{{ root_url }}" role="menuitem"{% if request.path == root_url %} aria-current="page"{% endif %}>{% translate "Home" %}</a>
         </li>
         {% include "snippets/menu.html" %}
     </ul>
