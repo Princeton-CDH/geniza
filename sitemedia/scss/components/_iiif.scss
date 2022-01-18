@@ -1,6 +1,8 @@
 /* limit size of iiif viewer */
 
+@use "../base/breakpoints";
 @use "../base/spacing";
+@use "../base/typography";
 
 .iiif_wrapper {
     display: block;
@@ -14,4 +16,24 @@
 #iiif_viewer {
     position: relative;
     height: clamp(200px, 75vh, 75vh);
+}
+
+.mirador-viewer {
+    h1 {
+        @include typography.headline-3;
+        text-align: left;
+        direction: ltr;
+    }
+    li {
+        font-size: typography.$text-size-md;
+        @include breakpoints.for-tablet-landscape-up {
+            font-size: typography.$text-size-lg;
+        }
+        & + li {
+            margin-top: spacing.$spacing-xs;
+        }
+    }
+    li::before {
+        @include typography.nav-bold;
+    }
 }

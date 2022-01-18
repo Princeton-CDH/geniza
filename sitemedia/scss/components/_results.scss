@@ -158,11 +158,6 @@ section#document-list {
         direction: rtl;
     }
 
-    .mirador-viewer & h1 {
-        @include typography.headline-3;
-        text-align: left;
-    }
-
     /* some transcription styles adapted from local admin site css */
     li::before {
         /* use pseudo marker to avoid periods for line numbers */
