@@ -31,9 +31,9 @@ class SelectDisabledMixin:
         return option_dict
 
 
-class SelectWithDisabled(SelectDisabledMixin, forms.Select):
+class RadioSelectWithDisabled(SelectDisabledMixin, forms.RadioSelect):
     """
-    Subclass of :class:`django.forms.Select` with option to mark
+    Subclass of :class:`django.forms.RadioSelect` with option to mark
     a choice as disabled.
     """
 
@@ -131,9 +131,12 @@ class DocumentSearchForm(forms.Form):
     sort = forms.ChoiceField(
         # Translators: label for form sort field
         label=_("Sort by"),
-        choices=SORT_CHOICES,
+        choices=[
+            (choice[0], mark_safe(f"<span>{choice[1]}</span>"))
+            for choice in SORT_CHOICES
+        ],
         required=False,
-        widget=SelectWithDisabled,
+        widget=RadioSelectWithDisabled,
     )
 
     doctype = FacetChoiceField(

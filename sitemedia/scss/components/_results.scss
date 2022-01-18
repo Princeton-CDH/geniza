@@ -86,8 +86,9 @@ section#document-list {
 
             // keywords in context
             em {
-                @include colors.apply-theme("primary");
+                color: var(--secondary);
                 font-weight: bold;
+                font-style: normal;
             }
             /* solr returns multiple matches in text without space between */
             em + em {
@@ -123,6 +124,7 @@ section#document-list {
         margin-left: auto;
         margin-top: spacing.$spacing-md;
         @include typography.meta;
+        color: var(--secondary);
         i {
             margin-left: spacing.$spacing-2xs;
             @include breakpoints.for-tablet-landscape-up {
@@ -141,11 +143,19 @@ section#document-list {
     align-self: flex-end;
 
     text-align: right;
-    direction: rtl;
+    // direction: rtl; /* search results ae mixed rtl/ltr and include unicode order mark characters */
+
+    .search-result & p {
+        white-space: pre-line;
+        text-align: right;
+        // disable site default max character width for reading
+        max-width: none;
+    }
 
     li {
         white-space: pre-line;
         margin-right: 2em; /* shift to make space for line numbers */
+        direction: rtl;
     }
 
     .mirador-viewer & h1 {

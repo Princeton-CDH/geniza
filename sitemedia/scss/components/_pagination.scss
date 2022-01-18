@@ -3,6 +3,7 @@
 // -----------------------------------------------------------------------------
 
 @use "../base/breakpoints";
+@use "../base/colors";
 @use "../base/spacing";
 @use "../base/typography";
 
@@ -13,6 +14,8 @@ nav.pagination {
     align-items: center;
     flex-flow: row wrap;
     margin: spacing.$spacing-lg 0;
+    background-color: var(--background-light);
+    color: var(--on-background-light);
     @include typography.nav-link;
     @include breakpoints.for-tablet-landscape-up {
         margin: spacing.$spacing-xl 0;
@@ -28,8 +31,8 @@ nav.pagination {
     }
     a,
     span {
-        @include typography.nav-bold;
         @include typography.link;
+        @include typography.nav-bold;
         &:not(.active) {
             @include typography.nav-link;
             text-decoration: none;

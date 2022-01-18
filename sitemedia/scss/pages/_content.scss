@@ -6,11 +6,10 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-#content-page {
+#content-page,
+#homepage {
     h1 {
-        @include breakpoints.for-tablet-landscape-up {
-            margin-top: spacing.$spacing-xl;
-        }
+        margin-top: spacing.$spacing-md;
     }
     .container {
         // Overall spacing
@@ -56,6 +55,7 @@
         margin: spacing.$spacing-md 0;
         figcaption {
             align-self: flex-start;
+            color: var(--on-background-alt);
         }
         img {
             align-self: center;
@@ -74,15 +74,6 @@
             @include breakpoints.for-tablet-landscape-up {
                 max-height: 300px;
             }
-        }
-    }
-
-    // Credits page
-    dd {
-        margin-top: spacing.$spacing-xs;
-        text-decoration: underline;
-        & + dt {
-            margin-top: spacing.$spacing-lg;
         }
     }
 }

@@ -24,6 +24,10 @@ class GenizaTei(teimap.Tei):
     labels = xmlmap.NodeListField(
         "tei:text/tei:body/tei:div/tei:label", GenizaTeiLine
     )  # not really a line...
+    # source description sometimes contains reference to scholarship record
+    source = xmlmap.NodeListField(
+        "tei:teiHeader//tei:sourceDesc/tei:msDesc/tei:msContents/tei:p", GenizaTeiLine
+    )
 
     def no_content(self):
         return str(self.text).strip() == ""
@@ -55,7 +59,8 @@ class GenizaTei(teimap.Tei):
             elif line.name == "l":
                 # use language codes? unreliable in the xml
                 # append tuple of line number, text
-                lines.append((line.number, str(line)))
+                # TODO: test line with no attribute; currently resulting in label "None"
+                lines.append((line.number or "", str(line)))
 
         # append the last block
         if lines:
@@ -85,14 +90,43 @@ class GenizaTei(teimap.Tei):
 
         return "\n".join(html)
 
+    rtl_mark = "\u200F"
+    ltr_mark = "\u200E"
+
     def text_to_plaintext(self):
         lines = []
         # because blocks are indicated by labels without containing elements,
         # iterate over all lines and create blocks based on the labels
+
+        # errors if there are no lines; sync transcription now checks
+        # and won't call in that case
+        if not self.text.lines:
+            return
+
+        # determine longest line so we can pad the text
+        longest_line = max(len(str(line)) for line in self.text.lines)
+        # some files have descriptions that are making lines much too long,
+        # so set a limit on line length
+        if longest_line > 100:
+            longest_line = 100
         for line in self.text.lines:
             if line.name == "label":
                 # blank line to indicate breaks between blocks
                 lines.append("")
+                lines.append("%s%s" % (self.ltr_mark, line))
             elif line.name == "l":
-                lines.append(str(line))
+                line_num = line.number or ""
+                # combine line text with line number and right justify;
+                # right justify line number
+                lines.append(
+                    " ".join(
+                        [
+                            self.rtl_mark,
+                            str(line).rjust(longest_line),
+                            self.ltr_mark,
+                            line_num.rjust(3),
+                        ]
+                    )
+                )
+
         return "\n".join(lines)

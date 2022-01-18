@@ -5,7 +5,7 @@ from wagtail.core.models import Page
 from wagtail.core.models.i18n import Locale
 from wagtail.core.models.sites import Site
 
-from geniza.pages.models import ContentPage, CreditsPage, HomePage
+from geniza.pages.models import ContainerPage, ContentPage, HomePage
 
 
 class Command(BaseCommand):
@@ -38,30 +38,40 @@ class Command(BaseCommand):
         port = options.get("port")
         (locale, _) = Locale.objects.get_or_create(language_code="en")
 
-        # Bootstrap empty home page
+        # Bootstrap empty home page, about page
         home_page = HomePage(
             title="The Princeton Geniza Project",
             description="Home page",
             locale=locale,
         )
+
         root = Page.get_first_root_node()
         root.add_child(instance=home_page)
 
-        # Create credits page
-        credits_page = CreditsPage(
-            title="Credits",
-            slug="credits",
-            description="List of Geniza Project contributors and their roles",
-            locale=locale,
-        )
-        home_page.add_child(instance=credits_page)
+        container_page = ContainerPage(title="About", slug="about", locale=locale)
+        home_page.add_child(instance=container_page)
 
-        # Bootstrap other empty pages
-        empty_pages = [
+        # Bootstrap other empty content pages
+
+        # Pages for main navigation menu
+        root_pages = [
             ContentPage(
                 title="Contact Us",
                 slug="contact",
                 description="Contact information",
+                locale=locale,
+            ),
+        ]
+        for page in root_pages:
+            page.show_in_menus = True
+            home_page.add_child(instance=page)
+
+        # Pages for About sub-navigation menu
+        container_pages = [
+            ContentPage(
+                title="Credits",
+                slug="credits",
+                description="List of Geniza Project contributors and their roles",
                 locale=locale,
             ),
             ContentPage(
@@ -89,8 +99,9 @@ class Command(BaseCommand):
                 locale=locale,
             ),
         ]
-        for page in empty_pages:
-            home_page.add_child(instance=page)
+        for page in container_pages:
+            page.show_in_menus = True
+            container_page.add_child(instance=page)
 
         if include_fixtures:
             # Create test page
@@ -125,7 +136,11 @@ class Command(BaseCommand):
             description="Example page",
             slug="content",
             body=content.replace(  # get static URLs for test images
-                "test-image-fragment.jpg", static("test-image-fragment.jpg")
-            ).replace("test-image-tagnetwork.png", static("test-image-tagnetwork.png")),
+                "test-image-fragment.jpg",
+                static("img/fixtures/test-image-fragment.jpg"),
+            ).replace(
+                "test-image-tagnetwork.png",
+                static("img/fixtures/test-image-tagnetwork.png"),
+            ),
             live=True,
         )

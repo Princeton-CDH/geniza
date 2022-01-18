@@ -2,35 +2,75 @@
 // Tabbed navigation that appears in the header of some pages.
 // -----------------------------------------------------------------------------
 
+@use "../base/colors";
 @use "../base/breakpoints";
 @use "../base/spacing";
 @use "../base/typography";
 
 .tabs {
-    display: flex;
-    justify-content: space-between;
-    text-align: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-content: stretch;
+    justify-content: center;
     margin: 0 auto;
     @include typography.nav-link;
+    // Tabs styling
     a,
     span {
-        flex: 1 0 auto;
-        display: inline-block;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        height: 100%;
+        padding-bottom: spacing.$spacing-xs;
+        border-bottom: 4px solid var(--tabs-bottom);
         @include breakpoints.for-tablet-landscape-up {
-            padding: spacing.$spacing-2xs spacing.$spacing-lg;
+            padding-left: spacing.$spacing-xl;
+            padding-right: spacing.$spacing-xl;
         }
     }
+    // Link-specific tabs styling
     a {
-        @include typography.link;
+        text-decoration: none;
+        position: relative;
+        /* use ::after for focus outline */
+        &::after {
+            content: "";
+            width: 80%;
+            height: 80%;
+            position: absolute;
+        }
+        &:focus-visible {
+            outline: none;
+        }
+        &:focus-visible::after {
+            outline: 0.1rem solid var(--tabs-focus);
+        }
     }
-    // Center tab padding boost
-    li:nth-child(2) a,
-    li:nth-child(2) span {
+    .disabled {
+        color: var(--disabled);
+    }
+    a:hover {
         @include breakpoints.for-tablet-landscape-up {
-            padding: spacing.$spacing-2xs spacing.$spacing-2xl;
+            border-bottom-color: var(--tabs-bottom-hover);
         }
     }
     a[aria-current="page"] {
         @include typography.nav-bold;
+        border-bottom-color: var(--secondary);
+        // Don't show hover color on current page tab
+        &:hover {
+            border-bottom-color: var(--secondary);
+        }
+    }
+    // Extra padding to get External Links on two lines
+    li:last-child a,
+    li:last-child span {
+        padding-left: spacing.$spacing-sm;
+        padding-right: spacing.$spacing-sm;
+        @include breakpoints.for-tablet-landscape-up {
+            padding-left: spacing.$spacing-2xl;
+            padding-right: spacing.$spacing-2xl;
+        }
     }
 }
