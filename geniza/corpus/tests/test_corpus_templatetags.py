@@ -5,6 +5,7 @@ import pytest
 from django.http.request import QueryDict
 
 from geniza.corpus.templatetags import corpus_extras
+from geniza.footnotes.models import Footnote
 
 
 class TestCorpusExtrasTemplateTags:
@@ -85,3 +86,41 @@ def test_unquote_url():
     assert corpus_extras.unquote(url) == parse.unquote(url)
     # Should handle empty string
     assert corpus_extras.unquote("") == ""
+
+
+def test_footnotes_on_source(document, join, source, twoauthor_source):
+    # Create three footnotes linking a certain document and source
+    fn = Footnote.objects.create(
+        content_object=document,
+        source=source,
+        doc_relation=Footnote.EDITION,
+    )
+    fn2 = Footnote.objects.create(
+        content_object=document,
+        source=source,
+        doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
+        content="some text",
+    )
+
+    # Link source but not document
+    fn_source_not_doc = Footnote.objects.create(
+        content_object=join,
+        source=source,
+        doc_relation=Footnote.DISCUSSION,
+    )
+
+    # Link document but not source
+    fn_doc_not_source = Footnote.objects.create(
+        content_object=document,
+        source=twoauthor_source,
+        doc_relation=Footnote.DISCUSSION,
+    )
+
+    fos = corpus_extras.footnotes_on_source(document, source)
+    # Should get all footnotes on the passed document and source
+    assert fn in fos
+    assert fn2 in fos
+
+    # Should not get a footnote on the source alone, or document alone
+    assert fn_source_not_doc not in fos
+    assert fn_doc_not_source not in fos

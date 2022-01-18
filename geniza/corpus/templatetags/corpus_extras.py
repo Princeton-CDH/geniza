@@ -50,10 +50,23 @@ def querystring_replace(context, **kwargs):
 
 @register.filter
 def unquote(url):
-    """Template tag to parse URL-encoded URLs.
+    """Template filter to parse URL-encoded URLs.
 
     Example use::
         <a href="{{ url|unquote }}">
     """
 
     return parse.unquote(url)
+
+
+@register.filter
+def footnotes_on_source(document, source):
+    """Template filter to get all footnotes related to the passed document and source.
+
+    Example use::
+        {% for fn in document|footnotes_on_source:source %}
+            {{ fn.doc_relation }}
+        {% endfor %}
+    """
+
+    return source.footnote_set.filter(document=document).order_by("location")
