@@ -570,7 +570,9 @@ class TestDocument:
             assert index_data[scholarship_count] == 0
         assert index_data["scholarship_t"] == []
 
-    def test_index_data_footnotes(self, document, source):
+    def test_index_data_footnotes(
+        self, document, source, twoauthor_source, multiauthor_untitledsource
+    ):
         # footnote with no content
         edition = Footnote.objects.create(
             content_object=document,
@@ -580,12 +582,12 @@ class TestDocument:
         )
         edition2 = Footnote.objects.create(
             content_object=document,
-            source=source,
+            source=twoauthor_source,
             doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
         )
         translation = Footnote.objects.create(
             content_object=document,
-            source=source,
+            source=multiauthor_untitledsource,
             doc_relation=Footnote.TRANSLATION,
         )
         index_data = document.index_data()
@@ -691,6 +693,28 @@ class TestDocument:
 
     def test_total_to_index(self, join, document):
         assert Document.total_to_index() == 2
+
+    def test_unique_sources(self, document, source, twoauthor_source):
+        # Create two different footnotes with the same document and source
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.EDITION,
+        )
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.TRANSLATION,
+        )
+        # Create one footnote with a new source
+        Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.EDITION,
+        )
+        assert source in document.unique_sources()
+        assert twoauthor_source in document.unique_sources()
+        assert len(document.unique_sources()) == 2
 
 
 def test_document_merge_with(document, join):

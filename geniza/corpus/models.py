@@ -25,7 +25,7 @@ from taggit_selectize.managers import TaggableManager
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
-from geniza.footnotes.models import Creator, Footnote
+from geniza.footnotes.models import Creator, Footnote, Source
 
 logger = logging.getLogger(__name__)
 
@@ -579,6 +579,10 @@ class Document(ModelIndexable):
             source__footnote__document=self,
         ).distinct()
 
+    def unique_sources(self):
+        """All unique sources attached to footnotes on this document."""
+        return Source.objects.filter(footnote__document=self).distinct()
+
     @classmethod
     def total_to_index(cls):
         # quick count for parasolr indexing (don't do prefetching just to get the total!)
@@ -636,10 +640,11 @@ class Document(ModelIndexable):
         )
 
         # count scholarship records by type
-        footnotes = self.footnotes.all()
+        unique_sources = self.unique_sources()
         counts = defaultdict(int)
         transcription_texts = []
-        for fn in footnotes:
+        for source in unique_sources:
+            fn = source.footnote_set.filter(document=self).first()
             for val in fn.doc_relation:
                 counts[val] += 1
             # if this is an edition/transcription, try to get plain text for indexing
@@ -656,7 +661,7 @@ class Document(ModelIndexable):
                 "scholarship_count_i": sum(counts.values()),
                 # preliminary scholarship record indexing
                 # (may need splitting out and weighting based on type of scholarship)
-                "scholarship_t": [fn.display() for fn in footnotes],
+                "scholarship_t": [fn.display() for fn in self.footnotes.all()],
                 # text content of any transcriptions
                 "transcription_t": transcription_texts,
             }
