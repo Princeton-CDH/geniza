@@ -1,3 +1,5 @@
+from urllib import parse
+
 from django import template
 
 register = template.Library()
@@ -44,3 +46,14 @@ def querystring_replace(context, **kwargs):
         querystring[key] = val
     # return urlencoded query string
     return querystring.urlencode()
+
+
+@register.filter
+def unquote(url):
+    """Template tag to parse URL-encoded URLs.
+
+    Example use::
+        <a href="{{ url|unquote }}">
+    """
+
+    return parse.unquote(url)

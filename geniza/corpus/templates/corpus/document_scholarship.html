@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n corpus_extras %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
@@ -29,7 +29,7 @@
                             <dt class="relation">
                                 {% if fn.location and fn.url %}
                                     {# Translators: label for footnote location within source (with url) #}
-                                    {% blocktranslate with location=fn.location url=fn.url trimmed %}
+                                    {% blocktranslate with location=fn.location url=fn.url|unquote trimmed %}
                                         see <a href="{{ url }}">{{ location }}</a> for
                                     {% endblocktranslate %}
                                 {% elif fn.location %}
