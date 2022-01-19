@@ -644,21 +644,27 @@ class Document(ModelIndexable):
         counts = defaultdict(int)
         transcription_texts = []
         for source in unique_sources:
-            fn = source.footnote_set.filter(document=self).first()
-            for val in fn.doc_relation:
-                counts[val] += 1
-            # if this is an edition/transcription, try to get plain text for indexing
-            if Footnote.EDITION in fn.doc_relation and fn.content:
-                plaintext = fn.content_text()
-                if plaintext:
-                    transcription_texts.append(plaintext)
+            source_relations = []
+            footnotes = source.footnote_set.filter(document=self)
+            for fn in footnotes:
+                for val in fn.doc_relation:
+                    source_relations.append(val)
+                # if this is an edition/transcription, try to get plain text for indexing
+                if Footnote.EDITION in fn.doc_relation and fn.content:
+                    plaintext = fn.content_text()
+                    if plaintext:
+                        transcription_texts.append(plaintext)
+            # count each unique doc relation type for this source once
+            for unique_relation in set(source_relations):
+                counts[unique_relation] += 1
 
         index_data.update(
             {
                 "num_editions_i": counts[Footnote.EDITION],
                 "num_translations_i": counts[Footnote.TRANSLATION],
                 "num_discussions_i": counts[Footnote.DISCUSSION],
-                "scholarship_count_i": sum(counts.values()),
+                # count each unique source as one scholarship record
+                "scholarship_count_i": len(unique_sources),
                 # preliminary scholarship record indexing
                 # (may need splitting out and weighting based on type of scholarship)
                 "scholarship_t": [fn.display() for fn in self.footnotes.all()],

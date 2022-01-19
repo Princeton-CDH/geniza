@@ -593,7 +593,7 @@ class TestDocument:
         index_data = document.index_data()
         assert index_data["num_editions_i"] == 2
         assert index_data["num_translations_i"] == 2
-        assert index_data["scholarship_count_i"] == 4
+        assert index_data["scholarship_count_i"] == 3  # unique sources
         assert index_data["transcription_t"] == ["transcription lines"]
 
         for note in [edition, edition2, translation]:
