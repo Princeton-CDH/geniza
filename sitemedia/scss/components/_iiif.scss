@@ -36,4 +36,13 @@
     li::before {
         @include typography.nav-bold;
     }
+    // Mobile improvement for mirador
+    .mirador-companion-area-left,
+    .mirador-companion-area-left div {
+        @include breakpoints.for-phone-only {
+            width: auto !important;
+            height: auto !important;
+            overflow: scroll;
+        }
+    }
 }
