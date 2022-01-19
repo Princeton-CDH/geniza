@@ -44,6 +44,9 @@
             margin-bottom: spacing.$spacing-2xs;
             @include typography.meta;
         }
+        li.location {
+            margin-left: 1rem;
+        }
     }
     div.unpublished {
         margin-top: spacing.$spacing-3xs;

@@ -1,6 +1,9 @@
 from urllib import parse
 
 from django import template
+from natsort import natsorted
+
+from geniza.footnotes.models import Footnote
 
 register = template.Library()
 
@@ -69,4 +72,28 @@ def footnotes_on_source(document, source):
         {% endfor %}
     """
 
-    return source.footnote_set.filter(document=document).order_by("location")
+    footnotes = source.footnote_set.filter(document=document).order_by("location")
+    # use natural sort so that items like T-S 8J17.15_10, T-S 8J17.15_11
+    # appear after T-S 8J17.15_2, T-S 8J17.15_3, ... T-S 8J17.15_9
+    return natsorted(footnotes, key=lambda f: f.location)
+
+
+@register.filter
+def unique_relations_on_source(document, source):
+    """Template filter to create a string for all unique document relations found on footnotes
+    joining the passed document and source.
+
+    Example use::
+        {{ document|unique_relations_on_source:source }}
+    """
+
+    doc_relations = []
+    # Get the full translated doc_relation names from the tuple in the model
+    translated_names = dict(Footnote.DOCUMENT_RELATION_TYPES)
+    # Loop through footnotes matching this document and source
+    for fn in footnotes_on_source(document, source):
+        for doc_relation in fn.doc_relation:
+            # Append each doc relation translated name to the list
+            doc_relations.append(str(translated_names[doc_relation]))
+    # Join by comma to match behavior of get_FOO_display()
+    return ", ".join(sorted(set(doc_relations)))

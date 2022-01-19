@@ -11,7 +11,7 @@
     <div class="container">
         {% include "corpus/snippets/document_tabs.html" %}
         <ol>
-            {% for fn in document.footnotes.all %}
+            {% for source in document.unique_sources %}
                 {% spaceless %}
                     <li class="citation">
                         <dl>
@@ -20,33 +20,43 @@
                                 {% translate 'Bibliographic citation' %}
                             </dt>
                             <dd>
-                                {{ fn.source.formatted_display|safe }}
-                                {% if fn.source.source_type.type == "Unpublished" %}
+                                {{ source.formatted_display|safe }}
+                                {% if source.source_type.type == "Unpublished" %}
                                     {# Translators: label for an unpublished scholarship record #}
                                     <div class="unpublished">{% translate 'unpublished' %}</div>
                                 {% endif %}
                             </dd>
-                            <dt class="relation">
-                                {% if fn.location and fn.url %}
-                                    {# Translators: label for footnote location within source (with url) #}
-                                    {% blocktranslate with location=fn.location url=fn.url|unquote trimmed %}
-                                        see <a href="{{ url }}">{{ location }}</a> for
-                                    {% endblocktranslate %}
-                                {% elif fn.location %}
-                                    {# Translators: label for footnote location within source #}
-                                    {% blocktranslate with location=fn.location trimmed %}
-                                        see {{ location }} for
-                                    {% endblocktranslate %}
-                                {% elif fn.url %}
-                                    {# Translators: label for included document relations for a footnote #}
-                                    <a href="{{ fn.url }}">{% translate 'includes' %}</a>
-                                {% else %}
-                                    {% translate 'includes' %}
-                                {% endif %}
-                            </dt>
-                            <dd class="relation">
-                                {{ fn.doc_relation }}
-                            </dd>
+                            {% with document|footnotes_on_source:source as footnotes %}
+                                <dt class="relation">
+                                    {% if footnotes|length == 1 %}
+                                        {% with fn=footnotes.0 single="true" %}
+                                            {% if fn.location or fn.url %}
+                                                {% include "corpus/snippets/footnote_location.html" %}
+                                            {% else %}
+                                                {# Translators: label for included document relations for a footnote #}
+                                                {% translate "includes" %}
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        see
+                                        <ul>
+                                            {% for fn in footnotes %}
+                                                <li class="location">
+                                                    {% include "corpus/snippets/footnote_location.html" %}
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                        for
+                                    {% endif %}
+                                </dt>
+                                <dd class="relation">
+                                    {% if footnotes|length == 1 %}
+                                        {{ footnotes.0.doc_relation }}
+                                    {% else %}
+                                        {{ document|unique_relations_on_source:source }}
+                                    {% endif %}
+                                </dd>
+                            {% endwith %}
                         </dl>
                     </li>
                 {% endspaceless %}

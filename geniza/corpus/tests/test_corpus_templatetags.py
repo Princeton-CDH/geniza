@@ -1,3 +1,4 @@
+from asyncio import format_helpers
 from unittest.mock import Mock
 from urllib import parse
 
@@ -89,7 +90,7 @@ def test_unquote_url():
 
 
 def test_footnotes_on_source(document, join, source, twoauthor_source):
-    # Create three footnotes linking a certain document and source
+    # Create two footnotes linking a certain document and source
     fn = Footnote.objects.create(
         content_object=document,
         source=source,
@@ -124,3 +125,24 @@ def test_footnotes_on_source(document, join, source, twoauthor_source):
     # Should not get a footnote on the source alone, or document alone
     assert fn_source_not_doc not in fos
     assert fn_doc_not_source not in fos
+
+
+def test_unique_relations_on_source(document, source):
+    # Create a footnotes linking a certain document and source as EDITION
+    Footnote.objects.create(
+        content_object=document,
+        source=source,
+        doc_relation=Footnote.EDITION,
+    )
+    # Create a footnotes linking a certain document and source as EDITION, TRANSLATION
+    Footnote.objects.create(
+        content_object=document,
+        source=source,
+        doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
+        content="some text",
+    )
+
+    assert (
+        corpus_extras.unique_relations_on_source(document, source)
+        == "Edition, Translation"
+    )

@@ -1,0 +1,29 @@
+{% load i18n corpus_extras %}
+
+{% if fn.location and fn.url %}
+    {% if single %}
+        {# Translators: label for footnote location within source (with url) #}
+        {% blocktranslate with location=fn.location url=fn.url|unquote trimmed %}
+            see <a href="{{ url }}">{{ location }}</a> for
+        {% endblocktranslate %}
+    {% else %}
+        <a href="{{ fn.url|unquote }}">{{ fn.location }}</a>
+    {% endif %}
+{% elif fn.location %}
+    {% if single %}
+        {# Translators: label for footnote location within source #}
+        {% blocktranslate with location=fn.location trimmed %}
+            see {{ location }} for
+        {% endblocktranslate %}
+    {% else %}
+        {{ fn.location }}
+    {% endif %}
+{% elif fn.url %}
+    {% if single %}
+        {# Translators: label for included document relations for a footnote #}
+        <a href="{{ fn.url|unquote }}">{% translate 'includes' %}</a>
+    {% else %}
+        {# Translators: label for a link in a list of footnote links #}
+        <a href="{{ fn.url|unquote }}">{% translate 'footnote' %}</a>
+    {% endif %}
+{% endif %}
