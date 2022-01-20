@@ -67,6 +67,10 @@ class DocumentSearchView(ListView, FormMixin):
     def get_queryset(self):
         # limit to documents with published status (i.e., no suppressed documents)
         documents = DocumentSolrQuerySet().filter(status=Document.STATUS_PUBLIC)
+
+        # get counts of facets, exclude type filter
+        documents = documents.facet_field("type", exclude="type", sort="value")
+
         form = self.get_form()
         # return empty queryset if not valid
         if not form.is_valid():
@@ -99,10 +103,8 @@ class DocumentSearchView(ListView, FormMixin):
                     .also("score")
                 )  # include relevance score in results
 
-            documents = documents.order_by(
-                self.solr_sort[search_opts["sort"]]
-            ).facet_field("type", exclude="type", sort="value")
-            # exclude type filter when generating counts
+            # order by sort option
+            documents = documents.order_by(self.solr_sort[search_opts["sort"]])
 
             # filter by type if specified
             if search_opts["doctype"]:
@@ -137,8 +139,7 @@ class DocumentSearchView(ListView, FormMixin):
         highlights = paged_result.get_highlighting() if paged_result.count() else {}
         facet_dict = self.queryset.get_facets()
         # populate choices for facet filter fields on the form
-        if facet_dict:
-            context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+        context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
         context_data.update(
             {
                 "highlighting": highlights,
