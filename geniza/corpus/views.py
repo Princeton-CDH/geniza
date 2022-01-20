@@ -137,7 +137,8 @@ class DocumentSearchView(ListView, FormMixin):
         highlights = paged_result.get_highlighting() if paged_result.count() else {}
         facet_dict = self.queryset.get_facets()
         # populate choices for facet filter fields on the form
-        context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
+        if "facet_fields" in facet_dict:
+            context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
         context_data.update(
             {
                 "highlighting": highlights,
