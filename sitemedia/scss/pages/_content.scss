@@ -26,8 +26,23 @@
                 margin-top: spacing.$spacing-md;
             }
         }
-        ul {
-            list-style: disc outside;
+        ul li {
+            position: relative;
+            &::before {
+                content: "";
+                width: 16px;
+                height: 18px;
+                position: absolute;
+                left: -#{spacing.$spacing-lg};
+                display: block;
+                background-color: var(--link-primary);
+                mask-image: url("/static/img/ui/mobile/light/bullet.svg");
+                @include breakpoints.for-tablet-landscape-up {
+                    width: 18px;
+                    height: 20px;
+                    mask-image: url("/static/img/ui/desktop/light/bullet.svg");
+                }
+            }
         }
         ol {
             counter-reset: listitem;
