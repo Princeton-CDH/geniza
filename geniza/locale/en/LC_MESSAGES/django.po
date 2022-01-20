@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-01-14 13:27-0500\n"
+"POT-Creation-Date: 2022-01-20 15:12-0500\n"
 "PO-Revision-Date: 2022-01-12 17:32\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -53,14 +53,14 @@ msgid "Document Type"
 msgstr ""
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:624
+#: geniza/corpus/models.py:629
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr ""
 
 #. Translators: label for 'home' link in footer navigation
 #: geniza/corpus/templates/admin/corpus/app_index.html:9
-#: geniza/templates/footer.html:9
+#: geniza/templates/footer.html:10
 msgid "Home"
 msgstr "Home"
 
@@ -121,19 +121,13 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: accessibility label for a footnote source citation in scholarship records view
-#: geniza/corpus/templates/corpus/document_scholarship.html:20
+#: geniza/corpus/templates/corpus/document_scholarship.html:21
 msgid "Bibliographic citation"
 msgstr ""
 
 #. Translators: label for an unpublished scholarship record
-#: geniza/corpus/templates/corpus/document_scholarship.html:26
+#: geniza/corpus/templates/corpus/document_scholarship.html:27
 msgid "unpublished"
-msgstr ""
-
-#. Translators: label for included document relations for a footnote
-#: geniza/corpus/templates/corpus/document_scholarship.html:37
-#: geniza/corpus/templates/corpus/snippets/footnote_location.html:24
-msgid "includes"
 msgstr ""
 
 #. Translators: Document edit link for admins
@@ -203,25 +197,31 @@ msgid "External Links (%(n_links)s)"
 msgstr ""
 
 #. Translators: label for footnote location within source (with url)
-#: geniza/corpus/templates/corpus/snippets/footnote_location.html:6
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:7
 #, python-format
 msgid "see <a href=\"%(url)s\">%(location)s</a> for"
 msgstr ""
 
 #. Translators: label for footnote location within source
-#: geniza/corpus/templates/corpus/snippets/footnote_location.html:15
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:16
 #, python-format
 msgid "see %(location)s for"
 msgstr ""
 
+#. Translators: label for included document relations for a footnote
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:25
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:32
+msgid "includes"
+msgstr ""
+
 #. Translators: label for a link in a list of footnote links
-#: geniza/corpus/templates/corpus/snippets/footnote_location.html:27
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:28
 msgid "footnote"
 msgstr ""
 
 #. Translators: Label for "previous page" button in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:5
-msgid "previous page"
+msgid "Previous"
 msgstr ""
 
 #. Translators: Title for link to page number in search results
@@ -231,8 +231,8 @@ msgid "page %(number)s"
 msgstr ""
 
 #. Translators: Label for "next page" button in search results
-#: geniza/corpus/templates/corpus/snippets/pagination.html:56
-msgid "next page"
+#: geniza/corpus/templates/corpus/snippets/pagination.html:60
+msgid "Next"
 msgstr ""
 
 #. Translators: title of document search page
@@ -304,42 +304,42 @@ msgid "footer navigation"
 msgstr ""
 
 #. Translators: label for Twitter links in footer
-#: geniza/templates/footer.html:16
+#: geniza/templates/footer.html:17
 msgid "Twitter"
 msgstr ""
 
 #. Translators: label for Instagram links in footer
-#: geniza/templates/footer.html:18
+#: geniza/templates/footer.html:19
 msgid "Instagram"
 msgstr ""
 
 #. Translators: accessibility label for Princeton Geniza Lab homepage, for footer
-#: geniza/templates/footer.html:23
+#: geniza/templates/footer.html:24
 msgid "Princeton Geniza Lab homepage"
 msgstr ""
 
 #. Translators: accessibility label for Princeton CDH homepage, for footer
-#: geniza/templates/footer.html:36
+#: geniza/templates/footer.html:37
 msgid "Princeton Center for Digital Humanities homepage"
 msgstr ""
 
 #. Translators: link label for Princeton accessibility assistance page, for footer
-#: geniza/templates/footer.html:55
+#: geniza/templates/footer.html:56
 msgid "Accessibility"
 msgstr ""
 
 #. Translators: official name of Princeton University's board of trustees, for footer
-#: geniza/templates/footer.html:60
+#: geniza/templates/footer.html:61
 msgid "The Trustees of Princeton University"
 msgstr ""
 
 #. Translators: Creative Commons license text, for footer
-#: geniza/templates/footer.html:64
+#: geniza/templates/footer.html:65
 msgid "Creative Commons CC-BY license"
 msgstr ""
 
 #. Translators: official name of Princeton University, for footer
-#: geniza/templates/footer.html:71
+#: geniza/templates/footer.html:72
 msgid "Princeton University homepage"
 msgstr ""
 
@@ -359,7 +359,7 @@ msgid "The Princeton Geniza Project"
 msgstr ""
 
 #. Translators: label for 'menu' open button for mobile navigation
-#: geniza/templates/nav.html:26
+#: geniza/templates/nav.html:27
 msgid "Open main navigation menu"
 msgstr ""
 
@@ -381,7 +381,7 @@ msgid "go"
 msgstr ""
 
 #. Translators: label for link to 'Search' page in main navigation
-#: geniza/templates/snippets/menu.html:6
+#: geniza/templates/snippets/menu.html:7
 msgid "Search"
 msgstr ""
 
