@@ -308,7 +308,22 @@ class TestDocumentSearchView:
             # filter called once to limit by status
             assert mock_sqs.filter.call_count == 1
             mock_sqs.filter.assert_called_with(status=Document.STATUS_PUBLIC)
-            mock_sqs.order_by.assert_called_with("-score")
+            # order_by should not be called when there is no search query
+            mock_sqs.order_by.assert_not_called()
+
+            # sort and keyword search params
+            mock_sqs.reset_mock()
+            docsearch_view.request = Mock()
+            docsearch_view.request.GET = {"q": "six apartments", "sort": "relevance"}
+            qs = docsearch_view.get_queryset()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.keyword_search.assert_called_with("six apartments")
+            mock_sqs.keyword_search.return_value.also.return_value.order_by.return_value.filter.assert_called_with(
+                status=Document.STATUS_PUBLIC
+            )
+            mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
+                "-score"
+            )
 
             # keyword, sort, and doctype filter search params
             mock_sqs.reset_mock()
