@@ -1,4 +1,10 @@
-// Adds code to the sort menu details/summary to act more like a <select> in JS environments
+/*
+ * JS to improve search form functionality
+ */
+
+/*
+ * Script to make the sort menu details/summary act more like a <select> in JS environments
+ */
 
 const details = document.querySelector("details.sort-select");
 const summarySpan = details.querySelector("summary span");
@@ -54,4 +60,27 @@ details.querySelector("summary").addEventListener("keydown", (e) => {
     if (details.open && e.shiftKey && e.code === "Tab") {
         details.removeAttribute("open");
     }
+});
+
+/*
+ * Script to make search query text a required field when "relevance" sort is selected
+ */
+
+queryField = document.querySelector("input[name='q']");
+relevanceSort = document.querySelector("input[name='sort'][value='relevance']");
+
+// If "relevance" selected on page load, set query text required
+if (relevanceSort.checked) {
+    queryField.setAttribute("required", "required");
+}
+
+// When any radio button is changed, checked if "relevance" is selected
+radioButtons.forEach((radioButton) => {
+    radioButton.addEventListener("change", () => {
+        if (relevanceSort.checked) {
+            queryField.setAttribute("required", "required");
+        } else {
+            queryField.removeAttribute("required");
+        }
+    });
 });

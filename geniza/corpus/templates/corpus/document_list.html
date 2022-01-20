@@ -4,8 +4,7 @@
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 {% block extrascript %}
-    <script defer src="{% static 'js/sort-select.js' %}" nonce="{{ request.csp_nonce }}"></script>
-    <script defer src="{% static 'js/relevance.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    <script defer src="{% static 'js/search.js' %}" nonce="{{ request.csp_nonce }}"></script>
 {% endblock %}
 
 {% block main %}
