@@ -319,7 +319,11 @@ class DocumentManifestView(DocumentDetailView):
             # CUDL attribution has some variation in tags;
             # would be nice to preserve tagged version,
             # for now, ignore tags so we can easily de-dupe
-            attributions.add(strip_tags(remote_manifest.attribution))
+            try:
+                attributions.add(strip_tags(remote_manifest.attribution))
+            except AttributeError:
+                # attribution is optional, so ignore if not present
+                pass
             for canvas in remote_manifest.sequences[0].canvases:
                 # do we want local canvas id, or rely on remote id?
                 local_canvas = dict(canvas)
