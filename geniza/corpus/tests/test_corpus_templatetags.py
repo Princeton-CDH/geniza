@@ -76,19 +76,6 @@ def test_querystring_replace():
     assert "page=10" in args
 
 
-def test_unquote_url():
-    # Should replace URL percent-encoded values with their ASCII equivalents
-    url = "http://www.test.com/fake%20url%3Fparam%3Dhello%26id%3Dworld"
-    assert (
-        corpus_extras.unquote(url)
-        == "http://www.test.com/fake url?param=hello&id=world"
-    )
-    # Should do the same thing as urllib.parse.unquote
-    assert corpus_extras.unquote(url) == parse.unquote(url)
-    # Should handle empty string
-    assert corpus_extras.unquote("") == ""
-
-
 def test_footnotes_on_source(document, join, source, twoauthor_source):
     # Create two footnotes linking a certain document and source
     fn = Footnote.objects.create(
