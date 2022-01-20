@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-01-20 15:12-0500\n"
-"PO-Revision-Date: 2022-01-12 17:32\n"
+"PO-Revision-Date: 2022-01-20 21:32\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en_US\n"
@@ -75,7 +75,7 @@ msgstr ""
 
 #: geniza/corpus/templates/corpus/document_detail.html:34
 msgid "Shelfmark"
-msgstr "Shelfmark"
+msgstr ""
 
 #. Translators: Editor label
 #: geniza/corpus/templates/corpus/document_detail.html:39
@@ -403,3 +403,4 @@ msgstr ""
 #: geniza/templates/snippets/theme_toggle.html:9
 msgid "Enable dark mode"
 msgstr ""
+
