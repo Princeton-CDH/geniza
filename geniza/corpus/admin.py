@@ -305,13 +305,6 @@ class DocumentAdmin(admin.ModelAdmin):
         # return queryset, use distinct not needed
         return queryset, False
 
-    def get_deleted_objects(self, objs, request):
-        # override delete to use *Document* instead of the Document proxy object;
-        # this avoids the delete permission problem caused by the generic relation
-        # for log entries (which cannot be deleted) on the proxy model
-
-        return super().get_deleted_objects(objs, request)
-
     def save_model(self, request, obj, form, change):
         """Customize this model's save_model function and then execute the
         existing admin.ModelAdmin save_model function"""
