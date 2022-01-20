@@ -1,5 +1,6 @@
 import logging
 from collections import defaultdict
+from itertools import chain
 
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
@@ -640,23 +641,28 @@ class Document(ModelIndexable):
         )
 
         # count scholarship records by type
-        sources = self.sources()
+        footnotes = self.footnotes.all()
         counts = defaultdict(int)
         transcription_texts = []
-        for source in sources:
-            source_relations = []
-            footnotes = source.footnote_set.filter(document=self)
-            for fn in footnotes:
-                for val in fn.doc_relation:
-                    source_relations.append(val)
-                # if this is an edition/transcription, try to get plain text for indexing
-                if Footnote.EDITION in fn.doc_relation and fn.content:
-                    plaintext = fn.content_text()
-                    if plaintext:
-                        transcription_texts.append(plaintext)
-            # count each unique doc relation type for this source once
-            for unique_relation in set(source_relations):
-                counts[unique_relation] += 1
+
+        # dict of sets of relations; keys are each source attached to any footnote on this document
+        source_relations = defaultdict(set)
+
+        for fn in footnotes:
+            # if this is an edition/transcription, try to get plain text for indexing
+            if Footnote.EDITION in fn.doc_relation and fn.content:
+                plaintext = fn.content_text()
+                if plaintext:
+                    transcription_texts.append(plaintext)
+            # add any doc relations to this footnote's source's set in source_relations
+            source_relations[fn.source] = source_relations[fn.source].union(
+                fn.doc_relation
+            )
+
+        # flatten sets of relations by source into a list of relations
+        for relation in list(chain(*source_relations.values())):
+            # add one for each relation in the flattened list
+            counts[relation] += 1
 
         index_data.update(
             {
@@ -664,7 +670,7 @@ class Document(ModelIndexable):
                 "num_translations_i": counts[Footnote.TRANSLATION],
                 "num_discussions_i": counts[Footnote.DISCUSSION],
                 # count each unique source as one scholarship record
-                "scholarship_count_i": len(sources),
+                "scholarship_count_i": self.sources().count(),
                 # preliminary scholarship record indexing
                 # (may need splitting out and weighting based on type of scholarship)
                 "scholarship_t": [fn.display() for fn in self.footnotes.all()],
