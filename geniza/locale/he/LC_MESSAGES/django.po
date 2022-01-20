@@ -53,6 +53,10 @@ msgstr "מיון לפי"
 msgid "Document Type"
 msgstr "סוג המסמך"
 
+#: geniza/corpus/forms.py:169
+msgid "Relevance sort is not available without a keyword search term."
+msgstr ""
+
 #. Translators: Default label when document does not have a type
 #: geniza/corpus/models.py:629
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
@@ -115,8 +119,13 @@ msgstr ""
 msgid "Submit search"
 msgstr "חיפוש"
 
+#. Translators: Label for form errors
+#: geniza/corpus/templates/corpus/document_list.html:49
+msgid "Errors:"
+msgstr ""
+
 #. Translators: number of search results
-#: geniza/corpus/templates/corpus/document_list.html:57
+#: geniza/corpus/templates/corpus/document_list.html:63
 #, python-format
 msgid "1 result"
 msgid_plural "%(count_humanized)s total results"
@@ -259,12 +268,12 @@ msgid "Search and browse Geniza documents."
 msgstr "חיפוש וצפיה במסמכי הגניזה."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:221
+#: geniza/corpus/views.py:222
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "רשומה קשורה ל-%(doc)s"
 
-#: geniza/corpus/views.py:228
+#: geniza/corpus/views.py:229
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
@@ -274,22 +283,22 @@ msgstr[2] "%(count)d רשומות קשורות ל %(doc)s"
 msgstr[3] "%(count)d רשומות קשורות ל %(doc)s"
 
 #. Translators: attribution for local IIIF manifests
-#: geniza/corpus/views.py:353
+#: geniza/corpus/views.py:354
 msgid "Princeton Geniza Project"
 msgstr "פרוייקט הגניזה של פרינסטון"
 
-#: geniza/corpus/views.py:354
+#: geniza/corpus/views.py:355
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr "קובץ על-ידי %(pgp)s."
 
-#: geniza/corpus/views.py:357
+#: geniza/corpus/views.py:358
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr "קובץ ותועתק על-ידי %(pgp)s."
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: geniza/corpus/views.py:359
+#: geniza/corpus/views.py:360
 msgid "Additional restrictions may apply."
 msgstr "קיימות מגבלות נוספות."
 

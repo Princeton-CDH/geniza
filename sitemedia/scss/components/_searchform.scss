@@ -354,3 +354,16 @@
         }
     }
 }
+// error messages
+#search main form h3#search-errors {
+    color: red;
+    margin-top: spacing.$spacing-md;
+    & + ul {
+        color: red;
+        list-style: circle;
+        li {
+            @include typography.meta;
+            margin-left: spacing.$spacing-lg;
+        }
+    }
+}
