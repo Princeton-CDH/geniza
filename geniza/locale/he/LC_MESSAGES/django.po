@@ -3,15 +3,14 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-01-20 15:12-0500\n"
-"PO-Revision-Date: 2022-01-12 17:31\n"
+"PO-Revision-Date: 2022-01-20 21:32\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
-"%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
 "X-Crowdin-Project: geniza\n"
 "X-Crowdin-Project-ID: 457634\n"
 "X-Crowdin-Language: he\n"
@@ -76,7 +75,7 @@ msgstr "מטא-דאטא"
 
 #: geniza/corpus/templates/corpus/document_detail.html:34
 msgid "Shelfmark"
-msgstr "Shelfmark"
+msgstr "מספר מדף"
 
 #. Translators: Editor label
 #: geniza/corpus/templates/corpus/document_detail.html:39
@@ -241,10 +240,8 @@ msgstr ""
 
 #. Translators: Label for "previous page" button in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:5
-#, fuzzy
-#| msgid "previous page"
 msgid "Previous"
-msgstr "לעמוד הקודם"
+msgstr ""
 
 #. Translators: Title for link to page number in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:19
@@ -324,10 +321,8 @@ msgstr "דילוג לתוכן"
 
 #. Translators: accessibility text label for footer site navigation
 #: geniza/templates/footer.html:4
-#, fuzzy
-#| msgid "main navigation"
 msgid "footer navigation"
-msgstr "ניווט"
+msgstr ""
 
 #. Translators: label for Twitter links in footer
 #: geniza/templates/footer.html:17
@@ -341,10 +336,8 @@ msgstr ""
 
 #. Translators: accessibility label for Princeton Geniza Lab homepage, for footer
 #: geniza/templates/footer.html:24
-#, fuzzy
-#| msgid "Princeton Geniza Project"
 msgid "Princeton Geniza Lab homepage"
-msgstr "פרוייקט הגניזה של פרינסטון"
+msgstr ""
 
 #. Translators: accessibility label for Princeton CDH homepage, for footer
 #: geniza/templates/footer.html:37
@@ -383,10 +376,8 @@ msgstr "דף הבית"
 
 #. Translators: site name label for 'home' button in main navigation
 #: geniza/templates/nav.html:16
-#, fuzzy
-#| msgid "Princeton Geniza Project"
 msgid "The Princeton Geniza Project"
-msgstr "פרוייקט הגניזה של פרינסטון"
+msgstr ""
 
 #. Translators: label for 'menu' open button for mobile navigation
 #: geniza/templates/nav.html:27
@@ -425,5 +416,3 @@ msgstr "חזרה לתפריט הראשי"
 msgid "Enable dark mode"
 msgstr ""
 
-#~ msgid "next page"
-#~ msgstr "לעמוד הבא"
