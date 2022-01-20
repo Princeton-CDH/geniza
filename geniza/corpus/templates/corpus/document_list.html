@@ -44,12 +44,18 @@
             <button type="submit" aria-label="{{ search_label }}" />
         </fieldset>
 
-        {% for field, errors in form.errors.items %}
-            {# no clean way to get field labels here, so we just collapse the error lists #}
-            {% for error in errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-        {% endfor %}
+        {% if form.errors %}
+            {# Translators: Label for form errors #}
+            <h3 id="search-errors">{% translate "Errors:" %}</h3>
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    {# no clean way to get field labels here, so we just collapse the error lists #}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        {% endif %}
     </form>
     <section id="document-list">
         <h1>
