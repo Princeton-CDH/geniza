@@ -1,29 +1,34 @@
 {% load i18n %}
 
-{% if fn.location and fn.url %}
-    {% if single %}
-        {# Translators: label for footnote location within source (with url) #}
-        {% blocktranslate with location=fn.location url=fn.url trimmed %}
-            see <a href="{{ url }}">{{ location }}</a> for
-        {% endblocktranslate %}
-    {% else %}
-        <a href="{{ fn.url }}">{{ fn.location }}</a>
-    {% endif %}
-{% elif fn.location %}
-    {% if single %}
-        {# Translators: label for footnote location within source #}
-        {% blocktranslate with location=fn.location trimmed %}
-            see {{ location }} for
-        {% endblocktranslate %}
-    {% else %}
-        {{ fn.location }}
-    {% endif %}
-{% elif fn.url %}
-    {% if single %}
+<li class="location">
+    {% if fn.location and fn.url %}
+        {% if forloop.first %}
+            {# Translators: label for footnote location within source (with url) #}
+            {% blocktranslate with location=fn.location url=fn.url trimmed %}
+                see <a href="{{ url }}">{{ location }}</a> for
+            {% endblocktranslate %}
+        {% else %}
+            <a href="{{ fn.url }}">{{ fn.location }}</a>
+        {% endif %}
+    {% elif fn.location %}
+        {% if forloop.first %}
+            {# Translators: label for footnote location within source #}
+            {% blocktranslate with location=fn.location trimmed %}
+                see {{ location }} for
+            {% endblocktranslate %}
+        {% else %}
+            {{ fn.location }}
+        {% endif %}
+    {% elif fn.url %}
+        {% if forloop.first %}
+            {# Translators: label for included document relations for a footnote #}
+            <a href="{{ fn.url }}">{% translate 'includes' %}</a>
+        {% else %}
+            {# Translators: label for a link in a list of footnote links #}
+            <a href="{{ fn.url }}">{% translate 'footnote' %}</a>
+        {% endif %}
+    {% elif forloop.first %}
         {# Translators: label for included document relations for a footnote #}
-        <a href="{{ fn.url }}">{% translate 'includes' %}</a>
-    {% else %}
-        {# Translators: label for a link in a list of footnote links #}
-        <a href="{{ fn.url }}">{% translate 'footnote' %}</a>
+        {% translate "includes" %}
     {% endif %}
-{% endif %}
+</li>

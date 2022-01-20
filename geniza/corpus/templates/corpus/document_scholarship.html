@@ -28,26 +28,11 @@
                                 {% endif %}
                             </dd>
                             <dt class="relation">
-                                {% if source.list|length == 1 %}
-                                    {% with fn=source.list.0 single="true" %}
-                                        {% if fn.location or fn.url %}
-                                            {% include "corpus/snippets/footnote_location.html" %}
-                                        {% else %}
-                                            {# Translators: label for included document relations for a footnote #}
-                                            {% translate "includes" %}
-                                        {% endif %}
-                                    {% endwith %}
-                                {% else %}
-                                    see
-                                    <ul>
-                                        {% for fn in source.list|natsort:"location" %}
-                                            <li class="location">
-                                                {% include "corpus/snippets/footnote_location.html" %}
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                    for
-                                {% endif %}
+                                <ul>
+                                    {% for fn in source.list|natsort:"location" %}
+                                        {% include "corpus/snippets/footnote_location.html" %}
+                                    {% endfor %}
+                                </ul>
                             </dt>
                             <dd class="relation">
                                 {{ source.list.0.doc_relation }}
