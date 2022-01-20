@@ -29,7 +29,6 @@ from geniza.corpus.admin import (
 from geniza.corpus.models import (
     Collection,
     Document,
-    DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -307,22 +306,6 @@ class TestDocumentAdmin:
         # display multiple ids
         doc = Document(old_pgpids=[460, 990])
         assert doc_admin.view_old_pgpids(doc) == "460,990"
-
-    def test_get_queryset(self):
-        # should use DocumentPrefetchableProxyAdmin for get_queryset
-        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
-        qs = doc_admin.get_queryset("rqst")
-        assert qs.model == DocumentPrefetchableProxy
-
-    def test_get_deleted_objects(self, document):
-        # should use Document instead of DocumentPrefetchableProxy for deletion
-        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
-        objs = DocumentPrefetchableProxy.objects.all()
-        (deleted_objects, _, _, _) = doc_admin.get_deleted_objects(objs, Mock())
-        # doesn't return the actual objects, but a list of items for display on the delete view
-        # check that the correct model was used based on the output of deleted_objects,
-        # which looks like Document: <a href="/admin/corpus/document/3951/change/">CUL Add.2586 (PGPID 3951)</a>
-        assert deleted_objects[0].startswith("Document: ")
 
 
 @pytest.mark.django_db

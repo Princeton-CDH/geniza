@@ -31,6 +31,42 @@ from geniza.footnotes.models import Creator, Footnote, Source
 logger = logging.getLogger(__name__)
 
 
+class GenericRelationWithOnDelete(GenericRelation):
+    """Identical copy of :class:`django.contrib.contenttypes.fields.GenericRelation`, except it
+    allows on_delete other than CASCADE."""
+
+    def __init__(
+        self,
+        to,
+        object_id_field="object_id",
+        content_type_field="content_type",
+        for_concrete_model=True,
+        related_query_name=None,
+        limit_choices_to=None,
+        on_delete=models.CASCADE,
+        **kwargs,
+    ):
+        kwargs["rel"] = self.rel_class(
+            self,
+            to,
+            related_query_name=related_query_name,
+            limit_choices_to=limit_choices_to,
+        )
+        kwargs["null"] = True
+        kwargs["blank"] = True
+        kwargs["on_delete"] = on_delete
+        kwargs["editable"] = False
+        kwargs["serialize"] = False
+
+        models.ForeignObject.__init__(
+            self, to, from_fields=[object_id_field], to_fields=[], **kwargs
+        )
+
+        self.object_id_field_name = object_id_field
+        self.content_type_field_name = content_type_field
+        self.for_concrete_model = for_concrete_model
+
+
 class CollectionManager(models.Manager):
     def get_by_natural_key(self, name, library):
         return self.get(name=name, library=library)
@@ -413,13 +449,9 @@ class Document(ModelIndexable):
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
 
-    @property
-    def log_entries(self):
-        return LogEntry.objects.filter(
-            object_id=self.id,
-            content_type__app_label="corpus",
-            content_type__model="document",
-        ).distinct()
+    log_entries = GenericRelationWithOnDelete(
+        LogEntry, related_query_name="document", on_delete=models.SET_NULL
+    )
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution
@@ -595,7 +627,7 @@ class Document(ModelIndexable):
         bulk."""
         # NOTE: some overlap with prefetching used for django admin
         return (
-            DocumentPrefetchableProxy.objects.select_related("doctype")
+            Document.objects.select_related("doctype")
             .prefetch_related(
                 "tags",
                 "languages",
@@ -850,32 +882,6 @@ class Document(ModelIndexable):
             log_entry.object_id = self.id
             log_entry.content_type_id = ContentType.objects.get_for_model(Document)
             log_entry.save()
-
-
-class DocumentPrefetchableProxy(Document):
-    """Proxy model for :class:`Document` that overrides the `log_entries` property
-    in order to make it a :class:`GenericRelation`."""
-
-    class Meta:
-        proxy = True
-
-    log_entries = GenericRelation(LogEntry, related_query_name="document")
-
-    @classmethod
-    def items_to_index(cls):
-        # parasolr is picking this up as an indexable since it extends Document,
-        # but we don't actually want to index it!
-        return []
-
-    @staticmethod
-    def total_to_index():
-        # tell parasolr, nothing to index here
-        return 0
-
-    @classmethod
-    def index_item_type(cls):
-        # when indexing in bulk with prefetching, index exactly like a document
-        return Document.index_item_type()
 
 
 class TextBlock(models.Model):

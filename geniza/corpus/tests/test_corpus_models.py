@@ -18,7 +18,6 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
-    DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -931,30 +930,3 @@ class TestTextBlock:
         block = TextBlock.objects.create(document=doc, fragment=frag, side="r")
         with patch.object(frag, "iiif_thumbnails") as mock_frag_thumbnails:
             assert block.thumbnail() == mock_frag_thumbnails.return_value
-
-
-class TestDocumentPrefetchableProxy:
-    def test_log_entries(self, document):
-        # docment.log_entries should be a QuerySet of two log entries, which cannot be modified
-        assert isinstance(document.log_entries, QuerySet)
-        assert document.log_entries.count() == 2
-        le = document.log_entries.first()
-        with pytest.raises(AttributeError):
-            document.log_entries.remove(le)
-
-        # Now use proxy model
-        document.__class__ = DocumentPrefetchableProxy
-
-        # Should now be able to remove, since it is a GenericRelation
-        document.log_entries.remove(le)
-        assert document.log_entries.count() == 1
-
-    def test_total_to_index(self):
-        assert DocumentPrefetchableProxy.total_to_index() == 0
-
-    def test_items_to_index(self):
-        assert DocumentPrefetchableProxy.items_to_index() == []
-
-    def test_index_data(self, document):
-        prefetch_doc = DocumentPrefetchableProxy.objects.get(pk=document.pk)
-        assert prefetch_doc.index_data() == document.index_data()

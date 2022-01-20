@@ -11,7 +11,7 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db.models import CharField, Count, F, Q
 from django.db.models.functions import Concat
-from django.db.models.query import Prefetch, QuerySet
+from django.db.models.query import Prefetch
 from django.forms.widgets import Textarea, TextInput
 from django.urls import path, resolve, reverse
 from django.utils import timezone
@@ -23,7 +23,6 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
-    DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -249,7 +248,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return (
-            DocumentPrefetchableProxyAdmin(DocumentPrefetchableProxy, self.admin_site)
+            super()
             .get_queryset(request)
             .select_related(
                 "doctype",
@@ -310,9 +309,8 @@ class DocumentAdmin(admin.ModelAdmin):
         # override delete to use *Document* instead of the Document proxy object;
         # this avoids the delete permission problem caused by the generic relation
         # for log entries (which cannot be deleted) on the proxy model
-        return super().get_deleted_objects(
-            Document.objects.filter(pk__in=[obj.pk for obj in objs]), request
-        )
+
+        return super().get_deleted_objects(objs, request)
 
     def save_model(self, request, obj, form, change):
         """Customize this model's save_model function and then execute the
@@ -482,14 +480,6 @@ class DocumentAdmin(admin.ModelAdmin):
     # -------------------------------------------------------------------------
 
     actions = (export_to_csv,)
-
-
-class DocumentPrefetchableProxyAdmin(admin.ModelAdmin):
-    """Proxy model admin for :class:`DocumentPrefetchableProxy` that intercepts `get_queryset`
-    in order to prefetch the :class:`GenericRelation` `log_entries`."""
-
-    def get_queryset(self, request):
-        return super().get_queryset(request)
 
 
 @admin.register(DocumentType)
