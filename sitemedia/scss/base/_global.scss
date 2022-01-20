@@ -59,6 +59,7 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex: 1 0 auto;
 }
 
 // Apply basic typographic styles defined in the typography module

@@ -524,23 +524,20 @@ class TestSearchPagination:
         ctx = {"page_obj": paginator.page(1), "request": HttpRequest()}
         result = self.template.render(ctx)
         assert '<nav class="pagination' in result
-        assert (
-            '<a name="previous page" title="previous page" class="disabled">' in result
-        )
-        assert '<a title="page 1" class="active"' in result
-        assert '<a name="next page" title="next page" class="disabled">' in result
+        assert '<span class="disabled prev">' in result
+        assert '<a title="page 1" class="pagelink" aria-current="page"' in result
+        assert '<span class="disabled next">' in result
 
     def test_first_of_twenty_pages(self):
         paginator = Paginator(range(20), per_page=1)
         ctx = {"page_obj": paginator.page(1), "request": HttpRequest()}
         result = self.template.render(ctx)
+        assert '<span class="disabled prev">' in result
+        assert '<a title="page 1" class="pagelink" aria-current="page"' in result
+        assert '<a title="page 2" class="pagelink" href="?page=2">' in result
         assert (
-            '<a name="previous page" title="previous page" class="disabled">' in result
-        )
-        assert '<a title="page 1" class="active"' in result
-        assert '<a title="page 2" href="?page=2">' in result
-        assert (
-            '<a name="next page" title="next page" rel="next" href="?page=2">' in result
+            '<a name="Next" title="Next" class="next" rel="next" href="?page=2">'
+            in result
         )
 
     def test_tenth_of_twenty_pages(self):
@@ -548,13 +545,13 @@ class TestSearchPagination:
         ctx = {"page_obj": paginator.page(10), "request": HttpRequest()}
         result = self.template.render(ctx)
         assert (
-            '<a name="previous page" title="previous page" rel="prev" href="?page=9">'
+            '<a name="Previous" title="Previous" class="prev" rel="prev" href="?page=9">'
             in result
         )
-        assert '<a title="page 10" class="active"' in result
-        assert '<a title="page 11" href="?page=11">' in result
+        assert '<a title="page 10" class="pagelink" aria-current="page"' in result
+        assert '<a title="page 11" class="pagelink" href="?page=11">' in result
         assert (
-            '<a name="next page" title="next page" rel="next" href="?page=11">'
+            '<a name="Next" title="Next" class="next" rel="next" href="?page=11">'
             in result
         )
 
