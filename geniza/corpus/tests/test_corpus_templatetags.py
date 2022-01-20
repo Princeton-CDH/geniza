@@ -76,60 +76,29 @@ def test_querystring_replace():
     assert "page=10" in args
 
 
-def test_footnotes_on_source(document, join, source, twoauthor_source):
-    # Create two footnotes linking a certain document and source
-    fn = Footnote.objects.create(
-        content_object=document,
-        source=source,
-        doc_relation=Footnote.EDITION,
-    )
-    fn2 = Footnote.objects.create(
-        content_object=document,
-        source=source,
-        doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-        content="some text",
-    )
-
-    # Link source but not document
-    fn_source_not_doc = Footnote.objects.create(
-        content_object=join,
-        source=source,
-        doc_relation=Footnote.DISCUSSION,
-    )
-
-    # Link document but not source
-    fn_doc_not_source = Footnote.objects.create(
-        content_object=document,
-        source=twoauthor_source,
-        doc_relation=Footnote.DISCUSSION,
-    )
-
-    fos = corpus_extras.footnotes_on_source(document, source)
-    # Should get all footnotes on the passed document and source
-    assert fn in fos
-    assert fn2 in fos
-
-    # Should not get a footnote on the source alone, or document alone
-    assert fn_source_not_doc not in fos
-    assert fn_doc_not_source not in fos
-
-
-def test_unique_relations_on_source(document, source):
-    # Create a footnotes linking a certain document and source as EDITION
+def test_natsort(document, source):
+    # Create three footnotes linking a certain document and source
     Footnote.objects.create(
         content_object=document,
         source=source,
         doc_relation=Footnote.EDITION,
+        location="doc 1",
     )
-    # Create a footnotes linking a certain document and source as EDITION, TRANSLATION
     Footnote.objects.create(
         content_object=document,
         source=source,
-        doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-        content="some text",
+        doc_relation=Footnote.EDITION,
+        location="doc 10",
+    )
+    Footnote.objects.create(
+        content_object=document,
+        source=source,
+        doc_relation=Footnote.EDITION,
+        location="doc 2",
     )
 
-    assert (
-        corpus_extras.unique_relations_on_source(document, source)
-        == "Edition, Translation"
-    )
+    # Should sort by location naturally (i.e. 10 will appear after 2, not after 1)
+    natsorted = corpus_extras.natsort(document.footnotes.all(), "location")
+    assert natsorted[0].location == "doc 1"
+    assert natsorted[1].location == "doc 2"
+    assert natsorted[2].location == "doc 10"

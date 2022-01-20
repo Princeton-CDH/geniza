@@ -579,7 +579,7 @@ class Document(ModelIndexable):
             source__footnote__document=self,
         ).distinct()
 
-    def unique_sources(self):
+    def sources(self):
         """All unique sources attached to footnotes on this document."""
         return Source.objects.filter(footnote__document=self).distinct()
 
@@ -640,10 +640,10 @@ class Document(ModelIndexable):
         )
 
         # count scholarship records by type
-        unique_sources = self.unique_sources()
+        sources = self.sources()
         counts = defaultdict(int)
         transcription_texts = []
-        for source in unique_sources:
+        for source in sources:
             source_relations = []
             footnotes = source.footnote_set.filter(document=self)
             for fn in footnotes:
@@ -664,7 +664,7 @@ class Document(ModelIndexable):
                 "num_translations_i": counts[Footnote.TRANSLATION],
                 "num_discussions_i": counts[Footnote.DISCUSSION],
                 # count each unique source as one scholarship record
-                "scholarship_count_i": len(unique_sources),
+                "scholarship_count_i": len(sources),
                 # preliminary scholarship record indexing
                 # (may need splitting out and weighting based on type of scholarship)
                 "scholarship_t": [fn.display() for fn in self.footnotes.all()],
