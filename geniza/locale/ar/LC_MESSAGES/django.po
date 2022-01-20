@@ -3,15 +3,14 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-01-20 15:12-0500\n"
-"PO-Revision-Date: 2022-01-12 17:31\n"
+"PO-Revision-Date: 2022-01-20 21:32\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
-"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 "X-Crowdin-Project: geniza\n"
 "X-Crowdin-Project-ID: 457634\n"
 "X-Crowdin-Language: ar\n"
@@ -55,7 +54,7 @@ msgstr "نوع المستند"
 
 #: geniza/corpus/forms.py:169
 msgid "Relevance sort is not available without a keyword search term."
-msgstr ""
+msgstr "فرز الصلة غير متوفر بدون مصطلح البحث عن كلمة مفتاحية."
 
 #. Translators: Default label when document does not have a type
 #: geniza/corpus/models.py:629
@@ -76,7 +75,7 @@ msgstr "بيانات التعريف"
 
 #: geniza/corpus/templates/corpus/document_detail.html:34
 msgid "Shelfmark"
-msgstr "Shelfmark"
+msgstr "الشرف"
 
 #. Translators: Editor label
 #: geniza/corpus/templates/corpus/document_detail.html:39
@@ -124,7 +123,7 @@ msgstr "إرسال البحث"
 #. Translators: Label for form errors
 #: geniza/corpus/templates/corpus/document_list.html:49
 msgid "Errors:"
-msgstr ""
+msgstr "الأخطاء:"
 
 #. Translators: number of search results
 #: geniza/corpus/templates/corpus/document_list.html:63
@@ -247,14 +246,12 @@ msgstr "يشمل"
 #. Translators: label for a link in a list of footnote links
 #: geniza/corpus/templates/corpus/snippets/footnote_location.html:28
 msgid "footnote"
-msgstr ""
+msgstr "حاشية"
 
 #. Translators: Label for "previous page" button in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:5
-#, fuzzy
-#| msgid "previous page"
 msgid "Previous"
-msgstr "الصفحة السابقة"
+msgstr "السابق"
 
 #. Translators: Title for link to page number in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:19
@@ -265,7 +262,7 @@ msgstr "صفحة %(number)s"
 #. Translators: Label for "next page" button in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:60
 msgid "Next"
-msgstr ""
+msgstr "التالي"
 
 #. Translators: title of document search page
 #: geniza/corpus/views.py:30
@@ -336,52 +333,48 @@ msgstr "تخطي إلى المحتوى الرئيسي"
 
 #. Translators: accessibility text label for footer site navigation
 #: geniza/templates/footer.html:4
-#, fuzzy
-#| msgid "main navigation"
 msgid "footer navigation"
-msgstr "الملاحة الرئيسية"
+msgstr "footer navigation"
 
 #. Translators: label for Twitter links in footer
 #: geniza/templates/footer.html:17
 msgid "Twitter"
-msgstr ""
+msgstr "تويتر"
 
 #. Translators: label for Instagram links in footer
 #: geniza/templates/footer.html:19
 msgid "Instagram"
-msgstr ""
+msgstr "إنستجرام"
 
 #. Translators: accessibility label for Princeton Geniza Lab homepage, for footer
 #: geniza/templates/footer.html:24
-#, fuzzy
-#| msgid "Princeton Geniza Project"
 msgid "Princeton Geniza Lab homepage"
-msgstr "مشروع برنستون جينيزا"
+msgstr "الصفحة الرئيسية لمختبر برينستون جينيزا"
 
 #. Translators: accessibility label for Princeton CDH homepage, for footer
 #: geniza/templates/footer.html:37
 msgid "Princeton Center for Digital Humanities homepage"
-msgstr ""
+msgstr "صفحة الاستقبال لمركز برينستون للعلوم الإنسانية الرقمية"
 
 #. Translators: link label for Princeton accessibility assistance page, for footer
 #: geniza/templates/footer.html:56
 msgid "Accessibility"
-msgstr ""
+msgstr "إمكانية الوصول"
 
 #. Translators: official name of Princeton University's board of trustees, for footer
 #: geniza/templates/footer.html:61
 msgid "The Trustees of Princeton University"
-msgstr ""
+msgstr "أمناء جامعة برينستون"
 
 #. Translators: Creative Commons license text, for footer
 #: geniza/templates/footer.html:65
 msgid "Creative Commons CC-BY license"
-msgstr ""
+msgstr "ترخيص المشاع الإبداعي CC-BY"
 
 #. Translators: official name of Princeton University, for footer
 #: geniza/templates/footer.html:72
 msgid "Princeton University homepage"
-msgstr ""
+msgstr "الصفحة الرئيسية لجامعة برينستون"
 
 #. Translators: accessibility text label for site navigation
 #: geniza/templates/nav.html:8
@@ -395,10 +388,8 @@ msgstr "المنزل"
 
 #. Translators: site name label for 'home' button in main navigation
 #: geniza/templates/nav.html:16
-#, fuzzy
-#| msgid "Princeton Geniza Project"
 msgid "The Princeton Geniza Project"
-msgstr "مشروع برنستون جينيزا"
+msgstr "مشروع برينستون جينيزا"
 
 #. Translators: label for 'menu' open button for mobile navigation
 #: geniza/templates/nav.html:27
@@ -437,5 +428,3 @@ msgstr "العودة إلى القائمة الرئيسية"
 msgid "Enable dark mode"
 msgstr "تمكين الوضع المظلم"
 
-#~ msgid "next page"
-#~ msgstr "الصفحة التالية"
