@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-01-20 12:13-0500\n"
+"POT-Creation-Date: 2022-01-20 15:12-0500\n"
 "PO-Revision-Date: 2022-01-12 17:31\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -58,7 +58,7 @@ msgid "Relevance sort is not available without a keyword search term."
 msgstr ""
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:624
+#: geniza/corpus/models.py:629
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr "نوع غير معروف"
@@ -139,32 +139,14 @@ msgstr[4] "النتائج %(count_humanized)s"
 msgstr[5] "مجموع النتائج %(count_humanized)s"
 
 #. Translators: accessibility label for a footnote source citation in scholarship records view
-#: geniza/corpus/templates/corpus/document_scholarship.html:20
+#: geniza/corpus/templates/corpus/document_scholarship.html:21
 msgid "Bibliographic citation"
 msgstr "الاقتباس الببليوغرافي"
 
 #. Translators: label for an unpublished scholarship record
-#: geniza/corpus/templates/corpus/document_scholarship.html:26
+#: geniza/corpus/templates/corpus/document_scholarship.html:27
 msgid "unpublished"
 msgstr "غير منشورة"
-
-#. Translators: label for footnote location within source (with url)
-#: geniza/corpus/templates/corpus/document_scholarship.html:32
-#, python-format
-msgid "see <a href=\"%(url)s\">%(location)s</a> for"
-msgstr "شاهد <a href=\"%(url)s\">%(location)s</a> ل"
-
-#. Translators: label for footnote location within source
-#: geniza/corpus/templates/corpus/document_scholarship.html:37
-#, python-format
-msgid "see %(location)s for"
-msgstr "شاهد %(location)s ل"
-
-#. Translators: label for included document relations for a footnote
-#: geniza/corpus/templates/corpus/document_scholarship.html:42
-#: geniza/corpus/templates/corpus/document_scholarship.html:44
-msgid "includes"
-msgstr "يشمل"
 
 #. Translators: Document edit link for admins
 #: geniza/corpus/templates/corpus/snippets/document_header.html:9
@@ -243,6 +225,29 @@ msgstr "الروابط الخارجية"
 #, python-format
 msgid "External Links (%(n_links)s)"
 msgstr "الروابط الخارجية (%(n_links)s)"
+
+#. Translators: label for footnote location within source (with url)
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:7
+#, python-format
+msgid "see <a href=\"%(url)s\">%(location)s</a> for"
+msgstr "شاهد <a href=\"%(url)s\">%(location)s</a> ل"
+
+#. Translators: label for footnote location within source
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:16
+#, python-format
+msgid "see %(location)s for"
+msgstr "شاهد %(location)s ل"
+
+#. Translators: label for included document relations for a footnote
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:25
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:32
+msgid "includes"
+msgstr "يشمل"
+
+#. Translators: label for a link in a list of footnote links
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:28
+msgid "footnote"
+msgstr ""
 
 #. Translators: Label for "previous page" button in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:5

@@ -390,7 +390,15 @@ class TestDocumentSearchView:
             # NOTE: test paginator isn't initialized properly from queryset count
             # assert context_data["paginator"].count == 22
 
-    def test_scholarship_sort(self, document, join, empty_solr, source):
+    def test_scholarship_sort(
+        self,
+        document,
+        join,
+        empty_solr,
+        source,
+        twoauthor_source,
+        multiauthor_untitledsource,
+    ):
         """integration test for sorting by scholarship asc and desc"""
 
         Footnote.objects.create(
@@ -401,12 +409,13 @@ class TestDocumentSearchView:
         doc_three_records = Document.objects.create(
             description="testing description",
         )
-        for _ in range(3):
+        for src in [source, twoauthor_source, multiauthor_untitledsource]:
             Footnote.objects.create(
                 content_object=doc_three_records,
-                source=source,
+                source=src,
                 doc_relation=Footnote.EDITION,
             )
+
         # ensure solr index is updated with all three test documents
         SolrClient().update.index(
             [

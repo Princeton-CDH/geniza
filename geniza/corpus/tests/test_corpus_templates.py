@@ -299,7 +299,7 @@ class TestDocumentTabsSnippet:
         # uses span, not link
         assertContains(response, "<span>Scholarship Records (0)</span>", html=True)
 
-    def test_with_footnotes(self, client, document, source):
+    def test_with_footnotes(self, client, document, source, twoauthor_source):
         """document nav should render scholarship link with footnote counter"""
         Footnote.objects.create(content_object=document, source=source)
         response = client.get(document.get_absolute_url())
@@ -311,7 +311,7 @@ class TestDocumentTabsSnippet:
         # count should be 1
         assertContains(response, "Scholarship Records (1)")
 
-        Footnote.objects.create(content_object=document, source=source)
+        Footnote.objects.create(content_object=document, source=twoauthor_source)
         response = client.get(document.get_absolute_url())
 
         # count should be 2
