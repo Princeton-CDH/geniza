@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-01-14 13:27-0500\n"
+"POT-Creation-Date: 2022-01-20 15:12-0500\n"
 "PO-Revision-Date: 2022-01-12 17:31\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -54,14 +54,14 @@ msgid "Document Type"
 msgstr "نوع المستند"
 
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:624
+#: geniza/corpus/models.py:629
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr "نوع غير معروف"
 
 #. Translators: label for 'home' link in footer navigation
 #: geniza/corpus/templates/admin/corpus/app_index.html:9
-#: geniza/templates/footer.html:9
+#: geniza/templates/footer.html:10
 msgid "Home"
 msgstr "المنزل"
 
@@ -130,32 +130,14 @@ msgstr[4] "النتائج %(count_humanized)s"
 msgstr[5] "مجموع النتائج %(count_humanized)s"
 
 #. Translators: accessibility label for a footnote source citation in scholarship records view
-#: geniza/corpus/templates/corpus/document_scholarship.html:20
+#: geniza/corpus/templates/corpus/document_scholarship.html:21
 msgid "Bibliographic citation"
 msgstr "الاقتباس الببليوغرافي"
 
 #. Translators: label for an unpublished scholarship record
-#: geniza/corpus/templates/corpus/document_scholarship.html:26
+#: geniza/corpus/templates/corpus/document_scholarship.html:27
 msgid "unpublished"
 msgstr "غير منشورة"
-
-#. Translators: label for footnote location within source (with url)
-#: geniza/corpus/templates/corpus/document_scholarship.html:32
-#, python-format
-msgid "see <a href=\"%(url)s\">%(location)s</a> for"
-msgstr "شاهد <a href=\"%(url)s\">%(location)s</a> ل"
-
-#. Translators: label for footnote location within source
-#: geniza/corpus/templates/corpus/document_scholarship.html:37
-#, python-format
-msgid "see %(location)s for"
-msgstr "شاهد %(location)s ل"
-
-#. Translators: label for included document relations for a footnote
-#: geniza/corpus/templates/corpus/document_scholarship.html:42
-#: geniza/corpus/templates/corpus/document_scholarship.html:44
-msgid "includes"
-msgstr "يشمل"
 
 #. Translators: Document edit link for admins
 #: geniza/corpus/templates/corpus/snippets/document_header.html:9
@@ -235,9 +217,34 @@ msgstr "الروابط الخارجية"
 msgid "External Links (%(n_links)s)"
 msgstr "الروابط الخارجية (%(n_links)s)"
 
+#. Translators: label for footnote location within source (with url)
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:7
+#, python-format
+msgid "see <a href=\"%(url)s\">%(location)s</a> for"
+msgstr "شاهد <a href=\"%(url)s\">%(location)s</a> ل"
+
+#. Translators: label for footnote location within source
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:16
+#, python-format
+msgid "see %(location)s for"
+msgstr "شاهد %(location)s ل"
+
+#. Translators: label for included document relations for a footnote
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:25
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:32
+msgid "includes"
+msgstr "يشمل"
+
+#. Translators: label for a link in a list of footnote links
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:28
+msgid "footnote"
+msgstr ""
+
 #. Translators: Label for "previous page" button in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:5
-msgid "previous page"
+#, fuzzy
+#| msgid "previous page"
+msgid "Previous"
 msgstr "الصفحة السابقة"
 
 #. Translators: Title for link to page number in search results
@@ -247,9 +254,9 @@ msgid "page %(number)s"
 msgstr "صفحة %(number)s"
 
 #. Translators: Label for "next page" button in search results
-#: geniza/corpus/templates/corpus/snippets/pagination.html:56
-msgid "next page"
-msgstr "الصفحة التالية"
+#: geniza/corpus/templates/corpus/snippets/pagination.html:60
+msgid "Next"
+msgstr ""
 
 #. Translators: title of document search page
 #: geniza/corpus/views.py:30
@@ -326,44 +333,44 @@ msgid "footer navigation"
 msgstr "الملاحة الرئيسية"
 
 #. Translators: label for Twitter links in footer
-#: geniza/templates/footer.html:16
+#: geniza/templates/footer.html:17
 msgid "Twitter"
 msgstr ""
 
 #. Translators: label for Instagram links in footer
-#: geniza/templates/footer.html:18
+#: geniza/templates/footer.html:19
 msgid "Instagram"
 msgstr ""
 
 #. Translators: accessibility label for Princeton Geniza Lab homepage, for footer
-#: geniza/templates/footer.html:23
+#: geniza/templates/footer.html:24
 #, fuzzy
 #| msgid "Princeton Geniza Project"
 msgid "Princeton Geniza Lab homepage"
 msgstr "مشروع برنستون جينيزا"
 
 #. Translators: accessibility label for Princeton CDH homepage, for footer
-#: geniza/templates/footer.html:36
+#: geniza/templates/footer.html:37
 msgid "Princeton Center for Digital Humanities homepage"
 msgstr ""
 
 #. Translators: link label for Princeton accessibility assistance page, for footer
-#: geniza/templates/footer.html:55
+#: geniza/templates/footer.html:56
 msgid "Accessibility"
 msgstr ""
 
 #. Translators: official name of Princeton University's board of trustees, for footer
-#: geniza/templates/footer.html:60
+#: geniza/templates/footer.html:61
 msgid "The Trustees of Princeton University"
 msgstr ""
 
 #. Translators: Creative Commons license text, for footer
-#: geniza/templates/footer.html:64
+#: geniza/templates/footer.html:65
 msgid "Creative Commons CC-BY license"
 msgstr ""
 
 #. Translators: official name of Princeton University, for footer
-#: geniza/templates/footer.html:71
+#: geniza/templates/footer.html:72
 msgid "Princeton University homepage"
 msgstr ""
 
@@ -385,7 +392,7 @@ msgid "The Princeton Geniza Project"
 msgstr "مشروع برنستون جينيزا"
 
 #. Translators: label for 'menu' open button for mobile navigation
-#: geniza/templates/nav.html:26
+#: geniza/templates/nav.html:27
 msgid "Open main navigation menu"
 msgstr "فتح قائمة التنقل الرئيسية"
 
@@ -407,7 +414,7 @@ msgid "go"
 msgstr "اذهب"
 
 #. Translators: label for link to 'Search' page in main navigation
-#: geniza/templates/snippets/menu.html:6
+#: geniza/templates/snippets/menu.html:7
 msgid "Search"
 msgstr "البحث"
 
@@ -420,3 +427,6 @@ msgstr "العودة إلى القائمة الرئيسية"
 #: geniza/templates/snippets/theme_toggle.html:9
 msgid "Enable dark mode"
 msgstr "تمكين الوضع المظلم"
+
+#~ msgid "next page"
+#~ msgstr "الصفحة التالية"
