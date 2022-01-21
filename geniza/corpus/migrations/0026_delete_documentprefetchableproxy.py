@@ -3,6 +3,17 @@
 from django.db import migrations
 
 
+def reassign_log_entries(apps, schema_editor):
+    LogEntry = apps.get_model("admin", "LogEntry")
+    ContentType = apps.get_model("contenttypes", "ContentType")
+    document_type = ContentType.objects.get(app_label="corpus", model="document")
+    for log_entry in LogEntry.objects.filter(
+        content_type__model="documentprefetchableproxy"
+    ):
+        log_entry.content_type = document_type
+        log_entry.save()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,7 +21,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # delete DocumentPrefetchableProxy model
         migrations.DeleteModel(
             name="DocumentPrefetchableProxy",
         ),
+        # reassign all log entries associated with DocumentPrefetchableProxy
+        # instances to Documents instead
+        migrations.RunPython(reassign_log_entries, migrations.RunPython.noop),
     ]
