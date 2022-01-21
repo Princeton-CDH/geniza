@@ -355,15 +355,10 @@
     }
 }
 // error messages
-#search main form h3#search-errors {
-    color: red;
+#search main form ul#search-errors {
     margin-top: spacing.$spacing-md;
-    & + ul {
-        color: red;
-        list-style: circle;
-        li {
-            @include typography.meta;
-            margin-left: spacing.$spacing-lg;
-        }
+    color: red;
+    li {
+        @include typography.meta;
     }
 }
