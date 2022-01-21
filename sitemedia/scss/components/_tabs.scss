@@ -44,7 +44,7 @@
             outline: none;
         }
         &:focus-visible::after {
-            outline: 0.1rem solid var(--tabs-focus);
+            outline: 0.1rem solid var(--focus);
         }
     }
     .disabled {

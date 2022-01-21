@@ -146,24 +146,27 @@ section#document-list {
         margin-left: auto;
         margin-top: spacing.$spacing-md;
         @include typography.meta;
-        color: var(--secondary);
+        border-bottom: 3px solid var(--background);
+        color: var(--icon-button);
         // focus styles
         &:focus {
-            outline: 0.125rem solid var(--tabs-focus);
+            outline: 0.125rem solid var(--focus);
             outline-offset: 0.66rem;
         }
         // hover and active styles
-        @include breakpoints.for-tablet-landscape-up {
-            &:hover,
-            &:active {
-                margin-bottom: -0.1875rem;
-                height: calc(1.75rem + 0.1875rem);
-                border-bottom: 0.1875rem solid var(--viewlink-bottom-hover);
-                outline: none; // keeping focus and hover/active styles distinct
+        &:hover,
+        &:active {
+            outline: none; // keeping focus and hover/active styles distinct
+        }
+        &:hover {
+            border-bottom-color: var(--icon-button);
+            @include breakpoints.for-tablet-landscape-up {
+                border-bottom-color: var(--icon-button-hover);
             }
-            &:active {
-                border-bottom-color: var(--primary);
-            }
+        }
+        &:active {
+            color: var(--icon-button-active);
+            border-bottom-color: var(--icon-button);
         }
         // icon to the right
         &:after {
