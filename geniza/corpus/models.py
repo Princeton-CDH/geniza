@@ -33,42 +33,6 @@ from geniza.footnotes.models import Creator, Footnote, Source
 logger = logging.getLogger(__name__)
 
 
-class GenericRelationWithOnDelete(GenericRelation):
-    """Identical copy of :class:`django.contrib.contenttypes.fields.GenericRelation`, except it
-    allows on_delete other than CASCADE."""
-
-    def __init__(
-        self,
-        to,
-        object_id_field="object_id",
-        content_type_field="content_type",
-        for_concrete_model=True,
-        related_query_name=None,
-        limit_choices_to=None,
-        on_delete=models.CASCADE,
-        **kwargs,
-    ):
-        kwargs["rel"] = self.rel_class(
-            self,
-            to,
-            related_query_name=related_query_name,
-            limit_choices_to=limit_choices_to,
-        )
-        kwargs["null"] = True
-        kwargs["blank"] = True
-        kwargs["on_delete"] = on_delete
-        kwargs["editable"] = False
-        kwargs["serialize"] = False
-
-        models.ForeignObject.__init__(
-            self, to, from_fields=[object_id_field], to_fields=[], **kwargs
-        )
-
-        self.object_id_field_name = object_id_field
-        self.content_type_field_name = content_type_field
-        self.for_concrete_model = for_concrete_model
-
-
 class CollectionManager(models.Manager):
     def get_by_natural_key(self, name, library):
         return self.get(name=name, library=library)
@@ -451,9 +415,7 @@ class Document(ModelIndexable):
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
 
-    log_entries = GenericRelationWithOnDelete(
-        LogEntry, related_query_name="document", on_delete=models.SET_NULL
-    )
+    log_entries = GenericRelation(LogEntry, related_query_name="document")
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution
