@@ -1,9 +1,10 @@
-/* limit size of iiif viewer */
+/* Mirador styles */
 
 @use "../base/breakpoints";
 @use "../base/spacing";
 @use "../base/typography";
 
+// Wrapper for limiting size
 .iiif_wrapper {
     display: block;
     width: clamp(300px, 75vw, 90vw);
@@ -18,6 +19,7 @@
     height: clamp(200px, 75vh, 75vh);
 }
 
+// Mirador general improvements
 .mirador-viewer {
     h1 {
         @include typography.headline-3;
