@@ -43,7 +43,9 @@ $off-white: #f7f7f7;
     --tabs-bottom-hover: #3d3d3d;
     --tabs-focus: #567856;
     --logo: #161616;
-    --viewlink-bottom-hover: #3d3d3d;
+    --icon-button: #567856;
+    --icon-button-active: #436043;
+    --icon-button-hover: #3d3d3d;
 }
 
 // Dark mode theme colors
@@ -72,7 +74,9 @@ $off-white: #f7f7f7;
     --tabs-bottom-hover: #ebebeb;
     --tabs-focus: #146feb;
     --logo: #f7f7f7;
-    --viewlink-bottom-hover: #ffffff;
+    --icon-button: #ffffff;
+    --icon-button-active: #ffffff;
+    --icon-button-bottom-hover: #ffffff;
 }
 
 body {
