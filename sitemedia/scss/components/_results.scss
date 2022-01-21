@@ -150,7 +150,7 @@ section#document-list {
         color: var(--icon-button);
         // focus styles
         &:focus {
-            outline: 0.125rem solid var(--tabs-focus);
+            outline: 0.125rem solid var(--focus);
             outline-offset: 0.66rem;
         }
         // hover and active styles

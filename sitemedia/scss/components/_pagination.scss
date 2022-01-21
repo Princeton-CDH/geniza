@@ -70,7 +70,7 @@ nav.pagination {
         }
         &:not(.next):focus-visible::after,
         &.next:focus-visible::before {
-            outline: 0.1rem solid var(--tabs-focus);
+            outline: 0.1rem solid var(--focus);
         }
         @include breakpoints.for-tablet-landscape-up {
             // hover underline
