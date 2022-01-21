@@ -31,6 +31,8 @@ nav.pagination {
     // spacing and style for page links, ellipsis, and disabled
     a,
     span {
+        position: relative;
+        border-bottom: 3px solid var(--background);
         @include typography.nav-bold;
         &:not([aria-current="page"]) {
             @include typography.nav-link;
@@ -49,8 +51,6 @@ nav.pagination {
     }
     // link-specific styling
     a {
-        position: relative;
-        border-bottom: 3px solid var(--background);
         // current page styling
         &[aria-current="page"] {
             text-decoration: none;
@@ -95,8 +95,6 @@ nav.pagination {
     // disabled prev/next
     span.disabled {
         color: var(--disabled);
-        position: relative;
-        border-bottom: 3px solid var(--background);
     }
     // button icons
     .prev::before {
