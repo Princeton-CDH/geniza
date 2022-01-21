@@ -11,25 +11,43 @@ const body = document.querySelector("body");
 const toggleLabel = document.querySelector("label#theme-toggle");
 const toggleCheckbox = toggleLabel.querySelector("input");
 
+const setMode = (mode) => {
+    if (mode === "dark") {
+        body.classList.add("dark-mode");
+        body.classList.remove("light-mode");
+        if (typeof miradorInstance !== "undefined" && miradorInstance) {
+            let action = Mirador.actions.updateConfig({
+                selectedTheme: "dark",
+            });
+            miradorInstance.store.dispatch(action);
+        }
+    } else if (mode === "light") {
+        body.classList.add("light-mode");
+        body.classList.remove("dark-mode");
+        if (typeof miradorInstance !== "undefined" && miradorInstance) {
+            let action = Mirador.actions.updateConfig({
+                selectedTheme: "light",
+            });
+            miradorInstance.store.dispatch(action);
+        }
+    }
+};
+
 if (systemDarkMode) {
-    body.classList.add("dark-mode");
-    body.classList.remove("light-mode");
+    setMode("dark");
     toggleCheckbox.checked = true;
 } else {
-    body.classList.add("light-mode");
-    body.classList.remove("dark-mode");
+    setMode("light");
     toggleCheckbox.checked = false;
 }
 
 // Toggle using classes on body element
 toggleCheckbox.addEventListener("change", function () {
     if (toggleCheckbox.checked) {
-        body.classList.add("dark-mode");
-        body.classList.remove("light-mode");
+        setMode("dark");
         localStorage.setItem("darkMode", "true");
     } else {
-        body.classList.add("light-mode");
-        body.classList.remove("dark-mode");
+        setMode("light");
         localStorage.setItem("darkMode", "false");
     }
 });
