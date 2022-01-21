@@ -2,6 +2,19 @@
   {
     "fields": {
       "created": "2021-12-20",
+      "extra_data": "{\"https://services.prod.env.cudl.link/v1/metadata/tei/MS-TS-00008-J-00005-00001/\":{},\"logo\":\"https://cudl.lib.cam.ac.uk/img/cu_logo.png\"}",
+      "label": "Legal document (T-S 8J5.1)",
+      "last_modified": "2021-12-20",
+      "metadata": "{\"Condition\":[\"torn\"],\"Origin Place\":[\"Cairo; Fus\\u1e6d\\u0101\\u1e6d\"],\"Provenance\":[\"Donated by Dr Solomon Schechter and his patron Dr Charles Taylor in 1898 as part of the Taylor-Schechter Genizah Collection\"],\"Physical Location\":[\"Cambridge University Library\"],\"Extent\":[\"2 leaves (bifolium). Leaf height: 17.6 cm, width: 26 (1 leaf: 13.3) cm.\"],\"Funding\":[\"The digitisation of the Taylor-Schechter Cairo Genizah Collection has been sponsored by the <a target='_blank' class='externalLink' href='http://www.jewishmanuscripts.org/'>Jewish Manuscript Preservation Society</a>, the <a target='_blank' class='externalLink' href='http://www.genizah.org/'>Friedberg Genizah Project Inc.</a>, and the <a target='_blank' class='externalLink' href='http://www.ahrc.ac.uk/Pages/default.aspx'>Arts and Humanities Research Council, UK</a>.\"],\"Abstract\":[\"<p style='text-align: justify;'>Legal document from Cairo and Fus\\u1e6d\\u0101\\u1e6d. The rich goldsmith Ab\\u016b Ya\\u02bfq\\u016bb Joseph b. Samuel\\u2019s (known as Ibn Na\\u1e25um) estate is recorded after his death for his minor children. Mentions Ab\\u016b Sahl, Ab\\u016b Sulaym\\u0101n, Ab\\u016b l-\\u1e24usayn al-\\u1e24alab\\u012b, Ab\\u016b l-Faraj b. Qas\\u0101ma, Ab\\u016b l-\\u1e6c\\u0101hir, Ab\\u016b l-\\u1e24asan b. Ayy\\u016bb, M\\u016bs\\u0101 b. Musallam al-Qazz\\u0101z (the silk trader), M\\u016bs\\u0101 b. Faraj the Christian, \\u1e62\\u0101f\\u012b b. Na\\u1e25r\\u012br, Ma\\u1e63lia\\u1e25 the Sicilian, Ab\\u016b l-\\u1e24asan al-\\u1e62an\\u0101n\\u012br\\u012b, and Ab\\u016b Is\\u1e25\\u0101q b. \\u1e62ul\\u1e25\\u0101n. Signed by Abraham b. Nathan Av Bet Din, Abraham b. \\u0160ema\\u02bfya he-\\u1e24aver (descendant of \\u0160ema\\u02bfya Ga\\u02beon), Isaac b. Samuel ha-Sefardi, Mevasser ha-Levi b. Ye\\u0161u\\u02bfa and S[...]l b. Sa\\u02bfadya. Dated 1425 of the Seleucid Era (= 1114 CE). In the hand of \\u1e24alfon b. Manasseh (who also signed the document). </p>\"],\"Date of Creation\":[\"1114 CE\"],\"Title\":[\"Legal document\"],\"Author(s) of the Record\":[\"CUL\"],\"Material\":[\"Paper\"],\"Classmark\":[\"T-S 8J5.1\"],\"Donor(s)\":[\"Schechter, S. (Solomon), 1847-1915; Taylor, Charles, 1840-1908\"],\"Subject(s)\":[\"Cairo Genizah\"],\"Associated Name(s)\":[\"Ab\\u016b Ya\\u02bfq\\u016bb Joseph b. Samuel (known as Ibn Na\\u1e25um the goldsmith); Ab\\u016b Sahl; Ab\\u016b Sulaym\\u0101n; Ab\\u016b l-\\u1e24usayn al-\\u1e24alab\\u012b; Ab\\u016b l-Faraj b. Qas\\u0101ma; Ab\\u016b l-\\u1e6c\\u0101hir; Ab\\u016b l-\\u1e24asan b. Ayy\\u016bb; M\\u016bs\\u0101 b. Musallam al-Qazz\\u0101z; M\\u016bs\\u0101 b. Faraj the Christian; \\u1e62\\u0101f\\u012b b. Na\\u1e25r\\u012br; Ma\\u1e63lia\\u1e25 the Sicilian; Ab\\u016b l-\\u1e24asan al-\\u1e62an\\u0101n\\u012br\\u012b; Ab\\u016b Is\\u1e25\\u0101q b. \\u1e62ul\\u1e25\\u0101n; Abraham b. Nathan Av; Abraham b. \\u0160ema\\u02bfya he-\\u1e24aver; Isaac b. Samuel ha-Sefardi; Mevasser ha-Levi b. Ye\\u0161u\\u02bfa; S[...]l b. Sa\\u02bfadya\"],\"Language(s)\":[\"Judaeo-Arabic; Hebrew; Aramaic\"],\"Layout\":[\"12-19 lines\"],\"Scribe(s)\":[\"\\u1e24alfon b. Manasseh\"]}",
+      "short_id": "MS-TS-00008-J-00005-00001",
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001"
+    },
+    "model": "djiffy.manifest",
+    "pk": 5695
+  },
+  {
+    "fields": {
+      "created": "2021-12-20",
       "extra_data": "{\"https://services.prod.env.cudl.link/v1/metadata/tei/MS-TS-00018-J-00001-00017/\":{},\"logo\":\"https://cudl.lib.cam.ac.uk/img/cu_logo.png\"}",
       "label": "Legal document (T-S 18J1.17)",
       "last_modified": "2021-12-20",
@@ -283,6 +296,22 @@
     },
     "model": "taggit.tag",
     "pk": 40
+  },
+  {
+    "fields": {
+      "name": "Qaraite divorce",
+      "slug": "qaraite-divorce"
+    },
+    "model": "taggit.tag",
+    "pk": 2786
+  },
+  {
+    "fields": {
+      "name": "Qaraites",
+      "slug": "qaraites"
+    },
+    "model": "taggit.tag",
+    "pk": 623
   },
   {
     "fields": {
@@ -949,6 +978,22 @@
   {
     "fields": {
       "collection": ["Taylor-Schechter", "Cambridge University Library"],
+      "created": "2021-05-26T20:35:19.718Z",
+      "iiif_url": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001",
+      "is_multifragment": false,
+      "last_modified": "2021-12-20T23:06:51.050Z",
+      "manifest": 5695,
+      "needs_review": "",
+      "notes": "",
+      "old_shelfmarks": "",
+      "shelfmark": "T-S 8J5.1",
+      "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-00008-J-00005-00001"
+    },
+    "model": "corpus.fragment"
+  },
+  {
+    "fields": {
+      "collection": ["Taylor-Schechter", "Cambridge University Library"],
       "created": "2021-05-26T20:33:59.832Z",
       "iiif_url": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00017",
       "is_multifragment": false,
@@ -959,6 +1004,22 @@
       "old_shelfmarks": "",
       "shelfmark": "T-S 18J1.17",
       "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-00018-J-00001-00017"
+    },
+    "model": "corpus.fragment"
+  },
+  {
+    "fields": {
+      "collection": ["Taylor-Schechter", "Cambridge University Library"],
+      "created": "2021-05-26T20:32:52.120Z",
+      "iiif_url": "",
+      "is_multifragment": false,
+      "last_modified": "2021-05-26T20:32:52.120Z",
+      "manifest": null,
+      "needs_review": "",
+      "notes": "",
+      "old_shelfmarks": "",
+      "shelfmark": "T-S 12.70",
+      "url": ""
     },
     "model": "corpus.fragment"
   },
@@ -1598,6 +1659,26 @@
   },
   {
     "fields": {
+      "created": "2021-05-26T20:35:19.784Z",
+      "description": "Inventory of the estate of a wealthy goldsmith, Abu Ya\u02bfqub, dated Elul 1425 (=August, 1114 CE) and consisting of dinars in bankers\u2019 notes, gold cash, and in bars of precious metals; various vessels, two female slaves, and promissory notes are also referenced. The document was written by \u1e24alfon b. Manasse and sealed by the rabbinic court on the day of Abu Ya\u02bfqub\u2019s death. Before any shares were distributed to the heirs, the widow received the \u201cdeferred installment\u201d due to her according to her marriage contract, in this case 75 dinars. (S. D. Goitein, Mediterranean Society 5:168-70, 549, 533; and Goitein\u2019s index cards) EMS",
+      "doc_date_calendar": "",
+      "doc_date_original": "",
+      "doc_date_standard": "",
+      "doctype": ["Legal"],
+      "language_note": "",
+      "languages": [],
+      "last_modified": "2021-12-23T15:35:59.615Z",
+      "needs_review": "",
+      "notes": "",
+      "old_pgpids": "[\"2143\", \"2144\", \"2145\"]",
+      "secondary_languages": [],
+      "status": "P"
+    },
+    "model": "corpus.document",
+    "pk": 2142
+  },
+  {
+    "fields": {
       "created": "2021-09-16T13:31:26.262Z",
       "description": "",
       "doc_date_calendar": "",
@@ -1655,6 +1736,26 @@
     },
     "model": "corpus.document",
     "pk": 3504
+  },
+  {
+    "fields": {
+      "created": "2021-05-26T20:32:52.123Z",
+      "description": "Bill of divorce, Qaraite. In Hebrew. T-S 12.54 and T-S 12.70 are two very rare examples of Qaraite bills of divorce. Husband: \u02bfAmm\u0101r al-Kh\u0101\u1e6dir\u012b. Witnesses: Yefet Kohen b. \u02bfEli; Mevorakh b. Yehuda ha-Levi.",
+      "doc_date_calendar": "",
+      "doc_date_original": "",
+      "doc_date_standard": "",
+      "doctype": ["Legal"],
+      "language_note": "",
+      "languages": [["Hebrew", "Hebrew"]],
+      "last_modified": "2022-01-04T17:58:40.313Z",
+      "needs_review": "",
+      "notes": "Look for Goitein scan in this folder: https://drive.google.com/drive/folders/1ZAWSK3ILoRyll0FafU61V5zdccx0CgaP?usp=sharing",
+      "old_pgpids": null,
+      "secondary_languages": [],
+      "status": "P"
+    },
+    "model": "corpus.document",
+    "pk": 9469
   },
   {
     "fields": {
@@ -2303,6 +2404,19 @@
   {
     "fields": {
       "certain": true,
+      "document": 2142,
+      "fragment": ["T-S 8J5.1"],
+      "multifragment": "",
+      "order": null,
+      "region": "a",
+      "side": ""
+    },
+    "model": "corpus.textblock",
+    "pk": 18742
+  },
+  {
+    "fields": {
+      "certain": true,
       "document": 3504,
       "fragment": ["T-S 18J1.17"],
       "multifragment": "",
@@ -2312,6 +2426,19 @@
     },
     "model": "corpus.textblock",
     "pk": 17094
+  },
+  {
+    "fields": {
+      "certain": true,
+      "document": 9469,
+      "fragment": ["T-S 12.70"],
+      "multifragment": "",
+      "order": null,
+      "region": "",
+      "side": ""
+    },
+    "model": "corpus.textblock",
+    "pk": 15818
   },
   {
     "fields": {
@@ -2863,14 +2990,6 @@
   },
   {
     "fields": {
-      "code": "en",
-      "name": "English"
-    },
-    "model": "footnotes.sourcelanguage",
-    "pk": 1
-  },
-  {
-    "fields": {
       "type": "Book"
     },
     "model": "footnotes.sourcetype",
@@ -2890,6 +3009,29 @@
     },
     "model": "footnotes.sourcetype",
     "pk": 4
+  },
+  {
+    "fields": {
+      "code": "en",
+      "name": "English"
+    },
+    "model": "footnotes.sourcelanguage",
+    "pk": 1
+  },
+  {
+    "fields": {
+      "code": "fr",
+      "name": "French"
+    },
+    "model": "footnotes.sourcelanguage",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "type": "Article"
+    },
+    "model": "footnotes.sourcetype",
+    "pk": 2
   },
   {
     "fields": {
@@ -3107,6 +3249,29 @@
     },
     "model": "footnotes.source",
     "pk": 743
+  },
+  {
+    "fields": {
+      "edition": null,
+      "issue": null,
+      "journal": "",
+      "languages": [],
+      "notes": "",
+      "other_info": "",
+      "page_range": "",
+      "place_published": "",
+      "publisher": "",
+      "source_type": 3,
+      "title": "typed texts",
+      "title_ar": null,
+      "title_en": "typed texts",
+      "title_he": null,
+      "url": "",
+      "volume": "T-S 8J",
+      "year": null
+    },
+    "model": "footnotes.source",
+    "pk": 737
   },
   {
     "fields": {
@@ -3434,6 +3599,65 @@
       "edition": null,
       "issue": null,
       "journal": "",
+      "languages": [1],
+      "notes": "Created from PGPID 2367",
+      "other_info": "",
+      "page_range": "",
+      "place_published": "",
+      "publisher": "",
+      "source_type": 3,
+      "title": "typed texts",
+      "title_ar": null,
+      "title_en": "typed texts",
+      "title_he": null,
+      "url": "",
+      "volume": "",
+      "year": null
+    },
+    "model": "footnotes.source",
+    "pk": 25
+  },
+  {
+    "fields": {
+      "edition": null,
+      "issue": null,
+      "journal": "Revue des Etudes Juives",
+      "languages": [4],
+      "notes": "",
+      "other_info": "",
+      "page_range": "",
+      "place_published": "",
+      "publisher": "",
+      "source_type": 2,
+      "title": "La lettre de divorce cara\u00efte et sa place dans les relations entre Cara\u00eftes et Rabbanites au Moyen Age (Une \u00e9tude de manuscrits de la Geniza du Caire)",
+      "title_ar": null,
+      "title_en": "La lettre de divorce cara\u00efte et sa place dans les relations entre Cara\u00eftes et Rabbanites au Moyen Age (Une \u00e9tude de manuscrits de la Geniza du Caire)",
+      "title_he": null,
+      "url": "",
+      "volume": "155:3\u20134",
+      "year": 1996
+    },
+    "model": "footnotes.source",
+    "pk": 768
+  },
+  {
+    "fields": {
+      "first_name": "Judith",
+      "first_name_ar": null,
+      "first_name_en": "Judith",
+      "first_name_he": null,
+      "last_name": "Olszowy-Schlanger",
+      "last_name_ar": null,
+      "last_name_en": "Olszowy-Schlanger",
+      "last_name_he": null
+    },
+    "model": "footnotes.creator"
+  },
+  {
+    "fields": {
+      "edition": null,
+      "issue": null,
+      "journal": "",
       "languages": [],
       "notes": "",
       "other_info": "",
@@ -3548,6 +3772,15 @@
   },
   {
     "fields": {
+      "creator": ["Goitein", "S. D."],
+      "sort_order": 1,
+      "source": 737
+    },
+    "model": "footnotes.authorship",
+    "pk": 1136
+  },
+  {
+    "fields": {
       "creator": ["\u02bfAodeh", "\u1e62ab\u012b\u1e25"],
       "sort_order": 1,
       "source": 21
@@ -3640,6 +3873,24 @@
     "fields": {
       "creator": ["Goitein", "S. D."],
       "sort_order": 1,
+      "source": 25
+    },
+    "model": "footnotes.authorship",
+    "pk": 28
+  },
+  {
+    "fields": {
+      "creator": ["Olszowy-Schlanger", "Judith"],
+      "sort_order": 1,
+      "source": 768
+    },
+    "model": "footnotes.authorship",
+    "pk": 1169
+  },
+  {
+    "fields": {
+      "creator": ["Goitein", "S. D."],
+      "sort_order": 1,
       "source": 736
     },
     "model": "footnotes.authorship",
@@ -3658,6 +3909,244 @@
     },
     "model": "footnotes.footnote",
     "pk": 544
+  },
+  {
+    "fields": {
+      "content": {
+        "blocks": [
+          {
+            "label": "",
+            "languages": [],
+            "lines": [
+              "\u05d1\u05e9\u05de \u05e8\u05d7\u05de",
+              "\u05d7\u05e6\u05e8\u05e0\u05d0 \u05d0\u05e0\u05df \u05e9\u05dc\u05e9\u05ea \u05d4\u05d3\u05d9\u05e0\u05d9\u05dd \u05d4\u05e7\u05d1\u05d5\u05e2\u05d9\u05dd \u05d1\u05e2\u05d9\u05e8 \u05d0\u05dc\u05e7\u05d0\u05d4\u05e8[\u05d4 ]",
+              "\u05d5\u05d1\u05e4\u05e1\u05d8\u05d0\u05d8 \u05de\u05e6\u05e8\u05d9\u05dd \u05d9\u05d5\u05dd \u05d0\u05dc\u05ea\u05dc\u05d0\u05ea\u05d0 \u05d0\u05dc\u05e1\u05d0\u05d1\u05e2 \u05de\u05df \u05d7\u05d3\u05e9 \u05d0\u05dc\u05d5\u05dc",
+              "\u05e9\u05e0\u05ea \u05d0\u05ea\u05db\u05d4 \u05dc\u05e9\u05d8\u05e8\u05d5\u05ea \u05e4\u05d9 \u05de\u05e0\u05d6\u05dc \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d9\u05e2\u05e7\u05d1 \u05d0\u05dc\u05de\u05ea\u05d5\u05e4\u05d0",
+              "\u05e8\u05d7\u05de\u05d4 \u05d0\u05dc\u05dc\u05d4 \u05de\u05e8\u05d5\u05e8 \u05d9\u05d5\u05e1\u05e3 \u05d4\u05d6\u05e7\u05df \u05e0\u05e2 \u05d1\u05e8 \u05de\u05e8\u05d5\u05e8 \u05e9\u05de\u05d5\u05d0\u05dc \u05d4\u05d6\u05e7\u05df \u05d4\u05d9\u05d3\u05d5\u05e2",
+              "\u05d1\u05df \u05e0\u05d7\u05d5\u05dd \u05e0\u05e2 \u05dc\u05e0\u05ea\u05d1\u05ea \u05d2\u05de\u05d9\u05e2 \u05de\u05d0 \u05d4\u05d5 \u05de\u05d5\u05d2\u05d5\u05d3 \u05dc\u05d4 \u05dc\u05d9\u05db\u05d5\u05df \u05dc\u05d6\u05db\u05d5 \u05d5\u05dc\u05e8\u05d0\u05d9\u05d4",
+              "\u05dc\u05dc\u05d9\u05ea\u05d5\u05de\u05d9\u05dd \u05d2\u05d1\u05e8\u05d4\u05dd \u05d0\u05dc\u05dc\u05d4 //\u05de\u05df \u05d3\u05dc\u05da // \u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05e1\u05d4\u05dc \u05de\u05d1\u05dc\u05d2\u05d4\u05d0",
+              "\u05e1\u05d2 \u05d5\u05e1\u05d3\u05e1 \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df \u05d5\u05dc\u05d3\u05d4 \u05d1\u05de\u05d0\u05d9\u05d4 \u05d3\u05d9\u05e0' \u05d5\u05e8\u05e7\u05e2\u05d4",
+              "\u05d1\u05db\u05d8 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05e1\u05d4\u05dc \u05d0\u05d9\u05e6\u05d0 \u05d1\u05de\u05d1 \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df",
+              "\u05d0\u05d9\u05e6\u05d0 \u05d1\u05e7 \u05d5\u05e1\u05ea\u05d4 \u05d5\u05e0\u05e6\u05e3 \u05d5\u05e8\u05d1\u05e2 \u05ea\u05d0\u05e8\u05d9\u05db\u05d4\u05d0 \u05d3\u05d5 \u05d0\u05dc\u05d7\u05d2\u05d4 \u05e1\u05e0\u05d4 \u05e1\u05d1\u05e2",
+              "\u05d5\u05e8\u05e7\u05e2\u05ea\u05d9\u05df \u05d1\u05db\u05d8 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d7\u05e1\u05d9\u05df \u05d0\u05dc\u05d7\u05dc\u05d1\u05d9 \u05d0\u05d7\u05d3\u05ea\u05d4\u05de\u05d0 \u05d3 \u05d5\u05ea\u05dc\u05ea\u05d9",
+              "\u05d5\u05d0\u05dc\u05ea\u05d0\u05e0\u05d9\u05d4 \u05d3 \u05d5\u05ea\u05dc\u05ea \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05e1\u05d4\u05dc \u05de\u05d1\u05dc\u05d2\u05d4\u05d0 \u05ea",
+              "\u05d5\u05ea\u05e1\u05e2\u05d9\u05df \u05d0\u05dc\u05d0 \u05ea\u05dc\u05ea \u05e4\u05d9\u05d4\u05d0 \u05e7\u05d1\u05d5\u05e5 \u05d9\u05d5 \u05d0\u05dc\u05e3 \u05d3\u05e8\u05d4\u05dd \u05d1\u05e7\u05d9 \u05e0\u05d9\u05e3 \u05d5\u05e1\u05ea\u05d9\u05df \u05d3\u05d9\u05e0'",
+              "\u05d5\u05e8\u05e7\u05e2\u05d4 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05e1\u05d4\u05dc \u05d1\u05dc\u05d7 \u05d5\u05ea\u05dc\u05ea \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05e1\u05dc\u05d9\u05de\u05d0\u05df \u05d1\u05de",
+              "\u05d3\u05d9\u05e0' \u05de\u05e7\u05e1\u05d8\u05d4 \u05d3\u05d9\u05e0' \u05db\u05dc \u05e9\u05d4\u05e8 \u05ea\u05d0\u05e8\u05d9\u05db\u05d4\u05d0 \u05e8\u05de\u05e6\u05d0\u05df \u05de\u05df \u05e1\u05e0\u05d4 \u05e1\u05d1\u05e2 \u05d5\u05e8\u05e7\u05e2\u05d4",
+              "\u05d1\u05db\u05d8 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df \u05d0\u05d9\u05e6\u05d0 \u05ea\u05d0\u05e8\u05d9\u05db\u05d4\u05d0 \u05e9\u05e2\u05d1\u05d0\u05df \u05de\u05df \u05e1\u05e0\u05d4 \u05e1\u05d1\u05e2 \u05d1\u05d9\u05d1 \u05d3\u05d9\u05e0'",
+              "\u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df \u05d1\u05e4\u05d3 \u05d5\u05e0\u05e6\u05e3 \u05e2\u05d9\u05e0\u05d0 \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df",
+              "\u05d1\u05e7 \u05d3\u05d9\u05e0' \u05d1\u05ea\u05d0\u05e8\u05d9\u05da \u05d3\u05d5 \u05d0\u05dc\u05e7\u05e2\u05d3\u05d4 \u05de\u05df \u05e1\u05e0\u05d4 \u05e1\u05ea \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05dc\u05e9\u05d9\u05da",
+              "\u05d0\u05d1\u05d5 \u05d0\u05dc\u05e4\u05e8\u05d2 \u05d1\u05df \u05e7\u05e1\u05d0\u05e1\u05d4 \u05d1\u05db\u05d8 \u05d5\u05e0\u05e6\u05e3 \u05d5\u05d7\u05e1\u05db\u05d4 \u05e4\u05e6\u05d4 \u05d5\u05de\u05d2\u05e1\u05dc \u05e4\u05e6\u05d4 \u05d5\u05e7\u05d7\u05e3 \u05e4\u05e6\u05d4"
+            ]
+          }
+        ],
+        "lines": [
+          "\u05d1\u05e9\u05de \u05e8\u05d7\u05de",
+          "\u05d7\u05e6\u05e8\u05e0\u05d0 \u05d0\u05e0\u05df \u05e9\u05dc\u05e9\u05ea \u05d4\u05d3\u05d9\u05e0\u05d9\u05dd \u05d4\u05e7\u05d1\u05d5\u05e2\u05d9\u05dd \u05d1\u05e2\u05d9\u05e8 \u05d0\u05dc\u05e7\u05d0\u05d4\u05e8[\u05d4 ]",
+          "\u05d5\u05d1\u05e4\u05e1\u05d8\u05d0\u05d8 \u05de\u05e6\u05e8\u05d9\u05dd \u05d9\u05d5\u05dd \u05d0\u05dc\u05ea\u05dc\u05d0\u05ea\u05d0 \u05d0\u05dc\u05e1\u05d0\u05d1\u05e2 \u05de\u05df \u05d7\u05d3\u05e9 \u05d0\u05dc\u05d5\u05dc",
+          "\u05e9\u05e0\u05ea \u05d0\u05ea\u05db\u05d4 \u05dc\u05e9\u05d8\u05e8\u05d5\u05ea \u05e4\u05d9 \u05de\u05e0\u05d6\u05dc \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d9\u05e2\u05e7\u05d1 \u05d0\u05dc\u05de\u05ea\u05d5\u05e4\u05d0",
+          "\u05e8\u05d7\u05de\u05d4 \u05d0\u05dc\u05dc\u05d4 \u05de\u05e8\u05d5\u05e8 \u05d9\u05d5\u05e1\u05e3 \u05d4\u05d6\u05e7\u05df \u05e0\u05e2 \u05d1\u05e8 \u05de\u05e8\u05d5\u05e8 \u05e9\u05de\u05d5\u05d0\u05dc \u05d4\u05d6\u05e7\u05df \u05d4\u05d9\u05d3\u05d5\u05e2",
+          "\u05d1\u05df \u05e0\u05d7\u05d5\u05dd \u05e0\u05e2 \u05dc\u05e0\u05ea\u05d1\u05ea \u05d2\u05de\u05d9\u05e2 \u05de\u05d0 \u05d4\u05d5 \u05de\u05d5\u05d2\u05d5\u05d3 \u05dc\u05d4 \u05dc\u05d9\u05db\u05d5\u05df \u05dc\u05d6\u05db\u05d5 \u05d5\u05dc\u05e8\u05d0\u05d9\u05d4",
+          "\u05dc\u05dc\u05d9\u05ea\u05d5\u05de\u05d9\u05dd \u05d2\u05d1\u05e8\u05d4\u05dd \u05d0\u05dc\u05dc\u05d4 //\u05de\u05df \u05d3\u05dc\u05da // \u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05e1\u05d4\u05dc \u05de\u05d1\u05dc\u05d2\u05d4\u05d0",
+          "\u05e1\u05d2 \u05d5\u05e1\u05d3\u05e1 \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df \u05d5\u05dc\u05d3\u05d4 \u05d1\u05de\u05d0\u05d9\u05d4 \u05d3\u05d9\u05e0' \u05d5\u05e8\u05e7\u05e2\u05d4",
+          "\u05d1\u05db\u05d8 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05e1\u05d4\u05dc \u05d0\u05d9\u05e6\u05d0 \u05d1\u05de\u05d1 \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df",
+          "\u05d0\u05d9\u05e6\u05d0 \u05d1\u05e7 \u05d5\u05e1\u05ea\u05d4 \u05d5\u05e0\u05e6\u05e3 \u05d5\u05e8\u05d1\u05e2 \u05ea\u05d0\u05e8\u05d9\u05db\u05d4\u05d0 \u05d3\u05d5 \u05d0\u05dc\u05d7\u05d2\u05d4 \u05e1\u05e0\u05d4 \u05e1\u05d1\u05e2",
+          "\u05d5\u05e8\u05e7\u05e2\u05ea\u05d9\u05df \u05d1\u05db\u05d8 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d7\u05e1\u05d9\u05df \u05d0\u05dc\u05d7\u05dc\u05d1\u05d9 \u05d0\u05d7\u05d3\u05ea\u05d4\u05de\u05d0 \u05d3 \u05d5\u05ea\u05dc\u05ea\u05d9",
+          "\u05d5\u05d0\u05dc\u05ea\u05d0\u05e0\u05d9\u05d4 \u05d3 \u05d5\u05ea\u05dc\u05ea \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05e1\u05d4\u05dc \u05de\u05d1\u05dc\u05d2\u05d4\u05d0 \u05ea",
+          "\u05d5\u05ea\u05e1\u05e2\u05d9\u05df \u05d0\u05dc\u05d0 \u05ea\u05dc\u05ea \u05e4\u05d9\u05d4\u05d0 \u05e7\u05d1\u05d5\u05e5 \u05d9\u05d5 \u05d0\u05dc\u05e3 \u05d3\u05e8\u05d4\u05dd \u05d1\u05e7\u05d9 \u05e0\u05d9\u05e3 \u05d5\u05e1\u05ea\u05d9\u05df \u05d3\u05d9\u05e0'",
+          "\u05d5\u05e8\u05e7\u05e2\u05d4 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05e1\u05d4\u05dc \u05d1\u05dc\u05d7 \u05d5\u05ea\u05dc\u05ea \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05e1\u05dc\u05d9\u05de\u05d0\u05df \u05d1\u05de",
+          "\u05d3\u05d9\u05e0' \u05de\u05e7\u05e1\u05d8\u05d4 \u05d3\u05d9\u05e0' \u05db\u05dc \u05e9\u05d4\u05e8 \u05ea\u05d0\u05e8\u05d9\u05db\u05d4\u05d0 \u05e8\u05de\u05e6\u05d0\u05df \u05de\u05df \u05e1\u05e0\u05d4 \u05e1\u05d1\u05e2 \u05d5\u05e8\u05e7\u05e2\u05d4",
+          "\u05d1\u05db\u05d8 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df \u05d0\u05d9\u05e6\u05d0 \u05ea\u05d0\u05e8\u05d9\u05db\u05d4\u05d0 \u05e9\u05e2\u05d1\u05d0\u05df \u05de\u05df \u05e1\u05e0\u05d4 \u05e1\u05d1\u05e2 \u05d1\u05d9\u05d1 \u05d3\u05d9\u05e0'",
+          "\u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df \u05d1\u05e4\u05d3 \u05d5\u05e0\u05e6\u05e3 \u05e2\u05d9\u05e0\u05d0 \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df",
+          "\u05d1\u05e7 \u05d3\u05d9\u05e0' \u05d1\u05ea\u05d0\u05e8\u05d9\u05da \u05d3\u05d5 \u05d0\u05dc\u05e7\u05e2\u05d3\u05d4 \u05de\u05df \u05e1\u05e0\u05d4 \u05e1\u05ea \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05dc\u05e9\u05d9\u05da",
+          "\u05d0\u05d1\u05d5 \u05d0\u05dc\u05e4\u05e8\u05d2 \u05d1\u05df \u05e7\u05e1\u05d0\u05e1\u05d4 \u05d1\u05db\u05d8 \u05d5\u05e0\u05e6\u05e3 \u05d5\u05d7\u05e1\u05db\u05d4 \u05e4\u05e6\u05d4 \u05d5\u05de\u05d2\u05e1\u05dc \u05e4\u05e6\u05d4 \u05d5\u05e7\u05d7\u05e3 \u05e4\u05e6\u05d4"
+        ]
+      },
+      "content_type": ["corpus", "document"],
+      "doc_relation": "E",
+      "location": "",
+      "notes": "compared with G. Weiss, Legal Documents Written by the Court Clerk \u1e24alfon Ben Manasse, Ph.D. Dissertation, 1970",
+      "object_id": 2142,
+      "source": 737,
+      "url": ""
+    },
+    "model": "footnotes.footnote",
+    "pk": 4908
+  },
+  {
+    "fields": {
+      "content": {
+        "blocks": [
+          {
+            "label": "",
+            "languages": [],
+            "lines": [
+              "\u05d5\u05de\u05e8\u05e9 \u05e4\u05e6\u05d4 \u05d5\u05d4 \u05d6\u05d1\u05d0\u05d3\u05d9 \u05e4\u05e6\u05d4 \u05d5\u05d7\u05d3\u05d9\u05d3\u05d4 \u05e4\u05e6\u05d4 \u05d5\u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05d2\u05d3\u05d3 \u05d5\u05d6\u05e0\u05d4\u05dd",
+              "\u05ea \u05d3\u05d9\u05e0' \u05d0\u05dc\u05d0 \u05e0\u05e6\u05e3 \u05d3\u05d9\u05e0' \u05d5\u05e0\u05e7\u05d3\u05d4 \u05ea\u05d0\u05e0\u05d9\u05d4 \u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05e7\u05d3\u05dd \u05d2\u05d9\u05d0\u05d3 \u05d0\u05dc\u05d5\u05d6\u05df \u05d3",
+              "\u05d5\u05db\u05de\u05e1\u05d9\u05df \u05d5\u05e1\u05d3\u05e1 \u05d5\u05d5\u05d6\u05df \u05e4\u05d4 \u05de\u05ea\u05e7\u05d0\u05dc \u05e4\u05e8\u05e1\u05d9\u05dd \u05e1\u05d1\u05d0\u05d9\u05da \u05d3\u05db\u05e8 \u05d0\u05dc\u05e9\u05d9\u05da",
+              "\u05d0\u05d1\u05d5 \u05d0\u05dc\u05d8\u05d0\u05d4\u05e8 \u05d0\u05df [\u05e7\u05d9\u05de]\u05ea\u05d4\u05d0 \u05e1\u05d5 \u05d3\u05d9\u05e0' \u05d5\u05e4\u05e6\u05d4 \u05d3\u05d4\u05d1 \u05e1\u05d1\u05d0\u05d9\u05da \u05d0\u05dc\u05d5\u05d6\u05df",
+              "\u05e2\u05d4 \u05d3\u05e8\u05d4\u05dd \u05d5\u05e0\u05e6\u05e3 \u05d5\u05e1\u05d1\u05d9[\u05db]\u05d4 \u05d3\u05d4\u05d1 \u05d5\u05d3\u05d4\u05d1 \u05d8\u05dc\u05d9 \u05d5\u05d7\u05dc\u05e7 \u05d5\u05d6\u05df \u05d0\u05dc\u05d2\u05de\u05d9\u05e2",
+              "\u05d9\u05d7 \u05d3\u05d9\u05e0'\u05d5\u05e1\u05d3\u05e1 \u05d5\u05d3\u05e7 \u05e4\u05e6\u05d4 \u05d0\u05dc\u05d5\u05d6\u05df \u05d4 \u05d3\u05e8\u05d0\u05d4\u05dd \u05d5\u05e1\u05d1\u05e2\u05d4 \u05d5\u05ea\u05dc\u05ea\u05d9\u05df \u05d3\u05d9\u05e0",
+              "\u05d0\u05dc\u05d0 \u05ea\u05dc\u05ea \u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05e8\u05d3\u05d5\u05d3 \u05d5\u05d2\u05d8\u05d0\u05d5\u05d9\u05df \u05e4\u05e6\u05d4 \u05d5\u05d2 \u05db\u05d5\u05d0\u05ea\u05d9\u05dd \u05e4\u05e6\u05d4",
+              "\u05d5\u05db\u05d0\u05df \u05e7\u05d1\u05e6\u05ea \u05d0\u05dc\u05d0\u05dc\u05de\u05e0\u05d4 \u05d9\u05d5\u05dd \u05d5\u05e4\u05d0\u05d4 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d9\u05e2\u05e7\u05d5\u05d1 [\u05d1]\u05d0\u05dc\u05e3",
+              "\u05d5\u05e7\u05e7 \u05d5\u05db\u05de\u05e1\u05d9\u05df \u05d3\u05e8\u05d4\u05dd \u05e1\u05dc\u05de\u05d4\u05d0 \u05d0\u05dc\u05d9\u05d4\u05d0 \u05d1\u05d9\u05ea \u05d3\u05d9\u05df \u05dc\u05ea\u05e6\u05e8\u05e4\u05d4\u05d0 \u05e4\u05d9",
+              "\u05e6\u05e8\u05db\u05d9 \u05d4\u05de\u05ea \u05e4\u05e1\u05d0\u05dc\u05e0\u05d0\u05d4 \u05e2\u05e0\u05d4\u05d0 \u05e4\u05e7\u05d0\u05dc\u05ea \u05d0\u05df \u05d2\u05de\u05d9\u05e2\u05d4\u05d0 \u05de\u05e6\u05ea",
+              "\u05e4\u05d9 \u05e0\u05d5\u05d0\u05d9\u05d1 \u05d0\u05dc\u05de\u05ea\u05d5\u05e4\u05d0 \u05e0\u05e2 \u05d5\u05de\u05df \u05d2\u05de\u05dc\u05d4 \u05d0\u05dc\u05e8\u05e7\u05d0\u05e2 \u05d0\u05dc\u05de\u05ea\u05d1\u05ea\u05d4",
+              "\u05dc\u05e2\u05d9\u05dc\u05d0 \u05ea\u05dc\u05ea\u05d4 \u05e8\u05e7\u05d0\u05e2 \u05e8\u05e7\u05e2\u05ea\u05d9\u05df \u05d1\u05db\u05d8 \u05d0\u05dc\u05d7\u05dc\u05d1\u05d9 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d7\u05e1\u05d9\u05df",
+              "\u05de\u05d1\u05dc\u05d2\u05d4\u05d0 \u05ea\u05e1\u05e2\u05d4 \u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d0\u05dc\u05e4\u05e8\u05d2",
+              "\u05d1\u05db\u05d8 \u05d3\u05d9\u05e0' \u05d5\u05e0\u05e6\u05e3 \u05e0\u05d0\u05e6\u05d4 \u05de\u05e6\u05d0\u05e4\u05d4 \u05d0\u05dc\u05d9 \u05d2\u05de\u05dc\u05d4 \u05d0\u05dc\u05e2\u05d9\u05df \u05d5\u05d3\u05db\u05e8",
+              "\u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d8\u05d0\u05d4\u05e8 \u05e6\u05d4\u05e8 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d9\u05e2\u05e7\u05d5\u05d1 \u05d0\u05dc\u05de\u05ea\u05d5\u05e4\u05d0 \u05e0\u05e2",
+              "\u05d0\u05df \u05e2\u05e0\u05d3 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d7\u05e1\u05df \u05d1\u05df \u05d0\u05d9\u05d5\u05d1 \u05e1\u05d0 \u05d5\u05e0\u05e6\u05e3 \u05d5\u05e8\u05d1\u05e2 \u05e2\u05df \u05d2\u05d0\u05d9\u05d6",
+              "\u05de\u05d1\u05dc\u05d2\u05d4 \u05e1\u05d4 \u05db\u05e8\u05d2 \u05d5\u05d0\u05d2\u05d1 \u05d2 \u05d5\u05e8\u05d1\u05e2 \u05d0\u05dc\u05d1\u05d0\u05e7\u05d9 \u05e1\u05d0 \u05d5\u05e0\u05e6\u05e3 \u05d5\u05e8\u05d1\u05e2 \u05d5\u05d3\u05dc\u05da",
+              "\u05de\u05df \u05d2\u05de\u05dc\u05d4 \u05e8\u05e7\u05e2\u05d4 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df \u05d0\u05dc\u05d3\u05d9 \u05d1\u05d9\u05d3 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d9\u05e2\u05e7\u05d5\u05d1"
+            ]
+          }
+        ],
+        "lines": [
+          "\u05d5\u05de\u05e8\u05e9 \u05e4\u05e6\u05d4 \u05d5\u05d4 \u05d6\u05d1\u05d0\u05d3\u05d9 \u05e4\u05e6\u05d4 \u05d5\u05d7\u05d3\u05d9\u05d3\u05d4 \u05e4\u05e6\u05d4 \u05d5\u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05d2\u05d3\u05d3 \u05d5\u05d6\u05e0\u05d4\u05dd",
+          "\u05ea \u05d3\u05d9\u05e0' \u05d0\u05dc\u05d0 \u05e0\u05e6\u05e3 \u05d3\u05d9\u05e0' \u05d5\u05e0\u05e7\u05d3\u05d4 \u05ea\u05d0\u05e0\u05d9\u05d4 \u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05e7\u05d3\u05dd \u05d2\u05d9\u05d0\u05d3 \u05d0\u05dc\u05d5\u05d6\u05df \u05d3",
+          "\u05d5\u05db\u05de\u05e1\u05d9\u05df \u05d5\u05e1\u05d3\u05e1 \u05d5\u05d5\u05d6\u05df \u05e4\u05d4 \u05de\u05ea\u05e7\u05d0\u05dc \u05e4\u05e8\u05e1\u05d9\u05dd \u05e1\u05d1\u05d0\u05d9\u05da \u05d3\u05db\u05e8 \u05d0\u05dc\u05e9\u05d9\u05da",
+          "\u05d0\u05d1\u05d5 \u05d0\u05dc\u05d8\u05d0\u05d4\u05e8 \u05d0\u05df [\u05e7\u05d9\u05de]\u05ea\u05d4\u05d0 \u05e1\u05d5 \u05d3\u05d9\u05e0' \u05d5\u05e4\u05e6\u05d4 \u05d3\u05d4\u05d1 \u05e1\u05d1\u05d0\u05d9\u05da \u05d0\u05dc\u05d5\u05d6\u05df",
+          "\u05e2\u05d4 \u05d3\u05e8\u05d4\u05dd \u05d5\u05e0\u05e6\u05e3 \u05d5\u05e1\u05d1\u05d9[\u05db]\u05d4 \u05d3\u05d4\u05d1 \u05d5\u05d3\u05d4\u05d1 \u05d8\u05dc\u05d9 \u05d5\u05d7\u05dc\u05e7 \u05d5\u05d6\u05df \u05d0\u05dc\u05d2\u05de\u05d9\u05e2",
+          "\u05d9\u05d7 \u05d3\u05d9\u05e0'\u05d5\u05e1\u05d3\u05e1 \u05d5\u05d3\u05e7 \u05e4\u05e6\u05d4 \u05d0\u05dc\u05d5\u05d6\u05df \u05d4 \u05d3\u05e8\u05d0\u05d4\u05dd \u05d5\u05e1\u05d1\u05e2\u05d4 \u05d5\u05ea\u05dc\u05ea\u05d9\u05df \u05d3\u05d9\u05e0",
+          "\u05d0\u05dc\u05d0 \u05ea\u05dc\u05ea \u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05e8\u05d3\u05d5\u05d3 \u05d5\u05d2\u05d8\u05d0\u05d5\u05d9\u05df \u05e4\u05e6\u05d4 \u05d5\u05d2 \u05db\u05d5\u05d0\u05ea\u05d9\u05dd \u05e4\u05e6\u05d4",
+          "\u05d5\u05db\u05d0\u05df \u05e7\u05d1\u05e6\u05ea \u05d0\u05dc\u05d0\u05dc\u05de\u05e0\u05d4 \u05d9\u05d5\u05dd \u05d5\u05e4\u05d0\u05d4 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d9\u05e2\u05e7\u05d5\u05d1 [\u05d1]\u05d0\u05dc\u05e3",
+          "\u05d5\u05e7\u05e7 \u05d5\u05db\u05de\u05e1\u05d9\u05df \u05d3\u05e8\u05d4\u05dd \u05e1\u05dc\u05de\u05d4\u05d0 \u05d0\u05dc\u05d9\u05d4\u05d0 \u05d1\u05d9\u05ea \u05d3\u05d9\u05df \u05dc\u05ea\u05e6\u05e8\u05e4\u05d4\u05d0 \u05e4\u05d9",
+          "\u05e6\u05e8\u05db\u05d9 \u05d4\u05de\u05ea \u05e4\u05e1\u05d0\u05dc\u05e0\u05d0\u05d4 \u05e2\u05e0\u05d4\u05d0 \u05e4\u05e7\u05d0\u05dc\u05ea \u05d0\u05df \u05d2\u05de\u05d9\u05e2\u05d4\u05d0 \u05de\u05e6\u05ea",
+          "\u05e4\u05d9 \u05e0\u05d5\u05d0\u05d9\u05d1 \u05d0\u05dc\u05de\u05ea\u05d5\u05e4\u05d0 \u05e0\u05e2 \u05d5\u05de\u05df \u05d2\u05de\u05dc\u05d4 \u05d0\u05dc\u05e8\u05e7\u05d0\u05e2 \u05d0\u05dc\u05de\u05ea\u05d1\u05ea\u05d4",
+          "\u05dc\u05e2\u05d9\u05dc\u05d0 \u05ea\u05dc\u05ea\u05d4 \u05e8\u05e7\u05d0\u05e2 \u05e8\u05e7\u05e2\u05ea\u05d9\u05df \u05d1\u05db\u05d8 \u05d0\u05dc\u05d7\u05dc\u05d1\u05d9 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d7\u05e1\u05d9\u05df",
+          "\u05de\u05d1\u05dc\u05d2\u05d4\u05d0 \u05ea\u05e1\u05e2\u05d4 \u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05d5\u05e8\u05e7\u05e2\u05d4 \u05d1\u05db\u05d8 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d0\u05dc\u05e4\u05e8\u05d2",
+          "\u05d1\u05db\u05d8 \u05d3\u05d9\u05e0' \u05d5\u05e0\u05e6\u05e3 \u05e0\u05d0\u05e6\u05d4 \u05de\u05e6\u05d0\u05e4\u05d4 \u05d0\u05dc\u05d9 \u05d2\u05de\u05dc\u05d4 \u05d0\u05dc\u05e2\u05d9\u05df \u05d5\u05d3\u05db\u05e8",
+          "\u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d8\u05d0\u05d4\u05e8 \u05e6\u05d4\u05e8 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d9\u05e2\u05e7\u05d5\u05d1 \u05d0\u05dc\u05de\u05ea\u05d5\u05e4\u05d0 \u05e0\u05e2",
+          "\u05d0\u05df \u05e2\u05e0\u05d3 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d7\u05e1\u05df \u05d1\u05df \u05d0\u05d9\u05d5\u05d1 \u05e1\u05d0 \u05d5\u05e0\u05e6\u05e3 \u05d5\u05e8\u05d1\u05e2 \u05e2\u05df \u05d2\u05d0\u05d9\u05d6",
+          "\u05de\u05d1\u05dc\u05d2\u05d4 \u05e1\u05d4 \u05db\u05e8\u05d2 \u05d5\u05d0\u05d2\u05d1 \u05d2 \u05d5\u05e8\u05d1\u05e2 \u05d0\u05dc\u05d1\u05d0\u05e7\u05d9 \u05e1\u05d0 \u05d5\u05e0\u05e6\u05e3 \u05d5\u05e8\u05d1\u05e2 \u05d5\u05d3\u05dc\u05da",
+          "\u05de\u05df \u05d2\u05de\u05dc\u05d4 \u05e8\u05e7\u05e2\u05d4 \u05d0\u05d1\u05d5 \u05e1\u05dc\u05d9\u05de\u05d0\u05df \u05d0\u05dc\u05d3\u05d9 \u05d1\u05d9\u05d3 \u05d0\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d9\u05e2\u05e7\u05d5\u05d1"
+        ]
+      },
+      "content_type": ["corpus", "document"],
+      "doc_relation": "E",
+      "location": "",
+      "notes": "compared with G. Weiss, Legal Documents Written by the Court Clerk \u1e24alfon Ben Manasse, Ph.D. Dissertation, 1970",
+      "object_id": 2142,
+      "source": 737,
+      "url": ""
+    },
+    "model": "footnotes.footnote",
+    "pk": 4909
+  },
+  {
+    "fields": {
+      "content": {
+        "blocks": [
+          {
+            "label": "",
+            "languages": [],
+            "lines": [
+              "\u05e4\u05d3\u05dc\u05da \u05d2\u05de\u05d9\u05e2 \u05de\u05d0 \u05d5\u05d2\u05d3 \u05dc\u05d4 \u05de\u05de\u05d0 \u05db\u05d0\u05df \u05d0\u05db\u05ea\u05de\u05e0\u05d0 \u05e2\u05dc\u05d9\u05d4 \u05d0\u05e0\u05df",
+              "\u05d1\u05d9 \u05d3\u05d9\u05e0\u05d0 \u05d9\u05d5\u05dd \u05d5\u05e4\u05d0\u05ea\u05d4 \u05e4\u05e1\u05d0\u05dc\u05e0\u05d0 \u05d0\u05e0\u05df \u05d1\u05d9 \u05d3\u05d9\u05e0\u05d0 \u05dc\u05dc\u05d0\u05dc\u05de\u05e0\u05d4 \u05d0\u05df \u05db\u05d0\u05df",
+              "\u05dc\u05dc\u05de\u05ea\u05d5\u05e4\u05d0 \u05d0\u05ea\u05d0\u05ea \u05db\u05d0\u05e8\u05d2 \u05e2\u05df \u05de\u05d0 \u05d0\u05ea\u05d1\u05ea\u05e0\u05d0\u05d4 \u05e4\u05d9 \u05d4\u05d3\u05d0",
+              "\u05d0\u05dc\u05e9\u05d9\u05de\u05d5\u05e9 \u05ea\u05e2\u05dc\u05de\u05e0\u05d0 \u05d1\u05d4 \u05e4\u05e7\u05d0\u05dc\u05ea \u05de\u05d0 \u05dc\u05d4 \u05e9\u05d9 \u05d5\u05e1\u05d0\u05dc\u05e0\u05d0\u05d4\u05d0",
+              "\u05d0\u05d9\u05e6\u05d0 \u05d0\u05df \u05db\u05d0\u05df \u05dc\u05d4 \u05d0\u05d5 //\u05d7\u05dc\u05d9 \u05de\u05e6\u05d0\u05d2 // \u05dc\u05d4\u05d0 \u05de\u05de\u05d0 \u05d4\u05d5 \u05de\u05db\u05ea\u05d5\u05d1 \u05e4\u05d9 \u05db\u05ea\u05d5\u05d1\u05ea\u05d4\u05d0",
+              "\u05d0\u05d5 \u05de\u05de\u05d0 \u05e2\u05e1\u05d0\u05d4 \u05d9\u05db\u05d5\u05df \u05e6\u05d0\u05d2\u05d4 \u05dc\u05d4 \u05e4\u05e7\u05d0\u05dc\u05ea \u05d0\u05dc\u05d3\u05d9 \u05db\u05d0\u05df \u05e2\u05e0\u05d3\u05d9 \u05de\u05df \u05d3\u05dc\u05da",
+              "\u05d2\u05d4\u05d6\u05ea \u05d1\u05d4 \u05d0\u05dc\u05d0\u05d1\u05e0\u05d4 \u05d0\u05dc\u05d3\u05d9 \u05d0\u05d6\u05d5\u05d2\u05ea\u05d4\u05d0 \u05dc\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d8\u05d0\u05d4\u05e8",
+              "\u05d5\u05dc\u05d9\u05e1 \u05ea\u05dd \u05d9\u05d7\u05ea\u05d0\u05d2 \u05d0\u05dc\u05d9 \u05d0\u05ea\u05d1\u05d0\u05ea\u05d4 \u05d0\u05dc\u05d0 \u05de\u05d0 \u05e7\u05d3 \u05e9\u05e8\u05d7 \u05dc\u05e2\u05d9\u05dc\u05d0",
+              "\u05d5\u05de\u05d4 \u05d3\u05d4\u05d5\u05d4 \u05e7\u05d3\u05de\u05e0\u05d0 \u05db\u05ea\u05d1\u05e0\u05d0 \u05d5\u05d7\u05ea\u05de\u05e0\u05d0 \u05d3\u05dc\u05d9\u05d4\u05d5\u05d9 \u05dc\u05d6\u05db\u05d5 \u05d5\u05dc\u05e8\u05d0\u05d9\u05d4",
+              "\u05e4\u05d9 \u05d0\u05dc\u05ea\u05d0\u05e8\u05d9\u05da \u05d0\u05dc\u05de\u05d3\u05db\u05d5\u05e8 \u05dc\u05e2\u05d9\u05dc\u05d0 \u05e9\u05e8\u05d9\u05e8 \u05d5\u05e7\u05d9\u05d9\u05dd \u05d5\u05e4\u05d9 \u05d2\u05de\u05dc\u05d4 \u05de\u05d0",
+              "\u05d0\u05d7\u05e6\u05e8 \u05d0\u05dc\u05d9\u05e0\u05d0 \u05d5\u05ea\u05d0\u05d9\u05e7 \u05e2\u05e8\u05d1\u05d9\u05d4 \u05d5\u05e2\u05d1\u05e8\u05d0\u05e0\u05d9\u05d4 \u05de\u05df \u05d3\u05dc\u05da \u05d5\u05ea\u05d9\u05e7\u05d4 \u05e2\u05e8\u05d1\u05d9",
+              "\u05e2\u05dc\u05d9 \u05de\u05d5\u05e1\u05d9 \u05d1\u05df \u05de\u05e1\u05dc\u05dd \u05d0\u05dc\u05e7\u05d6\u05d0\u05d6 \u05d1\u05e6 \u05d3\u05e8\u05d4\u05dd \u05d5\u05d5\u05ea\u05d9\u05e7 \u05e2\u05dc\u05d9 \u05de\u05d5\u05e1\u05d9 \u05d1\u05df \u05e4\u05e8\u05d2",
+              "\u05d0\u05dc\u05e0\u05e6\u05e8\u05d0\u05e0\u05d9 \u05d1\u05e2\u05e9\u05e8\u05d4 \u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05d5\u05d5\u05ea\u05d9\u05e7\u05d4 \u05e2\u05dc\u05d9 \u05e6\u05d0\u05e4\u05d9 \u05d1\u05df \u05e0\u05d7\u05e8\u05d9\u05e8",
+              "\u05d1\u05d0\u05e8\u05d1\u05e2\u05d4 \u05d5\u05e1\u05ea\u05d9\u05df \u05d3\u05e8\u05d4\u05dd \u05d5\u05e9\u05d8\u05e8 \u05e2\u05dc\u05d9 \u05de \u05de\u05e6\u05dc\u05d9\u05d7 \u05d0\u05dc\u05e6\u05e7\u05dc\u05d9 \u05e4\u05d9\u05d4",
+              "\u05d1\u05d0\u05e7\u05d9 \u05e2\u05e9\u05e8\u05d4 \u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05d5\u05e9\u05d8\u05e8 \u05e2\u05dc\u05d9 \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d7\u05e1\u05df \u05d0\u05dc\u05e6\u05e0\u05d0\u05e0\u05d9\u05e8\u05d9 \u05e4\u05d9\u05d4",
+              "\u05d1\u05d0\u05e7\u05d9 \u05e2\u05e9\u05e8\u05d4 \u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05d5\u05e9\u05d8\u05e8 \u05e2\u05dc\u05d9 \u05d0\u05d1\u05d5 \u05d0\u05e1\u05d7\u05e7 \u05d1\u05df \u05e6\u05dc\u05d7\u05df \u05d1\u05e7\u05d9 \u05e4\u05d9\u05d4 \u05e8\u05d1\u05e2 \u05d3\u05d9\u05e0'",
+              "\u05d5\u05db\u05ea\u05d1\u05e0\u05d0 \u05d5\u05d7\u05ea\u05de\u05e0\u05d0 \u05d3\u05dc\u05d9\u05d4\u05d5\u05d9 \u05dc\u05d6\u05db\u05d5 \u05d5\u05dc\u05e8\u05d0\u05d9\u05d4 \u05ea\u05dc\u05d9"
+            ]
+          }
+        ],
+        "lines": [
+          "\u05e4\u05d3\u05dc\u05da \u05d2\u05de\u05d9\u05e2 \u05de\u05d0 \u05d5\u05d2\u05d3 \u05dc\u05d4 \u05de\u05de\u05d0 \u05db\u05d0\u05df \u05d0\u05db\u05ea\u05de\u05e0\u05d0 \u05e2\u05dc\u05d9\u05d4 \u05d0\u05e0\u05df",
+          "\u05d1\u05d9 \u05d3\u05d9\u05e0\u05d0 \u05d9\u05d5\u05dd \u05d5\u05e4\u05d0\u05ea\u05d4 \u05e4\u05e1\u05d0\u05dc\u05e0\u05d0 \u05d0\u05e0\u05df \u05d1\u05d9 \u05d3\u05d9\u05e0\u05d0 \u05dc\u05dc\u05d0\u05dc\u05de\u05e0\u05d4 \u05d0\u05df \u05db\u05d0\u05df",
+          "\u05dc\u05dc\u05de\u05ea\u05d5\u05e4\u05d0 \u05d0\u05ea\u05d0\u05ea \u05db\u05d0\u05e8\u05d2 \u05e2\u05df \u05de\u05d0 \u05d0\u05ea\u05d1\u05ea\u05e0\u05d0\u05d4 \u05e4\u05d9 \u05d4\u05d3\u05d0",
+          "\u05d0\u05dc\u05e9\u05d9\u05de\u05d5\u05e9 \u05ea\u05e2\u05dc\u05de\u05e0\u05d0 \u05d1\u05d4 \u05e4\u05e7\u05d0\u05dc\u05ea \u05de\u05d0 \u05dc\u05d4 \u05e9\u05d9 \u05d5\u05e1\u05d0\u05dc\u05e0\u05d0\u05d4\u05d0",
+          "\u05d0\u05d9\u05e6\u05d0 \u05d0\u05df \u05db\u05d0\u05df \u05dc\u05d4 \u05d0\u05d5 //\u05d7\u05dc\u05d9 \u05de\u05e6\u05d0\u05d2 // \u05dc\u05d4\u05d0 \u05de\u05de\u05d0 \u05d4\u05d5 \u05de\u05db\u05ea\u05d5\u05d1 \u05e4\u05d9 \u05db\u05ea\u05d5\u05d1\u05ea\u05d4\u05d0",
+          "\u05d0\u05d5 \u05de\u05de\u05d0 \u05e2\u05e1\u05d0\u05d4 \u05d9\u05db\u05d5\u05df \u05e6\u05d0\u05d2\u05d4 \u05dc\u05d4 \u05e4\u05e7\u05d0\u05dc\u05ea \u05d0\u05dc\u05d3\u05d9 \u05db\u05d0\u05df \u05e2\u05e0\u05d3\u05d9 \u05de\u05df \u05d3\u05dc\u05da",
+          "\u05d2\u05d4\u05d6\u05ea \u05d1\u05d4 \u05d0\u05dc\u05d0\u05d1\u05e0\u05d4 \u05d0\u05dc\u05d3\u05d9 \u05d0\u05d6\u05d5\u05d2\u05ea\u05d4\u05d0 \u05dc\u05dc\u05e9\u05d9\u05da \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d8\u05d0\u05d4\u05e8",
+          "\u05d5\u05dc\u05d9\u05e1 \u05ea\u05dd \u05d9\u05d7\u05ea\u05d0\u05d2 \u05d0\u05dc\u05d9 \u05d0\u05ea\u05d1\u05d0\u05ea\u05d4 \u05d0\u05dc\u05d0 \u05de\u05d0 \u05e7\u05d3 \u05e9\u05e8\u05d7 \u05dc\u05e2\u05d9\u05dc\u05d0",
+          "\u05d5\u05de\u05d4 \u05d3\u05d4\u05d5\u05d4 \u05e7\u05d3\u05de\u05e0\u05d0 \u05db\u05ea\u05d1\u05e0\u05d0 \u05d5\u05d7\u05ea\u05de\u05e0\u05d0 \u05d3\u05dc\u05d9\u05d4\u05d5\u05d9 \u05dc\u05d6\u05db\u05d5 \u05d5\u05dc\u05e8\u05d0\u05d9\u05d4",
+          "\u05e4\u05d9 \u05d0\u05dc\u05ea\u05d0\u05e8\u05d9\u05da \u05d0\u05dc\u05de\u05d3\u05db\u05d5\u05e8 \u05dc\u05e2\u05d9\u05dc\u05d0 \u05e9\u05e8\u05d9\u05e8 \u05d5\u05e7\u05d9\u05d9\u05dd \u05d5\u05e4\u05d9 \u05d2\u05de\u05dc\u05d4 \u05de\u05d0",
+          "\u05d0\u05d7\u05e6\u05e8 \u05d0\u05dc\u05d9\u05e0\u05d0 \u05d5\u05ea\u05d0\u05d9\u05e7 \u05e2\u05e8\u05d1\u05d9\u05d4 \u05d5\u05e2\u05d1\u05e8\u05d0\u05e0\u05d9\u05d4 \u05de\u05df \u05d3\u05dc\u05da \u05d5\u05ea\u05d9\u05e7\u05d4 \u05e2\u05e8\u05d1\u05d9",
+          "\u05e2\u05dc\u05d9 \u05de\u05d5\u05e1\u05d9 \u05d1\u05df \u05de\u05e1\u05dc\u05dd \u05d0\u05dc\u05e7\u05d6\u05d0\u05d6 \u05d1\u05e6 \u05d3\u05e8\u05d4\u05dd \u05d5\u05d5\u05ea\u05d9\u05e7 \u05e2\u05dc\u05d9 \u05de\u05d5\u05e1\u05d9 \u05d1\u05df \u05e4\u05e8\u05d2",
+          "\u05d0\u05dc\u05e0\u05e6\u05e8\u05d0\u05e0\u05d9 \u05d1\u05e2\u05e9\u05e8\u05d4 \u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05d5\u05d5\u05ea\u05d9\u05e7\u05d4 \u05e2\u05dc\u05d9 \u05e6\u05d0\u05e4\u05d9 \u05d1\u05df \u05e0\u05d7\u05e8\u05d9\u05e8",
+          "\u05d1\u05d0\u05e8\u05d1\u05e2\u05d4 \u05d5\u05e1\u05ea\u05d9\u05df \u05d3\u05e8\u05d4\u05dd \u05d5\u05e9\u05d8\u05e8 \u05e2\u05dc\u05d9 \u05de \u05de\u05e6\u05dc\u05d9\u05d7 \u05d0\u05dc\u05e6\u05e7\u05dc\u05d9 \u05e4\u05d9\u05d4",
+          "\u05d1\u05d0\u05e7\u05d9 \u05e2\u05e9\u05e8\u05d4 \u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05d5\u05e9\u05d8\u05e8 \u05e2\u05dc\u05d9 \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d7\u05e1\u05df \u05d0\u05dc\u05e6\u05e0\u05d0\u05e0\u05d9\u05e8\u05d9 \u05e4\u05d9\u05d4",
+          "\u05d1\u05d0\u05e7\u05d9 \u05e2\u05e9\u05e8\u05d4 \u05d3\u05e0\u05d0\u05e0\u05d9\u05e8 \u05d5\u05e9\u05d8\u05e8 \u05e2\u05dc\u05d9 \u05d0\u05d1\u05d5 \u05d0\u05e1\u05d7\u05e7 \u05d1\u05df \u05e6\u05dc\u05d7\u05df \u05d1\u05e7\u05d9 \u05e4\u05d9\u05d4 \u05e8\u05d1\u05e2 \u05d3\u05d9\u05e0'",
+          "\u05d5\u05db\u05ea\u05d1\u05e0\u05d0 \u05d5\u05d7\u05ea\u05de\u05e0\u05d0 \u05d3\u05dc\u05d9\u05d4\u05d5\u05d9 \u05dc\u05d6\u05db\u05d5 \u05d5\u05dc\u05e8\u05d0\u05d9\u05d4 \u05ea\u05dc\u05d9"
+        ]
+      },
+      "content_type": ["corpus", "document"],
+      "doc_relation": "E",
+      "location": "",
+      "notes": "compared with G. Weiss, Legal Documents Written by the Court Clerk \u1e24alfon Ben Manasse, Ph.D. Dissertation, 1970",
+      "object_id": 2142,
+      "source": 737,
+      "url": ""
+    },
+    "model": "footnotes.footnote",
+    "pk": 4910
+  },
+  {
+    "fields": {
+      "content": {
+        "blocks": [
+          {
+            "label": "",
+            "languages": [],
+            "lines": [
+              "\u05d1\u05d9\u05e0\u05d9 \u05e9\u05d9\u05d8\u05d9 \u05de\u05df \u05d3\u05dc\u05da \u05d5\u05d7\u05dc\u05d9 \u05de\u05e6\u05d0\u05d2 [:] [\u05d5]\u05e7\u05d9\u05d9\u05de\u05d9\u05df \u05db\u05d5\u05dc\u05d4\u05d5\u05df \u05d5\u05d3\u05d9\u05df \u05e7\u05d9\u05d5\u05de\u05d9\u05d4\u05d5\u05df",
+              "\u05d5\u05dc\u05dc\u05de\u05ea\u05d5\u05e4\u05d0 \u05d0\u05d9\u05e6\u05d0 \u05d2\u05d0\u05e8\u05d9\u05ea\u05d9\u05df \u05d5\u05db\u05ea\u05d1\u05e0\u05d0 \u05d5\u05d7\u05ea\u05de\u05e0\u05d0 \u05d3\u05dc\u05d9\u05d4\u05d5\u05d9 \u05dc\u05d6\u05db\u05d5 \u05d5\u05dc\u05e8\u05d0\u05d9\u05d4",
+              "\u05d0\u05d1\u05e8\u05d4\u05dd \u05d1\u05e8 [ ] \u05d0\u05d1 \u05d1\u05d9\u05ea \u05d3\u05d9\u05df \u05e2\u05dc \u05db\u05dc \u05d9\u05e9\u05e8\u05d0\u05dc \u05d6\u05db\u05e8\u05d5 \u05dc\u05d1\u05e8\u05db\u05d4",
+              "\u05d0\u05d1\u05e8\u05d4\u05dd \u05d1\u05e8\u05d1\u05d9 \u05e9\u05de\u05e2\u05d9\u05d4 \u05d4\u05d7\u05d1\u05e8 \u05e0\u05d1[\u05ea\u05d5\u05d9\u05d0] \u05e0\u05d9\u05df \u05e9\u05de\u05e2\u05d9\u05d4\u05d5 \u05d2\u05d0\u05d5\u05df \u05e0\u05e2",
+              "\u05d1 ? \u05d0 \u05dc \u05e4",
+              "\u05d9\u05e6\u05d7\u05e7 \u05d1\u05d9\u05e8 \u05e9\u05de\u05d5\u05d0\u05dc \u05d4\u05e1\u05e4\u05e8\u05d3\u05d9 \u05d6\u05db \u05dc\u05d7 \u05d4\u05e2 \u05d4\u05d1:",
+              "\u05d7 \u05d0 \u05d1",
+              "\u05de\u05d1\u05e9\u05e8 \u05d4\u05dc\u05d5\u05d9 \u05d1\u05e8 \u05d9\u05e9\u05d5\u05e2\u05d4 \u05e1\u05d8 \u05d5\u05e1 \u05d1\u05d9\u05e8 \u05e1\u05e2\u05d3\u05d9\u05d4 \u05e0\u05e2",
+              "\u05d7\u05dc\u05e4\u05d5\u05df \u05d4\u05dc\u05d5\u05d9 \u05d1\u05d9\u05e8 \u05de\u05e0\u05e9\u05d4 \u05ea\u05e0\u05d1\u05d4\u05e6",
+              "",
+              "\u05e7\u05d1\u05e6\u05ea \u05d0\u05dc\u05d0\u05dc\u05de\u05e0\u05d0 \u05db\u05de\u05e1 \u05d6\u05d1\u05d0\u05d3\u05d9 \u05d5\u05de\u05e8\u05e9",
+              "\u05d5\u05d2\u05d8\u05d0 \u05d5\u05d7\u05d3\u05d9\u05d3\u05d4 \u05e7\u05d7\u05e3 \u05d5\u05de\u05db\u05e1\u05dc \u05d5\u05d7\u05e1\u05db\u05d4",
+              "\u05d5\u05e1\u05d1\u05d0\u05d9\u05da \u05e4\u05e6\u05d4 \u05ea\u05de\u05e0\u05d9\u05d4 \u05e2\u05e9\u05e8 \u05e7\u05d8\u05e2\u05d4",
+              "\u05d5\u05e7\u05d8\u05e2\u05d4 \u05e6\u05d2\u05d9\u05e8\u05d4 \u05ea\u05de\u05df \u05d0\u05dc\u05d2\u05de\u05dc\u05d4 \u05db\u05de\u05e1\u05d4",
+              "\u05d5\u05e1\u05d1\u05e2\u05d9\u05df \u05d3\u05d9\u05e0\u05d0\u05e8:"
+            ]
+          }
+        ],
+        "lines": [
+          "\u05d1\u05d9\u05e0\u05d9 \u05e9\u05d9\u05d8\u05d9 \u05de\u05df \u05d3\u05dc\u05da \u05d5\u05d7\u05dc\u05d9 \u05de\u05e6\u05d0\u05d2 [:] [\u05d5]\u05e7\u05d9\u05d9\u05de\u05d9\u05df \u05db\u05d5\u05dc\u05d4\u05d5\u05df \u05d5\u05d3\u05d9\u05df \u05e7\u05d9\u05d5\u05de\u05d9\u05d4\u05d5\u05df",
+          "\u05d5\u05dc\u05dc\u05de\u05ea\u05d5\u05e4\u05d0 \u05d0\u05d9\u05e6\u05d0 \u05d2\u05d0\u05e8\u05d9\u05ea\u05d9\u05df \u05d5\u05db\u05ea\u05d1\u05e0\u05d0 \u05d5\u05d7\u05ea\u05de\u05e0\u05d0 \u05d3\u05dc\u05d9\u05d4\u05d5\u05d9 \u05dc\u05d6\u05db\u05d5 \u05d5\u05dc\u05e8\u05d0\u05d9\u05d4",
+          "\u05d0\u05d1\u05e8\u05d4\u05dd \u05d1\u05e8 [ ] \u05d0\u05d1 \u05d1\u05d9\u05ea \u05d3\u05d9\u05df \u05e2\u05dc \u05db\u05dc \u05d9\u05e9\u05e8\u05d0\u05dc \u05d6\u05db\u05e8\u05d5 \u05dc\u05d1\u05e8\u05db\u05d4",
+          "\u05d0\u05d1\u05e8\u05d4\u05dd \u05d1\u05e8\u05d1\u05d9 \u05e9\u05de\u05e2\u05d9\u05d4 \u05d4\u05d7\u05d1\u05e8 \u05e0\u05d1[\u05ea\u05d5\u05d9\u05d0] \u05e0\u05d9\u05df \u05e9\u05de\u05e2\u05d9\u05d4\u05d5 \u05d2\u05d0\u05d5\u05df \u05e0\u05e2",
+          "\u05d1 ? \u05d0 \u05dc \u05e4",
+          "\u05d9\u05e6\u05d7\u05e7 \u05d1\u05d9\u05e8 \u05e9\u05de\u05d5\u05d0\u05dc \u05d4\u05e1\u05e4\u05e8\u05d3\u05d9 \u05d6\u05db \u05dc\u05d7 \u05d4\u05e2 \u05d4\u05d1:",
+          "\u05d7 \u05d0 \u05d1",
+          "\u05de\u05d1\u05e9\u05e8 \u05d4\u05dc\u05d5\u05d9 \u05d1\u05e8 \u05d9\u05e9\u05d5\u05e2\u05d4 \u05e1\u05d8 \u05d5\u05e1 \u05d1\u05d9\u05e8 \u05e1\u05e2\u05d3\u05d9\u05d4 \u05e0\u05e2",
+          "\u05d7\u05dc\u05e4\u05d5\u05df \u05d4\u05dc\u05d5\u05d9 \u05d1\u05d9\u05e8 \u05de\u05e0\u05e9\u05d4 \u05ea\u05e0\u05d1\u05d4\u05e6",
+          "",
+          "\u05e7\u05d1\u05e6\u05ea \u05d0\u05dc\u05d0\u05dc\u05de\u05e0\u05d0 \u05db\u05de\u05e1 \u05d6\u05d1\u05d0\u05d3\u05d9 \u05d5\u05de\u05e8\u05e9",
+          "\u05d5\u05d2\u05d8\u05d0 \u05d5\u05d7\u05d3\u05d9\u05d3\u05d4 \u05e7\u05d7\u05e3 \u05d5\u05de\u05db\u05e1\u05dc \u05d5\u05d7\u05e1\u05db\u05d4",
+          "\u05d5\u05e1\u05d1\u05d0\u05d9\u05da \u05e4\u05e6\u05d4 \u05ea\u05de\u05e0\u05d9\u05d4 \u05e2\u05e9\u05e8 \u05e7\u05d8\u05e2\u05d4",
+          "\u05d5\u05e7\u05d8\u05e2\u05d4 \u05e6\u05d2\u05d9\u05e8\u05d4 \u05ea\u05de\u05df \u05d0\u05dc\u05d2\u05de\u05dc\u05d4 \u05db\u05de\u05e1\u05d4",
+          "\u05d5\u05e1\u05d1\u05e2\u05d9\u05df \u05d3\u05d9\u05e0\u05d0\u05e8:"
+        ]
+      },
+      "content_type": ["corpus", "document"],
+      "doc_relation": "E",
+      "location": "",
+      "notes": "",
+      "object_id": 2142,
+      "source": 737,
+      "url": ""
+    },
+    "model": "footnotes.footnote",
+    "pk": 4907
   },
   {
     "fields": {
@@ -3731,6 +4220,34 @@
     },
     "model": "footnotes.footnote",
     "pk": 3921
+  },
+  {
+    "fields": {
+      "content": null,
+      "content_type": ["corpus", "document"],
+      "doc_relation": "E",
+      "location": "T-S 12",
+      "notes": "",
+      "object_id": 9469,
+      "source": 25,
+      "url": ""
+    },
+    "model": "footnotes.footnote",
+    "pk": 6362
+  },
+  {
+    "fields": {
+      "content": null,
+      "content_type": ["corpus", "document"],
+      "doc_relation": "E,T",
+      "location": "pp. 348\u201350",
+      "notes": "Translation to French",
+      "object_id": 9469,
+      "source": 768,
+      "url": "https://www.academia.edu/38307649/Judith_Olszowy-Schlanger_La_lettre_de_divorce_cara%C3%AFte_et_sa_place_dans_les_relations_entre_Cara%C3%AFtes_et_Rabbanites_au_Moyen_Age_Une_%C3%A9tude_de_manuscrits_de_la_Geniza_du_Caire_Revue_des_Etudes_Juives_155_3-4_July-December_1996_261-285"
+    },
+    "model": "footnotes.footnote",
+    "pk": 6363
   },
   {
     "fields": {
@@ -4825,6 +5342,23 @@
   },
   {
     "fields": {
+      "date_joined": "2021-05-26T20:22:21.453Z",
+      "email": "",
+      "first_name": "Nurit",
+      "groups": [],
+      "is_active": false,
+      "is_staff": false,
+      "is_superuser": false,
+      "last_login": null,
+      "last_name": "Tsafrir",
+      "password": "",
+      "user_permissions": [],
+      "username": "ntsafrir"
+    },
+    "model": "auth.user"
+  },
+  {
+    "fields": {
       "date_joined": "2021-06-03T23:56:32Z",
       "email": "brzowsky@princeton.edu",
       "first_name": "Jake",
@@ -5247,6 +5781,110 @@
   {
     "fields": {
       "action_flag": 1,
+      "action_time": "1990-06-28T04:00:00Z",
+      "change_message": "Initial data entry (spreadsheet), dated 6/28/1990",
+      "content_type": ["corpus", "document"],
+      "object_id": "2142",
+      "object_repr": "T-S 8J5.1 (PGPID 2142)",
+      "user": ["ntsafrir"]
+    },
+    "model": "admin.logentry",
+    "pk": 59947
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "1990-07-14T04:00:00Z",
+      "change_message": "Initial data entry (spreadsheet), dated 7/14/1990 [PGPID 2145]",
+      "content_type": ["corpus", "document"],
+      "object_id": "2142",
+      "object_repr": "T-S 8J5.1 (PGPID 2145)",
+      "user": ["ntsafrir"]
+    },
+    "model": "admin.logentry",
+    "pk": 59945
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "2021-05-26T20:35:19.761Z",
+      "change_message": "Imported via script [PGPID 2145]",
+      "content_type": ["corpus", "document"],
+      "object_id": "2142",
+      "object_repr": "T-S 8J5.1 (PGPID 2145)",
+      "user": ["script"]
+    },
+    "model": "admin.logentry",
+    "pk": 59946
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "2021-05-26T20:35:19.802Z",
+      "change_message": "Imported via script",
+      "content_type": ["corpus", "document"],
+      "object_id": "2142",
+      "object_repr": "T-S 8J5.1 (PGPID 2142)",
+      "user": ["script"]
+    },
+    "model": "admin.logentry",
+    "pk": 59948
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "2021-05-26T20:35:19.839Z",
+      "change_message": "Imported via script [PGPID 2143]",
+      "content_type": ["corpus", "document"],
+      "object_id": "2142",
+      "object_repr": "T-S 8J5.1 (PGPID 2143)",
+      "user": ["script"]
+    },
+    "model": "admin.logentry",
+    "pk": 59950
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "2021-05-26T20:35:19.874Z",
+      "change_message": "Imported via script [PGPID 2144]",
+      "content_type": ["corpus", "document"],
+      "object_id": "2142",
+      "object_repr": "T-S 8J5.1 (PGPID 2144)",
+      "user": ["script"]
+    },
+    "model": "admin.logentry",
+    "pk": 59952
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-09-21T18:04:52.341Z",
+      "change_message": "merged with 2143, 2144, 2145: all descriptions match - consecutive PGPIDs",
+      "content_type": ["corpus", "document"],
+      "object_id": "2142",
+      "object_repr": "T-S 8J5.1 (PGPID 2142)",
+      "user": ["script"]
+    },
+    "model": "admin.logentry",
+    "pk": 108505
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-12-23T15:35:59.842Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Description\", \"Needs review\"]}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "2142",
+      "object_repr": "T-S 8J5.1 (PGPID 2142)",
+      "user": ["alg4"]
+    },
+    "model": "admin.logentry",
+    "pk": 128464
+  },
+  {
+    "fields": {
+      "action_flag": 1,
       "action_time": "2021-09-16T13:31:26.367Z",
       "change_message": "[{\"added\": {}}]",
       "content_type": ["corpus", "document"],
@@ -5370,6 +6008,89 @@
     },
     "model": "taggit.taggeditem",
     "pk": 17783
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "2017-01-01T05:00:00Z",
+      "change_message": "Initial data entry (spreadsheet), dated 2017",
+      "content_type": ["corpus", "document"],
+      "object_id": "9469",
+      "object_repr": "T-S 12.70 (PGPID 9469)",
+      "user": ["snisenson"]
+    },
+    "model": "admin.logentry",
+    "pk": 50842
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "2021-05-26T20:32:52.141Z",
+      "change_message": "Imported via script",
+      "content_type": ["corpus", "document"],
+      "object_id": "9469",
+      "object_repr": "T-S 12.70 (PGPID 9469)",
+      "user": ["script"]
+    },
+    "model": "admin.logentry",
+    "pk": 50843
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-06-26T02:30:04.815Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Type\", \"Languages\", \"Description\", \"Tags\"]}}, {\"added\": {\"name\": \"footnote\", \"object\": \"Edition of T-S 12.70 (PGPID 9469)\"}}, {\"added\": {\"name\": \"footnote\", \"object\": \"Edition and Translation of T-S 12.70 (PGPID 9469)\"}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "9469",
+      "object_repr": "T-S 12.70 (PGPID 9469)",
+      "user": ["ae5677"]
+    },
+    "model": "admin.logentry",
+    "pk": 104060
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-06-26T02:30:36.615Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Description\"]}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "9469",
+      "object_repr": "T-S 12.70 (PGPID 9469)",
+      "user": ["ae5677"]
+    },
+    "model": "admin.logentry",
+    "pk": 104061
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2022-01-04T17:58:40.733Z",
+      "change_message": "[{\"changed\": {\"name\": \"footnote\", \"object\": \"Edition of T-S 12.70 (PGPID 9469)\", \"fields\": [\"Location\"]}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "9469",
+      "object_repr": "T-S 12.70 (PGPID 9469)",
+      "user": ["mrustow"]
+    },
+    "model": "admin.logentry",
+    "pk": 131103
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 9469,
+      "tag": 623
+    },
+    "model": "taggit.taggeditem",
+    "pk": 35314
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 9469,
+      "tag": 2786
+    },
+    "model": "taggit.taggeditem",
+    "pk": 35313
   },
   {
     "fields": {
