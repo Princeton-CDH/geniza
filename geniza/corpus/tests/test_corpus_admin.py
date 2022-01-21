@@ -16,7 +16,7 @@ from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.timezone import now
-from pytest_django.asserts import assertContains
+from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.corpus.admin import (
     DocumentAdmin,
@@ -306,6 +306,30 @@ class TestDocumentAdmin:
         # display multiple ids
         doc = Document(old_pgpids=[460, 990])
         assert doc_admin.view_old_pgpids(doc) == "460,990"
+
+    def test_document_delete(self, document, admin_client):
+        # make sure there is a log entry to trigger the permissions problem
+        log_entry = LogEntry.objects.create(
+            user_id=1,
+            content_type_id=ContentType.objects.get_for_model(document).id,
+            object_id=document.id,
+            object_repr="test",
+            action_flag=CHANGE,
+            change_message="test",
+        )
+        url = reverse("admin:corpus_document_delete", args=(document.id,))
+        response = admin_client.get(url)
+        assertNotContains(response, "your account doesn't have permission to delete")
+        assertNotContains(response, "Log Entry:")
+
+    def test_document_delete_no_log(self, document, admin_client):
+        # remove any associated log entries
+        document.log_entries.all().delete()
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        url = reverse("admin:corpus_document_delete", args=(document.id,))
+        response = admin_client.get(url)
+        # should not error if no log entry is in the deleted objects list
+        assert response.status_code == 200
 
 
 @pytest.mark.django_db

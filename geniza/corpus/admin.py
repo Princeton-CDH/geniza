@@ -16,6 +16,7 @@ from django.forms.widgets import Textarea, TextInput
 from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from pyexpat import model
 from tabular_export.admin import export_to_csv_response
 
 from geniza.common.admin import custom_empty_field_list_filter
@@ -245,6 +246,28 @@ class DocumentAdmin(admin.ModelAdmin):
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
+
+    def get_deleted_objects(self, objs, request):
+        # override to remove log entries from list and permission check
+        (
+            deletable_objects,
+            model_count,
+            perms_needed,
+            protected,
+        ) = super().get_deleted_objects(objs, request)
+
+        if "log entries" in model_count:
+            # remove any counts for log entries
+            del model_count["log entries"]
+            # remove the permission needed for log entry deletion
+            perms_needed.remove("log entry")
+            # filter out Log Entry from the list of items to be displayed for deletion
+            deletable_objects = [
+                obj
+                for obj in deletable_objects
+                if not isinstance(obj, str) or not obj.startswith("Log entry:")
+            ]
+        return deletable_objects, model_count, perms_needed, protected
 
     def get_queryset(self, request):
         return (
