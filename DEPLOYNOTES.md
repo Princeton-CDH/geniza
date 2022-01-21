@@ -1,5 +1,9 @@
 # Deploy Notes
 
+## 0.9
+
+-   Run `python manage.py index` to reindex all content due to a change in the way scholarship records are counted
+
 ## 0.8
 
 -   In order to set up About menu structure, go into the Wagtail CMS admin. Create and publish a new Container Page as a child of the English home page ("The Princeton Geniza Project"), and give it a title "About" and slug "about".

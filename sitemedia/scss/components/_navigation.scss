@@ -7,7 +7,7 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-.site-nav {
+#site-nav {
     display: flex;
     flex-flow: row wrap;
     @include breakpoints.for-tablet-landscape-up {
@@ -513,7 +513,7 @@
 }
 
 // Applying background image and gradient per system theme
-.site-nav {
+#site-nav {
     @include light-nav;
     @media (prefers-color-scheme: dark) {
         @include dark-nav;
@@ -521,9 +521,9 @@
 }
 
 // Manual (body-class based) theme overrides
-body.light-mode .site-nav {
+body.light-mode #site-nav {
     @include light-nav;
 }
-body.dark-mode .site-nav {
+body.dark-mode #site-nav {
     @include dark-nav;
 }
