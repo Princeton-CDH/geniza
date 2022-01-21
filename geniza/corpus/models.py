@@ -12,6 +12,8 @@ from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Lower
 from django.db.models.query import Prefetch
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate, get_language
@@ -882,6 +884,14 @@ class Document(ModelIndexable):
             log_entry.object_id = self.id
             log_entry.content_type_id = ContentType.objects.get_for_model(Document)
             log_entry.save()
+
+
+@receiver(pre_delete, sender=Document)
+def detach_document_logentries(sender, instance, **kwargs):
+    # To avoid deleting log entries caused by the generic relation
+    # from document to log entries, clear out object id
+    # for associated log entries before deleting the document
+    instance.log_entries.update(object_id=None)
 
 
 class TextBlock(models.Model):

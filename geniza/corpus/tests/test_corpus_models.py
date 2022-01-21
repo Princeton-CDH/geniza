@@ -1,4 +1,5 @@
 from datetime import datetime
+from multiprocessing.dummy import freeze_support
 from unittest.mock import Mock, patch
 
 import pytest
@@ -714,6 +715,21 @@ class TestDocument:
         assert source in document.sources()
         assert twoauthor_source in document.sources()
         assert len(document.sources()) == 2
+
+    def test_delete(self, document):
+        # create a log entry to confirm disassociation
+        log_entry = LogEntry.objects.create(
+            user_id=1,
+            content_type_id=ContentType.objects.get_for_model(document).id,
+            object_id=document.id,
+            object_repr="test",
+            action_flag=CHANGE,
+            change_message="test",
+        )
+        document.delete()
+        # get fresh copy of the same log entry
+        fresh_log_entry = LogEntry.objects.get(pk=log_entry.pk)
+        assert fresh_log_entry.object_id is None
 
 
 def test_document_merge_with(document, join):
