@@ -17,6 +17,8 @@ def reassign_log_entries(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
+        ("admin", "0003_logentry_add_action_flag_choices"),
+        ("contenttypes", "0002_remove_content_type_name"),
         ("corpus", "0025_documentprefetchableproxy"),
     ]
 
