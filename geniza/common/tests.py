@@ -4,6 +4,7 @@ import pytest
 from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
 from django.test import TestCase, override_settings
+from pytest_django.asserts import assertContains
 
 from geniza.common.admin import LocalUserAdmin, custom_empty_field_list_filter
 from geniza.common.utils import absolutize_url, custom_tag_string
@@ -106,3 +107,23 @@ class TestCustomEmptyFieldListFilter:
         choices = filter.choices(Mock())
         assert choices[1]["display"] == "nope"
         assert choices[2]["display"] == "yep"
+
+
+@pytest.mark.django_db
+class TestErrorViews(TestCase):
+    def test_404(self):
+        response = self.client.get("/fake-bad-url/")
+        # should first try redirecting to language code
+        assert response.status_code == 302
+        # should then return 404 error with template and context
+        with self.assertTemplateUsed("404.html"):
+            response = self.client.get(response.url)
+        assert response.status_code == 404
+        assert response.context["page_type"] == "error"
+
+    def test_500(self):
+        # should return 500 error with template and context
+        with self.assertTemplateUsed("500.html"):
+            response = self.client.get("/500/")
+        assert response.status_code == 500
+        assert response.context["page_type"] == "error"

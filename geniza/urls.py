@@ -18,18 +18,19 @@ from django.conf.urls.i18n import i18n_patterns
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from django.urls.conf import re_path
-from django.views.generic.base import RedirectView
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.core import urls as wagtail_urls
 
+from geniza.common.views import error_404, error_500
+
 urlpatterns = [
-    # redirect homepage to admin site for now
     path("admin/", admin.site.urls),
     path("accounts/", include("pucas.cas_urls")),
     path("i18n/", include("django.conf.urls.i18n")),
     path("taggit/", include("taggit_selectize.urls")),
     path("cms/", include(wagtailadmin_urls)),
+    path("404/", error_404, name="error_404"),
+    path("500/", error_500, name="error_500"),
 ]
 
 # urls that should be available in multiple languages
@@ -37,6 +38,10 @@ urlpatterns += i18n_patterns(
     path("", include("geniza.corpus.urls", namespace="corpus")),
     path("", include(wagtail_urls)),
 )
+
+# error handlers
+handler404 = "geniza.common.views.error_404"
+handler500 = "geniza.common.views.error_500"
 
 if settings.DEBUG:
     try:

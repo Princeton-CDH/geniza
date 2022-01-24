@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-01-20 15:12-0500\n"
+"POT-Creation-Date: 2022-01-24 15:52-0500\n"
 "PO-Revision-Date: 2022-01-12 17:32\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -16,6 +16,26 @@ msgstr ""
 "X-Crowdin-Language: en\n"
 "X-Crowdin-File: /develop/geniza/locale/en/LC_MESSAGES/django.po\n"
 "X-Crowdin-File-ID: 28\n"
+
+#. Translators: title for Not Found (404) error page
+#: geniza/common/views.py:7
+msgid "Not Found"
+msgstr ""
+
+#. Translators: description for Not Found (404) error page
+#: geniza/common/views.py:9
+msgid "Oops, you've hit a lacuna! Page not found."
+msgstr ""
+
+#. Translators: title for Internal Server Error (500) error page
+#: geniza/common/views.py:17
+msgid "Server Error"
+msgstr ""
+
+#. Translators: description for Internal Server Error (500) error page
+#: geniza/common/views.py:19
+msgid "Something went wrong putting this page together."
+msgstr ""
 
 #. Translators: placeholder for keyword search input
 #: geniza/corpus/forms.py:109
@@ -116,13 +136,8 @@ msgstr ""
 msgid "Submit search"
 msgstr ""
 
-#. Translators: Label for form errors
-#: geniza/corpus/templates/corpus/document_list.html:49
-msgid "Errors:"
-msgstr ""
-
 #. Translators: number of search results
-#: geniza/corpus/templates/corpus/document_list.html:63
+#: geniza/corpus/templates/corpus/document_list.html:61
 #, python-format
 msgid "1 result"
 msgid_plural "%(count_humanized)s total results"
@@ -255,12 +270,12 @@ msgid "Search and browse Geniza documents."
 msgstr ""
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:222
+#: geniza/corpus/views.py:223
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr ""
 
-#: geniza/corpus/views.py:229
+#: geniza/corpus/views.py:230
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
@@ -268,22 +283,22 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: attribution for local IIIF manifests
-#: geniza/corpus/views.py:354
+#: geniza/corpus/views.py:355
 msgid "Princeton Geniza Project"
 msgstr ""
 
-#: geniza/corpus/views.py:355
+#: geniza/corpus/views.py:356
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr ""
 
-#: geniza/corpus/views.py:358
+#: geniza/corpus/views.py:359
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr ""
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: geniza/corpus/views.py:360
+#: geniza/corpus/views.py:361
 msgid "Additional restrictions may apply."
 msgstr ""
 
