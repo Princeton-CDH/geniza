@@ -3,6 +3,7 @@ from django.utils.translation import gettext as _
 
 
 def error_404(request, *args, **kwargs):
+    """Render a 404 error with the correct status, context, and template."""
     context = {
         # Translators: title for Not Found (404) error page
         "page_title": _("Not Found"),
@@ -14,6 +15,7 @@ def error_404(request, *args, **kwargs):
 
 
 def error_500(request):
+    """Render a 500 error with the correct status, context, and template."""
     context = {
         # Translators: title for Internal Server Error (500) error page
         "page_title": _("Server Error"),
