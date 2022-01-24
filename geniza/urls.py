@@ -21,7 +21,7 @@ from django.urls import include, path
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.core import urls as wagtail_urls
 
-from geniza.common.views import error_404, error_500
+from geniza.common.views import error_500
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -29,7 +29,6 @@ urlpatterns = [
     path("i18n/", include("django.conf.urls.i18n")),
     path("taggit/", include("taggit_selectize.urls")),
     path("cms/", include(wagtailadmin_urls)),
-    path("404/", error_404, name="error_404"),
     path("500/", error_500, name="error_500"),
 ]
 
