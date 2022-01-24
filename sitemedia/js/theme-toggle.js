@@ -13,26 +13,13 @@ const toggleCheckbox = toggleLabel.querySelector("input");
 
 // Function to do shared actions for manual toggle and system light/dark mode
 const setMode = (mode) => {
-    if (mode === "dark") {
-        body.classList.add("dark-mode");
-        body.classList.remove("light-mode");
-        // siwtch mirador to dark mode
-        if (typeof miradorInstance !== "undefined" && miradorInstance) {
-            let action = Mirador.actions.updateConfig({
-                selectedTheme: "dark",
-            });
-            miradorInstance.store.dispatch(action);
-        }
-    } else if (mode === "light") {
-        body.classList.add("light-mode");
-        body.classList.remove("dark-mode");
-        // siwtch mirador to light mode
-        if (typeof miradorInstance !== "undefined" && miradorInstance) {
-            let action = Mirador.actions.updateConfig({
-                selectedTheme: "light",
-            });
-            miradorInstance.store.dispatch(action);
-        }
+    body.classList.add(`${mode}-mode`);
+    body.classList.remove(`${mode === "light" ? "dark" : "light"}-mode`);
+    if (typeof miradorInstance !== "undefined" && miradorInstance) {
+        const action = Mirador.actions.updateConfig({
+            selectedTheme: mode,
+        });
+        miradorInstance.store.dispatch(action);
     }
 };
 
