@@ -9,7 +9,7 @@ from django.template.loader import get_template
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
-from geniza.corpus.models import TextBlock
+from geniza.corpus.models import Document, TextBlock
 from geniza.footnotes.models import Footnote
 
 
@@ -49,17 +49,16 @@ class TestDocumentDetailTemplate:
     def test_viewer(self, client, document):
         """Document detail template should include viewer for IIIF content"""
         response = client.get(document.get_absolute_url())
-        local_manifest_url = reverse("corpus:document-manifest", args=[document.id])
         assertContains(
             response,
-            f'<div id="iiif_viewer" data-iiif-url="{local_manifest_url}" ',
+            '<section id="iiif-viewer">',
         )
 
     def test_viewer_annotations(self, client, document, typed_texts):
         """Document detail template should configure IIIF viewer for annotation display"""
         # fixture does not have annotations
         response = client.get(document.get_absolute_url())
-        assertContains(response, 'data-has-annotations="False"')
+        assertNotContains(response, '<div class="transcription">')
 
         # add a footnote with a digital edition
         Footnote.objects.create(
@@ -69,7 +68,7 @@ class TestDocumentDetailTemplate:
             content="A piece of text",
         )
         response = client.get(document.get_absolute_url())
-        assertContains(response, 'data-has-annotations="True"')
+        assertContains(response, '<div class="transcription">')
 
     def test_no_viewer(self, client, document):
         """Document with no IIIF shouldn't include viewer in template"""
@@ -146,9 +145,11 @@ class TestDocumentDetailTemplate:
         # Ensure that shelfmarks are displayed on the page.
         response = client.get(document.get_absolute_url())
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
-        response = client.get(join.get_absolute_url())
-        assertContains(response, "<dt>Shelfmark</dt>", html=True)
-        assertContains(response, join.shelfmark, html=True)
+        # Patch iiif_images() function to avoid trying to access fake IIIF URLs
+        with patch.object(Document, "iiif_images", return_value=[]):
+            response = client.get(join.get_absolute_url())
+            assertContains(response, "<dt>Shelfmark</dt>", html=True)
+            assertContains(response, join.shelfmark, html=True)
 
     def test_download_transcription_link(self, client, document, typed_texts):
         edition = Footnote.objects.create(
