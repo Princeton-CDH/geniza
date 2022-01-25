@@ -55,7 +55,9 @@
                 {% include "nav.html" %}
             </header>
             <main id="main-content">{% block main %}{% endblock main %}</main>
-            <footer></footer>
+            <footer>
+                {% include "footer.html" %}
+            </footer>
         {% endblock body %}
     </body>
 </html>

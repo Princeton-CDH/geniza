@@ -1,9 +1,12 @@
+from asyncio import format_helpers
 from unittest.mock import Mock
+from urllib import parse
 
 import pytest
 from django.http.request import QueryDict
 
 from geniza.corpus.templatetags import corpus_extras
+from geniza.footnotes.models import Footnote
 
 
 class TestCorpusExtrasTemplateTags:
@@ -71,3 +74,31 @@ def test_querystring_replace():
     assert "q=contract" in args
     assert "sort=relevance" in args
     assert "page=10" in args
+
+
+def test_natsort(document, source):
+    # Create three footnotes linking a certain document and source
+    Footnote.objects.create(
+        content_object=document,
+        source=source,
+        doc_relation=Footnote.EDITION,
+        location="doc 1",
+    )
+    Footnote.objects.create(
+        content_object=document,
+        source=source,
+        doc_relation=Footnote.EDITION,
+        location="doc 10",
+    )
+    Footnote.objects.create(
+        content_object=document,
+        source=source,
+        doc_relation=Footnote.EDITION,
+        location="doc 2",
+    )
+
+    # Should sort by location naturally (i.e. 10 will appear after 2, not after 1)
+    natsorted = corpus_extras.natsort(document.footnotes.all(), "location")
+    assert natsorted[0].location == "doc 1"
+    assert natsorted[1].location == "doc 2"
+    assert natsorted[2].location == "doc 10"
