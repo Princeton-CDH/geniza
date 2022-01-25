@@ -527,6 +527,20 @@ class Document(ModelIndexable):
             )
         )
 
+    def iiif_images(self):
+        iiif_images = []
+        for b in self.textblock_set.all():
+            frag_images = b.fragment.iiif_images()
+            if frag_images is not None:
+                images, labels = frag_images
+                iiif_images += [
+                    mark_safe('<img src="%s" loading="lazy" width="500" title="%s">')
+                    % (img.size(width=500), labels[i])
+                    for i, img in enumerate(images)
+                ]
+
+        return iiif_images
+
     def fragment_urls(self):
         """List of external URLs to view the Document's Fragments."""
         return list(

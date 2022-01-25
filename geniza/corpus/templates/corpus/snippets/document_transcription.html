@@ -1,0 +1,20 @@
+{% load i18n %}
+<section id="iiif-viewer">
+    <h1 class="sr-only">
+        {# Translators: accessibility label for document images and transcription section #}
+        {% translate "Images and transcription" %}
+    </h1>
+    {% if document.has_image %}
+        <ol class="iiif-images">
+            {% for image in document.iiif_images %}
+                <li id="image-{{ forloop.counter }}">{{ image|safe }}</li>
+            {% endfor %}
+        </ol>
+    {% endif %}
+    {% if document.has_transcription %}
+        <div class="transcription">
+            <h3>{% translate 'Transcription' %}</h3>
+            {{ document.digital_editions.0.content.html|safe }}
+        </div>
+    {% endif %}
+</section>

@@ -1,17 +1,66 @@
-/* limit size of iiif viewer */
+/* IIIF viewer */
 
+@use "../base/breakpoints";
 @use "../base/spacing";
+@use "../base/typography";
 
-.iiif_wrapper {
-    display: block;
-    width: clamp(300px, 75vw, 90vw);
-    margin: spacing.$spacing-md auto;
-    // Exception to 60ch max-width limit for mirador
-    * {
-        max-width: none;
+#iiif-viewer {
+    max-width: none;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    background-color: var(--background-light);
+    padding: spacing.$spacing-xl spacing.$spacing-lg;
+    overflow-x: scroll;
+    @include breakpoints.for-tablet-landscape-up {
+        padding: spacing.$spacing-2xl 10rem;
+        margin: 0;
+        max-width: 100%;
+        width: 100%;
+        flex-flow: row;
+        align-items: flex-start;
+        justify-content: space-between;
     }
-}
-#iiif_viewer {
-    position: relative;
-    height: clamp(200px, 75vh, 75vh);
+    .iiif-images {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        img {
+            max-width: 100%;
+        }
+        & + .transcription {
+            margin-top: spacing.$spacing-md;
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            width: 50%;
+            img {
+                max-width: 90%;
+            }
+            & + .transcription {
+                margin-left: spacing.$spacing-md;
+                width: 50%;
+            }
+        }
+    }
+    .transcription {
+        max-width: 100%;
+        * {
+            max-width: 100%;
+        }
+        h1 {
+            @include typography.headline-3;
+            text-align: left;
+            direction: ltr;
+        }
+        li {
+            & + li {
+                margin-top: spacing.$spacing-xs;
+            }
+        }
+        section + section {
+            margin-top: spacing.$spacing-md;
+        }
+    }
 }
