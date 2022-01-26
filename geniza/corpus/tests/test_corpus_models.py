@@ -8,17 +8,14 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db import IntegrityError
-from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
-from djiffy.models import Manifest
+from djiffy.models import Canvas, IIIFImage, Manifest
 
-from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
-    DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -178,6 +175,29 @@ class TestFragment:
         assert 'title="1r"' in thumbnails
         assert 'title="1v"' in thumbnails
         assert isinstance(thumbnails, SafeString)
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_iiif_images_locally_cached_manifest(self, mock_manifestimporter):
+        # fragment with a locally cached manifest
+        frag = Fragment(shelfmark="TS 1")
+        frag.iiif_url = "http://example.io/manifests/1"
+        frag.manifest = Manifest.objects.create(uri=frag.iiif_url, short_id="m")
+        # canvas with image and label
+        Canvas.objects.create(
+            manifest=frag.manifest,
+            label="fake image",
+            iiif_image_id="http://example.co/iiif/ts-1/00001",
+            short_id="c",
+            order=1,
+        )
+        frag.save()
+        # should return one IIIFImage and one label
+        (images, labels) = frag.iiif_images()
+        assert len(images) == 1
+        assert isinstance(images[0], IIIFImage)
+        assert len(labels) == 1
+        assert labels[0] == "fake image"
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
@@ -536,7 +556,7 @@ class TestDocument:
         for frag in document.fragments.all():
             assert frag.shelfmark in index_data["shelfmark_ss"]
         for tag in document.tags.all():
-            assert tag.name in index_data["tags_ss"]
+            assert tag.name in index_data["tags_ss_lower"]
         assert index_data["status_s"] == "Public"
         assert not index_data["old_pgpids_is"]
 
@@ -570,7 +590,9 @@ class TestDocument:
             assert index_data[scholarship_count] == 0
         assert index_data["scholarship_t"] == []
 
-    def test_index_data_footnotes(self, document, source):
+    def test_index_data_footnotes(
+        self, document, source, twoauthor_source, multiauthor_untitledsource
+    ):
         # footnote with no content
         edition = Footnote.objects.create(
             content_object=document,
@@ -580,18 +602,18 @@ class TestDocument:
         )
         edition2 = Footnote.objects.create(
             content_object=document,
-            source=source,
+            source=twoauthor_source,
             doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
         )
         translation = Footnote.objects.create(
             content_object=document,
-            source=source,
+            source=multiauthor_untitledsource,
             doc_relation=Footnote.TRANSLATION,
         )
         index_data = document.index_data()
         assert index_data["num_editions_i"] == 2
         assert index_data["num_translations_i"] == 2
-        assert index_data["scholarship_count_i"] == 4
+        assert index_data["scholarship_count_i"] == 3  # unique sources
         assert index_data["transcription_t"] == ["transcription lines"]
 
         for note in [edition, edition2, translation]:
@@ -688,6 +710,46 @@ class TestDocument:
         assert twoauthor_source.authors.first().pk in [
             editor.pk for editor in document.editors().all()
         ]
+
+    def test_total_to_index(self, join, document):
+        assert Document.total_to_index() == 2
+
+    def test_sources(self, document, source, twoauthor_source):
+        # Create two different footnotes with the same document and source
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.EDITION,
+        )
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.TRANSLATION,
+        )
+        # Create one footnote with a new source
+        Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.EDITION,
+        )
+        assert source in document.sources()
+        assert twoauthor_source in document.sources()
+        assert len(document.sources()) == 2
+
+    def test_delete(self, document):
+        # create a log entry to confirm disassociation
+        log_entry = LogEntry.objects.create(
+            user_id=1,
+            content_type_id=ContentType.objects.get_for_model(document).id,
+            object_id=document.id,
+            object_repr="test",
+            action_flag=CHANGE,
+            change_message="test",
+        )
+        document.delete()
+        # get fresh copy of the same log entry
+        fresh_log_entry = LogEntry.objects.get(pk=log_entry.pk)
+        assert fresh_log_entry.object_id is None
 
 
 def test_document_merge_with(document, join):
@@ -904,20 +966,3 @@ class TestTextBlock:
         block = TextBlock.objects.create(document=doc, fragment=frag, side="r")
         with patch.object(frag, "iiif_thumbnails") as mock_frag_thumbnails:
             assert block.thumbnail() == mock_frag_thumbnails.return_value
-
-
-class TestDocumentPrefetchableProxy:
-    def test_log_entries(self, document):
-        # docment.log_entries should be a QuerySet of two log entries, which cannot be modified
-        assert isinstance(document.log_entries, QuerySet)
-        assert document.log_entries.count() == 2
-        le = document.log_entries.first()
-        with pytest.raises(AttributeError):
-            document.log_entries.remove(le)
-
-        # Now use proxy model
-        document.__class__ = DocumentPrefetchableProxy
-
-        # Should now be able to remove, since it is a GenericRelation
-        document.log_entries.remove(le)
-        assert document.log_entries.count() == 1

@@ -19,6 +19,7 @@ $light-gray: #ebebeb;
 $off-white: #f7f7f7;
 
 @mixin light-mode {
+    // primary theme colors
     --primary: #436043;
     --primary-80: rgba(67, 96, 67, 0.8);
     --secondary: #567856;
@@ -29,23 +30,36 @@ $off-white: #f7f7f7;
     --on-primary: #ffffff;
     --on-secondary: #ffffff;
     --on-tertiary: #161616;
+    // background colors
     --background: #ffffff;
     --background-light: #f7f7f7;
     --background-gray: #ebebeb;
+    // text on background
     --on-background: #161616;
+    --on-background-alt: #3d3d3d;
     --on-background-25: rgba(0, 0, 0, 0.25);
+    --on-background-125: rgba(0, 0, 0, 0.125);
     --on-background-light: #161616;
     --on-background-light-alt: #3d3d3d;
     --on-background-gray: #161616;
+    // focused buttons
+    --focus: #567856;
+    // disabled links
     --disabled: #9e9e9e;
+    // tab navigation colors
     --tabs-bottom: #ebebeb;
     --tabs-bottom-hover: #3d3d3d;
-    --tabs-focus: #567856;
+    // logo fill color
     --logo: #161616;
+    // icon button colors (e.g. "view document details")
+    --icon-button: #567856;
+    --icon-button-active: #436043;
+    --icon-button-hover: #3d3d3d;
 }
 
 // Dark mode theme colors
 @mixin dark-mode {
+    // primary theme colors
     --primary: #c37f97;
     --primary-80: rgba(183, 102, 128, 0.8);
     --secondary: #b76680;
@@ -56,19 +70,31 @@ $off-white: #f7f7f7;
     --on-primary: #161616;
     --on-secondary: #161616;
     --on-tertiary: #ffffff;
+    // background colors
     --background: #161616;
-    --background-light: #3d3d3d;
-    --background-gray: #9e9e9e;
+    --background-light: #222222;
+    --background-gray: #3d3d3d;
+    // text on background
     --on-background: #ffffff;
-    --on-background-25: rgba(255, 255, 255, 0.25);
+    --on-background-alt: #9e9e9e;
+    --on-background-25: rgba(122, 122, 122, 0.25);
+    --on-background-125: rgba(122, 122, 122, 0.125);
     --on-background-light: #ffffff;
     --on-background-light-alt: #ebebeb;
-    --on-background-gray: #161616;
-    --disabled: #9e9e9e;
+    --on-background-gray: #ffffff;
+    // focused buttons
+    --focus: #146feb;
+    // disabled links
+    --disabled: #3d3d3d;
+    // tab navigation colors
     --tabs-bottom: #3d3d3d;
     --tabs-bottom-hover: #ebebeb;
-    --tabs-focus: #146feb;
+    // logo fill color
     --logo: #f7f7f7;
+    // icon button colors (e.g. "view document details")
+    --icon-button: #ffffff;
+    --icon-button-active: #ffffff;
+    --icon-button-bottom-hover: #ffffff;
 }
 
 body {

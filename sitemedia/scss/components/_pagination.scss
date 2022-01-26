@@ -10,18 +10,17 @@
 nav.pagination {
     max-width: 100%;
     display: flex;
-    justify-content: space-evenly;
+    justify-content: center;
     align-items: center;
     flex-flow: row wrap;
     margin: spacing.$spacing-lg 0;
-    background-color: var(--background-light);
     color: var(--on-background-light);
     @include typography.nav-link;
     @include breakpoints.for-tablet-landscape-up {
         margin: spacing.$spacing-xl 0;
         justify-content: center;
     }
-    // special styling for nav at bottom of page
+    // special styling for pagination at bottom of page
     &:last-of-type {
         margin: spacing.$spacing-2xl 0 0;
         @include breakpoints.for-tablet-landscape-up {
@@ -29,32 +28,83 @@ nav.pagination {
             justify-content: center;
         }
     }
+    // spacing and style for page links, ellipsis, and disabled
     a,
     span {
+        position: relative;
+        border-bottom: 3px solid var(--background);
         @include typography.nav-bold;
-        @include typography.link;
-        &:not(.active) {
+        &:not([aria-current="page"]) {
             @include typography.nav-link;
             text-decoration: none;
             font-weight: normal;
         }
-        @include breakpoints.for-tablet-landscape-up {
-            padding: 0 spacing.$spacing-sm;
-        }
-    }
-    a {
         display: flex;
-        min-width: 48px;
-        min-height: 48px;
         align-items: center;
         justify-content: center;
-    }
-    // special styling for fewer than 5 pages on mobile
-    &.compressed {
-        justify-content: center;
-        a,
-        span {
-            padding: 0 spacing.$spacing-xs;
+        padding: 0 spacing.$spacing-xs;
+        margin: spacing.$spacing-xs 0;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0 spacing.$spacing-sm;
+            margin: 0;
         }
+    }
+    // link-specific styling
+    a {
+        // current page styling
+        &[aria-current="page"] {
+            text-decoration: none;
+            border-bottom-color: var(--link-primary);
+        }
+        // use ::after for focus outline
+        // (.next gets ::before because it already has icon ::after)
+        &:not(.next)::after,
+        &.next::before {
+            content: "";
+            width: 80%;
+            height: 80%;
+            position: absolute;
+        }
+        &:focus-visible {
+            outline: none;
+        }
+        &:not(.next):focus-visible::after,
+        &.next:focus-visible::before {
+            outline: 0.1rem solid var(--focus);
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            // hover underline
+            &:hover {
+                text-decoration: none;
+                border-bottom-color: var(--on-background-light);
+            }
+            // current page underline color
+            &[aria-current="page"]:hover {
+                border-bottom-color: var(--link-primary);
+            }
+        }
+    }
+    // prev/next link, span styling
+    .prev,
+    .next {
+        flex: 1 0 100%;
+        @include breakpoints.for-tablet-landscape-up {
+            flex: 0 0 auto;
+        }
+    }
+    // disabled prev/next
+    span.disabled {
+        color: var(--disabled);
+    }
+    // button icons
+    .prev::before {
+        margin: 0.1rem spacing.$spacing-xs 0 0;
+        font-family: "Phosphor";
+        content: "\f03b"; // phosphor arrow-left icon
+    }
+    .next::after {
+        margin: 0.1rem 0 0 spacing.$spacing-xs;
+        font-family: "Phosphor";
+        content: "\f044"; // phosphor arrow-right icon
     }
 }

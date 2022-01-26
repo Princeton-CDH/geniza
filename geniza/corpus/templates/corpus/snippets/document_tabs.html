@@ -5,7 +5,7 @@
     <ul class="tabs">
         {% url 'corpus:document' pk=document.pk as document_url %}
         <li><a href="{{ document_url }}"{% if request.path == document_url %} aria-current="page"{% endif %}>{% translate "Document Details" %}</a></li>
-        {% with n_records=document.footnotes.count %}
+        {% with n_records=document.sources.count %}
             {# Translators: n_records is number of scholarship records #}
             {% blocktranslate asvar srec_text %}Scholarship Records ({{ n_records }}){% endblocktranslate %}
             {% url 'corpus:document-scholarship' pk=document.pk as scholarship_url %}

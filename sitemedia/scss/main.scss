@@ -14,9 +14,11 @@
 @use "components/pagination";
 @use "components/docheader";
 @use "components/controls";
+@use "components/footer";
 
 // Page-specific styles
 @use "pages/content";
 @use "pages/document";
+@use "pages/error";
 @use "pages/scholarship";
 @use "pages/search";

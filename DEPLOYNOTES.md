@@ -1,10 +1,15 @@
 # Deploy Notes
 
+## 0.9
+
+-   Run `python manage.py index` to reindex all content due to a change in the way scholarship records are counted
+
 ## 0.8
 
 -   In order to set up About menu structure, go into the Wagtail CMS admin. Create and publish a new Container Page as a child of the English home page ("The Princeton Geniza Project"), and give it a title "About" and slug "about".
--   Once the Container Page is created, move all desired Content Pages into the Container Page as children (click "More" > "Move", click the right arrow button next to the home page, then click on the title of the Container page)
--   Ensure that each Content Page is set up to appear in the menu ("Promote" > check "Show in menus"), then re-publish each one
+    -   Once the Container Page is created, move all desired Content Pages into the Container Page as children (click "More" > "Move", click the right arrow button next to the home page, then click on the title of the Container page)
+    -   Ensure that each Content Page is set up to appear in the menu ("Promote" > check "Show in menus"), then re-publish each one
+-   This update includes Solr configuration and indexing changes. Once the Solr core/collection configuration has been updated, all content should be reindexed.
 
 ## 0.7
 

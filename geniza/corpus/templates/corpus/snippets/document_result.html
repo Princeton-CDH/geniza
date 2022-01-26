@@ -45,7 +45,7 @@
                 {% elif document.transcription %}
                     {# otherwise, display truncated transcription #}
                     {# NOTE: might be nice to display N lines instead of using truncatechars #}
-                    <div class="transcription" lang="{{ lang }}">{{ document.transcription.0|linebreaks|truncatechars:150 }}</div>
+                    <div class="transcription" lang="{{ lang }}">{{ document.transcription.0|linebreaks|truncatechars_html:150 }}</div>
                 {% endif %}
             {% endwith %}
 
@@ -93,7 +93,7 @@
                 <h3 class="sr-only">{% translate 'Tags' %}</h3>
                 <ul class="tags">
                     {% for tag in document.tags|alphabetize|slice:":5" %}
-                        <li>{{ tag }}</li>
+                        <li><a href='{% url "corpus:document-search" %}?q=tag:"{{ tag }}"'>{{ tag }}</a></li>
                     {% endfor %}
                 </ul>
             {% endif %}
@@ -102,7 +102,6 @@
         {# view link #}
         <a class="view-link" href="{% url 'corpus:document' document.pgpid %}">
             {% translate 'View document details' %}
-            <i class="ph-arrow-right"></i>
         </a>
     </li>
 {% endspaceless %}

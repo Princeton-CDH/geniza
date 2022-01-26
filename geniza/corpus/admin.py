@@ -11,11 +11,12 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db.models import CharField, Count, F, Q
 from django.db.models.functions import Concat
-from django.db.models.query import Prefetch, QuerySet
+from django.db.models.query import Prefetch
 from django.forms.widgets import Textarea, TextInput
 from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from pyexpat import model
 from tabular_export.admin import export_to_csv_response
 
 from geniza.common.admin import custom_empty_field_list_filter
@@ -23,7 +24,6 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
-    DocumentPrefetchableProxy,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -169,9 +169,9 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == "yes":
-            return queryset.filter(footnotes__content__has_key="html").distinct()
+            return queryset.filter(footnotes__content__has_key="html")
         if self.value() == "no":
-            return queryset.exclude(footnotes__content__has_key="html").distinct()
+            return queryset.exclude(footnotes__content__has_key="html")
 
 
 @admin.register(Document)
@@ -247,9 +247,31 @@ class DocumentAdmin(admin.ModelAdmin):
     class Media:
         css = {"all": ("css/admin-local.css",)}
 
+    def get_deleted_objects(self, objs, request):
+        # override to remove log entries from list and permission check
+        (
+            deletable_objects,
+            model_count,
+            perms_needed,
+            protected,
+        ) = super().get_deleted_objects(objs, request)
+
+        if "log entries" in model_count:
+            # remove any counts for log entries
+            del model_count["log entries"]
+            # remove the permission needed for log entry deletion
+            perms_needed.remove("log entry")
+            # filter out Log Entry from the list of items to be displayed for deletion
+            deletable_objects = [
+                obj
+                for obj in deletable_objects
+                if not isinstance(obj, str) or not obj.startswith("Log entry:")
+            ]
+        return deletable_objects, model_count, perms_needed, protected
+
     def get_queryset(self, request):
         return (
-            DocumentPrefetchableProxyAdmin(DocumentPrefetchableProxy, self.admin_site)
+            super()
             .get_queryset(request)
             .select_related(
                 "doctype",
@@ -305,14 +327,6 @@ class DocumentAdmin(admin.ModelAdmin):
 
         # return queryset, use distinct not needed
         return queryset, False
-
-    def get_deleted_objects(self, objs, request):
-        # override delete to use *Document* instead of the Document proxy object;
-        # this avoids the delete permission problem caused by the generic relation
-        # for log entries (which cannot be deleted) on the proxy model
-        return super().get_deleted_objects(
-            Document.objects.filter(pk__in=[obj.pk for obj in objs]), request
-        )
 
     def save_model(self, request, obj, form, change):
         """Customize this model's save_model function and then execute the
@@ -482,14 +496,6 @@ class DocumentAdmin(admin.ModelAdmin):
     # -------------------------------------------------------------------------
 
     actions = (export_to_csv,)
-
-
-class DocumentPrefetchableProxyAdmin(admin.ModelAdmin):
-    """Proxy model admin for :class:`DocumentPrefetchableProxy` that intercepts `get_queryset`
-    in order to prefetch the :class:`GenericRelation` `log_entries`."""
-
-    def get_queryset(self, request):
-        return super().get_queryset(request)
 
 
 @admin.register(DocumentType)

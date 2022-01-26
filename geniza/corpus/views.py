@@ -65,8 +65,15 @@ class DocumentSearchView(ListView, FormMixin):
         return kwargs
 
     def get_queryset(self):
-        # limit to documents with published status (i.e., no suppressed documents)
-        documents = DocumentSolrQuerySet().filter(status=Document.STATUS_PUBLIC)
+
+        # limit to documents with published status (i.e., no suppressed documents);
+        # get counts of facets, excluding type filter
+        documents = (
+            DocumentSolrQuerySet()
+            .filter(status=Document.PUBLIC_LABEL)
+            .facet_field("type", exclude="type", sort="value")
+        )
+
         form = self.get_form()
         # return empty queryset if not valid
         if not form.is_valid():
@@ -99,10 +106,8 @@ class DocumentSearchView(ListView, FormMixin):
                     .also("score")
                 )  # include relevance score in results
 
-            documents = documents.order_by(
-                self.solr_sort[search_opts["sort"]]
-            ).facet_field("type", exclude="type", sort="value")
-            # exclude type filter when generating counts
+            # order by sort option
+            documents = documents.order_by(self.solr_sort[search_opts["sort"]])
 
             # filter by type if specified
             if search_opts["doctype"]:
@@ -265,15 +270,18 @@ class DocumentTranscriptionText(DocumentDetailView):
     def get(self, request, *args, **kwargs):
         document = self.get_object()
         try:
-            edition = document.editions().get(pk=self.kwargs["transcription_pk"])
+            edition = document.digital_editions().get(
+                pk=self.kwargs["transcription_pk"]
+            )
+            shelfmark = slugify(document.textblock_set.first().fragment.shelfmark)
             authors = [slugify(a.last_name) for a in edition.source.authors.all()]
-            filename = "PGP_%d_%s.txt" % (document.id, "_".join(authors))
+            filename = "PGP%d_%s_%s.txt" % (document.id, shelfmark, "_".join(authors))
 
             return HttpResponse(
                 edition.content["text"],
                 headers={
                     "Content-Type": "text/plain; charset=UTF-8",
-                    # prompt download with filename including pgpid & authors
+                    # prompt download with filename including pgpid, shelfmark, & authors
                     "Content-Disposition": 'attachment; filename="%s"' % filename,
                 },
             )
@@ -314,7 +322,11 @@ class DocumentManifestView(DocumentDetailView):
             # CUDL attribution has some variation in tags;
             # would be nice to preserve tagged version,
             # for now, ignore tags so we can easily de-dupe
-            attributions.add(strip_tags(remote_manifest.attribution))
+            try:
+                attributions.add(strip_tags(remote_manifest.attribution))
+            except AttributeError:
+                # attribution is optional, so ignore if not present
+                pass
             for canvas in remote_manifest.sequences[0].canvases:
                 # do we want local canvas id, or rely on remote id?
                 local_canvas = dict(canvas)

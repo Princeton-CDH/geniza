@@ -37,7 +37,7 @@ body#document {
             }
             // Lighter color metadata
             .secondary {
-                color: colors.$gray;
+                color: var(--on-background-alt);
             }
             dt {
                 margin-bottom: spacing.$spacing-3xs;
@@ -92,6 +92,13 @@ body#document {
             margin: spacing.$spacing-xl 0 spacing.$spacing-md;
             @include breakpoints.for-desktop-up {
                 margin: spacing.$spacing-3xl 0 spacing.$spacing-md;
+            }
+        }
+
+        section.transcription-link {
+            margin-top: spacing.$spacing-md;
+            @include breakpoints.for-desktop-up {
+                margin-top: spacing.$spacing-xl;
             }
         }
     }

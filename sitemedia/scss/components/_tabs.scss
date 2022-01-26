@@ -14,6 +14,7 @@
     justify-content: center;
     margin: 0 auto;
     @include typography.nav-link;
+    // Tabs styling
     a,
     span {
         display: flex;
@@ -28,6 +29,7 @@
             padding-right: spacing.$spacing-xl;
         }
     }
+    // Link-specific tabs styling
     a {
         text-decoration: none;
         position: relative;
@@ -42,17 +44,26 @@
             outline: none;
         }
         &:focus-visible::after {
-            outline: 0.1rem solid var(--tabs-focus);
+            outline: 0.1rem solid var(--focus);
         }
     }
     .disabled {
         color: var(--disabled);
     }
-
+    a:hover {
+        @include breakpoints.for-tablet-landscape-up {
+            border-bottom-color: var(--tabs-bottom-hover);
+        }
+    }
     a[aria-current="page"] {
         @include typography.nav-bold;
         border-bottom-color: var(--secondary);
+        // Don't show hover color on current page tab
+        &:hover {
+            border-bottom-color: var(--secondary);
+        }
     }
+    // Extra padding to get External Links on two lines
     li:last-child a,
     li:last-child span {
         padding-left: spacing.$spacing-sm;
@@ -61,9 +72,5 @@
             padding-left: spacing.$spacing-2xl;
             padding-right: spacing.$spacing-2xl;
         }
-    }
-    a:active,
-    a:hover {
-        border-bottom-color: var(--tabs-bottom-hover);
     }
 }

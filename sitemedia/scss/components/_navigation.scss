@@ -7,7 +7,7 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-.site-nav {
+#site-nav {
     display: flex;
     flex-flow: row wrap;
     @include breakpoints.for-tablet-landscape-up {
@@ -163,6 +163,11 @@
             display: inline-block;
             @include typography.nav-link;
             @include typography.mobile-menu;
+            // Currenlty active page
+            &[aria-current="page"] {
+                @include typography.nav-bold;
+                @include typography.mobile-menu;
+            }
         }
         & + li.menu-item a,
         & + ul.sub-menu li.menu-item a {
@@ -241,7 +246,8 @@
                 }
                 // Rotate caret up
                 &.open a.open-sub-menu::before,
-                a[aria-expanded="true"].open-sub-menu::before {
+                a[aria-expanded="true"].open-sub-menu::before,
+                &:hover a.open-sub-menu::before {
                     transform: rotate(-180deg);
                 }
             }
@@ -305,7 +311,7 @@
             width: auto;
             height: auto;
             padding: spacing.$spacing-xl 0 spacing.$spacing-sm;
-            top: 100%;
+            top: 101%;
             box-shadow: 0px 2px 4px var(--secondary-80);
             li.menu-item {
                 padding: 0;
@@ -328,11 +334,6 @@
         }
     }
 
-    // Currently active page
-    a[aria-current="page"] {
-        @include typography.nav-bold;
-        @include typography.mobile-menu;
-    }
     // Hide mobile menu buttons and labels in desktop
     li.menu-button,
     li.menu-label,
@@ -340,10 +341,19 @@
     ul#menu li.menu-label,
     ul#menu:target li.menu-button,
     ul#menu:target li.menu-label,
-    ul#about-menu:target li.menu-button,
-    ul#about-menu:target li.menu-label {
+    ul[id$="-menu"]:target li.menu-button,
+    ul[id$="-menu"]:target li.menu-label {
         @include breakpoints.for-tablet-landscape-up {
             display: none;
+        }
+    }
+    // Don' allow clicking submenu on desktop
+    ul[id$="-menu"]::before {
+        @include breakpoints.for-tablet-landscape-up {
+            content: "";
+            display: block;
+            height: 140px;
+            margin-top: -140px;
         }
     }
     // Hover indicator for nav links
@@ -363,7 +373,8 @@
         }
     }
     a:hover::after,
-    a[aria-current="page"]::after {
+    a[aria-current="page"]::after,
+    li.has-submenu:hover a.open-sub-menu::after {
         @include breakpoints.for-tablet-landscape-up {
             opacity: 100% !important;
         }
@@ -371,9 +382,14 @@
     // Gets cluttered in sub-menu, so only show when hovering
     ul.sub-menu {
         @include breakpoints.for-tablet-landscape-up {
+            a {
+                display: flex;
+                flex-flow: column;
+                span {
+                    flex: 1 0 100%;
+                }
+            }
             a::after {
-                position: relative;
-                right: spacing.$spacing-md;
                 margin-top: 0;
             }
             a[aria-current="page"]::after {
@@ -389,13 +405,23 @@
 // Header backgrounds for light and dark mode, mobile
 @mixin header-background-mobile-dark {
     background: url("/static/img/ui/mobile/dark/header-base.svg"),
-        linear-gradient(to right, rgba(22, 22, 22, 0), colors.$black 20rem),
+        linear-gradient(
+            to right,
+            rgba(22, 22, 22, 0),
+            rgba(22, 22, 22, 0.95) 19rem,
+            colors.$black 20rem
+        ),
         url("/static/img/ui/mobile/dark/header-image.png");
     background-repeat: no-repeat, no-repeat, no-repeat;
 }
 @mixin header-background-mobile-light {
     background: url("/static/img/ui/mobile/light/header-base.svg"),
-        linear-gradient(to right, rgba(255, 255, 255, 0), white 20rem),
+        linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0.66) 19rem,
+            white 20rem
+        ),
         url("/static/img/ui/mobile/light/header-image.png");
     background-repeat: no-repeat, no-repeat, no-repeat;
 }
@@ -403,13 +429,23 @@
 // Header backgrounds for light and dark mode, desktop
 @mixin header-background-desktop-dark {
     background: url("/static/img/ui/desktop/dark/header-base.svg"),
-        linear-gradient(to right, rgba(22, 22, 22, 0), colors.$black 90rem),
+        linear-gradient(
+            to right,
+            rgba(22, 22, 22, 0),
+            rgba(22, 22, 22, 0.9) 87rem,
+            colors.$black 90rem
+        ),
         url("/static/img/ui/desktop/dark/header-image.png");
     background-repeat: no-repeat, no-repeat, no-repeat;
 }
 @mixin header-background-desktop-light {
     background: url("/static/img/ui/desktop/light/header-base.svg"),
-        linear-gradient(to right, rgba(255, 255, 255, 0), white 90rem),
+        linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0.75) 89rem,
+            white 90rem
+        ),
         url("/static/img/ui/desktop/light/header-image.png");
     background-repeat: no-repeat, no-repeat, no-repeat;
 }
@@ -426,24 +462,21 @@
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             background: none;
+            a::after {
+                background: url("/static/img/ui/desktop/light/menu-hover.svg")
+                    center !important;
+                background-repeat: no-repeat !important;
+            }
         }
     }
     ul.sub-menu {
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             // Hack to look like submenu is layered underneath the menu
-            background: linear-gradient(
-                to bottom,
-                rgba(86, 120, 86, 0.05),
-                rgba(255, 255, 255, 0.2) 1rem
-            );
-        }
-    }
-    a::after {
-        @include breakpoints.for-tablet-landscape-up {
-            background: url("/static/img/ui/desktop/light/menu-hover.svg")
-                center !important;
-            background-repeat: no-repeat !important;
+            background: url("/static/img/ui/desktop/light/submenu-base.svg") top
+                    repeat-x,
+                linear-gradient(to bottom, var(--background), var(--background))
+                    top;
         }
     }
 }
@@ -460,29 +493,27 @@
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             background: none;
+            a::after {
+                background: url("/static/img/ui/desktop/dark/menu-hover.svg")
+                    center !important;
+                background-repeat: no-repeat !important;
+            }
         }
     }
     ul.sub-menu {
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             // Hack to look like submenu is layered underneath the menu
-            background: linear-gradient(
-                to bottom,
-                rgba(255, 255, 255, 0.01),
-                rgba(255, 255, 255, 0) 17px
-            );
-        }
-    }
-    a::after {
-        @include breakpoints.for-tablet-landscape-up {
-            background: url("/static/img/ui/desktop/dark/menu-hover.svg") center !important;
-            background-repeat: no-repeat !important;
+            background: url("/static/img/ui/desktop/dark/submenu-base.svg") top
+                    repeat-x,
+                linear-gradient(to bottom, var(--background), var(--background))
+                    top;
         }
     }
 }
 
 // Applying background image and gradient per system theme
-.site-nav {
+#site-nav {
     @include light-nav;
     @media (prefers-color-scheme: dark) {
         @include dark-nav;
@@ -490,9 +521,9 @@
 }
 
 // Manual (body-class based) theme overrides
-body.light-mode .site-nav {
+body.light-mode #site-nav {
     @include light-nav;
 }
-body.dark-mode .site-nav {
+body.dark-mode #site-nav {
     @include dark-nav;
 }

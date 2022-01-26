@@ -84,3 +84,20 @@ class TestDocumentSearchForm:
                 assert int(option["attrs"]["data-count"]) == fake_facets["doctype"].get(
                     option["value"]
                 )
+
+    def test_clean(self):
+        """Should add an error if query is empty and sort is relevance"""
+        form = DocumentSearchForm()
+        form.cleaned_data = {"q": "", "sort": "relevance"}
+        form.clean()
+        assert len(form.errors) == 1
+
+        # Otherwise should not raise an error
+        form = DocumentSearchForm()
+        form.cleaned_data = {"q": "test", "sort": "relevance"}
+        form.clean()
+        assert len(form.errors) == 0
+        form = DocumentSearchForm()
+        form.cleaned_data = {"q": "", "sort": "scholarship_desc"}
+        form.clean()
+        assert len(form.errors) == 0

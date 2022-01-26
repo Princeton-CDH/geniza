@@ -1,0 +1,66 @@
+// -----------------------------------------------------------------------------
+// Error pages.
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/spacing";
+@use "../base/typography";
+
+#error #main-content {
+    text-align: center;
+    h1 {
+        @include typography.headline-3;
+    }
+    // 404 error header and background image
+    h1.e404 {
+        margin-top: 157px;
+        margin-right: 18px;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: 195px;
+            margin-right: 28px;
+        }
+        &:after {
+            background: url("/static/img/ui/mobile/all/404.png") no-repeat
+                center/261.3px padding-box;
+            content: "";
+            display: block;
+            width: 261.3px;
+            height: 350px;
+            margin-top: -190px;
+            margin-right: -18px;
+            @include breakpoints.for-tablet-landscape-up {
+                background: url("/static/img/ui/desktop/all/404.png") no-repeat
+                    center/298.62px padding-box;
+                width: 298.62px;
+                height: 400px;
+                margin-top: -218px;
+                margin-right: -28px;
+            }
+        }
+    }
+    // 500 error header and background image
+    h1.e500 {
+        margin-top: 163px;
+        &:after {
+            background: url("/static/img/ui/mobile/all/500.png") no-repeat
+                center/280px padding-box;
+            content: "";
+            display: block;
+            height: 348px;
+            width: 280px;
+            margin-top: -163px;
+            @include breakpoints.for-tablet-landscape-up {
+                background: url("/static/img/ui/desktop/all/500.png") no-repeat
+                    center/380px padding-box;
+                height: 400px;
+                width: 380px;
+                margin-top: -200px;
+            }
+        }
+    }
+    // error text
+    p {
+        margin-top: spacing.$spacing-lg;
+        padding: 0 spacing.$spacing-xs;
+    }
+}

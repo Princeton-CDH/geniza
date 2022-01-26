@@ -1,5 +1,6 @@
 import logging
 from collections import defaultdict
+from itertools import chain
 
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
@@ -11,6 +12,8 @@ from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Lower
 from django.db.models.query import Prefetch
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate, get_language
@@ -25,7 +28,7 @@ from taggit_selectize.managers import TaggableManager
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
-from geniza.footnotes.models import Creator, Footnote
+from geniza.footnotes.models import Creator, Footnote, Source
 
 logger = logging.getLogger(__name__)
 
@@ -190,18 +193,29 @@ class Fragment(TrackChangesModel):
         return (self.shelfmark,)
 
     def iiif_images(self):
+        """IIIF image URLs for this fragment. Returns a list of
+        :class:`~piffle.image.IIIFImageClient` and corresponding list of labels,
+        or None if this fragement has no IIIF url associated."""
+
         # if there is no iiif for this fragment, bail out
         if not self.iiif_url:
             return None
-        # TODO: switch this to use locally cached version!
         images = []
         labels = []
-        manifest = IIIFPresentation.from_url(self.iiif_url)
-        for canvas in manifest.sequences[0].canvases:
-            image_id = canvas.images[0].resource.id
-            images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
-            # label provides library's recto/verso designation
-            labels.append(canvas.label)
+        # use images from locally cached manifest if possible
+        if self.manifest:
+            for canvas in self.manifest.canvases.all():
+                images.append(canvas.image)
+                labels.append(canvas.label)
+
+        # if not cached, load from remote url
+        else:
+            manifest = IIIFPresentation.from_url(self.iiif_url)
+            for canvas in manifest.sequences[0].canvases:
+                image_id = canvas.images[0].resource.id
+                images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
+                # label provides library's recto/verso designation
+                labels.append(canvas.label)
 
         return images, labels
 
@@ -302,7 +316,7 @@ class DocumentSignalHandlers:
             return
 
         doc_filter = {"%s__pk" % doc_attr: instance.pk}
-        docs = DocumentPrefetchableProxy.items_to_index().filter(**doc_filter)
+        docs = Document.items_to_index().filter(**doc_filter)
         if docs.exists():
             logger.debug(
                 "%s %s, reindexing %d related document(s)",
@@ -368,6 +382,7 @@ class Document(ModelIndexable):
         (PUBLIC, STATUS_PUBLIC),
         (SUPPRESSED, STATUS_SUPPRESSED),
     )
+    PUBLIC_LABEL = "Public"
     #: status of record; currently choices are public or suppressed
     status = models.CharField(
         max_length=2,
@@ -412,13 +427,7 @@ class Document(ModelIndexable):
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
 
-    @property
-    def log_entries(self):
-        return LogEntry.objects.filter(
-            object_id=self.id,
-            content_type__app_label="corpus",
-            content_type__model="document",
-        ).distinct()
+    log_entries = GenericRelation(LogEntry, related_query_name="document")
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution
@@ -579,23 +588,40 @@ class Document(ModelIndexable):
             source__footnote__document=self,
         ).distinct()
 
+    def sources(self):
+        """All unique sources attached to footnotes on this document."""
+        return Source.objects.filter(footnote__document=self).distinct()
+
+    @classmethod
+    def total_to_index(cls):
+        # quick count for parasolr indexing (don't do prefetching just to get the total!)
+        return cls.objects.count()
+
     @classmethod
     def items_to_index(cls):
         """Custom logic for finding items to be indexed when indexing in
         bulk."""
-        # TODO: can we share common/reused prefetching logic
-        # in a custom qureyset filter or similar? (adapted here from admin)
-        return cls.objects.select_related("doctype").prefetch_related(
-            "tags",
-            "languages",
-            "footnotes",
-            "log_entries",
-            Prefetch(
-                "textblock_set",
-                queryset=TextBlock.objects.select_related(
-                    "fragment", "fragment__collection"
+        # NOTE: some overlap with prefetching used for django admin
+        return (
+            Document.objects.select_related("doctype")
+            .prefetch_related(
+                "tags",
+                "languages",
+                "footnotes",
+                "footnotes__source",
+                "footnotes__source__authorship",
+                "footnotes__source__authorship__creator",
+                "footnotes__source__source_type",
+                "footnotes__source__languages",
+                "log_entries",
+                Prefetch(
+                    "textblock_set",
+                    queryset=TextBlock.objects.select_related(
+                        "fragment", "fragment__collection"
+                    ),
                 ),
-            ),
+            )
+            .distinct()
         )
 
     def index_data(self):
@@ -615,7 +641,7 @@ class Document(ModelIndexable):
                 "shelfmark_ss": [f.shelfmark for f in fragments],
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
-                "tags_ss": [t.name for t in self.tags.all()],
+                "tags_ss_lower": [t.name for t in self.tags.all()],
                 "status_s": self.get_status_display(),
                 "old_pgpids_is": self.old_pgpids,
                 "language_code_ss": [lang.iso_code for lang in self.languages.all()],
@@ -626,24 +652,36 @@ class Document(ModelIndexable):
         footnotes = self.footnotes.all()
         counts = defaultdict(int)
         transcription_texts = []
+
+        # dict of sets of relations; keys are each source attached to any footnote on this document
+        source_relations = defaultdict(set)
+
         for fn in footnotes:
-            for val in fn.doc_relation:
-                counts[val] += 1
             # if this is an edition/transcription, try to get plain text for indexing
             if Footnote.EDITION in fn.doc_relation and fn.content:
                 plaintext = fn.content_text()
                 if plaintext:
                     transcription_texts.append(plaintext)
+            # add any doc relations to this footnote's source's set in source_relations
+            source_relations[fn.source] = source_relations[fn.source].union(
+                fn.doc_relation
+            )
+
+        # flatten sets of relations by source into a list of relations
+        for relation in list(chain(*source_relations.values())):
+            # add one for each relation in the flattened list
+            counts[relation] += 1
 
         index_data.update(
             {
                 "num_editions_i": counts[Footnote.EDITION],
                 "num_translations_i": counts[Footnote.TRANSLATION],
                 "num_discussions_i": counts[Footnote.DISCUSSION],
-                "scholarship_count_i": sum(counts.values()),
+                # count each unique source as one scholarship record
+                "scholarship_count_i": self.sources().count(),
                 # preliminary scholarship record indexing
                 # (may need splitting out and weighting based on type of scholarship)
-                "scholarship_t": [fn.display() for fn in footnotes],
+                "scholarship_t": [fn.display() for fn in self.footnotes.all()],
                 # text content of any transcriptions
                 "transcription_t": transcription_texts,
             }
@@ -822,14 +860,12 @@ class Document(ModelIndexable):
             log_entry.save()
 
 
-class DocumentPrefetchableProxy(Document):
-    """Proxy model for :class:`Document` that overrides the `log_entries` property
-    in order to make it a :class:`GenericRelation`."""
-
-    class Meta:
-        proxy = True
-
-    log_entries = GenericRelation(LogEntry, related_query_name="document")
+@receiver(pre_delete, sender=Document)
+def detach_document_logentries(sender, instance, **kwargs):
+    # To avoid deleting log entries caused by the generic relation
+    # from document to log entries, clear out object id
+    # for associated log entries before deleting the document
+    instance.log_entries.update(object_id=None)
 
 
 class TextBlock(models.Model):

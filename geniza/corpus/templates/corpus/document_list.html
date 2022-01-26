@@ -4,7 +4,7 @@
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 {% block extrascript %}
-    <script defer src="{% static 'js/sort-select.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    <script defer src="{% static 'js/search.js' %}" nonce="{{ request.csp_nonce }}"></script>
 {% endblock %}
 
 {% block main %}
@@ -44,12 +44,16 @@
             <button type="submit" aria-label="{{ search_label }}" />
         </fieldset>
 
-        {% for field, errors in form.errors.items %}
-            {# no clean way to get field labels here, so we just collapse the error lists #}
-            {% for error in errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-        {% endfor %}
+        {% if form.errors %}
+            <ul id="search-errors">
+                {% for field, errors in form.errors.items %}
+                    {# no clean way to get field labels here, so we just collapse the error lists #}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        {% endif %}
     </form>
     <section id="document-list">
         <h1>

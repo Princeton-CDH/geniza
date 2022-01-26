@@ -17,7 +17,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "status": "status_s",
         "shelfmark": "shelfmark_t",
         "collection": "collection_ss",
-        "tags": "tags_ss",
+        "tags": "tags_ss_lower",
         "description": "description_t",
         "notes": "notes_t",
         "needs_review": "needs_review_t",
@@ -40,8 +40,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # - define additional search aliases for site users
     search_aliases = {
         # when searching, singular makes more sense for tags & old pgpids
-        "old_pgpid": "old_pgpids_is",
-        "tag": "tags_ss",
+        "old_pgpid": field_aliases["old_pgpids"],
+        "tag": field_aliases["tags"],
     }
     # - update to include all default aliases
     search_aliases.update(field_aliases)

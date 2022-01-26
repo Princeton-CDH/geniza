@@ -73,20 +73,41 @@ $text-size-5xl: 2rem; //     = 32px
 // blockquote
 @mixin quote {
     font-family: fonts.$primary;
-    padding-left: spacing.$spacing-lg;
-    border-left: 2px solid var(--on-background);
-    margin: spacing.$spacing-2xl 0;
-    &::before {
-        content: "\201C";
-        font-size: $text-size-4xl;
+    padding-left: spacing.$spacing-md;
+    border-left: 0.125rem solid var(--link-primary);
+    margin: 3rem 0;
+    &::before,
+    &::after {
+        content: "";
+        width: 30px;
+        height: 24px;
         position: absolute;
-        margin-top: -#{spacing.$spacing-2xl};
+        background-color: var(--link-primary);
+    }
+    &::before {
+        margin-top: -#{spacing.$spacing-xl};
+        mask-image: url("/static/img/ui/mobile/light/left-double-quote.svg");
     }
     &::after {
-        content: "\201D";
-        font-size: $text-size-4xl;
-        position: absolute;
         display: block;
+        margin-top: #{spacing.$spacing-sm};
+        mask-image: url("/static/img/ui/mobile/light/right-double-quote.svg");
+    }
+    @include breakpoints.for-tablet-landscape-up {
+        margin: 4rem 0;
+        &::before,
+        &::after {
+            width: 40px;
+            height: 32px;
+        }
+        &::before {
+            margin-top: -3rem;
+            mask-image: url("/static/img/ui/desktop/light/left-double-quote.svg");
+        }
+        &::after {
+            margin-top: #{spacing.$spacing-md};
+            mask-image: url("/static/img/ui/desktop/light/right-double-quote.svg");
+        }
     }
 }
 
@@ -112,7 +133,6 @@ $text-size-5xl: 2rem; //     = 32px
     font-family: fonts.$primary-italic;
     font-style: italic;
     font-weight: normal;
-    color: colors.$gray;
     font-size: $text-size-md;
     @include breakpoints.for-tablet-landscape-up {
         font-size: $text-size-lg;
@@ -132,8 +152,9 @@ $text-size-5xl: 2rem; //     = 32px
     text-decoration-line: underline;
     text-decoration-style: solid;
     text-decoration-thickness: 0.1875rem;
-    text-underline-offset: 0.2rem;
+    text-underline-offset: 0.375rem;
     text-decoration-color: var(--link-primary);
+    text-decoration-skip-ink: none;
     &:hover,
     &:active {
         text-decoration-color: var(--link-secondary);
