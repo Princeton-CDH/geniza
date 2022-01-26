@@ -65,11 +65,14 @@ class DocumentSearchView(ListView, FormMixin):
         return kwargs
 
     def get_queryset(self):
-        # limit to documents with published status (i.e., no suppressed documents)
-        documents = DocumentSolrQuerySet().filter(status=Document.STATUS_PUBLIC)
 
-        # get counts of facets, exclude type filter
-        documents = documents.facet_field("type", exclude="type", sort="value")
+        # limit to documents with published status (i.e., no suppressed documents);
+        # get counts of facets, excluding type filter
+        documents = (
+            DocumentSolrQuerySet()
+            .filter(status=Document.PUBLIC_LABEL)
+            .facet_field("type", exclude="type", sort="value")
+        )
 
         form = self.get_form()
         # return empty queryset if not valid

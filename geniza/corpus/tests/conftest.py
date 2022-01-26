@@ -9,6 +9,13 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.timezone import get_current_timezone, make_aware
 
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
+from geniza.footnotes.models import (
+    Creator,
+    Footnote,
+    Source,
+    SourceLanguage,
+    SourceType,
+)
 
 
 @patch("geniza.corpus.models.ManifestImporter", Mock())
@@ -101,3 +108,13 @@ def document(db, fragment):
 @pytest.fixture
 def join(db, fragment, multifragment):
     return make_join(fragment, multifragment)
+
+
+@pytest.fixture
+def footnote(db, source, document):
+    return Footnote.objects.create(
+        source=source,
+        content_object=document,
+        location="p.1",
+        doc_relation=Footnote.EDITION,
+    )
