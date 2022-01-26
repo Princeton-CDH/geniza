@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-01-24 15:52-0500\n"
+"POT-Creation-Date: 2022-01-26 12:42-0500\n"
 "PO-Revision-Date: 2022-01-12 17:32\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -16,26 +16,6 @@ msgstr ""
 "X-Crowdin-Language: en\n"
 "X-Crowdin-File: /develop/geniza/locale/en/LC_MESSAGES/django.po\n"
 "X-Crowdin-File-ID: 28\n"
-
-#. Translators: title for Not Found (404) error page
-#: geniza/common/views.py:7
-msgid "Not Found"
-msgstr ""
-
-#. Translators: description for Not Found (404) error page
-#: geniza/common/views.py:9
-msgid "Oops, you've hit a lacuna! Page not found."
-msgstr ""
-
-#. Translators: title for Internal Server Error (500) error page
-#: geniza/common/views.py:17
-msgid "Server Error"
-msgstr ""
-
-#. Translators: description for Internal Server Error (500) error page
-#: geniza/common/views.py:19
-msgid "Something went wrong putting this page together."
-msgstr ""
 
 #. Translators: placeholder for keyword search input
 #: geniza/corpus/forms.py:109
@@ -84,7 +64,7 @@ msgstr ""
 
 #. Translators: label for 'home' link in footer navigation
 #: geniza/corpus/templates/admin/corpus/app_index.html:9
-#: geniza/templates/footer.html:10
+#: geniza/templates/footer.html:12
 msgid "Home"
 msgstr "Home"
 
@@ -314,6 +294,26 @@ msgstr ""
 msgid "Discussion"
 msgstr ""
 
+#. Translators: title for Not Found (404) error page
+#: geniza/templates/404.html:5 geniza/templates/404.html:13
+msgid "Not Found"
+msgstr ""
+
+#. Translators: description for Not Found (404) error page
+#: geniza/templates/404.html:7 geniza/templates/404.html:14
+msgid "Oops, you've hit a lacuna! Page not found."
+msgstr ""
+
+#. Translators: title for Internal Server Error (500) error page
+#: geniza/templates/500.html:5 geniza/templates/500.html:19
+msgid "Server Error"
+msgstr ""
+
+#. Translators: description for Internal Server Error (500) error page
+#: geniza/templates/500.html:7 geniza/templates/500.html:20
+msgid "Something went wrong putting this page together."
+msgstr ""
+
 #: geniza/templates/admin/base_site.html:4
 msgid "Django site admin"
 msgstr ""
@@ -328,42 +328,42 @@ msgid "footer navigation"
 msgstr ""
 
 #. Translators: label for Twitter links in footer
-#: geniza/templates/footer.html:17
+#: geniza/templates/footer.html:19
 msgid "Twitter"
 msgstr ""
 
 #. Translators: label for Instagram links in footer
-#: geniza/templates/footer.html:19
+#: geniza/templates/footer.html:21
 msgid "Instagram"
 msgstr ""
 
 #. Translators: accessibility label for Princeton Geniza Lab homepage, for footer
-#: geniza/templates/footer.html:24
+#: geniza/templates/footer.html:26
 msgid "Princeton Geniza Lab homepage"
 msgstr ""
 
 #. Translators: accessibility label for Princeton CDH homepage, for footer
-#: geniza/templates/footer.html:37
+#: geniza/templates/footer.html:39
 msgid "Princeton Center for Digital Humanities homepage"
 msgstr ""
 
 #. Translators: link label for Princeton accessibility assistance page, for footer
-#: geniza/templates/footer.html:56
+#: geniza/templates/footer.html:58
 msgid "Accessibility"
 msgstr ""
 
 #. Translators: official name of Princeton University's board of trustees, for footer
-#: geniza/templates/footer.html:61
+#: geniza/templates/footer.html:63
 msgid "The Trustees of Princeton University"
 msgstr ""
 
 #. Translators: Creative Commons license text, for footer
-#: geniza/templates/footer.html:65
+#: geniza/templates/footer.html:67
 msgid "Creative Commons CC-BY license"
 msgstr ""
 
 #. Translators: official name of Princeton University, for footer
-#: geniza/templates/footer.html:72
+#: geniza/templates/footer.html:74
 msgid "Princeton University homepage"
 msgstr ""
 
@@ -383,12 +383,12 @@ msgid "The Princeton Geniza Project"
 msgstr ""
 
 #. Translators: label for 'menu' open button for mobile navigation
-#: geniza/templates/nav.html:27
+#: geniza/templates/nav.html:29
 msgid "Open main navigation menu"
 msgstr ""
 
 #. Translators: label for 'menu' close button for mobile navigation
-#: geniza/templates/nav.html:35
+#: geniza/templates/nav.html:37
 msgid "Close main navigation menu"
 msgstr ""
 

@@ -4,7 +4,7 @@
 {# Translators: title for Internal Server Error (500) error page #}
 {% block meta_title %}{% translate "Server Error" %}{% endblock meta_title %}
 {# Translators: description for Internal Server Error (500) error page #}
-{% block meta_description %}{% translate "OoSomething went wrong putting this page together." %}{% endblock meta_description %}
+{% block meta_description %}{% translate "Something went wrong putting this page together." %}{% endblock meta_description %}
 
 {% block page_type %}error{% endblock %}
 
@@ -17,5 +17,5 @@
 {# "translate" tags need to be duplicated since these are in separate blocks #}
 {% block main %}
     <h1 class="e500">{% translate "Server Error" %}</h1>
-    <p>{% translate "OoSomething went wrong putting this page together." %}</p>
+    <p>{% translate "Something went wrong putting this page together." %}</p>
 {% endblock %}
