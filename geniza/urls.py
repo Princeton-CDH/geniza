@@ -20,8 +20,7 @@ from django.conf.urls.i18n import i18n_patterns
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from django.urls.conf import re_path
-from django.views.generic.base import RedirectView, TemplateView
+from django.views.generic.base import TemplateView
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.contrib.sitemaps import Sitemap as WagtailSitemap
 from wagtail.contrib.sitemaps import views as sitemap_views
@@ -58,6 +57,7 @@ urlpatterns = [
         name="django.contrib.sitemaps.views.sitemap",
     ),
     path("cms/", include(wagtailadmin_urls)),
+    path("_500/", lambda _: 1 / 0),
 ]
 
 # urls that should be available in multiple languages

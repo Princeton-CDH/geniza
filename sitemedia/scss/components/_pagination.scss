@@ -31,6 +31,8 @@ nav.pagination {
     // spacing and style for page links, ellipsis, and disabled
     a,
     span {
+        position: relative;
+        border-bottom: 3px solid var(--background);
         @include typography.nav-bold;
         &:not([aria-current="page"]) {
             @include typography.nav-link;
@@ -49,13 +51,10 @@ nav.pagination {
     }
     // link-specific styling
     a {
-        position: relative;
         // current page styling
         &[aria-current="page"] {
             text-decoration: none;
-            border-bottom: 0.1875rem solid var(--link-primary);
-            margin-bottom: -0.1875rem;
-            margin-top: 0;
+            border-bottom-color: var(--link-primary);
         }
         // use ::after for focus outline
         // (.next gets ::before because it already has icon ::after)
@@ -71,18 +70,17 @@ nav.pagination {
         }
         &:not(.next):focus-visible::after,
         &.next:focus-visible::before {
-            outline: 0.1rem solid var(--primary);
+            outline: 0.1rem solid var(--focus);
         }
         @include breakpoints.for-tablet-landscape-up {
             // hover underline
             &:hover {
                 text-decoration: none;
-                border-bottom: 0.1875rem solid var(--on-background-light);
-                margin-bottom: -0.1875rem;
+                border-bottom-color: var(--on-background-light);
             }
             // current page underline color
             &[aria-current="page"]:hover {
-                border-bottom-color: var(--link-secondary);
+                border-bottom-color: var(--link-primary);
             }
         }
     }

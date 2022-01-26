@@ -82,13 +82,13 @@ class Command(BaseCommand):
             browser, "About submenu%s" % dark_mode_str, percy_css=about_menu_css
         )
 
-        # 404 page TODO
-        # browser.get("http://localhost:8000/bad-url")
-        # percy_snapshot(browser, "404 Page%s" % dark_mode_str)
+        # 404 page
+        browser.get("http://localhost:8000/en/bad-url/")
+        percy_snapshot(browser, "404 Page%s" % dark_mode_str)
 
-        # 500 page TODO
-        # browser.get("http://localhost:8000/500")
-        # percy_snapshot(browser, "500 Page%s" % dark_mode_str)
+        # 500 page
+        browser.get("http://localhost:8000/_500/")
+        percy_snapshot(browser, "500 Page%s" % dark_mode_str)
 
     def handle(self, *args, **options):
         # spin up browser and take snapshots; shut down when finished
