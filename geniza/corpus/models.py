@@ -12,6 +12,8 @@ from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Lower
 from django.db.models.query import Prefetch
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate, get_language
@@ -191,18 +193,29 @@ class Fragment(TrackChangesModel):
         return (self.shelfmark,)
 
     def iiif_images(self):
+        """IIIF image URLs for this fragment. Returns a list of
+        :class:`~piffle.image.IIIFImageClient` and corresponding list of labels,
+        or None if this fragement has no IIIF url associated."""
+
         # if there is no iiif for this fragment, bail out
         if not self.iiif_url:
             return None
-        # TODO: switch this to use locally cached version!
         images = []
         labels = []
-        manifest = IIIFPresentation.from_url(self.iiif_url)
-        for canvas in manifest.sequences[0].canvases:
-            image_id = canvas.images[0].resource.id
-            images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
-            # label provides library's recto/verso designation
-            labels.append(canvas.label)
+        # use images from locally cached manifest if possible
+        if self.manifest:
+            for canvas in self.manifest.canvases.all():
+                images.append(canvas.image)
+                labels.append(canvas.label)
+
+        # if not cached, load from remote url
+        else:
+            manifest = IIIFPresentation.from_url(self.iiif_url)
+            for canvas in manifest.sequences[0].canvases:
+                image_id = canvas.images[0].resource.id
+                images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
+                # label provides library's recto/verso designation
+                labels.append(canvas.label)
 
         return images, labels
 
@@ -413,13 +426,7 @@ class Document(ModelIndexable):
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
 
-    @property
-    def log_entries(self):
-        return LogEntry.objects.filter(
-            object_id=self.id,
-            content_type__app_label="corpus",
-            content_type__model="document",
-        ).distinct()
+    log_entries = GenericRelation(LogEntry, related_query_name="document")
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution
@@ -595,7 +602,7 @@ class Document(ModelIndexable):
         bulk."""
         # NOTE: some overlap with prefetching used for django admin
         return (
-            DocumentPrefetchableProxy.objects.select_related("doctype")
+            Document.objects.select_related("doctype")
             .prefetch_related(
                 "tags",
                 "languages",
@@ -852,30 +859,12 @@ class Document(ModelIndexable):
             log_entry.save()
 
 
-class DocumentPrefetchableProxy(Document):
-    """Proxy model for :class:`Document` that overrides the `log_entries` property
-    in order to make it a :class:`GenericRelation`."""
-
-    class Meta:
-        proxy = True
-
-    log_entries = GenericRelation(LogEntry, related_query_name="document")
-
-    @classmethod
-    def items_to_index(cls):
-        # parasolr is picking this up as an indexable since it extends Document,
-        # but we don't actually want to index it!
-        return []
-
-    @staticmethod
-    def total_to_index():
-        # tell parasolr, nothing to index here
-        return 0
-
-    @classmethod
-    def index_item_type(cls):
-        # when indexing in bulk with prefetching, index exactly like a document
-        return Document.index_item_type()
+@receiver(pre_delete, sender=Document)
+def detach_document_logentries(sender, instance, **kwargs):
+    # To avoid deleting log entries caused by the generic relation
+    # from document to log entries, clear out object id
+    # for associated log entries before deleting the document
+    instance.log_entries.update(object_id=None)
 
 
 class TextBlock(models.Model):
