@@ -23,11 +23,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # reassign all log entries associated with DocumentPrefetchableProxy
+        # instances to Documents instead
+        migrations.RunPython(reassign_log_entries, migrations.RunPython.noop),
         # delete DocumentPrefetchableProxy model
         migrations.DeleteModel(
             name="DocumentPrefetchableProxy",
         ),
-        # reassign all log entries associated with DocumentPrefetchableProxy
-        # instances to Documents instead
-        migrations.RunPython(reassign_log_entries, migrations.RunPython.noop),
     ]
