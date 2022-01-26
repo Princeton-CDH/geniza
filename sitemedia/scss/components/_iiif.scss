@@ -34,18 +34,27 @@
             margin-top: spacing.$spacing-md;
         }
         @include breakpoints.for-tablet-landscape-up {
+            align-items: flex-start;
             width: 50%;
             img {
                 max-width: 90%;
             }
+            // Special styling for images + transcription
             & + .transcription {
-                margin-left: spacing.$spacing-md;
+                align-self: flex-start;
+                margin: 0 0 0 spacing.$spacing-md;
                 width: 50%;
+            }
+            // Special styling for images and NO transcription
+            &:last-child {
+                margin: 0 auto;
+                align-items: center;
             }
         }
     }
     .transcription {
         max-width: 100%;
+        margin: 0 auto;
         * {
             max-width: 100%;
         }
