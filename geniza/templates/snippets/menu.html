@@ -8,7 +8,7 @@
     </a>
 </li>
 
-{% if skip_nav != "true" %}
+{% if not skip_nav %}
     {% for top_level_page in site.root_page.get_children.live.in_menu %}
         {% if top_level_page.get_children|length > 0 %}
             <li class="menu-item has-submenu" role="none">

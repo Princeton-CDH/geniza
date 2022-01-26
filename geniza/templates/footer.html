@@ -5,7 +5,7 @@
 <nav id="footer-nav">
     <ul role="menu">
         <li class="menu-item" role="none">
-            {% if skip_nav != "true" %}
+            {% if not skip_nav %}
                 {% pageurl site.root_page.localized as root_url %}
             {% endif %}
             {# Translators: label for 'home' link in footer navigation #}

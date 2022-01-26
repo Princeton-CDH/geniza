@@ -9,7 +9,7 @@
 {% block page_type %}error{% endblock %}
 
 {% block body %}
-    {% with skip_nav="true" %}
+    {% with skip_nav=1 %}
         {{ block.super }}
     {% endwith %}
 {% endblock %}
