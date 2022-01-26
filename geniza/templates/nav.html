@@ -14,8 +14,10 @@
                 {% translate "home" as aria_home %}
                 {# Translators: site name label for 'home' button in main navigation #}
                 {% translate "The Princeton Geniza Project" as site_name %}
-                {% pageurl site.root_page.localized as root_url %}
-                <a class="home-link" href="{{ root_url }}" aria-label="{{ aria_home }}" role="button">
+                {% if skip_nav != "true" %}
+                    {% pageurl site.root_page.localized as root_url %}
+                {% endif %}
+                <a class="home-link" href="{{ root_url|default:"/" }}" aria-label="{{ aria_home }}" role="button">
                     <svg>
                         <use href="{% static 'img/logos/pgp-logo.svg' %}#logo" />
                     </svg>

@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 {% load i18n static %}
 
-{% block meta_title %}{{ page_title }}{% endblock meta_title %}
-{% block meta_description %}{{ page_description }}{% endblock meta_description %}
+{# Translators: title for Not Found (404) error page #}
+{% block meta_title %}{% translate "Not Found" %}{% endblock meta_title %}
+{# Translators: description for Not Found (404) error page #}
+{% block meta_description %}{% translate "Oops, you've hit a lacuna! Page not found." %}{% endblock meta_description %}
 
+{% block page_type %}error{% endblock %}
+
+{# "translate" tags need to be duplicated since these are in separate blocks #}
 {% block main %}
-    <h1 class="e404">{{ page_title }}</h1>
-    <p>{{ page_description }}</p>
+    <h1 class="e404">{% translate "Not Found" %}</h1>
+    <p>{% translate "Oops, you've hit a lacuna! Page not found." %}</p>
 {% endblock %}

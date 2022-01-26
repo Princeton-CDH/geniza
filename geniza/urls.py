@@ -21,15 +21,13 @@ from django.urls import include, path
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.core import urls as wagtail_urls
 
-from geniza.common.views import error_500
-
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("pucas.cas_urls")),
     path("i18n/", include("django.conf.urls.i18n")),
     path("taggit/", include("taggit_selectize.urls")),
     path("cms/", include(wagtailadmin_urls)),
-    path("500/", error_500, name="error_500"),
+    path("_500/", lambda _: 1 / 0),
 ]
 
 # urls that should be available in multiple languages
@@ -37,10 +35,6 @@ urlpatterns += i18n_patterns(
     path("", include("geniza.corpus.urls", namespace="corpus")),
     path("", include(wagtail_urls)),
 )
-
-# error handlers
-handler404 = "geniza.common.views.error_404"
-handler500 = "geniza.common.views.error_500"
 
 if settings.DEBUG:
     try:

@@ -87,7 +87,7 @@ class Command(BaseCommand):
         percy_snapshot(browser, "404 Page%s" % dark_mode_str)
 
         # 500 page
-        browser.get("http://localhost:8000/500/")
+        browser.get("http://localhost:8000/_500/")
         percy_snapshot(browser, "500 Page%s" % dark_mode_str)
 
     def handle(self, *args, **options):
