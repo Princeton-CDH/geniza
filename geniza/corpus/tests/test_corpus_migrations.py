@@ -10,6 +10,7 @@ class ReassignLogEntries(TestMigrations):
     app = "corpus"
     migrate_from = "0025_documentprefetchableproxy"
     migrate_to = "0026_delete_documentprefetchableproxy"
+    log_entry = None
 
     def setUpBeforeMigration(self, apps):
         # Create a LogEntry for a Document, assign it to corpus.DocumentPrefetchableProxy ContentType
@@ -20,7 +21,7 @@ class ReassignLogEntries(TestMigrations):
             app_label="corpus", model="documentprefetchableproxy"
         )
         d = Document.objects.create()
-        LogEntry.objects.log_action(
+        self.log_entry = LogEntry.objects.log_action(
             user_id=1,
             content_type_id=document_prefetchable_type.pk,
             object_id=d.pk,
@@ -31,8 +32,7 @@ class ReassignLogEntries(TestMigrations):
 
     def test_log_entries_reassigned(self):
         # LogEntry should be reassigned so that its ContentType is corpus.Document
-        LogEntry = self.apps.get_model("admin", "LogEntry")
         ContentType = self.apps.get_model("contenttypes", "ContentType")
         document_type = ContentType.objects.get(app_label="corpus", model="document")
-        log_entry = LogEntry.objects.first()
-        assert log_entry.content_type_id == document_type.pk
+        self.log_entry.refresh_from_db()
+        assert self.log_entry.content_type_id == document_type.pk
