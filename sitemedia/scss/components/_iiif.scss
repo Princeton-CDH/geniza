@@ -1,7 +1,10 @@
-/* limit size of iiif viewer */
+/* Mirador styles */
 
+@use "../base/breakpoints";
 @use "../base/spacing";
+@use "../base/typography";
 
+// Wrapper for limiting size
 .iiif_wrapper {
     display: block;
     width: clamp(300px, 75vw, 90vw);
@@ -14,4 +17,34 @@
 #iiif_viewer {
     position: relative;
     height: clamp(200px, 75vh, 75vh);
+}
+
+// Mirador general improvements
+.mirador-viewer {
+    h1 {
+        @include typography.headline-3;
+        text-align: left;
+        direction: ltr;
+    }
+    li {
+        font-size: typography.$text-size-md;
+        @include breakpoints.for-tablet-landscape-up {
+            font-size: typography.$text-size-lg;
+        }
+        & + li {
+            margin-top: spacing.$spacing-xs;
+        }
+    }
+    li::before {
+        @include typography.nav-bold;
+    }
+    // Mobile improvement for mirador
+    .mirador-companion-area-left,
+    .mirador-companion-area-left div {
+        @include breakpoints.for-phone-only {
+            width: auto !important;
+            height: auto !important;
+            overflow: scroll;
+        }
+    }
 }

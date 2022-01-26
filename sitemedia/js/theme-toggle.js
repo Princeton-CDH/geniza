@@ -11,25 +11,33 @@ const body = document.querySelector("body");
 const toggleLabel = document.querySelector("label#theme-toggle");
 const toggleCheckbox = toggleLabel.querySelector("input");
 
+// Function to do shared actions for manual toggle and system light/dark mode
+const setMode = (mode) => {
+    body.classList.add(`${mode}-mode`);
+    body.classList.remove(`${mode === "light" ? "dark" : "light"}-mode`);
+    if (typeof miradorInstance !== "undefined" && miradorInstance) {
+        const action = Mirador.actions.updateConfig({
+            selectedTheme: mode,
+        });
+        miradorInstance.store.dispatch(action);
+    }
+};
+
 if (systemDarkMode) {
-    body.classList.add("dark-mode");
-    body.classList.remove("light-mode");
+    setMode("dark");
     toggleCheckbox.checked = true;
 } else {
-    body.classList.add("light-mode");
-    body.classList.remove("dark-mode");
+    setMode("light");
     toggleCheckbox.checked = false;
 }
 
 // Toggle using classes on body element
 toggleCheckbox.addEventListener("change", function () {
     if (toggleCheckbox.checked) {
-        body.classList.add("dark-mode");
-        body.classList.remove("light-mode");
+        setMode("dark");
         localStorage.setItem("darkMode", "true");
     } else {
-        body.classList.add("light-mode");
-        body.classList.remove("dark-mode");
+        setMode("light");
         localStorage.setItem("darkMode", "false");
     }
 });
