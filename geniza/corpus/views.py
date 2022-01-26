@@ -1,11 +1,11 @@
 from ast import literal_eval
 
 from django.db.models.query import Prefetch
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect
 from django.urls import reverse
 from django.utils.html import strip_tags
-from django.utils.text import Truncator
+from django.utils.text import Truncator, slugify
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views.generic import DetailView, ListView
@@ -65,7 +65,15 @@ class DocumentSearchView(ListView, FormMixin):
         return kwargs
 
     def get_queryset(self):
-        documents = DocumentSolrQuerySet().filter(status=Document.PUBLIC_LABEL)
+
+        # limit to documents with published status (i.e., no suppressed documents);
+        # get counts of facets, excluding type filter
+        documents = (
+            DocumentSolrQuerySet()
+            .filter(status=Document.PUBLIC_LABEL)
+            .facet_field("type", exclude="type", sort="value")
+        )
+
         form = self.get_form()
         # return empty queryset if not valid
         if not form.is_valid():
@@ -76,19 +84,30 @@ class DocumentSearchView(ListView, FormMixin):
             search_opts = form.cleaned_data
 
             if search_opts["q"]:
+                # NOTE: using requireFieldMatch so that field-specific search
+                # terms will NOT be usind for highlighting text matches
+                # (unless they are in the appropriate field)
                 documents = (
                     documents.keyword_search(search_opts["q"])
-                    .highlight("description", snippets=3, method="unified")
+                    .highlight(
+                        "description",
+                        snippets=3,
+                        method="unified",
+                        requireFieldMatch=True,
+                    )
                     # return smaller chunk of highlighted text for transcriptions
                     # since the lines are often shorter, resulting in longer text
-                    .highlight("transcription", method="unified", fragsize=50)
+                    .highlight(
+                        "transcription",
+                        method="unified",
+                        fragsize=150,  # try including more context
+                        requireFieldMatch=True,
+                    )
                     .also("score")
                 )  # include relevance score in results
 
-            documents = documents.order_by(
-                self.solr_sort[search_opts["sort"]]
-            ).facet_field("type", exclude="type", sort="value")
-            # exclude type filter when generating counts
+            # order by sort option
+            documents = documents.order_by(self.solr_sort[search_opts["sort"]])
 
             # filter by type if specified
             if search_opts["doctype"]:
@@ -241,6 +260,34 @@ class DocumentScholarshipView(DocumentDetailView):
             }
         )
         return context_data
+
+
+class DocumentTranscriptionText(DocumentDetailView):
+    """Return transcription as plain text for download"""
+
+    viewname = "corpus:document-transcription-text"
+
+    def get(self, request, *args, **kwargs):
+        document = self.get_object()
+        try:
+            edition = document.digital_editions().get(
+                pk=self.kwargs["transcription_pk"]
+            )
+            shelfmark = slugify(document.textblock_set.first().fragment.shelfmark)
+            authors = [slugify(a.last_name) for a in edition.source.authors.all()]
+            filename = "PGP%d_%s_%s.txt" % (document.id, shelfmark, "_".join(authors))
+
+            return HttpResponse(
+                edition.content["text"],
+                headers={
+                    "Content-Type": "text/plain; charset=UTF-8",
+                    # prompt download with filename including pgpid, shelfmark, & authors
+                    "Content-Disposition": 'attachment; filename="%s"' % filename,
+                },
+            )
+        except (Footnote.DoesNotExist, KeyError):
+            # if there is no footnote, or no plain text content, return 404
+            raise Http404
 
 
 class DocumentManifestView(DocumentDetailView):

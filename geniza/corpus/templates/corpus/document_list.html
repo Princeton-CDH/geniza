@@ -3,6 +3,9 @@
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
+{% block extrascript %}
+    <script defer src="{% static 'js/search.js' %}" nonce="{{ request.csp_nonce }}"></script>
+{% endblock %}
 
 {% block main %}
     <h1 class="sr-only">{{ page_title }}</h1>
@@ -16,21 +19,43 @@
                 </summary>
                 {{ form.doctype }}
             </details>
-            {{ form.sort }}
-            <label for="sort">{{ form.sort.label }}</label>
+
+            <label for="{{ form.sort.html_name }}">
+                {{ form.sort.label }}
+            </label>
+            <details class="sort-select" aria-expanded="false">
+                <summary class="sort-select-trigger">
+                    {% for choice in form.sort.field.choices %}
+                        {% if form.sort.value == choice.0 %}
+                            {{ choice.1 }}
+                        {% endif %}
+                    {% endfor %}
+                    {# Translators: Button to open or close sort options menu #}
+                    {% translate 'Toggle sort options menu' as toggle_label %}
+                    <div role="button" tabindex="-1" aria-pressed="false" aria-expanded="false" aria-label="{{ toggle_label }}">
+                        <span class="sr-only">{{ toggle_label }}</span>
+                    </div>
+                </summary>
+                {{ form.sort }}
+            </details>
+
             {# Translators: Search submit button #}
             {% translate 'Submit search' as search_label %}
-            <button type="submit" aria-label="{{ search_label }}">
-                <i class="ph-magnifying-glass"></i>
-            </button>
+            <button type="submit" aria-label="{{ search_label }}" />
         </fieldset>
 
-        {% for field, errors in form.errors.items %}
-            {# no clean way to get field labels here, so we just collapse the error lists #}
-            {% for error in errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-        {% endfor %}
+        {% if form.errors %}
+            {# Translators: Label for form errors #}
+            <h3 id="search-errors">{% translate "Errors:" %}</h3>
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    {# no clean way to get field labels here, so we just collapse the error lists #}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        {% endif %}
     </form>
     <section id="document-list">
         <h1>

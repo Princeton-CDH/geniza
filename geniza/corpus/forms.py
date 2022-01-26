@@ -31,9 +31,9 @@ class SelectDisabledMixin:
         return option_dict
 
 
-class SelectWithDisabled(SelectDisabledMixin, forms.Select):
+class RadioSelectWithDisabled(SelectDisabledMixin, forms.RadioSelect):
     """
-    Subclass of :class:`django.forms.Select` with option to mark
+    Subclass of :class:`django.forms.RadioSelect` with option to mark
     a choice as disabled.
     """
 
@@ -131,9 +131,12 @@ class DocumentSearchForm(forms.Form):
     sort = forms.ChoiceField(
         # Translators: label for form sort field
         label=_("Sort by"),
-        choices=SORT_CHOICES,
+        choices=[
+            (choice[0], mark_safe(f"<span>{choice[1]}</span>"))
+            for choice in SORT_CHOICES
+        ],
         required=False,
-        widget=SelectWithDisabled,
+        widget=RadioSelectWithDisabled,
     )
 
     doctype = FacetChoiceField(
@@ -154,3 +157,14 @@ class DocumentSearchForm(forms.Form):
             # for each facet, set the corresponding choice field
             if formfield in self.fields:
                 self.fields[formfield].populate_from_facets(facet_dict)
+
+    def clean(self):
+        """Validate form"""
+        cleaned_data = super().clean()
+        q = cleaned_data.get("q")
+        sort = cleaned_data.get("sort")
+        if sort == "relevance" and (not q or q == ""):
+            # Translators: Error message when relevance sort is selected without a search query
+            self.add_error(
+                "q", _("Relevance sort is not available without a keyword search term.")
+            )

@@ -6,7 +6,7 @@ import pytest
 from django.db.models.fields import related
 from django.http.response import Http404
 from django.urls import reverse
-from django.utils.text import Truncator
+from django.utils.text import Truncator, slugify
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
 
@@ -20,6 +20,7 @@ from geniza.corpus.views import (
     DocumentManifestView,
     DocumentScholarshipView,
     DocumentSearchView,
+    DocumentTranscriptionText,
     old_pgp_edition,
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
@@ -203,25 +204,25 @@ def test_pgp_metadata_for_old_site():
 
 
 class TestDocumentSearchView:
-    def test_document_suppression(self, document):
+    def test_ignore_suppressed_documents(self, document, empty_solr):
         suppressed_document = Document.objects.create(status=Document.SUPPRESSED)
+        Document.index_items([document, suppressed_document])
+        SolrClient().update.index([], commit=True)
+        # [d.index_data() for d in [document, suppressed_document]], commit=True
+        # )
+        print(suppressed_document.index_data())
 
-        SolrClient().update.index(
-            [
-                document.index_data(),  # no scholarship records
-                suppressed_document.index_data(),  # one scholarship record
-            ],
-            commit=True,
-        )
         docsearch_view = DocumentSearchView()
+        # mock request with empty keyword search
         docsearch_view.request = Mock()
-
-        # keyword search param
         docsearch_view.request.GET = {"q": ""}
         qs = docsearch_view.get_queryset()
-        resulting_pgpids = [obj["pgpid"] for obj in qs]
-        assert document.id in resulting_pgpids
-        assert suppressed_document.id not in resulting_pgpids
+        result_pgpids = [obj["pgpid"] for obj in qs]
+        print(result_pgpids)
+        print(qs)
+        assert qs.count() == 1
+        assert document.id in result_pgpids
+        assert suppressed_document.id not in result_pgpids
 
     def test_get_form_kwargs(self):
         docsearch_view = DocumentSearchView()
@@ -292,7 +293,7 @@ class TestDocumentSearchView:
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_called_with("six apartments")
             mock_sqs.keyword_search.return_value.highlight.assert_any_call(
-                "description", snippets=3, method="unified"
+                "description", snippets=3, method="unified", requireFieldMatch=True
             )
             mock_sqs.also.assert_called_with("score")
             mock_sqs.also.return_value.order_by.assert_called_with("-score")
@@ -304,7 +305,25 @@ class TestDocumentSearchView:
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_not_called()
-            mock_sqs.order_by.assert_called_with("-score")
+            # filter called once to limit by status
+            assert mock_sqs.filter.call_count == 1
+            mock_sqs.filter.assert_called_with(status=Document.STATUS_PUBLIC)
+            # order_by should not be called when there is no search query
+            mock_sqs.order_by.assert_not_called()
+
+            # sort and keyword search params
+            mock_sqs.reset_mock()
+            docsearch_view.request = Mock()
+            docsearch_view.request.GET = {"q": "six apartments", "sort": "relevance"}
+            qs = docsearch_view.get_queryset()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.keyword_search.assert_called_with("six apartments")
+            mock_sqs.keyword_search.return_value.also.return_value.order_by.return_value.filter.assert_called_with(
+                status=Document.STATUS_PUBLIC
+            )
+            mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
+                "-score"
+            )
 
             # keyword, sort, and doctype filter search params
             mock_sqs.reset_mock()
@@ -371,7 +390,15 @@ class TestDocumentSearchView:
             # NOTE: test paginator isn't initialized properly from queryset count
             # assert context_data["paginator"].count == 22
 
-    def test_scholarship_sort(self, document, join, empty_solr, source):
+    def test_scholarship_sort(
+        self,
+        document,
+        join,
+        empty_solr,
+        source,
+        twoauthor_source,
+        multiauthor_untitledsource,
+    ):
         """integration test for sorting by scholarship asc and desc"""
 
         Footnote.objects.create(
@@ -382,12 +409,13 @@ class TestDocumentSearchView:
         doc_three_records = Document.objects.create(
             description="testing description",
         )
-        for _ in range(3):
+        for src in [source, twoauthor_source, multiauthor_untitledsource]:
             Footnote.objects.create(
                 content_object=doc_three_records,
-                source=source,
+                source=src,
                 doc_relation=Footnote.EDITION,
             )
+
         # ensure solr index is updated with all three test documents
         SolrClient().update.index(
             [
@@ -763,3 +791,93 @@ class TestDocumentAnnotationListView:
 
         assertNotContains(response, "here is my transcription text")
         assertContains(response, "completely different transcription text")
+
+
+@pytest.mark.django_db
+class TestDocumentTranscriptionText:
+    view_name = DocumentTranscriptionText.viewname
+
+    def test_nonexesistent_pgpid(self, client):
+        # non-existent pgpid should 404
+        assert (
+            client.get(
+                reverse(self.view_name, kwargs={"pk": 123, "transcription_pk": 456})
+            ).status_code
+            == 404
+        )
+
+    def test_nonexesistent_footnote_id(self, client, document):
+        # valid pgpid but non-existent footnote id should 404
+        assert (
+            client.get(
+                reverse(
+                    self.view_name, kwargs={"pk": document.pk, "transcription_pk": 123}
+                )
+            ).status_code
+            == 404
+        )
+
+    def test_not_edition(self, client, document, source):
+        # valid pgpid, valid footnote, but not an edition should 404
+        discussion = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DISCUSSION,
+        )
+        assert (
+            client.get(
+                reverse(
+                    self.view_name,
+                    kwargs={"pk": document.pk, "transcription_pk": discussion.pk},
+                )
+            ).status_code
+            == 404
+        )
+
+    def test_no_content(self, client, document, source):
+        # valid pgpid, valid footnote, but not an edition should 404
+        edition = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.EDITION,
+        )
+        assert (
+            client.get(
+                reverse(
+                    self.view_name,
+                    kwargs={"pk": document.pk, "transcription_pk": edition.pk},
+                )
+            ).status_code
+            == 404
+        )
+
+    def test_success(self, client, document, source):
+        # valid pgpid, valid footnote, but not an edition should 404
+        edition = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.EDITION,
+            content={
+                "html": "some transcription text",
+                "text": "some transcription text",
+            },
+        )
+        response = client.get(
+            reverse(
+                self.view_name,
+                kwargs={"pk": document.pk, "transcription_pk": edition.pk},
+            )
+        )
+        assert response.status_code == 200
+        assert response.headers["Content-Type"] == "text/plain; charset=UTF-8"
+        content_disposition = response.headers["Content-Disposition"]
+        assert content_disposition.startswith("attachment; filename=")
+        assert content_disposition.endswith('.txt"')
+        # check filename format
+        filename = content_disposition.split("=")[1]
+        # filename is wrapped in quotes; includes pgpid, shelfmark, author last name
+        assert filename.startswith('"PGP%d' % document.pk)
+        assert slugify(document.shelfmark) in filename
+        assert slugify(source.authorship_set.first().creator.last_name) in filename
+
+        assert response.content == b"some transcription text"

@@ -292,3 +292,8 @@ WAGTAIL_SITE_NAME = "GENIZA"
 
 # default font base url
 FONT_URL_PREFIX = "/static/fonts/"
+
+# Taggit customization
+TAGGIT_TAGS_FROM_STRING = "geniza.common.utils.custom_tag_string"
+# See issue #499
+# TAGGIT_CASE_INSENSITIVE = True

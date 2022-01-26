@@ -45,7 +45,8 @@ html {
 
 // Body setup: vertical stack that always takes at least the full page height.
 body {
-    @include colors.apply-combo("background");
+    color: var(--on-background);
+    background-color: var(--background);
     @include typography.body;
 
     display: flex;
@@ -58,6 +59,7 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex: 1 0 auto;
 }
 
 // Apply basic typographic styles defined in the typography module

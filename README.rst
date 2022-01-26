@@ -26,7 +26,7 @@ Python 3.8 / Django 3.2 / Node 12 / Postgresql / Solr 8.6
     :alt: dbdocs build
 
 .. image:: https://percy.io/static/images/percy-badge.svg
-    :target: https://percy.io/3201ecb4/geniza
+    :target: https://percy.io/2cf28a24/geniza
     :alt: Visual regression tests
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
@@ -147,6 +147,18 @@ Performance, accessibility, SEO and more are audited via `Lighthouse <https://de
 Lighthouse runs several checks by visiting a list of URLs and averaging the results. If new pages are adding to the site, a corresponding URL should be added to the configuration file `lighthouserc.js`.
 
 If the Lighthouse build is generating errors that need to be temporarily or permanently ignored, the corresponding error code can be set to "off" or "warn" in `lighthouserc.js`.
+
+Visual Tests
+------------
+
+Visual regressions are monitored with `Percy <https://percy.io/>`_. Percy takes screenshots of the web application with different browsers and compares them to a set of base screenshots to find changes.
+
+In this repository, a GitHub Action is configured to take a set of Percy screenshots when one of the following conditions is met:
+
+#. A commit has been pushed to a pull request against the ``develop`` branch, and the phrase ``[run percy]`` is present in the commit message.
+#. A commit has been pushed to the ``develop`` branch, and the phrase ``[skip percy]`` is NOT present in the commit message.
+
+Otherwise, the Action will be skipped and Percy will not take a set of screenshots to check for visual regressions.
 
 Setup Black
 -----------

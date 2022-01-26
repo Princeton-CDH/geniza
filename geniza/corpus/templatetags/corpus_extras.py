@@ -1,4 +1,9 @@
+from urllib import parse
+
 from django import template
+from natsort import natsorted
+
+from geniza.footnotes.models import Footnote
 
 register = template.Library()
 
@@ -44,3 +49,15 @@ def querystring_replace(context, **kwargs):
         querystring[key] = val
     # return urlencoded query string
     return querystring.urlencode()
+
+
+@register.filter
+def natsort(sortable, key=None):
+    """Template filter to sort a list naturally, with an optional key to sort on.
+    Natural sort will sort strings like ["1", "2", "3", "10"] rather than ["1", "10", "2", "3"].
+    Example use::
+        {% for fn in document.footnotes.all|natsort:"location" %}
+            {{ fn.location }}
+        {% endfor %}
+    """
+    return natsorted(sortable, key=lambda i: getattr(i, key) if key else None)

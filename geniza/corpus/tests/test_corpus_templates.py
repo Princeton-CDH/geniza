@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 from django.core.paginator import Paginator
 from django.http.request import HttpRequest, QueryDict
+from django.template.defaultfilters import linebreaks
 from django.template.loader import get_template
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
@@ -32,8 +33,13 @@ class TestDocumentDetailTemplate:
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "<li>bill of sale</li>", html=True)
-        assertContains(response, "<li>real estate</li>", html=True)
+        for tag in ["bill of sale", "real estate"]:
+            assertContains(
+                response,
+                "<li><a href='/en/documents/?q=tag:\"%(tag)s\"' rel='tag'>%(tag)s</li>"
+                % {"tag": tag},
+                html=True,
+            )
 
     def test_description(self, client, document):
         """Document detail template should include document description"""
@@ -136,6 +142,67 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertContains(response, "Editors")
 
+    def test_shelfmarks(self, client, document, join):
+        # Ensure that shelfmarks are displayed on the page.
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "<dt>Shelfmark</dt>", html=True)
+        response = client.get(join.get_absolute_url())
+        assertContains(response, "<dt>Shelfmark</dt>", html=True)
+        assertContains(response, join.shelfmark, html=True)
+
+    def test_download_transcription_link(self, client, document, typed_texts):
+        edition = Footnote.objects.create(
+            content_object=document,
+            source=typed_texts,
+            doc_relation=Footnote.EDITION,
+            content={
+                "html": "some transcription text",
+                "text": "some transcription text",
+            },
+        )
+        response = client.get(document.get_absolute_url())
+        # typed text fixture authored by Goitein
+        assertContains(response, "Download Goitein's edition")
+        assertContains(
+            response,
+            reverse(
+                "corpus:document-transcription-text",
+                kwargs={"pk": document.pk, "transcription_pk": edition.pk},
+            ),
+        )
+
+    def test_download_transcription_link_two_authors(
+        self, client, document, twoauthor_source
+    ):
+        edition = Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.EDITION,
+            content={
+                "html": "some transcription text",
+                "text": "some transcription text",
+            },
+        )
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "Download Kernighan and Ritchie's edition")
+
+    def test_download_transcription_link_many_authors(
+        self, client, document, multiauthor_untitledsource
+    ):
+        edition = Footnote.objects.create(
+            content_object=document,
+            source=multiauthor_untitledsource,
+            doc_relation=Footnote.EDITION,
+            content={
+                "html": "some transcription text",
+                "text": "some transcription text",
+            },
+        )
+        response = client.get(document.get_absolute_url())
+        assertContains(
+            response, "Download Khan, el-Leithy, Rustow and Vanthieghem's edition"
+        )
+
 
 class TestDocumentScholarshipTemplate:
     def test_source_title(self, client, document, twoauthor_source):
@@ -232,7 +299,7 @@ class TestDocumentTabsSnippet:
         # uses span, not link
         assertContains(response, "<span>Scholarship Records (0)</span>", html=True)
 
-    def test_with_footnotes(self, client, document, source):
+    def test_with_footnotes(self, client, document, source, twoauthor_source):
         """document nav should render scholarship link with footnote counter"""
         Footnote.objects.create(content_object=document, source=source)
         response = client.get(document.get_absolute_url())
@@ -244,7 +311,7 @@ class TestDocumentTabsSnippet:
         # count should be 1
         assertContains(response, "Scholarship Records (1)")
 
-        Footnote.objects.create(content_object=document, source=source)
+        Footnote.objects.create(content_object=document, source=twoauthor_source)
         response = client.get(document.get_absolute_url())
 
         # count should be 2
@@ -259,7 +326,9 @@ class TestDocumentTabsSnippet:
 
         # disabled (not yet implemented) for MVP
         assertContains(
-            response, "<li class='disabled'><span>External Links</span></li>", html=True
+            response,
+            "<li class='disabled'><span>External Links</span></li>",
+            html=True,
         )
 
     @pytest.mark.skip("non-MVP feature")
@@ -325,6 +394,22 @@ class TestDocumentResult:
         assert "15 Transcriptions" in result
         assert "Translation" not in result
         assert "Discusion" not in result
+
+    def test_tags(self):
+        tags = ["bill of sale", "real estate"]
+        result = self.template.render(
+            context={
+                "document": {"pgpid": 1, "id": "document.1", "tags": tags},
+                "highlighting": {},
+                "page_obj": self.page_obj,
+            }
+        )
+        for tag in tags:
+            assert (
+                "<li><a href='/en/documents/?q=tag:\"%(tag)s\"'>%(tag)s</a></li>"
+                % {"tag": tag}
+                in result
+            )
 
     def test_multiple_scholarship_types(self):
         result = self.template.render(
@@ -395,10 +480,10 @@ class TestDocumentResult:
             "page_obj": self.page_obj,
         }
 
-        # template currently has truncate chars 75; just check that the beginning
+        # template currently has truncate chars 150; just check that the beginning
         # of the transcription is there
         rendered = self.template.render(context)
-        assert transcription_txt[:75] in rendered
+        assert linebreaks(transcription_txt)[:150] in rendered
         # language not specified
         assert 'lang=""' in rendered
 
@@ -439,23 +524,20 @@ class TestSearchPagination:
         ctx = {"page_obj": paginator.page(1), "request": HttpRequest()}
         result = self.template.render(ctx)
         assert '<nav class="pagination' in result
-        assert (
-            '<a name="previous page" title="previous page" class="disabled">' in result
-        )
-        assert '<a title="page 1" class="active"' in result
-        assert '<a name="next page" title="next page" class="disabled">' in result
+        assert '<span class="disabled prev">' in result
+        assert '<a title="page 1" class="pagelink" aria-current="page"' in result
+        assert '<span class="disabled next">' in result
 
     def test_first_of_twenty_pages(self):
         paginator = Paginator(range(20), per_page=1)
         ctx = {"page_obj": paginator.page(1), "request": HttpRequest()}
         result = self.template.render(ctx)
+        assert '<span class="disabled prev">' in result
+        assert '<a title="page 1" class="pagelink" aria-current="page"' in result
+        assert '<a title="page 2" class="pagelink" href="?page=2">' in result
         assert (
-            '<a name="previous page" title="previous page" class="disabled">' in result
-        )
-        assert '<a title="page 1" class="active"' in result
-        assert '<a title="page 2" href="?page=2">' in result
-        assert (
-            '<a name="next page" title="next page" rel="next" href="?page=2">' in result
+            '<a name="Next" title="Next" class="next" rel="next" href="?page=2">'
+            in result
         )
 
     def test_tenth_of_twenty_pages(self):
@@ -463,13 +545,13 @@ class TestSearchPagination:
         ctx = {"page_obj": paginator.page(10), "request": HttpRequest()}
         result = self.template.render(ctx)
         assert (
-            '<a name="previous page" title="previous page" rel="prev" href="?page=9">'
+            '<a name="Previous" title="Previous" class="prev" rel="prev" href="?page=9">'
             in result
         )
-        assert '<a title="page 10" class="active"' in result
-        assert '<a title="page 11" href="?page=11">' in result
+        assert '<a title="page 10" class="pagelink" aria-current="page"' in result
+        assert '<a title="page 11" class="pagelink" href="?page=11">' in result
         assert (
-            '<a name="next page" title="next page" rel="next" href="?page=11">'
+            '<a name="Next" title="Next" class="next" rel="next" href="?page=11">'
             in result
         )
 

@@ -33,7 +33,7 @@
     }
     .relation {
         max-width: none; // required to span the whole width
-        @include colors.apply-theme("background-light", "background-color");
+        background-color: var(--background-light);
         margin-left: -#{spacing.$spacing-xl};
         padding: spacing.$spacing-4xs 0 spacing.$spacing-4xs spacing.$spacing-xl;
         &:is(dt) {
@@ -44,10 +44,14 @@
             margin-bottom: spacing.$spacing-2xs;
             @include typography.meta;
         }
+        // Indentation for footnote relation when more than one present
+        li.location:not(:first-child) {
+            margin-left: spacing.$spacing-lg;
+        }
     }
     div.unpublished {
-        color: colors.$gray;
         margin-top: spacing.$spacing-3xs;
         @include typography.unpublished;
+        color: var(--on-background-alt);
     }
 }

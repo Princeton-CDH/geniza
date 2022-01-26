@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
+from taggit.utils import _parse_tags
 
 
 def absolutize_url(local_url, request=None):
@@ -32,3 +33,21 @@ def absolutize_url(local_url, request=None):
         root = root.rstrip("/")
 
     return root + local_url
+
+
+def custom_tag_string(tag_string):
+    """
+    Custom tag parsing for taggit to better support multi-word tags.
+
+    Expected parsing:
+    - 'legal document' -> ["legal document"]
+    - '"fiscal document", Arabic script' -> ["fiscal document", "Arabic script"]
+    - '"fiscal document", "Arabic script"' -> ["fiscal document", "Arabic script"]
+
+    This is configured in settings with TAGGIT_TAGS_FROM_STRING.
+    """
+    # Stack overflow solution: https://stackoverflow.com/questions/30513783/django-taggit-how-to-allow-multi-word-tags
+    # Our github issue for taggit: https://github.com/jazzband/django-taggit/issues/783
+    if "," not in tag_string:
+        tag_string += ","
+    return _parse_tags(tag_string)

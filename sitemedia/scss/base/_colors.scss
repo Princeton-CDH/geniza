@@ -18,65 +18,72 @@ $gray: #9e9e9e;
 $light-gray: #ebebeb;
 $off-white: #f7f7f7;
 
-// Theme colors
-$theme: (
-    "primary": #436043,
-    "secondary": #567856,
-    "tertiary": #7bac7b,
-    "on-primary": $white,
-    "on-secondary": $white,
-    "on-tertiary": $black,
-    "background": $white,
-    "background-light": $off-white,
-    "on-background": $black,
-    "on-background-light": $black,
-);
-
-// Dark mode theme colors
-$dark-theme: (
-    "primary": #c37f97,
-    "secondary": #b76680,
-    "tertiary": #b76680,
-    "on-primary": $black,
-    "on-secondary": $black,
-    "on-tertiary": $black,
-    "background": $black,
-    "background-light": $dark-gray,
-    "on-background": $white,
-    "on-background-light": $white,
-);
-
-/*
- * Mixin for applying theme colors: sets a given property by looking up
- * the color in the theme by name, and automatically switches it to the
- * corresponding dark mode version using a media query.
- *
- * @param {string} $color - The color name to look up in the theme
- * @param {string} $property - The CSS property to set; default "color"
- *
- */
-@mixin apply-theme($color, $property: color) {
-    #{$property}: map.get($theme, $color);
-
-    @media (prefers-color-scheme: dark) {
-        #{$property}: map.get($dark-theme, $color);
-    }
+@mixin light-mode {
+    --primary: #436043;
+    --primary-80: rgba(67, 96, 67, 0.8);
+    --secondary: #567856;
+    --secondary-80: rgba(86, 120, 86, 0.8);
+    --tertiary: #7bac7b;
+    --link-primary: #567856;
+    --link-secondary: #436043;
+    --on-primary: #ffffff;
+    --on-secondary: #ffffff;
+    --on-tertiary: #161616;
+    --background: #ffffff;
+    --background-light: #f7f7f7;
+    --background-gray: #ebebeb;
+    --on-background: #161616;
+    --on-background-alt: #3d3d3d;
+    --on-background-25: rgba(0, 0, 0, 0.25);
+    --on-background-light: #161616;
+    --on-background-light-alt: #3d3d3d;
+    --on-background-gray: #161616;
+    --disabled: #9e9e9e;
+    --tabs-bottom: #ebebeb;
+    --tabs-bottom-hover: #3d3d3d;
+    --tabs-focus: #567856;
+    --logo: #161616;
+    --viewlink-bottom-hover: #3d3d3d;
 }
 
-/*
- * Like @apply-theme, but sets both the background and text color using
- * the corresponding pair (e.g. primary and on-primary). The combo is selected
- * by background color.
- *
- * @param {string} $color - The background color name to look up in the theme
- *
- */
-@mixin apply-combo($background) {
-    color: map.get($theme, "on-#{$background}");
-    background-color: map.get($theme, $background);
+// Dark mode theme colors
+@mixin dark-mode {
+    --primary: #c37f97;
+    --primary-80: rgba(183, 102, 128, 0.8);
+    --secondary: #b76680;
+    --secondary-80: rgba(195, 127, 151, 0.8);
+    --tertiary: #b05070;
+    --link-primary: #c37f97;
+    --link-secondary: #b76680;
+    --on-primary: #161616;
+    --on-secondary: #161616;
+    --on-tertiary: #ffffff;
+    --background: #161616;
+    --background-light: #3d3d3d;
+    --background-gray: #9e9e9e;
+    --on-background: #ffffff;
+    --on-background-alt: #9e9e9e;
+    --on-background-25: rgba(255, 255, 255, 0.25);
+    --on-background-light: #ffffff;
+    --on-background-light-alt: #ebebeb;
+    --on-background-gray: #161616;
+    --disabled: #3d3d3d;
+    --tabs-bottom: #3d3d3d;
+    --tabs-bottom-hover: #ebebeb;
+    --tabs-focus: #146feb;
+    --logo: #f7f7f7;
+    --viewlink-bottom-hover: #ffffff;
+}
 
+body {
+    @include light-mode;
     @media (prefers-color-scheme: dark) {
-        color: map.get($dark-theme, "on-#{$background}");
-        background-color: map.get($dark-theme, $background);
+        @include dark-mode;
+    }
+    &.light-mode {
+        @include light-mode;
+    }
+    &.dark-mode {
+        @include dark-mode;
     }
 }
