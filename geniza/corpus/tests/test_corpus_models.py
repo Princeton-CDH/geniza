@@ -11,7 +11,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
-from djiffy.models import Manifest
+from djiffy.models import Canvas, IIIFImage, Manifest
 
 from geniza.corpus.models import (
     Collection,
@@ -175,6 +175,29 @@ class TestFragment:
         assert 'title="1r"' in thumbnails
         assert 'title="1v"' in thumbnails
         assert isinstance(thumbnails, SafeString)
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_iiif_images_locally_cached_manifest(self, mock_manifestimporter):
+        # fragment with a locally cached manifest
+        frag = Fragment(shelfmark="TS 1")
+        frag.iiif_url = "http://example.io/manifests/1"
+        frag.manifest = Manifest.objects.create(uri=frag.iiif_url, short_id="m")
+        # canvas with image and label
+        Canvas.objects.create(
+            manifest=frag.manifest,
+            label="fake image",
+            iiif_image_id="http://example.co/iiif/ts-1/00001",
+            short_id="c",
+            order=1,
+        )
+        frag.save()
+        # should return one IIIFImage and one label
+        (images, labels) = frag.iiif_images()
+        assert len(images) == 1
+        assert isinstance(images[0], IIIFImage)
+        assert len(labels) == 1
+        assert labels[0] == "fake image"
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")

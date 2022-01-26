@@ -193,18 +193,29 @@ class Fragment(TrackChangesModel):
         return (self.shelfmark,)
 
     def iiif_images(self):
+        """IIIF image URLs for this fragment. Returns a list of
+        :class:`~piffle.image.IIIFImageClient` and corresponding list of labels,
+        or None if this fragement has no IIIF url associated."""
+
         # if there is no iiif for this fragment, bail out
         if not self.iiif_url:
             return None
-        # TODO: switch this to use locally cached version!
         images = []
         labels = []
-        manifest = IIIFPresentation.from_url(self.iiif_url)
-        for canvas in manifest.sequences[0].canvases:
-            image_id = canvas.images[0].resource.id
-            images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
-            # label provides library's recto/verso designation
-            labels.append(canvas.label)
+        # use images from locally cached manifest if possible
+        if self.manifest:
+            for canvas in self.manifest.canvases.all():
+                images.append(canvas.image)
+                labels.append(canvas.label)
+
+        # if not cached, load from remote url
+        else:
+            manifest = IIIFPresentation.from_url(self.iiif_url)
+            for canvas in manifest.sequences[0].canvases:
+                image_id = canvas.images[0].resource.id
+                images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
+                # label provides library's recto/verso designation
+                labels.append(canvas.label)
 
         return images, labels
 
