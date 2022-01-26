@@ -29,7 +29,7 @@ if (target) {
             height: 250,
         },
         thumbnailNavigation: {
-            defaultPosition: "far-right",
+            defaultPosition: window.innerWidth < 900 ? "off" : "far-right",
         },
         windows: [
             {
