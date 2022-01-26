@@ -5,7 +5,7 @@ snapshot:
     - 1440
   minHeight: 1024
 discovery:
-  allowedHostnames: ["unpkg.com"]
+  allowedHostnames: ["unpkg.com", "images.lib.cam.ac.uk", "cudl.lib.cam.ac.uk"]
   networkIdleTimeout: 100
 static:
   baseUrl: /
