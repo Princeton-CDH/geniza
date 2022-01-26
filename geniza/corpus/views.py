@@ -65,11 +65,14 @@ class DocumentSearchView(ListView, FormMixin):
         return kwargs
 
     def get_queryset(self):
-        # limit to documents with published status (i.e., no suppressed documents)
-        documents = DocumentSolrQuerySet().filter(status=Document.STATUS_PUBLIC)
 
-        # get counts of facets, exclude type filter
-        documents = documents.facet_field("type", exclude="type", sort="value")
+        # limit to documents with published status (i.e., no suppressed documents);
+        # get counts of facets, excluding type filter
+        documents = (
+            DocumentSolrQuerySet()
+            .filter(status=Document.PUBLIC_LABEL)
+            .facet_field("type", exclude="type", sort="value")
+        )
 
         form = self.get_form()
         # return empty queryset if not valid
@@ -319,7 +322,11 @@ class DocumentManifestView(DocumentDetailView):
             # CUDL attribution has some variation in tags;
             # would be nice to preserve tagged version,
             # for now, ignore tags so we can easily de-dupe
-            attributions.add(strip_tags(remote_manifest.attribution))
+            try:
+                attributions.add(strip_tags(remote_manifest.attribution))
+            except AttributeError:
+                # attribution is optional, so ignore if not present
+                pass
             for canvas in remote_manifest.sequences[0].canvases:
                 # do we want local canvas id, or rely on remote id?
                 local_canvas = dict(canvas)

@@ -226,7 +226,6 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        print(response.content)
         assertContains(response, "Brian Kernighan and Dennis Ritchie")
         for author in twoauthor_source.authors.all():
             twoauthor_source.authors.remove(author)
@@ -258,7 +257,6 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        print(response.content)
         assertContains(
             response, '<a href="https://example.com/">includes</a>', html=True
         )

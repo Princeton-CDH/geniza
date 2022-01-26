@@ -6,6 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
+        ("admin", "0003_logentry_add_action_flag_choices"),
+        ("contenttypes", "0002_remove_content_type_name"),
         ("corpus", "0024_fragment_manifest"),
     ]
 

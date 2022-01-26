@@ -658,6 +658,19 @@ class TestDocumentManifestView:
             == "original source: %s" % mock_manifest.label
         )
 
+    def test_images_no_attribution(self, mockiifpres, client, document):
+        # manifest has no attribution
+        mock_manifest = mockiifpres.from_url.return_value
+        del mock_manifest.attribution  # remove attribution key
+
+        # should only have the default attribution content
+        response = client.get(reverse(self.view_name, args=[document.pk]))
+        result = response.json()
+        assert (
+            result["attribution"]
+            == "<div><p>Compilation by Princeton Geniza Project.</p><p>Additional restrictions may apply.</p></div>"
+        )
+
     def test_no_images_transcription(
         self, mockiifpres, client, document, source, fragment
     ):

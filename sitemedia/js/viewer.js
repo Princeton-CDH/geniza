@@ -1,4 +1,5 @@
 target = document.getElementById("iiif_viewer");
+let miradorInstance = null;
 if (target) {
     let windowOpts = {
         allowClose: false, // Prevent the user from closing this window
@@ -21,14 +22,14 @@ if (target) {
         windowOpts.defaultSidebarPanelWidth = 475;
     }
 
-    Mirador.viewer({
+    miradorInstance = Mirador.viewer({
         id: target.id,
         window: windowOpts,
         galleryView: {
             height: 250,
         },
         thumbnailNavigation: {
-            defaultPosition: "far-right",
+            defaultPosition: window.innerWidth < 900 ? "off" : "far-right",
         },
         windows: [
             {
