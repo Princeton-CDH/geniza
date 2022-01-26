@@ -1,5 +1,4 @@
 from datetime import datetime
-from multiprocessing.dummy import freeze_support
 from unittest.mock import Mock, patch
 
 import pytest
@@ -9,13 +8,11 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.db import IntegrityError
-from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
 from djiffy.models import Manifest
 
-from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
