@@ -1,3 +1,4 @@
+import json
 from asyncio import format_helpers
 from unittest.mock import Mock
 from urllib import parse
@@ -124,3 +125,16 @@ def test_iiif_image():
     assert corpus_extras.iiif_image(myimg, "bogus") == ""
     assert corpus_extras.iiif_image(myimg, "size:bogus") == ""
     assert corpus_extras.iiif_image(myimg, "size:bogus=1") == ""
+
+
+def test_iiif_info_json():
+    img_ids = ["http://image.server/path/myimgid", "http://image.server/path/myimgid2"]
+    json_ids = corpus_extras.iiif_info_json(img_ids)
+    # should convert into valid json
+    try:
+        json.loads(json_ids)
+    except ValueError:
+        assert False
+    # should contain the same ids but with /info.json appended
+    assert "http://image.server/path/myimgid/info.json" in json_ids
+    assert "http://image.server/path/myimgid2/info.json" in json_ids

@@ -2,7 +2,6 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pytest
-from attrdict import AttrDict
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -129,43 +128,14 @@ class TestFragment:
         assert Fragment.objects.get_by_natural_key(frag.shelfmark) == frag
 
     @patch("geniza.corpus.models.IIIFPresentation")
-    def test_iiif_thumbnails(self, mockiifpres):
+    def test_iiif_thumbnails(self, mockiifpres, iiif_dict):
         # no iiif
         frag = Fragment(shelfmark="TS 1")
         assert frag.iiif_thumbnails() == ""
 
         frag.iiif_url = "http://example.co/iiif/ts-1"
         # return simplified part of the manifest we need for this
-        mockiifpres.from_url.return_value = AttrDict(
-            {
-                "sequences": [
-                    {
-                        "canvases": [
-                            {
-                                "images": [
-                                    {
-                                        "resource": {
-                                            "id": "http://example.co/iiif/ts-1/00001",
-                                        }
-                                    }
-                                ],
-                                "label": "1r",
-                            },
-                            {
-                                "images": [
-                                    {
-                                        "resource": {
-                                            "id": "http://example.co/iiif/ts-1/00002",
-                                        }
-                                    }
-                                ],
-                                "label": "1v",
-                            },
-                        ]
-                    }
-                ]
-            }
-        )
+        mockiifpres.from_url.return_value = iiif_dict
 
         thumbnails = frag.iiif_thumbnails()
         assert (
@@ -477,6 +447,22 @@ class TestDocument:
             # dicts should contain the image objects and labels via the mocks
             assert (images[0]["image"], images[0]["label"]) == (img1, "label1")
             assert (images[1]["image"], images[1]["label"]) == (img2, "label2")
+
+    @patch("geniza.corpus.models.IIIFPresentation")
+    def test_iiif_image_ids(self, mockiifpres, iiif_dict):
+        # Create a document and fragment and a TextBlock to associate them
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark="T-S 1")
+        frag.iiif_url = "http://example.co/iiif/ts-1"
+        frag.save()
+        mockiifpres.from_url.return_value = iiif_dict
+        TextBlock.objects.create(document=doc, fragment=frag, side="r")
+        # Mock two IIIF images, mock their size functions
+        ids = doc.iiif_image_ids()
+        assert len(ids) == 2
+        assert isinstance(ids, list)
+        assert ids[0] == "http://example.co/iiif/ts-1/00001"
+        assert ids[1] == "http://example.co/iiif/ts-1/00002"
 
     def test_fragment_urls(self):
         # create example doc with two fragments with URLs

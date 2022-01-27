@@ -1,3 +1,4 @@
+import json
 from urllib import parse
 
 from django import template
@@ -89,3 +90,12 @@ def iiif_image(img, args):
     except (IIIFImageClientException, TypeError):
         # return an empty string if anything goes wrong
         return ""
+
+
+@register.filter
+def iiif_info_json(image_ids):
+    """Add /info.json to a list of IIIF image IDs and dump to JSON,
+    for OpenSeaDragon to parse. Example use::
+
+    """
+    return json.dumps([image_id + "/info.json" for image_id in image_ids])

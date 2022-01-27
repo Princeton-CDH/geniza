@@ -8,6 +8,7 @@ discovery:
   allowedHostnames:
     [
       "unpkg.com",
+      "cdnjs.cloudflare.com",
       "princeton.edu",
       "arks.princeton.edu",
       "figgy.princeton.edu",

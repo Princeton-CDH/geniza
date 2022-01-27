@@ -5,13 +5,19 @@
         {% translate "Images and transcription" %}
     </h1>
     {% if document.has_image %}
-        <ol class="iiif-images">
-            {% for image_dict in document.iiif_images %}
-                <li id="image-{{ forloop.counter }}">
-                    <img src="{{ image_dict.image|iiif_image:"size:width=500" }}" alt="{{ image_dict.label }}" title="{{ image_dict.label }}" loading="lazy">
-                </li>
-            {% endfor %}
-        </ol>
+        <noscript>
+            <ol id="iiif-images-fallback">
+                {% for image_dict in document.iiif_images %}
+                    <li id="image-{{ forloop.counter }}">
+                        <a href="{{ image_dict.image|iiif_image:"size:width=2880" }}">
+                            <img src="{{ image_dict.image|iiif_image:"size:width=500" }}" alt="{{ image_dict.label }}" title="{{ image_dict.label }}" loading="lazy">
+                        </a>
+                    </li>
+                {% endfor %}
+            </ol>
+        </noscript>
+        <div id="iiif-images" data-iiif-urls="{{ document.iiif_image_ids|iiif_info_json }}">
+        </div>
     {% endif %}
     {% if document.has_transcription %}
         <div class="transcription">
