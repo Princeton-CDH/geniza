@@ -14,7 +14,7 @@ discovery:
       "iiif-cloud.princeton.edu",
       "iiif.io",
     ]
-  networkIdleTimeout: 750
+  networkIdleTimeout: 100
 static:
   baseUrl: /
   include: "**/*.{html,htm}"
