@@ -12,9 +12,8 @@ discovery:
       "arks.princeton.edu",
       "figgy.princeton.edu",
       "iiif-cloud.princeton.edu",
-      "iiif.io",
     ]
-  networkIdleTimeout: 100
+  networkIdleTimeout: 500
 static:
   baseUrl: /
   include: "**/*.{html,htm}"
