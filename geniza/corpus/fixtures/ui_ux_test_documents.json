@@ -4182,6 +4182,510 @@
   },
   {
     "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/00fb7e2f-c3f6-4954-afc2-5e4011b5889f/file/3279b0e4-87f1-4fdb-87cc-535d4ce02d43\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":5428,\"height\":7230}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/03%2F50%2Fc8%2F0350c874505149eaace3ce19aea35503%2Fintermediate_file",
+      "label": "2",
+      "manifest": 11842,
+      "order": 1,
+      "short_id": "00fb7e2f-c3f6-4954-afc2-5e4011b5889f",
+      "thumbnail": false,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/4069f1b9-d29d-43e7-ac57-a39ff2d073a4/manifest/canvas/00fb7e2f-c3f6-4954-afc2-5e4011b5889f"
+    },
+    "model": "djiffy.canvas",
+    "pk": 24327
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/f9be5c9e-9275-413d-81da-dcb700a3429e/file/68128cd8-1548-4e68-9c6a-c5ef99a1edd5\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":5428,\"height\":7230}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/85%2Fdb%2F9a%2F85db9a586e4f468091753da3fa020e0f%2Fintermediate_file",
+      "label": "1",
+      "manifest": 11842,
+      "order": 0,
+      "short_id": "f9be5c9e-9275-413d-81da-dcb700a3429e",
+      "thumbnail": true,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/4069f1b9-d29d-43e7-ac57-a39ff2d073a4/manifest/canvas/f9be5c9e-9275-413d-81da-dcb700a3429e"
+    },
+    "model": "djiffy.canvas",
+    "pk": 24326
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/e36dc9fe-45d6-43c9-b351-4bbd52e3e2c0/file/ad5d9ec6-299b-4eec-ac72-cc8b27dfd465\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":4992,\"height\":6666}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/00%2F37%2F44%2F003744fd32454b3fa2a81106a99dce86%2Fintermediate_file",
+      "label": "verso",
+      "manifest": 10608,
+      "order": 1,
+      "short_id": "e36dc9fe-45d6-43c9-b351-4bbd52e3e2c0",
+      "thumbnail": false,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/12a80dcc-1433-4230-9677-e3a83c4880cd/manifest/canvas/e36dc9fe-45d6-43c9-b351-4bbd52e3e2c0"
+    },
+    "model": "djiffy.canvas",
+    "pk": 21865
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/ea6e86cb-c6f7-469b-80e6-d41f84aa0e35/file/887d8c55-81e6-4457-a63c-5665c099310d\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":4992,\"height\":6666}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/86%2F0a%2F3d%2F860a3dc84db0451faa68a764138bf2db%2Fintermediate_file",
+      "label": "recto",
+      "manifest": 10608,
+      "order": 0,
+      "short_id": "ea6e86cb-c6f7-469b-80e6-d41f84aa0e35",
+      "thumbnail": true,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/12a80dcc-1433-4230-9677-e3a83c4880cd/manifest/canvas/ea6e86cb-c6f7-469b-80e6-d41f84aa0e35"
+    },
+    "model": "djiffy.canvas",
+    "pk": 21864
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/4ac80196-9379-43f4-b4b1-45f5e2d89139/file/3e46cf8c-192f-4501-a43e-b28cbc2ed998\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":5428,\"height\":7230}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/dd%2F89%2F53%2Fdd89533de81e4030bb7b5edbe5c67ab3%2Fintermediate_file",
+      "label": "2",
+      "manifest": 14035,
+      "order": 1,
+      "short_id": "4ac80196-9379-43f4-b4b1-45f5e2d89139",
+      "thumbnail": false,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/fd1a6b4c-c7e6-4920-bda5-2306cbb3f6e2/manifest/canvas/4ac80196-9379-43f4-b4b1-45f5e2d89139"
+    },
+    "model": "djiffy.canvas",
+    "pk": 28921
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/bc6ec784-c91d-41bb-a0c3-9bf613e9b238/file/39a0db88-199f-4531-b980-d2408d92c291\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":5428,\"height\":7230}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/4f%2F96%2F65%2F4f96655581984b13a157568df37bae98%2Fintermediate_file",
+      "label": "1",
+      "manifest": 14035,
+      "order": 0,
+      "short_id": "bc6ec784-c91d-41bb-a0c3-9bf613e9b238",
+      "thumbnail": true,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/fd1a6b4c-c7e6-4920-bda5-2306cbb3f6e2/manifest/canvas/bc6ec784-c91d-41bb-a0c3-9bf613e9b238"
+    },
+    "model": "djiffy.canvas",
+    "pk": 28920
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/646a4f5f-c311-4df1-ae27-90b9be4a5586/file/5249ff60-690c-4c2d-abdc-dad08aeb2a1f\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":7230,\"height\":5428}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/f9%2Fa3%2Ff8%2Ff9a3f85bacf042e8b1477d8d1936f136%2Fintermediate_file",
+      "label": "2",
+      "manifest": 12331,
+      "order": 1,
+      "short_id": "646a4f5f-c311-4df1-ae27-90b9be4a5586",
+      "thumbnail": false,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/40be59a7-e77c-4534-8e87-c0137c7789c8/manifest/canvas/646a4f5f-c311-4df1-ae27-90b9be4a5586"
+    },
+    "model": "djiffy.canvas",
+    "pk": 25307
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/229e359f-b177-4ef2-9840-5d0437e5c429/file/b9cdbdb2-f0b7-4b7b-bc04-a2f987be2d5b\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":7230,\"height\":5428}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/10%2F83%2F7e%2F10837e6e60094fabae86e1d21c304919%2Fintermediate_file",
+      "label": "1",
+      "manifest": 12331,
+      "order": 0,
+      "short_id": "229e359f-b177-4ef2-9840-5d0437e5c429",
+      "thumbnail": true,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/40be59a7-e77c-4534-8e87-c0137c7789c8/manifest/canvas/229e359f-b177-4ef2-9840-5d0437e5c429"
+    },
+    "model": "djiffy.canvas",
+    "pk": 25306
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":5868,\"height\":7322}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00013-J-00035-00003-000-00002.jp2",
+      "label": "1v",
+      "manifest": 2007,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00013-J-00035-00003/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 4138
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":6023,\"height\":7980}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00013-J-00035-00003-000-00001.jp2",
+      "label": "1r",
+      "manifest": 2007,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00013-J-00035-00003/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 4137
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":1832,\"height\":2080}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-AS-00135-00053-000-00002.jp2",
+      "label": "1v",
+      "manifest": 5903,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AS-00135-00053/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 12327
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":1904,\"height\":2048}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-AS-00135-00053-000-00001.jp2",
+      "label": "1r",
+      "manifest": 5903,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AS-00135-00053/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 12326
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3133,\"height\":5702}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00245-000-00002.jp2",
+      "label": "1v",
+      "manifest": 6750,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00245/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 14084
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3097,\"height\":5726}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00245-000-00001.jp2",
+      "label": "1r",
+      "manifest": 6750,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00245/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 14083
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3536,\"height\":4472}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00129-000-00002.jp2",
+      "label": "1v",
+      "manifest": 78,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00129/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 166
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3529,\"height\":4363}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00129-000-00001.jp2",
+      "label": "1r",
+      "manifest": 78,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00129/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 165
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3511,\"height\":5207}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001-000-00004.jp2",
+      "label": "2v",
+      "manifest": 5695,
+      "order": 3,
+      "short_id": "4",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001/canvas/4"
+    },
+    "model": "djiffy.canvas",
+    "pk": 11851
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3684,\"height\":5144}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001-000-00003.jp2",
+      "label": "2r",
+      "manifest": 5695,
+      "order": 2,
+      "short_id": "3",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001/canvas/3"
+    },
+    "model": "djiffy.canvas",
+    "pk": 11850
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3653,\"height\":5309}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001-000-00002.jp2",
+      "label": "1v",
+      "manifest": 5695,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 11849
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3779,\"height\":5294}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001-000-00001.jp2",
+      "label": "1r",
+      "manifest": 5695,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 11848
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":5742,\"height\":8944}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00017-000-00002.jp2",
+      "label": "1v",
+      "manifest": 2972,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00017/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 6150
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":6163,\"height\":8944}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00017-000-00001.jp2",
+      "label": "1r",
+      "manifest": 2972,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00017/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 6149
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":5862,\"height\":8354}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00001-000-00002.jp2",
+      "label": "1v",
+      "manifest": 6885,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00001/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 14360
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":5477,\"height\":8366}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00001-000-00001.jp2",
+      "label": "1r",
+      "manifest": 6885,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00001/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 14359
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3888,\"height\":5459}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006-000-00004.jp2",
+      "label": "2v",
+      "manifest": 1311,
+      "order": 3,
+      "short_id": "4",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006/canvas/4"
+    },
+    "model": "djiffy.canvas",
+    "pk": 2732
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":4094,\"height\":5459}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006-000-00003.jp2",
+      "label": "2r",
+      "manifest": 1311,
+      "order": 2,
+      "short_id": "3",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006/canvas/3"
+    },
+    "model": "djiffy.canvas",
+    "pk": 2731
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3869,\"height\":5646}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006-000-00002.jp2",
+      "label": "1v",
+      "manifest": 1311,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 2730
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3800,\"height\":5381}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006-000-00001.jp2",
+      "label": "1r",
+      "manifest": 1311,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 2729
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":4428,\"height\":6382}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00012-00016-000-00002.jp2",
+      "label": "1v",
+      "manifest": 2409,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00010-J-00012-00016/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 4960
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":4811,\"height\":6765}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00012-00016-000-00001.jp2",
+      "label": "1r",
+      "manifest": 2409,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00010-J-00012-00016/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 4959
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/93e27c60-6d54-4ae6-995f-203e69d31b3d/file/8889b2f7-64db-4d19-adfb-d29b819d5ed8\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":4992,\"height\":6666}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/32%2Fc0%2F85%2F32c085ff598a43f48ac0c4a32116cd1b%2Fintermediate_file",
+      "label": "verso",
+      "manifest": 10607,
+      "order": 1,
+      "short_id": "93e27c60-6d54-4ae6-995f-203e69d31b3d",
+      "thumbnail": false,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/50a29467-9298-4e4e-994d-9064dd7de49e/manifest/canvas/93e27c60-6d54-4ae6-995f-203e69d31b3d"
+    },
+    "model": "djiffy.canvas",
+    "pk": 21863
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/b7eb8d50-b95c-4cb4-8b3b-0cb4556a3055/file/d08226a9-39b1-45f9-a7c5-9dfa59f41403\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":4992,\"height\":6666}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/9a%2F6e%2Fb9%2F9a6eb9ec627b4714876ab8322103fb27%2Fintermediate_file",
+      "label": "recto",
+      "manifest": 10607,
+      "order": 0,
+      "short_id": "b7eb8d50-b95c-4cb4-8b3b-0cb4556a3055",
+      "thumbnail": true,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/50a29467-9298-4e4e-994d-9064dd7de49e/manifest/canvas/b7eb8d50-b95c-4cb4-8b3b-0cb4556a3055"
+    },
+    "model": "djiffy.canvas",
+    "pk": 21862
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/d09a52f3-db12-4cf0-8405-ac8fd550cc33/file/be4abec2-822e-4235-9976-59a3dc91050e\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":4008,\"height\":5344}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/cc%2F59%2F31%2Fcc5931250cc7435f8ea7fcfe8f618e23%2Fintermediate_file",
+      "label": "verso",
+      "manifest": 11360,
+      "order": 1,
+      "short_id": "d09a52f3-db12-4cf0-8405-ac8fd550cc33",
+      "thumbnail": false,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/c3441638-b22f-46b7-b6a9-1301f6155c3e/manifest/canvas/d09a52f3-db12-4cf0-8405-ac8fd550cc33"
+    },
+    "model": "djiffy.canvas",
+    "pk": 23369
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/3e072707-6d31-4b66-a57f-0836a29a31d6/file/b50fb68c-c3d7-4789-8148-5c6ac8d8b55c\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":4008,\"height\":5344}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/98%2Fcd%2Fb9%2F98cdb9cbdef04e5d935e12eea7b574d2%2Fintermediate_file",
+      "label": "recto",
+      "manifest": 11360,
+      "order": 0,
+      "short_id": "3e072707-6d31-4b66-a57f-0836a29a31d6",
+      "thumbnail": true,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/c3441638-b22f-46b7-b6a9-1301f6155c3e/manifest/canvas/3e072707-6d31-4b66-a57f-0836a29a31d6"
+    },
+    "model": "djiffy.canvas",
+    "pk": 23368
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":5105,\"height\":6390}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-OR-01080-00001-00064-000-00002.jp2",
+      "label": "1v",
+      "manifest": 5809,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-OR-01080-00001-00064/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 12085
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":5171,\"height\":6356}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-OR-01080-00001-00064-000-00001.jp2",
+      "label": "1r",
+      "manifest": 5809,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-OR-01080-00001-00064/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 12084
+  },
+  {
+    "fields": {
       "content": null,
       "content_type": ["corpus", "document"],
       "doc_relation": "E",

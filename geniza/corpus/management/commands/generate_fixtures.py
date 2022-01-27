@@ -22,6 +22,7 @@ class Command(BaseCommand):
         fixtures = [
             "geniza/corpus/fixtures/documents.json",
             "geniza/corpus/fixtures/authorships.json",
+            "geniza/corpus/fixtures/manifests.json",
             "geniza/corpus/fixtures/document_dependents.json",
         ]
 
@@ -47,13 +48,24 @@ class Command(BaseCommand):
                 stdout=f1,
             )
 
+        # Dump authorships
+        with open(fixtures[2], "w") as f2:
+            call_command(
+                "dump_object",
+                "djiffy.manifest",
+                kitchensink=True,
+                natural=True,
+                query='{"fragment__textblock__document__pk__in": %s}' % pgpids,
+                stdout=f2,
+            )
+
         # This stdout rerouting is needed with custom_dump and merge_fixtures, but
         # the others work with call_command's stdout kwarg
 
         # Dump document related objects
         sysout = sys.stdout
-        with open(fixtures[2], "w") as f2:
-            sys.stdout = f2
+        with open(fixtures[3], "w") as f3:
+            sys.stdout = f3
             call_command("custom_dump", "document", *pgpids, natural=True)
 
         # Merge all dumped fixtures
