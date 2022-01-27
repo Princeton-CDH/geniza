@@ -98,6 +98,13 @@
                 </ul>
             {% endif %}
 
+            {% if document.iiif_images %}
+                {# proof of concept image display, should be resized #}
+                {% for img in document.iiif_images %}
+                    <img width="200" src="{{ img }}" />
+                {% endfor %}
+            {% endif %}
+
         </section>
         {# view link #}
         <a class="view-link" href="{% url 'corpus:document' document.pgpid %}">
