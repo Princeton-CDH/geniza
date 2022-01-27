@@ -18,6 +18,10 @@ th.column-last_modified {
     max-width: 10em;
 }
 
+.search-note {
+    font-size: 90%;
+}
+
 .model-document th.column-has_transcription {
     max-width: 6em;
     overflow-wrap: break-word;
@@ -28,6 +32,32 @@ th.column-last_modified {
 .model-footnote th.column-has_transcription {
     max-width: 7em;
     overflow-wrap: break-word;
+}
+
+/* by default, hide needs review column */
+.model-document th.column-needs_review,
+.model-document .results td:nth-child(3) {
+    display: none;
+}
+/* adjust columns displayed when needs review mode is enabled
+  (mode based on anchor being targeted) */
+a#needsreview:target {
+    font-weight: bold;
+}
+/* adjust columns when needs review is enabled,  */
+/* show needs review column (second) */
+.model-document a#needsreview:target ~ .results th.column-needs_review,
+.model-document a#needsreview:target ~ .results td:nth-child(3) {
+    display: table-cell;
+}
+/* suppress: tags (7), has transcription (10), has image (11) */
+.model-document a#needsreview:target ~ .results th.column-all_tags,
+.model-document a#needsreview:target ~ .results th.column-has_transcription,
+.model-document a#needsreview:target ~ .results th.column-has_image,
+.model-document a#needsreview:target ~ .results td:nth-child(7),
+.model-document a#needsreview:target ~ .results td:nth-child(10),
+.model-document a#needsreview:target ~ .results td:nth-child(11) {
+    display: none;
 }
 
 #content-related {
