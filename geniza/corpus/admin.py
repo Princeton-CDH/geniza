@@ -104,7 +104,7 @@ class LanguageScriptAdmin(admin.ModelAdmin):
 
     @admin.display(
         ordering="secondary_document__count",
-        description="# documents where this is a secondary langaug",
+        description="# documents where this is a secondary language",
     )
     def secondary_documents(self, obj):
         return format_html(
@@ -177,8 +177,11 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
     form = DocumentForm
+    # NOTE: columns display for default and needs review display
+    # are controlled via admin css; update the css if you change the order here
     list_display = (
         "id",
+        "needs_review",  # disabled by default with css
         "shelfmark",
         "description",
         "doctype",
