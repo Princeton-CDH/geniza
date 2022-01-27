@@ -55,7 +55,7 @@ class Command(BaseCommand):
         percy_snapshot(browser, "Document Search%s" % dark_mode_str)
 
         # document detail
-        browser.get("http://localhost:8000/en/documents/2811/")
+        browser.get("http://localhost:8000/en/documents/8151/")
         percy_snapshot(browser, "Document Details%s" % dark_mode_str)
 
         # document scholarship
@@ -72,7 +72,7 @@ class Command(BaseCommand):
         )
 
         # about submenu open on both desktop and mobile
-        browser.get("http://localhost:8000/en/documents/2811/#menu")
+        browser.get("http://localhost:8000/en/documents/8151/#menu")
         # open about menu
         browser.find_element_by_id("open-about-menu").send_keys(Keys.ENTER)
         # custom CSS to ensure that on mobile, the about menu transition is disabled and the menu

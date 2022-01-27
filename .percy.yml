@@ -5,7 +5,15 @@ snapshot:
     - 1440
   minHeight: 1024
 discovery:
-  allowedHostnames: ["unpkg.com", "images.lib.cam.ac.uk", "cudl.lib.cam.ac.uk"]
+  allowedHostnames:
+    [
+      "unpkg.com",
+      "princeton.edu",
+      "arks.princeton.edu",
+      "figgy.princeton.edu",
+      "iiif-cloud.princeton.edu",
+      "iiif.io",
+    ]
   networkIdleTimeout: 100
 static:
   baseUrl: /
