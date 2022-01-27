@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n corpus_extras %}
 <section id="iiif-viewer">
     <h1 class="sr-only">
         {# Translators: accessibility label for document images and transcription section #}
@@ -6,8 +6,10 @@
     </h1>
     {% if document.has_image %}
         <ol class="iiif-images">
-            {% for image in document.iiif_images %}
-                <li id="image-{{ forloop.counter }}">{{ image|safe }}</li>
+            {% for image_dict in document.iiif_images %}
+                <li id="image-{{ forloop.counter }}">
+                    <img src="{{ image_dict.image|iiif_image:"size:width=500" }}" alt="{{ image_dict.label }}" title="{{ image_dict.label }}" loading="lazy">
+                </li>
             {% endfor %}
         </ol>
     {% endif %}

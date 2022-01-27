@@ -463,9 +463,7 @@ class TestDocument:
         TextBlock.objects.create(document=doc, fragment=frag, side="r")
         # Mock two IIIF images, mock their size functions
         img1 = Mock()
-        img1.size.return_value = "img1"
         img2 = Mock()
-        img2.size.return_value = "img2"
         # Mock Fragment.iiif_images() to return those two images and two fake labels
         with patch.object(
             Fragment, "iiif_images", return_value=([img1, img2], ["label1", "label2"])
@@ -473,17 +471,12 @@ class TestDocument:
             images = doc.iiif_images()
             # Should call the mocked function
             mock_frag_iiif.assert_called_once
-            # Should return a list of two HTML strings
+            # Should return a list of two dicts
             assert len(images) == 2
-            # HTML strings should get the src and title of the images via the mocks
-            assert (
-                images[0]
-                == '<img src="img1" loading="lazy" width="500" title="label1">'
-            )
-            assert (
-                images[1]
-                == '<img src="img2" loading="lazy" width="500" title="label2">'
-            )
+            assert isinstance(images[0], dict)
+            # dicts should contain the image objects and labels via the mocks
+            assert (images[0]["image"], images[0]["label"]) == (img1, "label1")
+            assert (images[1]["image"], images[1]["label"]) == (img2, "label2")
 
     def test_fragment_urls(self):
         # create example doc with two fragments with URLs
