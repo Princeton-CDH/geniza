@@ -147,9 +147,10 @@ class TestDocumentDetailTemplate:
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
         # Patch iiif_images() function to avoid trying to access fake IIIF URLs
         with patch.object(Document, "iiif_images", return_value=[]):
-            response = client.get(join.get_absolute_url())
-            assertContains(response, "<dt>Shelfmark</dt>", html=True)
-            assertContains(response, join.shelfmark, html=True)
+            with patch.object(Document, "iiif_image_ids", return_value=[]):
+                response = client.get(join.get_absolute_url())
+                assertContains(response, "<dt>Shelfmark</dt>", html=True)
+                assertContains(response, join.shelfmark, html=True)
 
     def test_download_transcription_link(self, client, document, typed_texts):
         edition = Footnote.objects.create(

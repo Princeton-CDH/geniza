@@ -3,7 +3,7 @@
     "start": "webpack serve --mode=development",
     "build": "webpack --mode=production",
     "serve": "python manage.py runserver --insecure",
-    "percy": "percy exec -- python manage.py visual_tests",
+    "percy": "percy --debug exec -- python manage.py visual_tests",
     "test:visual": "start-server-and-test serve http://localhost:8000/documents/ percy"
   },
   "volta": {
