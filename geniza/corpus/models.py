@@ -645,6 +645,13 @@ class Document(ModelIndexable):
                 "status_s": self.get_status_display(),
                 "old_pgpids_is": self.old_pgpids,
                 "language_code_ss": [lang.iso_code for lang in self.languages.all()],
+                # use image info link without trailing info.json to easily convert back to iiif image client
+                "iiif_images_ss": [
+                    img.info()[:-10]  # i.e., remove /info.json
+                    for f in fragments
+                    if f.manifest
+                    for img in f.iiif_images()[0]
+                ],
             }
         )
 

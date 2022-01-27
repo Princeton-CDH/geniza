@@ -1,6 +1,7 @@
 import re
 
 from parasolr.django import AliasedSolrQuerySet
+from piffle.image import IIIFImageClient
 
 
 class DocumentSolrQuerySet(AliasedSolrQuerySet):
@@ -32,6 +33,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "scholarship": "scholarship_t",
         "transcription": "transcription_t",
         "language_code": "language_code_ss",
+        "iiif_images": "iiif_images_ss",
     }
 
     # regex to convert field aliases used in search to actual solr fields
@@ -83,3 +85,12 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         return self.search(self.keyword_search_qf).raw_query_parameters(
             keyword_query=self._search_term_cleanup(search_term)
         )
+
+    def get_result_document(self, doc):
+        # default implementation converts from attrdict to dict
+        doc = super().get_result_document(doc)
+        # convert indexed iiif image paths to IIIFImageClient objects
+        doc["iiif_images"] = [
+            IIIFImageClient(*img.rsplit("/", 1)) for img in doc.get("iiif_images", [])
+        ]
+        return doc.as_dict()
