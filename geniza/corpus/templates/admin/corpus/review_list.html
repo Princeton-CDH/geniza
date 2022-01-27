@@ -2,7 +2,8 @@
     <div class="module" id="awaiting-review-module">
         <h2>Awaiting review</h2>
         {% if perms.corpus.view_document %}
-            <h3><a href="{% url 'admin:corpus_document_changelist' %}?needs_review__isempty=0&q=needs_review:*#needsreview">Document{{ docs_review_count|pluralize }} ({{ docs_review_count }})</a></h3>
+            {# link to document list filtered by needs review  not empty, sort by needs review, and review display mode #}
+            <h3><a href="{% url 'admin:corpus_document_changelist' %}?needs_review__isempty=0&o=2.11.8&q=needs_review:*#needsreview">Document{{ docs_review_count|pluralize }} ({{ docs_review_count }})</a></h3>
             <ul class="actionlist">
                 {% for doc in docs_need_review %}
                     <li class="changelink">
