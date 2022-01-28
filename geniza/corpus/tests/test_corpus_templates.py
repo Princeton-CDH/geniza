@@ -280,7 +280,7 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertNotContains(response, "p. 25")
+        assertNotContains(response, "p. 25")  # should not show when removed
 
 
 class TestDocumentTabsSnippet:
