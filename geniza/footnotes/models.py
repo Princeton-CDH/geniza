@@ -445,8 +445,6 @@ class Footnote(TrackChangesModel):
         # source. notes.
         # source, location.
         parts = [str(self.source)]
-        if self.location:
-            parts.extend([", ", self.location])
         parts.append(".")
         if self.notes:
             # uppercase first letter of notes if not capitalized

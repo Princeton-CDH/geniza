@@ -218,13 +218,12 @@ class TestFootnote:
         footnote = Footnote(source=source)
         assert footnote.display() == "George Orwell, A Nice Cup of Tea."
 
-        footnote.location = "p. 55"
-        assert footnote.display() == "George Orwell, A Nice Cup of Tea, p. 55."
+        footnote.location = "p. 55"  # should not change display
+        assert footnote.display() == "George Orwell, A Nice Cup of Tea."
 
         footnote.notes = "With minor edits."
         assert (
-            footnote.display()
-            == "George Orwell, A Nice Cup of Tea, p. 55. With minor edits."
+            footnote.display() == "George Orwell, A Nice Cup of Tea. With minor edits."
         )
 
     @pytest.mark.django_db
