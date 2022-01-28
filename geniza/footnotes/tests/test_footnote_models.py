@@ -116,8 +116,12 @@ class TestSource:
         )
 
     def test_str_unpublished_vol(self, typed_texts):
+        # displays with volume
+        assert str(typed_texts) == "S. D. Goitein, typed texts, CUL"
+
+    def test_formatted_stripped(self, typed_texts):
         # displays without volume
-        assert str(typed_texts) == "S. D. Goitein, typed texts"
+        assert typed_texts.formatted_stripped() == "S. D. Goitein, typed texts"
 
     def test_formatted_display(self, book_section):
         # should display proper publisher info, page range for book section fixture

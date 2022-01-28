@@ -132,8 +132,12 @@ class Source(models.Model):
         ordering = ["title", "year"]
 
     def __str__(self):
-        """strip HTML tags and trailing period from formatted display"""
-        return strip_tags(self.formatted_display(extra_fields=False))[:-1]
+        # Append volume for unpublished (e.g. typed texts)
+        if self.source_type.type == "Unpublished" and self.volume:
+            return self.formatted_stripped() + ", " + self.volume
+        # Otherwise return formatted display without html tags
+        else:
+            return self.formatted_stripped()
 
     def all_authors(self):
         """semi-colon delimited list of authors in order"""
@@ -335,6 +339,10 @@ class Source(models.Model):
     all_authors.short_description = "Authors"
     all_authors.admin_order_field = "first_author"  # set in admin queryset
 
+    def formatted_stripped(self):
+        """strip HTML tags and trailing period from formatted display"""
+        return strip_tags(self.formatted_display(extra_fields=False))[:-1]
+
     @classmethod
     def get_volume_from_shelfmark(cls, shelfmark):
         """Given a shelfmark, get our volume label. This logic was determined in
@@ -444,7 +452,7 @@ class Footnote(TrackChangesModel):
         # source, location. notes.
         # source. notes.
         # source, location.
-        parts = [str(self.source)]
+        parts = [self.source.formatted_stripped()]
         if self.location:
             parts.extend([", ", self.location])
         parts.append(".")
