@@ -7,31 +7,27 @@
 @use "../base/spacing";
 
 div.controls {
-    // Controls mobile layout: centered, below header
+    // Controls layout: top right corner
     display: flex;
     position: absolute;
-    top: spacing.$spacing-4xl;
-    margin-top: -#{spacing.$spacing-sm};
-    width: 100%;
-    flex-direction: column;
-    align-items: center;
-    @include breakpoints.for-tablet-landscape-up {
-        // Controls desktop layout: top right corner
-        z-index: 3;
-        width: auto;
-        flex-direction: row;
-        align-items: flex-start;
-        margin-top: auto;
-        right: spacing.$spacing-sm;
-        top: 0;
-        padding-top: spacing.$spacing-xs;
-    }
+    width: auto;
+    flex-direction: row;
+    align-items: flex-start;
+    right: spacing.$spacing-sm;
+    top: spacing.$spacing-xs;
+    z-index: 3;
 
     // Language switcher form
     form#language {
         option[value="he"],
         option[value="ar"] {
             direction: rtl;
+        }
+        // hide on mobile
+        display: none;
+        // show on desktop
+        @include breakpoints.for-tablet-landscape-up {
+            display: block;
         }
     }
 
