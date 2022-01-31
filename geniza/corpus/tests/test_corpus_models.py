@@ -488,6 +488,41 @@ class TestDocument:
         TextBlock.objects.create(document=doc, fragment=frag, order=1)
         assert doc.title == "Legal document: s1"
 
+    # NOTE: not currently used; remove or revise if this remains unused
+    def test_shelfmark_display(self):
+        # T-S 8J22.21 + T-S NS J193
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        doc = Document.objects.create()
+        TextBlock.objects.create(document=doc, fragment=frag, order=1)
+        # single fragment
+        assert doc.shelfmark_display == frag.shelfmark
+
+        # add a second text block with the same fragment
+        TextBlock.objects.create(document=doc, fragment=frag)
+        # shelfmark should not repeat
+        assert doc.shelfmark_display == frag.shelfmark
+
+        frag2 = Fragment.objects.create(shelfmark="T-S NS J193")
+        TextBlock.objects.create(document=doc, fragment=frag2, order=2)
+        # multiple fragments: show first shelfmark + join indicator
+        assert doc.shelfmark_display == "%s + …" % frag.shelfmark
+
+        # ensure shelfmark honors order
+        doc2 = Document.objects.create()
+        TextBlock.objects.create(document=doc2, fragment=frag2, order=1)
+        TextBlock.objects.create(document=doc2, fragment=frag, order=2)
+        assert doc2.shelfmark_display == "%s + …" % frag2.shelfmark
+
+        # if no certain shelfmarks, don't return anything
+        doc3 = Document.objects.create()
+        frag3 = Fragment.objects.create(shelfmark="T-S NS J195")
+        TextBlock.objects.create(document=doc3, fragment=frag3, certain=False, order=1)
+        assert doc3.shelfmark_display == None
+
+        # use only the first certain shelfmark
+        TextBlock.objects.create(document=doc3, fragment=frag2, order=2)
+        assert doc3.shelfmark_display == frag2.shelfmark
+
     def test_has_transcription(self, document, source):
         # doc with no footnotes doesn't have transcription
         assert not document.has_transcription()
