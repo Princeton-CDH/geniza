@@ -8,14 +8,14 @@ from django.utils.html import strip_tags
 from django.utils.text import Truncator, slugify
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, FormView, ListView
 from django.views.generic.edit import FormMixin
 from piffle.presentation import IIIFPresentation
 from tabular_export.admin import export_to_csv_response
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus import iiif_utils
-from geniza.corpus.forms import DocumentSearchForm
+from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Footnote
@@ -457,6 +457,37 @@ class DocumentAnnotationListView(DocumentDetailView):
         annotation_list["resources"] = resources
 
         return JsonResponse(dict(annotation_list), encoder=iiif_utils.AttrDictEncoder)
+
+
+class DocumentMerge(FormView):
+    # TODO: PermissionRequiredMixin
+    # permission_required = ("people.change_person", "people.delete_person")
+    form_class = DocumentMergeForm
+    template_name = (
+        "corpus/document_merge.html"  # ? : Should this be in the admin folder instead?
+    )
+
+    def get_success_url(self):
+        return reverse("admin:corpus_document_changelist")  # TODO: Check me
+
+    def get_form_kwargs(self):
+        form_kwargs = super(DocumentMerge, self).get_form_kwargs()
+        form_kwargs["document_ids"] = self.document_ids
+        return form_kwargs
+
+    def get_initial(self):
+        # Default to first document selected
+        document_ids = self.request.GET.get("ids", None)
+        if document_ids:
+            self.document_ids = [int(pid) for pid in document_ids.split(",")]
+            # by default, prefer the first record created
+            return {"primary_document": sorted(self.document_ids)[0]}
+        else:
+            self.document_ids = []
+
+    def form_valid(self, form):
+        # TODO: Add message and process form
+        return super(DocumentMerge, self).form_valid(form)
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #

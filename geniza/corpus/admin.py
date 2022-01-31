@@ -13,6 +13,7 @@ from django.db.models import CharField, Count, F, Q
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.forms.widgets import Textarea, TextInput
+from django.http import HttpResponseRedirect
 from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
@@ -467,6 +468,23 @@ class DocumentAdmin(admin.ModelAdmin):
         "collection",
     ]
 
+    @admin.display(description="Merge selected documents together")
+    def merge_documents(self, request, queryset=None):
+        """Merge selected documents together"""
+        # Functionality drawn from https://github.com/Princeton-CDH/mep-django/blob/main/mep/people/admin.py
+        if queryset.count() < 2:
+            # ? : How do you raise an error in a template?
+            raise Exception("At least two documents need to be selected")
+
+        # NOTE: using selected ids from form and ignoring queryset
+        # because we can't pass the queryset via redirect
+        # ? : Is this correct? Is there a way to just pass the queryset?
+        selected = request.POST.getlist("_selected_action")
+        return HttpResponseRedirect(
+            "%s?ids=%s" % (reverse("corpus:document-merge"), ",".join(selected)),
+            status=303,
+        )  # status code 303 means "See Other"
+
     @admin.display(description="Export selected documents to CSV")
     def export_to_csv(self, request, queryset=None):
         """Stream tabular data as a CSV file"""
@@ -498,7 +516,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
     # -------------------------------------------------------------------------
 
-    actions = (export_to_csv,)
+    actions = (export_to_csv, merge_documents)
 
 
 @admin.register(DocumentType)

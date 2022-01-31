@@ -2,6 +2,8 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
+from geniza.corpus.models import Document
+
 
 class SelectDisabledMixin:
     """
@@ -168,3 +170,35 @@ class DocumentSearchForm(forms.Form):
             self.add_error(
                 "q", _("Relevance sort is not available without a keyword search term.")
             )
+
+
+class DocumentChoiceField(forms.ModelChoiceField):
+    pass
+    # label_template = get_template('people/snippets/person_option_label.html')
+
+    # def label_from_instance(self, person):
+    #     return self.label_template.render({'person': person})
+
+
+class DocumentMergeForm(forms.Form):
+    primary_document = DocumentChoiceField(
+        label="Primary record",
+        queryset=None,
+        help_text="Select the document record to preserve.",
+        # TODO: Expand on this help text
+        empty_label=None,
+        widget=forms.RadioSelect,
+    )
+
+    def __init__(self, *args, **kwargs):
+        document_ids = kwargs.get("document_ids", [])
+        # ? : I don't understand what's going on here.
+        try:
+            del kwargs["document_ids"]
+        except KeyError:
+            pass
+
+        super().__init__(*args, **kwargs)
+        self.fields["primary_document"].queryset = Document.objects.filter(
+            id__in=document_ids
+        )
