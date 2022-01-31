@@ -10,7 +10,7 @@
                 </span>
                 {# type and shelfmark #}
                 <span class="doctype">{{ document.type }}</span>
-                <span class="shelfmark">{{ document.shelfmark|join:" + " }}</span>
+                <span class="shelfmark">{% include "corpus/snippets/document_shelfmarks.html" %}</span>
             </h2>
 
             {# metadata #}

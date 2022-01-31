@@ -1,0 +1,13 @@
+// -----------------------------------------------------------------------------
+// Styling rules for document shelfmarks.
+// -----------------------------------------------------------------------------
+
+.shelfmark span {
+    // Never break in the middle of a shelfmark
+    white-space: nowrap;
+    display: inline-block;
+    // Add a plus indicator between shelfmarks
+    &:not(:last-child)::after {
+        content: " + ";
+    }
+}

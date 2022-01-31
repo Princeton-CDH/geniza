@@ -1,0 +1,10 @@
+{% for block in document.textblock_set.all %}
+    {% if block.certain %}
+        <span>{{ block.fragment.shelfmark }}</span>
+    {% endif %}
+{% empty %}
+    {# search results page uses list "shelfmark" instead of textblocK_set #}
+    {% for shelfmark in document.shelfmark %}
+        <span>{{ shelfmark }}</span>
+    {% endfor %}
+{% endfor %}

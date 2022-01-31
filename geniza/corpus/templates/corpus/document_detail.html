@@ -32,7 +32,7 @@
             {# metadata #}
             <dl class="metadata">
                 <dt>{% translate 'Shelfmark' %}</dt>
-                <dd>{{ document.shelfmark }}</dd>
+                <dd class="shelfmark">{% include "corpus/snippets/document_shelfmarks.html" %}</dd>
                 {% if document.digital_editions %}
                     <dt>
                         {# Translators: Editor label #}
