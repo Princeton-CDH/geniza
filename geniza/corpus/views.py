@@ -468,7 +468,7 @@ class DocumentMerge(FormView, PermissionRequiredMixin):
     )
 
     def get_success_url(self):
-        return reverse("admin:corpus_document_changelist")  # TODO: Check me
+        return reverse("admin:corpus_document_changelist")
 
     def get_form_kwargs(self):
         form_kwargs = super(DocumentMerge, self).get_form_kwargs()

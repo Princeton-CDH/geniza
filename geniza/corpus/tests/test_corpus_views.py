@@ -5,7 +5,7 @@ from unittest.mock import Mock, mock_open, patch
 import pytest
 from django.db.models.fields import related
 from django.http.response import Http404
-from django.urls import reverse
+from django.urls import resolve, reverse
 from django.utils.text import Truncator, slugify
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
@@ -18,6 +18,7 @@ from geniza.corpus.views import (
     DocumentAnnotationListView,
     DocumentDetailView,
     DocumentManifestView,
+    DocumentMerge,
     DocumentScholarshipView,
     DocumentSearchView,
     DocumentTranscriptionText,
@@ -894,3 +895,25 @@ class TestDocumentTranscriptionText:
         assert slugify(source.authorship_set.first().creator.last_name) in filename
 
         assert response.content == b"some transcription text"
+
+
+class TestDocumentMergeView:
+    def test_get_success_url(self):
+        resolved_url = resolve(DocumentMerge().get_success_url())
+        assert "admin" in resolved_url.app_names
+        assert resolved_url.url_name == "corpus_document_changelist"
+
+    def test_get_initial(self):
+        pmview = DocumentMerge()
+        pmview.request = Mock(GET={"ids": "12,23,456,7"})
+
+        initial = pmview.get_initial()
+        assert pmview.document_ids == [12, 23, 456, 7]
+        # lowest id selected as default primary person
+        assert initial["primary_document"] == 7
+
+    def test_get_form_kwargs(self):
+        pmview = DocumentMerge()
+        pmview.request = Mock(GET={"ids": "12,23,456,7"})
+        form_kwargs = pmview.get_form_kwargs()
+        assert form_kwargs["document_ids"] == pmview.document_ids
