@@ -1,11 +1,14 @@
 from ast import literal_eval
 
+from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect
 from django.urls import reverse
 from django.utils.html import strip_tags
+from django.utils.safestring import mark_safe
 from django.utils.text import Truncator, slugify
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -486,7 +489,39 @@ class DocumentMerge(FormView, PermissionRequiredMixin):
             self.document_ids = []
 
     def form_valid(self, form):
-        # TODO: Add message and process form
+        """Merge the selected documents into the primary document."""
+        primary_doc = form.cleaned_data["primary_document"]
+        # TODO: Incorporate rationale
+        rationale = ""
+
+        try:
+            secondary_ids = [
+                doc_id for doc_id in self.document_ids if doc_id != primary_doc.id
+            ]
+            secondary_docs = Document.objects.filter(id__in=secondary_ids)
+
+            # Get document strings before they are merged
+            primary_doc_str = str(primary_doc)
+            secondary_doc_str = ", ".join([str(doc) for doc in secondary_docs])
+
+            # Merge secondary documents into the selected primary document
+            primary_doc.merge_with(secondary_docs, rationale)
+
+            # Display info about the merge to the user
+            new_doc_link = reverse(
+                "admin:corpus_document_change", args=[primary_doc.id]
+            )
+            messages.success(
+                self.request,
+                mark_safe(
+                    f'Successfully merged documents {secondary_doc_str} with {primary_doc_str} to create <a href="{new_doc_link}">{primary_doc}</a>.'
+                ),
+            )
+
+        # error if person has more than one account, no account
+        except (ObjectDoesNotExist, MultipleObjectsReturned) as err:
+            messages.error(self.request, str(err))
+
         return super(DocumentMerge, self).form_valid(form)
 
 
