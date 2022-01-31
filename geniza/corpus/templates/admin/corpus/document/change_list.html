@@ -4,3 +4,15 @@
     <li><a href="{% url 'admin:corpus_document_csv' %}" class="">Download all as CSV</a></li>
     {{ block.super }}
 {% endblock %}
+
+{% block search %}
+    {{ block.super }}
+    <p class="search-note">Search can use phrases, wildcards, booleans, and field-specific searches on : description, shelfmark, pgpid, old_pgpid, needs_review, tag</p>
+{% endblock %}
+
+
+{% block result_list %}
+    List display: <a href="#">default</a> | <a href="#needsreview" id="needsreview">needs review</a>.
+    {# NOTE: anchor link needs to not be nested so we can use sibling filter in css #}
+    {{ block.super }}
+{% endblock %}
