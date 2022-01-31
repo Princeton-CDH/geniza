@@ -472,9 +472,7 @@ class DocumentAdmin(admin.ModelAdmin):
     def merge_documents(self, request, queryset=None):
         """Merge selected documents together"""
         # Functionality drawn from https://github.com/Princeton-CDH/mep-django/blob/main/mep/people/admin.py
-        if queryset.count() < 2:
-            # ? : How do you raise an error in a template?
-            raise Exception("At least two documents need to be selected")
+        # ? : Should we raise an error if there are no selected documents?
 
         # NOTE: using selected ids from form and ignoring queryset
         # because we can't pass the queryset via redirect
