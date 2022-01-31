@@ -3,8 +3,11 @@ from unittest import mock
 from unittest.mock import Mock, mock_open, patch
 
 import pytest
+from django.conf import settings
+from django.contrib.auth.models import Permission, User
 from django.db.models.fields import related
 from django.http.response import Http404
+from django.test import TestCase
 from django.urls import resolve, reverse
 from django.utils.text import Truncator, slugify
 from parasolr.django import SolrClient
@@ -917,3 +920,36 @@ class TestDocumentMergeView:
         pmview.request = Mock(GET={"ids": "12,23,456,7"})
         form_kwargs = pmview.get_form_kwargs()
         assert form_kwargs["document_ids"] == pmview.document_ids
+
+    def test_document_merge(self, admin_client):
+        # TODO: Check permissions and redirects
+
+        # create test document records to merge
+        doc1 = Document.objects.create()
+        doc2 = Document.objects.create()
+
+        doc_ids = [doc1.id, doc2.id]
+        idstring = ",".join(str(pid) for pid in doc_ids)
+
+        # GET should display choices
+        response = admin_client.get(reverse("corpus:document-merge"), {"ids": idstring})
+        assert response.status_code == 200
+
+        # POST should merge
+        response = admin_client.post(
+            "%s?ids=%s" % (reverse("corpus:document-merge"), idstring),
+            {"primary_document": doc1.id, "rationale": "Test rationale"},
+            follow=True,
+        )
+        TestCase().assertRedirects(
+            response, reverse("admin:corpus_document_changelist")
+        )
+        message = list(response.context.get("messages"))[0]
+        assert message.tags == "success"
+        assert "Successfully merged" in message.message
+        assert f"with ?? (PGPID {doc1.id})" in message.message
+        assert (
+            reverse("admin:corpus_document_change", args=[doc1.id]) in message.message
+        )
+
+        # TODO: test that rationale was passed to log entry

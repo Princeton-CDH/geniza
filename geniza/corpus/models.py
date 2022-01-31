@@ -728,7 +728,6 @@ class Document(ModelIndexable):
         metadata into this document, adds the merged documents into
         list of old PGP IDs, and creates a log entry documenting
         the merge, including the rationale."""
-
         # initialize old pgpid list if previously unset
         if self.old_pgpids is None:
             self.old_pgpids = []
@@ -736,7 +735,7 @@ class Document(ModelIndexable):
         # if user is not specified, log entry will be associated with
         # script and document will be flagged for review
         script = False
-        if user is None:
+        if user is None or user.is_anonymous:
             user = User.objects.get(username=settings.SCRIPT_USERNAME)
             script = True
 

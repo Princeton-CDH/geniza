@@ -504,7 +504,8 @@ class DocumentMerge(FormView, PermissionRequiredMixin):
             secondary_doc_str = ", ".join([str(doc) for doc in secondary_docs])
 
             # Merge secondary documents into the selected primary document
-            primary_doc.merge_with(secondary_docs, rationale, user=self.request.user)
+            user = getattr(self.request, "user", None)
+            primary_doc.merge_with(secondary_docs, rationale, user=user)
 
             # Display info about the merge to the user
             new_doc_link = reverse(
