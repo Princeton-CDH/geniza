@@ -1,4 +1,5 @@
 from django import forms
+from django.template.loader import get_template
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
@@ -173,11 +174,10 @@ class DocumentSearchForm(forms.Form):
 
 
 class DocumentChoiceField(forms.ModelChoiceField):
-    pass
-    # label_template = get_template('people/snippets/person_option_label.html')
+    label_template = get_template("corpus/snippets/document_option_label.html")
 
-    # def label_from_instance(self, person):
-    #     return self.label_template.render({'person': person})
+    def label_from_instance(self, document):
+        return self.label_template.render({"document": document})
 
 
 class DocumentMergeForm(forms.Form):
