@@ -141,16 +141,18 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertContains(response, "Editors")
 
-    def test_shelfmarks(self, client, document, join):
+    def test_shelfmarks(self, client, document, join, fragment, multifragment):
         # Ensure that shelfmarks are displayed on the page.
         response = client.get(document.get_absolute_url())
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
-        # Patch iiif_images() function to avoid trying to access fake IIIF URLs
-        with patch.object(Document, "iiif_images", return_value=[]):
-            with patch.object(Document, "iiif_image_ids", return_value=[]):
-                response = client.get(join.get_absolute_url())
-                assertContains(response, "<dt>Shelfmark</dt>", html=True)
-                assertContains(response, join.shelfmark, html=True)
+        # remove IIIF urls from fixture document fragments to prevent trying to access fake URLs
+        fragment.iiif_url = ""
+        fragment.save()
+        multifragment.iiif_url = ""
+        multifragment.save()
+        response = client.get(join.get_absolute_url())
+        assertContains(response, "<dt>Shelfmark</dt>", html=True)
+        assertContains(response, join.shelfmark, html=True)
 
     def test_download_transcription_link(self, client, document, typed_texts):
         edition = Footnote.objects.create(

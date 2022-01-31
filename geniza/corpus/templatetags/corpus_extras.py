@@ -99,3 +99,14 @@ def iiif_info_json(image_ids):
 
     """
     return json.dumps([image_id + "/info.json" for image_id in image_ids])
+
+
+@register.filter
+def format_attribution(attribution):
+    (attribution, additional_restrictions, extra_attrs_set) = attribution
+    extra_attrs = "\n".join("<p>%s</p>" % attr for attr in extra_attrs_set)
+    return '<div class="attribution"><p>%s</p><p>%s</p>%s</div>' % (
+        attribution,
+        additional_restrictions,
+        extra_attrs,
+    )

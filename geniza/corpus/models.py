@@ -16,6 +16,7 @@ from django.db.models.query import Prefetch
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.urls import reverse
+from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate, get_language
 from django.utils.translation import gettext as _
@@ -621,6 +622,36 @@ class Document(ModelIndexable):
     def sources(self):
         """All unique sources attached to footnotes on this document."""
         return Source.objects.filter(footnote__document=self).distinct()
+
+    def attribution(self):
+        """Generate a tuple of three attribution components for use in IIIF manifests
+        or wherever images/transcriptions need attribution."""
+        # keep track of unique attributions so we can include them all
+        extra_attrs_set = set()
+        for url in self.iiif_urls():
+            remote_manifest = IIIFPresentation.from_url(url)
+            # CUDL attribution has some variation in tags;
+            # would be nice to preserve tagged version,
+            # for now, ignore tags so we can easily de-dupe
+            try:
+                extra_attrs_set.add(strip_tags(remote_manifest.attribution))
+            except AttributeError:
+                # attribution is optional, so ignore if not present
+                pass
+        pgp = _("Princeton Geniza Project")
+        # Translators: attribution for local IIIF manifests
+        attribution = _("Compilation by %(pgp)s." % {"pgp": pgp})
+        if self.has_transcription():
+            # Translators: attribution for local IIIF manifests that include transcription
+            attribution = _("Compilation and transcription by %(pgp)s." % {"pgp": pgp})
+        # Translators: manifest attribution note that content from other institutions may have restrictions
+        additional_restrictions = _("Additional restrictions may apply.")
+
+        return (
+            attribution,
+            additional_restrictions,
+            extra_attrs_set,
+        )
 
     @classmethod
     def total_to_index(cls):

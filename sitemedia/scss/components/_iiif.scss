@@ -11,13 +11,12 @@
     align-items: center;
     background-color: var(--background-light);
     padding: spacing.$spacing-xl spacing.$spacing-lg;
-    overflow-x: scroll;
     @include breakpoints.for-tablet-landscape-up {
         padding: spacing.$spacing-2xl 10rem;
         margin: 0;
         max-width: 100%;
         width: 100%;
-        flex-flow: row;
+        flex-flow: row wrap;
         align-items: flex-start;
         justify-content: space-between;
     }
@@ -48,18 +47,21 @@
         }
         @include breakpoints.for-tablet-landscape-up {
             align-items: flex-start;
-            width: 50%;
+            width: 47%;
+            flex: 0 1 47%;
             height: 680px;
             // Special styling for images + transcription
             & + .transcription {
                 align-self: flex-start;
-                margin: 0 0 0 spacing.$spacing-md;
+                margin: 0;
                 width: 50%;
                 max-width: 50%;
+                flex: 0 1 50%;
             }
             // Special styling for images and NO transcription
-            &:last-child {
+            &.no-transcription {
                 margin: 0 auto;
+                flex: 1 0 100%;
             }
         }
     }
@@ -67,6 +69,7 @@
     .transcription {
         max-width: 60ch;
         margin: 0 auto;
+        flex: 1 0 100%;
         * {
             max-width: 100%;
         }
@@ -82,6 +85,16 @@
         }
         section + section {
             margin-top: spacing.$spacing-md;
+        }
+    }
+
+    // Attribution text
+    div.attribution {
+        @include typography.caption;
+        flex: 1 0 100%;
+        margin: spacing.$spacing-xl auto 0;
+        * {
+            max-width: 100%;
         }
     }
 }
