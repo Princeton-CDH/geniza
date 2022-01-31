@@ -1,13 +1,16 @@
 import re
+from unittest.mock import Mock
 
 from django import forms
 
 from geniza.corpus.forms import (
     CheckboxSelectWithCount,
+    DocumentChoiceField,
     DocumentSearchForm,
     FacetChoiceField,
     RadioSelectWithDisabled,
 )
+from geniza.corpus.models import Document
 
 
 class TestSelectedWithDisabled:
@@ -101,3 +104,16 @@ class TestDocumentSearchForm:
         form.cleaned_data = {"q": "", "sort": "scholarship_desc"}
         form.clean()
         assert len(form.errors) == 0
+
+
+class TestDocumentChoiceField:
+    def test_label_from_instance(self, document):
+        dchoicefield = DocumentChoiceField(Mock())
+
+        # Should not error on a document with the most minimal information
+        minimal_doc = Document.objects.create()
+        label = dchoicefield.label_from_instance(minimal_doc)
+        assert minimal_doc.id in label
+
+        # TODO: Check that details are included after geniza team shares details
+        #  of what they want to see in the label

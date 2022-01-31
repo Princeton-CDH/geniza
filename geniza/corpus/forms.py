@@ -184,8 +184,11 @@ class DocumentMergeForm(forms.Form):
     primary_document = DocumentChoiceField(
         label="Primary record",
         queryset=None,
-        help_text="Select the document record to preserve.",
-        # TODO: Expand on this help text
+        help_text=(
+            "Select the document record to prioritize. "
+            "Combines all metadata into this document, adds the merged "
+            "documents into list of old PGP IDs."
+        ),
         empty_label=None,
         widget=forms.RadioSelect,
     )
