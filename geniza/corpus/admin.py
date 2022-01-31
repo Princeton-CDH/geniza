@@ -468,7 +468,7 @@ class DocumentAdmin(admin.ModelAdmin):
         "collection",
     ]
 
-    @admin.display(description="Merge selected documents together")
+    @admin.display(description="Merge selected documents")
     def merge_documents(self, request, queryset=None):
         """Merge selected documents together"""
         # Functionality drawn from https://github.com/Princeton-CDH/mep-django/blob/main/mep/people/admin.py

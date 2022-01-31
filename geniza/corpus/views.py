@@ -490,8 +490,9 @@ class DocumentMerge(FormView, PermissionRequiredMixin):
 
     def form_valid(self, form):
         """Merge the selected documents into the primary document."""
+        breakpoint()
         primary_doc = form.cleaned_data["primary_document"]
-        # TODO: Incorporate rationale
+        # TODO: Incorporate user
         rationale = form.cleaned_data["rationale"]
 
         try:
@@ -514,7 +515,7 @@ class DocumentMerge(FormView, PermissionRequiredMixin):
             messages.success(
                 self.request,
                 mark_safe(
-                    f'Successfully merged documents {secondary_doc_str} with {primary_doc_str} to create <a href="{new_doc_link}">{primary_doc}</a>.'
+                    f'Successfully merged document(s) {secondary_doc_str} with {primary_doc_str} to create <a href="{new_doc_link}">{primary_doc}</a>.'
                 ),
             )
 
