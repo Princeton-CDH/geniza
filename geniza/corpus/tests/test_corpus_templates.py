@@ -127,7 +127,16 @@ class TestDocumentDetailTemplate:
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
         response = client.get(join.get_absolute_url())
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
-        assertContains(response, join.shelfmark, html=True)
+        shelfmarks = list(
+            block.fragment.shelfmark
+            for block in join.textblock_set.all()
+            if block.certain
+        )
+        assertContains(
+            response,
+            "<span>%s</span><span>%s</span>" % (shelfmarks[0], shelfmarks[1]),
+            html=True,
+        )
 
     def test_download_transcription_link(self, client, document, typed_texts):
         edition = Footnote.objects.create(
