@@ -1,5 +1,6 @@
 from ast import literal_eval
 
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect
@@ -459,9 +460,8 @@ class DocumentAnnotationListView(DocumentDetailView):
         return JsonResponse(dict(annotation_list), encoder=iiif_utils.AttrDictEncoder)
 
 
-class DocumentMerge(FormView):
-    # TODO: PermissionRequiredMixin
-    # permission_required = ("people.change_person", "people.delete_person")
+class DocumentMerge(FormView, PermissionRequiredMixin):
+    permission_required = ("corpus.change_document", "corpus.delete_document")
     form_class = DocumentMergeForm
     template_name = (
         "corpus/document_merge.html"  # ? : Should this be in the admin folder instead?
