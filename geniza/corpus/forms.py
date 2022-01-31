@@ -192,6 +192,10 @@ class DocumentMergeForm(forms.Form):
         empty_label=None,
         widget=forms.RadioSelect,
     )
+    rationale = forms.CharField(
+        label="Rationale",
+        help_text="Provide a brief explanation for merging these records.",
+    )
 
     def __init__(self, *args, **kwargs):
         document_ids = kwargs.get("document_ids", [])

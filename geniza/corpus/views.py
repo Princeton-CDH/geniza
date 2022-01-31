@@ -492,7 +492,7 @@ class DocumentMerge(FormView, PermissionRequiredMixin):
         """Merge the selected documents into the primary document."""
         primary_doc = form.cleaned_data["primary_document"]
         # TODO: Incorporate rationale
-        rationale = ""
+        rationale = form.cleaned_data["rationale"]
 
         try:
             secondary_ids = [
