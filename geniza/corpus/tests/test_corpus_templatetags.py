@@ -1,6 +1,6 @@
 import json
 from asyncio import format_helpers
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from urllib import parse
 
 import pytest
@@ -128,13 +128,10 @@ def test_iiif_image():
 
 
 def test_iiif_info_json():
-    img_ids = ["http://image.server/path/myimgid", "http://image.server/path/myimgid2"]
-    json_ids = corpus_extras.iiif_info_json(img_ids)
-    # should convert into valid json
-    try:
-        json.loads(json_ids)
-    except ValueError:
-        assert False
+    img1 = IIIFImageClient("http://image.server/path/", "myimgid")
+    img2 = IIIFImageClient("http://image.server/path/", "myimgid2")
+    imgs = [{"image": img1}, {"image": img2}]
+    json_ids = corpus_extras.iiif_info_json(imgs)
     # should contain the same ids but with /info.json appended
     assert "http://image.server/path/myimgid/info.json" in json_ids
     assert "http://image.server/path/myimgid2/info.json" in json_ids

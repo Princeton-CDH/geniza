@@ -55,7 +55,6 @@ class Command(BaseCommand):
         percy_snapshot(browser, "Document Search%s" % dark_mode_str)
 
         # document detail
-        browser.get("http://localhost:8000/en/documents/8151/iiif/manifest/")
         browser.get("http://localhost:8000/en/documents/8151/")
         percy_snapshot(browser, "Document Details%s" % dark_mode_str)
 

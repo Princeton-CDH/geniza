@@ -448,22 +448,6 @@ class TestDocument:
             assert (images[0]["image"], images[0]["label"]) == (img1, "label1")
             assert (images[1]["image"], images[1]["label"]) == (img2, "label2")
 
-    @patch("geniza.corpus.models.IIIFPresentation")
-    def test_iiif_image_ids(self, mockiifpres, iiif_dict):
-        # Create a document and fragment and a TextBlock to associate them
-        doc = Document.objects.create()
-        frag = Fragment.objects.create(shelfmark="T-S 1")
-        frag.iiif_url = "http://example.co/iiif/ts-1"
-        frag.save()
-        mockiifpres.from_url.return_value = iiif_dict
-        TextBlock.objects.create(document=doc, fragment=frag, side="r")
-        # Mock two IIIF images, mock their size functions
-        ids = doc.iiif_image_ids()
-        assert len(ids) == 2
-        assert isinstance(ids, list)
-        assert ids[0] == "http://example.co/iiif/ts-1/00001"
-        assert ids[1] == "http://example.co/iiif/ts-1/00002"
-
     def test_fragment_urls(self):
         # create example doc with two fragments with URLs
         doc = Document.objects.create()

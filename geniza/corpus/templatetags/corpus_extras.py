@@ -93,12 +93,12 @@ def iiif_image(img, args):
 
 
 @register.filter
-def iiif_info_json(image_ids):
+def iiif_info_json(images):
     """Add /info.json to a list of IIIF image IDs and dump to JSON,
     for OpenSeaDragon to parse. Example use::
 
     """
-    return json.dumps([image_id + "/info.json" for image_id in image_ids])
+    return json.dumps([image["image"].info() for image in images])
 
 
 @register.filter

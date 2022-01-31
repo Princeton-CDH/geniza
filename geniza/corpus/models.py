@@ -550,22 +550,6 @@ class Document(ModelIndexable):
 
         return iiif_images
 
-    def iiif_image_ids(self):
-        """List of IIIF image IDs for images of the Document's Fragments (used by OpenSeaDragon)."""
-        image_ids = []
-        for b in self.textblock_set.all():
-            if b.fragment.iiif_url:
-                # use locally cached manifest if possible
-                if b.fragment.manifest:
-                    for canvas in b.fragment.manifest.canvases.all():
-                        image_ids.append(canvas.iiif_image_id)
-                # if not cached, load from remote url
-                else:
-                    manifest = IIIFPresentation.from_url(b.fragment.iiif_url)
-                    for canvas in manifest.sequences[0].canvases:
-                        image_ids.append(canvas.images[0].resource.id)
-        return image_ids
-
     def fragment_urls(self):
         """List of external URLs to view the Document's Fragments."""
         return list(
