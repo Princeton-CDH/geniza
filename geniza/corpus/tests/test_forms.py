@@ -1,11 +1,13 @@
 import re
 from unittest.mock import Mock
 
+import pytest
 from django import forms
 
 from geniza.corpus.forms import (
     CheckboxSelectWithCount,
     DocumentChoiceField,
+    DocumentMergeForm,
     DocumentSearchForm,
     FacetChoiceField,
     RadioSelectWithDisabled,
@@ -113,7 +115,25 @@ class TestDocumentChoiceField:
         # Should not error on a document with the most minimal information
         minimal_doc = Document.objects.create()
         label = dchoicefield.label_from_instance(minimal_doc)
-        assert minimal_doc.id in label
+        assert str(minimal_doc.id) in label
 
         # TODO: Check that details are included after geniza team shares details
         #  of what they want to see in the label
+
+
+class TestDocumentMergeForm:
+    @pytest.mark.django_db
+    def test_init(self):
+        # no error if document ids not specified
+        DocumentMergeForm()
+
+        # create test document records
+        Document.objects.bulk_create([Document(), Document(), Document(), Document()])
+        # initialize with ids for all but the last
+        docs = Document.objects.all().order_by("pk")
+        doc_ids = list(docs.values_list("id", flat=True))
+        mergeform = DocumentMergeForm(document_ids=doc_ids[:-1])
+        # total should have all but one document
+        assert mergeform.fields["primary_document"].queryset.count() == docs.count() - 1
+        # last document should not be an available choice
+        assert docs.last() not in mergeform.fields["primary_document"].queryset
