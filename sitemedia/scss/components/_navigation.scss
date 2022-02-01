@@ -89,7 +89,7 @@ header {
         max-width: 100%;
         width: 100%;
         height: 100vh;
-        z-index: 4;
+        z-index: 6;
         // Direct descendent menu buttons (mobile)
         & > li.menu-button {
             display: flex;
@@ -141,6 +141,7 @@ header {
             & > li.menu-item + li.menu-item {
                 margin-left: spacing.$spacing-sm;
             }
+            z-index: 4;
         }
         outline-color: var(--primary);
     }
