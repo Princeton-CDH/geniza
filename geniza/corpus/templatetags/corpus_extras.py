@@ -1,7 +1,9 @@
+import json
 from urllib import parse
 
 from django import template
 from natsort import natsorted
+from piffle.iiif import IIIFImageClientException
 
 from geniza.footnotes.models import Footnote
 
@@ -61,3 +63,50 @@ def natsort(sortable, key=None):
         {% endfor %}
     """
     return natsorted(sortable, key=lambda i: getattr(i, key) if key else None)
+
+
+@register.filter
+def iiif_image(img, args):
+    """Add options to resize or otherwise change the display of an iiif
+    image; expects an instance of :class:`piffle.iiif.IIIFImageClient`.
+    Provide the method and arguments as filter string, i.e.::
+        {{ myimg|iiif_image:"size:width=225,height=255" }}
+    """
+    # copied from mep-django
+
+    # split into method and parameters (return if not formatted properly)
+    if ":" not in args:
+        return ""
+    mode, opts = args.split(":")
+    # split parameters into args and kwargs
+    args = opts.split(",")
+    # if there's an =, split it and include in kwargs dict
+    kwargs = dict(arg.split("=", 1) for arg in args if "=" in arg)
+    # otherwise, include as an arg
+    args = [arg for arg in args if "=" not in arg]
+    # attempt to call the method with the arguments
+    try:
+        return getattr(img, mode)(*args, **kwargs)
+    except (IIIFImageClientException, TypeError):
+        # return an empty string if anything goes wrong
+        return ""
+
+
+@register.filter
+def iiif_info_json(images):
+    """Add /info.json to a list of IIIF image IDs and dump to JSON,
+    for OpenSeaDragon to parse. Example use::
+
+    """
+    return json.dumps([image["image"].info() for image in images])
+
+
+@register.filter
+def format_attribution(attribution):
+    (attribution, additional_restrictions, extra_attrs_set) = attribution
+    extra_attrs = "\n".join("<p>%s</p>" % attr for attr in extra_attrs_set)
+    return '<div class="attribution"><p>%s</p><p>%s</p>%s</div>' % (
+        attribution,
+        additional_restrictions,
+        extra_attrs,
+    )

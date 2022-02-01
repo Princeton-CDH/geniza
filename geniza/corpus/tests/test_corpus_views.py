@@ -607,11 +607,18 @@ class TestDocumentScholarshipView:
 
 
 @patch("geniza.corpus.views.IIIFPresentation")
+@patch("geniza.corpus.models.IIIFPresentation")
 class TestDocumentManifestView:
     view_name = "corpus:document-manifest"
 
     def test_no_images_no_transcription(
-        self, mockiifpres, client, document, source, fragment
+        self,
+        mock_view_iiifpres,
+        mock_model_iiifpres,
+        client,
+        document,
+        source,
+        fragment,
     ):
         # fixture document fragment has iiif, so remove it to test
         fragment.iiif_url = ""
@@ -621,11 +628,19 @@ class TestDocumentManifestView:
         assert response.status_code == 404
 
     def test_images_no_transcription(
-        self, mockiifpres, client, document, source, fragment
+        self,
+        mock_view_iiifpres,
+        mock_model_iiifpres,
+        client,
+        document,
+        source,
+        fragment,
     ):
         # document fragment has iiif, but no transcription; should return a manifest
 
-        mock_manifest = mockiifpres.from_url.return_value
+        mock_manifest = (
+            mock_view_iiifpres.from_url.return_value
+        ) = mock_model_iiifpres.from_url.return_value
         mock_manifest.label = "Remote content"
         mock_manifest.id = "http://example.io/manifest/1"
         mock_manifest.attribution = (
@@ -638,7 +653,7 @@ class TestDocumentManifestView:
         response = client.get(reverse(self.view_name, args=[document.pk]))
         assert response.status_code == 200
 
-        assert mockiifpres.from_url.called_with(fragment.iiif_url)
+        assert mock_view_iiifpres.from_url.called_with(fragment.iiif_url)
 
         # should not contain annotation list, since there is no transcription
         assertNotContains(response, "otherContent")
@@ -658,9 +673,11 @@ class TestDocumentManifestView:
             == "original source: %s" % mock_manifest.label
         )
 
-    def test_images_no_attribution(self, mockiifpres, client, document):
+    def test_images_no_attribution(
+        self, mock_view_iiifpres, mock_model_iiifpres, client, document
+    ):
         # manifest has no attribution
-        mock_manifest = mockiifpres.from_url.return_value
+        mock_manifest = mock_view_iiifpres.from_url.return_value
         del mock_manifest.attribution  # remove attribution key
 
         # should only have the default attribution content
@@ -668,11 +685,17 @@ class TestDocumentManifestView:
         result = response.json()
         assert (
             result["attribution"]
-            == "<div><p>Compilation by Princeton Geniza Project.</p><p>Additional restrictions may apply.</p></div>"
+            == '<div class="attribution"><p>Compilation by Princeton Geniza Project.</p><p>Additional restrictions may apply.</p></div>'
         )
 
     def test_no_images_transcription(
-        self, mockiifpres, client, document, source, fragment
+        self,
+        mock_view_iiifpres,
+        mock_model_iiifpres,
+        client,
+        document,
+        source,
+        fragment,
     ):
         # remove iiif url from fixture document fragment has iiif
         fragment.iiif_url = ""
@@ -688,7 +711,7 @@ class TestDocumentManifestView:
         assert response.status_code == 200
 
         # should not load any remote manifests
-        assert mockiifpres.from_url.call_count == 0
+        assert mock_view_iiifpres.from_url.call_count == 0
         # should use empty canvas id
         assertContains(response, EMPTY_CANVAS_ID)
         # should include annotations
@@ -699,7 +722,9 @@ class TestDocumentManifestView:
             response, reverse("corpus:document-annotations", args=[document.pk])
         )
 
-    def test_get_absolute_url(self, mockiifpres, document, source):
+    def test_get_absolute_url(
+        self, mock_view_iiifpres, mock_model_iiifpres, document, source
+    ):
         """should return manifest permalink"""
 
         view = DocumentManifestView()

@@ -7,11 +7,11 @@
     <link rel="canonical" href="{{ document.permalink }}" />
 {% endblock extrameta %}
 {% block extrascript %}
-    {# mirador is slow, so only include if needed #}
-    {% if document.has_transcription or document.iiif_urls %}
+    {# include openseadragon if needed #}
+    {% if document.has_images or document.iiif_urls %}
         {# NOTE: referencing specific version avoids an extra render-blocking lookup #}
-        <script defer src="https://unpkg.com/mirador@3.3.0/dist/mirador.min.js" nonce="{{ request.csp_nonce}}"></script>
-        <script defer src="{% static 'js/viewer.js' %}" nonce="{{ request.csp_nonce }}"></script>
+        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/openseadragon.min.js" nonce="{{ request.csp_nonce}}"></script>
+        <script defer src="{% static 'js/openseadragon.js' %}" nonce="{{ request.csp_nonce }}"></script>
     {% endif %}
 {% endblock extrascript %}
 
@@ -32,7 +32,7 @@
             {# metadata #}
             <dl class="metadata">
                 <dt>{% translate 'Shelfmark' %}</dt>
-                <dd>{{ document.shelfmark }}</dd>
+                <dd class="shelfmark">{% include "corpus/snippets/document_shelfmarks.html" %}</dd>
                 {% if document.digital_editions %}
                     <dt>
                         {# Translators: Editor label #}
@@ -84,7 +84,7 @@
             <section class="transcription-link">
                 {% for ed in document.digital_editions %}
                     {% if ed.content.text %}
-                        <p><a href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">Download {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% endfor %}'s edition.</a></p>
+                        <p><a href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">Download {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% empty %}[unknown]{% endfor %}'s edition.</a></p>
                     {% endif %}
                 {% endfor %}
             </section>
@@ -93,8 +93,6 @@
 
     {# viewer #}
     {% if document.has_transcription or document.iiif_urls %}
-        <div class="iiif_wrapper">
-            <div id="iiif_viewer" data-iiif-url="{% url "corpus:document-manifest" document.id %}" data-has-annotations="{{ document.has_transcription }}"></div>
-        </div>
+        {% include "corpus/snippets/document_transcription.html" %}
     {% endif %}
 {% endblock main %}

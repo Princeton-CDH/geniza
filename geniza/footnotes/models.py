@@ -132,8 +132,14 @@ class Source(models.Model):
         ordering = ["title", "year"]
 
     def __str__(self):
-        """strip HTML tags and trailing period from formatted display"""
-        return strip_tags(self.formatted_display(extra_fields=False))[:-1]
+        """Method used for for internal/data admin use.
+        Please use the `display` or `formatted_display` methods for public display."""
+        # Append volume for unpublished (e.g. typed texts)
+        if self.source_type.type == "Unpublished" and self.volume:
+            return "%s (%s)" % (self.display(), self.volume)
+        # Otherwise return formatted display without html tags
+        else:
+            return self.display()
 
     def all_authors(self):
         """semi-colon delimited list of authors in order"""
@@ -330,10 +336,15 @@ class Source(models.Model):
         )
         delimiter = ", " if use_comma else " "
 
-        return delimiter.join([val for val in (author, ref) if val]) + "."
+        # rstrip to prevent double periods (e.g. in the case of trailing edition abbreviation)
+        return delimiter.join([val for val in (author, ref) if val]).rstrip(".") + "."
 
     all_authors.short_description = "Authors"
     all_authors.admin_order_field = "first_author"  # set in admin queryset
+
+    def display(self):
+        """strip HTML tags from formatted display"""
+        return strip_tags(self.formatted_display(extra_fields=False))
 
     @classmethod
     def get_volume_from_shelfmark(cls, shelfmark):
@@ -444,10 +455,7 @@ class Footnote(TrackChangesModel):
         # source, location. notes.
         # source. notes.
         # source, location.
-        parts = [str(self.source)]
-        if self.location:
-            parts.extend([", ", self.location])
-        parts.append(".")
+        parts = [self.source.display()]
         if self.notes:
             # uppercase first letter of notes if not capitalized
             notes = self.notes[0].upper() + self.notes[1:]
