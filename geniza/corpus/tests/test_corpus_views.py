@@ -901,10 +901,13 @@ class TestDocumentTranscriptionText:
 
 
 class TestDocumentMergeView:
-    def test_get_success_url(self):
-        resolved_url = resolve(DocumentMerge().get_success_url())
+    def test_get_success_url(self, document):
+        merge_view = DocumentMerge()
+        merge_view.primary_document = document
+
+        resolved_url = resolve(merge_view.get_success_url())
         assert "admin" in resolved_url.app_names
-        assert resolved_url.url_name == "corpus_document_changelist"
+        assert resolved_url.url_name == "corpus_document_change"
 
     def test_get_initial(self):
         pmview = DocumentMerge()
@@ -942,7 +945,7 @@ class TestDocumentMergeView:
             follow=True,
         )
         TestCase().assertRedirects(
-            response, reverse("admin:corpus_document_changelist")
+            response, reverse("admin:corpus_document_change", args=[doc1.id])
         )
         message = list(response.context.get("messages"))[0]
         assert message.tags == "success"

@@ -469,7 +469,7 @@ class DocumentMerge(FormView, PermissionRequiredMixin):
     template_name = "admin/corpus/document/merge.html"
 
     def get_success_url(self):
-        return reverse("admin:corpus_document_changelist")
+        return reverse("admin:corpus_document_change", args=[self.primary_document.id])
 
     def get_form_kwargs(self):
         form_kwargs = super(DocumentMerge, self).get_form_kwargs()
@@ -489,6 +489,7 @@ class DocumentMerge(FormView, PermissionRequiredMixin):
     def form_valid(self, form):
         """Merge the selected documents into the primary document."""
         primary_doc = form.cleaned_data["primary_document"]
+        self.primary_document = primary_doc
         rationale = form.cleaned_data["rationale"]
 
         try:
