@@ -87,27 +87,6 @@ class TestDocumentDetailTemplate:
         response = admin_client.get(document.get_absolute_url())
         assertContains(response, edit_url)
 
-    def test_source_location(self, client, document, source):
-        """Document detail template should show footnote location if present"""
-        fn = Footnote.objects.create(
-            content_object=document,
-            source=source,
-            location="p. 25",
-            doc_relation=Footnote.EDITION,
-        )
-        response = client.get(document.get_absolute_url())
-        assertNotContains(response, "p. 25")  # should not show when no content
-        fn.content = "fake content"
-        fn.save()
-        response = client.get(document.get_absolute_url())
-        assertContains(response, "p. 25")  # should show when there is content
-        fn.location = ""
-        fn.save()
-        response = client.get(
-            reverse("corpus:document-scholarship", args=[document.pk])
-        )
-        assertNotContains(response, "p. 25")
-
     def test_editors(self, client, document, source, twoauthor_source):
         # footnote with no content
         Footnote.objects.create(
@@ -152,7 +131,12 @@ class TestDocumentDetailTemplate:
         multifragment.save()
         response = client.get(join.get_absolute_url())
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
-        assertContains(response, join.shelfmark, html=True)
+        shelfmarks = join.certain_join_shelfmarks
+        assertContains(
+            response,
+            "<span>%s + </span><span>%s</span>" % (shelfmarks[0], shelfmarks[1]),
+            html=True,
+        )
 
     def test_download_transcription_link(self, client, document, typed_texts):
         edition = Footnote.objects.create(
@@ -287,6 +271,25 @@ class TestDocumentScholarshipTemplate:
         assertContains(
             response, '<dd class="relation">Edition, Translation</dd>', html=True
         )
+
+    def test_source_location(self, client, document, source):
+        """Document scholarship template should show footnote location when present"""
+        fn = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            location="p. 25",
+            doc_relation=Footnote.EDITION,
+        )
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assertContains(response, "p. 25")
+        fn.location = ""
+        fn.save()
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assertNotContains(response, "p. 25")  # should not show when removed
 
 
 class TestDocumentTabsSnippet:

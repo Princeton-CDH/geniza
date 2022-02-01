@@ -439,7 +439,7 @@ class Document(ModelIndexable):
         # ordering = [Least('textblock__fragment__shelfmark')]
 
     def __str__(self):
-        return f"{self.shelfmark_display or '??'} (PGPID {self.id or '??'})"
+        return f"{self.shelfmark or '??'} (PGPID {self.id or '??'})"
 
     @staticmethod
     def get_by_any_pgpid(pgpid):
@@ -462,16 +462,21 @@ class Document(ModelIndexable):
         )
 
     @property
-    def shelfmark_display(self):
-        """First shelfmark plus join indicator for shorter display."""
-        # NOTE preliminary pending more discussion and implementation of #154:
-        # https://github.com/Princeton-CDH/geniza/issues/154
-        certain = list(
+    def certain_join_shelfmarks(self):
+        return list(
             dict.fromkeys(
                 block.fragment.shelfmark
                 for block in self.textblock_set.filter(certain=True)
             ).keys()
         )
+
+    # NOTE: not currently used; remove or revise if this remains unused
+    @property
+    def shelfmark_display(self):
+        """First shelfmark plus join indicator for shorter display."""
+        # NOTE preliminary pending more discussion and implementation of #154:
+        # https://github.com/Princeton-CDH/geniza/issues/154
+        certain = self.certain_join_shelfmarks
         if not certain:
             return None
         return certain[0] + (" + …" if len(certain) > 1 else "")
@@ -577,7 +582,7 @@ class Document(ModelIndexable):
     @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
-        return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"
+        return f"{self.doctype or _('Unknown type')}: {self.shelfmark or '??'}"
 
     def editions(self):
         """All footnotes for this document where the document relation includes
@@ -683,7 +688,7 @@ class Document(ModelIndexable):
                 "description_t": self.description,
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
-                "shelfmark_ss": [f.shelfmark for f in fragments],
+                "shelfmark_ss": self.certain_join_shelfmarks,
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],

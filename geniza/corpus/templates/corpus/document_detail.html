@@ -32,7 +32,7 @@
             {# metadata #}
             <dl class="metadata">
                 <dt>{% translate 'Shelfmark' %}</dt>
-                <dd>{{ document.shelfmark }}</dd>
+                <dd class="shelfmark">{% include "corpus/snippets/document_shelfmarks.html" %}</dd>
                 {% if document.digital_editions %}
                     <dt>
                         {# Translators: Editor label #}
@@ -84,7 +84,7 @@
             <section class="transcription-link">
                 {% for ed in document.digital_editions %}
                     {% if ed.content.text %}
-                        <p><a href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">Download {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% endfor %}'s edition.</a></p>
+                        <p><a href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">Download {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% empty %}[unknown]{% endfor %}'s edition.</a></p>
                     {% endif %}
                 {% endfor %}
             </section>
