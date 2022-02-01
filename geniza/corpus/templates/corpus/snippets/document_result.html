@@ -95,6 +95,9 @@
                     {% for tag in document.tags|alphabetize|slice:":5" %}
                         <li><a href='{% url "corpus:document-search" %}?q=tag:"{{ tag }}"'>{{ tag }}</a></li>
                     {% endfor %}
+                    {% if document.tags|length > 5 %}
+                        <li>{{ document.tags|length|add:"-5" }} {% translate 'more...' %}</li>
+                    {% endif %}
                 </ul>
             {% endif %}
 
