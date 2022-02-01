@@ -951,8 +951,5 @@ class TestDocumentMergeView:
         assert message.tags == "success"
         assert "Successfully merged" in message.message
         assert f"with ?? (PGPID {doc1.id})" in message.message
-        assert (
-            reverse("admin:corpus_document_change", args=[doc1.id]) in message.message
-        )
 
         # TODO: test that rationale was passed to log entry
