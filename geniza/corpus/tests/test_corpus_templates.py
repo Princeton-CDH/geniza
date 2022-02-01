@@ -409,6 +409,18 @@ class TestDocumentResult:
                 in result
             )
 
+        # Ensure that the number of tags shown is limited to 5 and message displays correctly
+        tags = ["bill of sale", "real estate", "arabic", "ib6", "ibn", "red sea"]
+        result = self.template.render(
+            context={
+                "document": {"pgpid": 1, "id": "document.1", "tags": tags},
+                "highlighting": {},
+                "page_obj": self.page_obj,
+            }
+        )
+        assert "red sea" not in result
+        assert "1 more..." in result
+
     def test_multiple_scholarship_types(self):
         result = self.template.render(
             context={
