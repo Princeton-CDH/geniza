@@ -1,10 +1,10 @@
 {% for block in document.textblock_set.all %}
     {% if block.certain %}
-        <span>{{ block.fragment.shelfmark }}</span>
+        <span>{{ block.fragment.shelfmark }}{% if not forloop.last %} + {% endif %}</span>
     {% endif %}
 {% empty %}
     {# search results page uses list "shelfmark" instead of textblocK_set #}
     {% for shelfmark in document.shelfmark %}
-        <span>{{ shelfmark }}</span>
+        <span>{{ shelfmark }}{% if not forloop.last %} +&nbsp;{% endif %}</span>
     {% endfor %}
 {% endfor %}
