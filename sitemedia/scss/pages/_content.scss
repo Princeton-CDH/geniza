@@ -13,7 +13,7 @@
     }
     .container {
         // Overall spacing
-        padding: spacing.$spacing-md spacing.$spacing-sm;
+        padding: spacing.$spacing-md spacing.$spacing-md;
         @include breakpoints.for-tablet-landscape-up {
             padding: spacing.$spacing-lg 0;
         }
