@@ -158,38 +158,65 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}).
         if editions.count() > 1:
             self.stats["multiple_editions"] += 1
 
-            # check for structured author names in the TEI
-            if tei.source_authors:
-                tei_authors = set(tei.source_authors)
-                author_matches = []
-                for ed in editions:
-                    ed_authors = set(
-                        [auth.last_name for auth in ed.source.authors.all()]
-                    )
-                    if ed_authors == tei_authors:
-                        author_matches.append(ed)
-
-                # if we got exactly one match, use that edition
-                if len(author_matches) == 1:
-                    return author_matches[0]
-                else:
-                    # there's only one case where this is possible, and
-                    # it isn't tagged in the TEI yet; hope to resolve some other way,
-                    # but warn in case
-                    self.stderr.write(
-                        "Multiple matches possible for source authors: %s"
-                        % author_matches
-                    )
-
             # fallback footnote selection: identify based on existence of transcription content
             editions_with_content = editions.filter(content__isnull=False)
-
-            if editions_with_content.count() > 1:
-                self.stats["multiple_editions_with_content"] += 1
-                self.multiedition_docs.add(doc.id)
-            elif editions_with_content.count() == 1:
+            if editions_with_content.count() == 1:
                 # if there was only one, assume it's the one to update
                 return editions_with_content.first()
+
+            else:
+                # if multiple, try to identify correct edition by author name
+                # check for structured author names in the TEI
+                if tei.source_authors:
+                    tei_authors = set(tei.source_authors)
+                    author_matches = []
+                    for ed in editions_with_content:
+                        ed_authors = set(
+                            [auth.last_name for auth in ed.source.authors.all()]
+                        )
+                        if ed_authors == tei_authors:
+                            author_matches.append(ed)
+
+                    # if we got exactly one match, use that edition
+                    if len(author_matches) == 1:
+                        return author_matches[0]
+                    elif author_matches:
+                        # there's only one case where this is possible, and
+                        # it isn't tagged in the TEI yet; hope to resolve some other way,
+                        # but warn in case
+                        self.stderr.write(
+                            "Multiple matches possible for source authors on %s: %s"
+                            % (filename, ", ".join(tei.source_authors))
+                        )
+                        self.stderr.write(
+                            "  %s"
+                            % "\n  ".join(
+                                [
+                                    "%s (fn pk %s)" % (ed.source, ed.pk)
+                                    for ed in author_matches
+                                ]
+                            )
+                        )
+                    else:
+                        self.stderr.write(
+                            "No match for source authors; typo? on %s: %s"
+                            % (filename, ", ".join(tei.source_authors))
+                        )
+
+                        # at least one of these needs a new footnote
+                        source_info = str(tei.source[0]).lower()
+                        if "goitein" in source_info and "typed texts" in source_info:
+                            if not self.noact_mode:
+                                footnote = self.create_goitein_footnote(doc)
+                                if footnote:
+                                    self.stats["footnote_created"] += 1
+                                    return footnote
+
+                else:
+                    # if no author names in the tei, nothing else we can do
+                    self.stats["multiple_editions_with_content"] += 1
+                    self.multiedition_docs.add(doc.id)
+
         elif not editions.exists():
             # if no edition exists and we can identify as
             # goitein typed texts, create the footnote
@@ -216,7 +243,7 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}).
             authors__last_name="Goitein",
             title_en="typed texts",
             source_type__type="Unpublished",
-            volume=Source.get_volume_from_shelfmark(doc.shelfmark),
+            volume__startswith=Source.get_volume_from_shelfmark(doc.shelfmark),
         ).first()
         if not source:
             self.stderr.write(
