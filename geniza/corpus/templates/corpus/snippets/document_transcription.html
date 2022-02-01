@@ -22,7 +22,13 @@
     {% if document.has_transcription %}
         <div class="transcription">
             <h3>{% translate 'Transcription' %}</h3>
-            {{ document.digital_editions.0.content.html|safe }}
+
+            {% for edition in document.digital_editions %}
+                <div>
+                    <p class="source">{{ edition.source.display }}</p>
+                    {{ edition.content.html|safe }}
+                </div>
+            {% endfor %}
         </div>
     {% endif %}
     {{ document.attribution|format_attribution|safe }}
