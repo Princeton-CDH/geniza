@@ -174,6 +174,8 @@ class DocumentSearchForm(forms.Form):
 
 
 class DocumentChoiceField(forms.ModelChoiceField):
+    """Add a summary of each document to the widget"""
+
     label_template = get_template("corpus/snippets/document_option_label.html")
 
     def label_from_instance(self, document):
@@ -185,9 +187,9 @@ class DocumentMergeForm(forms.Form):
         label="Primary record",
         queryset=None,
         help_text=(
-            "Select the document record to prioritize. "
-            "Combines all metadata into this document, adds the merged "
-            "documents into list of old PGP IDs."
+            "Select the document record to prioritize. The document selected "
+            "will keep its PGPID and the others will be merged as old PGPIDs. "
+            "Other metadata and footnotes are merged into this document."
         ),
         empty_label=None,
         widget=forms.RadioSelect,
@@ -199,7 +201,8 @@ class DocumentMergeForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         document_ids = kwargs.get("document_ids", [])
-        # ? : I don't understand what's going on here.
+
+        # Remove the added kwarg so that the super method doesn't error
         try:
             del kwargs["document_ids"]
         except KeyError:
