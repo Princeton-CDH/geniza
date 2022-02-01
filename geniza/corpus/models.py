@@ -688,7 +688,7 @@ class Document(ModelIndexable):
                 "description_t": self.description,
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
-                "shelfmark_ss": [f.shelfmark for f in fragments],
+                "shelfmark_ss": self.certain_join_shelfmarks,
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],
