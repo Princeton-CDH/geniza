@@ -1,9 +1,11 @@
+import json
 from asyncio import format_helpers
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from urllib import parse
 
 import pytest
 from django.http.request import QueryDict
+from piffle.iiif import IIIFImageClient
 
 from geniza.corpus.templatetags import corpus_extras
 from geniza.footnotes.models import Footnote
@@ -102,3 +104,34 @@ def test_natsort(document, source):
     assert natsorted[0].location == "doc 1"
     assert natsorted[1].location == "doc 2"
     assert natsorted[2].location == "doc 10"
+
+
+def test_iiif_image():
+    # copied from mep_django
+
+    myimg = IIIFImageClient("http://image.server/path/", "myimgid")
+    # check expected behavior
+    assert str(corpus_extras.iiif_image(myimg, "size:width=250")) == str(
+        myimg.size(width=250)
+    )
+    assert str(corpus_extras.iiif_image(myimg, "size:width=250,height=300")) == str(
+        myimg.size(width=250, height=300)
+    )
+    assert str(corpus_extras.iiif_image(myimg, "format:png")) == str(
+        myimg.format("png")
+    )
+
+    # check that errors don't raise exceptions
+    assert corpus_extras.iiif_image(myimg, "bogus") == ""
+    assert corpus_extras.iiif_image(myimg, "size:bogus") == ""
+    assert corpus_extras.iiif_image(myimg, "size:bogus=1") == ""
+
+
+def test_iiif_info_json():
+    img1 = IIIFImageClient("http://image.server/path/", "myimgid")
+    img2 = IIIFImageClient("http://image.server/path/", "myimgid2")
+    imgs = [{"image": img1}, {"image": img2}]
+    json_ids = corpus_extras.iiif_info_json(imgs)
+    # should contain the same ids but with /info.json appended
+    assert "http://image.server/path/myimgid/info.json" in json_ids
+    assert "http://image.server/path/myimgid2/info.json" in json_ids

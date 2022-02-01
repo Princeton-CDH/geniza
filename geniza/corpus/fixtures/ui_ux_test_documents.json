@@ -1,6 +1,19 @@
 [
   {
     "fields": {
+      "created": "2022-01-20",
+      "extra_data": "{\"https://figgy.princeton.edu/catalog/4069f1b9-d29d-43e7-ac57-a39ff2d073a4.jsonld\":{\"@context\":[\"https://bibdata.princeton.edu/context.json\",{\"wgs84\":\"http://www.w3.org/2003/01/geo/wgs84_pos#\",\"latitude\":{\"@id\":\"wgs84:lat\"},\"longitude\":{\"@id\":\"wgs84:lon\"}}],\"@id\":\"https://figgy.princeton.edu/catalog/4069f1b9-d29d-43e7-ac57-a39ff2d073a4\",\"identifier\":[\"ark:/88435/dc7m01bw84k\"],\"edm_rights\":{\"@id\":\"http://rightsstatements.org/vocab/NKC/1.0/\",\"@type\":\"dcterms:RightsStatement\",\"pref_label\":\"No Known Copyright\"},\"system_created_at\":\"2021-12-01T22:47:32Z\",\"system_updated_at\":\"2022-01-06T19:20:01Z\",\"title\":[{\"@value\":\"ENA 2727.15d\",\"@language\":\"eng\"}]},\"logo\":\"https://figgy.princeton.edu/assets/pul_logo_icon-7b5f9384dfa5ca04f4851c6ee9e44e2d6953e55f893472a3e205e1591d3b2ca6.png\",\"license\":\"http://rightsstatements.org/vocab/NKC/1.0/\"}",
+      "label": "ENA 2727.15d",
+      "last_modified": "2022-01-20",
+      "metadata": "{\"Identifier\":[\"ark:/88435/dc7m01bw84k\"],\"Title\":[\"ENA 2727.15d\"],\"Local Identifier\":[\"ENA 2727.15d\"]}",
+      "short_id": "4069f1b9-d29d-43e7-ac57-a39ff2d073a4",
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/4069f1b9-d29d-43e7-ac57-a39ff2d073a4/manifest"
+    },
+    "model": "djiffy.manifest",
+    "pk": 11842
+  },
+  {
+    "fields": {
       "created": "2021-12-20",
       "extra_data": "{\"https://services.prod.env.cudl.link/v1/metadata/tei/MS-TS-00008-J-00005-00001/\":{},\"logo\":\"https://cudl.lib.cam.ac.uk/img/cu_logo.png\"}",
       "label": "Legal document (T-S 8J5.1)",
@@ -37,6 +50,32 @@
     },
     "model": "djiffy.manifest",
     "pk": 2007
+  },
+  {
+    "fields": {
+      "created": "2022-01-20",
+      "extra_data": "{\"https://figgy.princeton.edu/catalog/fd1a6b4c-c7e6-4920-bda5-2306cbb3f6e2.jsonld\":{\"@context\":[\"https://bibdata.princeton.edu/context.json\",{\"wgs84\":\"http://www.w3.org/2003/01/geo/wgs84_pos#\",\"latitude\":{\"@id\":\"wgs84:lat\"},\"longitude\":{\"@id\":\"wgs84:lon\"}}],\"@id\":\"https://figgy.princeton.edu/catalog/fd1a6b4c-c7e6-4920-bda5-2306cbb3f6e2\",\"identifier\":[\"ark:/88435/dcxs55mp093\"],\"edm_rights\":{\"@id\":\"http://rightsstatements.org/vocab/NKC/1.0/\",\"@type\":\"dcterms:RightsStatement\",\"pref_label\":\"No Known Copyright\"},\"system_created_at\":\"2021-12-02T03:17:03Z\",\"system_updated_at\":\"2022-01-06T21:11:02Z\",\"title\":[{\"@value\":\"ENA 3751.5\",\"@language\":\"eng\"}]},\"logo\":\"https://figgy.princeton.edu/assets/pul_logo_icon-7b5f9384dfa5ca04f4851c6ee9e44e2d6953e55f893472a3e205e1591d3b2ca6.png\",\"license\":\"http://rightsstatements.org/vocab/NKC/1.0/\"}",
+      "label": "ENA 3751.5",
+      "last_modified": "2022-01-20",
+      "metadata": "{\"Identifier\":[\"ark:/88435/dcxs55mp093\"],\"Title\":[\"ENA 3751.5\"],\"Local Identifier\":[\"ENA 3751.5\"]}",
+      "short_id": "fd1a6b4c-c7e6-4920-bda5-2306cbb3f6e2",
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/fd1a6b4c-c7e6-4920-bda5-2306cbb3f6e2/manifest"
+    },
+    "model": "djiffy.manifest",
+    "pk": 14035
+  },
+  {
+    "fields": {
+      "created": "2022-01-20",
+      "extra_data": "{\"https://figgy.princeton.edu/catalog/40be59a7-e77c-4534-8e87-c0137c7789c8.jsonld\":{\"@context\":[\"https://bibdata.princeton.edu/context.json\",{\"wgs84\":\"http://www.w3.org/2003/01/geo/wgs84_pos#\",\"latitude\":{\"@id\":\"wgs84:lat\"},\"longitude\":{\"@id\":\"wgs84:lon\"}}],\"@id\":\"https://figgy.princeton.edu/catalog/40be59a7-e77c-4534-8e87-c0137c7789c8\",\"identifier\":[\"ark:/88435/dc2514nw495\"],\"edm_rights\":{\"@id\":\"http://rightsstatements.org/vocab/NKC/1.0/\",\"@type\":\"dcterms:RightsStatement\",\"pref_label\":\"No Known Copyright\"},\"system_created_at\":\"2021-12-02T05:16:27Z\",\"system_updated_at\":\"2022-01-06T19:56:11Z\",\"title\":[{\"@value\":\"ENA 4045.2\",\"@language\":\"eng\"}]},\"logo\":\"https://figgy.princeton.edu/assets/pul_logo_icon-7b5f9384dfa5ca04f4851c6ee9e44e2d6953e55f893472a3e205e1591d3b2ca6.png\",\"license\":\"http://rightsstatements.org/vocab/NKC/1.0/\"}",
+      "label": "ENA 4045.2",
+      "last_modified": "2022-01-20",
+      "metadata": "{\"Identifier\":[\"ark:/88435/dc2514nw495\"],\"Title\":[\"ENA 4045.2\"],\"Local Identifier\":[\"ENA 4045.2\"]}",
+      "short_id": "40be59a7-e77c-4534-8e87-c0137c7789c8",
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/40be59a7-e77c-4534-8e87-c0137c7789c8/manifest"
+    },
+    "model": "djiffy.manifest",
+    "pk": 12331
   },
   {
     "fields": {
@@ -188,6 +227,32 @@
   },
   {
     "fields": {
+      "created": "2022-01-20",
+      "extra_data": "{\"https://figgy.princeton.edu/catalog/12a80dcc-1433-4230-9677-e3a83c4880cd.jsonld\":{\"@context\":[\"https://bibdata.princeton.edu/context.json\",{\"wgs84\":\"http://www.w3.org/2003/01/geo/wgs84_pos#\",\"latitude\":{\"@id\":\"wgs84:lat\"},\"longitude\":{\"@id\":\"wgs84:lon\"}}],\"@id\":\"https://figgy.princeton.edu/catalog/12a80dcc-1433-4230-9677-e3a83c4880cd\",\"identifier\":[\"ark:/88435/j6731c28x\"],\"edm_rights\":{\"@id\":\"http://rightsstatements.org/vocab/NKC/1.0/\",\"@type\":\"dcterms:RightsStatement\",\"pref_label\":\"No Known Copyright\"},\"system_created_at\":\"2021-01-08T06:47:56Z\",\"system_updated_at\":\"2021-03-23T19:37:53Z\",\"title\":[{\"@value\":\"ENA 2697.9\",\"@language\":\"eng\"}]},\"logo\":\"https://figgy.princeton.edu/assets/pul_logo_icon-7b5f9384dfa5ca04f4851c6ee9e44e2d6953e55f893472a3e205e1591d3b2ca6.png\",\"license\":\"http://rightsstatements.org/vocab/NKC/1.0/\"}",
+      "label": "ENA 2697.9",
+      "last_modified": "2022-01-20",
+      "metadata": "{\"Identifier\":[\"ark:/88435/j6731c28x\"],\"Title\":[\"ENA 2697.9\"],\"Local Identifier\":[\"ENA 2697.9\"]}",
+      "short_id": "12a80dcc-1433-4230-9677-e3a83c4880cd",
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/12a80dcc-1433-4230-9677-e3a83c4880cd/manifest"
+    },
+    "model": "djiffy.manifest",
+    "pk": 10608
+  },
+  {
+    "fields": {
+      "created": "2022-01-20",
+      "extra_data": "{\"https://figgy.princeton.edu/catalog/50a29467-9298-4e4e-994d-9064dd7de49e.jsonld\":{\"@context\":[\"https://bibdata.princeton.edu/context.json\",{\"wgs84\":\"http://www.w3.org/2003/01/geo/wgs84_pos#\",\"latitude\":{\"@id\":\"wgs84:lat\"},\"longitude\":{\"@id\":\"wgs84:lon\"}}],\"@id\":\"https://figgy.princeton.edu/catalog/50a29467-9298-4e4e-994d-9064dd7de49e\",\"identifier\":[\"ark:/88435/zg64tv44j\"],\"edm_rights\":{\"@id\":\"http://rightsstatements.org/vocab/NKC/1.0/\",\"@type\":\"dcterms:RightsStatement\",\"pref_label\":\"No Known Copyright\"},\"system_created_at\":\"2021-01-08T06:48:01Z\",\"system_updated_at\":\"2021-03-23T19:37:52Z\",\"title\":[{\"@value\":\"ENA 2697.8\",\"@language\":\"eng\"}]},\"logo\":\"https://figgy.princeton.edu/assets/pul_logo_icon-7b5f9384dfa5ca04f4851c6ee9e44e2d6953e55f893472a3e205e1591d3b2ca6.png\",\"license\":\"http://rightsstatements.org/vocab/NKC/1.0/\"}",
+      "label": "ENA 2697.8",
+      "last_modified": "2022-01-20",
+      "metadata": "{\"Identifier\":[\"ark:/88435/zg64tv44j\"],\"Title\":[\"ENA 2697.8\"],\"Local Identifier\":[\"ENA 2697.8\"]}",
+      "short_id": "50a29467-9298-4e4e-994d-9064dd7de49e",
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/50a29467-9298-4e4e-994d-9064dd7de49e/manifest"
+    },
+    "model": "djiffy.manifest",
+    "pk": 10607
+  },
+  {
+    "fields": {
       "abbrev": "ENA",
       "lib_abbrev": "JTS",
       "library": "Jewish Theological Seminary Library",
@@ -195,6 +260,19 @@
       "name": "Elkan Nathan Adler"
     },
     "model": "corpus.collection"
+  },
+  {
+    "fields": {
+      "created": "2022-01-20",
+      "extra_data": "{\"https://figgy.princeton.edu/catalog/c3441638-b22f-46b7-b6a9-1301f6155c3e.jsonld\":{\"@context\":[\"https://bibdata.princeton.edu/context.json\",{\"wgs84\":\"http://www.w3.org/2003/01/geo/wgs84_pos#\",\"latitude\":{\"@id\":\"wgs84:lat\"},\"longitude\":{\"@id\":\"wgs84:lon\"}}],\"@id\":\"https://figgy.princeton.edu/catalog/c3441638-b22f-46b7-b6a9-1301f6155c3e\",\"identifier\":[\"ark:/88435/4q77g0855\"],\"edm_rights\":{\"@id\":\"http://rightsstatements.org/vocab/NKC/1.0/\",\"@type\":\"dcterms:RightsStatement\",\"pref_label\":\"No Known Copyright\"},\"system_created_at\":\"2021-01-08T06:19:59Z\",\"system_updated_at\":\"2021-03-23T19:22:47Z\",\"title\":[{\"@value\":\"ENA 2209.12\",\"@language\":\"eng\"}]},\"logo\":\"https://figgy.princeton.edu/assets/pul_logo_icon-7b5f9384dfa5ca04f4851c6ee9e44e2d6953e55f893472a3e205e1591d3b2ca6.png\",\"license\":\"http://rightsstatements.org/vocab/NKC/1.0/\"}",
+      "label": "ENA 2209.12",
+      "last_modified": "2022-01-20",
+      "metadata": "{\"Identifier\":[\"ark:/88435/4q77g0855\"],\"Title\":[\"ENA 2209.12\"],\"Local Identifier\":[\"ENA 2209.12\"]}",
+      "short_id": "c3441638-b22f-46b7-b6a9-1301f6155c3e",
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/c3441638-b22f-46b7-b6a9-1301f6155c3e/manifest"
+    },
+    "model": "djiffy.manifest",
+    "pk": 11360
   },
   {
     "fields": {
@@ -272,6 +350,54 @@
     },
     "model": "taggit.tag",
     "pk": 480
+  },
+  {
+    "fields": {
+      "name": "illness: respiratory",
+      "slug": "illness-respiratory"
+    },
+    "model": "taggit.tag",
+    "pk": 1868
+  },
+  {
+    "fields": {
+      "name": "illness: occupation with self",
+      "slug": "illness-occupation-with-self"
+    },
+    "model": "taggit.tag",
+    "pk": 1224
+  },
+  {
+    "fields": {
+      "name": "illness: chronic",
+      "slug": "illness-chronic"
+    },
+    "model": "taggit.tag",
+    "pk": 666
+  },
+  {
+    "fields": {
+      "name": "illness: rich description",
+      "slug": "illness-rich-description"
+    },
+    "model": "taggit.tag",
+    "pk": 461
+  },
+  {
+    "fields": {
+      "name": "illness: cost",
+      "slug": "illness-cost"
+    },
+    "model": "taggit.tag",
+    "pk": 177
+  },
+  {
+    "fields": {
+      "name": "illness: treatment",
+      "slug": "illness-treatment"
+    },
+    "model": "taggit.tag",
+    "pk": 81
   },
   {
     "fields": {
@@ -978,6 +1104,38 @@
   {
     "fields": {
       "collection": ["Taylor-Schechter", "Cambridge University Library"],
+      "created": "2021-05-26T20:36:31.950Z",
+      "iiif_url": "",
+      "is_multifragment": false,
+      "last_modified": "2021-05-26T20:36:31.950Z",
+      "manifest": null,
+      "needs_review": "",
+      "notes": "",
+      "old_shelfmarks": "",
+      "shelfmark": "T-S Ar.7.16",
+      "url": ""
+    },
+    "model": "corpus.fragment"
+  },
+  {
+    "fields": {
+      "collection": ["", "Jewish Theological Seminary Library"],
+      "created": "2021-05-26T20:25:30.819Z",
+      "iiif_url": "https://figgy.princeton.edu/concern/scanned_resources/4069f1b9-d29d-43e7-ac57-a39ff2d073a4/manifest",
+      "is_multifragment": false,
+      "last_modified": "2022-01-20T19:38:10.205Z",
+      "manifest": 11842,
+      "needs_review": "",
+      "notes": "",
+      "old_shelfmarks": "",
+      "shelfmark": "ENA 2727.15d",
+      "url": ""
+    },
+    "model": "corpus.fragment"
+  },
+  {
+    "fields": {
+      "collection": ["Taylor-Schechter", "Cambridge University Library"],
       "created": "2021-05-26T20:35:19.718Z",
       "iiif_url": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001",
       "is_multifragment": false,
@@ -1075,10 +1233,10 @@
     "fields": {
       "collection": ["", "Jewish Theological Seminary Library"],
       "created": "2021-05-26T20:26:10.943Z",
-      "iiif_url": "",
+      "iiif_url": "https://figgy.princeton.edu/concern/scanned_resources/fd1a6b4c-c7e6-4920-bda5-2306cbb3f6e2/manifest",
       "is_multifragment": false,
-      "last_modified": "2021-05-26T20:26:10.943Z",
-      "manifest": null,
+      "last_modified": "2022-01-20T19:50:44.055Z",
+      "manifest": 14035,
       "needs_review": "",
       "notes": "",
       "old_shelfmarks": "",
@@ -1123,10 +1281,10 @@
     "fields": {
       "collection": ["", "Jewish Theological Seminary Library"],
       "created": "2021-05-26T20:27:00.792Z",
-      "iiif_url": "",
+      "iiif_url": "https://figgy.princeton.edu/concern/scanned_resources/40be59a7-e77c-4534-8e87-c0137c7789c8/manifest",
       "is_multifragment": false,
-      "last_modified": "2021-05-26T20:27:00.792Z",
-      "manifest": null,
+      "last_modified": "2022-01-20T19:40:42.838Z",
+      "manifest": 12331,
       "needs_review": "",
       "notes": "",
       "old_shelfmarks": "",
@@ -1186,22 +1344,6 @@
   {
     "fields": {
       "collection": ["Taylor-Schechter", "Cambridge University Library"],
-      "created": "2021-05-26T20:35:36.362Z",
-      "iiif_url": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00129",
-      "is_multifragment": false,
-      "last_modified": "2021-12-20T23:07:05.183Z",
-      "manifest": 78,
-      "needs_review": "",
-      "notes": "",
-      "old_shelfmarks": "",
-      "shelfmark": "T-S Ar.30.129",
-      "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-AR-00030-00129"
-    },
-    "model": "corpus.fragment"
-  },
-  {
-    "fields": {
-      "collection": ["Taylor-Schechter", "Cambridge University Library"],
       "created": "2021-05-26T20:35:34.125Z",
       "iiif_url": "",
       "is_multifragment": false,
@@ -1212,6 +1354,22 @@
       "old_shelfmarks": "",
       "shelfmark": "T-S Ar.22.140",
       "url": ""
+    },
+    "model": "corpus.fragment"
+  },
+  {
+    "fields": {
+      "collection": ["Taylor-Schechter", "Cambridge University Library"],
+      "created": "2021-05-26T20:35:36.362Z",
+      "iiif_url": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00129",
+      "is_multifragment": false,
+      "last_modified": "2021-12-20T23:07:05.183Z",
+      "manifest": 78,
+      "needs_review": "",
+      "notes": "",
+      "old_shelfmarks": "",
+      "shelfmark": "T-S Ar.30.129",
+      "url": "https://cudl.lib.cam.ac.uk/view/MS-TS-AR-00030-00129"
     },
     "model": "corpus.fragment"
   },
@@ -1446,10 +1604,10 @@
     "fields": {
       "collection": ["", "Jewish Theological Seminary Library"],
       "created": "2021-05-26T20:25:28.075Z",
-      "iiif_url": "",
+      "iiif_url": "https://figgy.princeton.edu/concern/scanned_resources/12a80dcc-1433-4230-9677-e3a83c4880cd/manifest",
       "is_multifragment": false,
-      "last_modified": "2021-05-26T20:25:28.075Z",
-      "manifest": null,
+      "last_modified": "2022-01-20T19:31:23.068Z",
+      "manifest": 10608,
       "needs_review": "",
       "notes": "",
       "old_shelfmarks": "",
@@ -1465,10 +1623,10 @@
         "Jewish Theological Seminary Library"
       ],
       "created": "2021-05-26T20:25:27.994Z",
-      "iiif_url": "",
+      "iiif_url": "https://figgy.princeton.edu/concern/scanned_resources/50a29467-9298-4e4e-994d-9064dd7de49e/manifest",
       "is_multifragment": false,
-      "last_modified": "2021-12-27T21:52:03.244Z",
-      "manifest": null,
+      "last_modified": "2022-01-20T19:31:22.762Z",
+      "manifest": 10607,
       "needs_review": "",
       "notes": "",
       "old_shelfmarks": "",
@@ -1481,10 +1639,10 @@
     "fields": {
       "collection": ["", "Jewish Theological Seminary Library"],
       "created": "2021-05-26T20:25:13.957Z",
-      "iiif_url": "",
+      "iiif_url": "https://figgy.princeton.edu/concern/scanned_resources/c3441638-b22f-46b7-b6a9-1301f6155c3e/manifest",
       "is_multifragment": false,
-      "last_modified": "2021-05-26T20:25:13.957Z",
-      "manifest": null,
+      "last_modified": "2022-01-20T19:35:32.588Z",
+      "manifest": 11360,
       "needs_review": "",
       "notes": "",
       "old_shelfmarks": "",
@@ -1656,6 +1814,29 @@
     },
     "model": "corpus.document",
     "pk": 5626
+  },
+  {
+    "fields": {
+      "created": "2021-05-26T20:36:31.954Z",
+      "description": "Letter in the hand of Yehuda b. \u1e6coviyyahu (muqaddam of Bilbays, active 1170s\u20131219). In Judaeo-Arabic. Containing a complaint about illness. The purpose seems to be that the writer is unable to support a \u1e24aver who came to stay with him. \u201c[I was] constrained by my great expenses for medicines and chickens\u2026 An illness came upon me, on top of my chronic illness: shortness of breath and fever...\u201d Mentions the boy Abu l-Bayan and al-Shaykh al-Muhadhdhab. Cites Berakhot 3b: \u201cA handful cannot satisfy a lion, nor can a pit be filled up with its own clods.\u201d Information from Goitein\u2019s note cards. Goitein read the word farr\u016bj as sur\u016bj (meaning lamps -\"perhaps he stayed up at night\"), but see, for instance, Halper 410 and DK 238.3 for the formula \"the medicine and the chicken.\" Regards to \"our rabbi Avraham (Maimonides)\" in the margin. AA. ASE.",
+      "doc_date_calendar": "",
+      "doc_date_original": "",
+      "doc_date_standard": "",
+      "doctype": ["Letter"],
+      "language_note": "",
+      "languages": [
+        ["Hebrew", "Hebrew"],
+        ["Judaeo-Arabic", "Hebrew"]
+      ],
+      "last_modified": "2021-10-25T19:52:19.682Z",
+      "needs_review": "",
+      "notes": "",
+      "old_pgpids": null,
+      "secondary_languages": [],
+      "status": "P"
+    },
+    "model": "corpus.document",
+    "pk": 8151
   },
   {
     "fields": {
@@ -1859,26 +2040,6 @@
   },
   {
     "fields": {
-      "created": "2021-05-26T20:35:36.367Z",
-      "description": "List of sums owed to or by a teacher, including 2.5 dirhams per weeks for teaching a son or orphan. (Information from Goitein's index cards) EMS",
-      "doc_date_calendar": "",
-      "doc_date_original": "",
-      "doc_date_standard": "",
-      "doctype": ["List or table"],
-      "language_note": "",
-      "languages": [],
-      "last_modified": "2021-05-26T20:35:36.367Z",
-      "needs_review": "",
-      "notes": "",
-      "old_pgpids": null,
-      "secondary_languages": [],
-      "status": "P"
-    },
-    "model": "corpus.document",
-    "pk": 3879
-  },
-  {
-    "fields": {
       "created": "2021-05-26T20:35:34.129Z",
       "description": "Recto: Letter or petition to a Fatimid vizier of the 5th/11th century. Possible join with T-S K25.221 (Khan, Arabic Legal and Administrative Documents in the Cambridge Genizah Collections, doc. 72), which uses the same titulature. Reuse: Judaeo-Arabic commentary on Isaiah 54:1 and 1 Samuel 1:11",
       "doc_date_calendar": "",
@@ -1896,6 +2057,26 @@
     },
     "model": "corpus.document",
     "pk": 30824
+  },
+  {
+    "fields": {
+      "created": "2021-05-26T20:35:36.367Z",
+      "description": "List of sums owed to or by a teacher, including 2.5 dirhams per weeks for teaching a son or orphan. (Information from Goitein's index cards) EMS",
+      "doc_date_calendar": "",
+      "doc_date_original": "",
+      "doc_date_standard": "",
+      "doctype": ["List or table"],
+      "language_note": "",
+      "languages": [],
+      "last_modified": "2021-05-26T20:35:36.367Z",
+      "needs_review": "",
+      "notes": "",
+      "old_pgpids": null,
+      "secondary_languages": [],
+      "status": "P"
+    },
+    "model": "corpus.document",
+    "pk": 3879
   },
   {
     "fields": {
@@ -2404,6 +2585,32 @@
   {
     "fields": {
       "certain": true,
+      "document": 8151,
+      "fragment": ["T-S Ar.7.16"],
+      "multifragment": "",
+      "order": null,
+      "region": "",
+      "side": ""
+    },
+    "model": "corpus.textblock",
+    "pk": 20516
+  },
+  {
+    "fields": {
+      "certain": true,
+      "document": 8151,
+      "fragment": ["ENA 2727.15d"],
+      "multifragment": "",
+      "order": 1,
+      "region": "",
+      "side": ""
+    },
+    "model": "corpus.textblock",
+    "pk": 33953
+  },
+  {
+    "fields": {
+      "certain": true,
       "document": 2142,
       "fragment": ["T-S 8J5.1"],
       "multifragment": "",
@@ -2625,19 +2832,6 @@
   {
     "fields": {
       "certain": true,
-      "document": 3879,
-      "fragment": ["T-S Ar.30.129"],
-      "multifragment": "",
-      "order": null,
-      "region": "",
-      "side": ""
-    },
-    "model": "corpus.textblock",
-    "pk": 19100
-  },
-  {
-    "fields": {
-      "certain": true,
       "document": 30824,
       "fragment": ["T-S Ar.22.140"],
       "multifragment": "",
@@ -2647,6 +2841,19 @@
     },
     "model": "corpus.textblock",
     "pk": 19051
+  },
+  {
+    "fields": {
+      "certain": true,
+      "document": 3879,
+      "fragment": ["T-S Ar.30.129"],
+      "multifragment": "",
+      "order": null,
+      "region": "",
+      "side": ""
+    },
+    "model": "corpus.textblock",
+    "pk": 19100
   },
   {
     "fields": {
@@ -3175,6 +3382,29 @@
       "title_en": "index cards",
       "title_he": null,
       "url": "",
+      "volume": "ENA",
+      "year": null
+    },
+    "model": "footnotes.source",
+    "pk": 836
+  },
+  {
+    "fields": {
+      "edition": null,
+      "issue": null,
+      "journal": "",
+      "languages": [],
+      "notes": "",
+      "other_info": "",
+      "page_range": "",
+      "place_published": "",
+      "publisher": "",
+      "source_type": 3,
+      "title": "index cards",
+      "title_ar": null,
+      "title_en": "index cards",
+      "title_he": null,
+      "url": "",
       "volume": "T-S 18",
       "year": null
     },
@@ -3226,6 +3456,42 @@
     },
     "model": "footnotes.source",
     "pk": 3
+  },
+  {
+    "fields": {
+      "edition": null,
+      "issue": null,
+      "journal": "",
+      "languages": [1],
+      "notes": "Created from PGPID 6221",
+      "other_info": "",
+      "page_range": "",
+      "place_published": "",
+      "publisher": "",
+      "source_type": 3,
+      "title": null,
+      "title_ar": null,
+      "title_en": null,
+      "title_he": null,
+      "url": "",
+      "volume": "",
+      "year": 2019
+    },
+    "model": "footnotes.source",
+    "pk": 35
+  },
+  {
+    "fields": {
+      "first_name": "Alan",
+      "first_name_ar": null,
+      "first_name_en": "Alan",
+      "first_name_he": null,
+      "last_name": "Elbaum",
+      "last_name_ar": null,
+      "last_name_en": "Elbaum",
+      "last_name_he": null
+    },
+    "model": "footnotes.creator"
   },
   {
     "fields": {
@@ -3738,6 +4004,15 @@
     "fields": {
       "creator": ["Goitein", "S. D."],
       "sort_order": 1,
+      "source": 836
+    },
+    "model": "footnotes.authorship",
+    "pk": 1236
+  },
+  {
+    "fields": {
+      "creator": ["Goitein", "S. D."],
+      "sort_order": 1,
       "source": 855
     },
     "model": "footnotes.authorship",
@@ -3760,6 +4035,15 @@
     },
     "model": "footnotes.authorship",
     "pk": 4
+  },
+  {
+    "fields": {
+      "creator": ["Elbaum", "Alan"],
+      "sort_order": 1,
+      "source": 35
+    },
+    "model": "footnotes.authorship",
+    "pk": 39
   },
   {
     "fields": {
@@ -3898,6 +4182,510 @@
   },
   {
     "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/00fb7e2f-c3f6-4954-afc2-5e4011b5889f/file/3279b0e4-87f1-4fdb-87cc-535d4ce02d43\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":5428,\"height\":7230}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/03%2F50%2Fc8%2F0350c874505149eaace3ce19aea35503%2Fintermediate_file",
+      "label": "2",
+      "manifest": 11842,
+      "order": 1,
+      "short_id": "00fb7e2f-c3f6-4954-afc2-5e4011b5889f",
+      "thumbnail": false,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/4069f1b9-d29d-43e7-ac57-a39ff2d073a4/manifest/canvas/00fb7e2f-c3f6-4954-afc2-5e4011b5889f"
+    },
+    "model": "djiffy.canvas",
+    "pk": 24327
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/f9be5c9e-9275-413d-81da-dcb700a3429e/file/68128cd8-1548-4e68-9c6a-c5ef99a1edd5\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":5428,\"height\":7230}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/85%2Fdb%2F9a%2F85db9a586e4f468091753da3fa020e0f%2Fintermediate_file",
+      "label": "1",
+      "manifest": 11842,
+      "order": 0,
+      "short_id": "f9be5c9e-9275-413d-81da-dcb700a3429e",
+      "thumbnail": true,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/4069f1b9-d29d-43e7-ac57-a39ff2d073a4/manifest/canvas/f9be5c9e-9275-413d-81da-dcb700a3429e"
+    },
+    "model": "djiffy.canvas",
+    "pk": 24326
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/e36dc9fe-45d6-43c9-b351-4bbd52e3e2c0/file/ad5d9ec6-299b-4eec-ac72-cc8b27dfd465\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":4992,\"height\":6666}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/00%2F37%2F44%2F003744fd32454b3fa2a81106a99dce86%2Fintermediate_file",
+      "label": "verso",
+      "manifest": 10608,
+      "order": 1,
+      "short_id": "e36dc9fe-45d6-43c9-b351-4bbd52e3e2c0",
+      "thumbnail": false,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/12a80dcc-1433-4230-9677-e3a83c4880cd/manifest/canvas/e36dc9fe-45d6-43c9-b351-4bbd52e3e2c0"
+    },
+    "model": "djiffy.canvas",
+    "pk": 21865
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/ea6e86cb-c6f7-469b-80e6-d41f84aa0e35/file/887d8c55-81e6-4457-a63c-5665c099310d\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":4992,\"height\":6666}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/86%2F0a%2F3d%2F860a3dc84db0451faa68a764138bf2db%2Fintermediate_file",
+      "label": "recto",
+      "manifest": 10608,
+      "order": 0,
+      "short_id": "ea6e86cb-c6f7-469b-80e6-d41f84aa0e35",
+      "thumbnail": true,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/12a80dcc-1433-4230-9677-e3a83c4880cd/manifest/canvas/ea6e86cb-c6f7-469b-80e6-d41f84aa0e35"
+    },
+    "model": "djiffy.canvas",
+    "pk": 21864
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/4ac80196-9379-43f4-b4b1-45f5e2d89139/file/3e46cf8c-192f-4501-a43e-b28cbc2ed998\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":5428,\"height\":7230}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/dd%2F89%2F53%2Fdd89533de81e4030bb7b5edbe5c67ab3%2Fintermediate_file",
+      "label": "2",
+      "manifest": 14035,
+      "order": 1,
+      "short_id": "4ac80196-9379-43f4-b4b1-45f5e2d89139",
+      "thumbnail": false,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/fd1a6b4c-c7e6-4920-bda5-2306cbb3f6e2/manifest/canvas/4ac80196-9379-43f4-b4b1-45f5e2d89139"
+    },
+    "model": "djiffy.canvas",
+    "pk": 28921
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/bc6ec784-c91d-41bb-a0c3-9bf613e9b238/file/39a0db88-199f-4531-b980-d2408d92c291\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":5428,\"height\":7230}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/4f%2F96%2F65%2F4f96655581984b13a157568df37bae98%2Fintermediate_file",
+      "label": "1",
+      "manifest": 14035,
+      "order": 0,
+      "short_id": "bc6ec784-c91d-41bb-a0c3-9bf613e9b238",
+      "thumbnail": true,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/fd1a6b4c-c7e6-4920-bda5-2306cbb3f6e2/manifest/canvas/bc6ec784-c91d-41bb-a0c3-9bf613e9b238"
+    },
+    "model": "djiffy.canvas",
+    "pk": 28920
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/646a4f5f-c311-4df1-ae27-90b9be4a5586/file/5249ff60-690c-4c2d-abdc-dad08aeb2a1f\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":7230,\"height\":5428}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/f9%2Fa3%2Ff8%2Ff9a3f85bacf042e8b1477d8d1936f136%2Fintermediate_file",
+      "label": "2",
+      "manifest": 12331,
+      "order": 1,
+      "short_id": "646a4f5f-c311-4df1-ae27-90b9be4a5586",
+      "thumbnail": false,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/40be59a7-e77c-4534-8e87-c0137c7789c8/manifest/canvas/646a4f5f-c311-4df1-ae27-90b9be4a5586"
+    },
+    "model": "djiffy.canvas",
+    "pk": 25307
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/229e359f-b177-4ef2-9840-5d0437e5c429/file/b9cdbdb2-f0b7-4b7b-bc04-a2f987be2d5b\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":7230,\"height\":5428}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/10%2F83%2F7e%2F10837e6e60094fabae86e1d21c304919%2Fintermediate_file",
+      "label": "1",
+      "manifest": 12331,
+      "order": 0,
+      "short_id": "229e359f-b177-4ef2-9840-5d0437e5c429",
+      "thumbnail": true,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/40be59a7-e77c-4534-8e87-c0137c7789c8/manifest/canvas/229e359f-b177-4ef2-9840-5d0437e5c429"
+    },
+    "model": "djiffy.canvas",
+    "pk": 25306
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":5868,\"height\":7322}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00013-J-00035-00003-000-00002.jp2",
+      "label": "1v",
+      "manifest": 2007,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00013-J-00035-00003/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 4138
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":6023,\"height\":7980}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00013-J-00035-00003-000-00001.jp2",
+      "label": "1r",
+      "manifest": 2007,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00013-J-00035-00003/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 4137
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":1832,\"height\":2080}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-AS-00135-00053-000-00002.jp2",
+      "label": "1v",
+      "manifest": 5903,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AS-00135-00053/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 12327
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":1904,\"height\":2048}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-AS-00135-00053-000-00001.jp2",
+      "label": "1r",
+      "manifest": 5903,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AS-00135-00053/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 12326
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3133,\"height\":5702}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00245-000-00002.jp2",
+      "label": "1v",
+      "manifest": 6750,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00245/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 14084
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3097,\"height\":5726}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00245-000-00001.jp2",
+      "label": "1r",
+      "manifest": 6750,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00245/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 14083
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3536,\"height\":4472}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00129-000-00002.jp2",
+      "label": "1v",
+      "manifest": 78,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00129/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 166
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3529,\"height\":4363}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00129-000-00001.jp2",
+      "label": "1r",
+      "manifest": 78,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-AR-00030-00129/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 165
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3511,\"height\":5207}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001-000-00004.jp2",
+      "label": "2v",
+      "manifest": 5695,
+      "order": 3,
+      "short_id": "4",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001/canvas/4"
+    },
+    "model": "djiffy.canvas",
+    "pk": 11851
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3684,\"height\":5144}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001-000-00003.jp2",
+      "label": "2r",
+      "manifest": 5695,
+      "order": 2,
+      "short_id": "3",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001/canvas/3"
+    },
+    "model": "djiffy.canvas",
+    "pk": 11850
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3653,\"height\":5309}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001-000-00002.jp2",
+      "label": "1v",
+      "manifest": 5695,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 11849
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3779,\"height\":5294}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001-000-00001.jp2",
+      "label": "1r",
+      "manifest": 5695,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00008-J-00005-00001/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 11848
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":5742,\"height\":8944}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00017-000-00002.jp2",
+      "label": "1v",
+      "manifest": 2972,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00017/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 6150
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":6163,\"height\":8944}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00017-000-00001.jp2",
+      "label": "1r",
+      "manifest": 2972,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00017/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 6149
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":5862,\"height\":8354}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00001-000-00002.jp2",
+      "label": "1v",
+      "manifest": 6885,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00001/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 14360
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":5477,\"height\":8366}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00001-000-00001.jp2",
+      "label": "1r",
+      "manifest": 6885,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00018-J-00001-00001/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 14359
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3888,\"height\":5459}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006-000-00004.jp2",
+      "label": "2v",
+      "manifest": 1311,
+      "order": 3,
+      "short_id": "4",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006/canvas/4"
+    },
+    "model": "djiffy.canvas",
+    "pk": 2732
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":4094,\"height\":5459}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006-000-00003.jp2",
+      "label": "2r",
+      "manifest": 1311,
+      "order": 2,
+      "short_id": "3",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006/canvas/3"
+    },
+    "model": "djiffy.canvas",
+    "pk": 2731
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3869,\"height\":5646}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006-000-00002.jp2",
+      "label": "1v",
+      "manifest": 1311,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 2730
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":3800,\"height\":5381}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006-000-00001.jp2",
+      "label": "1r",
+      "manifest": 1311,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00010-J-00022-00006/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 2729
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":4428,\"height\":6382}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00012-00016-000-00002.jp2",
+      "label": "1v",
+      "manifest": 2409,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00010-J-00012-00016/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 4960
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":4811,\"height\":6765}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00012-00016-000-00001.jp2",
+      "label": "1r",
+      "manifest": 2409,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-TS-00010-J-00012-00016/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 4959
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/93e27c60-6d54-4ae6-995f-203e69d31b3d/file/8889b2f7-64db-4d19-adfb-d29b819d5ed8\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":4992,\"height\":6666}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/32%2Fc0%2F85%2F32c085ff598a43f48ac0c4a32116cd1b%2Fintermediate_file",
+      "label": "verso",
+      "manifest": 10607,
+      "order": 1,
+      "short_id": "93e27c60-6d54-4ae6-995f-203e69d31b3d",
+      "thumbnail": false,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/50a29467-9298-4e4e-994d-9064dd7de49e/manifest/canvas/93e27c60-6d54-4ae6-995f-203e69d31b3d"
+    },
+    "model": "djiffy.canvas",
+    "pk": 21863
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/b7eb8d50-b95c-4cb4-8b3b-0cb4556a3055/file/d08226a9-39b1-45f9-a7c5-9dfa59f41403\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":4992,\"height\":6666}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/9a%2F6e%2Fb9%2F9a6eb9ec627b4714876ab8322103fb27%2Fintermediate_file",
+      "label": "recto",
+      "manifest": 10607,
+      "order": 0,
+      "short_id": "b7eb8d50-b95c-4cb4-8b3b-0cb4556a3055",
+      "thumbnail": true,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/50a29467-9298-4e4e-994d-9064dd7de49e/manifest/canvas/b7eb8d50-b95c-4cb4-8b3b-0cb4556a3055"
+    },
+    "model": "djiffy.canvas",
+    "pk": 21862
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/d09a52f3-db12-4cf0-8405-ac8fd550cc33/file/be4abec2-822e-4235-9976-59a3dc91050e\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":4008,\"height\":5344}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/cc%2F59%2F31%2Fcc5931250cc7435f8ea7fcfe8f618e23%2Fintermediate_file",
+      "label": "verso",
+      "manifest": 11360,
+      "order": 1,
+      "short_id": "d09a52f3-db12-4cf0-8405-ac8fd550cc33",
+      "thumbnail": false,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/c3441638-b22f-46b7-b6a9-1301f6155c3e/manifest/canvas/d09a52f3-db12-4cf0-8405-ac8fd550cc33"
+    },
+    "model": "djiffy.canvas",
+    "pk": 23369
+  },
+  {
+    "fields": {
+      "extra_data": "{\"rendering\":[{\"@id\":\"https://figgy.princeton.edu/downloads/3e072707-6d31-4b66-a57f-0836a29a31d6/file/b50fb68c-c3d7-4789-8148-5c6ac8d8b55c\",\"label\":\"Download the original file\",\"format\":\"image/tiff\"}],\"width\":4008,\"height\":5344}",
+      "iiif_image_id": "https://iiif-cloud.princeton.edu/iiif/2/98%2Fcd%2Fb9%2F98cdb9cbdef04e5d935e12eea7b574d2%2Fintermediate_file",
+      "label": "recto",
+      "manifest": 11360,
+      "order": 0,
+      "short_id": "3e072707-6d31-4b66-a57f-0836a29a31d6",
+      "thumbnail": true,
+      "uri": "https://figgy.princeton.edu/concern/scanned_resources/c3441638-b22f-46b7-b6a9-1301f6155c3e/manifest/canvas/3e072707-6d31-4b66-a57f-0836a29a31d6"
+    },
+    "model": "djiffy.canvas",
+    "pk": 23368
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":5105,\"height\":6390}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-OR-01080-00001-00064-000-00002.jp2",
+      "label": "1v",
+      "manifest": 5809,
+      "order": 1,
+      "short_id": "2",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-OR-01080-00001-00064/canvas/2"
+    },
+    "model": "djiffy.canvas",
+    "pk": 12085
+  },
+  {
+    "fields": {
+      "extra_data": "{\"width\":5171,\"height\":6356}",
+      "iiif_image_id": "https://images.lib.cam.ac.uk/iiif/MS-OR-01080-00001-00064-000-00001.jp2",
+      "label": "1r",
+      "manifest": 5809,
+      "order": 0,
+      "short_id": "1",
+      "thumbnail": false,
+      "uri": "https://cudl.lib.cam.ac.uk/iiif/MS-OR-01080-00001-00064/canvas/1"
+    },
+    "model": "djiffy.canvas",
+    "pk": 12084
+  },
+  {
+    "fields": {
       "content": null,
       "content_type": ["corpus", "document"],
       "doc_relation": "E",
@@ -3909,6 +4697,37 @@
     },
     "model": "footnotes.footnote",
     "pk": 544
+  },
+  {
+    "fields": {
+      "content": {
+        "html": "<section>\n <h1>ENA 2727.15d, recto:</h1>\n <ul>\n <li value='1'>\u05db\u05d9 \u05d0\u05ea\u05d4 \u05ea\u05d1\u05e8\u05da \u05e6[\u05d3\u05d9\u05e7 \u05d9\u05d9\u05d9</li>\n <li value='2'>\u05e9\u05dc\u05d5\u05dd \u05d4\u05e2\u05de\u05d5\u05e1(?) \u05d9\u05d5\u05e4\u05e8\u05e9 \u05e2\u05dc [</li>\n <li value='3'>\u05de\u05e8\u05e0\u05d5 \u05d5\u05e8\u05d1\u05e0\u05d5 \u05d0\u05dc\u05d9\u05d4\u05d5 \u05d4\u05d3\u05d9\u05d9\u05df [</li>\n <li value='4'>\u05d9\u05d4\u05d9 \u05d0\u05dc\u05d4\u05d9\u05d5 \u05e2\u05de\u05d5 \u05d1\u05e2\u05e0\u05d2\u05d5(?) \u05d5 . [</li>\n <li value='5'>\u05d9\u05e9\u05e8\u05d0\u05dc \u05d8\u05d5\u05d1 \u05d1\u05e9\u05dd(?) \u05db\u05dc \u05d7 . [</li></ul>\n</section>\n<section>\n <h1>ENA 2727.15d + T-S T-S Ar.7.16, recto:</h1>\n <ul>\n <li value='6'>\u05de\u05df \u05d0\u05dc\u05e9\u05d5\u05e7 \u05e2\u05dc\u05d9 \u05d7\u05e6\u05e8\u05ea\u05d4\u05d0 \u05d0\u05dc . [. . . . . . . . . . . . . .] | . . \u05d9\u05d2[\u05de\u05e2</li>\n <li value='7'>\u05d0\u05dc\u05e9\u05de\u05dc \u05d1\u05d4\u05d0 \u05e2\u05dc\u05d9 \u05d0\u05de\u05d0\u05df(?) . . [. . . . . . .] | . \u05e8 \u05d3\u05d0\u05dc\u05da \u05d0\u05df \u05d5\u05e6\u05dc \u05d0\u05dc\u05d9 \u05e2\u05e0\u05d3\u05d9 \u05d0\u05dc\u05d7\u05d1\u05e8</li>\n <li value='8'>\u05d0\u05dc\u05db\u05d4\u05df \u05d5\u05dc\u05d3(?) \u05d5\u05dc\u05d4(?) \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d1\u05d9\u05d0\u05df | [\u05d5]\u05e4\u05e8\u05d7\u05ea \u05d1\u05d5\u05e8\u05d5\u05d3\u05d4 \u05d5\u05d2\u05de\u05e0\u05d9 \u05db\u05d5\u05e0\u05d4 \u05e8\u05d0\u05d9\u05e0\u05d9 \u05de\u05e8\u05d9\u05e5</li>\n <li value='9'>\u05d0\u05dc\u05d0\u05d6\u05dd(?) . . . . . | . \u05e4\u05d9 \u05e6\u05d9\u05e7\u05d4 \u05de\u05df \u05db\u05ea\u05e8\u05d4 \u05d0\u05dc\u05db\u05e8\u05d2 \u05dc\u05dc\u05e9\u05e8\u05d0\u05d1 \u05d5\u05d0\u05dc\u05e4\u05e8\u05d5\u05d2 \u05d5\u05d3\u05d0\u05dc\u05da</li></ul>\n</section>\n<section>\n <h1>T-S T-S Ar.7.16, recto:</h1>\n <ul>\n <li value='10'>] . . \u05e2\u05e8\u05e5 \u05dc\u05d9 \u05de\u05e8\u05e5 \u05d6\u05d0\u05d9\u05d3 \u05e2\u05dc\u05d9 \u05de\u05e8\u05e6\u05d9 \u05d0\u05dc\u05d3\u05d0\u05d9\u05dd \u05e6\u05d9\u05e7 \u05e0\u05e4\u05e1 \u05d5\u05d7\u05de\u05d0</li>\n <li value='11'>] . . \u05d0\u05dc\u05d5\u05dc\u05d3 \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d1\u05d9\u05d0\u05df \u05d5 . . . . \u05d5\u05d0\u05d9\u05df \u05d4\u05e7\u05d5\u05de\u05e5 \u05de\u05e9\u05d1\u05d9\u05e2 \u05d0\u05ea</li>\n <li value='12'>\u05d4\u05d0\u05e8\u05d9 \u05d5\u05d0\u05d9\u05df \u05d4\u05d1\u05d5]\u05e8 \u05de\u05ea\u05de\u05dc\u05d0 \u05de\u05d7\u05d5\u05dc\u05d9\u05ea\u05d5 \u05e7\u05d3 \u05e0\u05d8\u05e8 \u05e4\u05d9 \u05e7\u05e2\u05d5\u05d3\u05d4 \u05e2\u05e0\u05d3\u05d9 \u05d5\u05d0\u05d9\u05df \u05d0\u05d9\u05e9 \u05e9\u05dd</li>\n <li value='13'>] . \u05e8\u05d5 \u05d5\u05e7\u05d9\u05d4 \u05e9\u05e8\u05d0\u05d1 \u05d0\u05d5 \u05d7\u05d6\u05de\u05d4 . . . \u05df \u05e7\u05d3 \u05e8\u05d0\u05d9 \u05d3\u05dc\u05da \u05d4\u05d0\u05e0\u05d9 (?)</li>\n <li value='14'>] \u05d5\u05d0\u05dc\u05e9\u05db\u05d5\u05d0 \u05dc\u05dc\u05d4 \u05ea\u05e2\u05d0\u05dc\u05d9 \u05d0\u05e9\u05e8 \u05dc\u05d0 \u05e2\u05d6\u05d1 \u05d5\u05dc\u05d0 \u05d9\u05e2\u05d6\u05d5\u05d1 \u05d5\u05e7\u05d3 \u05e7\u05d0\u05dc \u05dc\u05d9</li>\n <li value='15'>] \u05d4\u05dc\u05db\u05d5\u05ea \u05e8\u05d1\u05e0\u05d5 \u05d9\u05e6\u05d7\u05e7 \u05d6\u05dc \u05e4\u05ea\u05e0\u05e2\u05dd \u05d0\u05dc\u05d7\u05e6\u05e8\u05d4 \u05ea\u05e1\u05dc\u05dd \u05dc\u05d4</li>\n <li value='16'>\u05d0\u05dc\u05e9\u05d9]\u05da \u05d0\u05dc\u05de\u05d4\u05d3\u05d1 \u05d5\u05e4\u05e7\u05d4 \u05d0\u05dc\u05d3\u05e4\u05d0\u05ea\u05e8 \u05d0\u05dc\u05d3\u05d9 \u05d0\u05e1\u05ea\u05e2\u05d0\u05e8\u05ea\u05d4\u05dd \u05d0\u05dc\u05d7\u05e6\u05e8\u05d4</li></ul>\n</section>\n<section>\n <h1>ENA 2727.15d, recto, right margin:</h1>\n <ul>\n <li value='1'>\u05de\u05e0\u05d9\u05d9 \u05d5\u05dc\u05d0 \u05ea\u05d0\u05db\u05e8\u05d4\u05dd(?) \u05e2\u05e0\u05d4 \u05d5\u05dc\u05dc\u05d7\u05e6\u05e8\u05d4 \u05e4\u05d9 \u05d3\u05dc\u05da . . [</li>\n <li value='2'>\u05d0\u05dc\u05d7\u05e6\u05e8\u05d4 \u05de\u05db\u05d3\u05d5\u05de\u05d4 \u05d1\u05d0\u05d2\u05dc \u05e1\u05dc\u05d0\u05dd \u05d5\u05e8\u05d1\u05e0\u05d5 \u05d0\u05d1\u05e8\u05d4\u05dd . . . [</li></ul>\n</section>\n<section>\n <h1>ENA 2727.15d, recto, upper margin:</h1>\n <ul>\n <li value='1'>\u05d5\u05d0\u05dc\u05de\u05dc\u05de\u05d3</li>\n <li value='2'>\u05d1\u05df \u05e8\u05d1\u05e0\u05d5</li>\n <li value='3'>\u05e9\u05de\u05d5\u05d0\u05dc</li>\n <li value='4'>\u05de\u05e2\u05dc\u05dd</li>\n <li value='5'>\u05d0\u05d1\u05d5 \u05d0\u05dc\u05d1\u05d9\u05d0\u05df</li>\n <li value='6'>\u05d0\u05dc\u05e1\u05dc\u05d0\u05dd</li>\n <li value='7'>\u05d5\u05e2\u05dc\u05d9 \u05d5\u05dc\u05d3\u05d4 \u05d0\u05dc\u05e1\u05dc\u05d0\u05dd</li>\n <li value='8'>\u05d5\u05ea\u05e0\u05e2\u05dd</li>\n <li value='9'>\u05ea\u05d5\u05e6\u05d9\u05d4</li>\n <li value='10'>\u05e2\u05dc\u05d9\u05d4</li></ul>\n</section>",
+        "text": "\n\u200eENA 2727.15d, recto:\n\u200f                                                      \u05db\u05d9 \u05d0\u05ea\u05d4 \u05ea\u05d1\u05e8\u05da \u05e6[\u05d3\u05d9\u05e7 \u05d9\u05d9\u05d9 \u200e   1\n\u200f                                                   \u05e9\u05dc\u05d5\u05dd \u05d4\u05e2\u05de\u05d5\u05e1(?) \u05d9\u05d5\u05e4\u05e8\u05e9 \u05e2\u05dc [ \u200e   2\n\u200f                                                   \u05de\u05e8\u05e0\u05d5 \u05d5\u05e8\u05d1\u05e0\u05d5 \u05d0\u05dc\u05d9\u05d4\u05d5 \u05d4\u05d3\u05d9\u05d9\u05df [ \u200e   3\n\u200f                                               \u05d9\u05d4\u05d9 \u05d0\u05dc\u05d4\u05d9\u05d5 \u05e2\u05de\u05d5 \u05d1\u05e2\u05e0\u05d2\u05d5(?) \u05d5 . [ \u200e   4\n\u200f                                                  \u05d9\u05e9\u05e8\u05d0\u05dc \u05d8\u05d5\u05d1 \u05d1\u05e9\u05dd(?) \u05db\u05dc \u05d7 . [ \u200e   5\n\n\u200eENA 2727.15d + T-S T-S Ar.7.16, recto:\n\u200f         \u05de\u05df \u05d0\u05dc\u05e9\u05d5\u05e7 \u05e2\u05dc\u05d9 \u05d7\u05e6\u05e8\u05ea\u05d4\u05d0 \u05d0\u05dc . [. . . . . . . . . . . . . .] | . . \u05d9\u05d2[\u05de\u05e2 \u200e   6\n\u200f \u05d0\u05dc\u05e9\u05de\u05dc \u05d1\u05d4\u05d0 \u05e2\u05dc\u05d9 \u05d0\u05de\u05d0\u05df(?) . . [. . . . . . .] | . \u05e8 \u05d3\u05d0\u05dc\u05da \u05d0\u05df \u05d5\u05e6\u05dc \u05d0\u05dc\u05d9 \u05e2\u05e0\u05d3\u05d9 \u05d0\u05dc\u05d7\u05d1\u05e8 \u200e   7\n\u200f      \u05d0\u05dc\u05db\u05d4\u05df \u05d5\u05dc\u05d3(?) \u05d5\u05dc\u05d4(?) \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d1\u05d9\u05d0\u05df | [\u05d5]\u05e4\u05e8\u05d7\u05ea \u05d1\u05d5\u05e8\u05d5\u05d3\u05d4 \u05d5\u05d2\u05de\u05e0\u05d9 \u05db\u05d5\u05e0\u05d4 \u05e8\u05d0\u05d9\u05e0\u05d9 \u05de\u05e8\u05d9\u05e5 \u200e   8\n\u200f          \u05d0\u05dc\u05d0\u05d6\u05dd(?) . . . . . | . \u05e4\u05d9 \u05e6\u05d9\u05e7\u05d4 \u05de\u05df \u05db\u05ea\u05e8\u05d4 \u05d0\u05dc\u05db\u05e8\u05d2 \u05dc\u05dc\u05e9\u05e8\u05d0\u05d1 \u05d5\u05d0\u05dc\u05e4\u05e8\u05d5\u05d2 \u05d5\u05d3\u05d0\u05dc\u05da \u200e   9\n\n\u200eT-S T-S Ar.7.16, recto:\n\u200f                         ] . . \u05e2\u05e8\u05e5 \u05dc\u05d9 \u05de\u05e8\u05e5 \u05d6\u05d0\u05d9\u05d3 \u05e2\u05dc\u05d9 \u05de\u05e8\u05e6\u05d9 \u05d0\u05dc\u05d3\u05d0\u05d9\u05dd \u05e6\u05d9\u05e7 \u05e0\u05e4\u05e1 \u05d5\u05d7\u05de\u05d0 \u200e  10\n\u200f                       ] . . \u05d0\u05dc\u05d5\u05dc\u05d3 \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d1\u05d9\u05d0\u05df \u05d5 . . . . \u05d5\u05d0\u05d9\u05df \u05d4\u05e7\u05d5\u05de\u05e5 \u05de\u05e9\u05d1\u05d9\u05e2 \u05d0\u05ea \u200e  11\n\u200f             \u05d4\u05d0\u05e8\u05d9 \u05d5\u05d0\u05d9\u05df \u05d4\u05d1\u05d5]\u05e8 \u05de\u05ea\u05de\u05dc\u05d0 \u05de\u05d7\u05d5\u05dc\u05d9\u05ea\u05d5 \u05e7\u05d3 \u05e0\u05d8\u05e8 \u05e4\u05d9 \u05e7\u05e2\u05d5\u05d3\u05d4 \u05e2\u05e0\u05d3\u05d9 \u05d5\u05d0\u05d9\u05df \u05d0\u05d9\u05e9 \u05e9\u05dd \u200e  12\n\u200f                       ] . \u05e8\u05d5 \u05d5\u05e7\u05d9\u05d4 \u05e9\u05e8\u05d0\u05d1 \u05d0\u05d5 \u05d7\u05d6\u05de\u05d4 . . . \u05df \u05e7\u05d3 \u05e8\u05d0\u05d9 \u05d3\u05dc\u05da \u05d4\u05d0\u05e0\u05d9 (?) \u200e  13\n\u200f                        ] \u05d5\u05d0\u05dc\u05e9\u05db\u05d5\u05d0 \u05dc\u05dc\u05d4 \u05ea\u05e2\u05d0\u05dc\u05d9 \u05d0\u05e9\u05e8 \u05dc\u05d0 \u05e2\u05d6\u05d1 \u05d5\u05dc\u05d0 \u05d9\u05e2\u05d6\u05d5\u05d1 \u05d5\u05e7\u05d3 \u05e7\u05d0\u05dc \u05dc\u05d9 \u200e  14\n\u200f                                  ] \u05d4\u05dc\u05db\u05d5\u05ea \u05e8\u05d1\u05e0\u05d5 \u05d9\u05e6\u05d7\u05e7 \u05d6\u05dc \u05e4\u05ea\u05e0\u05e2\u05dd \u05d0\u05dc\u05d7\u05e6\u05e8\u05d4 \u05ea\u05e1\u05dc\u05dd \u05dc\u05d4 \u200e  15\n\u200f                           \u05d0\u05dc\u05e9\u05d9]\u05da \u05d0\u05dc\u05de\u05d4\u05d3\u05d1 \u05d5\u05e4\u05e7\u05d4 \u05d0\u05dc\u05d3\u05e4\u05d0\u05ea\u05e8 \u05d0\u05dc\u05d3\u05d9 \u05d0\u05e1\u05ea\u05e2\u05d0\u05e8\u05ea\u05d4\u05dd \u05d0\u05dc\u05d7\u05e6\u05e8\u05d4 \u200e  16\n\n\u200eENA 2727.15d, recto, right margin:\n\u200f                                \u05de\u05e0\u05d9\u05d9 \u05d5\u05dc\u05d0 \u05ea\u05d0\u05db\u05e8\u05d4\u05dd(?) \u05e2\u05e0\u05d4 \u05d5\u05dc\u05dc\u05d7\u05e6\u05e8\u05d4 \u05e4\u05d9 \u05d3\u05dc\u05da . . [ \u200e   1\n\u200f                                \u05d0\u05dc\u05d7\u05e6\u05e8\u05d4 \u05de\u05db\u05d3\u05d5\u05de\u05d4 \u05d1\u05d0\u05d2\u05dc \u05e1\u05dc\u05d0\u05dd \u05d5\u05e8\u05d1\u05e0\u05d5 \u05d0\u05d1\u05e8\u05d4\u05dd . . . [ \u200e   2\n\n\u200eENA 2727.15d, recto, upper margin:\n\u200f                                                                    \u05d5\u05d0\u05dc\u05de\u05dc\u05de\u05d3 \u200e   1\n\u200f                                                                    \u05d1\u05df \u05e8\u05d1\u05e0\u05d5 \u200e   2\n\u200f                                                                      \u05e9\u05de\u05d5\u05d0\u05dc \u200e   3\n\u200f                                                                       \u05de\u05e2\u05dc\u05dd \u200e   4\n\u200f                                                                 \u05d0\u05d1\u05d5 \u05d0\u05dc\u05d1\u05d9\u05d0\u05df \u200e   5\n\u200f                                                                     \u05d0\u05dc\u05e1\u05dc\u05d0\u05dd \u200e   6\n\u200f                                                           \u05d5\u05e2\u05dc\u05d9 \u05d5\u05dc\u05d3\u05d4 \u05d0\u05dc\u05e1\u05dc\u05d0\u05dd \u200e   7\n\u200f                                                                      \u05d5\u05ea\u05e0\u05e2\u05dd \u200e   8\n\u200f                                                                      \u05ea\u05d5\u05e6\u05d9\u05d4 \u200e   9\n\u200f                                                                       \u05e2\u05dc\u05d9\u05d4 \u200e  10"
+      },
+      "content_type": ["corpus", "document"],
+      "doc_relation": "E",
+      "location": "",
+      "notes": "12/2019 (incorporating partial transcription on Goitein\u2019s note card)",
+      "object_id": 8151,
+      "source": 35,
+      "url": ""
+    },
+    "model": "footnotes.footnote",
+    "pk": 5241
+  },
+  {
+    "fields": {
+      "content": null,
+      "content_type": ["corpus", "document"],
+      "doc_relation": "D",
+      "location": "card #11032",
+      "notes": "",
+      "object_id": 8151,
+      "source": 836,
+      "url": "https://geniza.princeton.edu/indexcards/index.php?a=card&id=11032"
+    },
+    "model": "footnotes.footnote",
+    "pk": 11825
   },
   {
     "fields": {
@@ -4340,6 +5159,34 @@
     "fields": {
       "content": null,
       "content_type": ["corpus", "document"],
+      "doc_relation": "E,T",
+      "location": "",
+      "notes": "",
+      "object_id": 30824,
+      "source": 22,
+      "url": "https://docs.google.com/document/d/15vbUsJRMtfnkQyTKG9w3WBlElZpY3ps9ijk0k56Qo14/edit?usp=sharing"
+    },
+    "model": "footnotes.footnote",
+    "pk": 5059
+  },
+  {
+    "fields": {
+      "content": null,
+      "content_type": ["corpus", "document"],
+      "doc_relation": "T,E",
+      "location": "",
+      "notes": "",
+      "object_id": 30824,
+      "source": 22,
+      "url": "https://docs.google.com/document/d/15vbUsJRMtfnkQyTKG9w3WBlElZpY3ps9ijk0k56Qo14/edit?usp=sharing"
+    },
+    "model": "footnotes.footnote",
+    "pk": 5060
+  },
+  {
+    "fields": {
+      "content": null,
+      "content_type": ["corpus", "document"],
       "doc_relation": "D",
       "location": "card #11096",
       "notes": "",
@@ -4366,34 +5213,6 @@
     },
     "model": "footnotes.footnote",
     "pk": 5065
-  },
-  {
-    "fields": {
-      "content": null,
-      "content_type": ["corpus", "document"],
-      "doc_relation": "E,T",
-      "location": "",
-      "notes": "",
-      "object_id": 30824,
-      "source": 22,
-      "url": "https://docs.google.com/document/d/15vbUsJRMtfnkQyTKG9w3WBlElZpY3ps9ijk0k56Qo14/edit?usp=sharing"
-    },
-    "model": "footnotes.footnote",
-    "pk": 5059
-  },
-  {
-    "fields": {
-      "content": null,
-      "content_type": ["corpus", "document"],
-      "doc_relation": "T,E",
-      "location": "",
-      "notes": "",
-      "object_id": 30824,
-      "source": 22,
-      "url": "https://docs.google.com/document/d/15vbUsJRMtfnkQyTKG9w3WBlElZpY3ps9ijk0k56Qo14/edit?usp=sharing"
-    },
-    "model": "footnotes.footnote",
-    "pk": 5060
   },
   {
     "fields": {
@@ -5434,7 +6253,7 @@
       "is_active": true,
       "is_staff": true,
       "is_superuser": false,
-      "last_login": "2022-01-06T02:08:18.239Z",
+      "last_login": "2022-01-23T21:10:08.735Z",
       "last_name": "Rosenberg",
       "password": "",
       "user_permissions": [],
@@ -5525,7 +6344,7 @@
       "is_active": true,
       "is_staff": true,
       "is_superuser": true,
-      "last_login": "2022-01-13T21:38:36.186Z",
+      "last_login": "2022-01-23T18:24:27.303Z",
       "last_name": "Rustow",
       "password": "",
       "user_permissions": [],
@@ -5777,6 +6596,187 @@
     },
     "model": "taggit.taggeditem",
     "pk": 3554
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "2017-01-01T05:00:00Z",
+      "change_message": "Initial data entry (spreadsheet), dated 2017",
+      "content_type": ["corpus", "document"],
+      "object_id": "8151",
+      "object_repr": "T-S Ar.7.16 (PGPID 8151)",
+      "user": ["pgl"]
+    },
+    "model": "admin.logentry",
+    "pk": 65419
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2019-12-19T05:00:00Z",
+      "change_message": "Major revision (spreadsheet), dated 12/19/2019",
+      "content_type": ["corpus", "document"],
+      "object_id": "8151",
+      "object_repr": "T-S Ar.7.16 (PGPID 8151)",
+      "user": ["ae5677"]
+    },
+    "model": "admin.logentry",
+    "pk": 65420
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "2021-05-26T20:36:32.051Z",
+      "change_message": "Imported via script",
+      "content_type": ["corpus", "document"],
+      "object_id": "8151",
+      "object_repr": "T-S Ar.7.16 (PGPID 8151)",
+      "user": ["script"]
+    },
+    "model": "admin.logentry",
+    "pk": 65421
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-10-25T17:50:38.741Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Description\"]}}, {\"added\": {\"name\": \"Related Fragment\", \"object\": \"ENA 2727.15d\"}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "8151",
+      "object_repr": "ENA 2727.15d + \u2026 (PGPID 8151)",
+      "user": ["ae5677"]
+    },
+    "model": "admin.logentry",
+    "pk": 110701
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-10-25T17:51:58.140Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Description\"]}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "8151",
+      "object_repr": "ENA 2727.15d + \u2026 (PGPID 8151)",
+      "user": ["ae5677"]
+    },
+    "model": "admin.logentry",
+    "pk": 110702
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-10-25T17:52:38.433Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Description\"]}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "8151",
+      "object_repr": "ENA 2727.15d + \u2026 (PGPID 8151)",
+      "user": ["ae5677"]
+    },
+    "model": "admin.logentry",
+    "pk": 110703
+  },
+  {
+    "fields": {
+      "action_flag": 2,
+      "action_time": "2021-10-25T19:52:19.799Z",
+      "change_message": "[{\"changed\": {\"fields\": [\"Description\"]}}]",
+      "content_type": ["corpus", "document"],
+      "object_id": "8151",
+      "object_repr": "ENA 2727.15d + \u2026 (PGPID 8151)",
+      "user": ["ae5677"]
+    },
+    "model": "admin.logentry",
+    "pk": 110714
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 8151,
+      "tag": 666
+    },
+    "model": "taggit.taggeditem",
+    "pk": 22300
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 8151,
+      "tag": 86
+    },
+    "model": "taggit.taggeditem",
+    "pk": 22299
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 8151,
+      "tag": 177
+    },
+    "model": "taggit.taggeditem",
+    "pk": 22298
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 8151,
+      "tag": 81
+    },
+    "model": "taggit.taggeditem",
+    "pk": 22297
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 8151,
+      "tag": 80
+    },
+    "model": "taggit.taggeditem",
+    "pk": 22296
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 8151,
+      "tag": 463
+    },
+    "model": "taggit.taggeditem",
+    "pk": 22295
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 8151,
+      "tag": 461
+    },
+    "model": "taggit.taggeditem",
+    "pk": 22294
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 8151,
+      "tag": 1868
+    },
+    "model": "taggit.taggeditem",
+    "pk": 22293
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 8151,
+      "tag": 1224
+    },
+    "model": "taggit.taggeditem",
+    "pk": 22292
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 8151,
+      "tag": 1892
+    },
+    "model": "taggit.taggeditem",
+    "pk": 22291
   },
   {
     "fields": {
@@ -6417,68 +7417,6 @@
   {
     "fields": {
       "action_flag": 1,
-      "action_time": "2004-01-01T05:00:00Z",
-      "change_message": "Initial data entry (spreadsheet), dated 2004",
-      "content_type": ["corpus", "document"],
-      "object_id": "3879",
-      "object_repr": "T-S Ar.30.129 (PGPID 3879)",
-      "user": ["pgl"]
-    },
-    "model": "admin.logentry",
-    "pk": 61009
-  },
-  {
-    "fields": {
-      "action_flag": 1,
-      "action_time": "2021-05-26T20:35:36.411Z",
-      "change_message": "Imported via script",
-      "content_type": ["corpus", "document"],
-      "object_id": "3879",
-      "object_repr": "T-S Ar.30.129 (PGPID 3879)",
-      "user": ["script"]
-    },
-    "model": "admin.logentry",
-    "pk": 61010
-  },
-  {
-    "fields": {
-      "content_type": ["corpus", "document"],
-      "object_id": 3879,
-      "tag": 87
-    },
-    "model": "taggit.taggeditem",
-    "pk": 20545
-  },
-  {
-    "fields": {
-      "content_type": ["corpus", "document"],
-      "object_id": 3879,
-      "tag": 2254
-    },
-    "model": "taggit.taggeditem",
-    "pk": 20544
-  },
-  {
-    "fields": {
-      "content_type": ["corpus", "document"],
-      "object_id": 3879,
-      "tag": 452
-    },
-    "model": "taggit.taggeditem",
-    "pk": 20543
-  },
-  {
-    "fields": {
-      "content_type": ["corpus", "document"],
-      "object_id": 3879,
-      "tag": 1215
-    },
-    "model": "taggit.taggeditem",
-    "pk": 20542
-  },
-  {
-    "fields": {
-      "action_flag": 1,
       "action_time": "2016-01-01T05:00:00Z",
       "change_message": "Initial data entry (spreadsheet), dated 2016",
       "content_type": ["corpus", "document"],
@@ -6550,6 +7488,68 @@
     },
     "model": "taggit.taggeditem",
     "pk": 20475
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "2004-01-01T05:00:00Z",
+      "change_message": "Initial data entry (spreadsheet), dated 2004",
+      "content_type": ["corpus", "document"],
+      "object_id": "3879",
+      "object_repr": "T-S Ar.30.129 (PGPID 3879)",
+      "user": ["pgl"]
+    },
+    "model": "admin.logentry",
+    "pk": 61009
+  },
+  {
+    "fields": {
+      "action_flag": 1,
+      "action_time": "2021-05-26T20:35:36.411Z",
+      "change_message": "Imported via script",
+      "content_type": ["corpus", "document"],
+      "object_id": "3879",
+      "object_repr": "T-S Ar.30.129 (PGPID 3879)",
+      "user": ["script"]
+    },
+    "model": "admin.logentry",
+    "pk": 61010
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 3879,
+      "tag": 87
+    },
+    "model": "taggit.taggeditem",
+    "pk": 20545
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 3879,
+      "tag": 2254
+    },
+    "model": "taggit.taggeditem",
+    "pk": 20544
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 3879,
+      "tag": 452
+    },
+    "model": "taggit.taggeditem",
+    "pk": 20543
+  },
+  {
+    "fields": {
+      "content_type": ["corpus", "document"],
+      "object_id": 3879,
+      "tag": 1215
+    },
+    "model": "taggit.taggeditem",
+    "pk": 20542
   },
   {
     "fields": {

@@ -9,7 +9,7 @@ from django.template.loader import get_template
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
-from geniza.corpus.models import TextBlock
+from geniza.corpus.models import Document, TextBlock
 from geniza.footnotes.models import Footnote
 
 
@@ -49,17 +49,16 @@ class TestDocumentDetailTemplate:
     def test_viewer(self, client, document):
         """Document detail template should include viewer for IIIF content"""
         response = client.get(document.get_absolute_url())
-        local_manifest_url = reverse("corpus:document-manifest", args=[document.id])
         assertContains(
             response,
-            f'<div id="iiif_viewer" data-iiif-url="{local_manifest_url}" ',
+            '<section id="iiif-viewer">',
         )
 
     def test_viewer_annotations(self, client, document, typed_texts):
         """Document detail template should configure IIIF viewer for annotation display"""
         # fixture does not have annotations
         response = client.get(document.get_absolute_url())
-        assertContains(response, 'data-has-annotations="False"')
+        assertNotContains(response, '<div class="transcription">')
 
         # add a footnote with a digital edition
         Footnote.objects.create(
@@ -69,7 +68,7 @@ class TestDocumentDetailTemplate:
             content="A piece of text",
         )
         response = client.get(document.get_absolute_url())
-        assertContains(response, 'data-has-annotations="True"')
+        assertContains(response, '<div class="transcription">')
 
     def test_no_viewer(self, client, document):
         """Document with no IIIF shouldn't include viewer in template"""
@@ -87,27 +86,6 @@ class TestDocumentDetailTemplate:
         assertNotContains(response, edit_url)
         response = admin_client.get(document.get_absolute_url())
         assertContains(response, edit_url)
-
-    def test_source_location(self, client, document, source):
-        """Document detail template should show footnote location if present"""
-        fn = Footnote.objects.create(
-            content_object=document,
-            source=source,
-            location="p. 25",
-            doc_relation=Footnote.EDITION,
-        )
-        response = client.get(document.get_absolute_url())
-        assertNotContains(response, "p. 25")  # should not show when no content
-        fn.content = "fake content"
-        fn.save()
-        response = client.get(document.get_absolute_url())
-        assertContains(response, "p. 25")  # should show when there is content
-        fn.location = ""
-        fn.save()
-        response = client.get(
-            reverse("corpus:document-scholarship", args=[document.pk])
-        )
-        assertNotContains(response, "p. 25")
 
     def test_editors(self, client, document, source, twoauthor_source):
         # footnote with no content
@@ -142,13 +120,23 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertContains(response, "Editors")
 
-    def test_shelfmarks(self, client, document, join):
+    def test_shelfmarks(self, client, document, join, fragment, multifragment):
         # Ensure that shelfmarks are displayed on the page.
         response = client.get(document.get_absolute_url())
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
+        # remove IIIF urls from fixture document fragments to prevent trying to access fake URLs
+        fragment.iiif_url = ""
+        fragment.save()
+        multifragment.iiif_url = ""
+        multifragment.save()
         response = client.get(join.get_absolute_url())
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
-        assertContains(response, join.shelfmark, html=True)
+        shelfmarks = join.certain_join_shelfmarks
+        assertContains(
+            response,
+            "<span>%s + </span><span>%s</span>" % (shelfmarks[0], shelfmarks[1]),
+            html=True,
+        )
 
     def test_download_transcription_link(self, client, document, typed_texts):
         edition = Footnote.objects.create(
@@ -284,6 +272,25 @@ class TestDocumentScholarshipTemplate:
             response, '<dd class="relation">Edition, Translation</dd>', html=True
         )
 
+    def test_source_location(self, client, document, source):
+        """Document scholarship template should show footnote location when present"""
+        fn = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            location="p. 25",
+            doc_relation=Footnote.EDITION,
+        )
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assertContains(response, "p. 25")
+        fn.location = ""
+        fn.save()
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        assertNotContains(response, "p. 25")  # should not show when removed
+
 
 class TestDocumentTabsSnippet:
     def test_detail_link(self, client, document):
@@ -408,6 +415,18 @@ class TestDocumentResult:
                 % {"tag": tag}
                 in result
             )
+
+        # Ensure that the number of tags shown is limited to 5 and message displays correctly
+        tags = ["bill of sale", "real estate", "arabic", "ib6", "ibn", "red sea"]
+        result = self.template.render(
+            context={
+                "document": {"pgpid": 1, "id": "document.1", "tags": tags},
+                "highlighting": {},
+                "page_obj": self.page_obj,
+            }
+        )
+        assert "red sea" not in result
+        assert "+ 1 more" in result
 
     def test_multiple_scholarship_types(self):
         result = self.template.render(
