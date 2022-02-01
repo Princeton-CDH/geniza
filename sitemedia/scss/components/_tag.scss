@@ -18,3 +18,11 @@
         margin-right: 0;
     }
 }
+
+// "(+ N more)" after a long list of tags
+.tags li.more {
+    color: var(--on-background-alt);
+    &::before {
+        content: "";
+    }
+}
