@@ -20,7 +20,8 @@
 }
 
 // When adding additional info to tag lists
-.tags li.no-hash {
+.tags li.more {
+    color: var(--on-background-alt);
     &::before {
         content: "";
     }
