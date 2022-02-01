@@ -18,6 +18,7 @@ def test_fields():
     assert tei.lines
     assert tei.labels
     assert len(tei.labels) == 4
+    assert tei.source_authors == ["Gil"]
 
 
 def test_no_content():

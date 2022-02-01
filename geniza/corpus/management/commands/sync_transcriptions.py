@@ -56,6 +56,8 @@ class Command(BaseCommand):
             self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
         self.stats = defaultdict(int)
+        # after creating missing goitein typed text notes, these will not be created again
+        self.stats["footnote_created"] = 0
         # keep track of document ids with multiple digitized editions (likely merged records/joins)
         self.multiedition_docs = set()
 
@@ -152,15 +154,36 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}).
         # identify the edition footnote to be updated
         # NOTE: still needs to handle multiple editions, no editions
         editions = doc.footnotes.editions()
+
         if editions.count() > 1:
-            # debugging output for footnote selection
-            # print('more than one edition for %s' % xmlfile)
-            # print(list(ed.source for ed in editions))
-            # try filtering by current text content
-            editions_with_content = editions.filter(content__isnull=False)
-            # print('editions with content')
-            # print(list(ed.source for ed in editions_with_content))
             self.stats["multiple_editions"] += 1
+
+            # check for structured author names in the TEI
+            if tei.source_authors:
+                tei_authors = set(tei.source_authors)
+                author_matches = []
+                for ed in editions:
+                    ed_authors = set(
+                        [auth.last_name for auth in ed.source.authors.all()]
+                    )
+                    if ed_authors == tei_authors:
+                        author_matches.append(ed)
+
+                # if we got exactly one match, use that edition
+                if len(author_matches) == 1:
+                    return author_matches[0]
+                else:
+                    # there's only one case where this is possible, and
+                    # it isn't tagged in the TEI yet; hope to resolve some other way,
+                    # but warn in case
+                    self.stderr.write(
+                        "Multiple matches possible for source authors: %s"
+                        % author_matches
+                    )
+
+            # fallback footnote selection: identify based on existence of transcription content
+            editions_with_content = editions.filter(content__isnull=False)
+
             if editions_with_content.count() > 1:
                 self.stats["multiple_editions_with_content"] += 1
                 self.multiedition_docs.add(doc.id)

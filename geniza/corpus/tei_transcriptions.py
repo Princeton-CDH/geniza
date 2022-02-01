@@ -28,6 +28,11 @@ class GenizaTei(teimap.Tei):
     source = xmlmap.NodeListField(
         "tei:teiHeader//tei:sourceDesc/tei:msDesc/tei:msContents/tei:p", GenizaTeiLine
     )
+    # for documents with more than one transcription, authors have been
+    # tagged with last name in n attribute to allow identifying/differentiating
+    source_authors = xmlmap.StringListField(
+        "tei:teiHeader//tei:sourceDesc//tei:author/@n"
+    )
 
     def no_content(self):
         return str(self.text).strip() == ""
