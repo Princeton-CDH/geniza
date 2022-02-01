@@ -134,7 +134,7 @@ class TestDocumentDetailTemplate:
         )
         assertContains(
             response,
-            "<span>%s</span><span>%s</span>" % (shelfmarks[0], shelfmarks[1]),
+            "<span>%s + </span><span>%s</span>" % (shelfmarks[0], shelfmarks[1]),
             html=True,
         )
 
