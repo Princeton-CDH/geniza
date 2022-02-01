@@ -419,7 +419,7 @@ class TestDocumentResult:
             }
         )
         assert "red sea" not in result
-        assert "1 more..." in result
+        assert "+ 1 more" in result
 
     def test_multiple_scholarship_types(self):
         result = self.template.render(
