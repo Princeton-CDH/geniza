@@ -76,6 +76,34 @@
     @include declare-fonts("https://geniza.cdh.princeton.edu/static/fonts");
 }
 
+// Fallback fonts
+@font-face {
+    font-family: "arial-regular";
+    src: local(Arial);
+    size-adjust: 83%;
+    font-style: normal;
+    font-weight: normal;
+    font-display: fallback;
+}
+
+@font-face {
+    font-family: "arial-bold";
+    src: local(Arial);
+    size-adjust: 83%;
+    font-style: normal;
+    font-weight: bold;
+    font-display: fallback;
+}
+
+@font-face {
+    font-family: "arial-italic";
+    src: local(Arial);
+    size-adjust: 83%;
+    font-style: italic;
+    font-weight: normal;
+    font-display: fallback;
+}
+
 // Variables containing font stacks go here, for use as "font-family" values.
 // We pick fallback fonts that are reasonably close to the desired webfont and
 // also likely to be installed on the user's machine. For more, see:
@@ -83,9 +111,9 @@
 // https://www.cssfontstack.com/
 
 // Primary font family: all Latin text, all Hebrew except transcriptions
-$primary: ("Greta Sans Hebrew Regular", Arial, sans-serif);
-$primary-bold: ("Greta Sans Hebrew Bold", Arial, sans-serif);
-$primary-italic: ("Greta Sans Regular Italic", Arial, sans-serif);
+$primary: ("Greta Sans Hebrew Regular", "arial-regular", sans-serif);
+$primary-bold: ("Greta Sans Hebrew Bold", "arial-bold", sans-serif);
+$primary-italic: ("Greta Sans Regular Italic", "arial-italic", sans-serif);
 
 // Secondary font family: Hebrew transcriptions
 $hebrew: ("FrankRuhl 1924 MF Medium", Georgia, serif);
