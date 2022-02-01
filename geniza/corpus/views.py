@@ -466,9 +466,7 @@ class DocumentAnnotationListView(DocumentDetailView):
 class DocumentMerge(FormView, PermissionRequiredMixin):
     permission_required = ("corpus.change_document", "corpus.delete_document")
     form_class = DocumentMergeForm
-    template_name = (
-        "corpus/document_merge.html"  # ? : Should this be in the admin folder instead?
-    )
+    template_name = "admin/corpus/document/merge.html"
 
     def get_success_url(self):
         return reverse("admin:corpus_document_changelist")
