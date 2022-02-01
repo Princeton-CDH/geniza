@@ -18,3 +18,10 @@
         margin-right: 0;
     }
 }
+
+// When adding additional info to tag lists
+.tags li.no-hash {
+    &::before {
+        content: "";
+    }
+}
