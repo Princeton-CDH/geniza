@@ -513,7 +513,7 @@ class DocumentMerge(FormView, PermissionRequiredMixin):
             messages.success(
                 self.request,
                 mark_safe(
-                    f'Successfully merged document(s) {secondary_doc_str} with {primary_doc_str} to create <a href="{new_doc_link}">{primary_doc}</a>.'
+                    f"Successfully merged document(s) {secondary_doc_str} with {primary_doc_str}."
                 ),
             )
 
