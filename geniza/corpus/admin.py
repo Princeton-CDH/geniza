@@ -476,7 +476,6 @@ class DocumentAdmin(admin.ModelAdmin):
 
         # NOTE: using selected ids from form and ignoring queryset
         # because we can't pass the queryset via redirect
-        # ? : Is this correct? Is there a way to just pass the queryset?
         selected = request.POST.getlist("_selected_action")
         return HttpResponseRedirect(
             "%s?ids=%s" % (reverse("corpus:document-merge"), ",".join(selected)),
