@@ -131,11 +131,7 @@ class TestDocumentDetailTemplate:
         multifragment.save()
         response = client.get(join.get_absolute_url())
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
-        shelfmarks = list(
-            block.fragment.shelfmark
-            for block in join.textblock_set.all()
-            if block.certain
-        )
+        shelfmarks = join.certain_join_shelfmarks
         assertContains(
             response,
             "<span>%s + </span><span>%s</span>" % (shelfmarks[0], shelfmarks[1]),

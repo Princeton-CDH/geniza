@@ -480,6 +480,26 @@ class TestDocument:
         TextBlock.objects.create(document=doc, fragment=frag, order=1)
         assert doc.title == "Legal document: s1"
 
+    def test_certain_join_shelfmarks(self):
+        # T-S 8J22.21 (+ T-S NS J193, uncertain)
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        doc = Document.objects.create()
+        TextBlock.objects.create(document=doc, fragment=frag, order=1, certain=True)
+        frag2 = Fragment.objects.create(shelfmark="T-S NS J193")
+        TextBlock.objects.create(document=doc, fragment=frag2, order=2, certain=False)
+        # should only be one shelfmark from certain join
+        assert len(doc.certain_join_shelfmarks) == 1
+        # should be the one with certain=True
+        assert doc.certain_join_shelfmarks[0] == "T-S 8J22.21"
+
+        # Add a third fragment
+        frag3 = Fragment.objects.create(shelfmark="T-S NS J195")
+        TextBlock.objects.create(document=doc, fragment=frag3, certain=True, order=3)
+        # should be length 2
+        assert len(doc.certain_join_shelfmarks) == 2
+        # should maintain order
+        assert doc.certain_join_shelfmarks[1] == "T-S NS J195"
+
     # NOTE: not currently used; remove or revise if this remains unused
     def test_shelfmark_display(self):
         # T-S 8J22.21 + T-S NS J193
