@@ -46,7 +46,7 @@ class Command(BaseCommand):
             title="The Princeton Geniza Project",
             description="Home page",
             locale=locale,
-            content=home_content,
+            body=home_content,
             live=True,
         )
 
