@@ -28,19 +28,19 @@ class TestSource:
     @pytest.mark.django_db
     def test_str(self, source, twoauthor_source, multiauthor_untitledsource):
         # source has no year; str should be creator lastname, title, (n.p., n.d.)
-        assert str(source) == "%s, %s" % (
+        assert str(source) == "%s, %s." % (
             source.authors.first().firstname_lastname(),
             source.title,
         )
         # set a year
         source.year = 1984
-        assert str(source) == "%s, %s (1984)" % (
+        assert str(source) == "%s, %s (1984)." % (
             source.authors.first().firstname_lastname(),
             source.title,
         )
 
         # two authors
-        assert str(twoauthor_source) == "%s and %s, %s" % (
+        assert str(twoauthor_source) == "%s and %s, %s." % (
             twoauthor_source.authors.first().firstname_lastname(),
             twoauthor_source.authors.all()[1].firstname_lastname(),
             twoauthor_source.title,
@@ -59,7 +59,7 @@ class TestSource:
         lastnames = [
             a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
         ]
-        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s, %s" % (
+        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s, %s." % (
             tuple(lastnames) + (multiauthor_untitledsource.source_type.type.lower(),)
         )
 
@@ -67,7 +67,7 @@ class TestSource:
     def test_str_article(self, article):
 
         # article with title, journal title, volume, year
-        assert str(article) == '%s, "%s," %s %s, no. %d (%s)' % (
+        assert str(article) == '%s, "%s," %s %s, no. %d (%s).' % (
             article.authors.first().firstname_lastname(),
             article.title,
             article.journal,
@@ -77,7 +77,7 @@ class TestSource:
         )
         # article with no title
         article.title = ""
-        assert str(article) == "%s, %s %s, no. %d (%s)" % (
+        assert str(article) == "%s, %s %s, no. %d (%s)." % (
             article.authors.first().firstname_lastname(),
             article.journal,
             article.volume,
@@ -87,7 +87,7 @@ class TestSource:
         # no volume or issue
         article.volume = ""
         article.issue = None
-        assert str(article) == "%s, %s (%s)" % (
+        assert str(article) == "%s, %s (%s)." % (
             article.authors.first().firstname_lastname(),
             article.journal,
             article.year,
@@ -99,7 +99,7 @@ class TestSource:
 
     def test_str_book_section(self, book_section):
         # book section with authors, title, book title, edition, year, volume no.
-        assert str(book_section) == '%s, "%s," in %s, %s ed. (%s), vol. %s' % (
+        assert str(book_section) == '%s, "%s," in %s, %s ed. (%s), vol. %s.' % (
             book_section.authors.first().firstname_lastname(),
             book_section.title,
             book_section.journal,
@@ -116,8 +116,12 @@ class TestSource:
         )
 
     def test_str_unpublished_vol(self, typed_texts):
+        # displays with volume
+        assert str(typed_texts) == "S. D. Goitein, typed texts. (CUL)"
+
+    def test_display(self, typed_texts):
         # displays without volume
-        assert str(typed_texts) == "S. D. Goitein, typed texts"
+        assert typed_texts.display() == "S. D. Goitein, typed texts."
 
     def test_formatted_display(self, book_section):
         # should display proper publisher info, page range for book section fixture
