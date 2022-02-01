@@ -25,13 +25,13 @@ class Command(BaseCommand):
 
         dark_mode_str = ""  # empty string in light mode
 
-        # homepage TODO
+        # homepage
         browser.get("http://localhost:8000/")
         if dark_mode:
             # turn on dark mode, save in local storage
             browser.find_element_by_css_selector("#theme-toggle").send_keys(Keys.ENTER)
             dark_mode_str = " (dark mode)"
-        # percy_snapshot(browser, "Home")
+        percy_snapshot(browser, "Home")
 
         # content page
         browser.get("http://localhost:8000/en/content/")

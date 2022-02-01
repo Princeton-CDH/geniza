@@ -38,16 +38,23 @@ class Command(BaseCommand):
         port = options.get("port")
         (locale, _) = Locale.objects.get_or_create(language_code="en")
 
-        # Bootstrap empty home page, about page
+        # Bootstrap home page
+        with open("geniza/pages/fixtures/example_homepage.html", "r") as home_fixture:
+            home_content = home_fixture.read()
+
         home_page = HomePage(
             title="The Princeton Geniza Project",
             description="Home page",
             locale=locale,
+            content=home_content,
+            live=True,
         )
 
+        # Add home page to root
         root = Page.get_first_root_node()
         root.add_child(instance=home_page)
 
+        # Create container page called "About"
         container_page = ContainerPage(title="About", slug="about", locale=locale)
         home_page.add_child(instance=container_page)
 
