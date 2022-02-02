@@ -44,9 +44,6 @@
             margin-bottom: spacing.$spacing-2xs;
             @include typography.meta;
         }
-        // span.location:not(:last-child)::after {
-        //     content: ", ";
-        // }
         li.location {
             word-break: break-all;
         }
