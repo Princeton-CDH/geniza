@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-02-02 12:39-0500\n"
+"POT-Creation-Date: 2022-02-02 12:54-0500\n"
 "PO-Revision-Date: 2022-01-12 17:31\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -329,15 +329,20 @@ msgstr[3] "%(count)d سجل منح دراسية لـ %(doc)s"
 msgstr[4] "%(count)d سجل منح دراسية لـ %(doc)s"
 msgstr[5] "%(count)d سجل منح دراسية لـ %(doc)s"
 
-#: geniza/footnotes/models.py:402
+#. Translators: Placeholder for when a work has no title available
+#: geniza/footnotes/models.py:197
+msgid "[no title]"
+msgstr ""
+
+#: geniza/footnotes/models.py:403
 msgid "Edition"
 msgstr "الطبعة"
 
-#: geniza/footnotes/models.py:403
+#: geniza/footnotes/models.py:404
 msgid "Translation"
 msgstr "الترجمة"
 
-#: geniza/footnotes/models.py:404
+#: geniza/footnotes/models.py:405
 msgid "Discussion"
 msgstr "المناقشة"
 
