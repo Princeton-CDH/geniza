@@ -1,5 +1,5 @@
 {# template snippet for displaying document label on a form #}
-{# used on person merge form to provide enough information to merge accurately #}
+{# used on document merge form to provide enough information to merge accurately #}
 <div class="merge-document-label">
     <strong><a target="_blank" href="{% url 'admin:corpus_document_change' document.id %}">{{ document }}</a></strong>
     <p>PGPID {{ document.id }}</p>

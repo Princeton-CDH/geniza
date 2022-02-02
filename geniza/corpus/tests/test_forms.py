@@ -109,7 +109,7 @@ class TestDocumentSearchForm:
 
 
 class TestDocumentChoiceField:
-    def test_label_from_instance(self, document):
+    def test_label_from_instance(self, document, footnote):
         dchoicefield = DocumentChoiceField(Mock())
 
         # Should not error on a document with the most minimal information
@@ -117,8 +117,12 @@ class TestDocumentChoiceField:
         label = dchoicefield.label_from_instance(minimal_doc)
         assert str(minimal_doc.id) in label
 
-        # TODO: Check that details are included after geniza team shares details
-        #  of what they want to see in the label
+        # Check that the attributes of a document are in label
+        document.footnotes.add(footnote)
+        label = dchoicefield.label_from_instance(document)
+        "Deed of sale" in label
+        assert str(footnote.source) in label
+        "URL" not in label  # Ensure that the URL is not displayed when there is no URL
 
 
 class TestDocumentMergeForm:

@@ -184,7 +184,7 @@ class DocumentChoiceField(forms.ModelChoiceField):
 
 class DocumentMergeForm(forms.Form):
     primary_document = DocumentChoiceField(
-        label="Primary record",
+        label="Primary document",
         queryset=None,
         help_text=(
             "Select the document record to prioritize. The document selected "

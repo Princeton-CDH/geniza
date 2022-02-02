@@ -910,19 +910,19 @@ class TestDocumentMergeView:
         assert resolved_url.url_name == "corpus_document_change"
 
     def test_get_initial(self):
-        pmview = DocumentMerge()
-        pmview.request = Mock(GET={"ids": "12,23,456,7"})
+        dmview = DocumentMerge()
+        dmview.request = Mock(GET={"ids": "12,23,456,7"})
 
-        initial = pmview.get_initial()
-        assert pmview.document_ids == [12, 23, 456, 7]
-        # lowest id selected as default primary person
+        initial = dmview.get_initial()
+        assert dmview.document_ids == [12, 23, 456, 7]
+        # lowest id selected as default primary document
         assert initial["primary_document"] == 7
 
     def test_get_form_kwargs(self):
-        pmview = DocumentMerge()
-        pmview.request = Mock(GET={"ids": "12,23,456,7"})
-        form_kwargs = pmview.get_form_kwargs()
-        assert form_kwargs["document_ids"] == pmview.document_ids
+        dmview = DocumentMerge()
+        dmview.request = Mock(GET={"ids": "12,23,456,7"})
+        form_kwargs = dmview.get_form_kwargs()
+        assert form_kwargs["document_ids"] == dmview.document_ids
 
     def test_document_merge(self, admin_client):
         # TODO: Check permissions and redirects
@@ -951,5 +951,3 @@ class TestDocumentMergeView:
         assert message.tags == "success"
         assert "Successfully merged" in message.message
         assert f"with ?? (PGPID {doc1.id})" in message.message
-
-        # TODO: test that rationale was passed to log entry
