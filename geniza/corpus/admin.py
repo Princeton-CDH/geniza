@@ -477,7 +477,7 @@ class DocumentAdmin(admin.ModelAdmin):
         # NOTE: using selected ids from form and ignoring queryset
         # because we can't pass the queryset via redirect
         selected = request.POST.getlist("_selected_action")
-        if queryset.count() < 2:
+        if len(selected) < 2:
             messages.error(request, "You must select at least two documents to merge")
             return HttpResponseRedirect(reverse("admin:corpus_document_changelist"))
         return HttpResponseRedirect(

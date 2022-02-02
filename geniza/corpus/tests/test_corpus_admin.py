@@ -342,6 +342,13 @@ class TestDocumentAdmin:
         assert resp["location"].startswith(reverse("corpus:document-merge"))
         assert resp["location"].endswith("?ids=%s" % ",".join(test_ids))
 
+        test_ids = ["50344"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = DocumentAdmin(Document, Mock()).merge_documents(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 302
+        assert resp["location"] == reverse("admin:corpus_document_changelist")
+
 
 @pytest.mark.django_db
 class TestDocumentForm:
