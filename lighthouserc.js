@@ -8,7 +8,6 @@ module.exports = {
                 "http://localhost:8000/en/documents/8151/", // doc detail — includign OpenSeaDragon
                 "http://localhost:8000/en/documents/8151/scholarship/", // doc scholarship
                 "http://localhost:8000/en/content/", // content page
-                "http://localhost:8000/en/bad-url/", // 404 page
             ],
             // The following two commands make Lighthouse start up a Django
             // server for us to test against. PYTHONUNBUFFERED is needed to make
