@@ -9,7 +9,10 @@
 #content-page,
 #homepage {
     h1 {
-        margin-top: spacing.$spacing-md;
+        margin-top: -#{spacing.$spacing-sm};
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: 0;
+        }
     }
     .container {
         // Overall spacing
