@@ -11,12 +11,11 @@
     h1 {
         color: var(--link-primary);
         z-index: 1;
-        margin-top: -4.5rem;
-        padding: 75px spacing.$spacing-2xl 70px;
+        margin-top: -5.5rem;
+        padding: 100px spacing.$spacing-3xl 60px;
         max-width: 100%;
         width: 100%;
         text-align: center;
-        font-size: typography.$text-size-3xl;
         @include breakpoints.for-tablet-landscape-up {
             margin-top: -8rem;
             padding: 285px 0 180px;
@@ -34,10 +33,10 @@
             rgba(255, 255, 255, 1),
             rgba(255, 255, 255, 0)
         ),
-        url("/static/img/ui/mobile/light/homepage-center.png") center 45px
+        url("/static/img/ui/mobile/light/homepage-center.png") center 65px
             no-repeat,
-        url("/static/img/ui/mobile/light/homepage-left.png") left 45px no-repeat,
-        url("/static/img/ui/mobile/light/homepage-right.png") right 45px
+        url("/static/img/ui/mobile/light/homepage-left.png") left 65px no-repeat,
+        url("/static/img/ui/mobile/light/homepage-right.png") right 65px
             no-repeat,
         linear-gradient(
             180deg,
@@ -77,10 +76,10 @@
             rgba(22, 22, 22, 1),
             rgba(22, 22, 22, 0)
         ),
-        url("/static/img/ui/mobile/dark/homepage-center.png") center 45px
+        url("/static/img/ui/mobile/dark/homepage-center.png") center 65px
             no-repeat,
-        url("/static/img/ui/mobile/dark/homepage-left.png") left 45px no-repeat,
-        url("/static/img/ui/mobile/dark/homepage-right.png") right 45px
+        url("/static/img/ui/mobile/dark/homepage-left.png") left 65px no-repeat,
+        url("/static/img/ui/mobile/dark/homepage-right.png") right 65px
             no-repeat,
         linear-gradient(
             180deg,
