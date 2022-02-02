@@ -45,6 +45,10 @@ def test_html():
     # check that the last line / last block is included
     assert "<li value='6'>الحسن بن ابرهيم</li>" in html
 
+    # assert that missing line number does not result in a line number of "None"
+    assert "<li value='None'>" not in html
+    assert "<li value=''>" not in html
+
 
 def test_text_to_plaintext():
     tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
