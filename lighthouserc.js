@@ -5,7 +5,7 @@ module.exports = {
             url: [
                 "http://localhost:8000/", // home page
                 "http://localhost:8000/en/documents/", // doc search
-                "http://localhost:8000/en/documents/8151/", // doc detail — includign OpenSeaDragon
+                "http://localhost:8000/en/documents/8151/", // doc detail — including OpenSeaDragon
                 "http://localhost:8000/en/documents/8151/scholarship/", // doc scholarship
                 "http://localhost:8000/en/content/", // content page
             ],
