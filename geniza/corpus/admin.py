@@ -3,7 +3,7 @@ from collections import namedtuple
 from adminsortable2.admin import SortableInlineAdminMixin
 from django import forms
 from django.conf import settings
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -477,6 +477,9 @@ class DocumentAdmin(admin.ModelAdmin):
         # NOTE: using selected ids from form and ignoring queryset
         # because we can't pass the queryset via redirect
         selected = request.POST.getlist("_selected_action")
+        if queryset.count() < 2:
+            messages.error(request, "You must select at least two documents to merge")
+            return HttpResponseRedirect(reverse("admin:corpus_document_changelist"))
         return HttpResponseRedirect(
             "%s?ids=%s" % (reverse("corpus:document-merge"), ",".join(selected)),
             status=303,
