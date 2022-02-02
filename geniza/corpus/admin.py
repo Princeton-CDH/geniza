@@ -472,7 +472,6 @@ class DocumentAdmin(admin.ModelAdmin):
     def merge_documents(self, request, queryset=None):
         """Merge selected documents together"""
         # Functionality drawn from https://github.com/Princeton-CDH/mep-django/blob/main/mep/people/admin.py
-        # ? : Should we raise an error if there are no selected documents?
 
         # NOTE: using selected ids from form and ignoring queryset
         # because we can't pass the queryset via redirect
