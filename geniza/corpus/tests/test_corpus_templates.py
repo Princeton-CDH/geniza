@@ -245,7 +245,7 @@ class TestDocumentScholarshipTemplate:
             reverse("corpus:document-scholarship", args=[document.pk])
         )
         assertContains(
-            response, '<a href="https://example.com/">includes</a>', html=True
+            response, '<a href="https://example.com/">online resource</a>', html=True
         )
         fn.url = ""
         fn.save()
@@ -254,7 +254,7 @@ class TestDocumentScholarshipTemplate:
         )
         assertNotContains(response, '<a href="https://example.com/">')
 
-    def test_source_relation(self, client, document, source):
+    def test_source_relation(self, client, document, source, twoauthor_source):
         """Document scholarship template should show source relation to doc"""
         fn = Footnote.objects.create(
             content_object=document, source=source, doc_relation=Footnote.EDITION
@@ -262,14 +262,31 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertContains(response, '<dd class="relation">Edition</dd>', html=True)
-        fn.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
-        fn.save()
+        assertContains(
+            response, '<dt class="relation">includes Edition</dt>', html=True
+        )
+
+        fn2 = Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.EDITION,
+            location="p. 25",
+        )
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
+        assertContains(response, '<dt class="relation">for Edition see</dt>', html=True)
+
+        fn2.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
+        fn2.save()
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        print(response.content)
         assertContains(
-            response, '<dd class="relation">Edition, Translation</dd>', html=True
+            response,
+            '<dt class="relation">for Edition, Translation see</dt>',
+            html=True,
         )
 
     def test_source_location(self, client, document, source):
