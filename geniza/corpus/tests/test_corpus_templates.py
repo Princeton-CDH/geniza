@@ -138,7 +138,7 @@ class TestDocumentDetailTemplate:
             html=True,
         )
 
-    def test_download_transcription_link(self, client, document, typed_texts):
+    def test_download_transcription_link_anonymous(self, client, document, typed_texts):
         edition = Footnote.objects.create(
             content_object=document,
             source=typed_texts,
@@ -150,6 +150,22 @@ class TestDocumentDetailTemplate:
         )
         response = client.get(document.get_absolute_url())
         # typed text fixture authored by Goitein
+        # should not be available to anonymous users (suppressed for now)
+        assertNotContains(response, "Download Goitein's edition")
+
+    # NOTE: text download is limited to authenticated users for now
+    def test_download_transcription_link(self, admin_client, document, typed_texts):
+        edition = Footnote.objects.create(
+            content_object=document,
+            source=typed_texts,
+            doc_relation=Footnote.EDITION,
+            content={
+                "html": "some transcription text",
+                "text": "some transcription text",
+            },
+        )
+        response = admin_client.get(document.get_absolute_url())
+        # typed text fixture authored by Goitein
         assertContains(response, "Download Goitein's edition")
         assertContains(
             response,
@@ -160,7 +176,7 @@ class TestDocumentDetailTemplate:
         )
 
     def test_download_transcription_link_two_authors(
-        self, client, document, twoauthor_source
+        self, admin_client, document, twoauthor_source
     ):
         edition = Footnote.objects.create(
             content_object=document,
@@ -171,11 +187,11 @@ class TestDocumentDetailTemplate:
                 "text": "some transcription text",
             },
         )
-        response = client.get(document.get_absolute_url())
+        response = admin_client.get(document.get_absolute_url())
         assertContains(response, "Download Kernighan and Ritchie's edition")
 
     def test_download_transcription_link_many_authors(
-        self, client, document, multiauthor_untitledsource
+        self, admin_client, document, multiauthor_untitledsource
     ):
         edition = Footnote.objects.create(
             content_object=document,
@@ -186,7 +202,7 @@ class TestDocumentDetailTemplate:
                 "text": "some transcription text",
             },
         )
-        response = client.get(document.get_absolute_url())
+        response = admin_client.get(document.get_absolute_url())
         assertContains(
             response, "Download Khan, el-Leithy, Rustow and Vanthieghem's edition"
         )
