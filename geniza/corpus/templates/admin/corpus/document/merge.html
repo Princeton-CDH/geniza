@@ -17,40 +17,13 @@
 {% endblock %}
 
 {% block content %}
-    <form method="post" style="padding-top: 2em;">
-        {% csrf_token %} {% if form.errors %}
-            <p class="errornote">Please correct the error{{ form.errors|pluralize}} below.</p>
-            <ul class="errorlist">{% for error in form.non_field_errors %}
-                <li>{{ error }}</li>{% endfor %}
-            </ul>
-        {% endif %}
-        <fieldset class="module">
-            <div class="form-row">
-                <div>
-                    <strong>{{ form.primary_document.label_tag }}</strong>
-                    <p>{{ form.primary_document.help_text }}</p>
-                </div>
-                <div>
-                    {{ form.primary_document.errors }}
-                    {{ form.primary_document }}
-                </div>
-            </div>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
 
-            <div class="form-row">
-                <div>
-                    <strong>{{ form.rationale.label_tag }}</strong>
-                    <p>{{ form.rationale.help_text }}</p>
-                </div>
-                <div>
-                    {{ form.rationale.errors }}
-                    {{ form.rationale }}
-                </div>
-            </div>
-
-            <div class="form-row">
-                <input type="submit" value="Submit">
-            </div>
-        </fieldset>
+        <div>
+            <input type="submit" value="Submit">
+        </div>
     </form>
 
 {% endblock %}
