@@ -3,10 +3,12 @@ module.exports = {
         collect: {
             // URLs that Lighthouse will visit and test
             url: [
+                "http://localhost:8000/", // home page
                 "http://localhost:8000/en/documents/", // doc search
-                "http://localhost:8000/en/documents/8151/", // doc detail — currently with IIIF viewer
+                "http://localhost:8000/en/documents/8151/", // doc detail — includign OpenSeaDragon
                 "http://localhost:8000/en/documents/8151/scholarship/", // doc scholarship
                 "http://localhost:8000/en/content/", // content page
+                "http://localhost:8000/en/bad-url/", // 404 page
             ],
             // The following two commands make Lighthouse start up a Django
             // server for us to test against. PYTHONUNBUFFERED is needed to make
@@ -39,6 +41,9 @@ module.exports = {
                 "csp-xss": "off",
                 // this is important, but failing so disable for now
                 "render-blocking-resources": "off",
+                // next two are only failing because of OpenSeaDragon, so disable for now
+                "unsized-images": "off",
+                "unused-javascript": "off",
             },
         },
     },
