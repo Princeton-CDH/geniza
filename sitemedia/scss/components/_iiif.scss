@@ -76,8 +76,10 @@
         h1,
         h2 {
             @include typography.headline-3;
-            text-align: left;
             direction: ltr;
+        }
+        h1 {
+            text-align: left;
         }
         li {
             & + li {
