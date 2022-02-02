@@ -21,7 +21,7 @@
     {% endif %}
     {% if document.has_transcription %}
         <div class="transcription">
-            <h3>{% translate 'Transcription' %}</h3>
+            <h2>{% translate 'Transcription' %}</h2>
             {{ document.digital_editions.0.content.html|safe }}
         </div>
     {% endif %}

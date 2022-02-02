@@ -73,7 +73,8 @@
         * {
             max-width: 100%;
         }
-        h1 {
+        h1,
+        h2 {
             @include typography.headline-3;
             text-align: left;
             direction: ltr;
