@@ -1,7 +1,25 @@
 {# template snippet for displaying document label on a form #}
 {# used on person merge form to provide enough information to merge accurately #}
 <div class="merge-document-label">
-    <strong>{{ document }}</strong>
-    <p>&&& Add other relevant document info &&&</p>
+    <strong><a target="_blank" href="{% url 'admin:corpus_document_change' document.id %}">{{ document }}</a></strong>
     <p>PGPID {{ document.id }}</p>
+    {% if document.description %}
+        <p>
+            <dt>Description</dt>
+            <dd>{{ document.description }}</dd>
+        </p>
+    {% endif %}
+
+    {% if document.footnotes.count %}<strong>Footnotes</strong>{% endif %}
+    <ul>
+        {% for footnote in document.footnotes.all %}
+            <li><a target="_blank" href="{% url 'admin:footnotes_footnote_change' footnote.id %}">{{ footnote }}</a>
+                {% if footnote.source %}<dt>Source</dt>
+                    <dd>{{ footnote.source }}</dd>{% endif %}
+                {% if footnote.url %}<dt>URL</dt>
+                    <dd><a target="_blank" href="{{ footnote.url }}">{{ footnote.url }}</a></dd>{% endif %}
+            </li>
+
+        {% endfor %}
+    </ul>
 </div>
