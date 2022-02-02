@@ -735,7 +735,7 @@ class Document(ModelIndexable):
         # if user is not specified, log entry will be associated with
         # script and document will be flagged for review
         script = False
-        if user is None or user.is_anonymous:
+        if user is None:
             user = User.objects.get(username=settings.SCRIPT_USERNAME)
             script = True
 
