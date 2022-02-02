@@ -4,6 +4,7 @@ from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
 from django.utils import html
 from django.utils.html import strip_tags
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager
@@ -188,15 +189,12 @@ class Source(models.Model):
             # otherwise, just leave unformatted
             else:
                 work_title = self.title + ltr_mark
-        elif self.source_type and (
-            extra_fields or not author or self.source_type.type == "Unpublished"
-        ):
-            # Use type as descriptive title when no title available, per CMS
-            # Only when extra_fields enabled, or there is no author, or "unpublished" should appear
-            # in brief citation
-            work_title = (
-                self.source_type.type if not author else self.source_type.type.lower()
-            )
+        elif extra_fields or not author:
+            # Use [no title] as placeholder title when no title available;
+            # only when extra_fields enabled, or there is no author
+
+            # Translators: Placeholder for when a work has no title available
+            work_title = gettext("[no title]")
 
         # Wrap title in link to URL
         if self.url and work_title:
@@ -327,7 +325,7 @@ class Source(models.Model):
         #   L. B. Yarbrough (in Hebrew)             (no comma)
         #   Author (1964)                           (no comma)
         #   Author, Journal 6 (1964)                (comma)
-        #   Author, unpublished                     (comma)
+        #   Author, [no title]                      (comma)
         use_comma = (
             extra_fields
             or self.title
