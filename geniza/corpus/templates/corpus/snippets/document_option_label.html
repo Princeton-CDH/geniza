@@ -15,17 +15,31 @@
         <dd>{{ document.needs_review }}</dd>
     </dl>
 
-
     {% if document.footnotes.count %}<h3>Scholarship Records</h3>{% endif %}
-    <ul>
-        {% for footnote in document.footnotes.all %}
-            <li><a target="_blank" href="{% url 'admin:footnotes_footnote_change' footnote.id %}">{{ footnote }}</a>
-                {% if footnote.source %}<dt>Source</dt>
-                    <dd>{{ footnote.source }}</dd>{% endif %}
-                {% if footnote.url %}<dt>URL</dt>
-                    <dd><a target="_blank" href="{{ footnote.url }}">{{ footnote.url }}</a></dd>{% endif %}
+    <ol>
+        {% regroup document.footnotes.all by source as source_list %}
+        {% for source in source_list %}
+            <li class="citation">
+                <dl>
+                    <dt class="sr-only">Bibliographic citation</dt>
+                    <dd>
+                        {{ source.grouper.formatted_display|safe }}
+                        {% if source.grouper.source_type.type == "Unpublished" %}
+                            <div class="unpublished">unpublished</div>
+                        {% endif %}
+                    </dd>
+                    <dt class="relation">
+                        <ul>
+                            {% for fn in source.list %}
+                                {% include "corpus/snippets/footnote_location.html" %}
+                            {% endfor %}
+                        </ul>
+                    </dt>
+                    <dd class="relation">
+                        {{ source.list.0.doc_relation }}
+                    </dd>
+                </dl>
             </li>
-
         {% endfor %}
-    </ul>
+    </ol>
 </div>
