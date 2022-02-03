@@ -81,8 +81,10 @@ body#document {
             li {
                 // spacing between tags
                 margin-right: 0;
+                min-width: 48px;
                 & + li {
                     margin-left: 0.5rem;
+                    padding-top: 24px;
                 }
                 @include typography.meta;
             }

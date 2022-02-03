@@ -365,7 +365,7 @@ class TestDocumentTabsSnippet:
         # disabled (not yet implemented) for MVP
         assertContains(
             response,
-            "<li class='disabled'><span>External Links</span></li>",
+            "<li><span disabled aria-disabled='true'>External Links</span></li>",
             html=True,
         )
 

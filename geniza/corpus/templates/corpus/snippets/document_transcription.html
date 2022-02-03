@@ -21,7 +21,7 @@
     {% endif %}
     {% if document.has_transcription %}
         <div class="transcription{% if not document.has_image %} no-image{% endif %}">
-            <h3>{% translate 'Transcription' %}</h3>
+            <h2>{% translate 'Transcription' %}</h2>
             {% if document.digital_editions|length > 1 %}
                 {# when there are multiple editions, use disclosure element #}
                 {% for edition in document.digital_editions %}
