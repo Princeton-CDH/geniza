@@ -2,11 +2,19 @@
 {# used on document merge form to provide enough information to merge accurately #}
 <div class="merge-document-label">
     <h2><a target="_blank" href="{% url 'admin:corpus_document_change' document.id %}">{{ document }}</a></h2>
-    <p>PGPID {{ document.id }}</p>
-    <p>
+    <dl>
         <dt>Description</dt>
         <dd>{{ document.description }}</dd>
-    </p>
+        <dt>Languages</dt>
+        <dd>{{ document.all_languages }}</dd>
+        <dt>Tags</dt>
+        <dd>{{ document.all_tags }}</dd>
+        <dt>Notes</dt>
+        <dd>{{ document.notes }}</dd>
+        <dt>Needs Review</dt>
+        <dd>{{ document.needs_review }}</dd>
+    </dl>
+
 
     {% if document.footnotes.count %}<h3>Scholarship Records</h3>{% endif %}
     <ul>
