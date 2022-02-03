@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-01-26 12:42-0500\n"
+"POT-Creation-Date: 2022-02-02 12:54-0500\n"
 "PO-Revision-Date: 2022-01-12 17:31\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -57,8 +57,29 @@ msgstr "סוג המסמך"
 msgid "Relevance sort is not available without a keyword search term."
 msgstr ""
 
+#: geniza/corpus/models.py:630
+msgid "Princeton Geniza Project"
+msgstr "פרוייקט הגניזה של פרינסטון"
+
+#. Translators: attribution for local IIIF manifests
+#: geniza/corpus/models.py:632
+#, python-format
+msgid "Compilation by %(pgp)s."
+msgstr "קובץ על-ידי %(pgp)s."
+
+#. Translators: attribution for local IIIF manifests that include transcription
+#: geniza/corpus/models.py:635
+#, python-format
+msgid "Compilation and transcription by %(pgp)s."
+msgstr "קובץ ותועתק על-ידי %(pgp)s."
+
+#. Translators: manifest attribution note that content from other institutions may have restrictions
+#: geniza/corpus/models.py:637
+msgid "Additional restrictions may apply."
+msgstr "קיימות מגבלות נוספות."
+
 #. Translators: Default label when document does not have a type
-#: geniza/corpus/models.py:629
+#: geniza/corpus/models.py:687
 #: geniza/corpus/templates/corpus/snippets/document_header.html:17
 msgid "Unknown type"
 msgstr "סוג לא ידוע"
@@ -139,6 +160,23 @@ msgstr "ציטוט"
 msgid "unpublished"
 msgstr "לא פורסם"
 
+#. Translators: label for included document relations for a single footnote
+#: geniza/corpus/templates/corpus/document_scholarship.html:32
+msgid "includes"
+msgstr "כלול"
+
+#. Translators: label for document relations in list of footnotes
+#: geniza/corpus/templates/corpus/document_scholarship.html:35
+#, python-format
+msgid "for %(relation)s see"
+msgstr ""
+
+#. Translators: label for document relations for one footnote with no location or URL
+#: geniza/corpus/templates/corpus/document_scholarship.html:40
+#, python-format
+msgid "includes %(relation)s"
+msgstr ""
+
 #. Translators: Document edit link for admins
 #: geniza/corpus/templates/corpus/snippets/document_header.html:9
 msgid "Edit"
@@ -182,7 +220,11 @@ msgstr[3] "%(counter)s דיונים"
 msgid "No Scholarship Records"
 msgstr "אין רשומות קשורות"
 
-#: geniza/corpus/templates/corpus/snippets/document_result.html:104
+#: geniza/corpus/templates/corpus/snippets/document_result.html:99
+msgid "more"
+msgstr ""
+
+#: geniza/corpus/templates/corpus/snippets/document_result.html:107
 msgid "View document details"
 msgstr "הצגת פרטי מסמך"
 
@@ -211,27 +253,24 @@ msgstr "קישורים חיצוניים"
 msgid "External Links (%(n_links)s)"
 msgstr "קישורים חיצוניים (%(n_links)s)"
 
-#. Translators: label for footnote location within source (with url)
-#: geniza/corpus/templates/corpus/snippets/footnote_location.html:7
-#, python-format
-msgid "see <a href=\"%(url)s\">%(location)s</a> for"
-msgstr ""
+#. Translators: accessibility label for document images and transcription section
+#: geniza/corpus/templates/corpus/snippets/document_transcription.html:5
+#, fuzzy
+#| msgid "1 Transcription"
+#| msgid_plural "%(counter)s Transcriptions"
+msgid "Images and transcription"
+msgstr "תעתוק אחד"
 
-#. Translators: label for footnote location within source
-#: geniza/corpus/templates/corpus/snippets/footnote_location.html:16
-#, python-format
-msgid "see %(location)s for"
-msgstr ""
+#: geniza/corpus/templates/corpus/snippets/document_transcription.html:24
+#, fuzzy
+#| msgid "1 Transcription"
+#| msgid_plural "%(counter)s Transcriptions"
+msgid "Transcription"
+msgstr "תעתוק אחד"
 
-#. Translators: label for included document relations for a footnote
-#: geniza/corpus/templates/corpus/snippets/footnote_location.html:25
-#: geniza/corpus/templates/corpus/snippets/footnote_location.html:32
-msgid "includes"
-msgstr "כלול"
-
-#. Translators: label for a link in a list of footnote links
-#: geniza/corpus/templates/corpus/snippets/footnote_location.html:28
-msgid "footnote"
+#. Translators: label for a link to a resource with no named location
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:10
+msgid "online resource"
 msgstr ""
 
 #. Translators: Label for "previous page" button in search results
@@ -253,22 +292,22 @@ msgid "Next"
 msgstr ""
 
 #. Translators: title of document search page
-#: geniza/corpus/views.py:30
+#: geniza/corpus/views.py:31
 msgid "Search Documents"
 msgstr "חיפוש מסמכים"
 
 #. Translators: description of document search page, for search engines
-#: geniza/corpus/views.py:32
+#: geniza/corpus/views.py:33
 msgid "Search and browse Geniza documents."
 msgstr "חיפוש וצפיה במסמכי הגניזה."
 
 #. Translators: title of document scholarship page
-#: geniza/corpus/views.py:223
+#: geniza/corpus/views.py:227
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "רשומה קשורה ל-%(doc)s"
 
-#: geniza/corpus/views.py:230
+#: geniza/corpus/views.py:234
 #, python-format
 msgid "%(count)d scholarship record for %(doc)s"
 msgid_plural "%(count)d scholarship records for %(doc)s"
@@ -277,35 +316,20 @@ msgstr[1] "%(count)d רשומות קשורות ל %(doc)s"
 msgstr[2] "%(count)d רשומות קשורות ל %(doc)s"
 msgstr[3] "%(count)d רשומות קשורות ל %(doc)s"
 
-#. Translators: attribution for local IIIF manifests
-#: geniza/corpus/views.py:355
-msgid "Princeton Geniza Project"
-msgstr "פרוייקט הגניזה של פרינסטון"
+#. Translators: Placeholder for when a work has no title available
+#: geniza/footnotes/models.py:197
+msgid "[no title]"
+msgstr ""
 
-#: geniza/corpus/views.py:356
-#, python-format
-msgid "Compilation by %(pgp)s."
-msgstr "קובץ על-ידי %(pgp)s."
-
-#: geniza/corpus/views.py:359
-#, python-format
-msgid "Compilation and transcription by %(pgp)s."
-msgstr "קובץ ותועתק על-ידי %(pgp)s."
-
-#. Translators: manifest attribution note that content from other institutions may have restrictions
-#: geniza/corpus/views.py:361
-msgid "Additional restrictions may apply."
-msgstr "קיימות מגבלות נוספות."
-
-#: geniza/footnotes/models.py:394
+#: geniza/footnotes/models.py:403
 msgid "Edition"
 msgstr "מהדורה"
 
-#: geniza/footnotes/models.py:395
+#: geniza/footnotes/models.py:404
 msgid "Translation"
 msgstr "תרגום"
 
-#: geniza/footnotes/models.py:396
+#: geniza/footnotes/models.py:405
 msgid "Discussion"
 msgstr "דיון"
 

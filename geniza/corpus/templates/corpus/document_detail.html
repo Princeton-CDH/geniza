@@ -79,8 +79,9 @@
             </h3>
             <p>{{ document.description }}</p>
         </section>
-        {# link to download transcription if available #}
-        {% if document.has_transcription %}
+
+        {# link to download transcription if available; admin only for now since plain-text bidi is not great #}
+        {% if document.has_transcription and user.is_authenticated %}
             <section class="transcription-link">
                 {% for ed in document.digital_editions %}
                     {% if ed.content.text %}

@@ -44,9 +44,8 @@
             margin-bottom: spacing.$spacing-2xs;
             @include typography.meta;
         }
-        // Indentation for footnote relation when more than one present
-        li.location:not(:first-child) {
-            margin-left: spacing.$spacing-lg;
+        li.location {
+            word-break: break-all;
         }
     }
     div.unpublished {

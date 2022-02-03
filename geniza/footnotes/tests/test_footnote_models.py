@@ -55,12 +55,12 @@ class TestSource:
             ordinal(twoauthor_source.edition),
         )
 
-        # four authors, no title, unpublished
+        # four authors, no title
         lastnames = [
             a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
         ]
-        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s, %s." % (
-            tuple(lastnames) + (multiauthor_untitledsource.source_type.type.lower(),)
+        assert str(multiauthor_untitledsource) == "%s, %s, %s and %s." % tuple(
+            lastnames
         )
 
     @pytest.mark.django_db
@@ -180,6 +180,16 @@ class TestSource:
             phd_dissertation.place_published
             and phd_dissertation.place_published
             not in phd_dissertation.formatted_display()
+        )
+
+    def test_formatted_no_title(self, multiauthor_untitledsource):
+        # should include [no title]
+        lastnames = [
+            a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
+        ]
+        assert (
+            multiauthor_untitledsource.formatted_display()
+            == "%s, %s, %s and %s, [no title]." % tuple(lastnames)
         )
 
     def test_get_volume_from_shelfmark(self):

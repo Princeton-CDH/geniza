@@ -28,6 +28,11 @@ class GenizaTei(teimap.Tei):
     source = xmlmap.NodeListField(
         "tei:teiHeader//tei:sourceDesc/tei:msDesc/tei:msContents/tei:p", GenizaTeiLine
     )
+    # for documents with more than one transcription, authors have been
+    # tagged with last name in n attribute to allow identifying/differentiating
+    source_authors = xmlmap.StringListField(
+        "tei:teiHeader//tei:sourceDesc//tei:author/@n"
+    )
 
     def no_content(self):
         return str(self.text).strip() == ""
@@ -59,7 +64,7 @@ class GenizaTei(teimap.Tei):
             elif line.name == "l":
                 # use language codes? unreliable in the xml
                 # append tuple of line number, text
-                # TODO: test line with no attribute; currently resulting in label "None"
+                # return empty string for line number if no line attribute
                 lines.append((line.number or "", str(line)))
 
         # append the last block
@@ -80,7 +85,8 @@ class GenizaTei(teimap.Tei):
                 output.append(f" <h1>{block['label']}</h1>")
 
             text_lines = " <ul>%s</ul>" % "".join(
-                f"\n <li value='{line_number}'>{line}</li>"
+                "\n <li%s>%s</li>"
+                % (f" value='{line_number}'" if line_number else "", line)
                 for line_number, line in block["lines"]
                 if line.strip()
             )

@@ -138,7 +138,7 @@ class TestDocumentDetailTemplate:
             html=True,
         )
 
-    def test_download_transcription_link(self, client, document, typed_texts):
+    def test_download_transcription_link_anonymous(self, client, document, typed_texts):
         edition = Footnote.objects.create(
             content_object=document,
             source=typed_texts,
@@ -150,6 +150,22 @@ class TestDocumentDetailTemplate:
         )
         response = client.get(document.get_absolute_url())
         # typed text fixture authored by Goitein
+        # should not be available to anonymous users (suppressed for now)
+        assertNotContains(response, "Download Goitein's edition")
+
+    # NOTE: text download is limited to authenticated users for now
+    def test_download_transcription_link(self, admin_client, document, typed_texts):
+        edition = Footnote.objects.create(
+            content_object=document,
+            source=typed_texts,
+            doc_relation=Footnote.EDITION,
+            content={
+                "html": "some transcription text",
+                "text": "some transcription text",
+            },
+        )
+        response = admin_client.get(document.get_absolute_url())
+        # typed text fixture authored by Goitein
         assertContains(response, "Download Goitein's edition")
         assertContains(
             response,
@@ -160,7 +176,7 @@ class TestDocumentDetailTemplate:
         )
 
     def test_download_transcription_link_two_authors(
-        self, client, document, twoauthor_source
+        self, admin_client, document, twoauthor_source
     ):
         edition = Footnote.objects.create(
             content_object=document,
@@ -171,11 +187,11 @@ class TestDocumentDetailTemplate:
                 "text": "some transcription text",
             },
         )
-        response = client.get(document.get_absolute_url())
+        response = admin_client.get(document.get_absolute_url())
         assertContains(response, "Download Kernighan and Ritchie's edition")
 
     def test_download_transcription_link_many_authors(
-        self, client, document, multiauthor_untitledsource
+        self, admin_client, document, multiauthor_untitledsource
     ):
         edition = Footnote.objects.create(
             content_object=document,
@@ -186,7 +202,7 @@ class TestDocumentDetailTemplate:
                 "text": "some transcription text",
             },
         )
-        response = client.get(document.get_absolute_url())
+        response = admin_client.get(document.get_absolute_url())
         assertContains(
             response, "Download Khan, el-Leithy, Rustow and Vanthieghem's edition"
         )
@@ -245,7 +261,7 @@ class TestDocumentScholarshipTemplate:
             reverse("corpus:document-scholarship", args=[document.pk])
         )
         assertContains(
-            response, '<a href="https://example.com/">includes</a>', html=True
+            response, '<a href="https://example.com/">online resource</a>', html=True
         )
         fn.url = ""
         fn.save()
@@ -254,7 +270,7 @@ class TestDocumentScholarshipTemplate:
         )
         assertNotContains(response, '<a href="https://example.com/">')
 
-    def test_source_relation(self, client, document, source):
+    def test_source_relation(self, client, document, source, twoauthor_source):
         """Document scholarship template should show source relation to doc"""
         fn = Footnote.objects.create(
             content_object=document, source=source, doc_relation=Footnote.EDITION
@@ -262,14 +278,31 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertContains(response, '<dd class="relation">Edition</dd>', html=True)
-        fn.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
-        fn.save()
+        assertContains(
+            response, '<dt class="relation">includes Edition</dt>', html=True
+        )
+
+        fn2 = Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.EDITION,
+            location="p. 25",
+        )
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
+        assertContains(response, '<dt class="relation">for Edition see</dt>', html=True)
+
+        fn2.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
+        fn2.save()
+        response = client.get(
+            reverse("corpus:document-scholarship", args=[document.pk])
+        )
+        print(response.content)
         assertContains(
-            response, '<dd class="relation">Edition, Translation</dd>', html=True
+            response,
+            '<dt class="relation">for Edition, Translation see</dt>',
+            html=True,
         )
 
     def test_source_location(self, client, document, source):
