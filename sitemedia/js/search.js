@@ -1,4 +1,10 @@
-// Adds code to the sort menu details/summary to act more like a <select> in JS environments
+/*
+ * JS to improve search form functionality
+ */
+
+/*
+ * Script to make the sort menu details/summary act more like a <select> in JS environments
+ */
 
 const details = document.querySelector("details.sort-select");
 const summarySpan = details.querySelector("summary span");

@@ -1,5 +1,11 @@
 # Deploy Notes
 
+## 4.0
+
+-   Run `python manage.py index` to reindex all content to update scholarship records counts and shelfmark indexing
+-   Add all new fonts from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`
+
+
 ## 0.8
 
 -   In order to set up About menu structure, go into the Wagtail CMS admin. Create and publish a new Container Page as a child of the English home page ("The Princeton Geniza Project"), and give it a title "About" and slug "about".

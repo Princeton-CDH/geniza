@@ -157,3 +157,14 @@ class DocumentSearchForm(forms.Form):
             # for each facet, set the corresponding choice field
             if formfield in self.fields:
                 self.fields[formfield].populate_from_facets(facet_dict)
+
+    def clean(self):
+        """Validate form"""
+        cleaned_data = super().clean()
+        q = cleaned_data.get("q")
+        sort = cleaned_data.get("sort")
+        if sort == "relevance" and (not q or q == ""):
+            # Translators: Error message when relevance sort is selected without a search query
+            self.add_error(
+                "q", _("Relevance sort is not available without a keyword search term.")
+            )

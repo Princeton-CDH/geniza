@@ -1,0 +1,8 @@
+{% for shelfmark in document.certain_join_shelfmarks %}
+    <span>{{ shelfmark }}{% if not forloop.last %} + {% endif %}</span>
+{% empty %}
+    {# search results page uses list "shelfmark" instead of textblocK_set #}
+    {% for shelfmark in document.shelfmark %}
+        <span>{{ shelfmark }}{% if not forloop.last %} +&nbsp;{% endif %}</span>
+    {% endfor %}
+{% endfor %}

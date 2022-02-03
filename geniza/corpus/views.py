@@ -18,6 +18,7 @@ from geniza.corpus import iiif_utils
 from geniza.corpus.forms import DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
+from geniza.corpus.templatetags import corpus_extras
 from geniza.footnotes.models import Footnote
 
 
@@ -65,8 +66,15 @@ class DocumentSearchView(ListView, FormMixin):
         return kwargs
 
     def get_queryset(self):
-        # limit to documents with published status (i.e., no suppressed documents)
-        documents = DocumentSolrQuerySet().filter(status=Document.STATUS_PUBLIC)
+
+        # limit to documents with published status (i.e., no suppressed documents);
+        # get counts of facets, excluding type filter
+        documents = (
+            DocumentSolrQuerySet()
+            .filter(status=Document.PUBLIC_LABEL)
+            .facet_field("type", exclude="type", sort="value")
+        )
+
         form = self.get_form()
         # return empty queryset if not valid
         if not form.is_valid():
@@ -99,10 +107,8 @@ class DocumentSearchView(ListView, FormMixin):
                     .also("score")
                 )  # include relevance score in results
 
-            documents = documents.order_by(
-                self.solr_sort[search_opts["sort"]]
-            ).facet_field("type", exclude="type", sort="value")
-            # exclude type filter when generating counts
+            # order by sort option
+            documents = documents.order_by(self.solr_sort[search_opts["sort"]])
 
             # filter by type if specified
             if search_opts["doctype"]:
@@ -317,7 +323,11 @@ class DocumentManifestView(DocumentDetailView):
             # CUDL attribution has some variation in tags;
             # would be nice to preserve tagged version,
             # for now, ignore tags so we can easily de-dupe
-            attributions.add(strip_tags(remote_manifest.attribution))
+            try:
+                attributions.add(strip_tags(remote_manifest.attribution))
+            except AttributeError:
+                # attribution is optional, so ignore if not present
+                pass
             for canvas in remote_manifest.sequences[0].canvases:
                 # do we want local canvas id, or rely on remote id?
                 local_canvas = dict(canvas)
@@ -348,21 +358,7 @@ class DocumentManifestView(DocumentDetailView):
         # (or at least, do not display in Mirador)
         # in 3.0 we can use multiple provider blocks, but no viewer supports it yet
 
-        extra_attrs = "\n".join("<p>%s</p>" % attr for attr in attributions)
-        # Translators: attribution for local IIIF manifests
-        pgp = _("Princeton Geniza Project")
-        attribution = _("Compilation by %(pgp)s." % {"pgp": pgp})
-        # Translators: attribution for local IIIF manifests that include transcription
-        if document.has_transcription():
-            attribution = _("Compilation and transcription by %(pgp)s." % {"pgp": pgp})
-        # Translators: manifest attribution note that content from other institutions may have restrictions
-        additional_restrictions = _("Additional restrictions may apply.")
-
-        manifest.attribution = """<div><p>%s</p><p>%s</p>%s</div>""" % (
-            attribution,
-            additional_restrictions,
-            extra_attrs,
-        )
+        manifest.attribution = corpus_extras.format_attribution(document.attribution())
 
         # if transcription is available, add an annotation list to first canvas
         if document.has_transcription():

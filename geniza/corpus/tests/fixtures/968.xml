@@ -15,7 +15,7 @@
                         <msName/>
                     </msIdentifier>
                     <msContents>
-                        <p>TS 13 J 15, fol. 5, ed. Gil, Palestine, III, pp. 293-295 (Doc. #514),</p>
+                        <p>TS 13 J 15, fol. 5, ed. <bibl><author n="Gil">Gil</author>, Palestine, III, pp. 293-295 (Doc. #514)</bibl>,</p>
                         <p>C.T., 6-9-86, (P)</p>
                     </msContents>
                 </msDesc>
@@ -66,8 +66,8 @@
 
                 <l n="5">אלשיך ביע </l>
                 <l n="6">צרוף אלורד </l>
-                <l n="7"> אול פי אול </l>
-                <l n="8"> לאלא תגסם </l>
+                <l n=""> אול פי אול </l>
+                <l> לאלא תגסם </l>
 
                 <label>Recto </label>
                 <label># </label>

@@ -282,7 +282,7 @@
             }
         }
         &[open] summary {
-            @include box-shadow(var(--on-background-25));
+            @include box-shadow(var(--on-background-125));
             // Expanded details marker
             &::after {
                 transform: rotate(-180deg);
@@ -352,5 +352,13 @@
                 }
             }
         }
+    }
+}
+// error messages
+#search main form ul#search-errors {
+    margin-top: spacing.$spacing-md;
+    color: red;
+    li {
+        @include typography.meta;
     }
 }

@@ -2,6 +2,7 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pytest
+from attrdict import AttrDict
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
@@ -9,6 +10,13 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.timezone import get_current_timezone, make_aware
 
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
+from geniza.footnotes.models import (
+    Creator,
+    Footnote,
+    Source,
+    SourceLanguage,
+    SourceType,
+)
 
 
 @patch("geniza.corpus.models.ManifestImporter", Mock())
@@ -101,3 +109,47 @@ def document(db, fragment):
 @pytest.fixture
 def join(db, fragment, multifragment):
     return make_join(fragment, multifragment)
+
+
+@pytest.fixture
+def footnote(db, source, document):
+    return Footnote.objects.create(
+        source=source,
+        content_object=document,
+        location="p.1",
+        doc_relation=Footnote.EDITION,
+    )
+
+
+@pytest.fixture
+def iiif_dict():
+    return AttrDict(
+        {
+            "sequences": [
+                {
+                    "canvases": [
+                        {
+                            "images": [
+                                {
+                                    "resource": {
+                                        "id": "http://example.co/iiif/ts-1/00001",
+                                    }
+                                }
+                            ],
+                            "label": "1r",
+                        },
+                        {
+                            "images": [
+                                {
+                                    "resource": {
+                                        "id": "http://example.co/iiif/ts-1/00002",
+                                    }
+                                }
+                            ],
+                            "label": "1v",
+                        },
+                    ]
+                }
+            ]
+        }
+    )

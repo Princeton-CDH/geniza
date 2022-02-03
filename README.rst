@@ -3,7 +3,7 @@ Princeton Geniza Project
 
 
 
-Python/Django web application for a new version of the `Princeton Geniza Project
+Python/Django web application for a version 4.x of the `Princeton Geniza Project
 <https://cdh.princeton.edu/projects/princeton-geniza-project/>`_.
 
 Python 3.8 / Django 3.2 / Node 12 / Postgresql / Solr 8.6
@@ -180,4 +180,4 @@ Or configure your git to always ignore the black revision commit:
 
 License
 -------
-This project is licensed under the `Apache 2.0 License <https://github.com/Princeton-CDH/mep-django/blob/main/LICENSE>`_.
+This software is licensed under the `Apache 2.0 License <https://github.com/Princeton-CDH/mep-django/blob/main/LICENSE>`_.

@@ -1,0 +1,80 @@
+{% load i18n static wagtailcore_tags %}
+
+{# Translators: accessibility text label for footer site navigation #}
+{% translate "footer navigation" as footer_nav_label %}
+<nav id="footer-nav">
+    <ul role="menu">
+        <li class="menu-item" role="none">
+            {% if not skip_nav %}
+                {% pageurl site.root_page.localized as root_url %}
+            {% endif %}
+            {# Translators: label for 'home' link in footer navigation #}
+            <a href="{{ root_url|default:"/" }}" role="menuitem"{% if not skip_nav and request.path == root_url %} aria-current="page"{% endif %}>{% translate "Home" %}</a>
+        </li>
+        {% include "snippets/menu.html" %}
+    </ul>
+</nav>
+
+{# Translators: label for Twitter links in footer #}
+{% translate 'Twitter' as twitter_text %}
+{# Translators: label for Instagram links in footer #}
+{% translate 'Instagram' as instagram_text %}
+
+<ul id="footer-links">
+    <li>
+        {# Translators: accessibility label for Princeton Geniza Lab homepage, for footer #}
+        <a class="logo" href="https://genizalab.princeton.edu/" aria-label="{% translate 'Princeton Geniza Lab homepage' %}">
+            <svg id="pgl-logo">
+                <use href="{% static 'img/logos/pgl-logo.svg' %}#pgl-logo" />
+            </svg>
+        </a>
+        <ul class="social">
+            <li>
+                <a class="twitter" href="https://twitter.com/GenizaLab">{{ twitter_text }}</a>
+            </li>
+        </ul>
+    </li>
+    <li>
+        {# Translators: accessibility label for Princeton CDH homepage, for footer #}
+        <a class="logo" href="https://cdh.princeton.edu/" aria-label="{% translate 'Princeton Center for Digital Humanities homepage' %}">
+            <svg id="cdh-logo">
+                <use href="{% static 'img/logos/cdh-logo.svg' %}#cdh-logo" />
+            </svg>
+        </a>
+        <ul class="social">
+            <li>
+                <a class="twitter" href="https://twitter.com/PrincetonDH">{{ twitter_text }}</a>
+            </li>
+            <li>
+                <a class="instagram" href="https://www.instagram.com/princetoncdh/">{{ instagram_text }}</a>
+            </li>
+        </ul>
+    </li>
+</ul>
+<ul id="legal">
+    <li>
+        <a href="https://accessibility.princeton.edu/help" id="accessibility">
+            {# Translators: link label for Princeton accessibility assistance page, for footer #}
+            {% translate 'Accessibility' %}
+        </a>
+    </li>
+    <li id="copyright">
+        {# Translators: official name of Princeton University's board of trustees, for footer #}
+        <span>{% now 'Y' %} {% translate 'The Trustees of Princeton University' %}</span>
+    </li>
+    <li id="license">
+        {# Translators: Creative Commons license text, for footer #}
+        {% translate 'Creative Commons CC-BY license' as license_text %}
+        <a href="https://creativecommons.org/licenses/by/2.0/" aria-label="{{ license_text }}">
+            <img src="{% static 'img/icons/license-icon.svg' %}" width="32" height="16" alt="{{ license_text }}" />
+        </a>
+    </li>
+    <li>
+        {# Translators: official name of Princeton University, for footer #}
+        <a href="https://princeton.edu/" aria-label="{% translate 'Princeton University homepage' %}">
+            <svg id="princeton-logo">
+                <use href="{% static 'img/logos/princeton-logo.svg' %}#princeton-logo" />
+            </svg>
+        </a>
+    </li>
+</ul>

@@ -1,0 +1,12 @@
+{% load i18n %}
+
+<li class="location">
+    {% if fn.location and fn.url %}
+        <a href="{{ fn.url }}">{{ fn.location }}</a>
+    {% elif fn.location %}
+        {{ fn.location }}
+    {% elif fn.url %}
+        {# Translators: label for a link to a resource with no named location #}
+        <a href="{{ fn.url }}">{% translate "online resource" %}</a>
+    {% endif %}
+</li>

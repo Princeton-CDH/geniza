@@ -1,0 +1,274 @@
+// -----------------------------------------------------------------------------
+// Site footer that appears on every page.
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/spacing";
+@use "../base/typography";
+
+// Mixin used for icons to the left of text (span or link)
+@mixin icon-and-text {
+    a::before,
+    span::before {
+        @include typography.icon-button-md;
+        font-family: "Phosphor" !important;
+        margin: 0 0.2rem 0 0;
+        vertical-align: middle;
+    }
+}
+
+footer {
+    * {
+        max-width: 100%;
+    }
+    @include typography.meta;
+    text-align: center;
+
+    // footer desktop
+    @include breakpoints.for-tablet-landscape-up {
+        position: relative;
+        margin-top: spacing.$spacing-2xl;
+        padding-top: spacing.$spacing-3xl;
+        display: grid;
+        grid-template-areas:
+            "nav links"
+            "legal legal";
+        flex-flow: row wrap;
+        justify-content: space-between;
+    }
+
+    // footer site navigation (mobile)
+    nav#footer-nav {
+        margin: 25% 17.5% 0; // Use percentages to scale with background
+        text-align: left;
+        ul {
+            display: grid;
+            grid-template-rows: repeat(3, auto);
+            grid-auto-flow: column dense;
+            grid-auto-columns: 1fr 1fr;
+            a {
+                text-decoration: none;
+                &[aria-current="page"] {
+                    @include typography.nav-bold;
+                }
+            }
+            li {
+                margin-bottom: 0.5rem;
+            }
+            li.has-submenu {
+                grid-row-end: span 20; // Hack to get tight grid
+                ul {
+                    display: flex;
+                    flex-flow: column;
+                    li.menu-item {
+                        margin-left: 1rem;
+                    }
+                }
+            }
+        }
+        // footer site navigation (desktop)
+        @include breakpoints.for-tablet-landscape-up {
+            margin: 0 0 spacing.$spacing-md spacing.$spacing-3xl;
+        }
+    }
+
+    // footer links to PGL, CDH
+    ul#footer-links {
+        & > li {
+            margin-top: 1.5rem;
+        }
+        svg {
+            fill: var(--logo);
+            &#pgl-logo {
+                width: 177px;
+                height: 85px;
+            }
+            &#cdh-logo {
+                width: 108px;
+                height: 80px;
+            }
+        }
+
+        // social links
+        ul.social li {
+            @include icon-and-text;
+            a.twitter::before {
+                content: "\f341"; // phosphor twitter-logo icon
+            }
+            a.instagram::before {
+                content: "\f1e1"; // phosphor instagram-logo icon
+            }
+            @include breakpoints.for-tablet-landscape-up {
+                text-align: right;
+            }
+        }
+        // footer links (desktop)
+        @include breakpoints.for-tablet-landscape-up {
+            & > li {
+                margin: spacing.$spacing-md spacing.$spacing-lg 0 0;
+            }
+            display: flex;
+            a.logo {
+                display: flex;
+                align-items: center;
+                height: 90px;
+                margin-bottom: spacing.$spacing-md;
+            }
+        }
+    }
+
+    // Legal and accessibility matters list
+    ul#legal {
+        padding-top: spacing.$spacing-lg;
+        margin: spacing.$spacing-md spacing.$spacing-xs;
+        border-top: 1px solid var(--on-background);
+        @include breakpoints.for-tablet-landscape-up {
+            margin: 0 spacing.$spacing-md;
+            padding-top: 0;
+            grid-area: legal;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            li {
+                flex: 1 0 auto;
+                // accessibility link li
+                &:first-child {
+                    text-align: left;
+                    padding-left: spacing.$spacing-3xl;
+                    margin-left: -#{spacing.$spacing-md};
+                }
+                // Princeton logo li
+                &:last-child {
+                    text-align: right;
+                    padding-right: spacing.$spacing-3xl;
+                    margin-right: -#{spacing.$spacing-md};
+                }
+            }
+        }
+
+        // accessibility assistance link
+        a#accessibility {
+            text-decoration: underline;
+            text-decoration-thickness: 0.06rem;
+            text-decoration-color: var(--on-background);
+            text-decoration-skip-ink: none;
+            text-underline-offset: 0.375rem;
+        }
+
+        // copyright text
+        li#copyright {
+            margin: 1rem 0 0;
+            @include icon-and-text;
+            span::before {
+                content: "\f115"; // phosphor copyright icon
+            }
+            @include breakpoints.for-tablet-landscape-up {
+                margin: 0;
+                flex: 0 1 auto;
+            }
+        }
+
+        // CC-BY license icon
+        li#license {
+            margin: 0 0 0.5rem;
+            text-align: center;
+            img {
+                width: 2rem;
+            }
+            @include breakpoints.for-tablet-landscape-up {
+                margin: spacing.$spacing-2xs spacing.$spacing-sm 0;
+                flex: 0 1 auto;
+            }
+        }
+
+        // Princeton logo
+        svg#princeton-logo {
+            fill: var(--logo);
+            width: 185px;
+            height: 63px;
+        }
+    }
+}
+
+// Footer backgrounds for light and dark mode, mobile
+@mixin footer-background-mobile-dark {
+    background: url("/static/img/ui/mobile/dark/footer-gradient.svg") top,
+        url("/static/img/ui/mobile/dark/footer-image.png") top,
+        url("/static/img/ui/mobile/dark/footer-base.svg") top;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-size: 100% auto, 100% auto, 100% auto;
+}
+@mixin footer-background-mobile-light {
+    background: url("/static/img/ui/mobile/light/footer-gradient.svg") top,
+        url("/static/img/ui/mobile/light/footer-image.png") top,
+        url("/static/img/ui/mobile/light/footer-base.svg") top;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-size: 100% auto, 100% auto, 100% auto;
+}
+
+// Footer background extension for large screens
+@mixin before-footer-desktop {
+    position: absolute;
+    content: " ";
+    height: 100%;
+    display: block;
+    left: 0;
+    z-index: -1;
+}
+
+// Footer backgrounds for light and dark mode, desktop
+@mixin footer-background-desktop-dark {
+    background: url("/static/img/ui/desktop/dark/footer-gradient.svg") top right,
+        url("/static/img/ui/desktop/dark/footer-image.png") top right,
+        url("/static/img/ui/desktop/dark/footer-base.svg") top right;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    &:before {
+        @include before-footer-desktop;
+        background: url("/static/img/ui/desktop/dark/footer-filler.svg")
+            repeat-x;
+        right: 1980px;
+    }
+}
+@mixin footer-background-desktop-light {
+    background: url("/static/img/ui/desktop/light/footer-gradient.svg") top
+            right,
+        url("/static/img/ui/desktop/light/footer-image.png") top right,
+        url("/static/img/ui/desktop/light/footer-base.svg") top right;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    &:before {
+        @include before-footer-desktop;
+        background: url("/static/img/ui/desktop/light/footer-filler.svg")
+            repeat-x;
+        right: 1900px;
+    }
+}
+
+// Nav theme overrides for light mode
+@mixin light-footer {
+    @include footer-background-mobile-light;
+    @include breakpoints.for-tablet-landscape-up {
+        @include footer-background-desktop-light;
+    }
+}
+// Nav theme overrides for dark mode
+@mixin dark-footer {
+    @include footer-background-mobile-dark;
+    @include breakpoints.for-tablet-landscape-up {
+        @include footer-background-desktop-dark;
+    }
+}
+// Applying background image and gradient per system theme
+footer {
+    @include light-footer;
+    @media (prefers-color-scheme: dark) {
+        @include dark-footer;
+    }
+}
+
+// Manual (body-class based) theme overrides
+body.light-mode footer {
+    @include light-footer;
+}
+body.dark-mode footer {
+    @include dark-footer;
+}

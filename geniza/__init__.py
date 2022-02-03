@@ -1,4 +1,4 @@
-__version_info__ = (0, 8, 0, None)  # but 4.0 when we reach MVP!
+__version_info__ = (4, 0, 0, None)
 
 
 # Dot-connect all but the last. Last is dash-connected if not None.

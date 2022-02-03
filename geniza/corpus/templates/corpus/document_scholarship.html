@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n corpus_extras %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
@@ -11,7 +11,8 @@
     <div class="container">
         {% include "corpus/snippets/document_tabs.html" %}
         <ol>
-            {% for fn in document.footnotes.all %}
+            {% regroup document.footnotes.all by source as source_list %}
+            {% for source in source_list %}
                 {% spaceless %}
                     <li class="citation">
                         <dl>
@@ -20,33 +21,36 @@
                                 {% translate 'Bibliographic citation' %}
                             </dt>
                             <dd>
-                                {{ fn.source.formatted_display|safe }}
-                                {% if fn.source.source_type.type == "Unpublished" %}
+                                {{ source.grouper.formatted_display|safe }}
+                                {% if source.grouper.source_type.type == "Unpublished" %}
                                     {# Translators: label for an unpublished scholarship record #}
                                     <div class="unpublished">{% translate 'unpublished' %}</div>
                                 {% endif %}
                             </dd>
                             <dt class="relation">
-                                {% if fn.location and fn.url %}
-                                    {# Translators: label for footnote location within source (with url) #}
-                                    {% blocktranslate with location=fn.location url=fn.url trimmed %}
-                                        see <a href="{{ url }}">{{ location }}</a> for
-                                    {% endblocktranslate %}
-                                {% elif fn.location %}
-                                    {# Translators: label for footnote location within source #}
-                                    {% blocktranslate with location=fn.location trimmed %}
-                                        see {{ location }} for
-                                    {% endblocktranslate %}
-                                {% elif fn.url %}
-                                    {# Translators: label for included document relations for a footnote #}
-                                    <a href="{{ fn.url }}">{% translate 'includes' %}</a>
+                                {# Translators: label for included document relations for a single footnote #}
+                                {% translate "includes" as includes_text %}
+                                {% if source.list|length > 1 or source.list.0.location or source.list.0.url %}
+                                    {# Translators: label for document relations in list of footnotes #}
+                                    {% blocktranslate with relation=source.list.0.doc_relation trimmed %}
+                                        for {{ relation }} see
+                                    {% endblocktranslate%}
                                 {% else %}
-                                    {% translate 'includes' %}
+                                    {# Translators: label for document relations for one footnote with no location or URL #}
+                                    {% blocktranslate with relation=source.list.0.doc_relation trimmed %}
+                                        includes {{ relation }}
+                                    {% endblocktranslate%}
                                 {% endif %}
                             </dt>
-                            <dd class="relation">
-                                {{ fn.doc_relation }}
-                            </dd>
+                            {% if source.list|length > 1 or source.list.0.location or source.list.0.url %}
+                                <dd class="relation">
+                                    <ul>
+                                        {% for fn in source.list|natsort:"location" %}
+                                            {% include "corpus/snippets/footnote_location.html" %}
+                                        {% endfor %}
+                                    </ul>
+                                </dd>
+                            {% endif %}
                         </dl>
                     </li>
                 {% endspaceless %}

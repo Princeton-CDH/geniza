@@ -7,9 +7,13 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-.site-nav {
+header {
+    z-index: 2;
+}
+#site-nav {
     display: flex;
     flex-flow: row wrap;
+    z-index: 3;
     @include breakpoints.for-tablet-landscape-up {
         flex-flow: row nowrap;
         align-items: center;
@@ -85,7 +89,7 @@
         max-width: 100%;
         width: 100%;
         height: 100vh;
-        z-index: 2;
+        z-index: 6;
         // Direct descendent menu buttons (mobile)
         & > li.menu-button {
             display: flex;
@@ -137,6 +141,7 @@
             & > li.menu-item + li.menu-item {
                 margin-left: spacing.$spacing-sm;
             }
+            z-index: 4;
         }
         outline-color: var(--primary);
     }
@@ -405,49 +410,46 @@
 // Header backgrounds for light and dark mode, mobile
 @mixin header-background-mobile-dark {
     background: url("/static/img/ui/mobile/dark/header-base.svg"),
-        linear-gradient(
-            to right,
-            rgba(22, 22, 22, 0),
-            rgba(22, 22, 22, 0.95) 19rem,
-            colors.$black 20rem
-        ),
         url("/static/img/ui/mobile/dark/header-image.png");
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-repeat: no-repeat, no-repeat;
 }
 @mixin header-background-mobile-light {
     background: url("/static/img/ui/mobile/light/header-base.svg"),
-        linear-gradient(
-            to right,
-            rgba(255, 255, 255, 0),
-            rgba(255, 255, 255, 0.66) 19rem,
-            white 20rem
-        ),
         url("/static/img/ui/mobile/light/header-image.png");
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-repeat: no-repeat, no-repeat;
+}
+
+// Header background extension for large screens
+@mixin after-header-desktop {
+    position: absolute;
+    content: " ";
+    height: 188px;
+    display: block;
+    left: 1950px;
+    right: 0;
+    top: -1px;
 }
 
 // Header backgrounds for light and dark mode, desktop
 @mixin header-background-desktop-dark {
-    background: url("/static/img/ui/desktop/dark/header-base.svg"),
-        linear-gradient(
-            to right,
-            rgba(22, 22, 22, 0),
-            rgba(22, 22, 22, 0.9) 87rem,
-            colors.$black 90rem
-        ),
-        url("/static/img/ui/desktop/dark/header-image.png");
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background: url("/static/img/ui/desktop/dark/header-base.svg") top left -11px,
+        url("/static/img/ui/desktop/dark/header-image.png") top left -11px;
+    background-repeat: no-repeat, no-repeat;
+    &:after {
+        @include after-header-desktop;
+        background: url("/static/img/ui/desktop/dark/header-filler.svg")
+            repeat-x;
+    }
 }
 @mixin header-background-desktop-light {
-    background: url("/static/img/ui/desktop/light/header-base.svg"),
-        linear-gradient(
-            to right,
-            rgba(255, 255, 255, 0),
-            rgba(255, 255, 255, 0.75) 89rem,
-            white 90rem
-        ),
-        url("/static/img/ui/desktop/light/header-image.png");
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background: url("/static/img/ui/desktop/light/header-base.svg") top left -11px,
+        url("/static/img/ui/desktop/light/header-image.png") top left -11px;
+    background-repeat: no-repeat, no-repeat;
+    &:after {
+        @include after-header-desktop;
+        background: url("/static/img/ui/desktop/light/header-filler.svg")
+            repeat-x;
+    }
 }
 
 // Nav theme overrides for light mode
@@ -513,7 +515,7 @@
 }
 
 // Applying background image and gradient per system theme
-.site-nav {
+#site-nav {
     @include light-nav;
     @media (prefers-color-scheme: dark) {
         @include dark-nav;
@@ -521,9 +523,9 @@
 }
 
 // Manual (body-class based) theme overrides
-body.light-mode .site-nav {
+body.light-mode #site-nav {
     @include light-nav;
 }
-body.dark-mode .site-nav {
+body.dark-mode #site-nav {
     @include dark-nav;
 }

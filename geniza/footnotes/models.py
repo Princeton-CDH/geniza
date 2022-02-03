@@ -4,6 +4,7 @@ from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
 from django.utils import html
 from django.utils.html import strip_tags
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager
@@ -132,8 +133,14 @@ class Source(models.Model):
         ordering = ["title", "year"]
 
     def __str__(self):
-        """strip HTML tags and trailing period from formatted display"""
-        return strip_tags(self.formatted_display(extra_fields=False))[:-1]
+        """Method used for for internal/data admin use.
+        Please use the `display` or `formatted_display` methods for public display."""
+        # Append volume for unpublished (e.g. typed texts)
+        if self.source_type.type == "Unpublished" and self.volume:
+            return "%s (%s)" % (self.display(), self.volume)
+        # Otherwise return formatted display without html tags
+        else:
+            return self.display()
 
     def all_authors(self):
         """semi-colon delimited list of authors in order"""
@@ -182,15 +189,12 @@ class Source(models.Model):
             # otherwise, just leave unformatted
             else:
                 work_title = self.title + ltr_mark
-        elif self.source_type and (
-            extra_fields or not author or self.source_type.type == "Unpublished"
-        ):
-            # Use type as descriptive title when no title available, per CMS
-            # Only when extra_fields enabled, or there is no author, or "unpublished" should appear
-            # in brief citation
-            work_title = (
-                self.source_type.type if not author else self.source_type.type.lower()
-            )
+        elif extra_fields or not author:
+            # Use [digital geniza document edition] as placeholder title when no title available;
+            # only when extra_fields enabled, or there is no author
+
+            # Translators: Placeholder for when a work has no title available
+            work_title = gettext("[digital geniza document edition]")
 
         # Wrap title in link to URL
         if self.url and work_title:
@@ -321,7 +325,7 @@ class Source(models.Model):
         #   L. B. Yarbrough (in Hebrew)             (no comma)
         #   Author (1964)                           (no comma)
         #   Author, Journal 6 (1964)                (comma)
-        #   Author, unpublished                     (comma)
+        #   Author, [digital geniza document edition]                      (comma)
         use_comma = (
             extra_fields
             or self.title
@@ -330,10 +334,15 @@ class Source(models.Model):
         )
         delimiter = ", " if use_comma else " "
 
-        return delimiter.join([val for val in (author, ref) if val]) + "."
+        # rstrip to prevent double periods (e.g. in the case of trailing edition abbreviation)
+        return delimiter.join([val for val in (author, ref) if val]).rstrip(".") + "."
 
     all_authors.short_description = "Authors"
     all_authors.admin_order_field = "first_author"  # set in admin queryset
+
+    def display(self):
+        """strip HTML tags from formatted display"""
+        return strip_tags(self.formatted_display(extra_fields=False))
 
     @classmethod
     def get_volume_from_shelfmark(cls, shelfmark):
@@ -444,10 +453,7 @@ class Footnote(TrackChangesModel):
         # source, location. notes.
         # source. notes.
         # source, location.
-        parts = [str(self.source)]
-        if self.location:
-            parts.extend([", ", self.location])
-        parts.append(".")
+        parts = [self.source.display()]
         if self.notes:
             # uppercase first letter of notes if not capitalized
             notes = self.notes[0].upper() + self.notes[1:]

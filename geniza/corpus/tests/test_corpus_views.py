@@ -308,7 +308,22 @@ class TestDocumentSearchView:
             # filter called once to limit by status
             assert mock_sqs.filter.call_count == 1
             mock_sqs.filter.assert_called_with(status=Document.STATUS_PUBLIC)
-            mock_sqs.order_by.assert_called_with("-score")
+            # order_by should not be called when there is no search query
+            mock_sqs.order_by.assert_not_called()
+
+            # sort and keyword search params
+            mock_sqs.reset_mock()
+            docsearch_view.request = Mock()
+            docsearch_view.request.GET = {"q": "six apartments", "sort": "relevance"}
+            qs = docsearch_view.get_queryset()
+            mock_sqs = mock_queryset_cls.return_value
+            mock_sqs.keyword_search.assert_called_with("six apartments")
+            mock_sqs.keyword_search.return_value.also.return_value.order_by.return_value.filter.assert_called_with(
+                status=Document.STATUS_PUBLIC
+            )
+            mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
+                "-score"
+            )
 
             # keyword, sort, and doctype filter search params
             mock_sqs.reset_mock()
@@ -375,7 +390,15 @@ class TestDocumentSearchView:
             # NOTE: test paginator isn't initialized properly from queryset count
             # assert context_data["paginator"].count == 22
 
-    def test_scholarship_sort(self, document, join, empty_solr, source):
+    def test_scholarship_sort(
+        self,
+        document,
+        join,
+        empty_solr,
+        source,
+        twoauthor_source,
+        multiauthor_untitledsource,
+    ):
         """integration test for sorting by scholarship asc and desc"""
 
         Footnote.objects.create(
@@ -386,12 +409,13 @@ class TestDocumentSearchView:
         doc_three_records = Document.objects.create(
             description="testing description",
         )
-        for _ in range(3):
+        for src in [source, twoauthor_source, multiauthor_untitledsource]:
             Footnote.objects.create(
                 content_object=doc_three_records,
-                source=source,
+                source=src,
                 doc_relation=Footnote.EDITION,
             )
+
         # ensure solr index is updated with all three test documents
         SolrClient().update.index(
             [
@@ -508,6 +532,38 @@ class TestDocumentSearchView:
         ), "document with shelfmark in description returned second"
         # (document with similar shelfmark is third)
 
+    def test_shelfmark_partialmatch(self, empty_solr, multifragment):
+        # integration test for shelfmark indexing with partial matching
+        # - using empty solr fixture to ensure solr is empty when this test starts
+
+        # multifragment shelfmark can test for this problem: T-S 16.377
+        doc1 = Document.objects.create()
+        TextBlock.objects.create(document=doc1, fragment=multifragment)
+        # create an arbitrary fragment with similar numeric shelfmark
+        folder_fragment = Fragment.objects.create(shelfmark="T-S 16.378")
+        doc2 = Document.objects.create()
+        TextBlock.objects.create(document=doc2, fragment=folder_fragment)
+
+        # ensure solr index is updated with the two test documents
+        SolrClient().update.index(
+            [
+                doc1.index_data(),
+                doc2.index_data(),
+            ],
+            commit=True,
+        )
+
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # sort doesn't matter in this case
+        docsearch_view.request.GET = {"q": "T-S 16"}
+        qs = docsearch_view.get_queryset()
+        # should return both documents
+        assert qs.count() == 2
+        resulting_ids = [result["pgpid"] for result in qs]
+        assert doc1.id in resulting_ids
+        assert doc2.id in resulting_ids
+
 
 class TestDocumentScholarshipView:
     def test_page_title(self, document, client, source):
@@ -583,11 +639,18 @@ class TestDocumentScholarshipView:
 
 
 @patch("geniza.corpus.views.IIIFPresentation")
+@patch("geniza.corpus.models.IIIFPresentation")
 class TestDocumentManifestView:
     view_name = "corpus:document-manifest"
 
     def test_no_images_no_transcription(
-        self, mockiifpres, client, document, source, fragment
+        self,
+        mock_view_iiifpres,
+        mock_model_iiifpres,
+        client,
+        document,
+        source,
+        fragment,
     ):
         # fixture document fragment has iiif, so remove it to test
         fragment.iiif_url = ""
@@ -597,11 +660,19 @@ class TestDocumentManifestView:
         assert response.status_code == 404
 
     def test_images_no_transcription(
-        self, mockiifpres, client, document, source, fragment
+        self,
+        mock_view_iiifpres,
+        mock_model_iiifpres,
+        client,
+        document,
+        source,
+        fragment,
     ):
         # document fragment has iiif, but no transcription; should return a manifest
 
-        mock_manifest = mockiifpres.from_url.return_value
+        mock_manifest = (
+            mock_view_iiifpres.from_url.return_value
+        ) = mock_model_iiifpres.from_url.return_value
         mock_manifest.label = "Remote content"
         mock_manifest.id = "http://example.io/manifest/1"
         mock_manifest.attribution = (
@@ -614,7 +685,7 @@ class TestDocumentManifestView:
         response = client.get(reverse(self.view_name, args=[document.pk]))
         assert response.status_code == 200
 
-        assert mockiifpres.from_url.called_with(fragment.iiif_url)
+        assert mock_view_iiifpres.from_url.called_with(fragment.iiif_url)
 
         # should not contain annotation list, since there is no transcription
         assertNotContains(response, "otherContent")
@@ -634,8 +705,29 @@ class TestDocumentManifestView:
             == "original source: %s" % mock_manifest.label
         )
 
+    def test_images_no_attribution(
+        self, mock_view_iiifpres, mock_model_iiifpres, client, document
+    ):
+        # manifest has no attribution
+        mock_manifest = mock_view_iiifpres.from_url.return_value
+        del mock_manifest.attribution  # remove attribution key
+
+        # should only have the default attribution content
+        response = client.get(reverse(self.view_name, args=[document.pk]))
+        result = response.json()
+        assert (
+            result["attribution"]
+            == '<div class="attribution"><p>Compilation by Princeton Geniza Project.</p><p>Additional restrictions may apply.</p></div>'
+        )
+
     def test_no_images_transcription(
-        self, mockiifpres, client, document, source, fragment
+        self,
+        mock_view_iiifpres,
+        mock_model_iiifpres,
+        client,
+        document,
+        source,
+        fragment,
     ):
         # remove iiif url from fixture document fragment has iiif
         fragment.iiif_url = ""
@@ -651,7 +743,7 @@ class TestDocumentManifestView:
         assert response.status_code == 200
 
         # should not load any remote manifests
-        assert mockiifpres.from_url.call_count == 0
+        assert mock_view_iiifpres.from_url.call_count == 0
         # should use empty canvas id
         assertContains(response, EMPTY_CANVAS_ID)
         # should include annotations
@@ -662,7 +754,9 @@ class TestDocumentManifestView:
             response, reverse("corpus:document-annotations", args=[document.pk])
         )
 
-    def test_get_absolute_url(self, mockiifpres, document, source):
+    def test_get_absolute_url(
+        self, mock_view_iiifpres, mock_model_iiifpres, document, source
+    ):
         """should return manifest permalink"""
 
         view = DocumentManifestView()

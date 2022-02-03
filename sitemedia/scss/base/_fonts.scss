@@ -30,30 +30,52 @@
 
 // @font-face declarations
 
-// Greta Sans regular, bold for Hebrew and Latin text
 @mixin declare-fonts($base_url) {
+    // Greta Sans regular for Latin
     @font-face {
-        font-family: "Greta Sans Hebrew Regular";
+        font-family: "Greta Sans Regular";
         font-style: normal;
-        src: url("#{$base_url}/WF-037420-011833-002518.woff2") format("woff2"),
-            url("#{$base_url}/WF-037420-011833-002518.woff") format("woff");
+        src: url("#{$base_url}/WF-037420-011914-001035.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011914-001035.woff") format("woff");
         font-display: swap;
     }
 
+    // Fallback Greta Sans for Hebrew
+    @font-face {
+        font-family: "Greta Sans Hebrew Regular";
+        src: url("#{$base_url}/WF-037420-011833-002518.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011833-002518.woff") format("woff");
+        font-style: normal;
+        font-weight: normal;
+        font-display: fallback;
+    }
+
+    // Greta Sans Bold for Latin
+    @font-face {
+        font-family: "Greta Sans Regular Bold";
+        font-style: normal;
+        font-weight: bold;
+        src: url("#{$base_url}/WF-037420-011914-001041.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011914-001041.woff") format("woff");
+        font-display: swap;
+    }
+
+    // Fallback Greta Sans Bold for Hebrew
     @font-face {
         font-family: "Greta Sans Hebrew Bold";
-        font-style: bold;
         src: url("#{$base_url}/WF-037420-011833-002521.woff2") format("woff2"),
             url("#{$base_url}/WF-037420-011833-002521.woff") format("woff");
-        font-display: swap;
+        font-style: normal;
+        font-weight: bold;
+        font-display: fallback;
     }
 
     // Greta Sans italic for Latin text
     @font-face {
         font-family: "Greta Sans Regular Italic";
         font-style: italic;
-        src: url("#{$base_url}/WF-037420-011833-001036.woff2") format("woff2"),
-            url("#{$base_url}/WF-037420-011833-001036.woff") format("woff");
+        src: url("#{$base_url}/WF-037420-011914-001036.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-011914-001036.woff") format("woff");
         font-display: swap;
     }
 
@@ -76,6 +98,34 @@
     @include declare-fonts("https://geniza.cdh.princeton.edu/static/fonts");
 }
 
+// Fallback fonts for ayin and hamza
+@font-face {
+    font-family: "arial-regular";
+    src: local(Arial);
+    size-adjust: 83%;
+    font-style: normal;
+    font-weight: normal;
+    font-display: fallback;
+}
+
+@font-face {
+    font-family: "arial-bold";
+    src: local(Arial);
+    size-adjust: 83%;
+    font-style: normal;
+    font-weight: bold;
+    font-display: fallback;
+}
+
+@font-face {
+    font-family: "arial-italic";
+    src: local(Arial);
+    size-adjust: 83%;
+    font-style: italic;
+    font-weight: normal;
+    font-display: fallback;
+}
+
 // Variables containing font stacks go here, for use as "font-family" values.
 // We pick fallback fonts that are reasonably close to the desired webfont and
 // also likely to be installed on the user's machine. For more, see:
@@ -83,9 +133,19 @@
 // https://www.cssfontstack.com/
 
 // Primary font family: all Latin text, all Hebrew except transcriptions
-$primary: ("Greta Sans Hebrew Regular", Arial, sans-serif);
-$primary-bold: ("Greta Sans Hebrew Bold", Arial, sans-serif);
-$primary-italic: ("Greta Sans Regular Italic", Arial, sans-serif);
+$primary: (
+    "Greta Sans Regular",
+    "Greta Sans Hebrew Regular",
+    "arial-regular",
+    sans-serif
+);
+$primary-bold: (
+    "Greta Sans Regular Bold",
+    "Greta Sans Hebrew Bold",
+    "arial-bold",
+    sans-serif
+);
+$primary-italic: ("Greta Sans Regular Italic", "arial-italic", sans-serif);
 
 // Secondary font family: Hebrew transcriptions
 $hebrew: ("FrankRuhl 1924 MF Medium", Georgia, serif);

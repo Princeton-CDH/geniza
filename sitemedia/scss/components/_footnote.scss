@@ -44,6 +44,9 @@
             margin-bottom: spacing.$spacing-2xs;
             @include typography.meta;
         }
+        li.location {
+            word-break: break-all;
+        }
     }
     div.unpublished {
         margin-top: spacing.$spacing-3xs;
