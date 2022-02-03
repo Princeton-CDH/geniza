@@ -331,7 +331,7 @@ msgstr[5] "%(count)d سجل منح دراسية لـ %(doc)s"
 
 #. Translators: Placeholder for when a work has no title available
 #: geniza/footnotes/models.py:197
-msgid "[digital Geniza document edition]"
+msgid "[digital geniza document edition]"
 msgstr ""
 
 #: geniza/footnotes/models.py:403

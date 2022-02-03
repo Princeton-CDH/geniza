@@ -183,13 +183,13 @@ class TestSource:
         )
 
     def test_formatted_no_title(self, multiauthor_untitledsource):
-        # should include [digital Geniza document edition]
+        # should include [digital geniza document edition]
         lastnames = [
             a.creator.last_name for a in multiauthor_untitledsource.authorship_set.all()
         ]
         assert (
             multiauthor_untitledsource.formatted_display()
-            == "%s, %s, %s and %s, [digital Geniza document edition]."
+            == "%s, %s, %s and %s, [digital geniza document edition]."
             % tuple(lastnames)
         )
 
