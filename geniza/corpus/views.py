@@ -464,7 +464,7 @@ class DocumentAnnotationListView(DocumentDetailView):
 
 
 class DocumentMerge(FormView, PermissionRequiredMixin):
-    permission_required = ("corpus.change_document", "corpus.delete_document")
+    permission_required = ("change_document", "delete_document")
     form_class = DocumentMergeForm
     template_name = "admin/corpus/document/merge.html"
 
@@ -499,8 +499,8 @@ class DocumentMerge(FormView, PermissionRequiredMixin):
             secondary_docs = Document.objects.filter(id__in=secondary_ids)
 
             # Get document strings before they are merged
-            primary_doc_str = str(primary_doc)
-            secondary_doc_str = ", ".join([str(doc) for doc in secondary_docs])
+            primary_doc_str = f"PGPID {primary_doc.id}"
+            secondary_doc_str = ", ".join([f"PGPID {doc.id}" for doc in secondary_docs])
 
             # Merge secondary documents into the selected primary document
             user = getattr(self.request, "user", None)
@@ -517,7 +517,6 @@ class DocumentMerge(FormView, PermissionRequiredMixin):
                 ),
             )
 
-        # error if person has more than one account, no account
         except (ObjectDoesNotExist, MultipleObjectsReturned) as err:
             messages.error(self.request, str(err))
 

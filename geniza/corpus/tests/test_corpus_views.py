@@ -924,7 +924,7 @@ class TestDocumentMergeView:
         form_kwargs = dmview.get_form_kwargs()
         assert form_kwargs["document_ids"] == dmview.document_ids
 
-    def test_document_merge(self, admin_client):
+    def test_document_merge(self, admin_client, client):
         # TODO: Check permissions and redirects
 
         # create test document records to merge
