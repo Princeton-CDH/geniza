@@ -1,5 +1,40 @@
 # Change Log
 
+## 4.0 — Initial public version of Princeton Geniza Project v4
+
+-   public site
+    -   As researcher, I want footnotes from the same source counted and displayed as a single scholarship record so that multiple links to parts of same document don't inflate the scholarship count and display.
+    -   As a frontend user, I want all tags to be clickable so I can easily view all documents with those tags.
+    -   As a front end user, I need to be able to see when more than 5 tags exist for search results because it's confusing to search for a tag and not see it displayed.
+    -   As a front-end user, I should not be able to sort by relevance without any search text, since relevance is not meaningful without search terms.
+    -   As a front end user, I want to see a homepage when I first visit the website so I can learn context for its contents.
+    -   As a front end user, I want a transcription and image display that works on mobile devices, and allows me to zoom in and out on images.
+    -   As an admin, I want the site to provide XML sitemaps for document and content pages so that site content will be findable by search engines
+    -   As a long-time geniza researcher, I want links that I've bookmarked to redirect to the same content on the new version of the PGP site so I can access the documents I'm interested in. 🆕 enhancement
+    -   various small improvements to document details page
+-   content/data admin
+    -   As a content admin, I want to easily see and sort documents that need review so that I can manage the queue more efficiently.
+    -   As an admin, I want TEI transcription synchronization to handle documents with multiple transcriptions, so that content is not lost or hidden in the new system.
+    -   As a content editor, I need to see volume for unpublished sources when editing footnotes so that I can select the correct source.
+    -   bugfix: editing documents should not result in log entries linked to proxy document objects
+    -   bugfix: django admin document filter by "has transcription" reports inaccurate numbers
+-   public site visual design
+
+    -   links in all states (hover, click, focus)
+    -   template and styles for 404 not found error page
+    -   template and styles for 500 server error page
+    -   pagination links in all modes and interactions (hover, click, focus, disabled)
+    -   buttons in all states (hover, click, focus, disabled)
+    -   colors for light and dark mode
+    -   tabs on document detail and scholarship records (hover, click, focus, disabled)
+    -   site footer with a list of site menu items, licensing, accessibility, and links to social media
+    -   header and main menu
+    -   search form and search page interactions (hover, click, focus, disabled)
+
+-   maintenance/other
+    -   Resolve failing lighthouse tests
+    -   Updated versions of fonts
+
 ## 0.8
 
 -   public site search and document display
