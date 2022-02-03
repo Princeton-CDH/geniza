@@ -84,6 +84,12 @@
       <tokenizer class="solr.WhitespaceTokenizerFactory"/>
     </analyzer>
   </fieldType>
+  <fieldType name="text_lettersnumbers" class="solr.TextField" positionIncrementGap="100">
+    <analyzer>
+      <!-- only capture letters and numbers -->
+      <tokenizer class="solr.PatternTokenizerFactory" pattern="[A-Za-z0-9]*" group="0"/>
+    </analyzer>
+  </fieldType>
   <fieldType name="tfloat" class="solr.TrieFloatField" positionIncrementGap="0" docValues="true" precisionStep="8"/>
   <fieldType name="tfloats" class="solr.TrieFloatField" positionIncrementGap="0" docValues="true" multiValued="true" precisionStep="8"/>
   <fieldType name="tint" class="solr.TrieIntField" positionIncrementGap="0" docValues="true" precisionStep="8"/>
@@ -98,6 +104,7 @@
   <field name="last_modified" type="pdate" multiValued="false" indexed="true" required="true" stored="true" default="NOW"/>
 
   <copyField source="shelfmark_ss" dest="shelfmark_t" maxChars="30000" />
+  <copyField source="shelfmark_ss" dest="shelfmark_textnum" maxChars="30000" />
   <copyField source="tags_ss_lower" dest="tags_t" maxChars="30000" />
   <copyField source="type_s" dest="type_t" maxChars="300" />
 
@@ -140,6 +147,7 @@
   <dynamicField name="*_tf" type="tfloat" indexed="true" stored="true"/>
   <dynamicField name="*_td" type="tdouble" indexed="true" stored="true"/>
   <dynamicField name="*_ws" type="text_ws" indexed="true" stored="true"/>
+  <dynamicField name="*_textnum" type="text_lettersnumbers" indexed="true" stored="true" multiValued="true"/>
   <dynamicField name="*_i" type="int" indexed="true" stored="true"/>
   <dynamicField name="*_s" type="string" indexed="true" stored="true"/>
   <dynamicField name="*_l" type="long" indexed="true" stored="true"/>
