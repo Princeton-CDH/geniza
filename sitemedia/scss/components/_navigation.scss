@@ -419,7 +419,8 @@ header {
     background-repeat: no-repeat, no-repeat;
 }
 
-@mixin after-desktop {
+// Header background extension for large screens
+@mixin after-header-desktop {
     position: absolute;
     content: " ";
     height: 188px;
@@ -435,7 +436,7 @@ header {
         url("/static/img/ui/desktop/dark/header-image.png") top left -11px;
     background-repeat: no-repeat, no-repeat;
     &:after {
-        @include after-desktop;
+        @include after-header-desktop;
         background: url("/static/img/ui/desktop/dark/header-filler.svg")
             repeat-x;
     }
@@ -445,7 +446,7 @@ header {
         url("/static/img/ui/desktop/light/header-image.png") top left -11px;
     background-repeat: no-repeat, no-repeat;
     &:after {
-        @include after-desktop;
+        @include after-header-desktop;
         background: url("/static/img/ui/desktop/light/header-filler.svg")
             repeat-x;
     }
