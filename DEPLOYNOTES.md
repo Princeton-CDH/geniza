@@ -3,6 +3,7 @@
 ## 0.9
 
 -   Run `python manage.py index` to reindex all content due to a change in the way scholarship records are counted
+-   Add all new fonts from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`
 
 ## 0.8
 
