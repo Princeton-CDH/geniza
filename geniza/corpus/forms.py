@@ -196,7 +196,7 @@ class DocumentMergeForm(forms.Form):
     )
     rationale = forms.CharField(
         label="Rationale",
-        help_text="Provide a brief explanation for merging these records.",
+        help_text="Briefly note why these documents are being merged; will be included in the document history.",
     )
 
     def __init__(self, *args, **kwargs):
