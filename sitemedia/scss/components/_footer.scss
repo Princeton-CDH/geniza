@@ -213,7 +213,6 @@ footer {
     height: 100%;
     display: block;
     left: 0;
-    right: 1900px;
     z-index: -1;
 }
 
@@ -227,6 +226,7 @@ footer {
         @include before-footer-desktop;
         background: url("/static/img/ui/desktop/dark/footer-filler.svg")
             repeat-x;
+        right: 1980px;
     }
 }
 @mixin footer-background-desktop-light {
@@ -239,6 +239,7 @@ footer {
         @include before-footer-desktop;
         background: url("/static/img/ui/desktop/light/footer-filler.svg")
             repeat-x;
+        right: 1900px;
     }
 }
 
