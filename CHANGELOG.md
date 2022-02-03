@@ -1,6 +1,8 @@
 # Change Log
 
-## 4.0 — Initial public version of Princeton Geniza Project v4
+## 4.0
+
+**Initial public version of Princeton Geniza Project v4.0**
 
 -   public site
     -   As researcher, I want footnotes from the same source counted and displayed as a single scholarship record so that multiple links to parts of same document don't inflate the scholarship count and display.
@@ -10,16 +12,15 @@
     -   As a front end user, I want to see a homepage when I first visit the website so I can learn context for its contents.
     -   As a front end user, I want a transcription and image display that works on mobile devices, and allows me to zoom in and out on images.
     -   As an admin, I want the site to provide XML sitemaps for document and content pages so that site content will be findable by search engines
-    -   As a long-time geniza researcher, I want links that I've bookmarked to redirect to the same content on the new version of the PGP site so I can access the documents I'm interested in. 🆕 enhancement
+    -   As a long-time geniza researcher, I want links that I've bookmarked to redirect to the same content on the new version of the PGP site so I can access the same documents on the new site
     -   various small improvements to document details page
+    -   bugfix: search for partial shelfmarks doesn't yield the expected results
 -   content/data admin
     -   As a content admin, I want to easily see and sort documents that need review so that I can manage the queue more efficiently.
     -   As an admin, I want TEI transcription synchronization to handle documents with multiple transcriptions, so that content is not lost or hidden in the new system.
     -   As a content editor, I need to see volume for unpublished sources when editing footnotes so that I can select the correct source.
     -   bugfix: editing documents should not result in log entries linked to proxy document objects
-    -   bugfix: django admin document filter by "has transcription" reports inaccurate numbers
 -   public site visual design
-
     -   links in all states (hover, click, focus)
     -   template and styles for 404 not found error page
     -   template and styles for 500 server error page
@@ -30,10 +31,11 @@
     -   site footer with a list of site menu items, licensing, accessibility, and links to social media
     -   header and main menu
     -   search form and search page interactions (hover, click, focus, disabled)
-
+    -   Updated versions of fonts (extended character support)
+    -   Improved fallback font styles
 -   maintenance/other
     -   Resolve failing lighthouse tests
-    -   Updated versions of fonts
+    -   Improve handling for IIIF content to work better with PUL/JTS materials
 
 ## 0.8
 
