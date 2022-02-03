@@ -411,24 +411,45 @@ header {
 @mixin header-background-mobile-dark {
     background: url("/static/img/ui/mobile/dark/header-base.svg"),
         url("/static/img/ui/mobile/dark/header-image.png");
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-repeat: no-repeat, no-repeat;
 }
 @mixin header-background-mobile-light {
     background: url("/static/img/ui/mobile/light/header-base.svg"),
         url("/static/img/ui/mobile/light/header-image.png");
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-repeat: no-repeat, no-repeat;
+}
+
+// Header background extension for large screens
+@mixin after-header-desktop {
+    position: absolute;
+    content: " ";
+    height: 188px;
+    display: block;
+    left: 1950px;
+    right: 0;
+    top: -1px;
 }
 
 // Header backgrounds for light and dark mode, desktop
 @mixin header-background-desktop-dark {
-    background: url("/static/img/ui/desktop/dark/header-base.svg"),
-        url("/static/img/ui/desktop/dark/header-image.png");
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background: url("/static/img/ui/desktop/dark/header-base.svg") top left -11px,
+        url("/static/img/ui/desktop/dark/header-image.png") top left -11px;
+    background-repeat: no-repeat, no-repeat;
+    &:after {
+        @include after-header-desktop;
+        background: url("/static/img/ui/desktop/dark/header-filler.svg")
+            repeat-x;
+    }
 }
 @mixin header-background-desktop-light {
-    background: url("/static/img/ui/desktop/light/header-base.svg"),
-        url("/static/img/ui/desktop/light/header-image.png");
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background: url("/static/img/ui/desktop/light/header-base.svg") top left -11px,
+        url("/static/img/ui/desktop/light/header-image.png") top left -11px;
+    background-repeat: no-repeat, no-repeat;
+    &:after {
+        @include after-header-desktop;
+        background: url("/static/img/ui/desktop/light/header-filler.svg")
+            repeat-x;
+    }
 }
 
 // Nav theme overrides for light mode
