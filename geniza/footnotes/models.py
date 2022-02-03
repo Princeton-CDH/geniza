@@ -190,11 +190,11 @@ class Source(models.Model):
             else:
                 work_title = self.title + ltr_mark
         elif extra_fields or not author:
-            # Use [no title] as placeholder title when no title available;
+            # Use [digital Geniza document edition] as placeholder title when no title available;
             # only when extra_fields enabled, or there is no author
 
             # Translators: Placeholder for when a work has no title available
-            work_title = gettext("[no title]")
+            work_title = gettext("[digital Geniza document edition]")
 
         # Wrap title in link to URL
         if self.url and work_title:
@@ -325,7 +325,7 @@ class Source(models.Model):
         #   L. B. Yarbrough (in Hebrew)             (no comma)
         #   Author (1964)                           (no comma)
         #   Author, Journal 6 (1964)                (comma)
-        #   Author, [no title]                      (comma)
+        #   Author, [digital Geniza document edition]                      (comma)
         use_comma = (
             extra_fields
             or self.title
