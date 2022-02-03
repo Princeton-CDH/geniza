@@ -187,9 +187,9 @@ class DocumentMergeForm(forms.Form):
         label="Primary document",
         queryset=None,
         help_text=(
-            "Select the document record to prioritize. The document selected "
-            "will keep its PGPID and the others will be merged as old PGPIDs. "
-            "Other metadata and footnotes are merged into this document."
+            "Select the primary document, which will be used as the merged document PGPID."
+            "All other PGPIDs will be added to the list of old PGPIDs. "
+            "All metadata, tags, footnotes, and log entries will be combined on the merged document."
         ),
         empty_label=None,
         widget=forms.RadioSelect,
