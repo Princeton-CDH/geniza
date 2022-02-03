@@ -10,7 +10,7 @@
         </p>
     {% endif %}
 
-    {% if document.footnotes.count %}<strong>Footnotes</strong>{% endif %}
+    {% if document.footnotes.count %}<strong>Scholarship Records</strong>{% endif %}
     <ul>
         {% for footnote in document.footnotes.all %}
             <li><a target="_blank" href="{% url 'admin:footnotes_footnote_change' footnote.id %}">{{ footnote }}</a>
