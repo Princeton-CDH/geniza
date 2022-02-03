@@ -174,7 +174,7 @@ class DocumentSearchForm(forms.Form):
 
 
 class DocumentChoiceField(forms.ModelChoiceField):
-    """Add a summary of each document to the widget"""
+    """Add a summary of each document to a form (used for document merging)"""
 
     label_template = get_template("corpus/snippets/document_option_label.html")
 
@@ -197,6 +197,7 @@ class DocumentMergeForm(forms.Form):
     rationale = forms.CharField(
         label="Rationale",
         help_text="Briefly note why these documents are being merged; will be included in the document history.",
+        widget=forms.Textarea(),
     )
 
     def __init__(self, *args, **kwargs):

@@ -470,7 +470,8 @@ class DocumentAdmin(admin.ModelAdmin):
 
     @admin.display(description="Merge selected documents")
     def merge_documents(self, request, queryset=None):
-        """Merge selected documents together"""
+        """Admin action to merge selected documents. Points to an intermediate
+        page with then redirects to the newly-merged document"""
         # Functionality drawn from https://github.com/Princeton-CDH/mep-django/blob/main/mep/people/admin.py
 
         # NOTE: using selected ids from form and ignoring queryset
