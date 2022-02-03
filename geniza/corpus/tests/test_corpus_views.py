@@ -544,7 +544,7 @@ class TestDocumentSearchView:
         doc2 = Document.objects.create()
         TextBlock.objects.create(document=doc2, fragment=folder_fragment)
 
-        # ensure solr index is updated with all three test documents
+        # ensure solr index is updated with the two test documents
         SolrClient().update.index(
             [
                 doc1.index_data(),
