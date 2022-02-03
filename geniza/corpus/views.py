@@ -463,8 +463,8 @@ class DocumentAnnotationListView(DocumentDetailView):
         return JsonResponse(dict(annotation_list), encoder=iiif_utils.AttrDictEncoder)
 
 
-class DocumentMerge(FormView, PermissionRequiredMixin):
-    permission_required = ("change_document", "delete_document")
+class DocumentMerge(PermissionRequiredMixin, FormView):
+    permission_required = ("corpus.change_document", "corpus.delete_document")
     form_class = DocumentMergeForm
     template_name = "admin/corpus/document/merge.html"
 

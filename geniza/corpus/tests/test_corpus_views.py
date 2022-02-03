@@ -925,7 +925,10 @@ class TestDocumentMergeView:
         assert form_kwargs["document_ids"] == dmview.document_ids
 
     def test_document_merge(self, admin_client, client):
-        # TODO: Check permissions and redirects
+        # Ensure that the document merge view is not visible to public
+        response = client.get(reverse("corpus:document-merge"))
+        assert response.status_code == 302
+        assert response.url.startswith("/accounts/login/")
 
         # create test document records to merge
         doc1 = Document.objects.create()
@@ -950,4 +953,4 @@ class TestDocumentMergeView:
         message = list(response.context.get("messages"))[0]
         assert message.tags == "success"
         assert "Successfully merged" in message.message
-        assert f"with ?? (PGPID {doc1.id})" in message.message
+        assert f"with PGPID {doc1.id}" in message.message
