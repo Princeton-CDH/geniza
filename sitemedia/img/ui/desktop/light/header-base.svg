@@ -20,5 +20,8 @@
           <stop offset="0.98" style="stop-color: rgb(255, 255, 255); stop-opacity: 0.75;"></stop>
           <stop offset="1" style="stop-color: rgb(255, 255, 255);"></stop>
         </linearGradient>
+        <clipPath id="clip0_431_29530">
+            <rect width="1961.25" height="188" />
+        </clipPath>
     </defs>
 </svg>
