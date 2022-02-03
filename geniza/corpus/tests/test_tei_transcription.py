@@ -18,6 +18,7 @@ def test_fields():
     assert tei.lines
     assert tei.labels
     assert len(tei.labels) == 4
+    assert tei.source_authors == ["Gil"]
 
 
 def test_no_content():
@@ -43,6 +44,10 @@ def test_html():
 
     # check that the last line / last block is included
     assert "<li value='6'>الحسن بن ابرهيم</li>" in html
+
+    # assert that missing line number does not result in a line number of "None"
+    assert "<li value='None'>" not in html
+    assert "<li value=''>" not in html
 
 
 def test_text_to_plaintext():

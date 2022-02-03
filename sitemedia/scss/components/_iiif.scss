@@ -68,6 +68,16 @@
     // Transcription text
     .transcription {
         max-width: 60ch;
+        @include breakpoints.for-tablet-landscape-up {
+            /* make a scrollable div; match height with image container */
+            max-height: 680px;
+            overflow: scroll;
+            /* no scrolling/max height when no image present */
+            &.no-image {
+                max-height: none;
+                overflow: auto;
+            }
+        }
         margin: 0 auto;
         flex: 1 0 100%;
         * {
@@ -85,6 +95,12 @@
         }
         section + section {
             margin-top: spacing.$spacing-md;
+        }
+
+        .source {
+            @include typography.body;
+            text-align: left;
+            padding-top: spacing.$spacing-md;
         }
     }
 

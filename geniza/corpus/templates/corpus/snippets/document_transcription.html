@@ -20,9 +20,19 @@
         </div>
     {% endif %}
     {% if document.has_transcription %}
-        <div class="transcription">
+        <div class="transcription{% if not document.has_image %} no-image{% endif %}">
             <h3>{% translate 'Transcription' %}</h3>
-            {{ document.digital_editions.0.content.html|safe }}
+            {% if document.digital_editions|length > 1 %}
+                {# when there are multiple editions, use disclosure element #}
+                {% for edition in document.digital_editions %}
+                    <details {% if forloop.first %}open{% endif %}>
+                        <summary class="source">{{ edition.source.display }}</summary>
+                        <div>{{ edition.content.html|safe }}</div>
+                    </details>
+                {% endfor %}
+            {% else %}
+                <div>{{ document.digital_editions.0.content.html|safe }}</div>
+            {% endif %}
         </div>
     {% endif %}
     {{ document.attribution|format_attribution|safe }}

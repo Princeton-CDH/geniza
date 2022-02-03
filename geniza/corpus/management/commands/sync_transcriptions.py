@@ -13,7 +13,7 @@ import os.path
 from collections import defaultdict
 
 from django.conf import settings
-from django.contrib.admin.models import CHANGE, LogEntry
+from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
@@ -23,7 +23,7 @@ from git import Repo
 
 from geniza.corpus.models import Document
 from geniza.corpus.tei_transcriptions import GenizaTei
-from geniza.footnotes.models import Footnote
+from geniza.footnotes.models import Footnote, Source
 
 
 class Command(BaseCommand):
@@ -39,24 +39,33 @@ class Command(BaseCommand):
             help="Do not save changes to the database",
         )
 
+    # dict of footnotes that have been updated with list of TEI files, to track/prevent
+    # TEI files resolving incorrectly to the same edition
+    footnotes_updated = defaultdict(list)
+
     def handle(self, *args, **options):
         # get settings for remote git repository url and local path
         gitrepo_url = settings.TEI_TRANSCRIPTIONS_GITREPO
         gitrepo_path = settings.TEI_TRANSCRIPTIONS_LOCAL_PATH
 
         self.verbosity = options["verbosity"]
+        self.noact_mode = options["noact"]
 
         # make sure we have latest tei content from git repository
         self.sync_git(gitrepo_url, gitrepo_path)
 
-        if not options["noact"]:
+        if not self.noact_mode:
             # get content type and user for log entries, unless in no-act mode
             self.footnote_contenttype = ContentType.objects.get_for_model(Footnote)
             self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
-        self.verbosity = options["verbosity"]
-
         self.stats = defaultdict(int)
+        # after creating missing goitein typed text notes, these will not be created again
+        self.stats["footnote_created"] = 0
+        # duplicates might not always happen
+        self.stats["duplicate_footnote"] = 0
+        # updates should not happen after initial sync when there are no TEI changes
+        self.stats["footnote_updated"] = 0
         # keep track of document ids with multiple digitized editions (likely merged records/joins)
         self.multiedition_docs = set()
 
@@ -109,24 +118,40 @@ class Command(BaseCommand):
             footnote = self.get_edition_footnote(doc, tei, xmlfile)
             # if we identified an appropriate footnote, update it
             if footnote:
-                html = tei.text_to_html()
-                text = tei.text_to_plaintext()
-                if html:
-                    footnote.content = {"html": html, "text": text}
-                    if footnote.has_changed("content"):
-                        # don't actually save in --noact mode
-                        if not options["noact"]:
-                            footnote.save()
-                            # create a log entry to document the change
-                            self.log_footnote_update(
-                                footnote, os.path.basename(xmlfile)
-                            )
-
-                        # count as a change whether in no-act mode or not
-                        self.stats["footnote_updated"] += 1
+                # if this footnote has already been chosen in the current script run, don't update again
+                if self.footnotes_updated[footnote.pk]:
+                    self.stderr.write(
+                        "Footnote %s (PGPID %s) already updated with %s; not overwriting with %s"
+                        % (
+                            footnote.pk,
+                            doc.pk,
+                            ";".join(self.footnotes_updated[footnote.pk]),
+                            xmlfile,
+                        )
+                    )
+                    self.stats["duplicate_footnote"] += 1
                 else:
-                    if self.verbosity >= self.v_normal:
-                        self.stderr.write("No html generated for %s" % doc.id)
+                    self.footnotes_updated[footnote.pk].append(xmlfile)
+
+                    html = tei.text_to_html()
+                    text = tei.text_to_plaintext()
+                    if html:
+                        footnote.content = {"html": html, "text": text}
+                        if footnote.has_changed("content"):
+
+                            # don't actually save in --noact mode
+                            if not self.noact_mode:
+                                footnote.save()
+                                # create a log entry to document the change
+                                self.log_footnote_update(
+                                    footnote, os.path.basename(xmlfile)
+                                )
+
+                            # count as a change whether in no-act mode or not
+                            self.stats["footnote_updated"] += 1
+                    else:
+                        if self.verbosity >= self.v_normal:
+                            self.stderr.write("No html generated for %s" % doc.id)
 
             # NOTE: in *one* case there is a TEI file with translation content and
             # no transcription; will get reported as empty, but that's ok — it's out of scope
@@ -143,34 +168,54 @@ class Command(BaseCommand):
 {multiple_editions:,} documents with multiple editions; {multiple_editions_with_content} multiple editions with content ({multi_edition_docs} unique documents).
 {no_edition:,} documents with no edition.
 {one_edition:,} documents with one edition.
-Updated {footnote_updated:,} footnotes.
+Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped overwriting {duplicate_footnote}).
 """.format(
                 **self.stats
             )
         )
 
+        for footnote_id, xmlfiles in self.footnotes_updated.items():
+            if len(xmlfiles) > 1:
+                self.stderr.write(
+                    "Footnote pk %s updated more than once: %s"
+                    % (footnote_id, ";".join(xmlfiles))
+                )
+
     def get_edition_footnote(self, doc, tei, filename):
         # identify the edition footnote to be updated
         # NOTE: still needs to handle multiple editions, no editions
         editions = doc.footnotes.editions()
+
         if editions.count() > 1:
-            # debugging output for footnote selection
-            # print('more than one edition for %s' % xmlfile)
-            # print(list(ed.source for ed in editions))
-            # try filtering by current text content
-            editions_with_content = editions.filter(content__isnull=False)
-            # print('editions with content')
-            # print(list(ed.source for ed in editions_with_content))
             self.stats["multiple_editions"] += 1
-            if editions_with_content.count() > 1:
+
+            # when there are multiple, try to identify correct edition by author names
+            footnote = self.choose_edition_by_authors(tei, editions, doc)
+            # if we got a match, use it
+            if footnote:
+                return footnote
+
+            # if not, limit to editions with content and try again
+            editions_with_content = editions.filter(content__isnull=False)
+            footnote = self.choose_edition_by_authors(tei, editions_with_content, doc)
+            if footnote:
+                return footnote
+
+            # if not, fallback to first edition
+            if editions_with_content.count() == 1:
                 self.stats["multiple_editions_with_content"] += 1
                 self.multiedition_docs.add(doc.id)
-            elif editions_with_content.count() == 1:
+
                 # if there was only one, assume it's the one to update
+                # NOTE: this is potentially wrong!
                 return editions_with_content.first()
-        elif not editions.exists():
-            # debugging output for footnote selection
-            # print('no edition for %s' % xmlfile)
+
+        if not editions.exists():
+            # no editions found; check if we can create a goitein typed texts footnote
+            footnote = self.is_it_goitein(tei, doc)
+            if footnote:
+                return footnote
+
             self.stats["no_edition"] += 1
             if self.verbosity > self.v_normal:
                 self.stdout.write("No edition found for %s" % filename)
@@ -180,6 +225,65 @@ Updated {footnote_updated:,} footnotes.
             self.stats["one_edition"] += 1
             # if only one edition, update the transciption content there
             return editions.first()
+
+    def choose_edition_by_authors(self, tei, editions, doc):
+        # try to choose correct edition from a list based on author names;
+        # use on structured author names in the TEI
+        if tei.source_authors:
+            tei_authors = set(tei.source_authors)
+            author_matches = []
+            for ed in editions:
+                ed_authors = set([auth.last_name for auth in ed.source.authors.all()])
+                if ed_authors == tei_authors:
+                    author_matches.append(ed)
+
+            # if we got exactly one match, use that edition
+            if len(author_matches) == 1:
+                return author_matches[0]
+
+            # if there were *no* author matches, see if we can create a goitein typed text note
+            if not author_matches:
+                return self.is_it_goitein(tei, doc)
+
+    def is_it_goitein(self, tei, doc):
+        # if no edition exists and we can identify based on the TEI as
+        # goitein typed texts, create a new  footnote
+        source_info = str(tei.source[0]).lower()
+        if "goitein" in source_info and "typed texts" in source_info:
+            if not self.noact_mode:
+                footnote = self.create_goitein_footnote(doc)
+                if footnote:
+                    self.stats["footnote_created"] += 1
+                    return footnote
+
+    def create_goitein_footnote(self, doc):
+        source = Source.objects.filter(
+            authors__last_name="Goitein",
+            title_en="typed texts",
+            source_type__type="Unpublished",
+            volume__startswith=Source.get_volume_from_shelfmark(doc.shelfmark),
+        ).first()
+        if not source:
+            self.stderr.write(
+                "Error finding Goitein typed texts source for %s" % doc.shelfmark
+            )
+            return
+
+        footnote = Footnote.objects.create(
+            source=source,
+            content_object=doc,
+            doc_relation=Footnote.EDITION,
+        )
+        LogEntry.objects.log_action(
+            user_id=self.script_user.id,
+            content_type_id=self.footnote_contenttype.pk,
+            object_id=footnote.pk,
+            object_repr=str(footnote),
+            change_message="Created Goitein typed texts footnote to sync transcription",
+            action_flag=ADDITION,
+        )
+
+        return footnote
 
     def sync_git(self, gitrepo_url, local_path):
         # ensure git repository has been cloned and content is up to date
