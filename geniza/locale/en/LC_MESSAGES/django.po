@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-02-02 12:54-0500\n"
-"PO-Revision-Date: 2022-02-02 19:05\n"
+"POT-Creation-Date: 2022-02-02 15:47-0500\n"
+"PO-Revision-Date: 2022-02-03 16:37\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en_US\n"
@@ -297,7 +297,7 @@ msgstr[1] ""
 
 #. Translators: Placeholder for when a work has no title available
 #: geniza/footnotes/models.py:197
-msgid "[no title]"
+msgid "[digital Geniza document edition]"
 msgstr ""
 
 #: geniza/footnotes/models.py:403
