@@ -532,6 +532,38 @@ class TestDocumentSearchView:
         ), "document with shelfmark in description returned second"
         # (document with similar shelfmark is third)
 
+    def test_shelfmark_partialmatch(self, empty_solr, multifragment):
+        # integration test for shelfmark indexing with partial matching
+        # - using empty solr fixture to ensure solr is empty when this test starts
+
+        # multifragment shelfmark can test for this problem: T-S 16.377
+        doc1 = Document.objects.create()
+        TextBlock.objects.create(document=doc1, fragment=multifragment)
+        # create an arbitrary fragment with similar numeric shelfmark
+        folder_fragment = Fragment.objects.create(shelfmark="T-S 16.378")
+        doc2 = Document.objects.create()
+        TextBlock.objects.create(document=doc2, fragment=folder_fragment)
+
+        # ensure solr index is updated with the two test documents
+        SolrClient().update.index(
+            [
+                doc1.index_data(),
+                doc2.index_data(),
+            ],
+            commit=True,
+        )
+
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # sort doesn't matter in this case
+        docsearch_view.request.GET = {"q": "T-S 16"}
+        qs = docsearch_view.get_queryset()
+        # should return both documents
+        assert qs.count() == 2
+        resulting_ids = [result["pgpid"] for result in qs]
+        assert doc1.id in resulting_ids
+        assert doc2.id in resulting_ids
+
 
 class TestDocumentScholarshipView:
     def test_page_title(self, document, client, source):

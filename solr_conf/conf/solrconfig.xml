@@ -740,6 +740,7 @@
         collection_ss
         shelfmark_t^80
         shelfmark_ss^100
+        shelfmark_textnum^140
         tags_t
         tags_ss_lower
         scholarship_t
@@ -749,6 +750,7 @@
       <str name="keyword_pf">
         description_t^50
         shelfmark_t^100
+        shelfmark_textnum^140
         tags_t
         scholarship_t^80
         transcription_t^80
@@ -759,6 +761,7 @@
         type_s
         shelfmark_t
         shelfmark_ss
+        shelfmark_textnum
         tags_t
         tags_ss_lower
         description_t
@@ -771,6 +774,7 @@
       <str name="admin_doc_pf">
         type_s
         shelfmark_t
+        shelfmark_textnum
         tags_t
         description_t
         notes_t
