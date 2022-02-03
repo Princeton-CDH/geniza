@@ -918,6 +918,15 @@ class TestDocumentMergeView:
         # lowest id selected as default primary document
         assert initial["primary_document"] == 7
 
+        # Test when no ideas are provided (a user shouldn't get here,
+        #  but shouldn't raise an error.)
+        dmview.request = Mock(GET={"ids": ""})
+        initial = dmview.get_initial()
+        assert dmview.document_ids == []
+        dmview.request = Mock(GET={})
+        initial = dmview.get_initial()
+        assert dmview.document_ids == []
+
     def test_get_form_kwargs(self):
         dmview = DocumentMerge()
         dmview.request = Mock(GET={"ids": "12,23,456,7"})
