@@ -492,33 +492,27 @@ class DocumentMerge(PermissionRequiredMixin, FormView):
         self.primary_document = primary_doc
         rationale = form.cleaned_data["rationale"]
 
-        try:
-            secondary_ids = [
-                doc_id for doc_id in self.document_ids if doc_id != primary_doc.id
-            ]
-            secondary_docs = Document.objects.filter(id__in=secondary_ids)
+        secondary_ids = [
+            doc_id for doc_id in self.document_ids if doc_id != primary_doc.id
+        ]
+        secondary_docs = Document.objects.filter(id__in=secondary_ids)
 
-            # Get document strings before they are merged
-            primary_doc_str = f"PGPID {primary_doc.id}"
-            secondary_doc_str = ", ".join([f"PGPID {doc.id}" for doc in secondary_docs])
+        # Get document strings before they are merged
+        primary_doc_str = f"PGPID {primary_doc.id}"
+        secondary_doc_str = ", ".join([f"PGPID {doc.id}" for doc in secondary_docs])
 
-            # Merge secondary documents into the selected primary document
-            user = getattr(self.request, "user", None)
-            primary_doc.merge_with(secondary_docs, rationale, user=user)
+        # Merge secondary documents into the selected primary document
+        user = getattr(self.request, "user", None)
+        primary_doc.merge_with(secondary_docs, rationale, user=user)
 
-            # Display info about the merge to the user
-            new_doc_link = reverse(
-                "admin:corpus_document_change", args=[primary_doc.id]
-            )
-            messages.success(
-                self.request,
-                mark_safe(
-                    f"Successfully merged document(s) {secondary_doc_str} with {primary_doc_str}."
-                ),
-            )
-
-        except (ObjectDoesNotExist, MultipleObjectsReturned) as err:
-            messages.error(self.request, str(err))
+        # Display info about the merge to the user
+        new_doc_link = reverse("admin:corpus_document_change", args=[primary_doc.id])
+        messages.success(
+            self.request,
+            mark_safe(
+                f"Successfully merged document(s) {secondary_doc_str} with {primary_doc_str}."
+            ),
+        )
 
         return super(DocumentMerge, self).form_valid(form)
 
