@@ -26,6 +26,7 @@ footer {
 
     // footer desktop
     @include breakpoints.for-tablet-landscape-up {
+        position: relative;
         margin-top: spacing.$spacing-2xl;
         padding-top: spacing.$spacing-3xl;
         display: grid;
@@ -205,12 +206,28 @@ footer {
     background-size: 100% auto, 100% auto, 100% auto;
 }
 
+// Footer background extension for large screens
+@mixin before-footer-desktop {
+    position: absolute;
+    content: " ";
+    height: 100%;
+    display: block;
+    left: 0;
+    right: 1900px;
+    z-index: -1;
+}
+
 // Footer backgrounds for light and dark mode, desktop
 @mixin footer-background-desktop-dark {
     background: url("/static/img/ui/desktop/dark/footer-gradient.svg") top right,
         url("/static/img/ui/desktop/dark/footer-image.png") top right,
         url("/static/img/ui/desktop/dark/footer-base.svg") top right;
     background-repeat: no-repeat, no-repeat, no-repeat;
+    &:before {
+        @include before-footer-desktop;
+        background: url("/static/img/ui/desktop/dark/footer-filler.svg")
+            repeat-x;
+    }
 }
 @mixin footer-background-desktop-light {
     background: url("/static/img/ui/desktop/light/footer-gradient.svg") top
@@ -218,6 +235,11 @@ footer {
         url("/static/img/ui/desktop/light/footer-image.png") top right,
         url("/static/img/ui/desktop/light/footer-base.svg") top right;
     background-repeat: no-repeat, no-repeat, no-repeat;
+    &:before {
+        @include before-footer-desktop;
+        background: url("/static/img/ui/desktop/light/footer-filler.svg")
+            repeat-x;
+    }
 }
 
 // Nav theme overrides for light mode
