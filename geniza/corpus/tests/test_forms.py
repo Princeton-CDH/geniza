@@ -121,7 +121,7 @@ class TestDocumentChoiceField:
         document.footnotes.add(footnote)
         label = dchoicefield.label_from_instance(document)
         "Deed of sale" in label
-        assert str(footnote.source) in label
+        assert "Edition" in label
         "URL" not in label  # Ensure that the URL is not displayed when there is no URL
 
 
