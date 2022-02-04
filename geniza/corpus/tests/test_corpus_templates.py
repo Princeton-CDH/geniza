@@ -335,7 +335,11 @@ class TestDocumentTabsSnippet:
         """document nav should render inert scholarship tab if no footnotes"""
         response = client.get(document.get_absolute_url())
         # uses span, not link
-        assertContains(response, "<span>Scholarship Records (0)</span>", html=True)
+        assertContains(
+            response,
+            "<span disabled aria-disabled='true'>Scholarship Records (0)</span>",
+            html=True,
+        )
 
     def test_with_footnotes(self, client, document, source, twoauthor_source):
         """document nav should render scholarship link with footnote counter"""
