@@ -69,6 +69,11 @@ $text-size-5xl: 2rem; //     = 32px
     font-family: fonts.$primary-bold;
     font-weight: bold;
 }
+@mixin body-italic {
+    @include body;
+    font-family: fonts.$primary-italic;
+    font-style: italic;
+}
 
 // blockquote
 @mixin quote {
@@ -139,6 +144,7 @@ $text-size-5xl: 2rem; //     = 32px
     }
     line-height: 1.5;
 }
+
 // label for unpublished records in scholarship records view
 @mixin unpublished {
     @include caption;
