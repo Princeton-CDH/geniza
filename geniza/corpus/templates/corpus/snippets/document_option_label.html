@@ -1,5 +1,17 @@
 {# template snippet for displaying document label on a form #}
 {# used on document merge form to provide enough information to merge accurately #}
+
+<style>
+    .transcription-container {
+        max-height: 350px;
+        overflow: scroll;
+    }
+
+    ul>li {
+        list-style-type: none;
+    }
+</style>
+
 <div class="merge-document-label">
     <h2><a target="_blank" href="{% url 'admin:corpus_document_change' document.id %}"
         title="Go to this document's edit page">
@@ -22,27 +34,37 @@
     <ol>
         {% regroup document.footnotes.all by source as source_list %}
         {% for source in source_list %}
-            <li class="citation">
+            <li>
                 <dl>
                     <dt>Bibliographic citation</dt>
-                    <dd>{{ footnote }}
-                        {{ source.grouper.formatted_display|safe }}
+                    <dd>{{ source.grouper.formatted_display|safe }}
                         {% if source.grouper.source_type.type == "Unpublished" %}
                             <div class="unpublished">unpublished</div>
                         {% endif %}
                     </dd>
-                    <dt class="relation">
+                    <dt>Footnote location</dt>
+                    <dd>
                         <ul>
                             {% for fn in source.list %}
                                 {% include "corpus/snippets/footnote_location.html" %}
+                                {{ source.list.0.doc_relation }}
+                                {% if fn.content %}
+                                    <dt>Transcriptions</dt>
+                                    <dd class="transcription-container">
+                                        {% include "footnotes/transcription.html" with transcription=fn.content %}
+                                    </dd>
+                                {% endif %}
                             {% endfor %}
                         </ul>
-                    </dt>
-                    <dd class="relation">
-                        {{ source.list.0.doc_relation }}
                     </dd>
+                    <dt>Document Relation</dt>
+                    <dd>
+
+                    </dd>
+
                 </dl>
             </li>
+
         {% endfor %}
     </ol>
 </div>

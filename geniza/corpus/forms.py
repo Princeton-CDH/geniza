@@ -187,7 +187,7 @@ class DocumentMergeForm(forms.Form):
         label="Primary document",
         queryset=None,
         help_text=(
-            "Select the primary document, which will be used as the merged document PGPID."
+            "Select the primary document, which will be used as the merged document PGPID. "
             "All other PGPIDs will be added to the list of old PGPIDs. "
             "All metadata, tags, footnotes, and log entries will be combined on the merged document."
         ),
