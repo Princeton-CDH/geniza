@@ -14,7 +14,7 @@
 
 <div class="merge-document-label">
     <h2><a target="_blank" href="{% url 'admin:corpus_document_change' document.id %}"
-        title="Go to this document's edit page">
+        title="Go to this document's admin edit page">
         <img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>
         {{ document }}</h2>
     <dl>
@@ -41,6 +41,9 @@
                         {% if source.grouper.source_type.type == "Unpublished" %}
                             <div class="unpublished">unpublished</div>
                         {% endif %}
+                        <a href="{% url 'admin:footnotes_source_change' source.grouper.id %}"
+                            title="Go to this source's admin edit page"><img src="/static/admin/img/icon-changelink.svg"
+                                alt="Change"></a>
                     </dd>
                     <dt>Footnote location</dt>
                     <dd>
@@ -57,11 +60,6 @@
                             {% endfor %}
                         </ul>
                     </dd>
-                    <dt>Document Relation</dt>
-                    <dd>
-
-                    </dd>
-
                 </dl>
             </li>
 
