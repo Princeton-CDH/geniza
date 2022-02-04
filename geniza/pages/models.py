@@ -93,6 +93,9 @@ class ContentPage(Page):
         RichTextFieldPanel("body"),
     ]
 
+    # show in menu by default
+    show_in_menus_default = True
+
     def get_context(self, request):
         context = super(ContentPage, self).get_context(request)
         context["page_type"] = "content-page"
