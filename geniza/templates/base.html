@@ -21,12 +21,17 @@
             <link rel="stylesheet" type="text/css" href="{% static 'css/test-banner.css' %}"/>
         {% endif %}
         <!-- resource preloading -->
+        <link rel="preconnect" href="https://unpkg.com" crossorigin />
         <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011833-002518.woff2" crossorigin />
         <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011833-002521.woff2" crossorigin />
-        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011833-001036.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001035.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001036.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001041.woff2" crossorigin />
         <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011833-002518.woff" crossorigin />
         <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011833-002521.woff" crossorigin />
-        <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011833-001036.woff" crossorigin />
+        <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001035.woff" crossorigin />
+        <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001036.woff" crossorigin />
+        <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001041.woff" crossorigin />
         {% if page_includes_transcriptions %} {# only preload transcription font when needed #}
             <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}FrankRuhl1924MFMediumMedium.woff2" crossorigin />
             <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}FrankRuhl1924MFMediumMedium.woff" crossorigin />

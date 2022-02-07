@@ -69,6 +69,11 @@ $text-size-5xl: 2rem; //     = 32px
     font-family: fonts.$primary-bold;
     font-weight: bold;
 }
+@mixin body-italic {
+    @include body;
+    font-family: fonts.$primary-italic;
+    font-style: italic;
+}
 
 // blockquote
 @mixin quote {
@@ -93,6 +98,9 @@ $text-size-5xl: 2rem; //     = 32px
         margin-top: #{spacing.$spacing-sm};
         mask-image: url("/static/img/ui/mobile/light/right-double-quote.svg");
     }
+    & + blockquote {
+        margin-top: 6rem;
+    }
     @include breakpoints.for-tablet-landscape-up {
         margin: 4rem 0;
         &::before,
@@ -107,6 +115,9 @@ $text-size-5xl: 2rem; //     = 32px
         &::after {
             margin-top: #{spacing.$spacing-md};
             mask-image: url("/static/img/ui/desktop/light/right-double-quote.svg");
+        }
+        & + blockquote {
+            margin-top: 8rem;
         }
     }
 }
@@ -139,6 +150,7 @@ $text-size-5xl: 2rem; //     = 32px
     }
     line-height: 1.5;
 }
+
 // label for unpublished records in scholarship records view
 @mixin unpublished {
     @include caption;

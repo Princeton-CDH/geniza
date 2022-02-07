@@ -1,8 +1,10 @@
 # Deploy Notes
 
-## 0.9
+## 4.0
 
--   Run `python manage.py index` to reindex all content due to a change in the way scholarship records are counted
+-   Run `python manage.py sync_transcriptions` to update transcriptions for documents with multiple transcriptions
+-   Run `python manage.py index` to reindex all content to update scholarship records counts and shelfmark indexing
+-   Add all new fonts from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`
 
 ## 0.8
 

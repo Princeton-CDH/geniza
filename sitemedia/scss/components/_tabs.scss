@@ -47,7 +47,7 @@
             outline: 0.1rem solid var(--focus);
         }
     }
-    .disabled {
+    span[disabled] {
         color: var(--disabled);
     }
     a:hover {

@@ -1,0 +1,127 @@
+// -----------------------------------------------------------------------------
+// Home page styles
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/spacing";
+@use "../base/typography";
+
+#homepage {
+    // Header text with background
+    h1 {
+        color: var(--link-primary);
+        z-index: 1;
+        margin-top: -5.5rem;
+        padding: 100px spacing.$spacing-3xl 60px;
+        max-width: 100%;
+        width: 100%;
+        text-align: center;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: -8rem;
+            padding: 285px 0 180px;
+        }
+    }
+    .container {
+        line-height: 1.4;
+    }
+}
+
+// Homepage background, light mode, mobile
+@mixin light-home {
+    background: linear-gradient(
+            to top,
+            rgba(255, 255, 255, 1),
+            rgba(255, 255, 255, 0)
+        ),
+        url("/static/img/ui/mobile/light/homepage-center.png") center 65px
+            no-repeat,
+        url("/static/img/ui/mobile/light/homepage-left.png") left 65px no-repeat,
+        url("/static/img/ui/mobile/light/homepage-right.png") right 65px
+            no-repeat,
+        linear-gradient(
+            180deg,
+            rgba(86, 120, 86, 0.2) 0%,
+            rgba(86, 120, 86, 0.112) 51.9%,
+            rgba(86, 120, 86, 0) 100%
+        );
+    background-blend-mode: normal, darken, darken, darken, normal;
+
+    // Homepage background, light mode, desktop
+    @include breakpoints.for-tablet-landscape-up {
+        background: linear-gradient(
+                to top,
+                rgba(255, 255, 255, 1),
+                rgba(255, 255, 255, 0)
+            ),
+            url("/static/img/ui/desktop/light/homepage-center.png") bottom -17px
+                center no-repeat,
+            url("/static/img/ui/desktop/light/homepage-left.png") bottom -17px left
+                no-repeat,
+            url("/static/img/ui/desktop/light/homepage-right.png") bottom -17px right
+                no-repeat,
+            linear-gradient(
+                180deg,
+                rgba(86, 120, 86, 0.2) 0%,
+                rgba(86, 120, 86, 0.112) 51.9%,
+                rgba(86, 120, 86, 0) 100%
+            );
+        background-blend-mode: normal;
+    }
+}
+
+// Homepage background, dark mode, mobile
+@mixin dark-home {
+    background: linear-gradient(
+            to top,
+            rgba(22, 22, 22, 1),
+            rgba(22, 22, 22, 0)
+        ),
+        url("/static/img/ui/mobile/dark/homepage-center.png") center 65px
+            no-repeat,
+        url("/static/img/ui/mobile/dark/homepage-left.png") left 65px no-repeat,
+        url("/static/img/ui/mobile/dark/homepage-right.png") right 65px
+            no-repeat,
+        linear-gradient(
+            180deg,
+            rgba(195, 127, 151, 0.2) 0%,
+            rgba(195, 127, 151, 0.112) 51.9%,
+            rgba(195, 127, 151, 0) 100%
+        );
+
+    // Homepage background, dark mode, desktop
+    @include breakpoints.for-tablet-landscape-up {
+        background: linear-gradient(
+                to top,
+                rgba(22, 22, 22, 1),
+                rgba(22, 22, 22, 0)
+            ),
+            url("/static/img/ui/desktop/dark/homepage-center.png") bottom -17px center
+                no-repeat,
+            url("/static/img/ui/desktop/dark/homepage-left.png") bottom -17px left
+                no-repeat,
+            url("/static/img/ui/desktop/dark/homepage-right.png") bottom -17px right
+                no-repeat,
+            linear-gradient(
+                180deg,
+                rgba(195, 127, 151, 0.2) 0%,
+                rgba(195, 127, 151, 0.112) 51.9%,
+                rgba(195, 127, 151, 0) 100%
+            );
+    }
+}
+
+// Applying background image and gradient per system theme
+#homepage h1 {
+    @include light-home;
+    @media (prefers-color-scheme: dark) {
+        @include dark-home;
+    }
+}
+
+// Manual (body-class based) theme overrides
+body.light-mode#homepage h1 {
+    @include light-home;
+}
+body.dark-mode#homepage h1 {
+    @include dark-home;
+}
