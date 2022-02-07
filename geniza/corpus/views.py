@@ -22,6 +22,7 @@ from geniza.corpus import iiif_utils
 from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
+from geniza.corpus.templatetags import corpus_extras
 from geniza.footnotes.models import Footnote
 
 
@@ -361,21 +362,7 @@ class DocumentManifestView(DocumentDetailView):
         # (or at least, do not display in Mirador)
         # in 3.0 we can use multiple provider blocks, but no viewer supports it yet
 
-        extra_attrs = "\n".join("<p>%s</p>" % attr for attr in attributions)
-        # Translators: attribution for local IIIF manifests
-        pgp = _("Princeton Geniza Project")
-        attribution = _("Compilation by %(pgp)s." % {"pgp": pgp})
-        # Translators: attribution for local IIIF manifests that include transcription
-        if document.has_transcription():
-            attribution = _("Compilation and transcription by %(pgp)s." % {"pgp": pgp})
-        # Translators: manifest attribution note that content from other institutions may have restrictions
-        additional_restrictions = _("Additional restrictions may apply.")
-
-        manifest.attribution = """<div><p>%s</p><p>%s</p>%s</div>""" % (
-            attribution,
-            additional_restrictions,
-            extra_attrs,
-        )
+        manifest.attribution = corpus_extras.format_attribution(document.attribution())
 
         # if transcription is available, add an annotation list to first canvas
         if document.has_transcription():

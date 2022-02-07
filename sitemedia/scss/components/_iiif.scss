@@ -1,50 +1,124 @@
-/* Mirador styles */
+/* IIIF viewer (OpenSeaDragon) + transcription text content */
 
 @use "../base/breakpoints";
 @use "../base/spacing";
 @use "../base/typography";
 
-// Wrapper for limiting size
-.iiif_wrapper {
-    display: block;
-    width: clamp(300px, 75vw, 90vw);
-    margin: spacing.$spacing-md auto;
-    // Exception to 60ch max-width limit for mirador
-    * {
-        max-width: none;
+#iiif-viewer {
+    max-width: none;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    background-color: var(--background-light);
+    padding: spacing.$spacing-xl spacing.$spacing-lg;
+    @include breakpoints.for-tablet-landscape-up {
+        padding: spacing.$spacing-2xl 10rem;
+        margin: 0;
+        max-width: 100%;
+        width: 100%;
+        flex-flow: row wrap;
+        align-items: flex-start;
+        justify-content: space-between;
     }
-}
-#iiif_viewer {
-    position: relative;
-    height: clamp(200px, 75vh, 75vh);
+    // Fallback image list for noscript
+    #iiif-images-fallback {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        img {
+            max-width: 100%;
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            align-items: flex-start;
+            width: 50%;
+            img {
+                max-width: 90%;
+            }
+        }
+    }
+    // OpenSeaDragon container
+    #iiif-images {
+        width: 100%;
+        height: 320px;
+        & + .transcription {
+            margin-top: spacing.$spacing-md;
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            align-items: flex-start;
+            width: 47%;
+            flex: 0 1 47%;
+            height: 680px;
+            // Special styling for images + transcription
+            & + .transcription {
+                align-self: flex-start;
+                margin: 0;
+                width: 50%;
+                max-width: 50%;
+                flex: 0 1 50%;
+            }
+            // Special styling for images and NO transcription
+            &.no-transcription {
+                margin: 0 auto;
+                flex: 1 0 100%;
+            }
+        }
+    }
+    // Transcription text
+    .transcription {
+        max-width: 60ch;
+        @include breakpoints.for-tablet-landscape-up {
+            /* make a scrollable div; match height with image container */
+            max-height: 680px;
+            overflow: scroll;
+            /* no scrolling/max height when no image present */
+            &.no-image {
+                max-height: none;
+                overflow: auto;
+            }
+        }
+        margin: 0 auto;
+        flex: 1 0 100%;
+        * {
+            max-width: 100%;
+        }
+        h1,
+        h2 {
+            @include typography.headline-3;
+            direction: ltr;
+        }
+        h1 {
+            text-align: left;
+        }
+        li {
+            & + li {
+                margin-top: spacing.$spacing-xs;
+            }
+        }
+        section + section {
+            margin-top: spacing.$spacing-md;
+        }
+
+        .source {
+            @include typography.body;
+            text-align: left;
+            padding-top: spacing.$spacing-md;
+        }
+    }
+
+    // Attribution text
+    div.attribution {
+        @include typography.caption;
+        flex: 1 0 100%;
+        margin: spacing.$spacing-xl auto 0;
+        * {
+            max-width: 100%;
+        }
+    }
 }
 
-// Mirador general improvements
-.mirador-viewer {
-    h1 {
-        @include typography.headline-3;
-        text-align: left;
-        direction: ltr;
-    }
-    li {
-        font-size: typography.$text-size-md;
-        @include breakpoints.for-tablet-landscape-up {
-            font-size: typography.$text-size-lg;
-        }
-        & + li {
-            margin-top: spacing.$spacing-xs;
-        }
-    }
-    li::before {
-        @include typography.nav-bold;
-    }
-    // Mobile improvement for mirador
-    .mirador-companion-area-left,
-    .mirador-companion-area-left div {
-        @include breakpoints.for-phone-only {
-            width: auto !important;
-            height: auto !important;
-            overflow: scroll;
-        }
-    }
+// OpenSeaDragon full screen
+canvas {
+    max-width: none;
 }

@@ -25,13 +25,16 @@ class Command(BaseCommand):
 
         dark_mode_str = ""  # empty string in light mode
 
-        # homepage TODO
+        # dark mode switch
         browser.get("http://localhost:8000/")
         if dark_mode:
             # turn on dark mode, save in local storage
             browser.find_element_by_css_selector("#theme-toggle").send_keys(Keys.ENTER)
             dark_mode_str = " (dark mode)"
-        # percy_snapshot(browser, "Home")
+
+        # homepage
+        browser.get("http://localhost:8000/")
+        percy_snapshot(browser, "Home%s" % dark_mode_str)
 
         # content page
         browser.get("http://localhost:8000/en/content/")
@@ -55,7 +58,7 @@ class Command(BaseCommand):
         percy_snapshot(browser, "Document Search%s" % dark_mode_str)
 
         # document detail
-        browser.get("http://localhost:8000/en/documents/2532/")
+        browser.get("http://localhost:8000/en/documents/8151/")
         percy_snapshot(browser, "Document Details%s" % dark_mode_str)
 
         # document scholarship
@@ -72,7 +75,7 @@ class Command(BaseCommand):
         )
 
         # about submenu open on both desktop and mobile
-        browser.get("http://localhost:8000/en/documents/2532/#menu")
+        browser.get("http://localhost:8000/en/documents/8151/#menu")
         # open about menu
         browser.find_element_by_id("open-about-menu").send_keys(Keys.ENTER)
         # custom CSS to ensure that on mobile, the about menu transition is disabled and the menu

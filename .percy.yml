@@ -5,8 +5,16 @@ snapshot:
     - 1440
   minHeight: 1024
 discovery:
-  allowedHostnames: ["unpkg.com"]
-  networkIdleTimeout: 100
+  allowedHostnames:
+    [
+      "unpkg.com",
+      "cdnjs.cloudflare.com",
+      "princeton.edu",
+      "arks.princeton.edu",
+      "figgy.princeton.edu",
+      "iiif-cloud.princeton.edu",
+    ]
+  networkIdleTimeout: 500
 static:
   baseUrl: /
   include: "**/*.{html,htm}"

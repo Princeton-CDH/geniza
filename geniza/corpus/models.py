@@ -1,3 +1,4 @@
+import json
 import logging
 from collections import defaultdict
 from itertools import chain
@@ -15,6 +16,7 @@ from django.db.models.query import Prefetch
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.urls import reverse
+from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import activate, get_language
 from django.utils.translation import gettext as _
@@ -437,7 +439,7 @@ class Document(ModelIndexable):
         # ordering = [Least('textblock__fragment__shelfmark')]
 
     def __str__(self):
-        return f"{self.shelfmark_display or '??'} (PGPID {self.id or '??'})"
+        return f"{self.shelfmark or '??'} (PGPID {self.id or '??'})"
 
     @staticmethod
     def get_by_any_pgpid(pgpid):
@@ -460,16 +462,21 @@ class Document(ModelIndexable):
         )
 
     @property
-    def shelfmark_display(self):
-        """First shelfmark plus join indicator for shorter display."""
-        # NOTE preliminary pending more discussion and implementation of #154:
-        # https://github.com/Princeton-CDH/geniza/issues/154
-        certain = list(
+    def certain_join_shelfmarks(self):
+        return list(
             dict.fromkeys(
                 block.fragment.shelfmark
                 for block in self.textblock_set.filter(certain=True)
             ).keys()
         )
+
+    # NOTE: not currently used; remove or revise if this remains unused
+    @property
+    def shelfmark_display(self):
+        """First shelfmark plus join indicator for shorter display."""
+        # NOTE preliminary pending more discussion and implementation of #154:
+        # https://github.com/Princeton-CDH/geniza/issues/154
+        certain = self.certain_join_shelfmarks
         if not certain:
             return None
         return certain[0] + (" + …" if len(certain) > 1 else "")
@@ -535,6 +542,19 @@ class Document(ModelIndexable):
             )
         )
 
+    def iiif_images(self):
+        """List of IIIF images and labels for images of the Document's Fragments."""
+        iiif_images = []
+        for b in self.textblock_set.all():
+            frag_images = b.fragment.iiif_images()
+            if frag_images is not None:
+                images, labels = frag_images
+                iiif_images += [
+                    {"image": img, "label": labels[i]} for i, img in enumerate(images)
+                ]
+
+        return iiif_images
+
     def fragment_urls(self):
         """List of external URLs to view the Document's Fragments."""
         return list(
@@ -562,7 +582,7 @@ class Document(ModelIndexable):
     @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
-        return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"
+        return f"{self.doctype or _('Unknown type')}: {self.shelfmark or '??'}"
 
     def editions(self):
         """All footnotes for this document where the document relation includes
@@ -591,6 +611,36 @@ class Document(ModelIndexable):
     def sources(self):
         """All unique sources attached to footnotes on this document."""
         return Source.objects.filter(footnote__document=self).distinct()
+
+    def attribution(self):
+        """Generate a tuple of three attribution components for use in IIIF manifests
+        or wherever images/transcriptions need attribution."""
+        # keep track of unique attributions so we can include them all
+        extra_attrs_set = set()
+        for url in self.iiif_urls():
+            remote_manifest = IIIFPresentation.from_url(url)
+            # CUDL attribution has some variation in tags;
+            # would be nice to preserve tagged version,
+            # for now, ignore tags so we can easily de-dupe
+            try:
+                extra_attrs_set.add(strip_tags(remote_manifest.attribution))
+            except AttributeError:
+                # attribution is optional, so ignore if not present
+                pass
+        pgp = _("Princeton Geniza Project")
+        # Translators: attribution for local IIIF manifests
+        attribution = _("Compilation by %(pgp)s." % {"pgp": pgp})
+        if self.has_transcription():
+            # Translators: attribution for local IIIF manifests that include transcription
+            attribution = _("Compilation and transcription by %(pgp)s." % {"pgp": pgp})
+        # Translators: manifest attribution note that content from other institutions may have restrictions
+        additional_restrictions = _("Additional restrictions may apply.")
+
+        return (
+            attribution,
+            additional_restrictions,
+            extra_attrs_set,
+        )
 
     @classmethod
     def total_to_index(cls):
@@ -638,7 +688,7 @@ class Document(ModelIndexable):
                 "description_t": self.description,
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
-                "shelfmark_ss": [f.shelfmark for f in fragments],
+                "shelfmark_ss": self.certain_join_shelfmarks,
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],
