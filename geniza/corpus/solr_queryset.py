@@ -93,4 +93,4 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         doc["iiif_images"] = [
             IIIFImageClient(*img.rsplit("/", 1)) for img in doc.get("iiif_images", [])
         ]
-        return doc.as_dict()
+        return doc
