@@ -16,11 +16,11 @@ class HomePage(Page):
             "h3",
             "bold",
             "italic",
+            "underline",
             "link",
             "ol",
             "ul",
             "image",
-            "embed",
             "blockquote",
             "superscript",
             "subscript",
@@ -74,11 +74,11 @@ class ContentPage(Page):
             "h3",
             "bold",
             "italic",
+            "underline",
             "link",
             "ol",
             "ul",
             "image",
-            "embed",
             "blockquote",
             "superscript",
             "subscript",
@@ -92,6 +92,9 @@ class ContentPage(Page):
         FieldPanel("description"),
         RichTextFieldPanel("body"),
     ]
+
+    # show in menu by default
+    show_in_menus_default = True
 
     def get_context(self, request):
         context = super(ContentPage, self).get_context(request)
