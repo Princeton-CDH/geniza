@@ -19,7 +19,7 @@ django-csp
 gitpython
 eulxml
 rich
-wagtail
+wagtail>=2.15.3,<2.16
 wagtail-localize
 djiffy>=0.7
 natsort
