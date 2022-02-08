@@ -339,7 +339,7 @@ class TestDocumentAdmin:
         resp = DocumentAdmin(Document, Mock()).merge_documents(mockrequest, Mock())
         assert isinstance(resp, HttpResponseRedirect)
         assert resp.status_code == 303
-        assert resp["location"].startswith(reverse("corpus:document-merge"))
+        assert resp["location"].startswith(reverse("admin:document-merge"))
         assert resp["location"].endswith("?ids=%s" % ",".join(test_ids))
 
         test_ids = ["50344"]

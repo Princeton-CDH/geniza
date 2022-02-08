@@ -34,9 +34,4 @@ urlpatterns = [
         name="document-annotations",
     ),
     path("export/pgp-metadata-old/", corpus_views.pgp_metadata_for_old_site),
-    path(
-        "admin/corpus/document/merge/",
-        corpus_views.DocumentMerge.as_view(),
-        name="document-merge",
-    ),
 ]

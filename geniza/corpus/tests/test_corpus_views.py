@@ -992,7 +992,7 @@ class TestDocumentMergeView:
 
     def test_document_merge(self, admin_client, client):
         # Ensure that the document merge view is not visible to public
-        response = client.get(reverse("corpus:document-merge"))
+        response = client.get(reverse("admin:document-merge"))
         assert response.status_code == 302
         assert response.url.startswith("/accounts/login/")
 
@@ -1004,12 +1004,12 @@ class TestDocumentMergeView:
         idstring = ",".join(str(pid) for pid in doc_ids)
 
         # GET should display choices
-        response = admin_client.get(reverse("corpus:document-merge"), {"ids": idstring})
+        response = admin_client.get(reverse("admin:document-merge"), {"ids": idstring})
         assert response.status_code == 200
 
         # POST should merge
         response = admin_client.post(
-            "%s?ids=%s" % (reverse("corpus:document-merge"), idstring),
+            "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
             {"primary_document": doc1.id, "rationale": "Test rationale"},
             follow=True,
         )

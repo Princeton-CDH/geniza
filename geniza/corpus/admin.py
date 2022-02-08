@@ -31,6 +31,7 @@ from geniza.corpus.models import (
     TextBlock,
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
+from geniza.corpus.views import DocumentMerge
 from geniza.footnotes.admin import DocumentFootnoteInline
 
 
@@ -481,7 +482,7 @@ class DocumentAdmin(admin.ModelAdmin):
             messages.error(request, "You must select at least two documents to merge")
             return HttpResponseRedirect(reverse("admin:corpus_document_changelist"))
         return HttpResponseRedirect(
-            "%s?ids=%s" % (reverse("corpus:document-merge"), ",".join(selected)),
+            "%s?ids=%s" % (reverse("admin:document-merge"), ",".join(selected)),
             status=303,
         )  # status code 303 means "See Other"
 
@@ -510,7 +511,12 @@ class DocumentAdmin(admin.ModelAdmin):
                 "csv/",
                 self.admin_site.admin_view(self.export_to_csv),
                 name="corpus_document_csv",
-            )
+            ),
+            path(
+                "merge/",
+                DocumentMerge.as_view(),
+                name="document-merge",
+            ),
         ]
         return urls + super(DocumentAdmin, self).get_urls()
 
