@@ -1,0 +1,9 @@
+{# Render figure with responsive image and optional caption #}
+{# Expects ImageWithCaption structblock with image and caption #}
+{# Adapted from mep-django #}
+<figure>
+    {% include "pages/snippets/responsive_image.html" with img=value.image alt_text=value.alternative_text %}
+    {% if value.caption %}
+        <figcaption>{{ value.caption }}</figcaption>
+    {% endif %}
+</figure>

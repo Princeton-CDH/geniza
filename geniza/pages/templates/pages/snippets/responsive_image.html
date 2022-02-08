@@ -1,0 +1,14 @@
+{% load wagtailimages_tags %}
+{# Generate responsive image using wagtail image template tag #}
+{# Expects Image as img; sizes per design spec #}
+{# Adapted from mep-django #}
+{% image img max-280x200 as mobile_1x %}
+{% image img max-400x300 as desktop_1x %}
+<img srcset="{{ mobile_1x.url }} {{ mobile_1x.width }}w,
+    {{ desktop_1x.url }} {{ desktop_1x.width }}w"
+    sizes="(max-width: 320px) {{ mobile_1x.width }}px,
+    {{ desktop_1x.width }}px"
+    src="{{ desktop_1x.url }}"
+    class="{% if img.width >= img.height %}landscape{% else %}portrait{% endif %}"
+    alt="{% firstof alt_text desktop_1x.alt %}" title="{{ desktop_1x.alt }}"
+/>
