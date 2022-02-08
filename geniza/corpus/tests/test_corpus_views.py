@@ -3,9 +3,12 @@ from unittest import mock
 from unittest.mock import Mock, mock_open, patch
 
 import pytest
+from django.conf import settings
+from django.contrib.auth.models import Permission, User
 from django.db.models.fields import related
 from django.http.response import Http404
-from django.urls import reverse
+from django.test import TestCase
+from django.urls import resolve, reverse
 from django.utils.text import Truncator, slugify
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
@@ -18,6 +21,7 @@ from geniza.corpus.views import (
     DocumentAnnotationListView,
     DocumentDetailView,
     DocumentManifestView,
+    DocumentMerge,
     DocumentScholarshipView,
     DocumentSearchView,
     DocumentTranscriptionText,
@@ -951,3 +955,68 @@ class TestDocumentTranscriptionText:
         assert slugify(source.authorship_set.first().creator.last_name) in filename
 
         assert response.content == b"some transcription text"
+
+
+class TestDocumentMergeView:
+    def test_get_success_url(self, document):
+        merge_view = DocumentMerge()
+        merge_view.primary_document = document
+
+        resolved_url = resolve(merge_view.get_success_url())
+        assert "admin" in resolved_url.app_names
+        assert resolved_url.url_name == "corpus_document_change"
+
+    def test_get_initial(self):
+        dmview = DocumentMerge()
+        dmview.request = Mock(GET={"ids": "12,23,456,7"})
+
+        initial = dmview.get_initial()
+        assert dmview.document_ids == [12, 23, 456, 7]
+        # lowest id selected as default primary document
+        assert initial["primary_document"] == 7
+
+        # Test when no ideas are provided (a user shouldn't get here,
+        #  but shouldn't raise an error.)
+        dmview.request = Mock(GET={"ids": ""})
+        initial = dmview.get_initial()
+        assert dmview.document_ids == []
+        dmview.request = Mock(GET={})
+        initial = dmview.get_initial()
+        assert dmview.document_ids == []
+
+    def test_get_form_kwargs(self):
+        dmview = DocumentMerge()
+        dmview.request = Mock(GET={"ids": "12,23,456,7"})
+        form_kwargs = dmview.get_form_kwargs()
+        assert form_kwargs["document_ids"] == dmview.document_ids
+
+    def test_document_merge(self, admin_client, client):
+        # Ensure that the document merge view is not visible to public
+        response = client.get(reverse("admin:document-merge"))
+        assert response.status_code == 302
+        assert response.url.startswith("/accounts/login/")
+
+        # create test document records to merge
+        doc1 = Document.objects.create()
+        doc2 = Document.objects.create()
+
+        doc_ids = [doc1.id, doc2.id]
+        idstring = ",".join(str(pid) for pid in doc_ids)
+
+        # GET should display choices
+        response = admin_client.get(reverse("admin:document-merge"), {"ids": idstring})
+        assert response.status_code == 200
+
+        # POST should merge
+        response = admin_client.post(
+            "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+            {"primary_document": doc1.id, "rationale": "Test rationale"},
+            follow=True,
+        )
+        TestCase().assertRedirects(
+            response, reverse("admin:corpus_document_change", args=[doc1.id])
+        )
+        message = list(response.context.get("messages"))[0]
+        assert message.tags == "success"
+        assert "Successfully merged" in message.message
+        assert f"with PGPID {doc1.id}" in message.message

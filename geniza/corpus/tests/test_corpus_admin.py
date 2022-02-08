@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.db.models.query import EmptyQuerySet
 from django.forms import modelform_factory
 from django.forms.models import model_to_dict
+from django.http import HttpResponseRedirect
 from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
@@ -330,6 +331,23 @@ class TestDocumentAdmin:
         response = admin_client.get(url)
         # should not error if no log entry is in the deleted objects list
         assert response.status_code == 200
+
+    def test_merge_document(self):
+        mockrequest = Mock()
+        test_ids = ["50344", "33003", "10100"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = DocumentAdmin(Document, Mock()).merge_documents(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 303
+        assert resp["location"].startswith(reverse("admin:document-merge"))
+        assert resp["location"].endswith("?ids=%s" % ",".join(test_ids))
+
+        test_ids = ["50344"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = DocumentAdmin(Document, Mock()).merge_documents(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 302
+        assert resp["location"] == reverse("admin:corpus_document_changelist")
 
 
 @pytest.mark.django_db

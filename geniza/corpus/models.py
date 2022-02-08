@@ -778,7 +778,6 @@ class Document(ModelIndexable):
         metadata into this document, adds the merged documents into
         list of old PGP IDs, and creates a log entry documenting
         the merge, including the rationale."""
-
         # initialize old pgpid list if previously unset
         if self.old_pgpids is None:
             self.old_pgpids = []
