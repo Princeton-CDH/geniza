@@ -184,7 +184,7 @@ class DocumentChoiceField(forms.ModelChoiceField):
 
 class DocumentMergeForm(forms.Form):
     primary_document = DocumentChoiceField(
-        label="Primary document",
+        label="Select primary document",
         queryset=None,
         help_text=(
             "Select the primary document, which will be used as the merged document PGPID. "
