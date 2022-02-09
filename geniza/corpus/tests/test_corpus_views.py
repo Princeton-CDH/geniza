@@ -1,6 +1,6 @@
 from time import sleep
 from unittest import mock
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import ANY, Mock, mock_open, patch
 
 import pytest
 from django.conf import settings
@@ -1010,7 +1010,7 @@ class TestDocumentMergeView:
         # POST should merge
         response = admin_client.post(
             "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
-            {"primary_document": doc1.id, "rationale": "Test rationale"},
+            {"primary_document": doc1.id, "rationale": "duplicate"},
             follow=True,
         )
         TestCase().assertRedirects(
@@ -1020,3 +1020,28 @@ class TestDocumentMergeView:
         assert message.tags == "success"
         assert "Successfully merged" in message.message
         assert f"with PGPID {doc1.id}" in message.message
+
+        with patch.object(Document, "merge_with") as mock_merge_with:
+            # should pick up rationale notes as parenthetical
+            response = admin_client.post(
+                "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+                {
+                    "primary_document": doc1.id,
+                    "rationale": "duplicate",
+                    "rationale_notes": "test",
+                },
+                follow=True,
+            )
+            mock_merge_with.assert_called_with(ANY, "duplicate (test)", user=ANY)
+
+            # with "other", should use rationale notes as rationale string
+            response = admin_client.post(
+                "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+                {
+                    "primary_document": doc1.id,
+                    "rationale": "other",
+                    "rationale_notes": "test",
+                },
+                follow=True,
+            )
+            mock_merge_with.assert_called_with(ANY, "test", user=ANY)

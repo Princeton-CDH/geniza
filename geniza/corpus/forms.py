@@ -1,5 +1,7 @@
 from django import forms
+from django.forms import renderers
 from django.template.loader import get_template
+from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
@@ -183,8 +185,13 @@ class DocumentChoiceField(forms.ModelChoiceField):
 
 
 class DocumentMergeForm(forms.Form):
+    RATIONALE_CHOICES = [
+        ("duplicate", "Duplicate"),
+        ("join", "Join"),
+        ("other", "Other (please specify)"),
+    ]
     primary_document = DocumentChoiceField(
-        label="Primary document",
+        label="Select primary document",
         queryset=None,
         help_text=(
             "Select the primary document, which will be used as the merged document PGPID. "
@@ -194,9 +201,16 @@ class DocumentMergeForm(forms.Form):
         empty_label=None,
         widget=forms.RadioSelect,
     )
-    rationale = forms.CharField(
+    rationale = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        required=True,
         label="Rationale",
-        help_text="Briefly note why these documents are being merged; will be included in the document history.",
+        help_text="Choose the option that best explains why these documents are being merged; will be included in the document history.",
+        choices=RATIONALE_CHOICES,
+    )
+    rationale_notes = forms.CharField(
+        required=False,
+        label="Rationale notes",
         widget=forms.Textarea(),
     )
 
@@ -213,3 +227,13 @@ class DocumentMergeForm(forms.Form):
         self.fields["primary_document"].queryset = Document.objects.filter(
             id__in=document_ids
         )
+        self.initial["rationale"] = "duplicate"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        rationale = cleaned_data.get("rationale")
+        rationale_notes = cleaned_data.get("rationale_notes")
+
+        if rationale == "other" and not rationale_notes:
+            msg = 'Additional information is required when selecting "Other".'
+            self.add_error("rationale", msg)
