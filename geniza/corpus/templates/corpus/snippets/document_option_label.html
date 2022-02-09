@@ -33,8 +33,8 @@
         </div>
     {% endif %}
     {% if document.footnotes.count %}
-        <details class="form-row">
-            <summary>Scholarship Records</summary>
+        <div class="form-row">
+            <label>Scholarship Records</label>
             <ol>
                 {% regroup document.footnotes.all by source as source_list %}
                 {% for source in source_list %}
@@ -73,6 +73,6 @@
                     </li>
                 {% endfor %}
             </ol>
-        </details>
+        </div>
     {% endif %}
 </div>
