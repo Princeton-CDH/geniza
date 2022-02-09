@@ -17,20 +17,13 @@
             </div>
         </fieldset>
     {% endif %}
-    {% if original.has_transcription %}
+    {% if original.digital_editions %}
         <fieldset class="module aligned transcriptions-field">
             <div class="form-row">
-                <label>Transcription(s)</label>
-                {% regroup original.footnotes.all by source as source_list %}
-                {% for source in source_list %}
-                    {% if source_list|length > 1 %}<h3 class="source">{{ source.grouper|safe }}</h3>{% endif %}
-                    {% for footnote in source.list %}
-                        {% if footnote.content %}
-                            {% include "footnotes/transcription.html" with transcription=footnote.content %}
-                        {% else %}
-                            <div class="transcription">No transcription</div>
-                        {% endif %}
-                    {% endfor %}
+                <label>Transcription{{ original.digital_editions.count|pluralize }}</label>
+                {% for footnote in original.digital_editions %}
+                    {% if original.digital_editions|length > 1 %}<h3 class="source">{{ footnote.source|safe }}</h3>{% endif %}
+                    {% include "footnotes/transcription.html" with transcription=footnote.content %}
                 {% endfor %}
             </div>
         </fieldset>
