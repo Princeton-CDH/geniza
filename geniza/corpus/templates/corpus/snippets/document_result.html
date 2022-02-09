@@ -1,7 +1,7 @@
 {% load i18n corpus_extras %}
 {% spaceless %}
     <li class="search-result">
-        <section>
+        <section class="{% if document.iiif_images %}has-image{% endif %}">
             {# title #}
             <h2 class="title">
                 {# result number #}
@@ -100,15 +100,19 @@
                     {% endif %}
                 </ul>
             {% endif %}
-
-            {% if document.iiif_images %}
-                {# proof of concept image display, should be resized #}
-                {% for img in document.iiif_images %}
-                    <img width="200" src="{{ img }}" />
-                {% endfor %}
-            {% endif %}
-
         </section>
+
+        {% if document.iiif_images %}
+            <ul class="images">
+                {% for image in document.iiif_images|slice:":3" %}
+                    <li class="image-{{ forloop.counter }}">
+                        <a href="{% url 'corpus:document' document.pgpid %}">
+                            <img src="{{ image|iiif_image:"size:width=250" }}" loading="lazy">
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
         {# view link #}
         <a class="view-link" href="{% url 'corpus:document' document.pgpid %}">
             {% translate 'View document details' %}
