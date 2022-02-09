@@ -146,10 +146,6 @@ a#needsreview:target {
     justify-content: flex-start;
 }
 
-.merge-document h2 {
-    margin: 0 0 0 0.5rem;
-}
-
 .merge-document .submit-row {
     clear: left;
     padding: 12px 14px;
@@ -180,4 +176,11 @@ a#needsreview:target {
 
 .aligned .merge-document-label ol li {
     list-style: auto;
+}
+
+.merge-document input[type="radio"] {
+    margin-right: 0.5rem;
+}
+.merge-document textarea {
+    margin: 0 0 20px 180px;
 }

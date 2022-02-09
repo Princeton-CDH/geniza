@@ -141,3 +141,37 @@ class TestDocumentMergeForm:
         assert mergeform.fields["primary_document"].queryset.count() == docs.count() - 1
         # last document should not be an available choice
         assert docs.last() not in mergeform.fields["primary_document"].queryset
+
+    @pytest.mark.django_db
+    def test_clean(self):
+        """Should add an error if rationale is 'other' and rationale notes are empty"""
+        doc = Document.objects.create()
+
+        form = DocumentMergeForm()
+        form.cleaned_data = {
+            "primary_document": doc.id,
+            "rationale": "other",
+            "rationale_notes": "",
+        }
+        form.clean()
+        assert len(form.errors) == 1
+
+        # should not produce an error if rationale notes provided
+        form = DocumentSearchForm()
+        form.cleaned_data = {
+            "primary_document": doc.id,
+            "rationale": "other",
+            "rationale_notes": "test",
+        }
+        form.clean()
+        assert len(form.errors) == 0
+
+        # should not produce an error if rational is "duplicate" or "join"
+        form = DocumentSearchForm()
+        form.cleaned_data = {
+            "primary_document": doc.id,
+            "rationale": "duplicate",
+            "rationale_notes": "",
+        }
+        form.clean()
+        assert len(form.errors) == 0

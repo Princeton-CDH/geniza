@@ -477,7 +477,18 @@ class DocumentMerge(PermissionRequiredMixin, FormView):
         """Merge the selected documents into the primary document."""
         primary_doc = form.cleaned_data["primary_document"]
         self.primary_document = primary_doc
-        rationale = form.cleaned_data["rationale"]
+
+        # Include additional notes in rationale string if present
+        if form.cleaned_data["rationale"] == "other":
+            # Only use the additional notes if "other" is chosen
+            rationale = form.cleaned_data["rationale_notes"]
+        elif form.cleaned_data["rationale_notes"]:
+            rationale = "%s (%s)" % (
+                form.cleaned_data["rationale"],
+                form.cleaned_data["rationale_notes"],
+            )
+        else:
+            rationale = form.cleaned_data["rationale"]
 
         secondary_ids = [
             doc_id for doc_id in self.document_ids if doc_id != primary_doc.id

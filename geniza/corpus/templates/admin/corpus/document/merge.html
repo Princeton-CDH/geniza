@@ -32,6 +32,11 @@
 {% block content %}
     <form method="post" class="merge-document">
         {% csrf_token %}
+        {% if form.errors|length > 0 %}
+            <p class="errornote">
+                Please correct the error below.
+            </p>
+        {% endif %}
         <fieldset class="module aligned">
             <div class="form-row">
                 {{ form.primary_document.label_tag }}
@@ -42,6 +47,8 @@
             <div class="form-row">
                 {{ form.rationale.label_tag }}
                 {{ form.rationale }}
+                {{ form.rationale.errors }}
+                {{ form.rationale_notes }}
                 <p class="help">{{ form.rationale.help_text|safe }}</p>
             </div>
             <div class="submit-row">
