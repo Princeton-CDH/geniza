@@ -681,6 +681,7 @@ class Document(ModelIndexable):
         # get fragments via textblocks for correct order
         # and to take advantage of prefetching
         fragments = [tb.fragment for tb in self.textblock_set.all()]
+        images = self.iiif_images()
         index_data.update(
             {
                 "pgpid_i": self.id,
@@ -697,17 +698,10 @@ class Document(ModelIndexable):
                 "language_code_ss": [lang.iso_code for lang in self.languages.all()],
                 # use image info link without trailing info.json to easily convert back to iiif image client
                 "iiif_images_ss": [
-                    img.info()[:-10]  # i.e., remove /info.json
-                    for f in fragments
-                    if f.manifest
-                    for img in f.iiif_images()[0]
+                    img["image"].info()[:-10]  # i.e., remove /info.json
+                    for img in images
                 ],
-                "iiif_labels_ss": [
-                    label
-                    for f in fragments
-                    if f.manifest
-                    for label in f.iiif_images()[1]
-                ],
+                "iiif_labels_ss": [img["label"] for img in images],
             }
         )
 

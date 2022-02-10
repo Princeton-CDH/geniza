@@ -405,7 +405,8 @@ class TestDocument:
         # reactivate previous default (in case it matters for other tests)
         activate(current_lang)
 
-    def test_iiif_urls(self):
+    @patch("geniza.corpus.models.IIIFPresentation")
+    def test_iiif_urls(self, mock_pres):
         # create example doc with two fragments with URLs
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark="s1", iiif_url="foo")
@@ -612,9 +613,6 @@ class TestDocument:
         with patch.object(
             Fragment, "iiif_images", return_value=([img1, img2], ["label1", "label2"])
         ):
-            manifest = Manifest.objects.create()
-            frag = Fragment.objects.create(shelfmark="T-S 8J22.21", manifest=manifest)
-            TextBlock.objects.create(document=document, fragment=frag, side="r")
             index_data = document.index_data()
             # index data should pick up images and labels
             assert index_data["iiif_images_ss"] == [
