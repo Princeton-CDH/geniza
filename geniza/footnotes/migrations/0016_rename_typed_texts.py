@@ -19,6 +19,7 @@ def rename_typed_texts(apps, schema_editor):
     for source in typed_texts:
         # rename to "unpublished editions"
         source.title = "unpublished editions"
+        source.title_en = "unpublished editions"
         source.save()
         # log action
         LogEntry.objects.log_action(
