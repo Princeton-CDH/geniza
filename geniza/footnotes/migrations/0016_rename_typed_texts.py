@@ -3,6 +3,7 @@
 from django.conf import settings
 from django.contrib.admin.models import CHANGE
 from django.db import migrations
+from django.db.models import Q
 
 
 def rename_typed_texts(apps, schema_editor):
@@ -18,7 +19,9 @@ def rename_typed_texts(apps, schema_editor):
     )  # generic user for script execution (should already be created)
 
     # get all sources called "typed texts"
-    typed_texts = Source.objects.filter(title="typed texts")
+    typed_texts = Source.objects.filter(
+        Q(title_en="typed texts") | Q(title="typed texts")
+    )
     # preserve as a list so queryset doesn't erase our set of records
     update_pks = list(typed_texts.values_list("pk", flat=True))
     # do a bulk update to replace the titles
