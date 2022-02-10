@@ -6,6 +6,8 @@ from django.db import migrations
 
 
 def rename_typed_texts(apps, schema_editor):
+    # rename all "typed texts" to "unpublished editions"
+    # partially adapted from mep-django
     Source = apps.get_model("footnotes", "Source")
     ContentType = apps.get_model("contenttypes", "ContentType")
     LogEntry = apps.get_model("admin", "LogEntry")
@@ -17,11 +19,12 @@ def rename_typed_texts(apps, schema_editor):
 
     # get all sources called "typed texts"
     typed_texts = Source.objects.filter(title="typed texts")
-    for source in typed_texts:
-        # rename to "unpublished editions"
-        source.title = "unpublished editions"
-        source.title_en = "unpublished editions"
-        source.save()
+    # preserve as a list so queryset doesn't erase our set of records
+    update_pks = list(typed_texts.values_list("pk", flat=True))
+    # do a bulk update to replace the titles
+    typed_texts.update(title="unpublished editions", title_en="unpublished editions")
+    # get fresh copies of the updated records and create log entries
+    for source in Source.objects.filter(pk__in=update_pks):
         # log action
         LogEntry.objects.log_action(
             user_id=user.id,
