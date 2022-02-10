@@ -603,6 +603,26 @@ class TestDocument:
             assert index_data[scholarship_count] == 0
         assert index_data["scholarship_t"] == []
 
+        # add mock images
+        img1 = Mock()
+        img1.info.return_value = "http://example.co/iiif/ts-1/00001/info.json"
+        img2 = Mock()
+        img2.info.return_value = "http://example.co/iiif/ts-1/00002/info.json"
+        # Mock Fragment.iiif_images() to return those two images and two fake labels
+        with patch.object(
+            Fragment, "iiif_images", return_value=([img1, img2], ["label1", "label2"])
+        ):
+            manifest = Manifest.objects.create()
+            frag = Fragment.objects.create(shelfmark="T-S 8J22.21", manifest=manifest)
+            TextBlock.objects.create(document=document, fragment=frag, side="r")
+            index_data = document.index_data()
+            # index data should pick up images and labels
+            assert index_data["iiif_images_ss"] == [
+                "http://example.co/iiif/ts-1/00001",
+                "http://example.co/iiif/ts-1/00002",
+            ]
+            assert index_data["iiif_labels_ss"] == ["label1", "label2"]
+
     def test_index_data_footnotes(
         self, document, source, twoauthor_source, multiauthor_untitledsource
     ):
