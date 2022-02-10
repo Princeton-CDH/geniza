@@ -92,9 +92,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         doc = super().get_result_document(doc)
         # convert indexed iiif image paths to IIIFImageClient objects
         images = doc.get("iiif_images", [])
+        doc["iiif_images"] = [IIIFImageClient(*img.rsplit("/", 1)) for img in images]
+        # zip images and associated labels into (img, label) tuples in result doc
         labels = doc.get("iiif_labels", [])
-        doc["iiif_images"] = [
-            (IIIFImageClient(*img.rsplit("/", 1)), labels[i])
-            for i, img in enumerate(images)
-        ]
+        doc["iiif_images"] = list(zip(doc["iiif_images"], labels))
         return doc
