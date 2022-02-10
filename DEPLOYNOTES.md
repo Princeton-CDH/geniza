@@ -1,5 +1,9 @@
 # Deploy Notes
 
+## 4.1
+
+-   This update includes Solr configuration and indexing changes. Once the Solr core has been updated, run `python manage.py index` to reindex all content (for IIIF image and label indexing).
+
 ## 4.0
 
 -   Run `python manage.py sync_transcriptions` to update transcriptions for documents with multiple transcriptions

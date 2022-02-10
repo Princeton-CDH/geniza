@@ -11,7 +11,7 @@ django-modeltranslation
 django-admin-sortable2
 python-dateutil>=2.8
 django-tabular-export
-parasolr>=0.8.1
+parasolr>=0.8.2
 django-gfklookupwidget
 django-adminlogentries
 django-webpack-loader
