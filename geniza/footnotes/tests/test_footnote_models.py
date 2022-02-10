@@ -115,13 +115,13 @@ class TestSource:
             author2.creator,
         )
 
-    def test_str_unpublished_vol(self, typed_texts):
+    def test_str_unpublished_vol(self, unpublished_editions):
         # displays with volume
-        assert str(typed_texts) == "S. D. Goitein, typed texts. (CUL)"
+        assert str(unpublished_editions) == "S. D. Goitein, unpublished editions. (CUL)"
 
-    def test_display(self, typed_texts):
+    def test_display(self, unpublished_editions):
         # displays without volume
-        assert typed_texts.display() == "S. D. Goitein, typed texts."
+        assert unpublished_editions.display() == "S. D. Goitein, unpublished editions."
 
     def test_formatted_display(self, book_section):
         # should display proper publisher info, page range for book section fixture

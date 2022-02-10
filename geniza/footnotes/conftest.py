@@ -63,10 +63,12 @@ def article(db):
 
 
 @pytest.fixture
-def typed_texts(db):
+def unpublished_editions(db):
     # fixture for unpublished source
     unpub = SourceType.objects.get(type="Unpublished")
-    source = Source.objects.create(source_type=unpub, title="typed texts", volume="CUL")
+    source = Source.objects.create(
+        source_type=unpub, title="unpublished editions", volume="CUL"
+    )
     author = Creator.objects.create(last_name="Goitein", first_name="S. D.")
     Authorship.objects.create(creator=author, source=source)
     return source

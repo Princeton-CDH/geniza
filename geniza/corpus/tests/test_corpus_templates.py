@@ -54,7 +54,7 @@ class TestDocumentDetailTemplate:
             '<section id="iiif-viewer">',
         )
 
-    def test_viewer_annotations(self, client, document, typed_texts):
+    def test_viewer_annotations(self, client, document, unpublished_editions):
         """Document detail template should configure IIIF viewer for annotation display"""
         # fixture does not have annotations
         response = client.get(document.get_absolute_url())
@@ -63,7 +63,7 @@ class TestDocumentDetailTemplate:
         # add a footnote with a digital edition
         Footnote.objects.create(
             content_object=document,
-            source=typed_texts,
+            source=unpublished_editions,
             doc_relation={Footnote.EDITION},
             content="A piece of text",
         )
@@ -138,10 +138,12 @@ class TestDocumentDetailTemplate:
             html=True,
         )
 
-    def test_download_transcription_link_anonymous(self, client, document, typed_texts):
+    def test_download_transcription_link_anonymous(
+        self, client, document, unpublished_editions
+    ):
         edition = Footnote.objects.create(
             content_object=document,
-            source=typed_texts,
+            source=unpublished_editions,
             doc_relation=Footnote.EDITION,
             content={
                 "html": "some transcription text",
@@ -149,15 +151,17 @@ class TestDocumentDetailTemplate:
             },
         )
         response = client.get(document.get_absolute_url())
-        # typed text fixture authored by Goitein
+        # unpublished editions fixture authored by Goitein
         # should not be available to anonymous users (suppressed for now)
         assertNotContains(response, "Download Goitein's edition")
 
     # NOTE: text download is limited to authenticated users for now
-    def test_download_transcription_link(self, admin_client, document, typed_texts):
+    def test_download_transcription_link(
+        self, admin_client, document, unpublished_editions
+    ):
         edition = Footnote.objects.create(
             content_object=document,
-            source=typed_texts,
+            source=unpublished_editions,
             doc_relation=Footnote.EDITION,
             content={
                 "html": "some transcription text",
@@ -165,7 +169,7 @@ class TestDocumentDetailTemplate:
             },
         )
         response = admin_client.get(document.get_absolute_url())
-        # typed text fixture authored by Goitein
+        # unpublished editions fixture authored by Goitein
         assertContains(response, "Download Goitein's edition")
         assertContains(
             response,
