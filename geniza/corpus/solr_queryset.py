@@ -34,6 +34,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "transcription": "transcription_t",
         "language_code": "language_code_ss",
         "iiif_images": "iiif_images_ss",
+        "iiif_labels": "iiif_labels_ss",
     }
 
     # regex to convert field aliases used in search to actual solr fields
@@ -90,7 +91,10 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # default implementation converts from attrdict to dict
         doc = super().get_result_document(doc)
         # convert indexed iiif image paths to IIIFImageClient objects
+        images = doc.get("iiif_images", [])
+        labels = doc.get("iiif_labels", [])
         doc["iiif_images"] = [
-            IIIFImageClient(*img.rsplit("/", 1)) for img in doc.get("iiif_images", [])
+            (IIIFImageClient(*img.rsplit("/", 1)), labels[i])
+            for i, img in enumerate(images)
         ]
         return doc

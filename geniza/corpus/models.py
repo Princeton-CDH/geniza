@@ -702,6 +702,12 @@ class Document(ModelIndexable):
                     if f.manifest
                     for img in f.iiif_images()[0]
                 ],
+                "iiif_labels_ss": [
+                    label
+                    for f in fragments
+                    if f.manifest
+                    for label in f.iiif_images()[1]
+                ],
             }
         )
 
