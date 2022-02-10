@@ -167,9 +167,10 @@ section#document-list {
             width: 170px;
             padding: 10px 0;
             margin: 0 auto;
+            z-index: 3;
             & + li {
                 position: absolute;
-                z-index: -1;
+                z-index: 2;
                 top: 5%;
                 left: 25%;
                 img {
@@ -179,7 +180,7 @@ section#document-list {
                 }
             }
             & + li + li {
-                z-index: -2;
+                z-index: 1;
                 top: 10%;
                 left: 30%;
                 img {
