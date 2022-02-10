@@ -420,7 +420,7 @@ class TestHasTranscriptionListFilter:
         )
 
     @pytest.mark.django_db
-    def test_queryset(self, document, join, typed_texts):
+    def test_queryset(self, document, join, unpublished_editions):
         filter = self.init_filter()
 
         # no transcription: all documents should be returned
@@ -435,7 +435,7 @@ class TestHasTranscriptionListFilter:
         # add a transcription
         footnote = Footnote.objects.create(
             doc_relation=["E"],
-            source=typed_texts,
+            source=unpublished_editions,
             content_type_id=ContentType.objects.get(
                 app_label="corpus", model="document"
             ).id,

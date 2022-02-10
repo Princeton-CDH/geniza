@@ -135,3 +135,49 @@ class TestFootnoteLocationPpMigration(TestMigrations):
         # unmodified
         for page_loc in ["doc 5", "49ב"]:
             assert Footnote.objects.filter(location=page_loc).exists()
+
+
+@pytest.mark.last
+class TestRenameTypedTextsMigration(TestMigrations):
+
+    app = "footnotes"
+    migrate_from = "0015_add_footnote_location_pp"
+    migrate_to = "0016_rename_typed_texts"
+    typed_texts_source = None
+    other_source = None
+
+    def setUpBeforeMigration(self, apps):
+        Source = apps.get_model("footnotes", "Source")
+        SourceType = apps.get_model("footnotes", "SourceType")
+        source_type = SourceType.objects.create(type="Unknown")
+        typed_texts_source = Source.objects.create(
+            title="typed texts", source_type=source_type
+        )
+        self.typed_texts_source = typed_texts_source
+        other_source = Source.objects.create(
+            title="other title", source_type=source_type
+        )
+        self.other_source = other_source
+
+    def test_rename_typed_texts(self):
+        # should rename "typed texts" (only) to "unpublished editions"
+        self.typed_texts_source.refresh_from_db()
+        assert self.typed_texts_source.title == "unpublished editions"
+        self.other_source.refresh_from_db()
+        assert self.other_source.title == "other title"
+
+        LogEntry = self.apps.get_model("admin", "LogEntry")
+        msg = 'changed title "typed texts" to "unpublished editions"'
+        # should create log entries with appropriate message for typed texts, but not other source
+        assert (
+            LogEntry.objects.filter(
+                change_message=msg, object_id=self.typed_texts_source.pk
+            ).count()
+            == 1
+        )
+        assert (
+            LogEntry.objects.filter(
+                change_message=msg, object_id=self.other_source.pk
+            ).count()
+            == 0
+        )
