@@ -104,6 +104,7 @@
 
         {% if document.iiif_images %}
             <ul class="images">
+                {# list of tuples of (IIIF image, label) #}
                 {% for image in document.iiif_images|slice:":3" %}
                     <li class="image-{{ forloop.counter }}">
                         <a href="{% url 'corpus:document' document.pgpid %}">
