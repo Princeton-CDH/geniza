@@ -24,7 +24,7 @@ from djiffy.importer import ManifestImporter
 from djiffy.models import Manifest
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
-from piffle.presentation import IIIFPresentation
+from piffle.presentation import IIIFException, IIIFPresentation
 from taggit.models import Tag
 from taggit_selectize.managers import TaggableManager
 
@@ -212,12 +212,15 @@ class Fragment(TrackChangesModel):
 
         # if not cached, load from remote url
         else:
-            manifest = IIIFPresentation.from_url(self.iiif_url)
-            for canvas in manifest.sequences[0].canvases:
-                image_id = canvas.images[0].resource.id
-                images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
-                # label provides library's recto/verso designation
-                labels.append(canvas.label)
+            try:
+                manifest = IIIFPresentation.from_url(self.iiif_url)
+                for canvas in manifest.sequences[0].canvases:
+                    image_id = canvas.images[0].resource.id
+                    images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
+                    # label provides library's recto/verso designation
+                    labels.append(canvas.label)
+            except IIIFException:
+                pass
 
         return images, labels
 
