@@ -1,13 +1,16 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
+from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
+from django.http import HttpResponseRedirect
 from django.test import TestCase, TransactionTestCase, override_settings
 
 from geniza.common.admin import LocalUserAdmin, custom_empty_field_list_filter
+from geniza.common.middleware import PublicLocaleMiddleware
 from geniza.common.utils import absolutize_url, custom_tag_string
 
 
@@ -149,3 +152,86 @@ class TestMigrations(TransactionTestCase):
 
     def setUpBeforeMigration(self, apps):
         pass
+
+
+class TestMiddleware(TestCase):
+    def setUp(self):
+        self.middleware = PublicLocaleMiddleware()
+        self.request = MagicMock()
+        self.request.META = {
+            "REQUEST_METHOD": "GET",
+        }
+        self.request.COOKIES = {}
+        self.request.user = Mock()
+        self.response = Mock()
+        self.response.status_code = 404
+
+    def test_process_request(self):
+        # with logged-in user, should not modify request at all
+        with patch("geniza.common.middleware.translation") as mock_translation:
+            self.request.user.is_authenticated = True
+            assert self.middleware.process_request(self.request) is None
+            mock_translation.get_language_from_path.assert_not_called
+
+        # set user to anonymous
+        self.request.user.is_authenticated = False
+
+        with patch("geniza.common.middleware.getattr") as mock_get_public_languages:
+            # try to access path with language that is not in PUBLIC_SITE_LANGUAGES
+            mock_get_public_languages.return_value = ["en", "he"]
+            self.request.path_info = "/ar/test"
+            # should process request by setting the language cookie and LANGUAGE_CODE property
+            # to the default language code
+            self.middleware.process_request(self.request)
+            assert (
+                self.request.COOKIES[settings.LANGUAGE_COOKIE_NAME]
+                == settings.LANGUAGE_CODE
+            )
+            assert self.request.LANGUAGE_CODE == settings.LANGUAGE_CODE
+
+            # try to access path with language that _is_ in PUBLIC_SITE_LANGUAGES
+            self.request.path_info = "/en/test"
+            self.request.COOKIES = {}
+            self.middleware.process_request(self.request)
+            # should not modify the request object
+            assert self.request.COOKIES == {}
+
+    def test_process_response(self):
+        # with logged-in user, should not modify response at all
+        with patch("geniza.common.middleware.translation") as mock_translation:
+            self.request.user.is_authenticated = True
+            assert (
+                self.middleware.process_response(self.request, self.response)
+                == self.response
+            )
+            mock_translation.get_language_from_path.assert_not_called
+
+        # set user to anonymous
+        self.request.user.is_authenticated = False
+
+        with patch("geniza.common.middleware.getattr") as mock_getattr:
+            mock_getattr.side_effect = [
+                ["en", "he"],  # settings.PUBLIC_SITE_LANGUAGES
+                settings.ROOT_URLCONF,  # request.urlconf
+            ]
+
+            # try to access path with language that is not in PUBLIC_SITE_LANGUAGES
+            self.request.path_info = "/ar/"
+            self.request.LANGUAGE_CODE = "en"
+            response = self.middleware.process_response(self.request, self.response)
+            # should redirect to URL with default language code
+            assert isinstance(response, HttpResponseRedirect)
+            assert response.url == "/%s/" % settings.LANGUAGE_CODE
+
+            mock_getattr.side_effect = [
+                ["en", "he"],  # settings.PUBLIC_SITE_LANGUAGES
+                settings.ROOT_URLCONF,  # request.urlconf
+            ]
+
+            # try to access path with language that _is_ in PUBLIC_SITE_LANGUAGES
+            self.request.path_info = "/he/"
+            self.request.LANGUAGE_CODE = "he"
+            response = self.middleware.process_response(self.request, self.response)
+            # should not modify response
+            assert response == self.response
+            assert not isinstance(response, HttpResponseRedirect)
