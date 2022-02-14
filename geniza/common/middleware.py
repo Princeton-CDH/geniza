@@ -12,7 +12,10 @@ class PublicLocaleMiddleware(MiddlewareMixin):
     response_redirect_class = HttpResponseRedirect
 
     def process_request(self, request: HttpRequest):
-        if settings.PUBLIC_SITE_LANGUAGES and not request.user.is_authenticated:
+        if (
+            getattr(settings, "PUBLIC_SITE_LANGUAGES", [])
+            and not request.user.is_authenticated
+        ):
             language_from_path = translation.get_language_from_path(request.path_info)
             if (
                 language_from_path
@@ -25,7 +28,10 @@ class PublicLocaleMiddleware(MiddlewareMixin):
                 request.LANGUAGE_CODE = translation.get_language()
 
     def process_response(self, request: HttpRequest, response: HttpResponse):
-        if settings.PUBLIC_SITE_LANGUAGES and not request.user.is_authenticated:
+        if (
+            getattr(settings, "PUBLIC_SITE_LANGUAGES", [])
+            and not request.user.is_authenticated
+        ):
             # Compare language from request against language from path
             language = request.LANGUAGE_CODE
             language_from_path = translation.get_language_from_path(request.path_info)
