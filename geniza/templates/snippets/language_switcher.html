@@ -8,8 +8,8 @@
                 {% get_current_language as LANGUAGE_CODE %}
                 {% get_language_info_list for LANGUAGES as languages %}
                 {% for language in languages %}
-                    {# For anonymous users, only display languages in PUBLIC_LANGUAGES (if defined) #}
-                    {% if user.is_authenticated or not PUBLIC_LANGUAGES or language.code in PUBLIC_LANGUAGES %}
+                    {# For anonymous users, only display languages in PUBLIC_SITE_LANGUAGES (if defined) #}
+                    {% if user.is_authenticated or not PUBLIC_SITE_LANGUAGES or language.code in PUBLIC_SITE_LANGUAGES %}
                         <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected{% endif %}>
                             {% language language.code %} {# display label for language in that language! #}
                                 {# Translators: label for language choices in navigation #}
