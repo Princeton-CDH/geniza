@@ -43,8 +43,7 @@
     // Fallback Greta Sans for Hebrew
     @font-face {
         font-family: "Greta Sans Hebrew Regular";
-        src: url("#{$base_url}/WF-037420-011833-002518.woff2") format("woff2"),
-            url("#{$base_url}/WF-037420-011833-002518.woff") format("woff");
+        src: url("#{$base_url}/GretaSansH-Regular.woff2") format("woff2");
         font-style: normal;
         font-weight: normal;
         font-display: fallback;
@@ -63,8 +62,7 @@
     // Fallback Greta Sans Bold for Hebrew
     @font-face {
         font-family: "Greta Sans Hebrew Bold";
-        src: url("#{$base_url}/WF-037420-011833-002521.woff2") format("woff2"),
-            url("#{$base_url}/WF-037420-011833-002521.woff") format("woff");
+        src: url("#{$base_url}/GretaSansH-Bold.woff2") format("woff2");
         font-style: normal;
         font-weight: bold;
         font-display: fallback;
