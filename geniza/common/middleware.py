@@ -12,15 +12,10 @@ class PublicLocaleMiddleware(MiddlewareMixin):
     response_redirect_class = HttpResponseRedirect
 
     def process_request(self, request: HttpRequest):
-        if (
-            getattr(settings, "PUBLIC_SITE_LANGUAGES", [])
-            and not request.user.is_authenticated
-        ):
+        public_site_languages = getattr(settings, "PUBLIC_SITE_LANGUAGES", [])
+        if public_site_languages and not request.user.is_authenticated:
             language_from_path = translation.get_language_from_path(request.path_info)
-            if (
-                language_from_path
-                and language_from_path not in settings.PUBLIC_SITE_LANGUAGES
-            ):
+            if language_from_path and language_from_path not in public_site_languages:
                 # If the path language isn't in the public site languages list,
                 # update cookies and the request object to use the default language
                 request.COOKIES[settings.LANGUAGE_COOKIE_NAME] = settings.LANGUAGE_CODE
