@@ -2,7 +2,6 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pytest
-from attrdict import AttrDict
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
@@ -132,38 +131,4 @@ def footnote(db, source, document):
         content_object=document,
         location="p.1",
         doc_relation=Footnote.EDITION,
-    )
-
-
-@pytest.fixture
-def iiif_dict():
-    return AttrDict(
-        {
-            "sequences": [
-                {
-                    "canvases": [
-                        {
-                            "images": [
-                                {
-                                    "resource": {
-                                        "id": "http://example.co/iiif/ts-1/00001",
-                                    }
-                                }
-                            ],
-                            "label": "1r",
-                        },
-                        {
-                            "images": [
-                                {
-                                    "resource": {
-                                        "id": "http://example.co/iiif/ts-1/00002",
-                                    }
-                                }
-                            ],
-                            "label": "1v",
-                        },
-                    ]
-                }
-            ]
-        }
     )
