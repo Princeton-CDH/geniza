@@ -220,6 +220,9 @@ class Fragment(TrackChangesModel):
                     # label provides library's recto/verso designation
                     labels.append(canvas.label)
             except IIIFException:
+                logger.warning(
+                    "IIIFException raised by from_url with URL: %s" % self.iiif_url
+                )
                 pass
 
         return images, labels
