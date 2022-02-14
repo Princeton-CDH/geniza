@@ -221,7 +221,7 @@ class Fragment(TrackChangesModel):
                     labels.append(canvas.label)
             except IIIFException:
                 logger.warning(
-                    "IIIFException raised by from_url with URL: %s" % self.iiif_url
+                    "Error loading IIIF manifest: %s" % self.iiif_url
                 )
                 pass
 
