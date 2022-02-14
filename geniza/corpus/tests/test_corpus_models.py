@@ -202,7 +202,8 @@ class TestFragment(TestCase):
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
-    def test_iiif_images_locally_cached_manifest(self, mock_manifestimporter):
+    def test_iiif_images_iiifexception(self, mock_manifestimporter):
+        # patch IIIFPresentation.from_url to always raise IIIFException
         with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
             mock_iiifpresentation.from_url = Mock()
             mock_iiifpresentation.from_url.side_effect = IIIFException
