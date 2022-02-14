@@ -1,7 +1,9 @@
 from datetime import datetime
+from unittest import TestCase
 from unittest.mock import Mock, patch
 
 import pytest
+from attrdict import AttrDict
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -10,7 +12,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
-from djiffy.models import Canvas, IIIFImage, Manifest
+from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
 
 from geniza.corpus.models import (
     Collection,
@@ -113,7 +115,7 @@ class TestLanguageScripts:
         )
 
 
-class TestFragment:
+class TestFragment(TestCase):
     def test_str(self):
         frag = Fragment(shelfmark="TS 1")
         assert str(frag) == frag.shelfmark
@@ -128,14 +130,43 @@ class TestFragment:
         assert Fragment.objects.get_by_natural_key(frag.shelfmark) == frag
 
     @patch("geniza.corpus.models.IIIFPresentation")
-    def test_iiif_thumbnails(self, mockiifpres, iiif_dict):
+    def test_iiif_thumbnails(self, mockiifpres):
         # no iiif
         frag = Fragment(shelfmark="TS 1")
         assert frag.iiif_thumbnails() == ""
 
         frag.iiif_url = "http://example.co/iiif/ts-1"
         # return simplified part of the manifest we need for this
-        mockiifpres.from_url.return_value = iiif_dict
+        mockiifpres.from_url.return_value = AttrDict(
+            {
+                "sequences": [
+                    {
+                        "canvases": [
+                            {
+                                "images": [
+                                    {
+                                        "resource": {
+                                            "id": "http://example.co/iiif/ts-1/00001",
+                                        }
+                                    }
+                                ],
+                                "label": "1r",
+                            },
+                            {
+                                "images": [
+                                    {
+                                        "resource": {
+                                            "id": "http://example.co/iiif/ts-1/00002",
+                                        }
+                                    }
+                                ],
+                                "label": "1v",
+                            },
+                        ]
+                    }
+                ]
+            }
+        )
 
         thumbnails = frag.iiif_thumbnails()
         assert (
@@ -168,6 +199,21 @@ class TestFragment:
         assert isinstance(images[0], IIIFImage)
         assert len(labels) == 1
         assert labels[0] == "fake image"
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_iiif_images_locally_cached_manifest(self, mock_manifestimporter):
+        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
+            mock_iiifpresentation.from_url = Mock()
+            mock_iiifpresentation.from_url.side_effect = IIIFException
+            frag = Fragment(shelfmark="TS 1")
+            frag.iiif_url = "http://example.io/manifests/1"
+            frag.save()
+            # should raise the exception
+            with self.assertRaises(IIIFException):
+                # should log at level WARN
+                with self.assertLogs(level="WARN"):
+                    frag.iiif_images()
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
