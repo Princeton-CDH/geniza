@@ -323,6 +323,7 @@ class DocumentManifestView(DocumentDetailView):
         # keep track of unique attributions so we can include them all
         attributions = set()
         for url in iiif_urls:
+            # NOTE: If this url fails, may raise IIIFException
             remote_manifest = IIIFPresentation.from_url(url)
             # CUDL attribution has some variation in tags;
             # would be nice to preserve tagged version,
@@ -421,6 +422,7 @@ class DocumentAnnotationListView(DocumentDetailView):
         if not canvas:
             iiif_urls = document.iiif_urls()
             if iiif_urls:
+                # NOTE: If this url fails, may raise IIIFException
                 manifest = IIIFPresentation.from_url(iiif_urls[0])
                 canvas = manifest.sequences[0].canvases[0]
             else:

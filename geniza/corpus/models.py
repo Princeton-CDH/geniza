@@ -621,6 +621,7 @@ class Document(ModelIndexable):
         # keep track of unique attributions so we can include them all
         extra_attrs_set = set()
         for url in self.iiif_urls():
+            # NOTE: If this url fails, may raise IIIFException
             remote_manifest = IIIFPresentation.from_url(url)
             # CUDL attribution has some variation in tags;
             # would be nice to preserve tagged version,
