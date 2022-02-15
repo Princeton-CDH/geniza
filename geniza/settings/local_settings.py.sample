@@ -93,3 +93,12 @@ DATA_IMPORT_URLS = {
 
 # path to preliminary JSON transcription data
 TRANSCRIPTIONS_JSON_FILE = BASE_DIR.parent / "data" / "transcriptions.json"
+
+# Languages to make visible on the public site/front-end in addition to the admin site.
+# If undefined, all LANGUAGES will be enabled on both the public and admin site.
+# Must be a subset of the language codes in LANGUAGES from base settings, or undefined.
+# PUBLIC_SITE_LANGUAGES = [
+#    "en",
+#    "he",
+#    "ar",
+# ]

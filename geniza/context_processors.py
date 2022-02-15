@@ -10,6 +10,9 @@ def template_globals(request):
     context_extras = {
         "SHOW_TEST_WARNING": getattr(settings, "SHOW_TEST_WARNING", False),
         "FONT_URL_PREFIX": getattr(settings, "FONT_URL_PREFIX", ""),
+        "PUBLIC_SITE_LANGUAGES": getattr(
+            settings, "PUBLIC_SITE_LANGUAGES", settings.LANGUAGES
+        ),
         "site": site,
     }
     return context_extras

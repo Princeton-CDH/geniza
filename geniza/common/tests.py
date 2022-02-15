@@ -1,13 +1,16 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
+from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
+from django.http import HttpResponseRedirect
 from django.test import TestCase, TransactionTestCase, override_settings
 
 from geniza.common.admin import LocalUserAdmin, custom_empty_field_list_filter
+from geniza.common.middleware import PublicLocaleMiddleware
 from geniza.common.utils import absolutize_url, custom_tag_string
 
 
@@ -149,3 +152,45 @@ class TestMigrations(TransactionTestCase):
 
     def setUpBeforeMigration(self, apps):
         pass
+
+
+class TestMiddleware(TestCase):
+    def test_call(self):
+        request = MagicMock()
+        request.method = "GET"
+        request.user = Mock()
+        get_response = Mock()
+        middleware = PublicLocaleMiddleware(get_response)
+
+        # with logged-in user, should continue with middleware chain without modifying request
+        with patch("geniza.common.middleware.translation") as mock_translation:
+            request.user.is_authenticated = True
+            assert middleware.__call__(request) == middleware.get_response(request)
+            mock_translation.get_language_from_path.assert_not_called
+
+        # set user to anonymous
+        request.user.is_authenticated = False
+
+        with patch("geniza.common.middleware.getattr") as mock_get_public_languages:
+            # try to access path with language that is not in PUBLIC_SITE_LANGUAGES
+            mock_get_public_languages.return_value = ["en", "he"]
+            request.path_info = "/ar/test"
+            # should call set_language
+            with patch("geniza.common.middleware.set_language") as mock_set_language:
+                middleware.__call__(request)
+                mock_set_language.assert_called_once
+            # should redirect to default language version of page
+            response = middleware.__call__(request)
+            assert isinstance(response, HttpResponseRedirect)
+            assert response.url == "/%s/test" % settings.LANGUAGE_CODE
+
+            # try to access path with language that _is_ in PUBLIC_SITE_LANGUAGES
+            request.path_info = "/en/test"
+            with patch("geniza.common.middleware.set_language") as mock_set_language:
+                response = middleware.__call__(request)
+                # should not call set_language
+                mock_set_language.assert_not_called
+                # should not redirect
+                assert not isinstance(response, HttpResponseRedirect)
+                # should continue with middleware chain instead
+                assert response == middleware.get_response(request)
