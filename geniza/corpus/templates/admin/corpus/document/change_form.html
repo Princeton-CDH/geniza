@@ -21,10 +21,14 @@
         <fieldset class="module aligned transcriptions-field">
             <div class="form-row">
                 <label>Transcription{{ original.digital_editions.count|pluralize }}</label>
-                {% for footnote in original.digital_editions %}
-                    {% if original.digital_editions|length > 1 %}<h3 class="source">{{ footnote.source|safe }}</h3>{% endif %}
-                    {% include "footnotes/transcription.html" with transcription=footnote.content %}
-                {% endfor %}
+                <ul class="transcriptions">
+                    {% for footnote in original.digital_editions %}
+                        <li>
+                            {% if original.digital_editions|length > 1 %}<h3 class="source">{{ footnote.source|safe }}</h3>{% endif %}
+                            {% include "footnotes/transcription.html" with transcription=footnote.content %}
+                        </li>
+                    {% endfor %}
+                </ul>
             </div>
         </fieldset>
     {% endif %}
