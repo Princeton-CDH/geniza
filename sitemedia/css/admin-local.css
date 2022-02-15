@@ -132,17 +132,13 @@ a#needsreview:target {
 }
 
 /* styling transcriptions with labels in document admin change form */
-.transcriptions-field .transcription:first-of-type {
-    margin-left: 30px;
+.transcriptions-field ul.transcriptions {
+    display: flex;
+    overflow-x: scroll;
 }
-.transcriptions-field h3.source:not(:first-of-type) {
-    margin-left: 160px;
-    margin-top: 20px;
+.transcriptions-field .transcription {
+    margin-left: 20px;
 }
-.transcriptions-field .transcription:not(:first-of-type) {
-    margin-left: 200px;
-}
-
 /* keep document relationship choices labels in line with checkboxes */
 .field-doc_relation {
     white-space: nowrap;
