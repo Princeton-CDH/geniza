@@ -770,6 +770,7 @@
         pgpid_i
         old_pgpids_is
         scholarship_t
+        transcription_t
       </str>
       <str name="admin_doc_pf">
         type_s
@@ -780,6 +781,7 @@
         notes_t
         needs_review_t
         scholarship_t
+        transcription_t
       </str>
 
     </lst>
