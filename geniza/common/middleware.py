@@ -23,10 +23,7 @@ class PublicLocaleMiddleware:
                 )
                 # set request method to POST and pass default language, new path to set_language
                 request.method = "POST"
-                request_data = {}
-                request_data["language"] = default_language
-                request_data["next"] = language_path
-                request.POST = request_data
+                request.POST = {"language": default_language, "next": language_path}
                 return set_language(request)
 
         # otherwise, continue on with middleware chain
