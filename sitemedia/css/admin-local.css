@@ -192,3 +192,18 @@ a#needsreview:target {
 .merge-document textarea {
     margin: 0 0 20px 180px;
 }
+
+.field-source .related-widget-wrapper .select2-container,
+.field-source
+    .related-widget-wrapper
+    .select2-selection--single
+    .select2-selection__rendered {
+    display: block;
+    overflow: visible;
+    white-space: normal;
+}
+
+.field-source .related-widget-wrapper span[role="combobox"] {
+    display: flex;
+    height: auto;
+}
