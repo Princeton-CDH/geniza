@@ -283,7 +283,7 @@ class TestDocumentScholarshipTemplate:
             reverse("corpus:document-scholarship", args=[document.pk])
         )
         assertContains(
-            response, '<dt class="relation">includes Edition</dt>', html=True
+            response, '<dt class="relation">includes edition</dt>', html=True
         )
 
         fn2 = Footnote.objects.create(
@@ -295,7 +295,7 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertContains(response, '<dt class="relation">for Edition see</dt>', html=True)
+        assertContains(response, '<dt class="relation">for edition see</dt>', html=True)
 
         fn2.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
         fn2.save()
@@ -305,7 +305,7 @@ class TestDocumentScholarshipTemplate:
         print(response.content)
         assertContains(
             response,
-            '<dt class="relation">for Edition, Translation see</dt>',
+            '<dt class="relation">for edition, translation see</dt>',
             html=True,
         )
 
