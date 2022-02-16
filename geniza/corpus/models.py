@@ -4,6 +4,7 @@ from collections import defaultdict
 from itertools import chain
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
@@ -25,8 +26,10 @@ from djiffy.models import Manifest
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
+from requests.exceptions import ConnectionError
 from taggit.models import Tag
 from taggit_selectize.managers import TaggableManager
+from urllib3.exceptions import HTTPError, NewConnectionError
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
@@ -219,11 +222,8 @@ class Fragment(TrackChangesModel):
                     images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
                     # label provides library's recto/verso designation
                     labels.append(canvas.label)
-            except IIIFException:
-                logger.warning(
-                    "Error loading IIIF manifest: %s" % self.iiif_url
-                )
-                pass
+            except (IIIFException, ConnectionError, HTTPError):
+                logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
 
         return images, labels
 
@@ -259,8 +259,20 @@ class Fragment(TrackChangesModel):
         if self.iiif_url and not self.manifest or self.has_changed("iiif_url"):
             # if iiif url has changed and there is a value, import and update
             if self.iiif_url:
-                ManifestImporter().import_paths([self.iiif_url])
-                self.manifest = Manifest.objects.filter(uri=self.iiif_url).first()
+                try:
+                    print("trying to import")
+                    ManifestImporter().import_paths([self.iiif_url])
+                    self.manifest = Manifest.objects.filter(uri=self.iiif_url).first()
+                except (IIIFException, NewConnectionError):
+                    # clear out the manifest if there was an error
+                    self.manifest = None
+                    # if saved via admin, alert the user
+                    if hasattr(self, "request"):
+                        messages.error(self.request, "Error loading IIIF manifest")
+
+                # if there was no error but manifest is unset, warn
+                if self.manifest is None and hasattr(self, "request"):
+                    messages.warning(self.request, "Failed to cache IIIF manifest")
             else:
                 # otherwise, clear the associated manifest (iiif url has been removed)
                 self.manifest = None
