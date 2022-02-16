@@ -32,12 +32,12 @@
                                 {% translate "includes" as includes_text %}
                                 {% if source.list|length > 1 or source.list.0.location or source.list.0.url %}
                                     {# Translators: label for document relations in list of footnotes #}
-                                    {% blocktranslate with relation=source.list.0.doc_relation trimmed %}
+                                    {% blocktranslate with relation=source.list.0.doc_relation|lower trimmed %}
                                         for {{ relation }} see
                                     {% endblocktranslate%}
                                 {% else %}
                                     {# Translators: label for document relations for one footnote with no location or URL #}
-                                    {% blocktranslate with relation=source.list.0.doc_relation trimmed %}
+                                    {% blocktranslate with relation=source.list.0.doc_relation|lower trimmed %}
                                         includes {{ relation }}
                                     {% endblocktranslate%}
                                 {% endif %}
