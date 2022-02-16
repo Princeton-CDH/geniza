@@ -22,10 +22,6 @@
                             </dt>
                             <dd>
                                 {{ source.grouper.formatted_display|safe }}
-                                {% if source.grouper.source_type.type == "Unpublished" %}
-                                    {# Translators: label for an unpublished scholarship record #}
-                                    <div class="unpublished">{% translate 'unpublished' %}</div>
-                                {% endif %}
                             </dd>
                             <dt class="relation">
                                 {# Translators: label for included document relations for a single footnote #}
