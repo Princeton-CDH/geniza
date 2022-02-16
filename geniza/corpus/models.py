@@ -260,7 +260,6 @@ class Fragment(TrackChangesModel):
             # if iiif url has changed and there is a value, import and update
             if self.iiif_url:
                 try:
-                    print("trying to import")
                     ManifestImporter().import_paths([self.iiif_url])
                     self.manifest = Manifest.objects.filter(uri=self.iiif_url).first()
                 except (IIIFException, NewConnectionError):

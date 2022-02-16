@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
 from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
+from piffle.presentation import IIIFException as piffle_IIIFException
 
 from geniza.corpus.models import (
     Collection,
@@ -286,6 +287,31 @@ class TestFragment(TestCase):
         frag.save()
         assert mock_manifestimporter.call_count == 0
         assert not frag.manifest
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.messages")
+    def test_save_import_manifest_error(self, mock_messages, mock_manifestimporter):
+        frag = Fragment(shelfmark="TS 1")
+        frag.request = Mock()
+        # remove any cached manifests
+        Manifest.objects.all().delete()
+        # mock manifest does nothing, manifest will be unset
+        frag.iiif_url = "something"  # needs to be changed to trigger relevant block
+        frag.save()
+        mock_messages.warning.assert_called_with(
+            frag.request, "Failed to cache IIIF manifest"
+        )
+
+        # import causes an error
+        mock_manifestimporter.return_value.import_paths.side_effect = (
+            piffle_IIIFException
+        )
+        frag.iiif_url = "something else"  # change again to trigger relevant block
+        frag.save()
+        mock_messages.error.assert_called_with(
+            frag.request, "Error loading IIIF manifest"
+        )
 
 
 @pytest.mark.django_db
