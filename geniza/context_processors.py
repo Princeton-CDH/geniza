@@ -14,5 +14,6 @@ def template_globals(request):
             settings, "PUBLIC_SITE_LANGUAGES", settings.LANGUAGES
         ),
         "site": site,
+        "GTAGS_ANALYTICS_ID": getattr(settings, "GTAGS_ANALYTICS_ID", None),
     }
     return context_extras
