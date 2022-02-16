@@ -19,7 +19,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "shelfmark": "shelfmark_t",
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
-        "description": "description_t",
+        "description": "description_txt_en",  # use stemmed version for field search & highlight
         "notes": "notes_t",
         "needs_review": "needs_review_t",
         "pgpid": "pgpid_i",
