@@ -571,3 +571,9 @@ class FragmentAdmin(admin.ModelAdmin):
         F("collection__name"),
         F("collection__library"),
     )
+
+    def save_model(self, request, obj, form, change):
+        # pass request in to save so that we can send messages
+        # if there is an error loading the IIIF manifest
+        obj.request = request
+        super().save_model(request, obj, form, change)
