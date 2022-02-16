@@ -50,7 +50,7 @@
         {% block extrascript %}{% endblock extrascript %}
     </head>
     <body id="{{ page_type }}{% block page_type %}{% endblock page_type %}">
-        {% wagtailuserbar 'bottom-left' %}
+        {% wagtailuserbar 'bottom-right' %}
         {% if SHOW_TEST_WARNING %}
             {% include 'snippets/test_banner.html' %}
         {% endif %}
