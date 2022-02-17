@@ -54,7 +54,7 @@ class TestDocumentDetailTemplate:
             '<section id="iiif-viewer">',
         )
 
-    def test_viewer_annotations(self, client, document, typed_texts):
+    def test_viewer_annotations(self, client, document, unpublished_editions):
         """Document detail template should configure IIIF viewer for annotation display"""
         # fixture does not have annotations
         response = client.get(document.get_absolute_url())
@@ -63,7 +63,7 @@ class TestDocumentDetailTemplate:
         # add a footnote with a digital edition
         Footnote.objects.create(
             content_object=document,
-            source=typed_texts,
+            source=unpublished_editions,
             doc_relation={Footnote.EDITION},
             content="A piece of text",
         )
@@ -138,10 +138,12 @@ class TestDocumentDetailTemplate:
             html=True,
         )
 
-    def test_download_transcription_link_anonymous(self, client, document, typed_texts):
+    def test_download_transcription_link_anonymous(
+        self, client, document, unpublished_editions
+    ):
         edition = Footnote.objects.create(
             content_object=document,
-            source=typed_texts,
+            source=unpublished_editions,
             doc_relation=Footnote.EDITION,
             content={
                 "html": "some transcription text",
@@ -149,15 +151,17 @@ class TestDocumentDetailTemplate:
             },
         )
         response = client.get(document.get_absolute_url())
-        # typed text fixture authored by Goitein
+        # unpublished editions fixture authored by Goitein
         # should not be available to anonymous users (suppressed for now)
         assertNotContains(response, "Download Goitein's edition")
 
     # NOTE: text download is limited to authenticated users for now
-    def test_download_transcription_link(self, admin_client, document, typed_texts):
+    def test_download_transcription_link(
+        self, admin_client, document, unpublished_editions
+    ):
         edition = Footnote.objects.create(
             content_object=document,
-            source=typed_texts,
+            source=unpublished_editions,
             doc_relation=Footnote.EDITION,
             content={
                 "html": "some transcription text",
@@ -165,7 +169,7 @@ class TestDocumentDetailTemplate:
             },
         )
         response = admin_client.get(document.get_absolute_url())
-        # typed text fixture authored by Goitein
+        # unpublished editions fixture authored by Goitein
         assertContains(response, "Download Goitein's edition")
         assertContains(
             response,
@@ -216,7 +220,7 @@ class TestDocumentScholarshipTemplate:
             reverse("corpus:document-scholarship", args=[document.pk])
         )
         assertContains(response, "<em>The C Programming Language</em>")
-        twoauthor_source.title = ""
+        twoauthor_source.title_en = ""
         twoauthor_source.save()
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
@@ -279,7 +283,7 @@ class TestDocumentScholarshipTemplate:
             reverse("corpus:document-scholarship", args=[document.pk])
         )
         assertContains(
-            response, '<dt class="relation">includes Edition</dt>', html=True
+            response, '<dt class="relation">includes edition</dt>', html=True
         )
 
         fn2 = Footnote.objects.create(
@@ -291,7 +295,7 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        assertContains(response, '<dt class="relation">for Edition see</dt>', html=True)
+        assertContains(response, '<dt class="relation">for edition see</dt>', html=True)
 
         fn2.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
         fn2.save()
@@ -301,7 +305,7 @@ class TestDocumentScholarshipTemplate:
         print(response.content)
         assertContains(
             response,
-            '<dt class="relation">for Edition, Translation see</dt>',
+            '<dt class="relation">for edition, translation see</dt>',
             html=True,
         )
 
@@ -335,7 +339,11 @@ class TestDocumentTabsSnippet:
         """document nav should render inert scholarship tab if no footnotes"""
         response = client.get(document.get_absolute_url())
         # uses span, not link
-        assertContains(response, "<span>Scholarship Records (0)</span>", html=True)
+        assertContains(
+            response,
+            "<span disabled aria-disabled='true'>Scholarship Records (0)</span>",
+            html=True,
+        )
 
     def test_with_footnotes(self, client, document, source, twoauthor_source):
         """document nav should render scholarship link with footnote counter"""

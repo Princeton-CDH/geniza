@@ -1,21 +1,25 @@
 from ast import literal_eval
 
+from django.contrib import messages
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect
 from django.urls import reverse
 from django.utils.html import strip_tags
+from django.utils.safestring import mark_safe
 from django.utils.text import Truncator, slugify
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, FormView, ListView
 from django.views.generic.edit import FormMixin
 from piffle.presentation import IIIFPresentation
 from tabular_export.admin import export_to_csv_response
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus import iiif_utils
-from geniza.corpus.forms import DocumentSearchForm
+from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.templatetags import corpus_extras
@@ -319,6 +323,7 @@ class DocumentManifestView(DocumentDetailView):
         # keep track of unique attributions so we can include them all
         attributions = set()
         for url in iiif_urls:
+            # NOTE: If this url fails, may raise IIIFException
             remote_manifest = IIIFPresentation.from_url(url)
             # CUDL attribution has some variation in tags;
             # would be nice to preserve tagged version,
@@ -417,6 +422,7 @@ class DocumentAnnotationListView(DocumentDetailView):
         if not canvas:
             iiif_urls = document.iiif_urls()
             if iiif_urls:
+                # NOTE: If this url fails, may raise IIIFException
                 manifest = IIIFPresentation.from_url(iiif_urls[0])
                 canvas = manifest.sequences[0].canvases[0]
             else:
@@ -444,6 +450,71 @@ class DocumentAnnotationListView(DocumentDetailView):
         annotation_list["resources"] = resources
 
         return JsonResponse(dict(annotation_list), encoder=iiif_utils.AttrDictEncoder)
+
+
+class DocumentMerge(PermissionRequiredMixin, FormView):
+    permission_required = ("corpus.change_document", "corpus.delete_document")
+    form_class = DocumentMergeForm
+    template_name = "admin/corpus/document/merge.html"
+
+    def get_success_url(self):
+        return reverse("admin:corpus_document_change", args=[self.primary_document.id])
+
+    def get_form_kwargs(self):
+        form_kwargs = super(DocumentMerge, self).get_form_kwargs()
+        form_kwargs["document_ids"] = self.document_ids
+        return form_kwargs
+
+    def get_initial(self):
+        # Default to first document selected
+        document_ids = self.request.GET.get("ids", None)
+        if document_ids:
+            self.document_ids = [int(pid) for pid in document_ids.split(",")]
+            # by default, prefer the first record created
+            return {"primary_document": sorted(self.document_ids)[0]}
+        else:
+            self.document_ids = []
+
+    def form_valid(self, form):
+        """Merge the selected documents into the primary document."""
+        primary_doc = form.cleaned_data["primary_document"]
+        self.primary_document = primary_doc
+
+        # Include additional notes in rationale string if present
+        if form.cleaned_data["rationale"] == "other":
+            # Only use the additional notes if "other" is chosen
+            rationale = form.cleaned_data["rationale_notes"]
+        elif form.cleaned_data["rationale_notes"]:
+            rationale = "%s (%s)" % (
+                form.cleaned_data["rationale"],
+                form.cleaned_data["rationale_notes"],
+            )
+        else:
+            rationale = form.cleaned_data["rationale"]
+
+        secondary_ids = [
+            doc_id for doc_id in self.document_ids if doc_id != primary_doc.id
+        ]
+        secondary_docs = Document.objects.filter(id__in=secondary_ids)
+
+        # Get document strings before they are merged
+        primary_doc_str = f"PGPID {primary_doc.id}"
+        secondary_doc_str = ", ".join([f"PGPID {doc.id}" for doc in secondary_docs])
+
+        # Merge secondary documents into the selected primary document
+        user = getattr(self.request, "user", None)
+        primary_doc.merge_with(secondary_docs, rationale, user=user)
+
+        # Display info about the merge to the user
+        new_doc_link = reverse("admin:corpus_document_change", args=[primary_doc.id])
+        messages.success(
+            self.request,
+            mark_safe(
+                f"Successfully merged document(s) {secondary_doc_str} with {primary_doc_str}."
+            ),
+        )
+
+        return super(DocumentMerge, self).form_valid(form)
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #

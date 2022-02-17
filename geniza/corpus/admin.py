@@ -3,7 +3,7 @@ from collections import namedtuple
 from adminsortable2.admin import SortableInlineAdminMixin
 from django import forms
 from django.conf import settings
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -13,9 +13,11 @@ from django.db.models import CharField, Count, F, Q
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.forms.widgets import Textarea, TextInput
+from django.http import HttpResponseRedirect
 from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from modeltranslation.admin import TabbedTranslationAdmin
 from pyexpat import model
 from tabular_export.admin import export_to_csv_response
 
@@ -30,6 +32,7 @@ from geniza.corpus.models import (
     TextBlock,
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
+from geniza.corpus.views import DocumentMerge
 from geniza.footnotes.admin import DocumentFootnoteInline
 
 
@@ -175,7 +178,7 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
 
 
 @admin.register(Document)
-class DocumentAdmin(admin.ModelAdmin):
+class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     form = DocumentForm
     # NOTE: columns display for default and needs review display
     # are controlled via admin css; update the css if you change the order here
@@ -467,6 +470,23 @@ class DocumentAdmin(admin.ModelAdmin):
         "collection",
     ]
 
+    @admin.display(description="Merge selected documents")
+    def merge_documents(self, request, queryset=None):
+        """Admin action to merge selected documents. This action redirects to an intermediate
+        page, which displays a form to review for confirmation and choose the primary document before merging."""
+        # Functionality drawn from https://github.com/Princeton-CDH/mep-django/blob/main/mep/people/admin.py
+
+        # NOTE: using selected ids from form and ignoring queryset
+        # because we can't pass the queryset via redirect
+        selected = request.POST.getlist("_selected_action")
+        if len(selected) < 2:
+            messages.error(request, "You must select at least two documents to merge")
+            return HttpResponseRedirect(reverse("admin:corpus_document_changelist"))
+        return HttpResponseRedirect(
+            "%s?ids=%s" % (reverse("admin:document-merge"), ",".join(selected)),
+            status=303,
+        )  # status code 303 means "See Other"
+
     @admin.display(description="Export selected documents to CSV")
     def export_to_csv(self, request, queryset=None):
         """Stream tabular data as a CSV file"""
@@ -492,13 +512,18 @@ class DocumentAdmin(admin.ModelAdmin):
                 "csv/",
                 self.admin_site.admin_view(self.export_to_csv),
                 name="corpus_document_csv",
-            )
+            ),
+            path(
+                "merge/",
+                DocumentMerge.as_view(),
+                name="document-merge",
+            ),
         ]
         return urls + super(DocumentAdmin, self).get_urls()
 
     # -------------------------------------------------------------------------
 
-    actions = (export_to_csv,)
+    actions = (export_to_csv, merge_documents)
 
 
 @admin.register(DocumentType)
@@ -546,3 +571,9 @@ class FragmentAdmin(admin.ModelAdmin):
         F("collection__name"),
         F("collection__library"),
     )
+
+    def save_model(self, request, obj, form, change):
+        # pass request in to save so that we can send messages
+        # if there is an error loading the IIIF manifest
+        obj.request = request
+        super().save_model(request, obj, form, change)

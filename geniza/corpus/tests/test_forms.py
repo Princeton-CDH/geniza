@@ -1,13 +1,18 @@
 import re
+from unittest.mock import Mock
 
+import pytest
 from django import forms
 
 from geniza.corpus.forms import (
     CheckboxSelectWithCount,
+    DocumentChoiceField,
+    DocumentMergeForm,
     DocumentSearchForm,
     FacetChoiceField,
     RadioSelectWithDisabled,
 )
+from geniza.corpus.models import Document
 
 
 class TestSelectedWithDisabled:
@@ -99,5 +104,74 @@ class TestDocumentSearchForm:
         assert len(form.errors) == 0
         form = DocumentSearchForm()
         form.cleaned_data = {"q": "", "sort": "scholarship_desc"}
+        form.clean()
+        assert len(form.errors) == 0
+
+
+class TestDocumentChoiceField:
+    def test_label_from_instance(self, document, footnote):
+        dchoicefield = DocumentChoiceField(Mock())
+
+        # Should not error on a document with the most minimal information
+        minimal_doc = Document.objects.create()
+        label = dchoicefield.label_from_instance(minimal_doc)
+        assert str(minimal_doc.id) in label
+
+        # Check that the attributes of a document are in label
+        document.footnotes.add(footnote)
+        label = dchoicefield.label_from_instance(document)
+        "Deed of sale" in label
+        assert "Edition" in label
+        "URL" not in label  # Ensure that the URL is not displayed when there is no URL
+
+
+class TestDocumentMergeForm:
+    @pytest.mark.django_db
+    def test_init(self):
+        # no error if document ids not specified
+        DocumentMergeForm()
+
+        # create test document records
+        Document.objects.bulk_create([Document(), Document(), Document(), Document()])
+        # initialize with ids for all but the last
+        docs = Document.objects.all().order_by("pk")
+        doc_ids = list(docs.values_list("id", flat=True))
+        mergeform = DocumentMergeForm(document_ids=doc_ids[:-1])
+        # total should have all but one document
+        assert mergeform.fields["primary_document"].queryset.count() == docs.count() - 1
+        # last document should not be an available choice
+        assert docs.last() not in mergeform.fields["primary_document"].queryset
+
+    @pytest.mark.django_db
+    def test_clean(self):
+        """Should add an error if rationale is 'other' and rationale notes are empty"""
+        doc = Document.objects.create()
+
+        form = DocumentMergeForm()
+        form.cleaned_data = {
+            "primary_document": doc.id,
+            "rationale": "other",
+            "rationale_notes": "",
+        }
+        form.clean()
+        assert len(form.errors) == 1
+
+        # should not produce an error if rationale notes provided
+        form = DocumentSearchForm()
+        form.cleaned_data = {
+            "primary_document": doc.id,
+            "rationale": "other",
+            "rationale_notes": "test",
+        }
+        form.clean()
+        assert len(form.errors) == 0
+
+        # should not produce an error if rational is "duplicate" or "join"
+        form = DocumentSearchForm()
+        form.cleaned_data = {
+            "primary_document": doc.id,
+            "rationale": "duplicate",
+            "rationale_notes": "",
+        }
         form.clean()
         assert len(form.errors) == 0

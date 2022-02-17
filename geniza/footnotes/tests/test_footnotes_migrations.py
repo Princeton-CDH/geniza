@@ -44,21 +44,31 @@ class AlterSourceEdition(TestMigrations):
     migrate_from = "0013_add_fields_to_source"
     migrate_to = "0014_alter_source_edition"
 
+    src1 = None
+    src2 = None
+    src3 = None
+
     def setUpBeforeMigration(self, apps):
         Source = apps.get_model("footnotes", "Source")
         SourceType = apps.get_model("footnotes", "SourceType")
         source_type = SourceType.objects.create(type="Unknown")
-        Source.objects.create(
-            title="Book 1", edition="bad data", source_type=source_type
+        self.src1 = Source.objects.create(
+            title_en="Book 1", edition="bad data", source_type=source_type
         )
-        Source.objects.create(title="Book 2", edition="2", source_type=source_type)
-        Source.objects.create(title="Book 3", edition="", source_type=source_type)
+        self.src2 = Source.objects.create(
+            title_en="Book 2", edition="2", source_type=source_type
+        )
+        self.src3 = Source.objects.create(
+            title_en="Book 3", edition="", source_type=source_type
+        )
 
     def test_editions_converted_to_int(self):
-        Source = self.apps.get_model("footnotes", "Source")
-        assert not Source.objects.filter(title="Book 1").first().edition
-        assert Source.objects.filter(title="Book 2").first().edition == 2
-        assert not Source.objects.filter(title="Book 3").first().edition
+        self.src1.refresh_from_db()
+        assert not self.src1.edition
+        self.src2.refresh_from_db()
+        assert self.src2.edition == 2
+        self.src3.refresh_from_db()
+        assert not self.src3.edition
 
 
 @pytest.mark.last
@@ -68,17 +78,25 @@ class AlterSourceEditionReverse(TestMigrations):
     migrate_from = "0014_alter_source_edition"
     migrate_to = "0013_add_fields_to_source"
 
+    src1 = None
+    src2 = None
+
     def setUpBeforeMigration(self, apps):
         Source = apps.get_model("footnotes", "Source")
         SourceType = apps.get_model("footnotes", "SourceType")
         source_type = SourceType.objects.create(type="Unknown")
-        Source.objects.create(title="Book 1", edition=None, source_type=source_type)
-        Source.objects.create(title="Book 2", edition=2, source_type=source_type)
+        self.src1 = Source.objects.create(
+            title_en="Book 1", edition=None, source_type=source_type
+        )
+        self.src2 = Source.objects.create(
+            title_en="Book 2", edition=2, source_type=source_type
+        )
 
     def test_editions_converted_to_string(self):
-        Source = self.apps.get_model("footnotes", "Source")
-        assert Source.objects.filter(title="Book 1").first().edition == ""
-        assert Source.objects.filter(title="Book 2").first().edition == "2"
+        self.src1.refresh_from_db()
+        assert self.src1.edition == ""
+        self.src2.refresh_from_db()
+        assert self.src2.edition == "2"
 
 
 @pytest.mark.last
@@ -95,7 +113,7 @@ class TestFootnoteLocationPpMigration(TestMigrations):
         ContentType = apps.get_model("contenttypes", "ContentType")
 
         source_type = SourceType.objects.create(type="Unknown")
-        source = Source.objects.create(title="Book", source_type=source_type)
+        source = Source.objects.create(title_en="Book", source_type=source_type)
         source_ctype = ContentType.objects.get(
             app_label="footnotes", model="sourcetype"
         )
@@ -135,3 +153,49 @@ class TestFootnoteLocationPpMigration(TestMigrations):
         # unmodified
         for page_loc in ["doc 5", "49ב"]:
             assert Footnote.objects.filter(location=page_loc).exists()
+
+
+@pytest.mark.last
+class TestRenameTypedTextsMigration(TestMigrations):
+
+    app = "footnotes"
+    migrate_from = "0015_add_footnote_location_pp"
+    migrate_to = "0016_rename_typed_texts"
+    typed_texts_source = None
+    other_source = None
+
+    def setUpBeforeMigration(self, apps):
+        Source = apps.get_model("footnotes", "Source")
+        SourceType = apps.get_model("footnotes", "SourceType")
+        source_type = SourceType.objects.create(type="Unknown")
+        typed_texts_source = Source.objects.create(
+            title_en="typed texts", source_type=source_type
+        )
+        self.typed_texts_source = typed_texts_source
+        other_source = Source.objects.create(
+            title_en="other title", source_type=source_type
+        )
+        self.other_source = other_source
+
+    def test_rename_typed_texts(self):
+        # should rename "typed texts" (only) to "unpublished editions"
+        self.typed_texts_source.refresh_from_db()
+        assert self.typed_texts_source.title_en == "unpublished editions"
+        self.other_source.refresh_from_db()
+        assert self.other_source.title_en == "other title"
+
+        LogEntry = self.apps.get_model("admin", "LogEntry")
+        msg = 'changed title "typed texts" to "unpublished editions"'
+        # should create log entries with appropriate message for typed texts, but not other source
+        assert (
+            LogEntry.objects.filter(
+                change_message=msg, object_id=self.typed_texts_source.pk
+            ).count()
+            == 1
+        )
+        assert (
+            LogEntry.objects.filter(
+                change_message=msg, object_id=self.other_source.pk
+            ).count()
+            == 0
+        )

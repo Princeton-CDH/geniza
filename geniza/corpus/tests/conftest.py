@@ -2,41 +2,44 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pytest
-from attrdict import AttrDict
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.utils.timezone import get_current_timezone, make_aware
 
-from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
-from geniza.footnotes.models import (
-    Creator,
-    Footnote,
-    Source,
-    SourceLanguage,
-    SourceType,
-)
+from geniza.corpus.models import Document, DocumentType, Fragment, Manifest, TextBlock
+from geniza.footnotes.models import Footnote
 
 
 @patch("geniza.corpus.models.ManifestImporter", Mock())
-def make_fragment():
+def make_fragment(manifest=True):
     """A real fragment from CUL, with URLs for testing."""
     return Fragment.objects.create(
         shelfmark="CUL Add.2586",
         url="https://cudl.lib.cam.ac.uk/view/MS-ADD-02586",
         iiif_url="https://cudl.lib.cam.ac.uk/iiif/MS-ADD-02586",
+        manifest=Manifest.objects.create(
+            uri="https://cudl.lib.cam.ac.uk/iiif/MS-ADD-02586", short_id="m"
+        )
+        if manifest
+        else None,
     )
 
 
 @patch("geniza.corpus.models.ManifestImporter", Mock())
-def make_multifragment():
+def make_multifragment(manifest=True):
     """A real multifragment object, with fake URLs for testing."""
     return Fragment.objects.create(
         shelfmark="T-S 16.377",
         url="https://example.com/view/TS16.377",
         iiif_url="https://iiif.example.com/TS16.377",
         is_multifragment=True,
+        manifest=Manifest.objects.create(
+            uri="https://iiif.example.com/TS16.377", short_id="m2"
+        )
+        if manifest
+        else None,
     )
 
 
@@ -44,7 +47,7 @@ def make_document(fragment):
     """A real legal document from the PGP."""
     doc = Document.objects.create(
         id=3951,
-        description="""Deed of sale in which a father sells to his son a quarter
+        description_en="""Deed of sale in which a father sells to his son a quarter
          of the apartment belonging to him in a house in the al- Mu'tamid
          passage of the Tujib quarter for seventeen dinars. Dated 1233.
          (Information from Mediterranean Society, IV, p. 281)""",
@@ -83,7 +86,7 @@ def make_document(fragment):
 def make_join(fragment, multifragment):
     """A fake letter document that occurs on two different fragments."""
     doc = Document.objects.create(
-        description="testing description",
+        description_en="testing description",
         doctype=DocumentType.objects.get_or_create(name="Letter")[0],
     )
     TextBlock.objects.create(document=doc, fragment=fragment, order=1)
@@ -99,6 +102,16 @@ def fragment(db):
 @pytest.fixture
 def multifragment(db):
     return make_multifragment()
+
+
+@pytest.fixture
+def fragment_no_manifest(db):
+    return make_fragment(manifest=False)
+
+
+@pytest.fixture
+def multifragment_no_manifest(db):
+    return make_multifragment(manifest=False)
 
 
 @pytest.fixture
@@ -118,38 +131,4 @@ def footnote(db, source, document):
         content_object=document,
         location="p.1",
         doc_relation=Footnote.EDITION,
-    )
-
-
-@pytest.fixture
-def iiif_dict():
-    return AttrDict(
-        {
-            "sequences": [
-                {
-                    "canvases": [
-                        {
-                            "images": [
-                                {
-                                    "resource": {
-                                        "id": "http://example.co/iiif/ts-1/00001",
-                                    }
-                                }
-                            ],
-                            "label": "1r",
-                        },
-                        {
-                            "images": [
-                                {
-                                    "resource": {
-                                        "id": "http://example.co/iiif/ts-1/00002",
-                                    }
-                                }
-                            ],
-                            "label": "1v",
-                        },
-                    ]
-                }
-            ]
-        }
     )

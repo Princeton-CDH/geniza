@@ -60,7 +60,7 @@ class Command(BaseCommand):
             self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
         self.stats = defaultdict(int)
-        # after creating missing goitein typed text notes, these will not be created again
+        # after creating missing goitein unpublished edition notes, these will not be created again
         self.stats["footnote_created"] = 0
         # duplicates might not always happen
         self.stats["duplicate_footnote"] = 0
@@ -211,7 +211,7 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
                 return editions_with_content.first()
 
         if not editions.exists():
-            # no editions found; check if we can create a goitein typed texts footnote
+            # no editions found; check if we can create a goitein unpublished edition footnote
             footnote = self.is_it_goitein(tei, doc)
             if footnote:
                 return footnote
@@ -241,15 +241,17 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
             if len(author_matches) == 1:
                 return author_matches[0]
 
-            # if there were *no* author matches, see if we can create a goitein typed text note
+            # if there were *no* author matches, see if we can create a goitein unpublished edition note
             if not author_matches:
                 return self.is_it_goitein(tei, doc)
 
     def is_it_goitein(self, tei, doc):
         # if no edition exists and we can identify based on the TEI as
-        # goitein typed texts, create a new  footnote
+        # goitein unpublished editions, create a new footnote
         source_info = str(tei.source[0]).lower()
-        if "goitein" in source_info and "typed texts" in source_info:
+        if "goitein" in source_info and (
+            "unpublished editions" in source_info or "typed texts" in source_info
+        ):
             if not self.noact_mode:
                 footnote = self.create_goitein_footnote(doc)
                 if footnote:
@@ -259,13 +261,14 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
     def create_goitein_footnote(self, doc):
         source = Source.objects.filter(
             authors__last_name="Goitein",
-            title_en="typed texts",
+            title_en="unpublished editions",
             source_type__type="Unpublished",
             volume__startswith=Source.get_volume_from_shelfmark(doc.shelfmark),
         ).first()
         if not source:
             self.stderr.write(
-                "Error finding Goitein typed texts source for %s" % doc.shelfmark
+                "Error finding Goitein unpublished editions source for %s"
+                % doc.shelfmark
             )
             return
 
@@ -279,7 +282,7 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
             content_type_id=self.footnote_contenttype.pk,
             object_id=footnote.pk,
             object_repr=str(footnote),
-            change_message="Created Goitein typed texts footnote to sync transcription",
+            change_message="Created Goitein unpublished editions footnote to sync transcription",
             action_flag=ADDITION,
         )
 

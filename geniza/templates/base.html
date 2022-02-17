@@ -43,10 +43,14 @@
         <!-- scripts -->
         {% get_files "main" "js" as main_js %}
         <script src="{{ main_js.0.url }}" nonce="{{ request.csp_nonce }}" defer></script>
+        {# analytics #}
+        {% if not request.is_preview and GTAGS_ANALYTICS_ID %}
+            {% include 'snippets/analytics.html' %}
+        {% endif %}
         {% block extrascript %}{% endblock extrascript %}
     </head>
     <body id="{{ page_type }}{% block page_type %}{% endblock page_type %}">
-        {% wagtailuserbar 'bottom-left' %}
+        {% wagtailuserbar 'bottom-right' %}
         {% if SHOW_TEST_WARNING %}
             {% include 'snippets/test_banner.html' %}
         {% endif %}

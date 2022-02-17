@@ -1,7 +1,9 @@
 from datetime import datetime
+from unittest import TestCase
 from unittest.mock import Mock, patch
 
 import pytest
+from attrdict import AttrDict
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -10,7 +12,8 @@ from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
-from djiffy.models import Canvas, IIIFImage, Manifest
+from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
+from piffle.presentation import IIIFException as piffle_IIIFException
 
 from geniza.corpus.models import (
     Collection,
@@ -113,7 +116,7 @@ class TestLanguageScripts:
         )
 
 
-class TestFragment:
+class TestFragment(TestCase):
     def test_str(self):
         frag = Fragment(shelfmark="TS 1")
         assert str(frag) == frag.shelfmark
@@ -128,14 +131,43 @@ class TestFragment:
         assert Fragment.objects.get_by_natural_key(frag.shelfmark) == frag
 
     @patch("geniza.corpus.models.IIIFPresentation")
-    def test_iiif_thumbnails(self, mockiifpres, iiif_dict):
+    def test_iiif_thumbnails(self, mockiifpres):
         # no iiif
         frag = Fragment(shelfmark="TS 1")
         assert frag.iiif_thumbnails() == ""
 
         frag.iiif_url = "http://example.co/iiif/ts-1"
         # return simplified part of the manifest we need for this
-        mockiifpres.from_url.return_value = iiif_dict
+        mockiifpres.from_url.return_value = AttrDict(
+            {
+                "sequences": [
+                    {
+                        "canvases": [
+                            {
+                                "images": [
+                                    {
+                                        "resource": {
+                                            "id": "http://example.co/iiif/ts-1/00001",
+                                        }
+                                    }
+                                ],
+                                "label": "1r",
+                            },
+                            {
+                                "images": [
+                                    {
+                                        "resource": {
+                                            "id": "http://example.co/iiif/ts-1/00002",
+                                        }
+                                    }
+                                ],
+                                "label": "1v",
+                            },
+                        ]
+                    }
+                ]
+            }
+        )
 
         thumbnails = frag.iiif_thumbnails()
         assert (
@@ -168,6 +200,73 @@ class TestFragment:
         assert isinstance(images[0], IIIFImage)
         assert len(labels) == 1
         assert labels[0] == "fake image"
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_iiif_images_iiifexception(self, mock_manifestimporter):
+        # patch IIIFPresentation.from_url to always raise IIIFException
+        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
+            mock_iiifpresentation.from_url = Mock()
+            mock_iiifpresentation.from_url.side_effect = IIIFException
+            frag = Fragment(shelfmark="TS 1")
+            frag.iiif_url = "http://example.io/manifests/1"
+            frag.save()
+            # should raise the exception
+            with self.assertRaises(IIIFException):
+                # should log at level WARN
+                with self.assertLogs(level="WARN"):
+                    frag.iiif_images()
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_attribution(self, mock_manifestimporter):
+        # fragment with no manifest
+        frag = Fragment(shelfmark="TS 1")
+        assert not frag.attribution
+
+        # fragment with a locally cached manifest
+        frag = Fragment(shelfmark="TS 2")
+        frag.iiif_url = "http://example.io/manifests/2"
+        # manifest with an attribution
+        frag.manifest = Manifest.objects.create(
+            uri=frag.iiif_url,
+            short_id="m",
+            extra_data={"attribution": "Created by a person"},
+        )
+        frag.save()
+        assert frag.attribution == "Created by a person"
+
+        # fragment with remote manifest
+        frag_no_manifest = Fragment(shelfmark="TS 3")
+        frag_no_manifest.iiif_url = "http://example.io/manifests/3"
+        frag_no_manifest.save()
+        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
+            # no attribution, should return None via caught AttributeError
+            mock_iiifpresentation.from_url.return_value = AttrDict({})
+            assert not frag_no_manifest.attribution
+
+            # with attribution
+            mock_iiifpresentation.reset_mock()
+            mock_iiifpresentation.from_url.return_value = AttrDict(
+                {"attribution": "Created by a person"}
+            )
+            assert frag_no_manifest.attribution == "Created by a person"
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_attribution_iiifexception(self, mock_manifestimporter):
+        # patch IIIFPresentation.from_url to always raise IIIFException
+        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
+            mock_iiifpresentation.from_url = Mock()
+            mock_iiifpresentation.from_url.side_effect = IIIFException
+            frag = Fragment(shelfmark="TS 1")
+            frag.iiif_url = "http://example.io/manifests/1"
+            frag.save()
+            # should raise the exception
+            with self.assertRaises(IIIFException):
+                # should log at level WARN
+                with self.assertLogs(level="WARN"):
+                    frag.attribution
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
@@ -239,6 +338,31 @@ class TestFragment:
         frag.save()
         assert mock_manifestimporter.call_count == 0
         assert not frag.manifest
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.messages")
+    def test_save_import_manifest_error(self, mock_messages, mock_manifestimporter):
+        frag = Fragment(shelfmark="TS 1")
+        frag.request = Mock()
+        # remove any cached manifests
+        Manifest.objects.all().delete()
+        # mock manifest does nothing, manifest will be unset
+        frag.iiif_url = "something"  # needs to be changed to trigger relevant block
+        frag.save()
+        mock_messages.warning.assert_called_with(
+            frag.request, "Failed to cache IIIF manifest"
+        )
+
+        # import causes an error
+        mock_manifestimporter.return_value.import_paths.side_effect = (
+            piffle_IIIFException
+        )
+        frag.iiif_url = "something else"  # change again to trigger relevant block
+        frag.save()
+        mock_messages.error.assert_called_with(
+            frag.request, "Error loading IIIF manifest"
+        )
 
 
 @pytest.mark.django_db
@@ -405,7 +529,8 @@ class TestDocument:
         # reactivate previous default (in case it matters for other tests)
         activate(current_lang)
 
-    def test_iiif_urls(self):
+    @patch("geniza.corpus.models.IIIFPresentation")
+    def test_iiif_urls(self, mock_pres):
         # create example doc with two fragments with URLs
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark="s1", iiif_url="foo")
@@ -602,6 +727,23 @@ class TestDocument:
         ]:
             assert index_data[scholarship_count] == 0
         assert index_data["scholarship_t"] == []
+
+        # add mock images
+        img1 = Mock()
+        img1.info.return_value = "http://example.co/iiif/ts-1/00001/info.json"
+        img2 = Mock()
+        img2.info.return_value = "http://example.co/iiif/ts-1/00002/info.json"
+        # Mock Fragment.iiif_images() to return those two images and two fake labels
+        with patch.object(
+            Fragment, "iiif_images", return_value=([img1, img2], ["label1", "label2"])
+        ):
+            index_data = document.index_data()
+            # index data should pick up images and labels
+            assert index_data["iiif_images_ss"] == [
+                "http://example.co/iiif/ts-1/00001",
+                "http://example.co/iiif/ts-1/00002",
+            ]
+            assert index_data["iiif_labels_ss"] == ["label1", "label2"]
 
     def test_index_data_footnotes(
         self, document, source, twoauthor_source, multiauthor_untitledsource

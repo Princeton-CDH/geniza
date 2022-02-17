@@ -135,7 +135,7 @@ class Source(models.Model):
     def __str__(self):
         """Method used for for internal/data admin use.
         Please use the `display` or `formatted_display` methods for public display."""
-        # Append volume for unpublished (e.g. typed texts)
+        # Append volume for unpublished
         if self.source_type.type == "Unpublished" and self.volume:
             return "%s (%s)" % (self.display(), self.volume)
         # Otherwise return formatted display without html tags

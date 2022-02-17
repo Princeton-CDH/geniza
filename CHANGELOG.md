@@ -1,5 +1,27 @@
 # Change Log
 
+## 4.1
+
+-   public site
+    -   As a user, I want to see image thumbnails with search results when available, so that I can quickly see which records have images and what they look like.
+    -   As a frontend user, I want my search terms to match variant forms of the words I enter so that I can find all related content.
+    -   As a researcher, I want to see Goitein's unpublished editions labeled more clearly, so I'm not confused by the ambiguous title "typed texts".
+    -   As a front end user, I want to see all transcriptions expanded by default when viewing a document so that I can easily access content when there are multiple transcriptions.
+    -   As a front-end user, I want to know which images are associated with each attribution, so that I am not confused by a list of attributions at the image and transcription display.
+-   content/data admin
+    -   As a content editor, I want to merge document records without losing data so that I can combine records when I've identified duplicates or joins.
+    -   As a content admin, I want to search for documents by transcription content so I can work with and export content based on transcription text.
+    -   As a content admin, I want to be able to see which transcriptions belong with which footnote so I can manage the content properly.
+    -   As a content admin, I want to see multiple transcriptions arranged horizontally on the document edit page, instead of vertically.
+    -   increase footnote source field size in document edit page so the names and titles are visible
+    -   As a content editor, I want to add alternate text and captions for images in Wagtail so that I can describe and present images more clearly.
+    -   As a content editor, I want to be able to underline text in Wagtail pages so I can use formatting in the glossary.
+    -   As a content editor, I want to a way to add Hebrew descriptions of documents to the document record, so that available information can be managed in the same place.
+    -   As an admin, I want to configure which languages are available on the site without disabling them in the admin site, to avoid people accidentally receiving a partially-translated version of the site that isn't ready.
+-   maintenance/other
+    -   setup google analytics
+    -   include software version in site footer
+
 ## 4.0
 
 **Initial public version of Princeton Geniza Project v4.0**

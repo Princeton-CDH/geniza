@@ -1,6 +1,7 @@
 import time
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
+from unittest import mock
+from unittest.mock import Mock, mock_open, patch
 
 import pytest
 from django.conf import settings
@@ -12,6 +13,7 @@ from django.core.exceptions import ValidationError
 from django.db.models.query import EmptyQuerySet
 from django.forms import modelform_factory
 from django.forms.models import model_to_dict
+from django.http import HttpResponseRedirect
 from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
@@ -228,7 +230,7 @@ class TestDocumentAdmin:
         doc.languages.add(arabic)
         doc.secondary_languages.add(french)
 
-        marina = Creator.objects.create(last_name="Rustow", first_name="Marina")
+        marina = Creator.objects.create(last_name_en="Rustow", first_name_en="Marina")
         book = SourceType.objects.create(type="Book")
         source = Source.objects.create(source_type=book)
         source.authors.add(marina)
@@ -331,6 +333,23 @@ class TestDocumentAdmin:
         # should not error if no log entry is in the deleted objects list
         assert response.status_code == 200
 
+    def test_merge_document(self):
+        mockrequest = Mock()
+        test_ids = ["50344", "33003", "10100"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = DocumentAdmin(Document, Mock()).merge_documents(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 303
+        assert resp["location"].startswith(reverse("admin:document-merge"))
+        assert resp["location"].endswith("?ids=%s" % ",".join(test_ids))
+
+        test_ids = ["50344"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = DocumentAdmin(Document, Mock()).merge_documents(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 302
+        assert resp["location"] == reverse("admin:corpus_document_changelist")
+
 
 @pytest.mark.django_db
 class TestDocumentForm:
@@ -366,7 +385,7 @@ class TestFragmentTextBlockInline:
     def test_document_description(self):
         fragment = Fragment.objects.create(shelfmark="CUL 123")
         test_description = "A medieval poem"
-        doc = Document.objects.create(description=test_description)
+        doc = Document.objects.create(description_en=test_description)
         textblock = TextBlock.objects.create(fragment=fragment, document=doc)
         inline = FragmentTextBlockInline(Fragment, admin_site=admin.site)
 
@@ -389,6 +408,15 @@ class TestFragmentAdmin:
         frag_admin = FragmentAdmin(model=Fragment, admin_site=admin.site)
         assert frag_admin.collection_display(fragment) == cul
 
+    @patch("django.contrib.admin.ModelAdmin.save_model")
+    def test_save_model(self, mock_super_save_model):
+        frag_admin = FragmentAdmin(model=Fragment, admin_site=admin.site)
+        mock_request = Mock()
+        mock_obj = Mock()
+        frag_admin.save_model(mock_request, mock_obj, Mock(), Mock())
+        args, kwargs = mock_super_save_model.call_args
+        assert args[1].request == mock_request
+
 
 class TestHasTranscriptionListFilter:
     def init_filter(self):
@@ -402,7 +430,7 @@ class TestHasTranscriptionListFilter:
         )
 
     @pytest.mark.django_db
-    def test_queryset(self, document, join, typed_texts):
+    def test_queryset(self, document, join, unpublished_editions):
         filter = self.init_filter()
 
         # no transcription: all documents should be returned
@@ -417,7 +445,7 @@ class TestHasTranscriptionListFilter:
         # add a transcription
         footnote = Footnote.objects.create(
             doc_relation=["E"],
-            source=typed_texts,
+            source=unpublished_editions,
             content_type_id=ContentType.objects.get(
                 app_label="corpus", model="document"
             ).id,

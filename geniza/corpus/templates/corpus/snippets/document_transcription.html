@@ -25,7 +25,7 @@
             {% if document.digital_editions|length > 1 %}
                 {# when there are multiple editions, use disclosure element #}
                 {% for edition in document.digital_editions %}
-                    <details {% if forloop.first %}open{% endif %}>
+                    <details open>
                         <summary class="source">{{ edition.source.display }}</summary>
                         <div>{{ edition.content.html|safe }}</div>
                     </details>
@@ -34,6 +34,12 @@
                 <div>{{ document.digital_editions.0.content.html|safe }}</div>
             {% endif %}
         </div>
+        <div class="attribution">
+            {% for fragment in document.fragments.all %}
+                {% if fragment.attribution %}
+                    {{ fragment.shelfmark }}: {{ fragment.attribution }}
+                {% endif %}
+            {% endfor %}
+        </div>
     {% endif %}
-    {{ document.attribution|format_attribution|safe }}
 </section>

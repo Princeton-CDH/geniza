@@ -4,6 +4,7 @@ from collections import defaultdict
 from itertools import chain
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
@@ -24,9 +25,11 @@ from djiffy.importer import ManifestImporter
 from djiffy.models import Manifest
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
-from piffle.presentation import IIIFPresentation
+from piffle.presentation import IIIFException, IIIFPresentation
+from requests.exceptions import ConnectionError
 from taggit.models import Tag
 from taggit_selectize.managers import TaggableManager
+from urllib3.exceptions import HTTPError, NewConnectionError
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
@@ -212,12 +215,15 @@ class Fragment(TrackChangesModel):
 
         # if not cached, load from remote url
         else:
-            manifest = IIIFPresentation.from_url(self.iiif_url)
-            for canvas in manifest.sequences[0].canvases:
-                image_id = canvas.images[0].resource.id
-                images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
-                # label provides library's recto/verso designation
-                labels.append(canvas.label)
+            try:
+                manifest = IIIFPresentation.from_url(self.iiif_url)
+                for canvas in manifest.sequences[0].canvases:
+                    image_id = canvas.images[0].resource.id
+                    images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
+                    # label provides library's recto/verso designation
+                    labels.append(canvas.label)
+            except (IIIFException, ConnectionError, HTTPError):
+                logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
 
         return images, labels
 
@@ -237,6 +243,27 @@ class Fragment(TrackChangesModel):
             )
         )
 
+    @property
+    def attribution(self):
+        """Generate an attribution for this fragment"""
+        # if there is no iiif for this fragment, bail out
+        if not self.iiif_url:
+            return None
+        # try to use locally cached manifest
+        if self.manifest:
+            return mark_safe(self.manifest.extra_data.get("attribution", ""))
+        try:
+            # otherwise try to use remote manifest attribution attribute
+            remote_manifest = IIIFPresentation.from_url(self.iiif_url)
+            try:
+                return mark_safe(remote_manifest.attribution)
+            except AttributeError:
+                # attribution is optional, so ignore if not present
+                return None
+        except IIIFException:
+            logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
+        return None
+
     def save(self, *args, **kwargs):
         """Remember how shelfmarks have changed by keeping a semi-colon list
         in the old_shelfmarks field"""
@@ -253,8 +280,19 @@ class Fragment(TrackChangesModel):
         if self.iiif_url and not self.manifest or self.has_changed("iiif_url"):
             # if iiif url has changed and there is a value, import and update
             if self.iiif_url:
-                ManifestImporter().import_paths([self.iiif_url])
-                self.manifest = Manifest.objects.filter(uri=self.iiif_url).first()
+                try:
+                    ManifestImporter().import_paths([self.iiif_url])
+                    self.manifest = Manifest.objects.filter(uri=self.iiif_url).first()
+                except (IIIFException, NewConnectionError):
+                    # clear out the manifest if there was an error
+                    self.manifest = None
+                    # if saved via admin, alert the user
+                    if hasattr(self, "request"):
+                        messages.error(self.request, "Error loading IIIF manifest")
+
+                # if there was no error but manifest is unset, warn
+                if self.manifest is None and hasattr(self, "request"):
+                    messages.warning(self.request, "Failed to cache IIIF manifest")
             else:
                 # otherwise, clear the associated manifest (iiif url has been removed)
                 self.manifest = None
@@ -615,9 +653,13 @@ class Document(ModelIndexable):
     def attribution(self):
         """Generate a tuple of three attribution components for use in IIIF manifests
         or wherever images/transcriptions need attribution."""
+
+        # NOTE: For individual fragment attribution, use :class:`Fragment` method instead.
+
         # keep track of unique attributions so we can include them all
         extra_attrs_set = set()
         for url in self.iiif_urls():
+            # NOTE: If this url fails, may raise IIIFException
             remote_manifest = IIIFPresentation.from_url(url)
             # CUDL attribution has some variation in tags;
             # would be nice to preserve tagged version,
@@ -681,11 +723,13 @@ class Document(ModelIndexable):
         # get fragments via textblocks for correct order
         # and to take advantage of prefetching
         fragments = [tb.fragment for tb in self.textblock_set.all()]
+        images = self.iiif_images()
         index_data.update(
             {
                 "pgpid_i": self.id,
                 "type_s": str(self.doctype) if self.doctype else _("Unknown type"),
-                "description_t": self.description,
+                # use english description for now
+                "description_t": self.description_en,
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
                 "shelfmark_ss": self.certain_join_shelfmarks,
@@ -695,6 +739,12 @@ class Document(ModelIndexable):
                 "status_s": self.get_status_display(),
                 "old_pgpids_is": self.old_pgpids,
                 "language_code_ss": [lang.iso_code for lang in self.languages.all()],
+                # use image info link without trailing info.json to easily convert back to iiif image client
+                "iiif_images_ss": [
+                    img["image"].info()[:-10]  # i.e., remove /info.json
+                    for img in images
+                ],
+                "iiif_labels_ss": [img["label"] for img in images],
             }
         )
 
@@ -778,7 +828,6 @@ class Document(ModelIndexable):
         metadata into this document, adds the merged documents into
         list of old PGP IDs, and creates a log entry documenting
         the merge, including the rationale."""
-
         # initialize old pgpid list if previously unset
         if self.old_pgpids is None:
             self.old_pgpids = []
@@ -790,7 +839,15 @@ class Document(ModelIndexable):
             user = User.objects.get(username=settings.SCRIPT_USERNAME)
             script = True
 
-        description_chunks = [self.description]
+        # language codes are needed to merge description, which is translated
+        language_codes = [lang_code for lang_code, lang_name in settings.LANGUAGES]
+
+        # handle translated description: create a dict of descriptions
+        # per supported language to aggregate and merge
+        description_chunks = {
+            lang_code: [getattr(self, "description_%s" % lang_code)]
+            for lang_code in language_codes
+        }
         language_notes = [self.language_note] if self.language_note else []
         notes = [self.notes] if self.notes else []
         needs_review = [self.needs_review] if self.needs_review else []
@@ -801,10 +858,15 @@ class Document(ModelIndexable):
             # add any tags from merge document tags to primary doc
             self.tags.add(*doc.tags.names())
             # add description if set and not duplicated
-            if doc.description and doc.description not in self.description:
-                description_chunks.append(
-                    "Description from PGPID %s:\n%s" % (doc.id, doc.description)
-                )
+            # for all supported languages
+            for lang_code in language_codes:
+                description_field = "description_%s" % lang_code
+                doc_description = getattr(doc, description_field)
+                current_description = getattr(self, description_field)
+                if doc_description and doc_description not in current_description:
+                    description_chunks[lang_code].append(
+                        "Description from PGPID %s:\n%s" % (doc.id, doc_description)
+                    )
             # add any notes
             if doc.notes:
                 notes.append("Notes from PGPID %s:\n%s" % (doc.id, doc.notes))
@@ -830,8 +892,16 @@ class Document(ModelIndexable):
             self._merge_footnotes(doc)
             self._merge_logentries(doc)
 
-        # combine text fields
-        self.description = "\n".join(description_chunks)
+        # combine aggregated content for text fields
+        for lang_code in language_codes:
+            description_field = "description_%s" % lang_code
+            # combine, but filter out any None values from unset content
+            setattr(
+                self,
+                description_field,
+                "\n".join([d for d in description_chunks[lang_code] if d]),
+            )
+
         self.notes = "\n".join(notes)
         self.language_note = "; ".join(language_notes)
         # if merged via script, flag for review

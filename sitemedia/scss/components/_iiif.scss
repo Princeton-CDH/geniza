@@ -101,7 +101,7 @@
         }
 
         .source {
-            @include typography.body;
+            @include typography.body-bold;
             text-align: left;
             padding-top: spacing.$spacing-md;
         }

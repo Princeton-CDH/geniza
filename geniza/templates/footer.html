@@ -69,6 +69,13 @@
             <img src="{% static 'img/icons/license-icon.svg' %}" width="32" height="16" alt="{{ license_text }}" />
         </a>
     </li>
+    <li id="sw-version">
+        {# Translators: software version, for footer #}
+        {% translate 'software version' as version_text %}
+        <a href="https://github.com/Princeton-CDH/geniza/" aria-label="{{ version_text }}">
+            {{ SW_VERSION }}
+        </a>
+    </li>
     <li>
         {# Translators: official name of Princeton University, for footer #}
         <a href="https://princeton.edu/" aria-label="{% translate 'Princeton University homepage' %}">

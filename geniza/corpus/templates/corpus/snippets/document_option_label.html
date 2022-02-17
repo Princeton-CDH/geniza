@@ -1,0 +1,78 @@
+{# template snippet for displaying document label on a form #}
+{# used on document merge form to provide enough information to merge accurately #}
+
+<div class="merge-document-label">
+    <h2>{{ document }}
+        <a target="_blank" href="{% url 'admin:corpus_document_change' document.id %}"
+            title="Go to this document's admin edit page">
+            <img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>
+    </h2>
+    {% if document.description %}
+        <div class="form-row">
+            <label>Description</label><div>{{ document.description }}</div>
+        </div>
+    {% endif %}
+    {% if document.all_languages %}
+        <div class="form-row">
+            <label>Languages</label><div>{{ document.all_languages }}</div>
+        </div>
+    {% endif %}
+    {% if document.all_tags %}
+        <div class="form-row">
+            <label>Tags</label><div>{{ document.all_tags }}</div>
+        </div>
+    {% endif %}
+    {% if document.notes %}
+        <div class="form-row">
+            <label>Notes</label><div>{{ document.notes }}</div>
+        </div>
+    {% endif %}
+    {% if document.needs_review %}
+        <div class="form-row">
+            <label>Needs Review</label><div>{{ document.needs_review }}</div>
+        </div>
+    {% endif %}
+    {% if document.footnotes.count %}
+        <div class="form-row">
+            <label>Scholarship Records</label>
+            <ol>
+                {% regroup document.footnotes.all by source as source_list %}
+                {% for source in source_list %}
+                    <li>
+                        <div class="form-row">
+                            <label>Bibliographic citation</label>
+                            <div>{{ source.grouper.formatted_display|safe }}
+                                <a href="{% url 'admin:footnotes_source_change' source.grouper.id %}"
+                                    title="Go to this source's admin edit page"><img src="/static/admin/img/icon-changelink.svg"
+                                        alt="Change"></a>
+                                {% if source.grouper.source_type.type == "Unpublished" %}
+                                    <div class="unpublished">unpublished</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% for fn in source.list %}
+                            {% if fn.location or fn.url %}
+                                <div class="form-row">
+                                    <label>Footnote location</label>
+                                    <div>{% include "corpus/snippets/footnote_location.html" %}</div>
+                                </div>
+                            {% endif %}
+                            <div class="form-row">
+                                <label>Footnote relation</label>
+                                <div>{{ fn.doc_relation }}</div>
+                            </div>
+                            {% if fn.content %}
+                                <div class="form-row">
+                                    <label>Transcription(s)</label>
+                                    <div class="transcription-container">
+                                        {% include "footnotes/transcription.html" with transcription=fn.content %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </li>
+                {% endfor %}
+            </ol>
+        </div>
+    {% endif %}
+</div>

@@ -1,11 +1,14 @@
 from time import sleep
 from unittest import mock
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import ANY, Mock, mock_open, patch
 
 import pytest
+from django.conf import settings
+from django.contrib.auth.models import Permission, User
 from django.db.models.fields import related
 from django.http.response import Http404
-from django.urls import reverse
+from django.test import TestCase
+from django.urls import resolve, reverse
 from django.utils.text import Truncator, slugify
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
@@ -18,6 +21,7 @@ from geniza.corpus.views import (
     DocumentAnnotationListView,
     DocumentDetailView,
     DocumentManifestView,
+    DocumentMerge,
     DocumentScholarshipView,
     DocumentSearchView,
     DocumentTranscriptionText,
@@ -130,7 +134,7 @@ def test_old_pgp_edition():
     doc = Document.objects.create()
     assert old_pgp_edition(doc.editions()) == ""
 
-    marina = Creator.objects.create(last_name="Rustow", first_name="Marina")
+    marina = Creator.objects.create(last_name_en="Rustow", first_name_en="Marina")
     book = SourceType.objects.create(type="Book")
     source = Source.objects.create(source_type=book)
     source.authors.add(marina)
@@ -144,7 +148,7 @@ def test_old_pgp_edition():
     edition_str = old_pgp_edition(doc.editions())
     assert edition_str == f"Ed. {fn.display()}"
 
-    source2 = Source.objects.create(title="Arabic dictionary", source_type=book)
+    source2 = Source.objects.create(title_en="Arabic dictionary", source_type=book)
     fn2 = Footnote.objects.create(
         doc_relation=[Footnote.EDITION],
         source=source2,
@@ -154,7 +158,7 @@ def test_old_pgp_edition():
     edition_str = old_pgp_edition(doc.editions())
     assert edition_str == f"Ed. Arabic dictionary; also ed. Marina Rustow."
 
-    source3 = Source.objects.create(title="Geniza Encyclopedia", source_type=book)
+    source3 = Source.objects.create(title_en="Geniza Encyclopedia", source_type=book)
     fn_trans = Footnote.objects.create(
         doc_relation=[Footnote.EDITION, Footnote.TRANSLATION],
         source=source3,
@@ -951,3 +955,93 @@ class TestDocumentTranscriptionText:
         assert slugify(source.authorship_set.first().creator.last_name) in filename
 
         assert response.content == b"some transcription text"
+
+
+class TestDocumentMergeView:
+    def test_get_success_url(self, document):
+        merge_view = DocumentMerge()
+        merge_view.primary_document = document
+
+        resolved_url = resolve(merge_view.get_success_url())
+        assert "admin" in resolved_url.app_names
+        assert resolved_url.url_name == "corpus_document_change"
+
+    def test_get_initial(self):
+        dmview = DocumentMerge()
+        dmview.request = Mock(GET={"ids": "12,23,456,7"})
+
+        initial = dmview.get_initial()
+        assert dmview.document_ids == [12, 23, 456, 7]
+        # lowest id selected as default primary document
+        assert initial["primary_document"] == 7
+
+        # Test when no ideas are provided (a user shouldn't get here,
+        #  but shouldn't raise an error.)
+        dmview.request = Mock(GET={"ids": ""})
+        initial = dmview.get_initial()
+        assert dmview.document_ids == []
+        dmview.request = Mock(GET={})
+        initial = dmview.get_initial()
+        assert dmview.document_ids == []
+
+    def test_get_form_kwargs(self):
+        dmview = DocumentMerge()
+        dmview.request = Mock(GET={"ids": "12,23,456,7"})
+        form_kwargs = dmview.get_form_kwargs()
+        assert form_kwargs["document_ids"] == dmview.document_ids
+
+    def test_document_merge(self, admin_client, client):
+        # Ensure that the document merge view is not visible to public
+        response = client.get(reverse("admin:document-merge"))
+        assert response.status_code == 302
+        assert response.url.startswith("/accounts/login/")
+
+        # create test document records to merge
+        doc1 = Document.objects.create()
+        doc2 = Document.objects.create()
+
+        doc_ids = [doc1.id, doc2.id]
+        idstring = ",".join(str(pid) for pid in doc_ids)
+
+        # GET should display choices
+        response = admin_client.get(reverse("admin:document-merge"), {"ids": idstring})
+        assert response.status_code == 200
+
+        # POST should merge
+        response = admin_client.post(
+            "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+            {"primary_document": doc1.id, "rationale": "duplicate"},
+            follow=True,
+        )
+        TestCase().assertRedirects(
+            response, reverse("admin:corpus_document_change", args=[doc1.id])
+        )
+        message = list(response.context.get("messages"))[0]
+        assert message.tags == "success"
+        assert "Successfully merged" in message.message
+        assert f"with PGPID {doc1.id}" in message.message
+
+        with patch.object(Document, "merge_with") as mock_merge_with:
+            # should pick up rationale notes as parenthetical
+            response = admin_client.post(
+                "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+                {
+                    "primary_document": doc1.id,
+                    "rationale": "duplicate",
+                    "rationale_notes": "test",
+                },
+                follow=True,
+            )
+            mock_merge_with.assert_called_with(ANY, "duplicate (test)", user=ANY)
+
+            # with "other", should use rationale notes as rationale string
+            response = admin_client.post(
+                "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+                {
+                    "primary_document": doc1.id,
+                    "rationale": "other",
+                    "rationale_notes": "test",
+                },
+                follow=True,
+            )
+            mock_merge_with.assert_called_with(ANY, "test", user=ANY)
