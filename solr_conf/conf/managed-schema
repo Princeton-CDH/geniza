@@ -86,7 +86,7 @@
          finally applies Porter's stemming.  The query time analyzer
          also applies synonyms from synonyms.txt. -->
     <dynamicField name="*_txt_en" type="text_en"  indexed="true"  stored="true"/>
-    <dynamicField name="*_txt_ens" type="text_en"  indexed="true"  stored="false" multiValued="true"/>
+    <dynamicField name="*_txt_ens" type="text_en"  indexed="true"  stored="true" multiValued="true"/>
     <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
         <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -154,7 +154,7 @@
   <copyField source="tags_ss_lower" dest="tags_t" maxChars="30000" />
   <copyField source="type_s" dest="type_t" maxChars="300" />
   <!-- copy description from general text to english text with stemming -->
-  <copyField source="description_t" dest="description_txt_en" />
+  <copyField source="description_t" dest="description_txt_ens" />
 
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
