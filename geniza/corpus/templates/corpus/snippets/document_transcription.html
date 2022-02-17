@@ -34,6 +34,12 @@
                 <div>{{ document.digital_editions.0.content.html|safe }}</div>
             {% endif %}
         </div>
+        <div class="attribution">
+            {% for fragment in document.fragments.all %}
+                {% if fragment.attribution %}
+                    {{ fragment.shelfmark }}: {{ fragment.attribution }}
+                {% endif %}
+            {% endfor %}
+        </div>
     {% endif %}
-    {{ document.attribution|format_attribution|safe }}
 </section>

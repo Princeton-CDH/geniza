@@ -2,7 +2,7 @@
 
 <div class="transcription" dir="rtl">
     {# provisional html format #}
-    {{ transcription.html|headers_to_h3|safe }}
+    {{ transcription.html|h1_to_h3|safe }}
     {# old format #}
     {% for block in transcription.blocks %}
         {% if block.label %}<h3>{{ block.label }}</h3>{% endif %}

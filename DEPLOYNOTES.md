@@ -6,6 +6,7 @@
 -   If not all languages should be enabled on the public site, edit `settings/local_settings.py` to add the **PUBLIC_SITE_LANGUAGES** variable from `settings/local_settings.py.sample`. As noted in the sample file, its value should be either a list of language codes that comprise the subset of **LANGUAGES** desired for the public site, or undefined.
 -   To enable Google Analytics for the production site, configure **GTAGS_ANALYTICS_ID** in local settings.
 -   Run `python manage.py update_translation_fields` to copy existing document descriptions to the description_en translated field.
+-   Run `python manage.py import_manifests --update` to update locally-cached manifests with the new attribution field.
 
 ## 4.0
 
