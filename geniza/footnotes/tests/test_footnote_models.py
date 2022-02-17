@@ -76,7 +76,7 @@ class TestSource:
             article.year,
         )
         # article with no title
-        article.title = ""
+        article.title_en = ""
         assert str(article) == "%s, %s %s, no. %d (%s)." % (
             article.authors.first().firstname_lastname(),
             article.journal,
@@ -352,27 +352,27 @@ class TestFootnoteQuerySet:
 
 class TestCreator:
     def test_str(self):
-        creator = Creator(last_name="Angelou", first_name="Maya")
+        creator = Creator(last_name_en="Angelou", first_name_en="Maya")
         str(creator) == "Angelou, Maya"
 
         # no firstname
-        assert str(Creator(last_name="Goitein")) == "Goitein"
+        assert str(Creator(last_name_en="Goitein")) == "Goitein"
 
     def test_natural_key(self):
-        creator = Creator(last_name="Angelou", first_name="Maya")
+        creator = Creator(last_name_en="Angelou", first_name_en="Maya")
         assert creator.natural_key() == ("Angelou", "Maya")
 
     @pytest.mark.django_db
     def test_get_by_natural_key(self):
-        creator = Creator.objects.create(last_name="Angelou", first_name="Maya")
+        creator = Creator.objects.create(last_name_en="Angelou", first_name_en="Maya")
         assert Creator.objects.get_by_natural_key("Angelou", "Maya") == creator
 
     def test_firstname_lastname(self):
-        creator = Creator(last_name="Angelou", first_name="Maya")
+        creator = Creator(last_name_en="Angelou", first_name_en="Maya")
         assert creator.firstname_lastname() == "Maya Angelou"
 
         # no firstname
-        assert Creator(last_name="Goitein").firstname_lastname() == "Goitein"
+        assert Creator(last_name_en="Goitein").firstname_lastname() == "Goitein"
 
 
 class TestAuthorship:

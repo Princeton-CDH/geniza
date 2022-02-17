@@ -126,14 +126,14 @@ def test_get_merge_candidates(fragment, multifragment, join):
     # join is a document associated with fragment & multifragment
     # create two other documents to be merged
     doc2 = Document.objects.create(
-        description="see other fragment", doctype=join.doctype
+        description_en="see other fragment", doctype=join.doctype
     )
     # associate in same order as join
     TextBlock.objects.create(document=doc2, fragment=fragment, order=1)
     TextBlock.objects.create(document=doc2, fragment=multifragment, order=2)
 
     doc3 = Document.objects.create(
-        description="see other fragment", doctype=join.doctype
+        description_en="see other fragment", doctype=join.doctype
     )
     # associate in different order as join doc
     TextBlock.objects.create(document=doc3, fragment=fragment, order=2)
@@ -141,7 +141,7 @@ def test_get_merge_candidates(fragment, multifragment, join):
 
     # doc on the same fragments with different type (unknown)
     unknown_doc = Document.objects.create(
-        description="something else",
+        description_en="something else",
     )
     # associate in same order as join doc
     TextBlock.objects.create(document=unknown_doc, fragment=fragment, order=1)
@@ -165,8 +165,8 @@ def test_get_merge_candidates(fragment, multifragment, join):
 def test_group_merge_candidates_same_desc():
     # merge based on same description
     command = merge_documents.Command()
-    doc1 = Document.objects.create(description="a marriage contract")
-    doc2 = Document.objects.create(description=doc1.description)
+    doc1 = Document.objects.create(description_en="a marriage contract")
+    doc2 = Document.objects.create(description_en=doc1.description_en)
     shelfmark_id = "shelfmark / letter"
     report_rows = command.group_merge_candidates(
         {
@@ -180,7 +180,7 @@ def test_group_merge_candidates_same_desc():
         "all descriptions match",
         "primary",
         doc1.pk,
-        doc1.description,
+        doc1.description_en,
     ]
     assert report_rows[1] == [
         shelfmark_id,
@@ -189,7 +189,7 @@ def test_group_merge_candidates_same_desc():
         "all descriptions match",
         "merge",
         doc2.pk,
-        doc2.description,
+        doc2.description_en,
     ]
 
 
@@ -197,7 +197,7 @@ def test_group_merge_candidates_same_desc():
 def test_group_merge_candidates_empty_description():
     # merge based on empty description text in secondary documents
     command = merge_documents.Command()
-    doc1 = Document.objects.create(description="a marriage contract")
+    doc1 = Document.objects.create(description_en="a marriage contract")
     doc2 = Document.objects.create()
     shelfmark_id = "shelfmark / letter"
     report_rows = command.group_merge_candidates(
@@ -208,14 +208,15 @@ def test_group_merge_candidates_empty_description():
     # status should be merge; rationale from empty description
     assert report_rows[0][2] == "MERGE"
     assert report_rows[0][3] == "one description, others empty"
+    assert report_rows[0][6] == "a marriage contract"
 
 
 @pytest.mark.django_db
 def test_group_merge_candidates_see_join():
     # merge based on "see join" text in secondary documents
     command = merge_documents.Command()
-    doc1 = Document.objects.create(description="a marriage contract")
-    doc2 = Document.objects.create(description="See join.")
+    doc1 = Document.objects.create(description_en="a marriage contract")
+    doc2 = Document.objects.create(description_en="See join.")
     shelfmark_id = "shelfmark / letter"
     report_rows = command.group_merge_candidates(
         {
@@ -233,8 +234,8 @@ def test_group_merge_candidates_see_join():
 def test_group_merge_candidates_see_pgpid():
     # merge based on "see pgpid" text in secondary documents
     command = merge_documents.Command()
-    doc1 = Document.objects.create(description="a marriage contract", pk=134552)
-    doc2 = Document.objects.create(description="See PGPID %d" % doc1.pk)
+    doc1 = Document.objects.create(description_en="a marriage contract", pk=134552)
+    doc2 = Document.objects.create(description_en="See PGPID %d" % doc1.pk)
     shelfmark_id = "shelfmark / unknown"
     report_rows = command.group_merge_candidates(
         {
