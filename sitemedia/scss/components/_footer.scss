@@ -169,7 +169,8 @@ footer {
         }
 
         // CC-BY license icon
-        li#license {
+        li#license,
+        li#sw-version {
             margin: 0 0 0.5rem;
             text-align: center;
             img {
@@ -178,6 +179,9 @@ footer {
             @include breakpoints.for-tablet-landscape-up {
                 margin: spacing.$spacing-2xs spacing.$spacing-sm 0;
                 flex: 0 1 auto;
+            }
+            a {
+                text-decoration: none;
             }
         }
 

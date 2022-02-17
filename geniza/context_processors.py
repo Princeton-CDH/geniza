@@ -1,6 +1,8 @@
 from django.conf import settings
 from wagtail.core.models import Site
 
+from geniza import __version__
+
 
 def template_globals(request):
     """Template context processor: add global includes (e.g.
@@ -16,5 +18,6 @@ def template_globals(request):
         ),
         "site": site,
         "GTAGS_ANALYTICS_ID": getattr(settings, "GTAGS_ANALYTICS_ID", None),
+        "SW_VERSION": __version__,  # software version for current release
     }
     return context_extras
