@@ -203,7 +203,7 @@ class TestFragment(TestCase):
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
-    def test_iiifexception(self, mock_manifestimporter):
+    def test_iiif_images_iiifexception(self, mock_manifestimporter):
         # patch IIIFPresentation.from_url to always raise IIIFException
         with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
             mock_iiifpresentation.from_url = Mock()
@@ -213,12 +213,9 @@ class TestFragment(TestCase):
             frag.save()
             # should raise the exception
             with self.assertRaises(IIIFException):
-                # iiif_images should log at level WARN
+                # should log at level WARN
                 with self.assertLogs(level="WARN"):
                     frag.iiif_images()
-                # as should attirbution
-                with self.assertLogs(level="WARN"):
-                    frag.attribution
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
@@ -254,6 +251,22 @@ class TestFragment(TestCase):
                 {"attribution": "Created by a person"}
             )
             assert frag_no_manifest.attribution == "Created by a person"
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_attribution_iiifexception(self, mock_manifestimporter):
+        # patch IIIFPresentation.from_url to always raise IIIFException
+        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
+            mock_iiifpresentation.from_url = Mock()
+            mock_iiifpresentation.from_url.side_effect = IIIFException
+            frag = Fragment(shelfmark="TS 1")
+            frag.iiif_url = "http://example.io/manifests/1"
+            frag.save()
+            # should raise the exception
+            with self.assertRaises(IIIFException):
+                # should log at level WARN
+                with self.assertLogs(level="WARN"):
+                    frag.attribution
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
