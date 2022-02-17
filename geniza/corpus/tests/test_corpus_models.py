@@ -219,6 +219,57 @@ class TestFragment(TestCase):
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
+    def test_attribution(self, mock_manifestimporter):
+        # fragment with no manifest
+        frag = Fragment(shelfmark="TS 1")
+        assert not frag.attribution
+
+        # fragment with a locally cached manifest
+        frag = Fragment(shelfmark="TS 2")
+        frag.iiif_url = "http://example.io/manifests/2"
+        # manifest with an attribution
+        frag.manifest = Manifest.objects.create(
+            uri=frag.iiif_url,
+            short_id="m",
+            extra_data={"attribution": "Created by a person"},
+        )
+        frag.save()
+        assert frag.attribution == "Created by a person"
+
+        # fragment with remote manifest
+        frag_no_manifest = Fragment(shelfmark="TS 3")
+        frag_no_manifest.iiif_url = "http://example.io/manifests/3"
+        frag_no_manifest.save()
+        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
+            # no attribution, should return None via caught AttributeError
+            mock_iiifpresentation.from_url.return_value = AttrDict({})
+            assert not frag_no_manifest.attribution
+
+            # with attribution
+            mock_iiifpresentation.reset_mock()
+            mock_iiifpresentation.from_url.return_value = AttrDict(
+                {"attribution": "Created by a person"}
+            )
+            assert frag_no_manifest.attribution == "Created by a person"
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_attribution_iiifexception(self, mock_manifestimporter):
+        # patch IIIFPresentation.from_url to always raise IIIFException
+        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
+            mock_iiifpresentation.from_url = Mock()
+            mock_iiifpresentation.from_url.side_effect = IIIFException
+            frag = Fragment(shelfmark="TS 1")
+            frag.iiif_url = "http://example.io/manifests/1"
+            frag.save()
+            # should raise the exception
+            with self.assertRaises(IIIFException):
+                # should log at level WARN
+                with self.assertLogs(level="WARN"):
+                    frag.attribution
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
     def test_save(self, mock_manifestimporter):
         frag = Fragment(shelfmark="TS 1")
         frag.save()

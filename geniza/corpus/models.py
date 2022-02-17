@@ -243,6 +243,27 @@ class Fragment(TrackChangesModel):
             )
         )
 
+    @property
+    def attribution(self):
+        """Generate an attribution for this fragment"""
+        # if there is no iiif for this fragment, bail out
+        if not self.iiif_url:
+            return None
+        # try to use locally cached manifest
+        if self.manifest:
+            return mark_safe(self.manifest.extra_data.get("attribution", ""))
+        try:
+            # otherwise try to use remote manifest attribution attribute
+            remote_manifest = IIIFPresentation.from_url(self.iiif_url)
+            try:
+                return mark_safe(remote_manifest.attribution)
+            except AttributeError:
+                # attribution is optional, so ignore if not present
+                return None
+        except IIIFException:
+            logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
+        return None
+
     def save(self, *args, **kwargs):
         """Remember how shelfmarks have changed by keeping a semi-colon list
         in the old_shelfmarks field"""
@@ -632,6 +653,9 @@ class Document(ModelIndexable):
     def attribution(self):
         """Generate a tuple of three attribution components for use in IIIF manifests
         or wherever images/transcriptions need attribution."""
+
+        # NOTE: For individual fragment attribution, use :class:`Fragment` method instead.
+
         # keep track of unique attributions so we can include them all
         extra_attrs_set = set()
         for url in self.iiif_urls():
