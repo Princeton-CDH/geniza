@@ -63,9 +63,10 @@ details.querySelector("summary").addEventListener("keydown", (e) => {
 });
 
 /*
- * Event listener to
- *
- *
+ * Event listener to auto-select "relevance" sort when text is entered, and disable it when
+ * there is no text in the search box.
+ * Without this, "relevance" sort will not be automatically selected when text is entered, and it
+ * can be selected even if no query is entered.
  */
 
 const textInput = document.querySelector("input[type='search']");
