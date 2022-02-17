@@ -220,7 +220,7 @@ class TestDocumentScholarshipTemplate:
             reverse("corpus:document-scholarship", args=[document.pk])
         )
         assertContains(response, "<em>The C Programming Language</em>")
-        twoauthor_source.title = ""
+        twoauthor_source.title_en = ""
         twoauthor_source.save()
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])

@@ -230,7 +230,7 @@ class TestDocumentAdmin:
         doc.languages.add(arabic)
         doc.secondary_languages.add(french)
 
-        marina = Creator.objects.create(last_name="Rustow", first_name="Marina")
+        marina = Creator.objects.create(last_name_en="Rustow", first_name_en="Marina")
         book = SourceType.objects.create(type="Book")
         source = Source.objects.create(source_type=book)
         source.authors.add(marina)
@@ -385,7 +385,7 @@ class TestFragmentTextBlockInline:
     def test_document_description(self):
         fragment = Fragment.objects.create(shelfmark="CUL 123")
         test_description = "A medieval poem"
-        doc = Document.objects.create(description=test_description)
+        doc = Document.objects.create(description_en=test_description)
         textblock = TextBlock.objects.create(fragment=fragment, document=doc)
         inline = FragmentTextBlockInline(Fragment, admin_site=admin.site)
 

@@ -134,7 +134,7 @@ def test_old_pgp_edition():
     doc = Document.objects.create()
     assert old_pgp_edition(doc.editions()) == ""
 
-    marina = Creator.objects.create(last_name="Rustow", first_name="Marina")
+    marina = Creator.objects.create(last_name_en="Rustow", first_name_en="Marina")
     book = SourceType.objects.create(type="Book")
     source = Source.objects.create(source_type=book)
     source.authors.add(marina)
@@ -148,7 +148,7 @@ def test_old_pgp_edition():
     edition_str = old_pgp_edition(doc.editions())
     assert edition_str == f"Ed. {fn.display()}"
 
-    source2 = Source.objects.create(title="Arabic dictionary", source_type=book)
+    source2 = Source.objects.create(title_en="Arabic dictionary", source_type=book)
     fn2 = Footnote.objects.create(
         doc_relation=[Footnote.EDITION],
         source=source2,
@@ -158,7 +158,7 @@ def test_old_pgp_edition():
     edition_str = old_pgp_edition(doc.editions())
     assert edition_str == f"Ed. Arabic dictionary; also ed. Marina Rustow."
 
-    source3 = Source.objects.create(title="Geniza Encyclopedia", source_type=book)
+    source3 = Source.objects.create(title_en="Geniza Encyclopedia", source_type=book)
     fn_trans = Footnote.objects.create(
         doc_relation=[Footnote.EDITION, Footnote.TRANSLATION],
         source=source3,

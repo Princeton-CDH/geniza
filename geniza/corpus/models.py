@@ -704,7 +704,8 @@ class Document(ModelIndexable):
             {
                 "pgpid_i": self.id,
                 "type_s": str(self.doctype) if self.doctype else _("Unknown type"),
-                "description_t": self.description,
+                # use english description for now
+                "description_t": self.description_en,
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
                 "shelfmark_ss": self.certain_join_shelfmarks,

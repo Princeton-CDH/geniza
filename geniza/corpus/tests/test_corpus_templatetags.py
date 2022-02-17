@@ -135,3 +135,8 @@ def test_iiif_info_json():
     # should contain the same ids but with /info.json appended
     assert "http://image.server/path/myimgid/info.json" in json_ids
     assert "http://image.server/path/myimgid2/info.json" in json_ids
+
+
+def test_h1_to_h3():
+    html = "<div><h1>hi</h1><h3>hello</h3></div>"
+    assert corpus_extras.h1_to_h3(html) == "<div><h3>hi</h3><h3>hello</h3></div>"
