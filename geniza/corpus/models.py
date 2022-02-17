@@ -251,12 +251,12 @@ class Fragment(TrackChangesModel):
             return None
         # try to use locally cached manifest
         if self.manifest:
-            return strip_tags(self.manifest.extra_data.get("attribution", ""))
+            return mark_safe(self.manifest.extra_data.get("attribution", ""))
         try:
             # otherwise try to use remote manifest attribution attribute
             remote_manifest = IIIFPresentation.from_url(self.iiif_url)
             try:
-                return strip_tags(remote_manifest.attribution)
+                return mark_safe(remote_manifest.attribution)
             except AttributeError:
                 # attribution is optional, so ignore if not present
                 return None
