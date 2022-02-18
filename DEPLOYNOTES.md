@@ -1,5 +1,9 @@
 # Deploy Notes
 
+## 4.2
+
+-   This update includes Solr indexing changes (for boolean fields on digital edition, translation, and discussion). Run `python manage.py index` to reindex all content.
+
 ## 4.1
 
 -   This update includes Solr configuration and indexing changes. Once the Solr core has been updated, run `python manage.py index` to reindex all content (for IIIF image and label indexing).
