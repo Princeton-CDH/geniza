@@ -54,6 +54,8 @@ jobs:
           restore-keys: |
             npm-${{ hashFiles('package-lock.json') }}
             npm-
+      - name: Install JS dependenceis
+        run: npm install
       - run: npm install -g @lhci/cli@0.8
       - run: npm ci
       - run: npm run build
