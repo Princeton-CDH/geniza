@@ -15,6 +15,7 @@ module.exports = (env, options) => ({
             "./sitemedia/esm/main.esm.js",
             "./sitemedia/scss/main.scss",
         ],
+        stimulus_app: "./sitemedia/js/stimulus_app.js",
     },
     output: {
         // locations and filenames of bundled files
@@ -67,6 +68,7 @@ module.exports = (env, options) => ({
             {
                 test: /\.js$/,
                 loader: "babel-loader",
+                exclude: /node_modules/, // don't transpile dependencies
             },
         ],
     },
@@ -102,7 +104,10 @@ module.exports = (env, options) => ({
         },
     },
     // enable importing .esm.js and other files without specifying extensions
-    resolve: { extensions: [".js", ".esm.js", ".sass", ".scss"] },
+    resolve: {
+        extensions: [".js", ".esm.js", ".sass", ".scss"],
+        modules: [path.resolve("./bundles"), "node_modules"],
+    },
     // generate source maps for easier debugging
     devtool: "source-map",
     // minify JS and CSS in production

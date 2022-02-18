@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "parasolr",
     "webpack_loader",
     "djiffy",
+    "widget_tweaks",
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",

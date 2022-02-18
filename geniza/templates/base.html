@@ -43,6 +43,8 @@
         <!-- scripts -->
         {% get_files "main" "js" as main_js %}
         <script src="{{ main_js.0.url }}" nonce="{{ request.csp_nonce }}" defer></script>
+        {% get_files "stimulus_app" "js" as stimulus_js %}
+        <script src="{{ stimulus_js.0.url }}" nonce="{{ request.csp_nonce }}" defer></script>
         {# analytics #}
         {% if not request.is_preview and GTAGS_ANALYTICS_ID %}
             {% include 'snippets/analytics.html' %}
@@ -63,7 +65,8 @@
                 </div>
                 {% include "nav.html" %}
             </header>
-            <main id="main-content">{% block main %}{% endblock main %}</main>
+
+            <main id="main-content"><turbo-frame id="content">{% block main %}{% endblock main %}</turbo-frame></main>
             <footer>
                 {% include "footer.html" %}
             </footer>

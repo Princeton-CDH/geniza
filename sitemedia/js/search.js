@@ -116,8 +116,10 @@ function onTextInputChange() {
     }
 }
 
+// disable for now — implementing with stimulus
+
 // Add on any input change (keyboard input or clear)
-textInput.addEventListener("input", onTextInputChange);
+// textInput.addEventListener("input", onTextInputChange);
 
 // Run once on page load to disable relevance (if search box is empty)
-onTextInputChange();
+// onTextInputChange();
