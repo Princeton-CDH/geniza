@@ -45,6 +45,8 @@ module.exports = {
                 "unused-javascript": "off",
                 // allow 1 unminified javascript per page
                 "unminified-javascript": ["error", { maxLength: 1 }],
+                // allow 1 offscreen image per page (OpenSeaDragon first image)
+                "offscreen-images": ["error", { maxLength: 1 }],
             },
         },
     },
