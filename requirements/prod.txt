@@ -24,3 +24,4 @@ wagtail-localize
 djiffy>=0.7.2
 natsort
 django-widget-tweaks
+django-csp-helpers

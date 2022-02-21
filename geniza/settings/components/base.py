@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "admin_log_entries",
     "parasolr",
     "webpack_loader",
+    "csp_helpers",
     "djiffy",
     "widget_tweaks",
     "geniza.common",

@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
-{% load static i18n humanize widget_tweaks %}
+{% load static i18n humanize widget_tweaks render_bundle_csp %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 {% block extrascript %}
-    <script defer src="{% static 'js/search.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    {% render_bundle_csp "search" "js" attrs='defer' %}
 {% endblock %}
 
 {% block main %}

@@ -15,7 +15,11 @@ module.exports = (env, options) => ({
             "./sitemedia/esm/main.esm.js",
             "./sitemedia/scss/main.scss",
         ],
+        openseadragon: "./sitemedia/js/openseadragon.js",
+        search: "./sitemedia/js/search.js",
         stimulus_app: "./sitemedia/js/stimulus_app.js",
+        submenu: "./sitemedia/js/submenu.js",
+        theme_toggle: "./sitemedia/js/theme-toggle.js",
     },
     output: {
         // locations and filenames of bundled files
