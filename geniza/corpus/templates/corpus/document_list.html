@@ -20,6 +20,19 @@
                 {{ form.doctype }}
             </details>
 
+            <label for="{{ form.has_transcription.auto_id }}">
+                {{ form.has_transcription.label }}
+                {{ form.has_transcription }}
+            </label>
+            <label for="{{ form.has_translation.auto_id }}">
+                {{ form.has_translation.label }}
+                {{ form.has_translation }}
+            </label>
+            <label for="{{ form.has_discussion.auto_id }}">
+                {{ form.has_discussion.label }}
+                {{ form.has_discussion }}
+            </label>
+
             <label for="{{ form.sort.html_name }}">
                 {{ form.sort.label }}
             </label>

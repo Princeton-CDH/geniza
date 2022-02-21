@@ -77,6 +77,9 @@ class DocumentSearchView(ListView, FormMixin):
             DocumentSolrQuerySet()
             .filter(status=Document.PUBLIC_LABEL)
             .facet_field("type", exclude="type", sort="value")
+            .facet_field("has_digital_edition")
+            .facet_field("has_translation")
+            .facet_field("has_discussion")
         )
 
         form = self.get_form()
@@ -119,6 +122,14 @@ class DocumentSearchView(ListView, FormMixin):
                 typelist = literal_eval(search_opts["doctype"])
                 quoted_typelist = ['"%s"' % doctype for doctype in typelist]
                 documents = documents.filter(type__in=quoted_typelist, tag="type")
+
+            # scholarship filters
+            if search_opts["has_transcription"] == True:
+                documents = documents.filter(has_digital_edition=True)
+            if search_opts["has_discussion"] == True:
+                documents = documents.filter(has_discussion=True)
+            if search_opts["has_translation"] == True:
+                documents = documents.filter(has_translation=True)
 
         self.queryset = documents
 
