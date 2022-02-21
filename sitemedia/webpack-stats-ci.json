@@ -3,6 +3,12 @@
   "publicPath": "/static/bundles/",
   "assets": [],
   "chunks": {
-    "main": []
+    "main": [],
+    "openseadragon": [],
+    "search": [],
+    "stimulus_app": [],
+    "submenu": [],
+    "theme_toggle": [],
+    "viewer": []
   }
 }
