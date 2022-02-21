@@ -9,8 +9,10 @@
                     {{ forloop.counter0|add:page_obj.start_index }}
                 </span>
                 {# type and shelfmark #}
-                <span class="doctype">{{ document.type }}</span>
-                <span class="shelfmark">{% include "corpus/snippets/document_shelfmarks.html" %}</span>
+                <a href="{% url 'corpus:document' document.pgpid %}">
+                    <span class="doctype">{{ document.type }}</span>
+                    <span class="shelfmark">{% include "corpus/snippets/document_shelfmarks.html" %}</span>
+                </a>
             </h2>
 
             {# metadata #}
