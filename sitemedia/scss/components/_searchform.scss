@@ -228,6 +228,11 @@
                             background-color: var(--secondary);
                             color: var(--on-secondary);
                         }
+                        &:disabled + span {
+                            color: var(--disabled);
+                            cursor: default;
+                            background-color: var(--background-light);
+                        }
                     }
                     // Non-selected options
                     @include typography.form-option-sm;

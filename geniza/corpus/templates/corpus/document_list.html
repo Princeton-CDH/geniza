@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
-{% load static i18n humanize %}
+{% load static i18n humanize widget_tweaks render_bundle_csp %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 {% block extrascript %}
-    <script defer src="{% static 'js/search.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    {% render_bundle_csp "search" "js" attrs='defer' %}
 {% endblock %}
 
 {% block main %}
     <h1 class="sr-only">{{ page_title }}</h1>
-    <form>
+    <form data-controller="search">
         <a href="#filters" role="button" id="filters-button">
             <i class="ph-faders"></i>
             {% translate "Filters" %}
@@ -19,7 +19,7 @@
                 {{ form.sort.label }}
             </label>
             <details class="sort-select" aria-expanded="false">
-                <summary class="sort-select-trigger">
+                <summary class="sort-select-trigger" data-search-target="sortlabel">
                     {% for choice in form.sort.field.choices %}
                         {% if form.sort.value == choice.0 %}
                             {{ choice.1 }}
@@ -28,10 +28,10 @@
                     {# Translators: Button to open or close sort options menu #}
                     {% translate 'Toggle sort options menu' as toggle_label %}
                     <div role="button" tabindex="-1" aria-pressed="false" aria-expanded="false" aria-label="{{ toggle_label }}">
-                        <span class="sr-only">{{ toggle_label }}</span>
+                        <span class="sr-only" >{{ toggle_label }}</span>
                     </div>
                 </summary>
-                {{ form.sort }}
+                {% render_field form.sort data-search-target="sort" %}
             </details>
         </fieldset>
 
@@ -66,7 +66,7 @@
         </fieldset>
 
         <fieldset id="query">
-            {{ form.q }}
+            {% render_field form.q data-search-target="query" data-action="input->search#updateSort" %}
 
             {# Translators: Search submit button #}
             {% translate 'Submit search' as search_label %}
