@@ -1,4 +1,5 @@
 from ast import literal_eval
+from random import randint
 
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -36,7 +37,7 @@ class DocumentSearchView(ListView, FormMixin):
     # Translators: description of document search page, for search engines
     page_description = _("Search and browse Geniza documents.")
     paginate_by = 50
-    initial = {"sort": "scholarship_desc"}
+    initial = {"sort": "random"}
 
     # map form sort to solr sort field
     solr_sort = {
@@ -45,11 +46,28 @@ class DocumentSearchView(ListView, FormMixin):
         "scholarship_asc": "scholarship_count_i",
         #        'name': 'sort_name_isort'
     }
+    random_seed = None
+
+    def get_solr_sort(self, sort_option):
+        """Return solr sort field for user-seleted sort option;
+        generates random seed for random sort if requested and not set;
+        otherwise uses solr sort field from :attr:`solr_sort`"""
+        if sort_option == "random":
+            if self.random_seed is None:
+                self.random_seed = randint(1000, 9999)
+            # use solr's random dynamic field to sort randomly
+            return "random_%s" % self.random_seed
+        return self.solr_sort[sort_option]
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         # use GET instead of default POST/PUT for form data
         form_data = self.request.GET.copy()
+
+        # check for a random seed and save if set;
+        # used to preserve random list order when paginating
+        if "rnd" in form_data:
+            self.random_seed = form_data["rnd"]
 
         # sort by chosen sort
         if "sort" in form_data and bool(form_data.get("sort")):
@@ -112,7 +130,7 @@ class DocumentSearchView(ListView, FormMixin):
                 )  # include relevance score in results
 
             # order by sort option
-            documents = documents.order_by(self.solr_sort[search_opts["sort"]])
+            documents = documents.order_by(self.get_solr_sort(search_opts["sort"]))
 
             # filter by type if specified
             if search_opts["doctype"]:
@@ -158,6 +176,10 @@ class DocumentSearchView(ListView, FormMixin):
                 "highlighting": highlights,
             }
         )
+        # if random seed is set and not in current request queryset,
+        # add to context to preserve for pagination
+        if self.random_seed and "rnd" not in self.request.GET:
+            context_data["random_seed"] = "&rnd=%s" % self.random_seed
         return context_data
 
 

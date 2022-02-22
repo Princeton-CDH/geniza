@@ -122,6 +122,8 @@ class DocumentSearchForm(forms.Form):
     SORT_CHOICES = [
         # Translators: label for sort by relevance
         ("relevance", _("Relevance")),
+        # Translators: label for sort in random order
+        ("random", _("Random")),
         # ("input_date", "Input Date (Latest – Earliest)"),
         # Translators: label for descending sort by number of scholarship records
         ("scholarship_desc", _("Scholarship Records (Most–Least)")),

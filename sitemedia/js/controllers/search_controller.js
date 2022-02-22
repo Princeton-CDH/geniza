@@ -22,7 +22,7 @@ export default class extends Controller {
             (target) => target.value === "relevance"
         );
         this.defaultSortElement = this.sortTargets.find(
-            (target) => target.value === "scholarship_desc"
+            (target) => target.value === "random"
         );
         this.updateSort();
     }
