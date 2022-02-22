@@ -10,6 +10,13 @@
 {% block main %}
     <h1 class="sr-only">{{ page_title }}</h1>
     <form data-controller="search">
+        <fieldset id="query">
+            {% render_field form.q data-search-target="query" data-action="input->search#updateSort" %}
+
+            {# Translators: Search submit button #}
+            {% translate 'Submit search' as search_label %}
+            <button type="submit" aria-label="{{ search_label }}" />
+        </fieldset>
         <a href="#filters" role="button" id="filters-button">
             <i class="ph-faders"></i>
             {% translate "Filters" %}
@@ -63,14 +70,6 @@
                 </summary>
                 {{ form.doctype }}
             </details>
-        </fieldset>
-
-        <fieldset id="query">
-            {% render_field form.q data-search-target="query" data-action="input->search#updateSort" %}
-
-            {# Translators: Search submit button #}
-            {% translate 'Submit search' as search_label %}
-            <button type="submit" aria-label="{{ search_label }}" />
         </fieldset>
 
         {% if form.errors %}
