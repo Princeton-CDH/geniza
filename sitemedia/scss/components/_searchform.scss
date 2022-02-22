@@ -276,14 +276,14 @@
     display: none;
     overflow-y: scroll;
     padding: 0;
+    flex-flow: column;
+    pointer-events: all;
+    align-items: flex-start;
     @include breakpoints.for-tablet-landscape-up {
         padding: 0 calc(calc(100vw - #{container.$two-column}) / 2);
     }
     &:target {
         display: flex;
-        flex-flow: column;
-        pointer-events: all;
-        align-items: flex-start;
     }
     a#close-filters-modal {
         text-decoration: none;
