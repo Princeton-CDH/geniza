@@ -127,7 +127,7 @@ class BooleanFacetField(FacetFieldMixin, forms.BooleanField):
         """
         count = facet_dict["true"]
         self.label = mark_safe(
-            f'<span>{self.label}</span><span class="count">{count:,}</span>'
+            f'<span class="label">{self.label}</span><span class="count">{count:,}</span>'
         )
 
         # pass the counts to the widget so it can be set as a data attribute

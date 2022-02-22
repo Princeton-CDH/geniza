@@ -68,10 +68,12 @@
     flex-flow: row wrap;
     align-items: center;
     justify-content: flex-start;
+}
+#search main form fieldset#query {
+    order: 1;
     // search box
     input[type="search"] {
         max-width: calc(100% - 2.75rem - #{spacing.$spacing-sm});
-        order: 1;
         flex: 1 1 auto;
         border: none;
         margin-right: spacing.$spacing-sm;
@@ -89,10 +91,39 @@
             color: var(--on-background-light-alt);
         }
     }
+    button[type="submit"] {
+        position: relative;
+        flex: 0 1 2.5rem;
+        width: auto;
+        height: 2.5rem;
+        border-radius: 0;
+        margin-left: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        @include form-button-colors;
+        @include breakpoints.for-tablet-landscape-up {
+            flex-basis: 3rem;
+            height: 2.5rem;
+        }
+        // Magnifying glass icon
+        &::after {
+            font-family: "Phosphor";
+            content: "\f5e6"; // phosphor magnifying glass bold icon
+            @include typography.icon-button-sm;
+            @include breakpoints.for-tablet-landscape-up {
+                content: "\f20a"; // phosphor magnifying glass icon
+                @include typography.icon-button-md;
+            }
+        }
+    }
+}
+#search main form fieldset#sort {
+    order: 3;
     // sort options select (uses details/summary)
     details.sort-select {
         position: relative;
-        order: 5;
         flex: 1 1 auto;
         min-height: 2.5rem;
         max-width: 100%;
@@ -206,45 +237,123 @@
     }
     label[for="sort"] {
         max-width: 100%;
-        order: 4;
         flex: 1 0 100%;
         margin-top: spacing.$spacing-lg;
         @include typography.form-option;
     }
-    button[type="submit"] {
-        order: 2;
-        position: relative;
-        flex: 0 1 2.5rem;
-        width: auto;
-        height: 2.5rem;
-        border-radius: 0;
-        margin-left: 0;
+}
+#search main form a#filters-button,
+#search main form span#filters-label {
+    margin: spacing.$spacing-md 0 spacing.$spacing-lg;
+    text-decoration: none;
+    @include typography.body-bold;
+    i.ph-faders {
+        @include typography.icon-button-md;
+        transform: rotate(90deg);
+    }
+}
+#search main form a#filters-button {
+    align-self: flex-start;
+    order: 2;
+    margin: spacing.$spacing-xl 0 spacing.$spacing-sm;
+}
+
+#search main form fieldset#filters {
+    background-color: var(--background);
+    max-width: none;
+    z-index: 4;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    display: none;
+    overflow-y: scroll;
+    padding: 0;
+    @include breakpoints.for-tablet-landscape-up {
+        padding: 0 calc(calc(100vw - #{container.$two-column}) / 2);
+    }
+    &:target {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
-        @include form-button-colors;
-        @include breakpoints.for-tablet-landscape-up {
-            flex-basis: 3rem;
-            height: 2.5rem;
-        }
-        // Magnifying glass icon
-        &::after {
+        flex-flow: column;
+        pointer-events: all;
+        align-items: flex-start;
+    }
+    a#close-filters-modal {
+        text-decoration: none;
+        margin-top: -#{spacing.$spacing-xs};
+        &::before {
+            content: "\f36d"; // phosphor X icon
+            @include typography.icon-button-xl;
             font-family: "Phosphor";
-            content: "\f5e6"; // phosphor magnifying glass bold icon
-            @include typography.icon-button-sm;
-            @include breakpoints.for-tablet-landscape-up {
-                content: "\f20a"; // phosphor magnifying glass icon
-                @include typography.icon-button-md;
-            }
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            margin-top: spacing.$spacing-md;
+        }
+    }
+    & > label {
+        flex: 0 0 2.5rem;
+        max-width: 100%;
+        width: 100%;
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        justify-content: flex-start;
+        cursor: pointer;
+        @include typography.form-option;
+        background-color: var(--background-light);
+        color: var(--on-background-light);
+        @include box-shadow(var(--on-background-25));
+        padding: 0 spacing.$spacing-sm;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0 spacing.$spacing-md;
+        }
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid var(--filter-border);
+        &:focus-within,
+        &:active {
+            border: none;
+            outline: 2px solid var(--link-primary);
+            z-index: 2;
+        }
+        input[type="checkbox"] {
+            @include a11y.sr-only;
+        }
+        span.label {
+            white-space: nowrap;
+        }
+        span.count {
+            flex: 1 1 100%;
+            max-width: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 1rem;
+            @include typography.meta;
+        }
+        span.count::after {
+            display: block;
+            font-family: "Phosphor";
+            content: "\f0e7"; // phosphor check icon
+            @include typography.icon-button-md;
+            transition: transform 0.75s ease;
+            float: right;
+            color: var(--on-background);
+        }
+        input:active + span + span.count::after,
+        input:checked + span + span.count::after {
+            color: var(--link-secondary);
+        }
+        input:checked:active + span + span.count::after {
+            color: var(--on-background);
         }
     }
     // document type filter
     details.doctype-filter {
-        order: 3;
-        flex: 1 0 100%;
+        flex: 0 1 2.9375rem;
         max-width: 100%;
-        margin-top: spacing.$spacing-lg;
+        width: 100%;
         @include typography.form-option;
         background-color: var(--background-light);
         color: var(--on-background-light);
@@ -252,6 +361,7 @@
         transition: box-shadow 0.15s ease;
         // Label for document type filter
         summary {
+            border-top: 1px solid transparent;
             display: flex;
             flex-flow: row nowrap;
             align-items: center;
