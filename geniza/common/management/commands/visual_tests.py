@@ -41,8 +41,7 @@ class Command(BaseCommand):
         percy_snapshot(browser, "Content Page%s" % dark_mode_str)
 
         # document search with document type filter expanded
-        # NOTE: revise to capture search filter panel when we implement it
-        browser.get("http://localhost:8000/en/documents/")
+        browser.get("http://localhost:8000/en/documents/?per_page=2#filters")
         # open document type filter
         browser.find_element_by_css_selector(".doctype-filter summary").click()
         # click the first option
