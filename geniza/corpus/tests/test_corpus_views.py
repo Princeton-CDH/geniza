@@ -434,15 +434,8 @@ class TestDocumentSearchView:
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()
 
-        # no sort, no query
-        docsearch_view.request.GET = {}
-        qs = docsearch_view.get_queryset()
-        # should return all three documents
-        assert qs.count() == 3
-        # by default, should return document with most records first
-        assert (
-            qs[0]["pgpid"] == doc_three_records.id
-        ), "document with most scholarship records returned first"
+        # default sort is now random instead of scholarship, so
+        # only test sorting explicitly
 
         # sort by scholarship desc
         docsearch_view.request.GET = {"sort": "scholarship_desc"}
