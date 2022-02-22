@@ -1,3 +1,5 @@
+from http.client import ResponseNotReady
+from pydoc import doc
 from time import sleep
 from unittest import mock
 from unittest.mock import ANY, Mock, mock_open, patch
@@ -235,16 +237,16 @@ class TestDocumentSearchView:
         docsearch_view.request.GET = {}
         assert docsearch_view.get_form_kwargs() == {
             "initial": {
-                "sort": "scholarship_desc",
+                "sort": "random",
             },
             "prefix": None,
-            "data": {"sort": "scholarship_desc"},
+            "data": {"sort": "random"},
         }
 
         # keyword search param
         docsearch_view.request.GET = {"q": "contract"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"sort": "scholarship_desc"},
+            "initial": {"sort": "random"},
             "prefix": None,
             "data": {
                 "q": "contract",
@@ -256,7 +258,7 @@ class TestDocumentSearchView:
         docsearch_view.request.GET = {"sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
             "initial": {
-                "sort": "scholarship_desc",
+                "sort": "random",
             },
             "prefix": None,
             "data": {
@@ -268,7 +270,7 @@ class TestDocumentSearchView:
         docsearch_view.request.GET = {"q": "contract", "sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
             "initial": {
-                "sort": "scholarship_desc",
+                "sort": "random",
             },
             "prefix": None,
             "data": {
@@ -348,20 +350,20 @@ class TestDocumentSearchView:
             # empty params
             mock_sqs.reset_mock()
             docsearch_view.request = Mock()
-            docsearch_view.request.GET = {"q": "", "sort": ""}
+            docsearch_view.request.GET = {"q": "", "sort": "", "rnd": "1234"}
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_not_called()
-            mock_sqs.order_by.assert_called_with("-scholarship_count_i")
+            mock_sqs.order_by.assert_called_with("random_1234")
 
             # no params
             mock_sqs.reset_mock()
             docsearch_view.request = Mock()
-            docsearch_view.request.GET = {}
+            docsearch_view.request.GET = {"rnd": "4567"}
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_not_called()
-            mock_sqs.order_by.assert_called_with("-scholarship_count_i")
+            mock_sqs.order_by.assert_called_with("random_4567")
 
     @pytest.mark.usefixtures("mock_solr_queryset")
     @patch("geniza.corpus.views.DocumentSearchView.get_queryset")
@@ -567,6 +569,40 @@ class TestDocumentSearchView:
         resulting_ids = [result["pgpid"] for result in qs]
         assert doc1.id in resulting_ids
         assert doc2.id in resulting_ids
+
+    def test_get_solr_sort(self):
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # default behavior — lookup from dict on the view
+        assert (
+            docsearch_view.get_solr_sort("relevance")
+            == docsearch_view.solr_sort["relevance"]
+        )
+        # random, no seed set
+        random_sort = docsearch_view.get_solr_sort("random")
+        assert random_sort.startswith("random_")
+        assert int(random_sort.split("_")[1])
+        # random, using existing seed
+        docsearch_view.random_seed = 1234
+        assert docsearch_view.get_solr_sort("random") == "random_1234"
+
+    def test_random_sort_preserved(self):
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        docsearch_view.request.GET = {"sort": "random", "rnd": "1234"}
+        docsearch_view.get_form_kwargs()  # populate random seed on view instance
+        assert docsearch_view.get_solr_sort("random") == "random_1234"
+
+    @pytest.mark.django_db
+    def test_random_seed_context(self, client):
+        response = client.get(reverse("corpus:document-search"))
+        assert response.context["random_seed"]
+        assert response.context["random_seed"].startswith("&rnd=")
+        assert int(response.context["random_seed"].split("=")[1])
+
+        response = client.get(reverse("corpus:document-search"), {"rnd": "1234"})
+        # not set because included in querystring
+        assert "random_seed" not in response.context
 
 
 class TestDocumentScholarshipView:

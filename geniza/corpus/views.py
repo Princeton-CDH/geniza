@@ -55,6 +55,7 @@ class DocumentSearchView(ListView, FormMixin):
         if sort_option == "random":
             if self.random_seed is None:
                 self.random_seed = randint(1000, 9999)
+            # use solr's random dynamic field to sort randomly
             return "random_%s" % self.random_seed
         return self.solr_sort[sort_option]
 
