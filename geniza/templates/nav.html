@@ -24,7 +24,7 @@
                     {% pageurl site.root_page.localized as root_url %}
                 {% endif %}
                 <a class="home-link" href="{{ root_url|default:"/" }}" aria-label="{{ aria_home }}" role="button">
-                    {{ site_name }}
+                    <span class="sr-only">{{ aria_home }}</span>
                 </a>
             </li>
             <li class="menu-button">
