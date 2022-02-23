@@ -412,9 +412,9 @@
                 @include box-shadow(var(--secondary-80));
             }
         }
-        &:active {
+        &[open] {
             @include box-shadow(var(--secondary-80));
-            &[open] summary {
+            summary {
                 @include box-shadow(var(--secondary-80));
             }
         }
