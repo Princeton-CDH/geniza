@@ -2,6 +2,7 @@
 // Global styles & overrides for basic HTML elements.
 // -----------------------------------------------------------------------------
 
+@use "breakpoints";
 @use "colors";
 @use "typography";
 @use "container";
@@ -96,4 +97,40 @@ em {
 
 turbo-frame#content {
     max-width: none;
+}
+
+// "Primary" button style
+button.primary {
+    @include typography.meta-bold;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    height: 2.75rem;
+    @include breakpoints.for-tablet-landscape-up {
+        height: 3.375rem;
+    }
+    box-sizing: border-box;
+    border-radius: 2px;
+    border: 1px solid var(--button-primary);
+    background-color: var(--button-primary);
+    color: var(--background);
+    cursor: pointer;
+    &:focus {
+        background-color: var(--button-primary);
+        border: 1px solid var(--button-focus);
+        outline: 1px solid var(--button-focus);
+    }
+    &:hover,
+    &:active {
+        border: 1px solid var(--button-primary);
+        background-color: var(--background);
+        color: var(--button-primary);
+    }
+    &:hover {
+        outline: none;
+    }
+    &:active {
+        outline: 1px solid var(--button-primary);
+    }
 }

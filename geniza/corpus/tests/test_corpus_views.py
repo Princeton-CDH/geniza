@@ -331,18 +331,24 @@ class TestDocumentSearchView:
                 "-score"
             )
 
-            # keyword, sort, and doctype filter search params
+            # keyword, sort, and filter search params
             mock_sqs.reset_mock()
             docsearch_view.request = Mock()
             docsearch_view.request.GET = {
                 "q": "six apartments",
                 "sort": "scholarship_desc",
                 "doctype": ["Legal"],
+                "has_transcription": "on",
+                "has_discussion": "on",
+                "has_translation": "on",
             }
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_called_with("six apartments")
+            # filter by doctype
             mock_sqs.keyword_search.return_value.also.return_value.order_by.return_value.filter.assert_called()
+            # also filters that result with next filter (has_transcription)
+            mock_sqs.keyword_search.return_value.also.return_value.order_by.return_value.filter.return_value.filter.assert_called()
             mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
                 "-scholarship_count_i"
             )

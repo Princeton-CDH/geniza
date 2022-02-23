@@ -9,17 +9,19 @@
 
 {% block main %}
     <h1 class="sr-only">{{ page_title }}</h1>
-    <form data-controller="search">
-        <fieldset>
+    <form data-controller="search" data-action="search#submit">
+        <fieldset id="query">
             {% render_field form.q data-search-target="query" data-action="input->search#updateSort" %}
 
-            <details class="doctype-filter">
-                <summary>
-                    {{ form.doctype.label }}
-                </summary>
-                {{ form.doctype }}
-            </details>
-
+            {# Translators: Search submit button #}
+            {% translate 'Submit search' as search_label %}
+            <button type="submit" aria-label="{{ search_label }}" />
+        </fieldset>
+        <a href="#filters" role="button" id="filters-button">
+            <i class="ph-faders"></i>
+            {% translate "Filters" %}
+        </a>
+        <fieldset id="sort">
             <label for="{{ form.sort.html_name }}">
                 {{ form.sort.label }}
             </label>
@@ -38,10 +40,39 @@
                 </summary>
                 {% render_field form.sort data-search-target="sort" %}
             </details>
+        </fieldset>
 
-            {# Translators: Search submit button #}
-            {% translate 'Submit search' as search_label %}
-            <button type="submit" aria-label="{{ search_label }}" />
+        <fieldset id="filters" aria-expanded="false">
+            <a href="#" role="button" id="close-filters-modal">
+                {# Translators: label for 'filters' close button for mobile navigation #}
+                {% translate "Close filter options" as close_button %}
+                <span class="sr-only">{{ close_button }}</span>
+            </a>
+            <span id="filters-label">
+                <i class="ph-faders"></i>
+                {% translate "Filters" %}
+            </span>
+            <label for="{{ form.has_transcription.auto_id }}">
+                {{ form.has_transcription }}
+                {{ form.has_transcription.label }}
+            </label>
+            <label for="{{ form.has_translation.auto_id }}">
+                {{ form.has_translation }}
+                {{ form.has_translation.label }}
+            </label>
+            <label for="{{ form.has_discussion.auto_id }}">
+                {{ form.has_discussion }}
+                {{ form.has_discussion.label }}
+            </label>
+            <details class="doctype-filter">
+                <summary>
+                    {{ form.doctype.label }}
+                </summary>
+                {{ form.doctype }}
+            </details>
+            <button type="submit" class="primary">
+                {% translate "Apply" %}
+            </button>
         </fieldset>
 
         {% if form.errors %}

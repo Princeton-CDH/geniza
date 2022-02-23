@@ -1,17 +1,22 @@
 // src/controllers/search.js
 
 import { Controller } from "@hotwired/stimulus";
-import { ApplicationController, useDebounce } from "stimulus-use";
+// TODO: Re-enable debounce when Turbo is set up
+// import { ApplicationController, useDebounce } from "stimulus-use";
 
 export default class extends Controller {
     static targets = ["query", "sort", "sortlabel"];
-    static debounces = ["submit"];
+    // static debounces = ["submit"];
 
     connect() {
-        useDebounce(this);
+        // useDebounce(this);
     }
 
     submit() {
+        // Close filter modal if open before submitting form. If the window location is #filters
+        // (i.e. filter modal is open), submitting the form will reopen it, so the location must
+        // be set back to # in order for the "apply" button in the filter modal to close the modal.
+        window.location.href = "#";
         this.element.submit();
     }
 

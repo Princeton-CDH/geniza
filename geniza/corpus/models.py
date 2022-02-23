@@ -784,6 +784,9 @@ class Document(ModelIndexable):
                 "scholarship_t": [fn.display() for fn in self.footnotes.all()],
                 # text content of any transcriptions
                 "transcription_t": transcription_texts,
+                "has_digital_edition_b": len(transcription_texts) > 0,
+                "has_translation_b": counts[Footnote.TRANSLATION] > 0,
+                "has_discussion_b": counts[Footnote.DISCUSSION] > 0,
             }
         )
 
