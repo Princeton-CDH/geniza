@@ -5,7 +5,7 @@ import { Controller } from "@hotwired/stimulus";
 // import { ApplicationController, useDebounce } from "stimulus-use";
 
 export default class extends Controller {
-    static targets = ["query", "sort", "sortlabel", "closeFilterModal"];
+    static targets = ["query", "sort", "sortlabel"];
     // static debounces = ["submit"];
 
     connect() {
