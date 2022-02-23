@@ -431,8 +431,8 @@ header {
 
 // Header backgrounds for light and dark mode, desktop
 @mixin header-background-desktop-dark {
-    background: url("/static/img/ui/desktop/dark/header-base.svg") top left -11px,
-        url("/static/img/ui/desktop/dark/header-image.png") top left -11px;
+    background: url("/static/img/ui/desktop/dark/header-base.svg") top left,
+        url("/static/img/ui/desktop/dark/header-image.png") top left;
     background-repeat: no-repeat, no-repeat;
     &:after {
         @include after-header-desktop;
@@ -441,14 +441,14 @@ header {
     }
     a.home-link {
         background: url("/static/img/ui/desktop/dark/logotype.png") no-repeat;
-        background-size: 233px 148px;
+        background-size: 233px 149px;
         width: 233px;
-        height: 148px;
+        height: 149px;
     }
 }
 @mixin header-background-desktop-light {
-    background: url("/static/img/ui/desktop/light/header-base.svg") top left -11px,
-        url("/static/img/ui/desktop/light/header-image.png") top left -11px;
+    background: url("/static/img/ui/desktop/light/header-base.svg") top left,
+        url("/static/img/ui/desktop/light/header-image.png") top left;
     background-repeat: no-repeat, no-repeat;
     &:after {
         @include after-header-desktop;
