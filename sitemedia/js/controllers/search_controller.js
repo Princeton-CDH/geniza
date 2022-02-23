@@ -4,14 +4,17 @@ import { Controller } from "@hotwired/stimulus";
 import { ApplicationController, useDebounce } from "stimulus-use";
 
 export default class extends Controller {
-    static targets = ["query", "sort", "sortlabel"];
-    static debounces = ["submit"];
+    static targets = ["query", "sort", "sortlabel", "closeModal"];
+    // TODO: Re-enable debounce when Turbo is setup
+    // static debounces = ["submit"];
 
     connect() {
         useDebounce(this);
     }
 
     submit() {
+        // Close modal if open before submitting form
+        this.closeModalTarget.click();
         this.element.submit();
     }
 

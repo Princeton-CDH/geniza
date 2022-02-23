@@ -9,7 +9,7 @@
 
 {% block main %}
     <h1 class="sr-only">{{ page_title }}</h1>
-    <form data-controller="search">
+    <form data-controller="search" data-action="search#submit">
         <fieldset id="query">
             {% render_field form.q data-search-target="query" data-action="input->search#updateSort" %}
 
@@ -43,7 +43,7 @@
         </fieldset>
 
         <fieldset id="filters" aria-expanded="false">
-            <a href="#" role="button" id="close-filters-modal">
+            <a href="#" role="button" id="close-filters-modal" data-search-target="closeModal">
                 {# Translators: label for 'filters' close button for mobile navigation #}
                 {% translate "Close filter options" as close_button %}
                 <span class="sr-only">{{ close_button }}</span>
@@ -70,6 +70,9 @@
                 </summary>
                 {{ form.doctype }}
             </details>
+            <button type="submit" class="primary">
+                {% translate "Apply" %}
+            </button>
         </fieldset>
 
         {% if form.errors %}

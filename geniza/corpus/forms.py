@@ -125,11 +125,10 @@ class BooleanFacetField(FacetFieldMixin, forms.BooleanField):
         """
         Set the label from the facets returned by solr.
         """
-        count = facet_dict.get("true", None)
-        if count:
-            self.label = mark_safe(
-                f'<span class="label">{self.label}</span><span class="count">{count:,}</span>'
-            )
+        count = facet_dict.get("true", 0)
+        self.label = mark_safe(
+            f'<span class="label">{self.label}</span><span class="count">{count:,}</span>'
+        )
 
         # pass the counts to the widget so it can be set as a data attribute
         self.widget.facet_counts = facet_dict

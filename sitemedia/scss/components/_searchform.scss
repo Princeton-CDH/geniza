@@ -468,6 +468,15 @@
             }
         }
     }
+    // "apply" button
+    button.primary {
+        margin: spacing.$spacing-2xl 0 spacing.$spacing-md;
+        align-self: center;
+        @include breakpoints.for-tablet-landscape-up {
+            align-self: flex-end;
+            margin: spacing.$spacing-3xl 0 spacing.$spacing-xl;
+        }
+    }
 }
 // error messages
 #search main form ul#search-errors {
