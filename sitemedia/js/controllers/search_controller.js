@@ -13,7 +13,9 @@ export default class extends Controller {
     }
 
     submit() {
-        // Close modal if open before submitting form
+        // Close filter modal if open before submitting form. If the window location is #filters
+        // (i.e. filter modal is open), submitting the form will reopen it, so the location must
+        // be set back to # in order for the "apply" button in the filter modal to close the modal.
         window.location.href = "#";
         this.element.submit();
     }
