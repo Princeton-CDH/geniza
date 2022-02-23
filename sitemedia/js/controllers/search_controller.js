@@ -1,20 +1,20 @@
 // src/controllers/search.js
 
 import { Controller } from "@hotwired/stimulus";
-import { ApplicationController, useDebounce } from "stimulus-use";
+// TODO: Re-enable debounce when Turbo is set up
+// import { ApplicationController, useDebounce } from "stimulus-use";
 
 export default class extends Controller {
-    static targets = ["query", "sort", "sortlabel", "closeModal"];
-    // TODO: Re-enable debounce when Turbo is setup
+    static targets = ["query", "sort", "sortlabel", "closeFilterModal"];
     // static debounces = ["submit"];
 
     connect() {
-        useDebounce(this);
+        // useDebounce(this);
     }
 
     submit() {
         // Close modal if open before submitting form
-        this.closeModalTarget.click();
+        window.location.href = "#";
         this.element.submit();
     }
 
