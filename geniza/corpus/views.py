@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
-from django.http.response import HttpResponsePermanentRedirect
+from django.http.response import HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
@@ -46,28 +46,31 @@ class DocumentSearchView(ListView, FormMixin):
         "scholarship_asc": "scholarship_count_i",
         #        'name': 'sort_name_isort'
     }
-    random_seed = None
+
+    def dispatch(self, request, *args, **kwargs):
+        # special case: for random sort we only show the first page of results
+        # if any other page is requested, redirect to first page
+        if request.GET.get("sort") == "random" and request.GET.get("page", "") > "1":
+            queryargs = request.GET.copy()
+            del queryargs["page"]
+            return HttpResponseRedirect(
+                "?".join([reverse("corpus:document-search"), queryargs.urlencode()])
+            )
+        return super().dispatch(request, *args, **kwargs)
 
     def get_solr_sort(self, sort_option):
         """Return solr sort field for user-seleted sort option;
-        generates random seed for random sort if requested and not set;
+        generates random sort field using solr random dynamic field;
         otherwise uses solr sort field from :attr:`solr_sort`"""
         if sort_option == "random":
-            if self.random_seed is None:
-                self.random_seed = randint(1000, 9999)
             # use solr's random dynamic field to sort randomly
-            return "random_%s" % self.random_seed
+            return "random_%s" % randint(1000, 9999)
         return self.solr_sort[sort_option]
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         # use GET instead of default POST/PUT for form data
         form_data = self.request.GET.copy()
-
-        # check for a random seed and save if set;
-        # used to preserve random list order when paginating
-        if "rnd" in form_data:
-            self.random_seed = form_data["rnd"]
 
         # sort by chosen sort
         if "sort" in form_data and bool(form_data.get("sort")):
@@ -176,10 +179,7 @@ class DocumentSearchView(ListView, FormMixin):
                 "highlighting": highlights,
             }
         )
-        # if random seed is set and not in current request queryset,
-        # add to context to preserve for pagination
-        if self.random_seed and "rnd" not in self.request.GET:
-            context_data["random_seed"] = "&rnd=%s" % self.random_seed
+
         return context_data
 
 

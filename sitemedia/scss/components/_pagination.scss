@@ -93,8 +93,11 @@ nav.pagination {
         }
     }
     // disabled prev/next
-    span.disabled {
+    span.disabled,
+    &.disabled * {
         color: var(--disabled);
+        pointer-events: none;
+        border-bottom: none;
     }
     // button icons
     .prev::before {

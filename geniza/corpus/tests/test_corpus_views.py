@@ -350,20 +350,22 @@ class TestDocumentSearchView:
             # empty params
             mock_sqs.reset_mock()
             docsearch_view.request = Mock()
-            docsearch_view.request.GET = {"q": "", "sort": "", "rnd": "1234"}
+            docsearch_view.request.GET = {"q": "", "sort": ""}
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_not_called()
-            mock_sqs.order_by.assert_called_with("random_1234")
+            args = mock_sqs.order_by.call_args[0]
+            assert args[0].startswith("random_")
 
             # no params
             mock_sqs.reset_mock()
             docsearch_view.request = Mock()
-            docsearch_view.request.GET = {"rnd": "4567"}
+            docsearch_view.request.GET = {}
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_not_called()
-            mock_sqs.order_by.assert_called_with("random_4567")
+            args = mock_sqs.order_by.call_args[0]
+            assert args[0].startswith("random_")
 
     @pytest.mark.usefixtures("mock_solr_queryset")
     @patch("geniza.corpus.views.DocumentSearchView.get_queryset")
@@ -575,27 +577,15 @@ class TestDocumentSearchView:
         random_sort = docsearch_view.get_solr_sort("random")
         assert random_sort.startswith("random_")
         assert int(random_sort.split("_")[1])
-        # random, using existing seed
-        docsearch_view.random_seed = 1234
-        assert docsearch_view.get_solr_sort("random") == "random_1234"
 
-    def test_random_sort_preserved(self):
-        docsearch_view = DocumentSearchView()
-        docsearch_view.request = Mock()
-        docsearch_view.request.GET = {"sort": "random", "rnd": "1234"}
-        docsearch_view.get_form_kwargs()  # populate random seed on view instance
-        assert docsearch_view.get_solr_sort("random") == "random_1234"
-
-    @pytest.mark.django_db
-    def test_random_seed_context(self, client):
-        response = client.get(reverse("corpus:document-search"))
-        assert response.context["random_seed"]
-        assert response.context["random_seed"].startswith("&rnd=")
-        assert int(response.context["random_seed"].split("=")[1])
-
-        response = client.get(reverse("corpus:document-search"), {"rnd": "1234"})
-        # not set because included in querystring
-        assert "random_seed" not in response.context
+    def test_random_page_redirect(self, client):
+        # any page of results other than one should redirect to the first page
+        docsearch_url = reverse("corpus:document-search")
+        response = client.get(docsearch_url, {"sort": "random", "page": 2, "q": "test"})
+        # should redirect
+        assert response.status_code == 302
+        # should preserve any query parameters
+        assert response["Location"] == "%s?sort=random&q=test" % docsearch_url
 
 
 class TestDocumentScholarshipView:
