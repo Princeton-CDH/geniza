@@ -95,9 +95,7 @@ class DocumentSearchView(ListView, FormMixin):
             DocumentSolrQuerySet()
             .filter(status=Document.PUBLIC_LABEL)
             .facet_field("type", exclude="type", sort="value")
-            .facet_field("has_digital_edition")
-            .facet_field("has_translation")
-            .facet_field("has_discussion")
+            .facet("has_digital_edition", "has_translation", "has_discussion")
         )
 
         form = self.get_form()
