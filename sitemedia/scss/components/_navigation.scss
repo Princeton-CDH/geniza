@@ -23,20 +23,10 @@ header {
     }
     // Logotype, links to homepage
     a.home-link {
-        display: inline-block;
-        vertical-align: bottom;
-        svg {
-            fill: var(--logo);
-        }
-    }
-    a.home-link,
-    a.home-link svg {
-        width: 6.25rem;
-        height: 2.8rem;
-        @include breakpoints.for-tablet-landscape-up {
-            width: 12.5rem;
-            height: 5.625rem;
-        }
+        position: absolute;
+        z-index: 5;
+        color: transparent;
+        font-size: 1rem;
     }
     // Mobile-only menu buttons
     li.menu-button {
@@ -54,21 +44,18 @@ header {
     }
     // Top-left corner links: home and open menu button
     ul#corner-links {
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
+        align-self: flex-start;
         height: 9rem;
-        margin-left: spacing.$spacing-md;
         @include breakpoints.for-tablet-landscape-up {
             height: auto;
-            margin: spacing.$spacing-2xl 0 0 spacing.$spacing-lg;
-            padding-top: spacing.$spacing-sm;
         }
         li {
-            margin-top: -#{spacing.$spacing-3xl};
+            @include breakpoints.for-tablet-landscape-up {
+                margin: 0;
+            }
         }
         li.menu-button {
-            margin-left: spacing.$spacing-sm;
+            margin-left: 10rem;
             a::before {
                 font-family: "Phosphor";
                 content: "\f1fa";
@@ -412,11 +399,23 @@ header {
     background: url("/static/img/ui/mobile/dark/header-base.svg"),
         url("/static/img/ui/mobile/dark/header-image.png");
     background-repeat: no-repeat, no-repeat;
+    a.home-link {
+        background: url("/static/img/ui/mobile/dark/logotype.png") no-repeat;
+        background-size: 160px;
+        width: 160px;
+        height: 111px;
+    }
 }
 @mixin header-background-mobile-light {
     background: url("/static/img/ui/mobile/light/header-base.svg"),
         url("/static/img/ui/mobile/light/header-image.png");
     background-repeat: no-repeat, no-repeat;
+    a.home-link {
+        background: url("/static/img/ui/mobile/light/logotype.png") no-repeat;
+        background-size: 151px;
+        width: 151px;
+        height: 111px;
+    }
 }
 
 // Header background extension for large screens
@@ -440,6 +439,12 @@ header {
         background: url("/static/img/ui/desktop/dark/header-filler.svg")
             repeat-x;
     }
+    a.home-link {
+        background: url("/static/img/ui/desktop/dark/logotype.png") no-repeat;
+        background-size: 233px 148px;
+        width: 233px;
+        height: 148px;
+    }
 }
 @mixin header-background-desktop-light {
     background: url("/static/img/ui/desktop/light/header-base.svg") top left -11px,
@@ -449,6 +454,12 @@ header {
         @include after-header-desktop;
         background: url("/static/img/ui/desktop/light/header-filler.svg")
             repeat-x;
+    }
+    a.home-link {
+        background: url("/static/img/ui/desktop/light/logotype.png") no-repeat;
+        background-size: 233px 148px;
+        width: 233px;
+        height: 148px;
     }
 }
 
