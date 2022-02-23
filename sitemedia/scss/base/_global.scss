@@ -99,6 +99,7 @@ turbo-frame#content {
     max-width: none;
 }
 
+// "Primary" button style
 button.primary {
     @include typography.meta-bold;
     display: flex;

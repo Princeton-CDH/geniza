@@ -263,6 +263,7 @@
     margin: spacing.$spacing-xl 0 spacing.$spacing-sm;
 }
 
+// filter modal
 #search main form fieldset#filters {
     background-color: var(--background);
     max-width: none;
@@ -279,12 +280,15 @@
     flex-flow: column;
     pointer-events: all;
     align-items: flex-start;
+    // width on desktop
     @include breakpoints.for-tablet-landscape-up {
         padding: 0 calc(calc(100vw - #{container.$two-column}) / 2);
     }
+    // show when targeted
     &:target {
         display: flex;
     }
+    // close button
     a#close-filters-modal {
         text-decoration: none;
         margin-top: -#{spacing.$spacing-xs};
@@ -297,6 +301,7 @@
             margin-top: spacing.$spacing-md;
         }
     }
+    // all filter form inputs that are not nested within a details
     & > label {
         flex: 0 0 2.5rem;
         max-width: 100%;
