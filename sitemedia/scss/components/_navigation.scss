@@ -53,10 +53,14 @@ header {
             }
         }
         li.menu-button {
-            margin-left: 10rem;
+            margin-left: 9.75rem;
+            margin-top: 0.66rem;
+            a {
+                @include typography.icon-button-md;
+            }
             a::before {
                 font-family: "Phosphor";
-                content: "\f1fa";
+                content: "\f5d6"; // Phosphor list-bold icon
             }
         }
     }
