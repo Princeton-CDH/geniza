@@ -1,10 +1,10 @@
 {% load i18n corpus_extras %}
-{% spaceless %}
-    <nav class="pagination">
+{% spaceless %} {# disable pagination when sorted randomly #}
+    <nav class="pagination {% if form.sort.value == 'random' %}disabled{% endif %}">
         {# Translators: Label for "previous page" button in search results #}
         {% translate 'Previous' as previous_page %}
         {% if page_obj.has_previous %}
-            <a name="{{ previous_page }}" title="{{ previous_page }}" class="prev" rel="prev" href="?{% querystring_replace page=page_obj.previous_page_number %}{{ random_seed }}">
+            <a name="{{ previous_page }}" title="{{ previous_page }}" class="prev" rel="prev" href="?{% querystring_replace page=page_obj.previous_page_number %}">
                 {{ previous_page }}
             </a>
         {% else %}
@@ -24,23 +24,23 @@
 
             {% elif page_obj.number <= 2  and number <= 5 %}
                 {# for current page 1 or 2, display first 5 #}
-                <a title="{{ page_number_title }}" class="pagelink" href="?{% querystring_replace page=number %}{{ random_seed }}">{{ number }}</a>
+                <a title="{{ page_number_title }}" class="pagelink" href="?{% querystring_replace page=number %}">{{ number }}</a>
 
             {% elif page_obj.number|add:1 >= page_obj.paginator.num_pages and number >= page_obj.paginator.num_pages|add:-4 %}
                 {# for current page last or next to last, display last 5 pages #}
-                <a title="{{ page_number_title }}" class="pagelink" href="?{% querystring_replace page=number %}{{ random_seed }}">{{ number }}</a>
+                <a title="{{ page_number_title }}" class="pagelink" href="?{% querystring_replace page=number %}">{{ number }}</a>
 
             {% elif page_obj.number|add:2 >= number and page_obj.number|add:-2 <= number and number <= 100 %}
                 {# display the two numbers before and after the current page (up to 100) #}
-                <a title="{{ page_number_title }}" class="pagelink" href="?{% querystring_replace page=number %}{{ random_seed }}">{{ number }}</a>
+                <a title="{{ page_number_title }}" class="pagelink" href="?{% querystring_replace page=number %}">{{ number }}</a>
 
             {% elif page_obj.number|add:1 >= number and page_obj.number|add:-1 <= number and number > 100 %}
                 {# display the one numbers before and after the current page (after 100) #}
-                <a title="{{ page_number_title }}" class="pagelink" href="?{% querystring_replace page=number %}{{ random_seed }}">{{ number }}</a>
+                <a title="{{ page_number_title }}" class="pagelink" href="?{% querystring_replace page=number %}">{{ number }}</a>
 
             {% elif forloop.first %}
                 {# always display the first page (not current page) #}
-                <a title="{{ page_number_title }}" class="pagelink" href="?{% querystring_replace page=number %}{{ random_seed }}">{{ number }}</a>
+                <a title="{{ page_number_title }}" class="pagelink" href="?{% querystring_replace page=number %}">{{ number }}</a>
                 {# if there is a gap between 1 and group around current page #}
                 {% if page_obj.number > 4 and page_obj.paginator.num_pages > 6 %}
                     <span class="ellipsis">...</span>
@@ -52,14 +52,14 @@
                 {% if page_obj.number|add:3 < number and number > 6 %}
                     <span class="ellipsis">...</span>
                 {% endif %}
-                <a title="{{ page_number_title }}" class="pagelink" href="?{% querystring_replace page=number %}{{ random_seed }}">{{ number }}</a>
+                <a title="{{ page_number_title }}" class="pagelink" href="?{% querystring_replace page=number %}">{{ number }}</a>
             {% endif%}
         {% endfor %}
 
         {# Translators: Label for "next page" button in search results #}
         {% translate 'Next' as next_page %}
         {% if page_obj.has_next %}
-            <a name="{{ next_page }}" title="{{ next_page }}" class="next" rel="next" href="?{% querystring_replace page=page_obj.next_page_number %}{{ random_seed }}">
+            <a name="{{ next_page }}" title="{{ next_page }}" class="next" rel="next" href="?{% querystring_replace page=page_obj.next_page_number %}">
                 {{ next_page }}
             </a>
         {% else %}
