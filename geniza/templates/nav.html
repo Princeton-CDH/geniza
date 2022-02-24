@@ -7,11 +7,6 @@
 {# Translators: accessibility text label for site navigation #}
 {% translate "main navigation" as main_nav_label %}
 
-{% static "img/ui/mobile/light/logotype.png" as mobile_light %}
-{% static "img/ui/mobile/dark/logotype.png" as mobile_dark %}
-{% static "img/ui/desktop/light/logotype.png" as desktop_light %}
-{% static "img/ui/desktop/dark/logotype.png" as desktop_dark %}
-
 <nav id="site-nav" aria-label="{{ main_nav_label }}">
     {% spaceless %}
         <ul id="corner-links">
