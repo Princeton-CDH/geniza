@@ -106,7 +106,7 @@ jobs:
         # NOTE: command line core creation does not seem to actually use the configset
 
       - name: Setup local_settings.py
-        run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
+        run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4()); print('DEBUG = True')" >> geniza/settings/local_settings.py
 
       - name: Run webpack to process scss/js
         run: npm run build
