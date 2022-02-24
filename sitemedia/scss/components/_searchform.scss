@@ -188,8 +188,11 @@
         }
         // List of sort options
         ul {
-            padding: spacing.$spacing-sm 0;
+            position: absolute;
+            z-index: 20;
+            width: calc(100% - 2.0625rem - #{spacing.$spacing-sm});
             max-width: calc(100% - 2.0625rem - #{spacing.$spacing-sm});
+            padding: spacing.$spacing-sm 0;
             @include form-drop-shadow;
             background-color: var(--background-light);
             li {
