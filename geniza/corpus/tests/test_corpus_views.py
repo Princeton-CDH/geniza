@@ -587,6 +587,14 @@ class TestDocumentSearchView:
         # should preserve any query parameters
         assert response["Location"] == "%s?sort=random&q=test" % docsearch_url
 
+    @pytest.mark.django_db
+    def test_dispatch(self, client):
+        # test regular response does not redirect
+        docsearch_url = reverse("corpus:document-search")
+        response = client.get(docsearch_url)
+        # should not redirect
+        assert response.status_code == 200
+
 
 class TestDocumentScholarshipView:
     def test_page_title(self, document, client, source):
