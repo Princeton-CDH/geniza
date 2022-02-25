@@ -99,7 +99,7 @@ class TestDocumentDetailView:
 
 @pytest.mark.django_db
 def test_old_pgp_tabulate_data():
-    legal_doc, _ = DocumentType.objects.get_or_create(name="Legal")
+    legal_doc = DocumentType.objects.get_or_create(name_en="Legal")[0]
     doc = Document.objects.create(id=36, doctype=legal_doc)
     frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
     TextBlock.objects.create(document=doc, fragment=frag, side="r")
@@ -184,7 +184,7 @@ def test_old_pgp_edition():
 
 @pytest.mark.django_db
 def test_pgp_metadata_for_old_site():
-    legal_doc, _ = DocumentType.objects.get_or_create(name="Legal")
+    legal_doc = DocumentType.objects.get_or_create(name_en="Legal")[0]
     doc = Document.objects.create(id=36, doctype=legal_doc)
     frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
     TextBlock.objects.create(document=doc, fragment=frag, side="r")

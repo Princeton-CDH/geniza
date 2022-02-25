@@ -213,7 +213,7 @@ class TestDocumentAdmin:
         cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21", collection=cul)
 
-        contract = DocumentType.objects.create(name="Contract")
+        contract = DocumentType.objects.create(name_en="Contract")
         doc = Document.objects.create(
             description="Business contracts with tables",
             doctype=contract,
