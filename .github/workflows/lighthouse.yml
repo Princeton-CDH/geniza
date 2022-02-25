@@ -46,7 +46,7 @@ jobs:
       - run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
       - uses: actions/setup-node@v2
         with:
-          node-version: 12
+          node-version: 16
       - uses: actions/cache@v2
         with:
           path: ~/.npm
