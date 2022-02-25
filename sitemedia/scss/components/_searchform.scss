@@ -109,7 +109,6 @@
         }
         // Magnifying glass icon
         &::after {
-            font-family: "Phosphor";
             content: "\f5e6"; // phosphor magnifying glass bold icon
             @include typography.icon-button-sm;
             @include breakpoints.for-tablet-landscape-up {
@@ -165,7 +164,6 @@
                 align-items: center;
                 justify-content: center;
                 &::after {
-                    font-family: "Phosphor";
                     content: "\f0c2"; // phosphor caret-down icon
                     @include typography.icon-button-md;
                 }
@@ -295,10 +293,9 @@
     a#close-filters-modal {
         text-decoration: none;
         margin-top: -#{spacing.$spacing-xs};
+        @include typography.icon-button-xl;
         &::before {
             content: "\f36d"; // phosphor X icon
-            @include typography.icon-button-xl;
-            font-family: "Phosphor";
         }
         @include breakpoints.for-tablet-landscape-up {
             margin-top: spacing.$spacing-md;
@@ -347,7 +344,6 @@
         }
         span.count::after {
             display: block;
-            font-family: "Phosphor";
             content: "\f0e7"; // phosphor check icon
             @include typography.icon-button-md;
             transition: transform 0.75s ease;
@@ -392,7 +388,6 @@
                 display: none;
             }
             &::after {
-                font-family: "Phosphor";
                 content: "\f0c2"; // phosphor caret-down icon
                 @include typography.icon-button-md;
                 transition: transform 0.75s ease;

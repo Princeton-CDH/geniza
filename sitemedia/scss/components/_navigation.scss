@@ -59,7 +59,6 @@ header {
                 @include typography.icon-button-md;
             }
             a::before {
-                font-family: "Phosphor";
                 content: "\f5d6"; // Phosphor list-bold icon
             }
         }
@@ -190,7 +189,6 @@ header {
             &::after {
                 display: block;
                 background: none;
-                font-family: "Phosphor";
                 content: "\f0c4"; // phosphor caret-right icon
                 @include typography.icon-button-lg;
                 // Desktop overrides
@@ -276,7 +274,6 @@ header {
                 @include typography.icon-button-lg;
             }
             a#back-to-main-menu::before {
-                font-family: "Phosphor";
                 content: "\f0c3"; // phosphor caret-left icon
                 @include typography.icon-button-lg;
             }
