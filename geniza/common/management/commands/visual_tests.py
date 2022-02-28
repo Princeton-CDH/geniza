@@ -38,7 +38,11 @@ class Command(BaseCommand):
 
         # content page
         browser.get("http://localhost:8000/en/content/")
-        # disable srcset and swap out content page images for ones from /static that Percy can see
+        # NOTE: The following script execution is a workaround to show user-uploaded images in
+        # content pages on Percy, which runs in production mode and thus cannot read from the
+        # /media directory where these images are uploaded by Wagtail. We clear the srcset
+        # attribute of each image, and swap out the src attribute for the appropriate image
+        # from /static.
         portrait_img = browser.find_element_by_css_selector(
             "#content-page figure img.portrait"
         )
