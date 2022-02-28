@@ -11,4 +11,5 @@ let viewer = OpenSeadragon({
     autoHideControls: false,
     showHomeControl: false,
     showRotationControl: true,
+    crossOriginPolicy: "Anonymous",
 });
