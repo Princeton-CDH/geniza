@@ -15,6 +15,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views.generic import DetailView, FormView, ListView
 from django.views.generic.edit import FormMixin
+from parasolr.django.views import SolrLastModifiedMixin
 from piffle.presentation import IIIFPresentation
 from tabular_export.admin import export_to_csv_response
 
@@ -214,7 +215,7 @@ class DocumentPastIdMixin:
             raise
 
 
-class DocumentDetailView(DocumentPastIdMixin, DetailView):
+class DocumentDetailView(DocumentPastIdMixin, DetailView, SolrLastModifiedMixin):
     """public display of a single :class:`~geniza.corpus.models.Document`"""
 
     model = Document
