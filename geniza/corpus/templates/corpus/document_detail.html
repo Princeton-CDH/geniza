@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n render_bundle_csp %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
@@ -9,9 +9,8 @@
 {% block extrascript %}
     {# include openseadragon if needed #}
     {% if document.has_images or document.iiif_urls %}
-        {# NOTE: referencing specific version avoids an extra render-blocking lookup #}
-        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/openseadragon.min.js" nonce="{{ request.csp_nonce}}"></script>
-        <script defer src="{% static 'js/openseadragon.js' %}" nonce="{{ request.csp_nonce }}"></script>
+        <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/" crossorigin />
+        {% render_bundle_csp "openseadragon" "js" attrs='defer' %}
     {% endif %}
 {% endblock extrascript %}
 

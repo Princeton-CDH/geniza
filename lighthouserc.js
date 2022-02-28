@@ -43,6 +43,8 @@ module.exports = {
                 // next two are only failing because of OpenSeaDragon, so disable for now
                 "unsized-images": "off",
                 "unused-javascript": "off",
+                // allow 1 offscreen image per page (OpenSeaDragon first image)
+                "offscreen-images": ["error", { maxLength: 1 }],
             },
         },
     },

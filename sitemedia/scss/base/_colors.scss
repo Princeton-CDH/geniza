@@ -55,6 +55,11 @@ $off-white: #f7f7f7;
     --icon-button: #567856;
     --icon-button-active: #436043;
     --icon-button-hover: #3d3d3d;
+    // button colors
+    --button-primary: #567856;
+    --button-focus: #161616;
+    // border colors for (unfocused) filters
+    --filter-border: rgba(0, 0, 0, 0.25);
 }
 
 // Dark mode theme colors
@@ -95,6 +100,11 @@ $off-white: #f7f7f7;
     --icon-button: #ffffff;
     --icon-button-active: #ffffff;
     --icon-button-bottom-hover: #ffffff;
+    // button colors
+    --button-primary: #ffffff;
+    --button-focus: #146feb;
+    // border colors for (unfocused) filters
+    --filter-border: #161616;
 }
 
 body {

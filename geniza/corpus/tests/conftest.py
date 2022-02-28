@@ -47,11 +47,11 @@ def make_document(fragment):
     """A real legal document from the PGP."""
     doc = Document.objects.create(
         id=3951,
-        description="""Deed of sale in which a father sells to his son a quarter
+        description_en="""Deed of sale in which a father sells to his son a quarter
          of the apartment belonging to him in a house in the al- Mu'tamid
          passage of the Tujib quarter for seventeen dinars. Dated 1233.
          (Information from Mediterranean Society, IV, p. 281)""",
-        doctype=DocumentType.objects.get_or_create(name="Legal")[0],
+        doctype=DocumentType.objects.get_or_create(name_en="Legal")[0],
     )
     TextBlock.objects.create(document=doc, fragment=fragment)
     doc.tags.add("bill of sale", "real estate")
@@ -86,8 +86,8 @@ def make_document(fragment):
 def make_join(fragment, multifragment):
     """A fake letter document that occurs on two different fragments."""
     doc = Document.objects.create(
-        description="testing description",
-        doctype=DocumentType.objects.get_or_create(name="Letter")[0],
+        description_en="testing description",
+        doctype=DocumentType.objects.get_or_create(name_en="Letter")[0],
     )
     TextBlock.objects.create(document=doc, fragment=fragment, order=1)
     TextBlock.objects.create(document=doc, fragment=multifragment, order=2)

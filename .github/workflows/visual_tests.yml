@@ -9,7 +9,7 @@ on:
       - develop
 
 env:
-  NODE_VERSION: 12 # required for percy CLI
+  NODE_VERSION: 16 # required for percy CLI
   DB_NAME: geniza
   DB_USER: geniza
   DB_PASSWORD: geniza

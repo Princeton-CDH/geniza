@@ -75,6 +75,26 @@ jobs:
       - name: Setup dummy webpack manifest
         run: cp sitemedia/webpack-stats-ci.json sitemedia/webpack-stats.json
 
+      - name: Install node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ hashFiles('package-lock.json') }}
+            npm-
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Recompile bundles
+        run: npm run build
+
       - name: Run pytest
         run: py.test --cov=./ --cov-report=xml
 

@@ -17,6 +17,7 @@ from django.http import HttpResponseRedirect
 from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from modeltranslation.admin import TabbedTranslationAdmin
 from pyexpat import model
 from tabular_export.admin import export_to_csv_response
 
@@ -177,7 +178,7 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
 
 
 @admin.register(Document)
-class DocumentAdmin(admin.ModelAdmin):
+class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     form = DocumentForm
     # NOTE: columns display for default and needs review display
     # are controlled via admin css; update the css if you change the order here
@@ -526,7 +527,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
 
 @admin.register(DocumentType)
-class DocumentTypeAdmin(admin.ModelAdmin):
+class DocumentTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = ("name", "display_label")
 
 
@@ -570,3 +571,9 @@ class FragmentAdmin(admin.ModelAdmin):
         F("collection__name"),
         F("collection__library"),
     )
+
+    def save_model(self, request, obj, form, change):
+        # pass request in to save so that we can send messages
+        # if there is an error loading the IIIF manifest
+        obj.request = request
+        super().save_model(request, obj, form, change)

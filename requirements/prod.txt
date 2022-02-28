@@ -21,5 +21,7 @@ eulxml
 rich
 wagtail>=2.15.3,<2.16
 wagtail-localize
-djiffy>=0.7
+djiffy>=0.7.2
 natsort
+django-widget-tweaks
+django-csp-helpers

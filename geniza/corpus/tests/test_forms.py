@@ -66,15 +66,23 @@ class TestDocumentSearchForm:
 
     def test_choices_from_facets(self):
         """A facet dict should produce correct choice labels"""
-        fake_facets = {"doctype": {"foo": 1, "bar": 2, "baz": 3}}
+        fake_facets = {
+            "doctype": {"foo": 1, "bar": 2, "baz": 3},
+            "has_transcription": {"true": 3, "false": 3},
+        }
         form = DocumentSearchForm()
         # call the method to configure choices based on facets
         form.set_choices_from_facets(fake_facets)
+        # test doctype facets (FacetChoiceField)
         for choice in form.fields["doctype"].widget.choices:
             # choice is index id, label
             choice_label = choice[1]
             assert isinstance(choice_label, str)
             assert "<span>" in choice_label
+        # test has_transcription facet (BooleanFacetField)
+        bool_label = form.fields["has_transcription"].label
+        assert isinstance(bool_label, str)
+        assert "3</span>" in bool_label
 
     def test_radio_select_get_context(self):
         form = DocumentSearchForm()
@@ -89,6 +97,17 @@ class TestDocumentSearchForm:
                 assert int(option["attrs"]["data-count"]) == fake_facets["doctype"].get(
                     option["value"]
                 )
+
+    def test_boolean_checkbox_get_context(self):
+        form = DocumentSearchForm()
+        fake_facets = {"has_transcription": {"true": 10, "false": 2}}
+        form.set_choices_from_facets(fake_facets)
+        context = form.fields["has_transcription"].widget.get_context(
+            "has_transcription", "all", {"id": "id_has_transcription"}
+        )
+        assert int(context["widget"]["attrs"]["data-count"]) == fake_facets[
+            "has_transcription"
+        ].get("true")
 
     def test_clean(self):
         """Should add an error if query is empty and sort is relevance"""

@@ -1,6 +1,7 @@
 import time
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
+from unittest import mock
+from unittest.mock import Mock, mock_open, patch
 
 import pytest
 from django.conf import settings
@@ -212,7 +213,7 @@ class TestDocumentAdmin:
         cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21", collection=cul)
 
-        contract = DocumentType.objects.create(name="Contract")
+        contract = DocumentType.objects.create(name_en="Contract")
         doc = Document.objects.create(
             description="Business contracts with tables",
             doctype=contract,
@@ -229,7 +230,7 @@ class TestDocumentAdmin:
         doc.languages.add(arabic)
         doc.secondary_languages.add(french)
 
-        marina = Creator.objects.create(last_name="Rustow", first_name="Marina")
+        marina = Creator.objects.create(last_name_en="Rustow", first_name_en="Marina")
         book = SourceType.objects.create(type="Book")
         source = Source.objects.create(source_type=book)
         source.authors.add(marina)
@@ -384,7 +385,7 @@ class TestFragmentTextBlockInline:
     def test_document_description(self):
         fragment = Fragment.objects.create(shelfmark="CUL 123")
         test_description = "A medieval poem"
-        doc = Document.objects.create(description=test_description)
+        doc = Document.objects.create(description_en=test_description)
         textblock = TextBlock.objects.create(fragment=fragment, document=doc)
         inline = FragmentTextBlockInline(Fragment, admin_site=admin.site)
 
@@ -406,6 +407,15 @@ class TestFragmentAdmin:
         fragment.collection = cul
         frag_admin = FragmentAdmin(model=Fragment, admin_site=admin.site)
         assert frag_admin.collection_display(fragment) == cul
+
+    @patch("django.contrib.admin.ModelAdmin.save_model")
+    def test_save_model(self, mock_super_save_model):
+        frag_admin = FragmentAdmin(model=Fragment, admin_site=admin.site)
+        mock_request = Mock()
+        mock_obj = Mock()
+        frag_admin.save_model(mock_request, mock_obj, Mock(), Mock())
+        args, kwargs = mock_super_save_model.call_args
+        assert args[1].request == mock_request
 
 
 class TestHasTranscriptionListFilter:

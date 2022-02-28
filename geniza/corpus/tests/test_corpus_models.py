@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
 from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
+from piffle.presentation import IIIFException as piffle_IIIFException
 
 from geniza.corpus.models import (
     Collection,
@@ -218,6 +219,57 @@ class TestFragment(TestCase):
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
+    def test_attribution(self, mock_manifestimporter):
+        # fragment with no manifest
+        frag = Fragment(shelfmark="TS 1")
+        assert not frag.attribution
+
+        # fragment with a locally cached manifest
+        frag = Fragment(shelfmark="TS 2")
+        frag.iiif_url = "http://example.io/manifests/2"
+        # manifest with an attribution
+        frag.manifest = Manifest.objects.create(
+            uri=frag.iiif_url,
+            short_id="m",
+            extra_data={"attribution": "Created by a person"},
+        )
+        frag.save()
+        assert frag.attribution == "Created by a person"
+
+        # fragment with remote manifest
+        frag_no_manifest = Fragment(shelfmark="TS 3")
+        frag_no_manifest.iiif_url = "http://example.io/manifests/3"
+        frag_no_manifest.save()
+        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
+            # no attribution, should return None via caught AttributeError
+            mock_iiifpresentation.from_url.return_value = AttrDict({})
+            assert not frag_no_manifest.attribution
+
+            # with attribution
+            mock_iiifpresentation.reset_mock()
+            mock_iiifpresentation.from_url.return_value = AttrDict(
+                {"attribution": "Created by a person"}
+            )
+            assert frag_no_manifest.attribution == "Created by a person"
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    def test_attribution_iiifexception(self, mock_manifestimporter):
+        # patch IIIFPresentation.from_url to always raise IIIFException
+        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
+            mock_iiifpresentation.from_url = Mock()
+            mock_iiifpresentation.from_url.side_effect = IIIFException
+            frag = Fragment(shelfmark="TS 1")
+            frag.iiif_url = "http://example.io/manifests/1"
+            frag.save()
+            # should raise the exception
+            with self.assertRaises(IIIFException):
+                # should log at level WARN
+                with self.assertLogs(level="WARN"):
+                    frag.attribution
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
     def test_save(self, mock_manifestimporter):
         frag = Fragment(shelfmark="TS 1")
         frag.save()
@@ -287,25 +339,50 @@ class TestFragment(TestCase):
         assert mock_manifestimporter.call_count == 0
         assert not frag.manifest
 
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.messages")
+    def test_save_import_manifest_error(self, mock_messages, mock_manifestimporter):
+        frag = Fragment(shelfmark="TS 1")
+        frag.request = Mock()
+        # remove any cached manifests
+        Manifest.objects.all().delete()
+        # mock manifest does nothing, manifest will be unset
+        frag.iiif_url = "something"  # needs to be changed to trigger relevant block
+        frag.save()
+        mock_messages.warning.assert_called_with(
+            frag.request, "Failed to cache IIIF manifest"
+        )
+
+        # import causes an error
+        mock_manifestimporter.return_value.import_paths.side_effect = (
+            piffle_IIIFException
+        )
+        frag.iiif_url = "something else"  # change again to trigger relevant block
+        frag.save()
+        mock_messages.error.assert_called_with(
+            frag.request, "Error loading IIIF manifest"
+        )
+
 
 @pytest.mark.django_db
 class TestDocumentType:
     def test_str(self):
         """Should use doctype.display_label if available, else use doctype.name"""
-        doctype = DocumentType(name="Legal")
-        assert str(doctype) == doctype.name
-        doctype.display_label = "Legal document"
+        doctype = DocumentType(name_en="Legal")
+        assert str(doctype) == doctype.name_en
+        doctype.display_label_en = "Legal document"
         assert str(doctype) == "Legal document"
 
     def test_natural_key(self):
         """Should use name as natural key"""
-        doc_type = DocumentType(name="SomeType")
+        doc_type = DocumentType(name_en="SomeType")
         assert len(doc_type.natural_key()) == 1
         assert "SomeType" in doc_type.natural_key()
 
     def test_get_by_natural_key(self):
         """Should find DocumentType object by name"""
-        doc_type = DocumentType(name="SomeType")
+        doc_type = DocumentType(name_en="SomeType")
         doc_type.save()
         assert DocumentType.objects.get_by_natural_key("SomeType") == doc_type
 
@@ -520,7 +597,7 @@ class TestDocument:
     def test_title(self):
         doc = Document.objects.create()
         assert doc.title == "Unknown type: ??"
-        legal = DocumentType.objects.get_or_create(name="Legal")[0]
+        legal = DocumentType.objects.get_or_create(name_en="Legal")[0]
         doc.doctype = legal
         doc.save()
         assert doc.title == "Legal document: ??"

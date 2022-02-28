@@ -19,7 +19,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "shelfmark": "shelfmark_t",
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
-        "description": "description_t",
+        "description": "description_txt_ens",  # use stemmed version for field search & highlight
         "notes": "notes_t",
         "needs_review": "needs_review_t",
         "pgpid": "pgpid_i",
@@ -35,6 +35,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "language_code": "language_code_ss",
         "iiif_images": "iiif_images_ss",
         "iiif_labels": "iiif_labels_ss",
+        "has_digital_edition": "has_digital_edition_b",
+        "has_translation": "has_translation_b",
+        "has_discussion": "has_discussion_b",
     }
 
     # regex to convert field aliases used in search to actual solr fields

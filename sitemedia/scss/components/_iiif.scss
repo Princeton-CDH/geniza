@@ -11,11 +11,11 @@
     align-items: center;
     background-color: var(--background-light);
     padding: spacing.$spacing-xl spacing.$spacing-lg;
+    width: 100%;
+    max-width: 100%;
     @include breakpoints.for-tablet-landscape-up {
         padding: spacing.$spacing-2xl 10rem;
         margin: 0;
-        max-width: 100%;
-        width: 100%;
         flex-flow: row wrap;
         align-items: flex-start;
         justify-content: space-between;
@@ -101,7 +101,7 @@
         }
 
         .source {
-            @include typography.body;
+            @include typography.body-bold;
             text-align: left;
             padding-top: spacing.$spacing-md;
         }

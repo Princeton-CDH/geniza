@@ -1,11 +1,12 @@
 from ast import literal_eval
+from random import randint
 
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
-from django.http.response import HttpResponsePermanentRedirect
+from django.http.response import HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
@@ -36,7 +37,7 @@ class DocumentSearchView(ListView, FormMixin):
     # Translators: description of document search page, for search engines
     page_description = _("Search and browse Geniza documents.")
     paginate_by = 50
-    initial = {"sort": "scholarship_desc"}
+    initial = {"sort": "random"}
 
     # map form sort to solr sort field
     solr_sort = {
@@ -45,6 +46,26 @@ class DocumentSearchView(ListView, FormMixin):
         "scholarship_asc": "scholarship_count_i",
         #        'name': 'sort_name_isort'
     }
+
+    def dispatch(self, request, *args, **kwargs):
+        # special case: for random sort we only show the first page of results
+        # if any other page is requested, redirect to first page
+        if request.GET.get("sort") == "random" and request.GET.get("page", "") > "1":
+            queryargs = request.GET.copy()
+            del queryargs["page"]
+            return HttpResponseRedirect(
+                "?".join([reverse("corpus:document-search"), queryargs.urlencode()])
+            )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_solr_sort(self, sort_option):
+        """Return solr sort field for user-seleted sort option;
+        generates random sort field using solr random dynamic field;
+        otherwise uses solr sort field from :attr:`solr_sort`"""
+        if sort_option == "random":
+            # use solr's random dynamic field to sort randomly
+            return "random_%s" % randint(1000, 9999)
+        return self.solr_sort[sort_option]
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -76,6 +97,7 @@ class DocumentSearchView(ListView, FormMixin):
         documents = (
             DocumentSolrQuerySet()
             .filter(status=Document.PUBLIC_LABEL)
+            .facet("has_digital_edition", "has_translation", "has_discussion")
             .facet_field("type", exclude="type", sort="value")
         )
 
@@ -112,13 +134,21 @@ class DocumentSearchView(ListView, FormMixin):
                 )  # include relevance score in results
 
             # order by sort option
-            documents = documents.order_by(self.solr_sort[search_opts["sort"]])
+            documents = documents.order_by(self.get_solr_sort(search_opts["sort"]))
 
             # filter by type if specified
             if search_opts["doctype"]:
                 typelist = literal_eval(search_opts["doctype"])
                 quoted_typelist = ['"%s"' % doctype for doctype in typelist]
                 documents = documents.filter(type__in=quoted_typelist, tag="type")
+
+            # scholarship filters
+            if search_opts["has_transcription"] == True:
+                documents = documents.filter(has_digital_edition=True)
+            if search_opts["has_discussion"] == True:
+                documents = documents.filter(has_discussion=True)
+            if search_opts["has_translation"] == True:
+                documents = documents.filter(has_translation=True)
 
         self.queryset = documents
 
@@ -158,6 +188,7 @@ class DocumentSearchView(ListView, FormMixin):
                 "highlighting": highlights,
             }
         )
+
         return context_data
 
 

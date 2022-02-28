@@ -93,7 +93,7 @@ class TestSourceAdmin:
     def test_get_queryset(self, twoauthor_source):
         # source with no author
         book = SourceType.objects.get(type="Book")
-        source = Source.objects.create(title="Unknown", source_type=book)
+        source = Source.objects.create(title_en="Unknown", source_type=book)
 
         # confirm that first author is set correctly on annotated queryset
         qs = SourceAdmin(Source, admin.site).get_queryset("rqst")
@@ -124,7 +124,7 @@ class TestSourceAdmin:
     @pytest.mark.django_db
     def test_footnotes(self):
         book = SourceType.objects.get(type="Book")
-        source = Source.objects.create(title="Unknown", source_type=book)
+        source = Source.objects.create(title_en="Unknown", source_type=book)
 
         source_admin = SourceAdmin(Source, admin.site)
         # manually set footnote__count since it would usually be set in
@@ -195,7 +195,7 @@ class TestFootnoteAdmin:
     def test_doc_relation_list(self):
         fnoteadmin = FootnoteAdmin(Footnote, admin.site)
         book = SourceType.objects.get(type="Book")
-        source = Source.objects.create(title="Reader", source_type=book)
+        source = Source.objects.create(title_en="Reader", source_type=book)
 
         footnote = Footnote(source=source, doc_relation=["E", "D"])
         assert fnoteadmin.doc_relation_list(footnote) == str(footnote.doc_relation)
@@ -273,7 +273,7 @@ class TestSourceFootnoteInline:
     @pytest.mark.django_db
     def test_object_link(self):
         book = SourceType.objects.get(type="Book")
-        source = Source.objects.create(title="Unknown", source_type=book)
+        source = Source.objects.create(title_en="Unknown", source_type=book)
         footnote = Footnote.objects.create(
             doc_relation=["E"],
             source=source,

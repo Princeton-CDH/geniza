@@ -59,15 +59,10 @@ class CheckboxSelectWithCount(forms.CheckboxSelectMultiple):
         return context
 
 
-class FacetChoiceField(forms.ChoiceField):
-    """Choice field where choices are set based on Solr facets"""
-
+class FacetFieldMixin:
     # Borrowed from ppa-django / mep-django
     # - turn off choice validation (shouldn't fail if facets don't get loaded)
     # - default is not required
-
-    # use a custom widget so we can add facet count as a data attribute
-    widget = CheckboxSelectWithCount
 
     def __init__(self, *args, **kwargs):
         if "required" not in kwargs:
@@ -89,6 +84,13 @@ class FacetChoiceField(forms.ChoiceField):
     def valid_value(self, value):
         return True
 
+
+class FacetChoiceField(FacetFieldMixin, forms.ChoiceField):
+    """Choice field where choices are set based on Solr facets"""
+
+    # use a custom widget so we can add facet count as a data attribute
+    widget = CheckboxSelectWithCount
+
     def populate_from_facets(self, facet_dict):
         """
         Populate the field choices from the facets returned by solr.
@@ -99,6 +101,35 @@ class FacetChoiceField(forms.ChoiceField):
             (val, mark_safe(f'<span>{val}</span><span class="count">{count:,}</span>'))
             for val, count in facet_dict.items()
         )
+        # pass the counts to the widget so it can be set as a data attribute
+        self.widget.facet_counts = facet_dict
+
+
+class CheckboxInputWithCount(forms.CheckboxInput):
+    # extend default CheckboxInput to add facet count as a data attribute
+    facet_counts = {}
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        count = self.facet_counts.get("true", None)
+        # make facet count available as data-count attribute
+        if count:
+            context["widget"]["attrs"]["data-count"] = f"{count:,}"
+        return context
+
+
+class BooleanFacetField(FacetFieldMixin, forms.BooleanField):
+    widget = CheckboxInputWithCount
+
+    def populate_from_facets(self, facet_dict):
+        """
+        Set the label from the facets returned by solr.
+        """
+        count = facet_dict.get("true", 0)
+        self.label = mark_safe(
+            f'<span class="label">{self.label}</span><span class="count">{count:,}</span>'
+        )
+
         # pass the counts to the widget so it can be set as a data attribute
         self.widget.facet_counts = facet_dict
 
@@ -122,6 +153,8 @@ class DocumentSearchForm(forms.Form):
     SORT_CHOICES = [
         # Translators: label for sort by relevance
         ("relevance", _("Relevance")),
+        # Translators: label for sort in random order
+        ("random", _("Random")),
         # ("input_date", "Input Date (Latest – Earliest)"),
         # Translators: label for descending sort by number of scholarship records
         ("scholarship_desc", _("Scholarship Records (Most–Least)")),
@@ -148,9 +181,26 @@ class DocumentSearchForm(forms.Form):
         # Translators: label for document type search form filter
         label=_("Document Type"),
     )
+    has_transcription = BooleanFacetField(
+        # Translators: label for "has transcription" search form filter
+        label=_("Has Transcription"),
+    )
+    has_translation = BooleanFacetField(
+        # Translators: label for "has translation" search form filter
+        label=_("Has Translation"),
+    )
+    has_discussion = BooleanFacetField(
+        # Translators: label for "has discussion" search form filter
+        label=_("Has Discussion"),
+    )
 
     # mapping of solr facet fields to form input
-    solr_facet_fields = {"type": "doctype"}
+    solr_facet_fields = {
+        "type": "doctype",
+        "has_digital_edition": "has_transcription",
+        "has_translation": "has_translation",
+        "has_discussion": "has_discussion",
+    }
 
     def set_choices_from_facets(self, facets):
         """Set choices on field from a dictionary of facets"""

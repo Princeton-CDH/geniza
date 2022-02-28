@@ -733,7 +733,8 @@
 
       <!-- keyword search field for geniza prototype -->
       <str name="keyword_qf">
-        description_t
+        description_t^50
+        description_txt_ens
         pgpid_i
         type_s
         type_t
@@ -749,6 +750,7 @@
       </str>
       <str name="keyword_pf">
         description_t^50
+        description_txt_ens^20
         shelfmark_t^100
         shelfmark_textnum^140
         tags_t
@@ -765,11 +767,13 @@
         tags_t
         tags_ss_lower
         description_t
+        description_txt_ens
         notes_t
         needs_review_t
         pgpid_i
         old_pgpids_is
         scholarship_t
+        transcription_t
       </str>
       <str name="admin_doc_pf">
         type_s
@@ -777,9 +781,11 @@
         shelfmark_textnum
         tags_t
         description_t
+        description_txt_ens
         notes_t
         needs_review_t
         scholarship_t
+        transcription_t
       </str>
 
     </lst>
