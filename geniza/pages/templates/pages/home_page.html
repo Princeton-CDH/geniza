@@ -4,6 +4,11 @@
 {% block meta_title %}{{ page.title }}{% endblock meta_title %}
 {% block meta_description %}{{ page.description }}{% endblock meta_description %}
 
+{% block extrameta %}
+    <meta property="og:title" content="{{ page.title }}" />
+    <meta property="og:description" content="{{ page.description }}" />
+{% endblock %}
+
 {% block main %}
     <!-- document scholarship records -->
     <h1>{{ page.title }}</h1>
