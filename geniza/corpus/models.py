@@ -336,6 +336,8 @@ class DocumentSignalHandlers:
         "document type": "doctype",
         "Related Fragment": "textblock",  # textblock verbose name
         "footnote": "footnotes",
+        "source": "footnotes__source",
+        "creator": "footnotes__source__authorship__creator",
     }
 
     @staticmethod
@@ -348,7 +350,6 @@ class DocumentSignalHandlers:
         # get related lookup for document filter
         model_name = instance._meta.verbose_name
         doc_attr = DocumentSignalHandlers.model_filter.get(model_name)
-
         # if handler fired on an model we don't care about, warn and exit
         if not doc_attr:
             logger.warning(
@@ -827,10 +828,14 @@ class Document(ModelIndexable):
             "post_save": DocumentSignalHandlers.related_save,
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
-        # "footnotes__source__authors": { # "footnotes__source__authorship__creator",
-        #     "post_save": DocumentSignalHandlers.related_save,
-        #     "pre_delete": DocumentSignalHandlers.related_delete,
-        # },
+        "footnotes.source": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
+        "footnotes.creator": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
     }
 
     def merge_with(self, merge_docs, rationale, user=None):
