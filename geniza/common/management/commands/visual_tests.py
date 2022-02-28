@@ -63,6 +63,31 @@ class Command(BaseCommand):
 
         # document detail
         browser.get("http://localhost:8000/en/documents/8151/")
+
+        # swap out the images for ones from /static that Percy can pick up
+        portrait_img = browser.find_element_by_css_selector(
+            "#content-page figure img.portrait"
+        )
+        browser.execute_script(
+            "arguments[0].setAttribute('srcset',arguments[1])", portrait_img, ""
+        )
+        browser.execute_script(
+            "arguments[0].setAttribute('src',arguments[1])",
+            portrait_img,
+            "/static/img/fixtures/test-image-fragment.jpg",
+        )
+        landscape_image = browser.find_element_by_css_selector(
+            "#content-page figure img.landscape"
+        )
+        browser.execute_script(
+            "arguments[0].setAttribute('srcset',arguments[1])", landscape_image, ""
+        )
+        browser.execute_script(
+            "arguments[0].setAttribute('src',arguments[1])",
+            landscape_image,
+            "/static/img/fixtures/test-image-tagnetwork.png",
+        )
+
         percy_snapshot(browser, "Document Details%s" % dark_mode_str)
 
         # document scholarship
