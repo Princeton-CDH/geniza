@@ -127,20 +127,16 @@ def h1_to_h3(html):
 def pgp_urlize(text):
     """Find all instances of \"PGPID #\" in the passed text, and convert
     each to a link to the referenced document."""
-    # use an absolutized placeholder URL to use for each match, replacing the fake pgpid 000
-    placeholder_url = absolutize_url(reverse("corpus:document", args=["000"]))
+    # use an absolutized placeholder URL to use for each match, replacing the fake pgpid 000 with the regex
+    placeholder_url = absolutize_url(reverse("corpus:document", args=["000"])).replace(
+        "000", "\g<pgpid>"
+    )
+    placeholder_link = '<a href="%s">\g<text></a>' % placeholder_url
+    # match all instances of PGPID ### with a link to the document
     return mark_safe(
         re.sub(
-            # match all instances of PGPID ###
-            r"\bPGPID\b \b(?P<pgpid>\d+)\b",
-            # replace with a link
-            lambda match: '<a href="%s">%s</a>'
-            % (
-                # replace the fake pgpid in the placeholder URL with the matched real pgpid
-                re.sub("000", match.group("pgpid"), placeholder_url),
-                # use the original entire matched string as link text
-                match.group(0),
-            ),
+            r"\b(?P<text>PGPID\b \b(?P<pgpid>\d+))\b",
+            placeholder_link,
             text,
         )
     )
