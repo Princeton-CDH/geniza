@@ -28,7 +28,7 @@ from geniza.corpus.templatetags import corpus_extras
 from geniza.footnotes.models import Footnote
 
 
-class DocumentSearchView(ListView, FormMixin):
+class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
     model = Document
     form_class = DocumentSearchForm
     context_object_name = "documents"
