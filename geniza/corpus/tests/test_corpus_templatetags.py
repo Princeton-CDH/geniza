@@ -4,9 +4,11 @@ from unittest.mock import Mock, patch
 from urllib import parse
 
 import pytest
+from django.core.exceptions import ObjectDoesNotExist
 from django.http.request import QueryDict
 from piffle.iiif import IIIFImageClient
 
+from geniza.corpus.models import Document
 from geniza.corpus.templatetags import corpus_extras
 from geniza.footnotes.models import Footnote
 
@@ -140,3 +142,37 @@ def test_iiif_info_json():
 def test_h1_to_h3():
     html = "<div><h1>hi</h1><h3>hello</h3></div>"
     assert corpus_extras.h1_to_h3(html) == "<div><h3>hi</h3><h3>hello</h3></div>"
+
+
+def test_pgp_urlize(document, join):
+    doc_link = '<a href="https://example.com/documents/{id}/">PGPID {id}</a>'.format(
+        id=document.id
+    )
+    join_link = '<a href="https://example.com/documents/{id}/">PGPID {id}</a>'.format(
+        id=join.id
+    )
+
+    # should create links for all referenced PGPID #
+    text_one_pgpid = "An example of some text with PGPID %s." % document.id
+    assert doc_link in corpus_extras.pgp_urlize(text_one_pgpid)
+    text_two_pgpids = "An example of sometext with PGPID %s and PGPID %s." % (
+        document.id,
+        join.id,
+    )
+    assert doc_link in corpus_extras.pgp_urlize(text_two_pgpids)
+    assert (join_link + ".") in corpus_extras.pgp_urlize(text_two_pgpids)
+    text_punctuation = (
+        "A PGPID %s, coming before a comma, and a PGPID %s; coming before a semicolon."
+        % (document.id, join.id)
+    )
+    assert (doc_link + ",") in corpus_extras.pgp_urlize(text_punctuation)
+    assert (join_link + ";") in corpus_extras.pgp_urlize(text_punctuation)
+
+    # in case this fake document exists, delete it so we can test a bad pgpid
+    try:
+        Document.objects.get(id=123456789).delete()
+    except ObjectDoesNotExist:
+        pass
+    # should not create a link
+    text_bad_pgpid = "See PGPID 123456789."
+    assert "<a href" not in corpus_extras.pgp_urlize(text_bad_pgpid)
