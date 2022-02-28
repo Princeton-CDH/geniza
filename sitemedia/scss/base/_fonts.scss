@@ -93,7 +93,7 @@
 
 // For Percy visual review, load fonts from the production site
 @media only percy {
-    @include declare-fonts("https://geniza.cdh.princeton.edu/static/fonts");
+    @include declare-fonts("https://geniza.princeton.edu/static/fonts");
 }
 
 // Fallback fonts for ayin and hamza
