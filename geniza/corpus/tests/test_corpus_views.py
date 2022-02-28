@@ -96,6 +96,12 @@ class TestDocumentDetailView:
             document.get_absolute_url()
         )
 
+    def test_last_modified(self, client, document):
+        """Ensure that the last modified header is set in the HEAD response"""
+        SolrClient().update.index([document.index_data()], commit=True)
+        response = client.head(document.get_absolute_url())
+        assert response["Last-Modified"]
+
 
 @pytest.mark.django_db
 def test_old_pgp_tabulate_data():
