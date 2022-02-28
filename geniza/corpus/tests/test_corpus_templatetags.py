@@ -1,14 +1,10 @@
-import json
-from asyncio import format_helpers
-from unittest.mock import Mock, patch
-from urllib import parse
+from unittest.mock import Mock
 
 import pytest
-from django.core.exceptions import ObjectDoesNotExist
 from django.http.request import QueryDict
 from piffle.iiif import IIIFImageClient
 
-from geniza.corpus.models import Document
+from geniza.common.utils import absolutize_url
 from geniza.corpus.templatetags import corpus_extras
 from geniza.footnotes.models import Footnote
 
@@ -145,11 +141,11 @@ def test_h1_to_h3():
 
 
 def test_pgp_urlize(document, join):
-    doc_link = '<a href="https://example.com/documents/{id}/">PGPID {id}</a>'.format(
-        id=document.id
+    doc_link = '<a href="{url}">PGPID {id}</a>'.format(
+        url=absolutize_url(document.get_absolute_url()), id=document.id
     )
-    join_link = '<a href="https://example.com/documents/{id}/">PGPID {id}</a>'.format(
-        id=join.id
+    join_link = '<a href="{url}">PGPID {id}</a>'.format(
+        url=absolutize_url(join.get_absolute_url()), id=join.id
     )
 
     # should create links for all referenced PGPID #
@@ -167,12 +163,3 @@ def test_pgp_urlize(document, join):
     )
     assert (doc_link + ",") in corpus_extras.pgp_urlize(text_punctuation)
     assert (join_link + ";") in corpus_extras.pgp_urlize(text_punctuation)
-
-    # in case this fake document exists, delete it so we can test a bad pgpid
-    try:
-        Document.objects.get(id=123456789).delete()
-    except ObjectDoesNotExist:
-        pass
-    # should not create a link
-    text_bad_pgpid = "See PGPID 123456789."
-    assert "<a href" not in corpus_extras.pgp_urlize(text_bad_pgpid)

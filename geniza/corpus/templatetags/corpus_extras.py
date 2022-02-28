@@ -3,10 +3,12 @@ import re
 
 from django import template
 from django.core.exceptions import ObjectDoesNotExist
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from natsort import natsorted
 from piffle.iiif import IIIFImageClientException
 
+from geniza.common.utils import absolutize_url
 from geniza.corpus.models import Document
 
 register = template.Library()
@@ -121,19 +123,24 @@ def h1_to_h3(html):
     return html.replace("h1", "h3")
 
 
-def replacement_link(matchobj):
-    """Given a regex match \"PGPID #\", return a link to the referenced
-    document with the original string as link text."""
-    try:
-        doc = Document.objects.get(id=int(matchobj.group(1)))
-        doc_link = doc.permalink
-        return '<a href="%s">%s</a>' % (doc_link, matchobj.group(0))
-    except ObjectDoesNotExist:
-        return matchobj.group(0)
-
-
 @register.filter
 def pgp_urlize(text):
     """Find all instances of \"PGPID #\" in the passed text, and convert
     each to a link to the referenced document."""
-    return mark_safe(re.sub(r"\bPGPID\b \b(\d+)\b", replacement_link, text))
+    # use an absolutized placeholder URL to use for each match, replacing the fake pgpid 000
+    placeholder_url = absolutize_url(reverse("corpus:document", args=["000"]))
+    return mark_safe(
+        re.sub(
+            # match all instances of PGPID ###
+            r"\bPGPID\b \b(?P<pgpid>\d+)\b",
+            # replace with a link
+            lambda match: '<a href="%s">%s</a>'
+            % (
+                # replace the fake pgpid in the placeholder URL with the matched real pgpid
+                re.sub("000", match.group("pgpid"), placeholder_url),
+                # use the original entire matched string as link text
+                match.group(0),
+            ),
+            text,
+        )
+    )
