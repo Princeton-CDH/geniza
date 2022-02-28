@@ -38,7 +38,7 @@ class Command(BaseCommand):
 
         # content page
         browser.get("http://localhost:8000/en/content/")
-        # swap out the images for ones from /static that Percy can pick up
+        # disable srcset and swap out content page images for ones from /static that Percy can see
         portrait_img = browser.find_element_by_css_selector(
             "#content-page figure img.portrait"
         )
