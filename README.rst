@@ -6,7 +6,7 @@ Princeton Geniza Project
 Python/Django web application for a version 4.x of the `Princeton Geniza Project
 <https://cdh.princeton.edu/projects/princeton-geniza-project/>`_.
 
-Python 3.8 / Django 3.2 / Node 12 / Postgresql / Solr 8.6
+Python 3.8 / Django 3.2 / Node 16 / Postgresql / Solr 8.6
 
 
 .. image:: https://github.com/Princeton-CDH/geniza/workflows/unit%20tests/badge.svg
@@ -50,6 +50,8 @@ Initial setup and installation:
 - Install required python dependencies::
 
     pip install -r requirements/dev.txt
+
+- Recommended: use [Volta](https://volta.sh/) for Node version management
 
 - Install required javascript dependencies::
 
