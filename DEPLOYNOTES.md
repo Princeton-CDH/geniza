@@ -3,6 +3,7 @@
 ## 4.2
 
 -   This update includes Solr indexing changes (for boolean fields on digital edition, translation, and discussion). Run `python manage.py index` to reindex all content.
+-   Anywhere that Node versions are being managed manually, Node should be upgraded to at 16.x, at least 16.14.0, and NPM to 7.x, at least 7.24.2.
 
 ## 4.1
 
