@@ -607,6 +607,12 @@ class TestDocumentSearchView:
         # should not redirect
         assert response.status_code == 200
 
+    def test_last_modified(self, client, document):
+        """Ensure that the last modified header is set in the HEAD response"""
+        SolrClient().update.index([document.index_data()], commit=True)
+        response = client.head(reverse("corpus:document-search"))
+        assert response["Last-Modified"]
+
 
 class TestDocumentScholarshipView:
     def test_page_title(self, document, client, source):
