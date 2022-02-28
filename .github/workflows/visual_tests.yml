@@ -1,10 +1,9 @@
 name: visual tests
 
 on:
-  # NOTE: Temporarily disabled due to limit reached
-  # push:
-  #   branches:
-  #     - develop
+  push:
+    branches:
+      - develop
   pull_request:
     branches:
       - develop
