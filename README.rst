@@ -51,7 +51,7 @@ Initial setup and installation:
 
     pip install -r requirements/dev.txt
 
-- Recommended: use [Volta](https://volta.sh/) for Node version management
+- Recommended: use `Volta <https://volta.sh/>`_ for Node version management
 
 - Install required javascript dependencies::
 
