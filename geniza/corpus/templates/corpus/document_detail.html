@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n render_bundle_csp %}
+{% load static i18n render_bundle_csp corpus_extras %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
@@ -76,7 +76,7 @@
                 {# Translators: label for document description #}
                 {% translate 'Description' %}
             </h3>
-            <p>{{ document.description }}</p>
+            <p>{{ document.description|pgp_urlize }}</p>
         </section>
 
         {# link to download transcription if available; admin only for now since plain-text bidi is not great #}
