@@ -12,11 +12,12 @@ export default class extends Controller {
         // useDebounce(this);
     }
 
-    submit() {
+    submit(e) {
         // Close filter modal if open before submitting form. If the window location is #filters
         // (i.e. filter modal is open), submitting the form will reopen it, so the location must
         // be set back to # in order for the "apply" button in the filter modal to close the modal.
-        window.location.href = "#";
+        e.preventDefault();
+        this.navBackToSearch();
         this.element.submit();
     }
 
@@ -30,6 +31,10 @@ export default class extends Controller {
     closeFilters(e) {
         e.preventDefault();
         this.filterModalTarget.setAttribute("aria-expanded", "false");
+        this.navBackToSearch();
+    }
+
+    navBackToSearch() {
         if (window.location.href.includes("#filters")) {
             // ensure filters modal can be closed if on #filters URL
             window.location.href = "#";
