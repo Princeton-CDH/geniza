@@ -30,6 +30,10 @@ export default class extends Controller {
     closeFilters(e) {
         e.preventDefault();
         this.filterModalTarget.setAttribute("aria-expanded", "false");
+        if (window.location.href.includes("#filters")) {
+            // ensure filters modal can be closed if on #filters URL
+            window.location.href = "#";
+        }
     }
 
     sortTargetConnected() {
