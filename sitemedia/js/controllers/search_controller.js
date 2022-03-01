@@ -1,4 +1,4 @@
-// src/controllers/search.js
+// controllers/search_controller.js
 
 import { Controller } from "@hotwired/stimulus";
 // TODO: Re-enable debounce when Turbo is set up

@@ -17,7 +17,7 @@
     box-shadow: 0px 2px 4px $color;
 }
 
-/* 
+/*
  * Mixin for form button colors in all four states:
  * default, focus, hover, active.
  */
@@ -43,7 +43,7 @@
         box-shadow 0.15s ease;
 }
 
-/* 
+/*
  * Mixin for form drop shadow in three states:
  * default, focus, active.
  */
@@ -61,7 +61,7 @@
 }
 
 // search form
-#search main form fieldset {
+main.search form fieldset {
     @include container.two-column;
     max-width: 100%;
     display: flex;
@@ -69,7 +69,7 @@
     align-items: center;
     justify-content: flex-start;
 }
-#search main form fieldset#query {
+main.search form fieldset#query {
     order: 1;
     // search box
     input[type="search"] {
@@ -119,7 +119,7 @@
         }
     }
 }
-#search main form fieldset#sort {
+main.search form fieldset#sort {
     order: 3;
     // sort options select (uses details/summary)
     details.sort-select {
@@ -247,8 +247,8 @@
         @include typography.form-option;
     }
 }
-#search main form a#filters-button,
-#search main form span#filters-label {
+main.search form a#filters-button,
+main.search form span#filters-label {
     margin: spacing.$spacing-md 0 spacing.$spacing-lg;
     text-decoration: none;
     @include typography.body-bold;
@@ -257,14 +257,14 @@
         transform: rotate(90deg);
     }
 }
-#search main form a#filters-button {
+main.search form a#filters-button {
     align-self: flex-start;
     order: 2;
     margin: spacing.$spacing-xl 0 spacing.$spacing-sm;
 }
 
 // filter modal
-#search main form fieldset#filters {
+main.search form fieldset#filters {
     background-color: var(--background);
     max-width: none;
     z-index: 4;
@@ -484,7 +484,7 @@
     }
 }
 // error messages
-#search main form ul#search-errors {
+main.search form ul#search-errors {
     margin-top: spacing.$spacing-md;
     color: red;
     li {

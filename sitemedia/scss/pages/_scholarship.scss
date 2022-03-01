@@ -5,7 +5,7 @@
 @use "../base/breakpoints";
 @use "../base/spacing";
 
-body#scholarship {
+main.scholarship {
     // Primary container
     div.container {
         display: flex;
