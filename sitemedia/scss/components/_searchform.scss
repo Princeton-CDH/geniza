@@ -249,7 +249,7 @@
     }
 }
 #search main form a#filters-button,
-#search main form span#filters-label {
+#search main form a#close-filters-button {
     margin: spacing.$spacing-md 0 spacing.$spacing-lg;
     text-decoration: none;
     @include typography.body-bold;
@@ -281,12 +281,22 @@
     flex-flow: column;
     pointer-events: all;
     align-items: flex-start;
-    // width on desktop
+    // overlay on form on desktop
     @include breakpoints.for-tablet-landscape-up {
-        padding: 0 calc(calc(100vw - #{container.$two-column}) / 2);
+        position: absolute;
+        width: 900px;
+        max-width: container.$two-column;
+        overflow-y: auto;
+        padding: spacing.$spacing-sm 1.275rem spacing.$spacing-sm
+            spacing.$spacing-sm;
+        margin: 0 0 0 -#{spacing.$spacing-sm};
+        top: 19.45rem;
+        left: auto;
+        height: auto;
     }
     // show when targeted
-    &:target {
+    &:target,
+    &[aria-expanded="true"] {
         display: flex;
     }
     // close button
@@ -298,7 +308,7 @@
             content: "\f36d"; // phosphor X icon
         }
         @include breakpoints.for-tablet-landscape-up {
-            margin-top: spacing.$spacing-md;
+            display: none;
         }
     }
     // all filter form inputs that are not nested within a details
@@ -476,8 +486,7 @@
         margin: spacing.$spacing-2xl 0 spacing.$spacing-md;
         align-self: center;
         @include breakpoints.for-tablet-landscape-up {
-            align-self: flex-end;
-            margin: spacing.$spacing-3xl 0 spacing.$spacing-xl;
+            display: none;
         }
     }
 }

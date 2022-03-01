@@ -5,7 +5,7 @@ import { Controller } from "@hotwired/stimulus";
 // import { ApplicationController, useDebounce } from "stimulus-use";
 
 export default class extends Controller {
-    static targets = ["query", "sort", "sortlabel"];
+    static targets = ["query", "sort", "sortlabel", "filterModal"];
     // static debounces = ["submit"];
 
     connect() {
@@ -18,6 +18,18 @@ export default class extends Controller {
         // be set back to # in order for the "apply" button in the filter modal to close the modal.
         window.location.href = "#";
         this.element.submit();
+    }
+
+    // Open/close the filter modal using aria-expanded instead of targeting with a link, to prevent
+    // scroll jumping around the page. Will still work as a link when JS is disabled.
+    openFilters(e) {
+        e.preventDefault();
+        this.filterModalTarget.setAttribute("aria-expanded", "true");
+    }
+
+    closeFilters(e) {
+        e.preventDefault();
+        this.filterModalTarget.setAttribute("aria-expanded", "false");
     }
 
     sortTargetConnected() {
