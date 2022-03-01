@@ -32,4 +32,4 @@ INSTALLED_APPS.append("django_dbml")
 # when running in CI, load fonts from production by overriding font base url
 # (needed for Percy and Lighthouse)
 if os.environ.get("CI"):
-    FONT_URL_PREFIX = "https://geniza.cdh.princeton.edu/static/fonts/"
+    FONT_URL_PREFIX = "https://geniza.princeton.edu/static/fonts/"

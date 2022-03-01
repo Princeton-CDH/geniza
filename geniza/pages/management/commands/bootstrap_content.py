@@ -1,9 +1,12 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.templatetags.static import static
 from wagtail.core.models import Page
 from wagtail.core.models.i18n import Locale
 from wagtail.core.models.sites import Site
+from wagtail.core.rich_text import RichText
+from wagtail.images.models import Image
 
 from geniza.pages.models import ContainerPage, ContentPage, HomePage
 
@@ -46,7 +49,7 @@ class Command(BaseCommand):
             title="The Princeton Geniza Project",
             description="Home page",
             locale=locale,
-            body=home_content,
+            body=[("paragraph", RichText(home_content))],
             live=True,
         )
 
@@ -137,17 +140,50 @@ class Command(BaseCommand):
         with open(
             "geniza/pages/fixtures/example_content_page.html", "r"
         ) as content_fixture:
-            content = content_fixture.read()
+            paragraph_1 = content_fixture.read()
+        image_caption = "Image Caption"
+        image1 = Image(title="Fragment", width=400, height=535)
+        with open("sitemedia/img/fixtures/test-image-fragment.jpg", "rb") as fragment:
+            image1.file = UploadedFile(file=fragment)
+            image1.save()
+        paragraph2 = """<p>The metadata is stored in the backend in Google Sheets and pushed out to
+            the PGP site every 24 hours. The transcriptions are stored in Bitbucket.</p>"""
+        image2 = Image(title="Tag Network", width=557, height=313)
+        with open(
+            "sitemedia/img/fixtures/test-image-tagnetwork.png", "rb"
+        ) as tag_network:
+            image2.file = UploadedFile(file=tag_network)
+            image2.save()
+        paragraph3 = """<p>Previous versions of the PGP database were based on the TextGarden web
+            application developed in 2005 by Rafael Alvarado, Manager of Humanities
+            Computing Research Applications at Princeton, and the original browser
+            developed by Peter Batke at Princeton in the late 1990s.</p>"""
+        body = [
+            ("paragraph", RichText(paragraph_1)),
+            (
+                "image",
+                {
+                    "image": image1,
+                    "alternative_text": image_caption,
+                    "caption": RichText(image_caption),
+                },
+            ),
+            ("paragraph", RichText(paragraph2)),
+            (
+                "image",
+                {
+                    "image": image2,
+                    "alternative_text": image_caption,
+                    "caption": RichText(image_caption),
+                },
+            ),
+            ("paragraph", RichText(paragraph3)),
+        ]
         return ContentPage(
             title="Page Title",
             description="Example page",
             slug="content",
-            body=content.replace(  # get static URLs for test images
-                "test-image-fragment.jpg",
-                static("img/fixtures/test-image-fragment.jpg"),
-            ).replace(
-                "test-image-tagnetwork.png",
-                static("img/fixtures/test-image-tagnetwork.png"),
-            ),
+            body=body,
             live=True,
+            show_in_menus=False,
         )

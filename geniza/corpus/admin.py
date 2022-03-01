@@ -527,7 +527,7 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
 
 @admin.register(DocumentType)
-class DocumentTypeAdmin(admin.ModelAdmin):
+class DocumentTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = ("name", "display_label")
 
 

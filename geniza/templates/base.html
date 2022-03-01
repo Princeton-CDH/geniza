@@ -15,6 +15,26 @@
         <meta name="msapplication-TileColor" content="#603cba">
         <meta name="theme-color" content="#6b59c1">
         <meta name="description" content="{% block meta_description %}{% endblock meta_description %}">
+
+        {# open graph metadata #}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="{% translate "Princeton Geniza Project" %}"/>
+        <meta property="og:title" content="{% firstof page_title page.title %}" />
+        <meta property="og:description" content="{% firstof page_description page.description %}" />
+        <meta property="og:url" content="{{ request.build_absolute_uri }}" />
+
+        {# twitter medatada #}
+        <meta name="twitter:domain" content="{{ request.get_host }}" />
+        <meta name="twitter:site" content="@GenizaLab" />
+        <meta name="twitter:url" content="{{ request.build_absolute_uri }}" />
+
+        {# NOTE: Add default social media preview image here. #}
+        {% comment %}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta property="og:image" content="{{ image }}" />
+        <meta name="twitter:image" content="{{ image }}" />
+         {% endcomment %}
+
         {% block extrameta %}{% endblock extrameta %}
         <!-- styles -->
         {% if SHOW_TEST_WARNING %}
@@ -22,13 +42,11 @@
         {% endif %}
         <!-- resource preloading -->
         <link rel="preconnect" href="https://unpkg.com" crossorigin />
-        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011833-002518.woff2" crossorigin />
-        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011833-002521.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}GretaSansH-Bold.woff2" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}GretaSansH-Regular.woff2" crossorigin />
         <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001035.woff2" crossorigin />
         <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001036.woff2" crossorigin />
         <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001041.woff2" crossorigin />
-        <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011833-002518.woff" crossorigin />
-        <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011833-002521.woff" crossorigin />
         <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001035.woff" crossorigin />
         <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001036.woff" crossorigin />
         <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001041.woff" crossorigin />

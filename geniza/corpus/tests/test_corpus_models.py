@@ -369,20 +369,20 @@ class TestFragment(TestCase):
 class TestDocumentType:
     def test_str(self):
         """Should use doctype.display_label if available, else use doctype.name"""
-        doctype = DocumentType(name="Legal")
-        assert str(doctype) == doctype.name
-        doctype.display_label = "Legal document"
+        doctype = DocumentType(name_en="Legal")
+        assert str(doctype) == doctype.name_en
+        doctype.display_label_en = "Legal document"
         assert str(doctype) == "Legal document"
 
     def test_natural_key(self):
         """Should use name as natural key"""
-        doc_type = DocumentType(name="SomeType")
+        doc_type = DocumentType(name_en="SomeType")
         assert len(doc_type.natural_key()) == 1
         assert "SomeType" in doc_type.natural_key()
 
     def test_get_by_natural_key(self):
         """Should find DocumentType object by name"""
-        doc_type = DocumentType(name="SomeType")
+        doc_type = DocumentType(name_en="SomeType")
         doc_type.save()
         assert DocumentType.objects.get_by_natural_key("SomeType") == doc_type
 
@@ -597,7 +597,7 @@ class TestDocument:
     def test_title(self):
         doc = Document.objects.create()
         assert doc.title == "Unknown type: ??"
-        legal = DocumentType.objects.get_or_create(name="Legal")[0]
+        legal = DocumentType.objects.get_or_create(name_en="Legal")[0]
         doc.doctype = legal
         doc.save()
         assert doc.title == "Legal document: ??"

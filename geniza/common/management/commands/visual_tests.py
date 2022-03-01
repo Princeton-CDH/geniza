@@ -38,10 +38,39 @@ class Command(BaseCommand):
 
         # content page
         browser.get("http://localhost:8000/en/content/")
+        # NOTE: The following script execution is a workaround to show user-uploaded images in
+        # content pages on Percy, which runs in production mode and thus cannot read from the
+        # /media directory where these images are uploaded by Wagtail. We clear the srcset
+        # attribute of each image, and swap out the src attribute for the appropriate image
+        # from /static.
+        portrait_img = browser.find_element_by_css_selector(
+            "#content-page figure img.portrait"
+        )
+        browser.execute_script(
+            "arguments[0].setAttribute('srcset',arguments[1])", portrait_img, ""
+        )
+        browser.execute_script(
+            "arguments[0].setAttribute('src',arguments[1])",
+            portrait_img,
+            "/static/img/fixtures/test-image-fragment.jpg",
+        )
+        landscape_image = browser.find_element_by_css_selector(
+            "#content-page figure img.landscape"
+        )
+        browser.execute_script(
+            "arguments[0].setAttribute('srcset',arguments[1])", landscape_image, ""
+        )
+        browser.execute_script(
+            "arguments[0].setAttribute('src',arguments[1])",
+            landscape_image,
+            "/static/img/fixtures/test-image-tagnetwork.png",
+        )
         percy_snapshot(browser, "Content Page%s" % dark_mode_str)
 
         # document search with document type filter expanded
-        browser.get("http://localhost:8000/en/documents/?per_page=2#filters")
+        browser.get(
+            "http://localhost:8000/en/documents/?per_page=2&sort=scholarship_desc#filters"
+        )
         # open document type filter
         browser.find_element_by_css_selector(".doctype-filter summary").click()
         # click the first option
@@ -57,7 +86,7 @@ class Command(BaseCommand):
 
         # document search
         browser.get(
-            "http://localhost:8000/en/documents/?q=the+writer+Avraham+באנפנא&per_page=2"
+            "http://localhost:8000/en/documents/?q=the+writer+Avraham+באנפנא&sort=relevance&per_page=2"
         )
         percy_snapshot(browser, "Document Search%s" % dark_mode_str)
 
@@ -79,7 +108,7 @@ class Command(BaseCommand):
         )
 
         # about submenu open on both desktop and mobile
-        browser.get("http://localhost:8000/en/documents/8151/#menu")
+        browser.get("http://localhost:8000/en/documents/3504/#menu")
         # open about menu
         browser.find_element_by_id("open-about-menu").send_keys(Keys.ENTER)
         # custom CSS to ensure that on mobile, the about menu transition is disabled and the menu

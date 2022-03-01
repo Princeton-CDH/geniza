@@ -13,6 +13,7 @@ function initImageZoom(event) {
             autoHideControls: false,
             showHomeControl: false,
             showRotationControl: true,
+            crossOriginPolicy: "Anonymous",
         });
     }
 }

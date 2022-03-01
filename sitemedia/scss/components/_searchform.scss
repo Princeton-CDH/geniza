@@ -109,7 +109,6 @@ main.search form fieldset#query {
         }
         // Magnifying glass icon
         &::after {
-            font-family: "Phosphor";
             content: "\f5e6"; // phosphor magnifying glass bold icon
             @include typography.icon-button-sm;
             @include breakpoints.for-tablet-landscape-up {
@@ -165,7 +164,6 @@ main.search form fieldset#sort {
                 align-items: center;
                 justify-content: center;
                 &::after {
-                    font-family: "Phosphor";
                     content: "\f0c2"; // phosphor caret-down icon
                     @include typography.icon-button-md;
                 }
@@ -188,8 +186,11 @@ main.search form fieldset#sort {
         }
         // List of sort options
         ul {
-            padding: spacing.$spacing-sm 0;
+            position: absolute;
+            z-index: 20;
+            width: calc(100% - 2.0625rem - #{spacing.$spacing-sm});
             max-width: calc(100% - 2.0625rem - #{spacing.$spacing-sm});
+            padding: spacing.$spacing-sm 0;
             @include form-drop-shadow;
             background-color: var(--background-light);
             li {
@@ -248,7 +249,7 @@ main.search form fieldset#sort {
     }
 }
 main.search form a#filters-button,
-main.search form span#filters-label {
+main.search form a#close-filters-button {
     margin: spacing.$spacing-md 0 spacing.$spacing-lg;
     text-decoration: none;
     @include typography.body-bold;
@@ -280,25 +281,34 @@ main.search form fieldset#filters {
     flex-flow: column;
     pointer-events: all;
     align-items: flex-start;
-    // width on desktop
+    // overlay on form on desktop
     @include breakpoints.for-tablet-landscape-up {
-        padding: 0 calc(calc(100vw - #{container.$two-column}) / 2);
+        position: absolute;
+        width: 900px;
+        max-width: container.$two-column;
+        overflow-y: auto;
+        padding: spacing.$spacing-sm 1.275rem spacing.$spacing-sm
+            spacing.$spacing-sm;
+        margin: 0 0 0 -#{spacing.$spacing-sm};
+        top: 19.45rem;
+        left: auto;
+        height: auto;
     }
     // show when targeted
-    &:target {
+    &:target,
+    &[aria-expanded="true"] {
         display: flex;
     }
     // close button
     a#close-filters-modal {
         text-decoration: none;
         margin-top: -#{spacing.$spacing-xs};
+        @include typography.icon-button-xl;
         &::before {
             content: "\f36d"; // phosphor X icon
-            @include typography.icon-button-xl;
-            font-family: "Phosphor";
         }
         @include breakpoints.for-tablet-landscape-up {
-            margin-top: spacing.$spacing-md;
+            display: none;
         }
     }
     // all filter form inputs that are not nested within a details
@@ -344,7 +354,6 @@ main.search form fieldset#filters {
         }
         span.count::after {
             display: block;
-            font-family: "Phosphor";
             content: "\f0e7"; // phosphor check icon
             @include typography.icon-button-md;
             transition: transform 0.75s ease;
@@ -389,7 +398,6 @@ main.search form fieldset#filters {
                 display: none;
             }
             &::after {
-                font-family: "Phosphor";
                 content: "\f0c2"; // phosphor caret-down icon
                 @include typography.icon-button-md;
                 transition: transform 0.75s ease;
@@ -478,8 +486,7 @@ main.search form fieldset#filters {
         margin: spacing.$spacing-2xl 0 spacing.$spacing-md;
         align-self: center;
         @include breakpoints.for-tablet-landscape-up {
-            align-self: flex-end;
-            margin: spacing.$spacing-3xl 0 spacing.$spacing-xl;
+            display: none;
         }
     }
 }
