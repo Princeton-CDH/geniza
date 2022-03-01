@@ -16,7 +16,7 @@
                 {% endfor %}
             </ol>
         </noscript>
-        <div id="iiif-images" data-iiif-urls="{{ document.iiif_images|iiif_info_json }}" class="{% if not document.has_transcription %}no-transcription{% endif %}">
+        <div id="iiif-images" data-controller="iiif" data-iiif-urls="{{ document.iiif_images|iiif_info_json }}" class="{% if not document.has_transcription %}no-transcription{% endif %}">
         </div>
     {% endif %}
     {% if document.has_transcription %}

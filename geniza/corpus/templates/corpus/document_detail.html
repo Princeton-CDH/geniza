@@ -25,7 +25,6 @@
     {# include openseadragon if needed #}
     {% if document.has_image or document.iiif_urls %}
         <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/" crossorigin />
-        {% render_bundle_csp "openseadragon" "js" attrs='defer' %}
     {% endif %}
 {% endblock extrascript %}
 
