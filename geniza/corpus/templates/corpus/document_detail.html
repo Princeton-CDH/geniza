@@ -22,7 +22,7 @@
 
     {# preview card images for twitter and open graph #}
     <meta name="twitter:card" content="summary{% if document.has_image %}_large_image{% endif %}" />
-    {% if document.has_image %}
+    {% if document.iiif_images %}
         {% with document.iiif_images.0.image|iiif_image:"size:width=1080" as image %}
             <meta property="og:image" content="{{ image }}" />
             <meta name="twitter:image" content="{{ image }}" />
@@ -31,7 +31,7 @@
 {% endblock extrameta %}
 {% block extrascript %}
     {# include openseadragon if needed #}
-    {% if document.has_images or document.iiif_urls %}
+    {% if document.has_image or document.iiif_urls %}
         <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/" crossorigin />
         {% render_bundle_csp "openseadragon" "js" attrs='defer' %}
     {% endif %}
