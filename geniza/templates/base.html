@@ -19,9 +19,14 @@
         {# open graph metadata #}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="{% translate "Princeton Geniza Project" %}"/>
+        <meta property="og:title" content="{% firstof page_title page.title %}" />
+        <meta property="og:description" content="{% firstof page_description page.description %}" />
+        <meta property="og:url" content="{{ request.build_absolute_uri }}" />
+
         {# twitter medatada #}
         <meta name="twitter:domain" content="{{ request.get_host }}" />
         <meta name="twitter:site" content="@GenizaLab" />
+        <meta name="twitter:url" content="{{ request.build_absolute_uri }}" />
 
         {# NOTE: Add default social media preview image here. #}
         {% comment %}
