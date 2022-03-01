@@ -68,7 +68,9 @@ class Command(BaseCommand):
         percy_snapshot(browser, "Content Page%s" % dark_mode_str)
 
         # document search with document type filter expanded
-        browser.get("http://localhost:8000/en/documents/?per_page=2#filters")
+        browser.get(
+            "http://localhost:8000/en/documents/?per_page=2&sort=scholarship_desc#filters"
+        )
         # open document type filter
         browser.find_element_by_css_selector(".doctype-filter summary").click()
         # click the first option
@@ -84,7 +86,7 @@ class Command(BaseCommand):
 
         # document search
         browser.get(
-            "http://localhost:8000/en/documents/?q=the+writer+Avraham+באנפנא&per_page=2"
+            "http://localhost:8000/en/documents/?q=the+writer+Avraham+באנפנא&sort=relevance&per_page=2"
         )
         percy_snapshot(browser, "Document Search%s" % dark_mode_str)
 
