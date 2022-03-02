@@ -101,6 +101,7 @@ class TestDocumentDetailView:
         SolrClient().update.index([document.index_data()], commit=True)
         response = client.head(document.get_absolute_url())
         assert response["Last-Modified"]
+        init_last_modified = response["Last-Modified"]
 
 
 @pytest.mark.django_db
@@ -612,6 +613,15 @@ class TestDocumentSearchView:
         SolrClient().update.index([document.index_data()], commit=True)
         response = client.head(reverse("corpus:document-search"))
         assert response["Last-Modified"]
+        init_last_modified = response["Last-Modified"]
+
+        # Ensure that a document being suppressed changes the last modified header
+        document.status = Document.SUPPRESSED
+        document.save()
+        SolrClient().update.index([document.index_data()], commit=True)
+        response = client.head(reverse("corpus:document-search"))
+        new_last_modified = response["Last-Modified"]
+        assert new_last_modified != init_last_modified
 
 
 class TestDocumentScholarshipView:
