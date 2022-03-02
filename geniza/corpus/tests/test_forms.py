@@ -126,6 +126,22 @@ class TestDocumentSearchForm:
         form.clean()
         assert len(form.errors) == 0
 
+    def test_filters_active(self):
+        # no filters should return false
+        form = DocumentSearchForm(data={"q": "test", "sort": "scholarship_desc"})
+        assert not form.filters_active()
+        # errors should return false
+        form = DocumentSearchForm(
+            data={"q": "", "sort": "relevance", "has_transcription": True}
+        )
+        assert not form.filters_active()
+        # filters on, should return true
+        form = DocumentSearchForm(data={"has_transcription": True})
+        assert form.filters_active()
+        # multivalue filter, should return true
+        form = DocumentSearchForm(data={"doctype": ["Literary", "Paraliterary"]})
+        assert form.filters_active()
+
 
 class TestDocumentChoiceField:
     def test_label_from_instance(self, document, footnote):

@@ -202,6 +202,16 @@ class DocumentSearchForm(forms.Form):
         "has_discussion": "has_discussion",
     }
 
+    def filters_active(self):
+        if self.is_valid():
+            return (
+                self.cleaned_data["doctype"]
+                or self.cleaned_data["has_transcription"]
+                or self.cleaned_data["has_translation"]
+                or self.cleaned_data["has_discussion"]
+            )
+        return False
+
     def set_choices_from_facets(self, facets):
         """Set choices on field from a dictionary of facets"""
         # borrowed from ppa-django;
