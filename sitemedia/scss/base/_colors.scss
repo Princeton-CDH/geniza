@@ -60,6 +60,8 @@ $off-white: #f7f7f7;
     --button-focus: #161616;
     // border colors for (unfocused) filters
     --filter-border: rgba(0, 0, 0, 0.25);
+    // active filter color
+    --filter-active: #7bac7b;
 }
 
 // Dark mode theme colors
@@ -105,6 +107,8 @@ $off-white: #f7f7f7;
     --button-focus: #146feb;
     // border colors for (unfocused) filters
     --filter-border: #161616;
+    // active filter color
+    --filter-active: #c37f97;
 }
 
 body {

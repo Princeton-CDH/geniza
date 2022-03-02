@@ -253,9 +253,20 @@
     margin: spacing.$spacing-md 0 spacing.$spacing-lg;
     text-decoration: none;
     @include typography.body-bold;
-    i.ph-faders {
-        @include typography.icon-button-md;
-        transform: rotate(90deg);
+    display: flex;
+    align-items: center;
+    svg {
+        fill: var(--logo);
+        color: var(--logo);
+        width: 26px;
+        height: 26px;
+        margin-right: spacing.$spacing-2xs;
+    }
+    &.active svg {
+        color: var(--filter-active);
+    }
+    &:focus {
+        outline: 0.125rem solid var(--focus);
     }
 }
 #search main form a#filters-button {
@@ -354,18 +365,18 @@
         }
         span.count::after {
             display: block;
-            content: "\f0e7"; // phosphor check icon
+            content: "\f0e8"; // phosphor check-circle icon
             @include typography.icon-button-md;
             transition: transform 0.75s ease;
             float: right;
-            color: var(--on-background);
+            color: var(--secondary);
         }
         input:active + span + span.count::after,
         input:checked + span + span.count::after {
-            color: var(--link-secondary);
+            content: "\f851"; // phosphor check-circle-fill icon
         }
         input:checked:active + span + span.count::after {
-            color: var(--on-background);
+            content: "\f0e8"; // phosphor check-circle icon
         }
     }
     // document type filter
