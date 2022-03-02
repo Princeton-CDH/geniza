@@ -69,7 +69,7 @@ def test_related_delete(mock_indexitems, document, join):
 
 @pytest.mark.django_db
 def test_items_to_index(document, footnote):
-    """Test that items_to_index doesn't fail silently."""
+    """Test that prefetching is properly configured."""
     # NOTE: including footnote fixture to ensure source/author prefetching is configured correctly
     # NOTE: Queryset must be explicitly called to trigger prefetching error.
     #  Other methods of accessing the queryset may not trigger anything.
