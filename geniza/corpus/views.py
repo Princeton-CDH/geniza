@@ -39,6 +39,7 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
     page_description = _("Search and browse Geniza documents.")
     paginate_by = 50
     initial = {"sort": "random"}
+    solr_lastmodified_filters = {"item_type_s": "document"}
 
     # map form sort to solr sort field
     solr_sort = {
