@@ -193,8 +193,8 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         return context_data
 
 
-class DocumentPastIdMixin:
-    """View mixin to handle redirects for documents with old PGPIDs.
+class DocumentDetailBase(SolrLastModifiedMixin):
+    """View mixin to handle lastmodified and redirects for documents with old PGPIDs.
     Overrides get request in the case of a 404, looking for any records
     with passed PGPID in old_pgpids, and if found, redirects to that document
     with current PGPID."""
@@ -214,8 +214,14 @@ class DocumentPastIdMixin:
             # otherwise, continue raising the 404
             raise
 
+    def get_solr_lastmodified_filters(self):
+        """Query solr for the object that needs their "last_modified" attribute updated.
+        Overwrites `SolrLastModifiedMixin`'s builtin method.
+        """
+        return {"pgpid_i": self.kwargs["pk"]}
 
-class DocumentDetailView(DocumentPastIdMixin, DetailView, SolrLastModifiedMixin):
+
+class DocumentDetailView(DocumentDetailBase, DetailView):
     """public display of a single :class:`~geniza.corpus.models.Document`"""
 
     model = Document

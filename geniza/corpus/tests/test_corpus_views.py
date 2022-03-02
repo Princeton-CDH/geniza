@@ -96,12 +96,23 @@ class TestDocumentDetailView:
             document.get_absolute_url()
         )
 
-    def test_last_modified(self, client, document):
+    def test_last_modified(self, client, document, join):
         """Ensure that the last modified header is set in the HEAD response"""
         SolrClient().update.index([document.index_data()], commit=True)
         response = client.head(document.get_absolute_url())
         assert response["Last-Modified"]
         init_last_modified = response["Last-Modified"]
+
+        # Sleeping is required to ensure that the last modified header is different.
+        sleep(1)
+
+        # Ensure that only one last modified header is updated when a document is updated.
+        SolrClient().update.index([join.index_data()], commit=True)
+        updated_doc_response = client.head(join.get_absolute_url())
+        other_doc_response = client.head(document.get_absolute_url())
+        assert (
+            updated_doc_response["Last-Modified"] != other_doc_response["Last-Modified"]
+        )
 
 
 @pytest.mark.django_db
@@ -614,6 +625,9 @@ class TestDocumentSearchView:
         response = client.head(reverse("corpus:document-search"))
         assert response["Last-Modified"]
         init_last_modified = response["Last-Modified"]
+
+        # Sleep for 1 second to ensure the last modified header is different
+        sleep(1)
 
         # Ensure that a document being suppressed changes the last modified header
         document.status = Document.SUPPRESSED
