@@ -215,8 +215,7 @@ class DocumentDetailBase(SolrLastModifiedMixin):
             raise
 
     def get_solr_lastmodified_filters(self):
-        """Query solr for the object that needs their "last_modified" attribute updated.
-        Overwrites `SolrLastModifiedMixin`'s builtin method.
+        """Filter solr last modified query by pgpid
         """
         return {"pgpid_i": self.kwargs["pk"]}
 
