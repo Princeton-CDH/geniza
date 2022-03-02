@@ -215,9 +215,8 @@ class DocumentDetailBase(SolrLastModifiedMixin):
             raise
 
     def get_solr_lastmodified_filters(self):
-        """Filter solr last modified query by pgpid
-        """
-        return {"pgpid_i": self.kwargs["pk"]}
+        """Filter solr last modified query by pgpid"""
+        return {"pgpid_i": self.kwargs["pk"], "item_type_s": "document"}
 
 
 class DocumentDetailView(DocumentDetailBase, DetailView):
