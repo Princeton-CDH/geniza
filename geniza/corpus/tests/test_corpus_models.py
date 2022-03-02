@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
 from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
+from modeltranslation.manager import MultilingualQuerySet
 from piffle.presentation import IIIFException as piffle_IIIFException
 
 from geniza.corpus.models import (
@@ -1121,3 +1122,16 @@ class TestTextBlock:
         block = TextBlock.objects.create(document=doc, fragment=frag, side="r")
         with patch.object(frag, "iiif_thumbnails") as mock_frag_thumbnails:
             assert block.thumbnail() == mock_frag_thumbnails.return_value
+
+
+@pytest.mark.django_db
+class TestDocumentSignalHandlers:
+    # Other tests are found in `test_corpus_signals.py`
+
+    def test_items_to_index(document, footnote):
+        """Test that prefetching is properly configured."""
+        # Because of lazy loading, querysets must be executed to test prefetches.
+        # Footnote fixture must be included to check source/creator prefetching.
+        docs = Document.items_to_index()
+        assert docs
+        assert type(docs) is MultilingualQuerySet

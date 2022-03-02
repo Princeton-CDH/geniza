@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 import pytest
-from modeltranslation.manager import MultilingualQuerySet
 from parasolr.django.indexing import ModelIndexable
 
 from geniza.corpus.models import (
@@ -65,14 +64,3 @@ def test_related_delete(mock_indexitems, document, join):
     assert mock_indexitems.call_count == 1
     assert document in mock_indexitems.call_args[0][0]
     assert join not in mock_indexitems.call_args[0][0]
-
-
-@pytest.mark.django_db
-def test_items_to_index(document, footnote):
-    """Test that prefetching is properly configured."""
-    # NOTE: including footnote fixture to ensure source/author prefetching is configured correctly
-    # NOTE: Queryset must be explicitly called to trigger prefetching error.
-    #  Other methods of accessing the queryset may not trigger anything.
-    docs = Document.items_to_index()
-    assert docs
-    assert type(docs) is MultilingualQuerySet
