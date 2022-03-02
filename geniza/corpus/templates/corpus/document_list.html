@@ -9,15 +9,15 @@
 
 {% block main %}
     <h1 class="sr-only">{{ page_title }}</h1>
-    <form data-controller="search" data-action="search#submit">
+    <form data-controller="search" data-action="search#submit" data-turbo-frame="_top">
         <fieldset id="query">
-            {% render_field form.q data-search-target="query" data-action="input->search#updateSort" %}
+            {% render_field form.q data-search-target="query" data-action="input->search#updateSort change->search#submit" %}
 
             {# Translators: Search submit button #}
             {% translate 'Submit search' as search_label %}
             <button type="submit" aria-label="{{ search_label }}" />
         </fieldset>
-        <a href="#filters" role="button" id="filters-button" data-action="click->search#openFilters" data-turbo="false">
+        <a href="#filters" role="button" id="filters-button" data-action="click->search#openFilters">
             <i class="ph-faders"></i>
             {% translate "Filters" %}
         </a>
@@ -38,20 +38,22 @@
                         <span class="sr-only" >{{ toggle_label }}</span>
                     </div>
                 </summary>
-                {% render_field form.sort data-search-target="sort" %}
+                {% render_field form.sort data-search-target="sort" data-action="change->search#submit" %}
             </details>
         </fieldset>
 
-        <fieldset id="filters" aria-expanded="false" data-search-target="filterModal">
-            <a href="#" role="button" id="close-filters-modal" data-action="click->search#closeFilters">
-                {# Translators: label for 'filters' close button for mobile navigation #}
-                {% translate "Close filter options" as close_button %}
-                <span class="sr-only">{{ close_button }}</span>
-            </a>
-            <a href="#" role="button" id="close-filters-button" data-action="click->search#closeFilters">
-                <i class="ph-faders"></i>
-                {% translate "Filters" %}
-            </a>
+        <fieldset id="filters" aria-expanded="false" data-search-target="filterModal" data-action="change->search#submit">
+            <turbo-stream action="remove" target="filters">
+                <a href="#" role="button" id="close-filters-modal" data-action="click->search#closeFilters">
+                    {# Translators: label for 'filters' close button for mobile navigation #}
+                    {% translate "Close filter options" as close_button %}
+                    <span class="sr-only">{{ close_button }}</span>
+                </a>
+                <a href="#" role="button" id="close-filters-button" data-action="click->search#closeFilters">
+                    <i class="ph-faders"></i>
+                    {% translate "Filters" %}
+                </a>
+            </turbo-stream>
             <label for="{{ form.has_transcription.auto_id }}">
                 {{ form.has_transcription }}
                 {{ form.has_transcription.label }}
