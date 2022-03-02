@@ -15,6 +15,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views.generic import DetailView, FormView, ListView
 from django.views.generic.edit import FormMixin
+from parasolr.django.views import SolrLastModifiedMixin
 from piffle.presentation import IIIFPresentation
 from tabular_export.admin import export_to_csv_response
 
@@ -27,7 +28,7 @@ from geniza.corpus.templatetags import corpus_extras
 from geniza.footnotes.models import Footnote
 
 
-class DocumentSearchView(ListView, FormMixin):
+class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
     model = Document
     form_class = DocumentSearchForm
     context_object_name = "documents"
@@ -38,6 +39,7 @@ class DocumentSearchView(ListView, FormMixin):
     page_description = _("Search and browse Geniza documents.")
     paginate_by = 50
     initial = {"sort": "random"}
+    solr_lastmodified_filters = {"item_type_s": "document"}
 
     # map form sort to solr sort field
     solr_sort = {
@@ -192,8 +194,8 @@ class DocumentSearchView(ListView, FormMixin):
         return context_data
 
 
-class DocumentPastIdMixin:
-    """View mixin to handle redirects for documents with old PGPIDs.
+class DocumentDetailBase(SolrLastModifiedMixin):
+    """View mixin to handle lastmodified and redirects for documents with old PGPIDs.
     Overrides get request in the case of a 404, looking for any records
     with passed PGPID in old_pgpids, and if found, redirects to that document
     with current PGPID."""
@@ -213,8 +215,12 @@ class DocumentPastIdMixin:
             # otherwise, continue raising the 404
             raise
 
+    def get_solr_lastmodified_filters(self):
+        """Filter solr last modified query by pgpid"""
+        return {"pgpid_i": self.kwargs["pk"], "item_type_s": "document"}
 
-class DocumentDetailView(DocumentPastIdMixin, DetailView):
+
+class DocumentDetailView(DocumentDetailBase, DetailView):
     """public display of a single :class:`~geniza.corpus.models.Document`"""
 
     model = Document
