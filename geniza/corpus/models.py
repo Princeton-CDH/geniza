@@ -335,6 +335,9 @@ class DocumentSignalHandlers:
         "tag": "tags",
         "document type": "doctype",
         "Related Fragment": "textblock",  # textblock verbose name
+        "footnote": "footnotes",
+        "source": "footnotes__source",
+        "creator": "footnotes__source__authorship__creator",
     }
 
     @staticmethod
@@ -820,9 +823,19 @@ class Document(ModelIndexable):
         "textblock_set": {
             "post_save": DocumentSignalHandlers.related_save,
             "pre_delete": DocumentSignalHandlers.related_delete,
-        }
-        # footnotes and sources, when we include editors/translators
-        # script+language when/if included in index data
+        },
+        "footnotes.footnote": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
+        "footnotes.source": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
+        "footnotes.creator": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
     }
 
     def merge_with(self, merge_docs, rationale, user=None):
