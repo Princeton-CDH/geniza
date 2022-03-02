@@ -1125,13 +1125,10 @@ class TestTextBlock:
 
 
 @pytest.mark.django_db
-class TestDocumentSignalHandlers:
-    # Other tests are found in `test_corpus_signals.py`
-
-    def test_items_to_index(document, footnote):
-        """Test that prefetching is properly configured."""
-        # Because of lazy loading, querysets must be executed to test prefetches.
-        # Footnote fixture must be included to check source/creator prefetching.
-        docs = Document.items_to_index()
-        assert docs
-        assert type(docs) is MultilingualQuerySet
+def test_items_to_index(document, footnote):
+    """Test that prefetching is properly configured."""
+    # Because of lazy loading, querysets must be executed to test prefetches.
+    # Footnote fixture must be included to check source/creator prefetching.
+    docs = Document.items_to_index()
+    assert docs
+    assert type(docs) is MultilingualQuerySet
