@@ -620,13 +620,14 @@ class TestDocumentSearchView:
         assert response.status_code == 200
 
     def test_last_modified(self, client, document):
-        """Ensure that the last modified header is set in the HEAD response"""
+        """Ensure that the last modified header is set in the response"""
         SolrClient().update.index([document.index_data()], commit=True)
         response = client.head(reverse("corpus:document-search"))
         assert response["Last-Modified"]
         init_last_modified = response["Last-Modified"]
 
-        # Sleep for 1 second to ensure the last modified header is different
+        # Sleep to ensure the last modified header is different. Last-Modified only
+        #  has a resolution of 1 second.
         sleep(1)
 
         # Ensure that a document being suppressed changes the last modified header
