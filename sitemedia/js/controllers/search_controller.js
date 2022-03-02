@@ -5,7 +5,14 @@ import { Controller } from "@hotwired/stimulus";
 // import { ApplicationController, useDebounce } from "stimulus-use";
 
 export default class extends Controller {
-    static targets = ["query", "sort", "sortlabel", "filterModal"];
+    static targets = [
+        "query",
+        "sort",
+        "sortlabel",
+        "filter",
+        "filterLabel",
+        "filterModal",
+    ];
     // static debounces = ["submit"];
 
     connect() {
@@ -33,6 +40,24 @@ export default class extends Controller {
         if (window.location.href.includes("#filters")) {
             // ensure filters modal can be closed if on #filters URL
             window.location.href = "#";
+        }
+    }
+
+    filterTargetConnected() {
+        // on load, check if filters are active and update label accordingly
+        this.updateFilters();
+    }
+
+    updateFilters() {
+        // toggle active filters label based on checked filter checkboxes
+        if (this.filterTargets.some((target) => target.checked)) {
+            this.filterLabelTargets.forEach((label) =>
+                label.classList.add("active")
+            );
+        } else {
+            this.filterLabelTargets.forEach((label) =>
+                label.classList.remove("active")
+            );
         }
     }
 

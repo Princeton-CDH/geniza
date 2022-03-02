@@ -17,8 +17,8 @@
             {% translate 'Submit search' as search_label %}
             <button type="submit" aria-label="{{ search_label }}" />
         </fieldset>
-        <a href="#filters" role="button" id="filters-button" data-action="click->search#openFilters">
-            <i class="ph-faders"></i>
+        <a href="#filters" role="button" id="filters-button" data-search-target="filterLabel" data-action="click->search#openFilters">
+            <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
             {% translate "Filters" %}
         </a>
         <fieldset id="sort">
@@ -48,27 +48,27 @@
                 {% translate "Close filter options" as close_button %}
                 <span class="sr-only">{{ close_button }}</span>
             </a>
-            <a href="#" role="button" id="close-filters-button" data-action="click->search#closeFilters">
-                <i class="ph-faders"></i>
+            <a href="#" role="button" id="close-filters-button" data-search-target="filterLabel" data-action="click->search#closeFilters">
+                <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
                 {% translate "Filters" %}
             </a>
             <label for="{{ form.has_transcription.auto_id }}">
-                {{ form.has_transcription }}
+                {% render_field form.has_transcription data-search-target="filter" data-action="change->search#updateFilters" %}
                 {{ form.has_transcription.label }}
             </label>
             <label for="{{ form.has_translation.auto_id }}">
-                {{ form.has_translation }}
+                {% render_field form.has_translation data-search-target="filter" data-action="change->search#updateFilters" %}
                 {{ form.has_translation.label }}
             </label>
             <label for="{{ form.has_discussion.auto_id }}">
-                {{ form.has_discussion }}
+                {% render_field form.has_discussion data-search-target="filter" data-action="change->search#updateFilters" %}
                 {{ form.has_discussion.label }}
             </label>
             <details class="doctype-filter">
                 <summary>
                     {{ form.doctype.label }}
                 </summary>
-                {{ form.doctype }}
+                {% render_field form.doctype data-search-target="filter" data-action="change->search#updateFilters" %}
             </details>
             <button type="submit" class="primary">
                 {% translate "Apply" %}
