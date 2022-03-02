@@ -113,6 +113,7 @@ class TestDocumentDetailView:
         assert (
             updated_doc_response["Last-Modified"] != other_doc_response["Last-Modified"]
         )
+        assert init_last_modified == other_doc_response["Last-Modified"]
 
 
 @pytest.mark.django_db
