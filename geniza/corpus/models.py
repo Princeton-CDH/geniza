@@ -701,7 +701,7 @@ class Document(ModelIndexable):
                 "languages",
                 "footnotes",
                 "footnotes__source",
-                "footnotes__source__authors",
+                "footnotes__source__authorship_set__creator",
                 "footnotes__source__source_type",
                 "footnotes__source__languages",
                 "log_entries",
