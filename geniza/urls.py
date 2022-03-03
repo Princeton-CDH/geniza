@@ -25,6 +25,7 @@ from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.contrib.sitemaps import Sitemap as WagtailSitemap
 from wagtail.contrib.sitemaps import views as sitemap_views
 from wagtail.core import urls as wagtail_urls
+from wagtail.documents import urls as wagtaildocs_urls
 
 from geniza.corpus.sitemaps import DocumentScholarshipSitemap, DocumentSitemap
 
@@ -61,6 +62,7 @@ urlpatterns = [
         name="django.contrib.sitemaps.views.sitemap",
     ),
     path("cms/", include(wagtailadmin_urls)),
+    path("documents/", include(wagtaildocs_urls)),
     path("_500/", lambda _: 1 / 0),
 ]
 
