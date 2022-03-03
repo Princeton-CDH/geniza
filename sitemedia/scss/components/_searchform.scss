@@ -119,7 +119,7 @@ main.search form fieldset#query {
     }
 }
 main.search form fieldset#sort {
-    order: 3;
+    order: 4;
     // sort options select (uses details/summary)
     details.sort-select {
         position: relative;
@@ -292,17 +292,16 @@ main.search form fieldset#filters {
     flex-flow: column;
     pointer-events: all;
     align-items: flex-start;
-    // overlay on form on desktop
+    // expand form on desktop
     @include breakpoints.for-tablet-landscape-up {
-        position: absolute;
+        order: 3;
+        position: relative;
         width: 900px;
         max-width: container.$two-column;
         overflow-y: auto;
         padding: spacing.$spacing-sm 1.275rem spacing.$spacing-sm
             spacing.$spacing-sm;
-        margin: 0 0 0 -#{spacing.$spacing-sm};
-        top: 19.45rem;
-        left: auto;
+        margin: -4.2rem 0 0 -#{spacing.$spacing-sm};
         height: auto;
     }
     // show when targeted

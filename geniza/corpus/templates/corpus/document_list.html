@@ -21,26 +21,6 @@
             <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
             {% translate "Filters" %}
         </a>
-        <fieldset id="sort">
-            <label for="{{ form.sort.html_name }}">
-                {{ form.sort.label }}
-            </label>
-            <details class="sort-select" aria-expanded="false">
-                <summary class="sort-select-trigger" data-search-target="sortlabel">
-                    {% for choice in form.sort.field.choices %}
-                        {% if form.sort.value == choice.0 %}
-                            {{ choice.1 }}
-                        {% endif %}
-                    {% endfor %}
-                    {# Translators: Button to open or close sort options menu #}
-                    {% translate 'Toggle sort options menu' as toggle_label %}
-                    <div role="button" tabindex="-1" aria-pressed="false" aria-expanded="false" aria-label="{{ toggle_label }}">
-                        <span class="sr-only" >{{ toggle_label }}</span>
-                    </div>
-                </summary>
-                {% render_field form.sort data-search-target="sort" data-action="change->search#update" %}
-            </details>
-        </fieldset>
 
         <fieldset id="filters" aria-expanded="false" data-search-target="filterModal">
             <a href="#" role="button" id="close-filters-modal" data-action="click->search#closeFilters">
@@ -73,6 +53,27 @@
             <button type="submit" class="primary">
                 {% translate "Apply" %}
             </button>
+        </fieldset>
+
+        <fieldset id="sort">
+            <label for="{{ form.sort.html_name }}">
+                {{ form.sort.label }}
+            </label>
+            <details class="sort-select" aria-expanded="false">
+                <summary class="sort-select-trigger" data-search-target="sortlabel">
+                    {% for choice in form.sort.field.choices %}
+                        {% if form.sort.value == choice.0 %}
+                            {{ choice.1 }}
+                        {% endif %}
+                    {% endfor %}
+                    {# Translators: Button to open or close sort options menu #}
+                    {% translate 'Toggle sort options menu' as toggle_label %}
+                    <div role="button" tabindex="-1" aria-pressed="false" aria-expanded="false" aria-label="{{ toggle_label }}">
+                        <span class="sr-only" >{{ toggle_label }}</span>
+                    </div>
+                </summary>
+                {% render_field form.sort data-search-target="sort" %}
+            </details>
         </fieldset>
 
         {% if form.errors %}
