@@ -1,7 +1,6 @@
 // controllers/search_controller.js
 
 import { Controller } from "@hotwired/stimulus";
-// TODO: Re-enable debounce when Turbo is set up
 import { ApplicationController, useDebounce } from "stimulus-use";
 import * as Turbo from "@hotwired/turbo";
 
@@ -32,6 +31,13 @@ export default class extends Controller {
         e.preventDefault();
         this.filterModalTarget.setAttribute("aria-expanded", "false");
         this.navBackToSearch();
+    }
+
+    filterModalTargetConnected() {
+        // expanded state should persist when connected
+        console.log("connected. aria-expanded:");
+        console.log(this.filterModalTarget.getAttribute("aria-expanded"));
+        // could there be a way to update counts here??
     }
 
     navBackToSearch() {

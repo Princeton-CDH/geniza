@@ -30,8 +30,27 @@ function logframeload(event) {
     console.log(event.target);
 }
 
+function logBeforeRender(event) {
+    console.log("turbo before-render");
+    console.log(event.detail.newBody);
+}
+
+function logBeforeCache(event) {
+    console.log("turbo before-cache");
+    console.log(event);
+}
+
+function logHashChange(event) {
+    console.log("turbo hashchange event");
+    console.log(event.oldURL);
+    console.log(event.newURL);
+}
+
 window.addEventListener("turbo:visit", logvisit);
 window.addEventListener("turbo:before-visit", logvisit);
 window.addEventListener("turbo:click", logclick);
 window.addEventListener("turbo:load", logload);
 window.addEventListener("turbo:frame-load", logframeload);
+window.addEventListener("turbo:before-render", logBeforeRender);
+window.addEventListener("turbo:before-cache", logBeforeCache);
+window.addEventListener("hashchange", logHashChange);

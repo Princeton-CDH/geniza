@@ -22,7 +22,7 @@
             {% translate "Filters" %}
         </a>
 
-        <fieldset id="filters" aria-expanded="false" data-search-target="filterModal">
+        <fieldset id="filters" aria-expanded="false" data-search-target="filterModal" data-turbo-permanent>
             <a href="#" role="button" id="close-filters-modal" data-action="click->search#closeFilters">
                 {# Translators: label for 'filters' close button for mobile navigation #}
                 {% translate "Close filter options" as close_button %}
@@ -33,22 +33,22 @@
                 {% translate "Filters" %}
             </a>
             <label for="{{ form.has_transcription.auto_id }}">
-                {{ form.has_transcription }}
+                {% render_field form.has_transcription data-action="search#update" %}
                 {{ form.has_transcription.label }}
             </label>
             <label for="{{ form.has_translation.auto_id }}">
-                {{ form.has_translation }}
+                {% render_field form.has_translation data-action="search#update" %}
                 {{ form.has_translation.label }}
             </label>
             <label for="{{ form.has_discussion.auto_id }}">
-                {{ form.has_discussion }}
+                {% render_field form.has_discussion data-action="search#update" %}
                 {{ form.has_discussion.label }}
             </label>
-            <details class="doctype-filter">
+            <details class="doctype-filter" data-turbo-permanent>
                 <summary>
                     {{ form.doctype.label }}
                 </summary>
-                {{ form.doctype }}
+                {% render_field form.doctype data-action="search#update" %}
             </details>
             <button type="submit" class="primary">
                 {% translate "Apply" %}
