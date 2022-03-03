@@ -7,6 +7,7 @@ snapshot:
 discovery:
   allowedHostnames:
     [
+      "geniza.princeton.edu",
       "unpkg.com",
       "cdnjs.cloudflare.com",
       "princeton.edu",
