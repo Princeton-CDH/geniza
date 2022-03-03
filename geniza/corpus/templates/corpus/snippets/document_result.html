@@ -115,7 +115,7 @@
             </ul>
         {% endif %}
         {# view link #}
-        <a class="view-link" href="{% url 'corpus:document' document.pgpid %}">
+        <a class="view-link" href="{% url 'corpus:document' document.pgpid %}" data-turbo-frame="main">
             {% translate 'View document details' %}
         </a>
     </li>

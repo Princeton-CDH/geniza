@@ -82,7 +82,9 @@
                 {% include "nav.html" %}
             </header>
 
-            <turbo-frame id="main" target="_top"><main id="main-content"  class="{{ page_type }}{% block page_type %}{% endblock page_type %}">{% block main %}{% endblock main %}</main></turbo-frame>
+            <turbo-frame id="main" data-turbo-action="advance">
+                <main id="main-content"  class="{{ page_type }}{% block page_type %}{% endblock page_type %}">{% block main %}{% endblock main %}</main>
+            </turbo-frame>
             <footer>
                 {% include "footer.html" %}
             </footer>

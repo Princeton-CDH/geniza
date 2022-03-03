@@ -7,16 +7,18 @@ import * as Turbo from "@hotwired/turbo";
 
 export default class extends Controller {
     static targets = ["query", "sort", "sortlabel", "filterModal"];
-    static debounces = ["submit"];
+    static debounces = ["update"];
 
     connect() {
         useDebounce(this);
     }
 
-    submit(e) {
-        e.preventDefault();
+    update() {
+        // submit the form and update the search results
         this.navBackToSearch();
-        this.element.submit();
+        // NOTE: turbo needs requestSubmit instead of submit to catch the event properly!
+        // see https://discuss.hotwired.dev/t/triggering-turbo-frame-with-js/1622/15
+        this.element.requestSubmit();
     }
 
     // Open/close the filter modal using aria-expanded instead of targeting with a link, to prevent

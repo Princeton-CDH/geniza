@@ -9,9 +9,9 @@
 
 {% block main %}
     <h1 class="sr-only">{{ page_title }}</h1>
-    <form data-controller="search" data-action="search#submit">
+    <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance">
         <fieldset id="query">
-            {% render_field form.q data-search-target="query" data-action="input->search#updateSort change->search#submit" %}
+            {% render_field form.q data-search-target="query" data-action="input->search#updateSort change->search#update" %}
 
             {# Translators: Search submit button #}
             {% translate 'Submit search' as search_label %}
@@ -38,11 +38,11 @@
                         <span class="sr-only" >{{ toggle_label }}</span>
                     </div>
                 </summary>
-                {% render_field form.sort data-search-target="sort" data-action="change->search#submit" %}
+                {% render_field form.sort data-search-target="sort" data-action="change->search#update" %}
             </details>
         </fieldset>
 
-        <fieldset id="filters" aria-expanded="false" data-search-target="filterModal" data-action="change->search#submit">
+        <fieldset id="filters" aria-expanded="false" data-search-target="filterModal">
             <a href="#" role="button" id="close-filters-modal" data-action="click->search#closeFilters">
                 {# Translators: label for 'filters' close button for mobile navigation #}
                 {% translate "Close filter options" as close_button %}
@@ -86,25 +86,28 @@
             </ul>
         {% endif %}
     </form>
-    <section id="document-list">
-        <h1>
-            {% comment %}Translators: number of search results{% endcomment %}
-            {% blocktranslate with count_humanized=paginator.count|intcomma count counter=paginator.count trimmed %}
-                1 result
-            {% plural %}
-                {{ count_humanized }} total results
-            {% endblocktranslate %}
-        </h1>
-        {% if is_paginated %}
-            {% include "corpus/snippets/pagination.html" %}
-        {% endif %}
-        <ol>
-            {% for document in documents %}
-                {% include "corpus/snippets/document_result.html" %}
-            {% endfor %}
-        </ol>
-        {% if is_paginated %}
-            {% include "corpus/snippets/pagination.html" %}
-        {% endif %}
-    </section>
+    {# keep pagination within the same frame but update history/location #}
+    <turbo-frame id="search-results" data-turbo-action="advance">
+        <section id="document-list">
+            <h1>
+                {% comment %}Translators: number of search results{% endcomment %}
+                {% blocktranslate with count_humanized=paginator.count|intcomma count counter=paginator.count trimmed %}
+                    1 result
+                {% plural %}
+                    {{ count_humanized }} total results
+                {% endblocktranslate %}
+            </h1>
+            {% if is_paginated %}
+                {% include "corpus/snippets/pagination.html" %}
+            {% endif %}
+            <ol>
+                {% for document in documents %}
+                    {% include "corpus/snippets/document_result.html" %}
+                {% endfor %}
+            </ol>
+            {% if is_paginated %}
+                {% include "corpus/snippets/pagination.html" %}
+            {% endif %}
+        </section>
+    </turbo>
 {% endblock main %}
