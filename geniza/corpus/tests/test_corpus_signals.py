@@ -13,7 +13,7 @@ from geniza.corpus.models import (
 
 @pytest.mark.django_db
 @patch.object(ModelIndexable, "index_items")
-def test_related_save(mock_indexitems, document, join):
+def test_related_save(mock_indexitems, document, join, footnote):
     # unsaved fragment should be ignored
     frag = Fragment(shelfmark="T-S 123")
 
@@ -40,6 +40,26 @@ def test_related_save(mock_indexitems, document, join):
     assert mock_indexitems.call_count == 1
     assert document in mock_indexitems.call_args[0][0]
     assert join not in mock_indexitems.call_args[0][0]
+
+    # footnote
+    mock_indexitems.reset_mock()
+    DocumentSignalHandlers.related_save(DocumentType, document.footnotes.first())
+    assert mock_indexitems.call_count == 1
+    assert document in mock_indexitems.call_args[0][0]
+
+    # source
+    mock_indexitems.reset_mock()
+    DocumentSignalHandlers.related_save(DocumentType, document.footnotes.first().source)
+    assert mock_indexitems.call_count == 1
+    assert document in mock_indexitems.call_args[0][0]
+
+    # creator
+    mock_indexitems.reset_mock()
+    DocumentSignalHandlers.related_save(
+        DocumentType, document.footnotes.first().source.authorship_set.first().creator
+    )
+    assert mock_indexitems.call_count == 1
+    assert document in mock_indexitems.call_args[0][0]
 
     # unhandled model should be ignored, no error
     mock_indexitems.reset_mock()

@@ -1,3 +1,5 @@
+from http.client import ResponseNotReady
+from pydoc import doc
 from time import sleep
 from unittest import mock
 from unittest.mock import ANY, Mock, mock_open, patch
@@ -94,10 +96,29 @@ class TestDocumentDetailView:
             document.get_absolute_url()
         )
 
+    def test_last_modified(self, client, document, join):
+        """Ensure that the last modified header is set in the HEAD response"""
+        SolrClient().update.index([document.index_data()], commit=True)
+        response = client.head(document.get_absolute_url())
+        assert response["Last-Modified"]
+        init_last_modified = response["Last-Modified"]
+
+        # Sleeping is required to ensure that the last modified header is different.
+        sleep(1)
+
+        # Ensure that only one last modified header is updated when a document is updated.
+        SolrClient().update.index([join.index_data()], commit=True)
+        updated_doc_response = client.head(join.get_absolute_url())
+        other_doc_response = client.head(document.get_absolute_url())
+        assert (
+            updated_doc_response["Last-Modified"] != other_doc_response["Last-Modified"]
+        )
+        assert init_last_modified == other_doc_response["Last-Modified"]
+
 
 @pytest.mark.django_db
 def test_old_pgp_tabulate_data():
-    legal_doc, _ = DocumentType.objects.get_or_create(name="Legal")
+    legal_doc = DocumentType.objects.get_or_create(name_en="Legal")[0]
     doc = Document.objects.create(id=36, doctype=legal_doc)
     frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
     TextBlock.objects.create(document=doc, fragment=frag, side="r")
@@ -182,7 +203,7 @@ def test_old_pgp_edition():
 
 @pytest.mark.django_db
 def test_pgp_metadata_for_old_site():
-    legal_doc, _ = DocumentType.objects.get_or_create(name="Legal")
+    legal_doc = DocumentType.objects.get_or_create(name_en="Legal")[0]
     doc = Document.objects.create(id=36, doctype=legal_doc)
     frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
     TextBlock.objects.create(document=doc, fragment=frag, side="r")
@@ -235,16 +256,16 @@ class TestDocumentSearchView:
         docsearch_view.request.GET = {}
         assert docsearch_view.get_form_kwargs() == {
             "initial": {
-                "sort": "scholarship_desc",
+                "sort": "random",
             },
             "prefix": None,
-            "data": {"sort": "scholarship_desc"},
+            "data": {"sort": "random"},
         }
 
         # keyword search param
         docsearch_view.request.GET = {"q": "contract"}
         assert docsearch_view.get_form_kwargs() == {
-            "initial": {"sort": "scholarship_desc"},
+            "initial": {"sort": "random"},
             "prefix": None,
             "data": {
                 "q": "contract",
@@ -256,7 +277,7 @@ class TestDocumentSearchView:
         docsearch_view.request.GET = {"sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
             "initial": {
-                "sort": "scholarship_desc",
+                "sort": "random",
             },
             "prefix": None,
             "data": {
@@ -268,7 +289,7 @@ class TestDocumentSearchView:
         docsearch_view.request.GET = {"q": "contract", "sort": "scholarship_desc"}
         assert docsearch_view.get_form_kwargs() == {
             "initial": {
-                "sort": "scholarship_desc",
+                "sort": "random",
             },
             "prefix": None,
             "data": {
@@ -329,18 +350,24 @@ class TestDocumentSearchView:
                 "-score"
             )
 
-            # keyword, sort, and doctype filter search params
+            # keyword, sort, and filter search params
             mock_sqs.reset_mock()
             docsearch_view.request = Mock()
             docsearch_view.request.GET = {
                 "q": "six apartments",
                 "sort": "scholarship_desc",
                 "doctype": ["Legal"],
+                "has_transcription": "on",
+                "has_discussion": "on",
+                "has_translation": "on",
             }
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_called_with("six apartments")
+            # filter by doctype
             mock_sqs.keyword_search.return_value.also.return_value.order_by.return_value.filter.assert_called()
+            # also filters that result with next filter (has_transcription)
+            mock_sqs.keyword_search.return_value.also.return_value.order_by.return_value.filter.return_value.filter.assert_called()
             mock_sqs.keyword_search.return_value.also.return_value.order_by.assert_called_with(
                 "-scholarship_count_i"
             )
@@ -352,7 +379,8 @@ class TestDocumentSearchView:
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_not_called()
-            mock_sqs.order_by.assert_called_with("-scholarship_count_i")
+            args = mock_sqs.order_by.call_args[0]
+            assert args[0].startswith("random_")
 
             # no params
             mock_sqs.reset_mock()
@@ -361,7 +389,8 @@ class TestDocumentSearchView:
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
             mock_sqs.keyword_search.assert_not_called()
-            mock_sqs.order_by.assert_called_with("-scholarship_count_i")
+            args = mock_sqs.order_by.call_args[0]
+            assert args[0].startswith("random_")
 
     @pytest.mark.usefixtures("mock_solr_queryset")
     @patch("geniza.corpus.views.DocumentSearchView.get_queryset")
@@ -432,15 +461,8 @@ class TestDocumentSearchView:
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()
 
-        # no sort, no query
-        docsearch_view.request.GET = {}
-        qs = docsearch_view.get_queryset()
-        # should return all three documents
-        assert qs.count() == 3
-        # by default, should return document with most records first
-        assert (
-            qs[0]["pgpid"] == doc_three_records.id
-        ), "document with most scholarship records returned first"
+        # default sort is now random instead of scholarship, so
+        # only test sorting explicitly
 
         # sort by scholarship desc
         docsearch_view.request.GET = {"sort": "scholarship_desc"}
@@ -567,6 +589,55 @@ class TestDocumentSearchView:
         resulting_ids = [result["pgpid"] for result in qs]
         assert doc1.id in resulting_ids
         assert doc2.id in resulting_ids
+
+    def test_get_solr_sort(self):
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # default behavior — lookup from dict on the view
+        assert (
+            docsearch_view.get_solr_sort("relevance")
+            == docsearch_view.solr_sort["relevance"]
+        )
+        # random, no seed set
+        random_sort = docsearch_view.get_solr_sort("random")
+        assert random_sort.startswith("random_")
+        assert int(random_sort.split("_")[1])
+
+    def test_random_page_redirect(self, client):
+        # any page of results other than one should redirect to the first page
+        docsearch_url = reverse("corpus:document-search")
+        response = client.get(docsearch_url, {"sort": "random", "page": 2, "q": "test"})
+        # should redirect
+        assert response.status_code == 302
+        # should preserve any query parameters
+        assert response["Location"] == "%s?sort=random&q=test" % docsearch_url
+
+    @pytest.mark.django_db
+    def test_dispatch(self, client):
+        # test regular response does not redirect
+        docsearch_url = reverse("corpus:document-search")
+        response = client.get(docsearch_url)
+        # should not redirect
+        assert response.status_code == 200
+
+    def test_last_modified(self, client, document):
+        """Ensure that the last modified header is set in the response"""
+        SolrClient().update.index([document.index_data()], commit=True)
+        response = client.head(reverse("corpus:document-search"))
+        assert response["Last-Modified"]
+        init_last_modified = response["Last-Modified"]
+
+        # Sleep to ensure the last modified header is different. Last-Modified only
+        #  has a resolution of 1 second.
+        sleep(1)
+
+        # Ensure that a document being suppressed changes the last modified header
+        document.status = Document.SUPPRESSED
+        document.save()
+        SolrClient().update.index([document.index_data()], commit=True)
+        response = client.head(reverse("corpus:document-search"))
+        new_last_modified = response["Last-Modified"]
+        assert new_last_modified != init_last_modified
 
 
 class TestDocumentScholarshipView:

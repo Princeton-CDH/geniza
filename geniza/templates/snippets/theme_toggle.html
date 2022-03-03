@@ -1,7 +1,7 @@
-{% load i18n static webpack_loader %}
+{% load i18n static render_bundle_csp %}
 
 {% block extrascript %}
-    <script defer src="{% static 'js/theme-toggle.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    {% render_bundle_csp "theme_toggle" "js" attrs='defer' %}
 {% endblock %}
 
 <label id="theme-toggle" for="theme-toggle-checkbox" tabindex="0">

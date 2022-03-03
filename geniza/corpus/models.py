@@ -302,7 +302,7 @@ class Fragment(TrackChangesModel):
 
 class DocumentTypeManager(models.Manager):
     def get_by_natural_key(self, name):
-        return self.get(name=name)
+        return self.get(name_en=name)
 
 
 class DocumentType(models.Model):
@@ -335,6 +335,9 @@ class DocumentSignalHandlers:
         "tag": "tags",
         "document type": "doctype",
         "Related Fragment": "textblock",  # textblock verbose name
+        "footnote": "footnotes",
+        "source": "footnotes__source",
+        "creator": "footnotes__source__authorship__creator",
     }
 
     @staticmethod
@@ -701,8 +704,7 @@ class Document(ModelIndexable):
                 "languages",
                 "footnotes",
                 "footnotes__source",
-                "footnotes__source__authorship",
-                "footnotes__source__authorship__creator",
+                "footnotes__source__authorship_set__creator",
                 "footnotes__source__source_type",
                 "footnotes__source__languages",
                 "log_entries",
@@ -784,6 +786,9 @@ class Document(ModelIndexable):
                 "scholarship_t": [fn.display() for fn in self.footnotes.all()],
                 # text content of any transcriptions
                 "transcription_t": transcription_texts,
+                "has_digital_edition_b": len(transcription_texts) > 0,
+                "has_translation_b": counts[Footnote.TRANSLATION] > 0,
+                "has_discussion_b": counts[Footnote.DISCUSSION] > 0,
             }
         )
 
@@ -818,9 +823,19 @@ class Document(ModelIndexable):
         "textblock_set": {
             "post_save": DocumentSignalHandlers.related_save,
             "pre_delete": DocumentSignalHandlers.related_delete,
-        }
-        # footnotes and sources, when we include editors/translators
-        # script+language when/if included in index data
+        },
+        "footnotes.footnote": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
+        "footnotes.source": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
+        "footnotes.creator": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
     }
 
     def merge_with(self, merge_docs, rationale, user=None):

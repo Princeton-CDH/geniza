@@ -1,11 +1,15 @@
 import json
-from urllib import parse
+import re
 
 from django import template
+from django.core.exceptions import ObjectDoesNotExist
+from django.urls import reverse
+from django.utils.safestring import mark_safe
 from natsort import natsorted
 from piffle.iiif import IIIFImageClientException
 
-from geniza.footnotes.models import Footnote
+from geniza.common.utils import absolutize_url
+from geniza.corpus.models import Document
 
 register = template.Library()
 
@@ -117,3 +121,22 @@ def h1_to_h3(html):
     """Convert h1 headers to h3 to match other transcription formats,
     used to avoid modeltranslation inserting elements into h1 headers"""
     return html.replace("h1", "h3")
+
+
+@register.filter
+def pgp_urlize(text):
+    """Find all instances of \"PGPID #\" in the passed text, and convert
+    each to a link to the referenced document."""
+    # use an absolutized placeholder URL to use for each match, replacing the fake pgpid 000 with the regex
+    placeholder_url = absolutize_url(reverse("corpus:document", args=["000"])).replace(
+        "000", "\g<pgpid>"
+    )
+    placeholder_link = '<a href="%s">\g<text></a>' % placeholder_url
+    # match all instances of PGPID ### with a link to the document
+    return mark_safe(
+        re.sub(
+            r"\b(?P<text>PGPID\b \b(?P<pgpid>\d+))\b",
+            placeholder_link,
+            text,
+        )
+    )

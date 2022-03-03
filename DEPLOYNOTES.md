@@ -1,5 +1,11 @@
 # Deploy Notes
 
+## 4.2
+
+-   This update includes Solr indexing changes (for boolean fields on digital edition, translation, and discussion). Run `python manage.py index` to reindex all content.
+-   Anywhere that Node versions are being managed manually, Node should be upgraded to at 16.x, at least 16.14.0, and NPM to 7.x, at least 7.24.2.
+-   Copy the new fonts `GretaSansH-Bold.woff2` and `GretaSansH-Regular.woff2` from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`
+
 ## 4.1
 
 -   This update includes Solr configuration and indexing changes. Once the Solr core has been updated, run `python manage.py index` to reindex all content (for IIIF image and label indexing).

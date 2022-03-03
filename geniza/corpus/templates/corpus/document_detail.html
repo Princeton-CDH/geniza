@@ -1,17 +1,31 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n render_bundle_csp corpus_extras %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 {% block extrameta %}
     <link rel="canonical" href="{{ document.permalink }}" />
+
+    {# digital editions metadata for twitter, slack #}
+    {% if document.digital_editions %}
+        <meta name="twitter:label1" value="{% blocktranslate count counter=document.editors.count trimmed %}Editor{% plural %}Editors{% endblocktranslate %}">
+        <meta name="twitter:data1" value="{% for ed in document.digital_editions %}{% ifchanged %}{{ ed.display|escape }}{% if not forloop.last %} {% endif %}{% endifchanged %}{% endfor %}">
+    {% endif %}
+
+    {# preview card images for twitter and open graph #}
+    <meta name="twitter:card" content="summary{% if document.has_image %}_large_image{% endif %}" />
+    {% if document.iiif_images %}
+        {% with document.iiif_images.0.image|iiif_image:"size:width=1080" as image %}
+            <meta property="og:image" content="{{ image }}" />
+            <meta name="twitter:image" content="{{ image }}" />
+        {% endwith %}
+    {% endif %}
 {% endblock extrameta %}
 {% block extrascript %}
     {# include openseadragon if needed #}
-    {% if document.has_images or document.iiif_urls %}
-        {# NOTE: referencing specific version avoids an extra render-blocking lookup #}
-        <script defer src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/openseadragon.min.js" nonce="{{ request.csp_nonce}}"></script>
-        <script defer src="{% static 'js/openseadragon.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    {% if document.has_image or document.iiif_urls %}
+        <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/" crossorigin />
+        {% render_bundle_csp "openseadragon" "js" attrs='defer' %}
     {% endif %}
 {% endblock extrascript %}
 
@@ -77,7 +91,7 @@
                 {# Translators: label for document description #}
                 {% translate 'Description' %}
             </h3>
-            <p>{{ document.description }}</p>
+            <p>{{ document.description|pgp_urlize }}</p>
         </section>
 
         {# link to download transcription if available; admin only for now since plain-text bidi is not great #}

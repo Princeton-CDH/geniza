@@ -1,3 +1,5 @@
+import OpenSeadragon from "openseadragon";
+
 let target = document.getElementById("iiif-images");
 let viewer = OpenSeadragon({
     id: target.id,
@@ -9,4 +11,5 @@ let viewer = OpenSeadragon({
     autoHideControls: false,
     showHomeControl: false,
     showRotationControl: true,
+    crossOriginPolicy: "Anonymous",
 });

@@ -1,11 +1,12 @@
-{% load i18n static wagtailcore_tags webpack_loader %}
+{% load i18n static wagtailcore_tags render_bundle_csp %}
 
 {% block extrascript %}
-    <script defer src="{% static 'js/submenu.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    {% render_bundle_csp "submenu" "js" attrs='defer' %}
 {% endblock %}
 
 {# Translators: accessibility text label for site navigation #}
 {% translate "main navigation" as main_nav_label %}
+
 <nav id="site-nav" aria-label="{{ main_nav_label }}">
     {% spaceless %}
         <ul id="corner-links">
@@ -18,9 +19,7 @@
                     {% pageurl site.root_page.localized as root_url %}
                 {% endif %}
                 <a class="home-link" href="{{ root_url|default:"/" }}" aria-label="{{ aria_home }}" role="button">
-                    <svg>
-                        <use href="{% static 'img/logos/pgp-logo.svg' %}#logo" />
-                    </svg>
+                    <span class="sr-only">{{ aria_home }}</span>
                 </a>
             </li>
             <li class="menu-button">

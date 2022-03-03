@@ -1,5 +1,32 @@
 # Change Log
 
+## 4.2
+
+-   public site
+    -   As a front-end user, I want keyword searches automatically sorted by relevance, so that I see the most useful results first.
+    -   As a user, I want an option to sort documents randomly so that I can easily discover documents I haven't looked at before.
+    -   As a front-end user, I want visual indicators for filtering search results, in a separate panel from the main search functions, so that I know where they are and can easily ignore them if I do not want to filter.
+    -   As a front end user, I want to filter search results to records with transcription available, so that I can easily find documents that have already been transcribed and will be easier for me to use.
+    -   As a front end user, I want to filter search results to records with translations available, so that I can find documents that are easier for me to work on.
+    -   As a front end user, I want to filter search results to records with discussion available, so that I can find documents with existing scholarly notes.
+    -   As a front end user, I want an easy way to apply selected filters, so that I can filter results without closing the filters panel.
+    -   As a front end user, I want to click on the document title in search results so I can get to the details more easily.
+    -   As a user, when I share PGP urls I want to see previews on social media, Slack or other supported platforms so that the content is more engaging.
+    -   As a frontend user, when a PGPID is referenced in a document description, I want it to link to the corresponding document so that I can easily access referenced documents.
+-   content/data admin
+    -   As an admin, I want documents automatically reindexed when I add or update scholarship records, so that database edits are immediately available in the public site.
+    -   As a content editor, I want to add translations for document types to the database, in order to make the content more accessible to Hebrew and Arabic users of the public site.
+-   public site visual design
+    -   logotype in header for both dark and light modes
+    -   selected state for scholarship records filters in search
+    -   new site favicon based on the logo
+-   maintenance/other
+    -   As an admin, I want documents automatically reindexed when I add or update scholarship records, so that database edits are immediately available in the public site.
+    -   last modified headers and conditional processing on document search and document detail pages
+    -   bugfix: correct an invalid prefetch field in Document.items_to_index
+    -   bugfix: search sort options dropdown shouldn't move following page content down
+    -   bugfix: image viewer breaks on mobile for documents with images but no transcriptions
+
 ## 4.1
 
 -   public site

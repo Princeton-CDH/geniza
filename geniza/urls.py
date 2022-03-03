@@ -20,7 +20,7 @@ from django.conf.urls.i18n import i18n_patterns
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic.base import TemplateView
+from django.views.generic.base import RedirectView, TemplateView
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.contrib.sitemaps import Sitemap as WagtailSitemap
 from wagtail.contrib.sitemaps import views as sitemap_views
@@ -38,6 +38,10 @@ urlpatterns = [
     path(
         "robots.txt",
         TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),
+    ),
+    path(
+        "favicon.ico",
+        RedirectView.as_view(url="/static/img/icons/favicon.ico", permanent=True),
     ),
     # redirect homepage to admin site for now
     path("admin/", admin.site.urls),

@@ -39,6 +39,7 @@ section#document-list {
     display: flex;
     justify-content: space-between;
     flex-flow: column;
+    position: relative;
 
     @include breakpoints.for-tablet-landscape-up {
         flex-flow: row wrap;
@@ -258,6 +259,24 @@ section#document-list {
                 font-size: typography.$text-size-2xl;
             }
         }
+
+        /* make the whole result block clickable */
+        &:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    }
+    /* raise tags & text over clickable pseudo content to allow selection */
+    .description,
+    .transcription,
+    .metadata dd,
+    .tags {
+        position: relative;
+        z-index: 2;
     }
 }
 

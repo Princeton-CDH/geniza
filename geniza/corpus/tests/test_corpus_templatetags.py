@@ -1,12 +1,10 @@
-import json
-from asyncio import format_helpers
-from unittest.mock import Mock, patch
-from urllib import parse
+from unittest.mock import Mock
 
 import pytest
 from django.http.request import QueryDict
 from piffle.iiif import IIIFImageClient
 
+from geniza.common.utils import absolutize_url
 from geniza.corpus.templatetags import corpus_extras
 from geniza.footnotes.models import Footnote
 
@@ -140,3 +138,28 @@ def test_iiif_info_json():
 def test_h1_to_h3():
     html = "<div><h1>hi</h1><h3>hello</h3></div>"
     assert corpus_extras.h1_to_h3(html) == "<div><h3>hi</h3><h3>hello</h3></div>"
+
+
+def test_pgp_urlize(document, join):
+    doc_link = '<a href="{url}">PGPID {id}</a>'.format(
+        url=absolutize_url(document.get_absolute_url()), id=document.id
+    )
+    join_link = '<a href="{url}">PGPID {id}</a>'.format(
+        url=absolutize_url(join.get_absolute_url()), id=join.id
+    )
+
+    # should create links for all referenced PGPID #
+    text_one_pgpid = "An example of some text with PGPID %s." % document.id
+    assert doc_link in corpus_extras.pgp_urlize(text_one_pgpid)
+    text_two_pgpids = "An example of sometext with PGPID %s and PGPID %s." % (
+        document.id,
+        join.id,
+    )
+    assert doc_link in corpus_extras.pgp_urlize(text_two_pgpids)
+    assert (join_link + ".") in corpus_extras.pgp_urlize(text_two_pgpids)
+    text_punctuation = (
+        "A PGPID %s, coming before a comma, and a PGPID %s; coming before a semicolon."
+        % (document.id, join.id)
+    )
+    assert (doc_link + ",") in corpus_extras.pgp_urlize(text_punctuation)
+    assert (join_link + ";") in corpus_extras.pgp_urlize(text_punctuation)
