@@ -1,5 +1,7 @@
 import os
 
+from django.conf import settings
+
 from geniza.settings.components.base import DATABASES, INSTALLED_APPS
 
 # These settings correspond to the service container settings in the
@@ -31,5 +33,5 @@ INSTALLED_APPS.append("django_dbml")
 
 # when running in CI, load fonts from production by overriding font base url
 # (needed for Percy and Lighthouse)
-if os.environ.get("CI"):
+if os.environ.get("CI") or settings.IS_PERCY:
     FONT_URL_PREFIX = "https://geniza.princeton.edu/static/fonts/"
