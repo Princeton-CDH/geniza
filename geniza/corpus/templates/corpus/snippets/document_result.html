@@ -107,7 +107,7 @@
                 {# list of tuples of (IIIF image, label) #}
                 {% for image in document.iiif_images|slice:":3" %}
                     <li class="image-{{ forloop.counter }}">
-                        <a href="{% url 'corpus:document' document.pgpid %}" data-turbo-frame="main">
+                        <a href="{% url 'corpus:document' document.pgpid %}" data-turbo-frame="main" target="_top">
                             <img src="{{ image.0|iiif_image:"size:width=250" }}" loading="lazy" alt="{{ image.1 }}">
                         </a>
                     </li>
@@ -115,7 +115,7 @@
             </ul>
         {% endif %}
         {# view link #}
-        <a class="view-link" href="{% url 'corpus:document' document.pgpid %}" data-turbo-frame="main">
+        <a class="view-link" href="{% url 'corpus:document' document.pgpid %}" data-turbo-frame="main" target="_top">
             {% translate 'View document details' %}
         </a>
     </li>
