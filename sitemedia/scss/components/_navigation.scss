@@ -111,7 +111,8 @@ header {
             pointer-events: all;
             @include breakpoints.for-tablet-landscape-up {
                 flex: 1 0 auto;
-                transition: none;
+                width: auto;
+                height: 100%;
             }
         }
         // Positioning for desktop
@@ -120,7 +121,6 @@ header {
             width: auto;
             height: 100%;
             display: flex;
-            transition: none;
             position: relative;
             flex: 1 0 auto;
             flex-flow: row nowrap;
