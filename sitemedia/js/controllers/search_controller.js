@@ -5,7 +5,13 @@ import { ApplicationController, useDebounce } from "stimulus-use";
 import * as Turbo from "@hotwired/turbo";
 
 export default class extends Controller {
-    static targets = ["query", "sort", "sortlabel", "filterModal"];
+    static targets = [
+        "query",
+        "sort",
+        "sortlabel",
+        "filterModal",
+        "doctypeFilter",
+    ];
     static debounces = ["update"];
 
     connect() {
@@ -22,22 +28,54 @@ export default class extends Controller {
 
     // Open/close the filter modal using aria-expanded instead of targeting with a link, to prevent
     // scroll jumping around the page. Will still work as a link when JS is disabled.
+    // Saves expanded/collapsed state in session storage.
     openFilters(e) {
         e.preventDefault();
         this.filterModalTarget.setAttribute("aria-expanded", "true");
+        window.sessionStorage.setItem("filters-expanded", "true");
     }
 
     closeFilters(e) {
         e.preventDefault();
         this.filterModalTarget.setAttribute("aria-expanded", "false");
+        window.sessionStorage.setItem("filters-expanded", "false");
         this.navBackToSearch();
     }
 
     filterModalTargetConnected() {
-        // expanded state should persist when connected
-        console.log("connected. aria-expanded:");
-        console.log(this.filterModalTarget.getAttribute("aria-expanded"));
-        // could there be a way to update counts here??
+        // Expanded/collapsed state should persist when connected
+        let savedFilterState =
+            window.sessionStorage.getItem("filters-expanded");
+        if (savedFilterState) {
+            this.filterModalTarget.setAttribute(
+                "aria-expanded",
+                savedFilterState
+            );
+        }
+    }
+
+    // doctype filter <details> element
+    toggleDoctypeFilter() {
+        // "open" attribute is null when collapsed, empty string when open
+        let currentState =
+            this.doctypeFilterTarget.getAttribute("open") !== null;
+        // toggling will reverse this state
+        let stateAfterClicked = !currentState;
+        // save in session storage
+        window.sessionStorage.setItem(
+            "doctype-filter-expanded",
+            stateAfterClicked
+        );
+    }
+
+    doctypeFilterTargetConnected() {
+        // Expanded/collapsed state should persist when connected
+        let savedDoctypeState = window.sessionStorage.getItem(
+            "doctype-filter-expanded"
+        );
+        if (savedDoctypeState === "true") {
+            this.doctypeFilterTarget.setAttribute("open", "");
+        }
     }
 
     navBackToSearch() {

@@ -22,7 +22,7 @@
             {% translate "Filters" %}
         </a>
 
-        <fieldset id="filters" aria-expanded="false" data-search-target="filterModal" data-turbo-permanent>
+        <fieldset id="filters" aria-expanded="false" data-search-target="filterModal">
             <a href="#" role="button" id="close-filters-modal" data-action="click->search#closeFilters">
                 {# Translators: label for 'filters' close button for mobile navigation #}
                 {% translate "Close filter options" as close_button %}
@@ -44,8 +44,8 @@
                 {% render_field form.has_discussion data-action="search#update" %}
                 {{ form.has_discussion.label }}
             </label>
-            <details class="doctype-filter" data-turbo-permanent>
-                <summary>
+            <details class="doctype-filter" data-search-target="doctypeFilter">
+                <summary data-action="click->search#toggleDoctypeFilter">
                     {{ form.doctype.label }}
                 </summary>
                 {% render_field form.doctype data-action="search#update" %}
@@ -72,7 +72,7 @@
                         <span class="sr-only" >{{ toggle_label }}</span>
                     </div>
                 </summary>
-                {% render_field form.sort data-search-target="sort" %}
+                {% render_field form.sort data-search-target="sort" data-action="search#update" %}
             </details>
         </fieldset>
 
