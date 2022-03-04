@@ -113,7 +113,7 @@ class Command(BaseCommand):
         browser.find_element_by_id("open-about-menu").send_keys(Keys.ENTER)
         # custom CSS to ensure that on mobile, the about menu transition is disabled and the menu
         # is in the correct position; and that on desktop, that override does not impact its position
-        about_menu_css = "ul#about-menu { visibility: visible !important; width: 100% !important; height: 100vh !important; } @media (min-width: 900px) { ul#about-menu { dispaly: flex !important; } }"
+        about_menu_css = "ul#about-menu { visibility: visible !important; width: 100% !important; height: 100vh !important; } @media (min-width: 900px) { ul#about-menu { dispaly: flex !important; width: auto !important; height: auto !important; } }"
         percy_snapshot(
             browser, "About submenu%s" % dark_mode_str, percy_css=about_menu_css
         )
