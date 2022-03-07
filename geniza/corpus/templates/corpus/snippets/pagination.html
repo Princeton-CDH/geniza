@@ -1,5 +1,4 @@
 {% load i18n corpus_extras %}
-{% get_current_language as LANGUAGE_CODE %}
 {% spaceless %} {# disable pagination when sorted randomly #}
     <nav class="pagination {% if form.sort.value == 'random' %}disabled{% endif %}" {% if LANGUAGE_CODE == "ar" or LANGUAGE_CODE == "he" %}dir="rtl"{% endif %}>
         {# Translators: Label for "previous page" button in search results #}
