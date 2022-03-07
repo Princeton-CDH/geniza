@@ -24,44 +24,50 @@ An image may be placed in one of the following subfolders of the ``img`` folder,
    * - ``icons``
      - Icons, such as `favicons <https://developer.mozilla.org/en-US/docs/Glossary/Favicon>`_ and other web browser icons, that are *not* user interface elements
    * - ``logos``
-     - Logo images, such as the PGP logo; preferably in ``svg`` file format
+     - Logo images, such as the PGP logo
    * - ``ui``
-     - Images used in the user interface, see below for details
+     - Images used in the user interface, such as separators, header and footer images
 
 If an image does not fit into any of these categories, it may be placed into the ``img`` folder directly.
 
-Structure of the ``ui`` folder
-----------------------------
+Structure of the ``logos`` and ``ui`` folders
+---------------------------------------------
 
-The ``ui`` subfolder contains images that are used in the user interface, such as separators, header and footer images, and custom quotation marks. The ``ui`` subfolder is structured in the following way:
+The ``logos`` and ``ui`` subfolders are structured in the following way:
 
 ::
 
     ui
+    ├── all
+    │   └── all
+    │       └── search-filter-icon.svg
     ├── desktop
+    │   ├── all
+    │   │   └── separator.svg
     │   ├── dark
     │   │   ├── header-base.svg
     │   │   └── header-image.png
     │   └── light
-    │       ├── header-base.svg
-    │       ├── header-image.png
-    │       └── separator.svg
+    │       ├── header-base.svg
+    │       └── header-image.png
     └── mobile
+        ├── all
+        │   └── separator.svg
         ├── dark
         │   ├── header-base.svg
         │   └── header-image.png
         └── light
             ├── header-base.svg
-            ├── header-image.png
-            └── separator.svg
+            └── header-image.png
 
-There are two subfolders at the top level, ``desktop`` and ``mobile``, to differentiate between UI elements used on different screen sizes. 
+There are three subfolders at the top level, ``desktop``, ``mobile``, and ``all`` to differentiate between UI elements used on different screen sizes. Elements used across both screen sizes may be placed in the ``all`` subfolder.
 
 One level deeper, the ``dark`` and ``light`` subfolders differentiate between images used in dark mode and light mode themes. These ``dark`` and ``light`` subfolders are where images are placed.
+
+If an image can be reused for both light and dark mode, either through SVG recoloring or simply because they are the same in both modes, they may be placed in the ``all`` subfolder.
 
 Notes
 ~~~~~
 - Images that are meant to be swapped out between screen sizes, or between dark/light themes, should have the **same filename** as each other. They are differentiated by their folder, rather than their filename.
 - ``svg`` images that are filled with a solid color, such as ``separator.svg``, may optionally be placed in only one directory per screen size, as they can be recolored in CSS to the appropriate light or dark mode color.
-- ``png`` images that are colored differently in light and dark mode must be uploaded separately in their appropriate folders, as they cannot be recolored in CSS.
-- Images that appear the same in light and dark mode can be placed directly in the appropriate folder, `desktop` or `mobile`, outside of the `dark` and `light` subfolders.
+- ``png`` images that are colored differently in light and dark mode must be uploaded in their appropriate folders, as they cannot be recolored in CSS.

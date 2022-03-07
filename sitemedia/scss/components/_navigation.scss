@@ -404,7 +404,8 @@ header {
         url("/static/img/ui/mobile/dark/header-image.png");
     background-repeat: no-repeat, no-repeat;
     a.home-link {
-        background: url("/static/img/ui/mobile/dark/logotype.png") no-repeat;
+        background: url("/static/img/logos/mobile/dark/pgp-logotype.png")
+            no-repeat;
         background-size: 160px;
         width: 160px;
         height: 111px;
@@ -415,7 +416,8 @@ header {
         url("/static/img/ui/mobile/light/header-image.png");
     background-repeat: no-repeat, no-repeat;
     a.home-link {
-        background: url("/static/img/ui/mobile/light/logotype.png") no-repeat;
+        background: url("/static/img/logos/mobile/light/pgp-logotype.png")
+            no-repeat;
         background-size: 151px;
         width: 151px;
         height: 111px;
@@ -444,7 +446,8 @@ header {
             repeat-x;
     }
     a.home-link {
-        background: url("/static/img/ui/desktop/dark/logotype.png") no-repeat;
+        background: url("/static/img/logos/desktop/dark/pgp-logotype.png")
+            no-repeat;
         background-size: 233px 150px;
         width: 233px;
         height: 150px;
@@ -460,7 +463,8 @@ header {
             repeat-x;
     }
     a.home-link {
-        background: url("/static/img/ui/desktop/light/logotype.png") no-repeat;
+        background: url("/static/img/logos/desktop/light/pgp-logotype.png")
+            no-repeat;
         background-size: 233px 150px;
         width: 233px;
         height: 150px;
