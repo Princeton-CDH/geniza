@@ -100,9 +100,8 @@ class Command(BaseCommand):
 
         # mobile menu
         browser.get("http://localhost:8000/en/documents/9469/#menu")
-        # custom CSS to ensure that on mobile, the menu transition is disabled and the menu
-        # is in the correct position
-        mobile_menu_css = "ul#menu { left: 0 !important; transition: none !important; }"
+        # custom CSS to ensure that on mobile, the menu is in the correct position
+        mobile_menu_css = "ul#menu { visibility: visible !important; width: 100% !important; height: 100vh !important; } @media (min-width: 900px) { ul#menu { width: auto !important; height: 100% !important; } }"
         percy_snapshot(
             browser, "Mobile menu%s" % dark_mode_str, percy_css=mobile_menu_css
         )
@@ -111,9 +110,9 @@ class Command(BaseCommand):
         browser.get("http://localhost:8000/en/documents/3504/#menu")
         # open about menu
         browser.find_element_by_id("open-about-menu").send_keys(Keys.ENTER)
-        # custom CSS to ensure that on mobile, the about menu transition is disabled and the menu
-        # is in the correct position; and that on desktop, that override does not impact its position
-        about_menu_css = "ul#about-menu { left: 0 !important; transition: none !important; } @media (min-width: 900px) { ul#about-menu { left: auto !important; } }"
+        # custom CSS to ensure that on mobile, the about menu is in the correct position;
+        # and that on desktop, that override does not impact its position
+        about_menu_css = "ul#about-menu { visibility: visible !important; width: 100% !important; height: 100vh !important; } @media (min-width: 900px) { ul#about-menu { dispaly: flex !important; width: auto !important; height: auto !important; } }"
         percy_snapshot(
             browser, "About submenu%s" % dark_mode_str, percy_css=about_menu_css
         )
