@@ -100,11 +100,12 @@ a#needsreview:target {
     font-style: italic;
 }
 
-/* left-aligned transcriptions; rtl is controlled thru html "dir=" attribute */
+/* rtl is controlled thru html "dir=" attribute */
 .transcription {
     display: inline-block;
     margin-right: auto;
     direction: rtl;
+    text-align: right;
 }
 .transcription h3,
 .transcription section h1 {
