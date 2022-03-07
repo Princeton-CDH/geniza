@@ -19,8 +19,10 @@
         {# open graph metadata #}
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="{% translate "Princeton Geniza Project" %}"/>
-        <meta property="og:title" content="{% firstof page_title|escape page.title|escape %}" />
-        <meta property="og:description" content="{% firstof page_description|escape page.description|escape %}" />
+        {% firstof page_title page.title as meta_title %}
+        <meta property="og:title" content="{{ meta_title|escape }}" />
+        {% firstof page_description page.description as meta_description %}
+        <meta property="og:description" content="{{ meta_description|escape }}" />
         <meta property="og:url" content="{{ request.build_absolute_uri }}" />
 
         {# twitter medatada #}
