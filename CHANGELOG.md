@@ -1,5 +1,12 @@
 # Change Log
 
+## 4.2.1 — bugfix release
+
+-   handle descriptions with tags so they don't cause malformed HTML in search results
+-   last modified header should not be set for document search if sort is random
+-   off-screen menu no longer shows up when resizing browser window or navigating on mobile
+-   transcription lines should be right-aligned in admin interface
+
 ## 4.2
 
 -   public site
