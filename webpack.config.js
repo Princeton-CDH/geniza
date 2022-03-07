@@ -18,7 +18,6 @@ module.exports = (env, options) => ({
         openseadragon: "./sitemedia/js/openseadragon.js",
         search: "./sitemedia/js/search.js",
         stimulus_app: "./sitemedia/js/stimulus_app.js",
-        submenu: "./sitemedia/js/submenu.js",
         theme_toggle: "./sitemedia/js/theme-toggle.js",
     },
     output: {

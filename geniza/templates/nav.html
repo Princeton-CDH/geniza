@@ -1,9 +1,5 @@
 {% load i18n static wagtailcore_tags render_bundle_csp %}
 
-{% block extrascript %}
-    {% render_bundle_csp "submenu" "js" attrs='defer' %}
-{% endblock %}
-
 {# Translators: accessibility text label for site navigation #}
 {% translate "main navigation" as main_nav_label %}
 
@@ -29,7 +25,7 @@
                 </a>
             </li>
         </ul>
-        <ul id="menu" role="menu" aria-label="{{ main_nav_label }}">
+        <ul id="menu" role="menu" aria-label="{{ main_nav_label }}" data-controller="menu">
             <li class="menu-button" role="none">
                 <a href="#" role="button">
                     {# Translators: label for 'menu' close button for mobile navigation #}

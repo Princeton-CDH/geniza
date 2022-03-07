@@ -23,7 +23,8 @@
                             {% pageurl child_page.localized as child_page_url %}
                             {% if request.path == child_page_url %}aria-current="page"{% endif %}
                         {% endfor %}
-                    >
+                        data-action="click->menu#clickSubmenu mouseover->menu#openSubmenu mouseout->menu#closeSubmenu"
+                        >
                         {{ top_level_page.localized.title }}
                     </a>
                 {% endif %}
