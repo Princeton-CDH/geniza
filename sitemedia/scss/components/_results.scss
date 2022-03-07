@@ -37,12 +37,14 @@ section#document-list {
 .search-result {
     @include container.two-column;
     display: flex;
-    justify-content: space-between;
-    flex-flow: column;
+    justify-content: center;
+    flex-flow: row wrap;
     position: relative;
 
     @include breakpoints.for-tablet-landscape-up {
         flex-flow: row wrap;
+        align-items: flex-start;
+        justify-content: flex-start;
     }
 
     // spacing in between results
@@ -71,31 +73,32 @@ section#document-list {
         }
     }
 
+    // result number in list
+    .counter {
+        @include typography.headline-2;
+        text-align: left;
+        float: left;
+        flex: 0 1 auto;
+    }
+
     // First row on mobile, left column on larger
     section:first-of-type {
-        margin-left: spacing.$spacing-2xl;
+        margin-left: spacing.$spacing-md;
         max-width: container.$measure;
         display: flex;
         flex-flow: column;
-        flex: 1 0 100%;
+        justify-content: flex-start;
+        flex: 1 1 70%;
         &.has-image {
             @include breakpoints.for-tablet-landscape-up {
-                flex: 1 1 62%;
+                flex: 1 0 62%;
+                align-self: flex-start;
                 padding-right: spacing.$spacing-sm;
             }
         }
-
         // document titles
         .title {
             position: relative;
-
-            // anchor counter to h2 instead of li, for alignment regardless of tags
-            .counter {
-                margin-left: -#{spacing.$spacing-2xl};
-                text-align: left;
-                float: left;
-                font-weight: bold;
-            }
 
             // document type, inside title
             .doctype {
@@ -218,38 +221,44 @@ section#document-list {
         }
     }
     // "view document details" link
-    .view-link {
+    a.view-link {
         display: flex;
-        align-items: center;
+        flex: 1 0 100%;
         width: max-content;
         height: 1.75rem;
         margin-left: auto;
         margin-top: spacing.$spacing-md;
-        @include typography.meta;
-        border-bottom: 3px solid var(--background);
-        color: var(--icon-button);
+        justify-content: flex-end;
+        span {
+            display: flex;
+            flex: 0 1 auto;
+            align-items: center;
+            @include typography.meta;
+            border-bottom: 3px solid var(--background);
+            color: var(--icon-button);
+        }
         // focus styles
-        &:focus {
+        &:focus span {
             outline: 0.125rem solid var(--focus);
             outline-offset: 0.66rem;
         }
         // hover and active styles
-        &:hover,
-        &:active {
+        &:hover span,
+        &:active span {
             outline: none; // keeping focus and hover/active styles distinct
         }
-        &:hover {
+        &:hover span {
             border-bottom-color: var(--icon-button);
             @include breakpoints.for-tablet-landscape-up {
                 border-bottom-color: var(--icon-button-hover);
             }
         }
-        &:active {
+        &:active span {
             color: var(--icon-button-active);
             border-bottom-color: var(--icon-button);
         }
         // icon to the right
-        &:after {
+        span:after {
             font-family: "Phosphor" !important;
             content: "\f044"; // phosphor arrow-right icon
             margin-left: spacing.$spacing-2xs;

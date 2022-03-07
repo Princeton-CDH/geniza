@@ -621,21 +621,33 @@ class TestDocumentSearchView:
         assert response.status_code == 200
 
     def test_last_modified(self, client, document):
-        """Ensure that the last modified header is set in the response"""
+        """Test last modified header for document search"""
         SolrClient().update.index([document.index_data()], commit=True)
+        # for now, with random sort as default, no last modified
         response = client.head(reverse("corpus:document-search"))
+        assert "Last-Modified" not in response
+
+        # no last-modified if random sort is requested
+        response = client.head(reverse("corpus:document-search"), {"sort": "random"})
+        assert "Last-Modified" not in response
+
+        # last-modified if random sort is requested
+        response = client.head(
+            reverse("corpus:document-search"), {"sort": "scholarship_desc"}
+        )
         assert response["Last-Modified"]
         init_last_modified = response["Last-Modified"]
 
-        # Sleep to ensure the last modified header is different. Last-Modified only
-        #  has a resolution of 1 second.
+        # Sleep before making changes to ensure the last modified header will
+        # changes, since last-modified only goes down to the second.
         sleep(1)
-
         # Ensure that a document being suppressed changes the last modified header
         document.status = Document.SUPPRESSED
         document.save()
         SolrClient().update.index([document.index_data()], commit=True)
-        response = client.head(reverse("corpus:document-search"))
+        response = client.head(
+            reverse("corpus:document-search"), {"sort": "scholarship_desc"}
+        )
         new_last_modified = response["Last-Modified"]
         assert new_last_modified != init_last_modified
 
