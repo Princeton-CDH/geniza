@@ -1,5 +1,6 @@
 from ast import literal_eval
 from random import randint
+from urllib import request
 
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -59,6 +60,13 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                 "?".join([reverse("corpus:document-search"), queryargs.urlencode()])
             )
         return super().dispatch(request, *args, **kwargs)
+
+    def last_modified(self):
+        # override last modified from solr mixin to not return a value when
+        # sorting by random
+        if self.request.GET.get("sort") in [None, "random"]:
+            return None
+        return super().last_modified()
 
     def get_solr_sort(self, sort_option):
         """Return solr sort field for user-seleted sort option;
