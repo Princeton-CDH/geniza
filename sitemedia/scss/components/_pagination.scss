@@ -110,4 +110,11 @@ nav.pagination {
         font-family: "Phosphor";
         content: "\f044"; // phosphor arrow-right icon
     }
+    // Hebrew and Arabic reversed arrows
+    &[dir="rtl"] .prev::before {
+        content: "\f044"; // phosphor arrow-right icon
+    }
+    &[dir="rtl"] .next::after {
+        content: "\f03b"; // phosphor arrow-left icon
+    }
 }
