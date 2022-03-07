@@ -2,7 +2,8 @@
 <!-- document detail page navigation -->
 {# Translators: accessibility text label for document detail view tabs navigation #}
 <nav aria-label="{% translate "tabs" %}">
-    <ul class="tabs">
+    {% get_current_language as LANGUAGE_CODE %}
+    <ul class="tabs" {% if LANGUAGE_CODE == "ar" or LANGUAGE_CODE == "he" %}dir="rtl"{% endif %}>
         {% url 'corpus:document' pk=document.pk as document_url %}
         <li><a href="{{ document_url }}"{% if request.path == document_url %} aria-current="page"{% endif %}>{% translate "Document Details" %}</a></li>
         {% with n_records=document.sources.count %}
