@@ -18,7 +18,6 @@ module.exports = (env, options) => ({
         openseadragon: "./sitemedia/js/openseadragon.js",
         search: "./sitemedia/js/search.js",
         stimulus_app: "./sitemedia/js/stimulus_app.js",
-        theme_toggle: "./sitemedia/js/theme-toggle.js",
     },
     output: {
         // locations and filenames of bundled files
