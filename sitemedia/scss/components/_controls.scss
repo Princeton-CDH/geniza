@@ -62,3 +62,17 @@ div.controls {
         }
     }
 }
+
+// tweaks for RTL layout for hebrew, arabic
+html[dir="rtl"] div.controls {
+    left: spacing.$spacing-sm;
+    right: auto;
+    label#theme-toggle {
+        margin-right: 0;
+        margin-left: spacing.$spacing-xs;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-right: 0;
+            margin-left: spacing.$spacing-md;
+        }
+    }
+}
