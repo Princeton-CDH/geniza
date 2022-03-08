@@ -9,12 +9,14 @@
 
 // Document title
 span#formatted-title {
+    z-index: 2; // prevent edit container from overlapping
     @include typography.headline-1;
     // document type, inside title
     .doctype {
         @include typography.doctype;
     }
     .shelfmark {
+        user-select: all; // allow one-click select
         @include typography.shelfmark;
     }
     margin: spacing.$spacing-xl spacing.$spacing-md spacing.$spacing-md;
