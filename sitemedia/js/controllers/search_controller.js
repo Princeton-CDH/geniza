@@ -88,6 +88,13 @@ export default class extends Controller {
         }
     }
 
+    applyFilters(e) {
+        // The apply button needs to close the filter modal on mobile before submitting
+        e.preventDefault();
+        this.closeFilters(e);
+        this.update();
+    }
+
     sortTargetConnected() {
         // when sort targets are first connected,
         // check and disable relevance sort if appropriate
