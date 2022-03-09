@@ -17,17 +17,6 @@ export default class extends Controller {
 
     connect() {
         useDebounce(this);
-
-        // Event listener to close the sort <details> element when a click is registered outside
-        // of it. This needs to be on the whole document because the click could be from anywhere!
-        document.addEventListener("click", (e) => {
-            if (
-                this.sortDetailsTarget.open &&
-                !this.sortDetailsTarget.contains(e.target)
-            ) {
-                this.sortDetailsTarget.removeAttribute("open");
-            }
-        });
     }
 
     update() {
@@ -138,6 +127,17 @@ export default class extends Controller {
     shiftTabCloseSort(e) {
         // Shift-tab out of the summary = exiting the list
         if (this.sortDetailsTarget.open && e.shiftKey && e.code === "Tab") {
+            this.sortDetailsTarget.removeAttribute("open");
+        }
+    }
+
+    clickCloseSort(e) {
+        // Event listener to close the sort <details> element when a click is registered outside
+        // of it. This needs to be on the whole document because the click could be from anywhere!
+        if (
+            this.sortDetailsTarget.open &&
+            !this.sortDetailsTarget.contains(e.target)
+        ) {
             this.sortDetailsTarget.removeAttribute("open");
         }
     }
