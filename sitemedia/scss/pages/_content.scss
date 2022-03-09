@@ -6,8 +6,8 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-#content-page,
-#homepage {
+main.content-page,
+main.homepage {
     h1 {
         margin-top: -#{spacing.$spacing-sm};
         @include breakpoints.for-tablet-landscape-up {

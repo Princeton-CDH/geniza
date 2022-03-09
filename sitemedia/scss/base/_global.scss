@@ -56,7 +56,7 @@ body {
 }
 
 // Center-align sections of main content using flexbox.
-main turbo-frame#content {
+main {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -95,7 +95,7 @@ em {
     font-style: italic;
 }
 
-turbo-frame#content {
+turbo-frame {
     max-width: none;
 }
 

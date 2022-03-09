@@ -69,7 +69,7 @@
         {% endif %}
         {% block extrascript %}{% endblock extrascript %}
     </head>
-    <body id="{{ page_type }}{% block page_type %}{% endblock page_type %}">
+    <body>
         {% wagtailuserbar 'bottom-right' %}
         {% if SHOW_TEST_WARNING %}
             {% include 'snippets/test_banner.html' %}
@@ -84,7 +84,9 @@
                 {% include "nav.html" %}
             </header>
 
-            <main id="main-content"><turbo-frame id="content">{% block main %}{% endblock main %}</turbo-frame></main>
+            <turbo-frame id="main" data-turbo-action="advance">
+                <main id="main-content"  class="{{ page_type }}{% block page_type %}{% endblock page_type %}">{% block main %}{% endblock main %}</main>
+            </turbo-frame>
             <footer>
                 {% include "footer.html" %}
             </footer>

@@ -107,15 +107,13 @@
                 {# list of tuples of (IIIF image, label) #}
                 {% for image in document.iiif_images|slice:":3" %}
                     <li class="image-{{ forloop.counter }}">
-                        <a href="{% url 'corpus:document' document.pgpid %}">
-                            <img src="{{ image.0|iiif_image:"size:width=250" }}" loading="lazy" alt="{{ image.1 }}">
-                        </a>
+                        <img src="{{ image.0|iiif_image:"size:width=250" }}" loading="lazy" alt="{{ image.1 }}">
                     </li>
                 {% endfor %}
             </ul>
         {% endif %}
         {# view link #}
-        <a class="view-link" href="{% url 'corpus:document' document.pgpid %}">
+        <a class="view-link" href="{% url 'corpus:document' document.pgpid %}" data-turbo-frame="main">
             <span>{% translate 'View document details' %}</span>
         </a>
     </li>
