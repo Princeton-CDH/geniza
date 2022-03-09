@@ -1,4 +1,4 @@
-// src/controllers/text.js
+// controllers/text_controller.js
 
 import { Controller } from "@hotwired/stimulus";
 

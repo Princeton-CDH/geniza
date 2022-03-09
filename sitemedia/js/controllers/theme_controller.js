@@ -1,4 +1,4 @@
-// src/controllers/theme.js
+// controllers/theme_controller.js
 
 import { Controller } from "@hotwired/stimulus";
 

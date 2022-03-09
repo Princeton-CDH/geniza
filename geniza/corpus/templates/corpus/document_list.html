@@ -1,17 +1,14 @@
 {% extends 'base.html' %}
-{% load static i18n humanize widget_tweaks render_bundle_csp %}
+{% load static i18n humanize widget_tweaks %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
-{% block extrascript %}
-    {% render_bundle_csp "search" "js" attrs='defer' %}
-{% endblock %}
 
 {% block main %}
     <h1 class="sr-only">{{ page_title }}</h1>
     <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance">
         <fieldset id="query">
-            {% render_field form.q data-search-target="query" data-action="input->search#updateSort change->search#update" %}
+            {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
 
             {# Translators: Search submit button #}
             {% translate 'Submit search' as search_label %}
@@ -59,8 +56,8 @@
             <label for="{{ form.sort.html_name }}">
                 {{ form.sort.label }}
             </label>
-            <details class="sort-select" aria-expanded="false">
-                <summary class="sort-select-trigger" data-search-target="sortlabel">
+            <details class="sort-select" aria-expanded="false" data-search-target="sortDetails">
+                <summary class="sort-select-trigger" data-search-target="sortLabel" data-action="keydown->search#shiftTabCloseSort">
                     {% for choice in form.sort.field.choices %}
                         {% if form.sort.value == choice.0 %}
                             {{ choice.1 }}
@@ -72,7 +69,7 @@
                         <span class="sr-only" >{{ toggle_label }}</span>
                     </div>
                 </summary>
-                {% render_field form.sort data-search-target="sort" data-action="search#update" %}
+                {% render_field form.sort data-search-target="sort" data-action="input->search#changeSort input->search#update keydown->search#keyboardCloseSort" %}
             </details>
         </fieldset>
 

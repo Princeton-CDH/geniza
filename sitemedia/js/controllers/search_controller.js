@@ -8,7 +8,8 @@ export default class extends Controller {
     static targets = [
         "query",
         "sort",
-        "sortlabel",
+        "sortLabel",
+        "sortDetails",
         "filterModal",
         "doctypeFilter",
     ];
@@ -16,6 +17,17 @@ export default class extends Controller {
 
     connect() {
         useDebounce(this);
+
+        // Event listener to close the sort <details> element when a click is registered outside
+        // of it. This needs to be on the whole document because the click could be from anywhere!
+        document.addEventListener("click", (e) => {
+            if (
+                this.sortDetailsTarget.open &&
+                !this.sortDetailsTarget.contains(e.target)
+            ) {
+                this.sortDetailsTarget.removeAttribute("open");
+            }
+        });
     }
 
     update() {
@@ -95,6 +107,41 @@ export default class extends Controller {
         this.update();
     }
 
+    // Sort element functions
+
+    changeSort(e) {
+        /*
+         * Event listener to mimic <select> menu "header" functionality in a details/summary with radio
+         * button inputs. Without this, the radio buttons will still work, but changes to the selected
+         * option will not be visible in the collapsed <summary> until the form is submitted and the page
+         * reloads.
+         */
+        this.setSortLabel(e.currentTarget.parentElement.textContent);
+    }
+
+    setSortLabel(label) {
+        this.sortLabelTarget.children[0].innerHTML = label;
+    }
+
+    keyboardCloseSort(e) {
+        // exit the list and submit on enter/space
+        if (
+            this.sortDetailsTarget.open &&
+            (e.code === "Enter" ||
+                e.code === "Space" ||
+                (!e.shiftKey && e.code === "Tab")) // Tab out of a radio button = exiting the list
+        ) {
+            this.sortDetailsTarget.removeAttribute("open");
+        }
+    }
+
+    shiftTabCloseSort(e) {
+        // Shift-tab out of the summary = exiting the list
+        if (this.sortDetailsTarget.open && e.shiftKey && e.code === "Tab") {
+            this.sortDetailsTarget.removeAttribute("open");
+        }
+    }
+
     sortTargetConnected() {
         // when sort targets are first connected,
         // check and disable relevance sort if appropriate
@@ -104,10 +151,10 @@ export default class extends Controller {
         this.defaultSortElement = this.sortTargets.find(
             (target) => target.value === "random"
         );
-        this.updateSort();
+        this.autoUpdateSort();
     }
 
-    updateSort(event) {
+    autoUpdateSort(event) {
         // when query is empty, disable sort by relevance
         if (this.queryTarget.value.trim() == "") {
             this.disableRelevanceSort();
@@ -127,10 +174,6 @@ export default class extends Controller {
             .forEach((radio) => {
                 radio.checked = false;
             });
-    }
-
-    setSortLabel(label) {
-        this.sortlabelTarget.children[0].innerHTML = label;
     }
 
     disableRelevanceSort() {
