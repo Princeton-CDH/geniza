@@ -3,6 +3,20 @@ Image organization
 
 This document explains how images are organized in the Princeton Geniza Project GitHub repository.
 
+Uploading process
+-----------------
+
+Files may be uploaded directly to GitHub. However, if it is inefficient for designers to deal with the below organization, they may instead pass images to a developer (e.g. through Google Drive or Dropbox).
+
+When uploading such image(s), the developer must include a blank line at the end of their commit message, followed by another line:
+
+::
+
+    Co-authored-by: name <name@example.com>
+
+
+This co-author credit should include the name and email of the designer.
+
 Filenames
 ---------
 
@@ -39,32 +53,65 @@ The ``logos`` and ``ui`` subfolders are structured in the following way:
 
     ui
     ├── all
-    │   └── all
-    │       └── search-filter-icon.svg
+    │   └── all
+    │       └── search-filter-icon.svg
     ├── desktop
     │   ├── all
+    │   │   ├── 404.png
     │   │   └── separator.svg
     │   ├── dark
-    │   │   ├── header-base.svg
-    │   │   └── header-image.png
+    │   │   ├── all
+    │   │   │   ├── footer-base.svg
+    │   │   │   └── submenu-base.svg
+    │   │   ├── ltr
+    │   │   │   ├── header-base.svg
+    │   │   │   └── header-image.png
+    │   │   └── rtl
+    │   │       ├── header-base.svg
+    │   │       └── header-image.png
     │   └── light
-    │       ├── header-base.svg
-    │       └── header-image.png
+    │       ├── all
+    │       │   ├── footer-base.svg
+    │       │   └── submenu-base.svg
+    │       ├── ltr
+    │       │   ├── header-base.svg
+    │       │   └── header-image.png
+    │       └── rtl
+    │           ├── header-base.svg
+    │           └── header-image.png
     └── mobile
-        ├── all
-        │   └── separator.svg
+        ├── all
+        │   ├── 404.png
+        │   └── separator.svg
         ├── dark
-        │   ├── header-base.svg
-        │   └── header-image.png
+        │   ├── all
+        │   │   ├── footer-base.svg
+        │   │   └── footer-image.png
+        │   ├── ltr
+        │   │   ├── header-base.svg
+        │   │   └── header-image.png
+        │   └── rtl
+        │       ├── header-base.svg
+        │       └── header-image.png
         └── light
-            ├── header-base.svg
-            └── header-image.png
+            ├── all
+            │   ├── footer-base.svg
+            │   └── footer-image.png
+            ├── ltr
+            │   ├── header-base.svg
+            │   └── header-image.png
+            └── rtl
+                ├── header-base.svg
+                └── header-image.png
+
 
 There are three subfolders at the top level, ``desktop``, ``mobile``, and ``all`` to differentiate between UI elements used on different screen sizes. Elements used across both screen sizes may be placed in the ``all`` subfolder.
 
 One level deeper, the ``dark`` and ``light`` subfolders differentiate between images used in dark mode and light mode themes. These ``dark`` and ``light`` subfolders are where images are placed.
 
 If an image can be reused for both light and dark mode, either through SVG recoloring or simply because they are the same in both modes, they may be placed in the ``all`` subfolder.
+
+Finally, if variants are needed for right-to-left (RTL) and left-to-right (LTR) reading languages, then a set of subfolders ``ltr``, ``rtl``, and ``all`` may be created at the deepest level, and images may be placed there according to intended reading direction.
 
 Notes
 ~~~~~

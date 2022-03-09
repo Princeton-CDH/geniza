@@ -417,11 +417,11 @@ html[dir="rtl"] #site-nav {
 
 // Header backgrounds for light and dark mode, mobile
 @mixin header-background-mobile-dark {
-    background: url("/static/img/ui/mobile/dark/header-base.svg"),
-        url("/static/img/ui/mobile/dark/header-image.png");
+    background: url("/static/img/ui/mobile/dark/ltr/header-base.svg"),
+        url("/static/img/ui/mobile/light/ltr/header-image.png");
     background-repeat: no-repeat, no-repeat;
     a.home-link {
-        background: url("/static/img/logos/mobile/dark/pgp-logotype.png")
+        background: url("/static/img/logos/mobile/dark/ltr/logotype.png")
             no-repeat;
         background-size: 160px;
         width: 160px;
@@ -429,11 +429,11 @@ html[dir="rtl"] #site-nav {
     }
 }
 @mixin header-background-mobile-light {
-    background: url("/static/img/ui/mobile/light/header-base.svg"),
-        url("/static/img/ui/mobile/light/header-image.png");
+    background: url("/static/img/ui/mobile/light/ltr/header-base.svg"),
+        url("/static/img/ui/mobile/light/ltr/header-image.png");
     background-repeat: no-repeat, no-repeat;
     a.home-link {
-        background: url("/static/img/logos/mobile/light/pgp-logotype.png")
+        background: url("/static/img/logos/mobile/light/ltr/logotype.png")
             no-repeat;
         background-size: 151px;
         width: 151px;
@@ -454,16 +454,16 @@ html[dir="rtl"] #site-nav {
 
 // Header backgrounds for light and dark mode, desktop
 @mixin header-background-desktop-dark {
-    background: url("/static/img/ui/desktop/dark/header-base.svg") top left,
-        url("/static/img/ui/desktop/dark/header-image.png") top left;
+    background: url("/static/img/ui/desktop/dark/ltr/header-base.svg") top left,
+        url("/static/img/ui/desktop/dark/ltr/header-image.png") top left;
     background-repeat: no-repeat, no-repeat;
     &:after {
         @include after-header-desktop;
-        background: url("/static/img/ui/desktop/dark/header-filler.svg")
+        background: url("/static/img/ui/desktop/light/all/header-filler.svg")
             repeat-x;
     }
     a.home-link {
-        background: url("/static/img/logos/desktop/dark/pgp-logotype.png")
+        background: url("/static/img/logos/desktop/dark/ltr/logotype.png")
             no-repeat;
         background-size: 233px 150px;
         width: 233px;
@@ -471,16 +471,16 @@ html[dir="rtl"] #site-nav {
     }
 }
 @mixin header-background-desktop-light {
-    background: url("/static/img/ui/desktop/light/header-base.svg") top left,
-        url("/static/img/ui/desktop/light/header-image.png") top left;
+    background: url("/static/img/ui/desktop/light/ltr/header-base.svg") top left,
+        url("/static/img/ui/desktop/light/ltr/header-image.png") top left;
     background-repeat: no-repeat, no-repeat;
     &:after {
         @include after-header-desktop;
-        background: url("/static/img/ui/desktop/light/header-filler.svg")
+        background: url("/static/img/ui/desktop/light/all/header-filler.svg")
             repeat-x;
     }
     a.home-link {
-        background: url("/static/img/logos/desktop/light/pgp-logotype.png")
+        background: url("/static/img/logos/desktop/light/ltr/logotype.png")
             no-repeat;
         background-size: 233px 150px;
         width: 233px;
@@ -501,7 +501,7 @@ html[dir="rtl"] #site-nav {
         @include breakpoints.for-tablet-landscape-up {
             background: none;
             a::after {
-                background: url("/static/img/ui/desktop/light/menu-hover.svg")
+                background: url("/static/img/ui/desktop/light/all/menu-hover.svg")
                     center !important;
                 background-repeat: no-repeat !important;
             }
@@ -511,8 +511,8 @@ html[dir="rtl"] #site-nav {
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             // Hack to look like submenu is layered underneath the menu
-            background: url("/static/img/ui/desktop/light/submenu-base.svg") top
-                    repeat-x,
+            background: url("/static/img/ui/desktop/light/all/submenu-base.svg")
+                    top repeat-x,
                 linear-gradient(to bottom, var(--background), var(--background))
                     top;
         }
@@ -532,7 +532,7 @@ html[dir="rtl"] #site-nav {
         @include breakpoints.for-tablet-landscape-up {
             background: none;
             a::after {
-                background: url("/static/img/ui/desktop/dark/menu-hover.svg")
+                background: url("/static/img/ui/desktop/dark/all/menu-hover.svg")
                     center !important;
                 background-repeat: no-repeat !important;
             }
@@ -542,8 +542,8 @@ html[dir="rtl"] #site-nav {
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             // Hack to look like submenu is layered underneath the menu
-            background: url("/static/img/ui/desktop/dark/submenu-base.svg") top
-                    repeat-x,
+            background: url("/static/img/ui/desktop/dark/all/submenu-base.svg")
+                    top repeat-x,
                 linear-gradient(to bottom, var(--background), var(--background))
                     top;
         }
@@ -570,20 +570,19 @@ body.dark-mode #site-nav {
 
 // RTL header backgrounds for light and dark mode, desktop
 @mixin header-background-desktop-dark-rtl {
-    background: url("/static/img/ui/desktop/dark/hebrew-header-base.svg") top
-            right,
-        url("/static/img/ui/desktop/dark/hebrew-header-image.png") top right;
+    background: url("/static/img/ui/desktop/dark/rtl/header-base.svg") top right,
+        url("/static/img/ui/desktop/dark/rtl/header-image.png") top right;
     background-repeat: no-repeat, no-repeat;
     &:after {
         @include after-header-desktop;
-        background: url("/static/img/ui/desktop/dark/header-filler.svg")
+        background: url("/static/img/ui/desktop/dark/all/header-filler.svg")
             repeat-x;
         top: -0.5px;
         left: 0;
         right: 1950px;
     }
     a.home-link {
-        background: url("/static/img/logos/desktop/dark/hebrew-logotype.png")
+        background: url("/static/img/logos/desktop/dark/rtl/logotype.png")
             no-repeat;
         background-size: 228px 149px;
         width: 228px;
@@ -591,20 +590,20 @@ body.dark-mode #site-nav {
     }
 }
 @mixin header-background-desktop-light-rtl {
-    background: url("/static/img/ui/desktop/light/hebrew-header-base.svg") top
+    background: url("/static/img/ui/desktop/light/rtl/header-base.svg") top
             right,
-        url("/static/img/ui/desktop/light/hebrew-header-image.png") top right;
+        url("/static/img/ui/desktop/light/rtl/header-image.png") top right;
     background-repeat: no-repeat, no-repeat;
     &:after {
         @include after-header-desktop;
-        background: url("/static/img/ui/desktop/light/header-filler.svg")
+        background: url("/static/img/ui/desktop/light/all/header-filler.svg")
             repeat-x;
         top: -0.5px;
         left: 0;
         right: 1950px;
     }
     a.home-link {
-        background: url("/static/img/logos/desktop/light/hebrew-logotype.png")
+        background: url("/static/img/logos/desktop/light/rtl/logotype.png")
             no-repeat;
         background-size: 228px 149px;
         width: 228px;
@@ -616,7 +615,7 @@ body.dark-mode #site-nav {
 @mixin light-hover-rtl {
     ul#menu a::after,
     ul.sub-menu a::after {
-        background: url("/static/img/ui/desktop/light/menu-hover.svg") right !important;
+        background: url("/static/img/ui/desktop/light/all/menu-hover.svg") right !important;
         background-repeat: no-repeat !important;
         transform: scaleX(-1) translateX(20px);
     }
@@ -628,7 +627,7 @@ body.dark-mode #site-nav {
 @mixin dark-hover-rtl {
     ul#menu a::after,
     ul.sub-menu a::after {
-        background: url("/static/img/ui/desktop/dark/menu-hover.svg") right !important;
+        background: url("/static/img/ui/desktop/dark/all/menu-hover.svg") right !important;
         background-repeat: no-repeat !important;
         transform: scaleX(-1) translateX(20px);
     }

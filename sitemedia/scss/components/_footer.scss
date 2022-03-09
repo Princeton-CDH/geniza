@@ -205,16 +205,16 @@ footer {
 
 // Footer backgrounds for light and dark mode, mobile
 @mixin footer-background-mobile-dark {
-    background: url("/static/img/ui/mobile/dark/footer-gradient.svg") top,
-        url("/static/img/ui/mobile/dark/footer-image.png") top,
-        url("/static/img/ui/mobile/dark/footer-base.svg") top;
+    background: url("/static/img/ui/mobile/dark/all/footer-gradient.svg") top,
+        url("/static/img/ui/mobile/dark/all/footer-image.png") top,
+        url("/static/img/ui/mobile/dark/all/footer-base.svg") top;
     background-repeat: no-repeat, no-repeat, no-repeat;
     background-size: 100% auto, 100% auto, 100% auto;
 }
 @mixin footer-background-mobile-light {
-    background: url("/static/img/ui/mobile/light/footer-gradient.svg") top,
-        url("/static/img/ui/mobile/light/footer-image.png") top,
-        url("/static/img/ui/mobile/light/footer-base.svg") top;
+    background: url("/static/img/ui/mobile/light/all/footer-gradient.svg") top,
+        url("/static/img/ui/mobile/light/all/footer-image.png") top,
+        url("/static/img/ui/mobile/light/all/footer-base.svg") top;
     background-repeat: no-repeat, no-repeat, no-repeat;
     background-size: 100% auto, 100% auto, 100% auto;
 }
@@ -231,26 +231,27 @@ footer {
 
 // Footer backgrounds for light and dark mode, desktop
 @mixin footer-background-desktop-dark {
-    background: url("/static/img/ui/desktop/dark/footer-gradient.svg") top right,
-        url("/static/img/ui/desktop/dark/footer-image.png") top right,
-        url("/static/img/ui/desktop/dark/footer-base.svg") top right;
+    background: url("/static/img/ui/desktop/dark/all/footer-gradient.svg") top
+            right,
+        url("/static/img/ui/desktop/dark/all/footer-image.png") top right,
+        url("/static/img/ui/desktop/dark/all/footer-base.svg") top right;
     background-repeat: no-repeat, no-repeat, no-repeat;
     &:before {
         @include before-footer-desktop;
-        background: url("/static/img/ui/desktop/dark/footer-filler.svg")
+        background: url("/static/img/ui/desktop/dark/all/footer-filler.svg")
             repeat-x;
         right: 1980px;
     }
 }
 @mixin footer-background-desktop-light {
-    background: url("/static/img/ui/desktop/light/footer-gradient.svg") top
+    background: url("/static/img/ui/desktop/light/all/footer-gradient.svg") top
             right,
-        url("/static/img/ui/desktop/light/footer-image.png") top right,
-        url("/static/img/ui/desktop/light/footer-base.svg") top right;
+        url("/static/img/ui/desktop/light/all/footer-image.png") top right,
+        url("/static/img/ui/desktop/light/all/footer-base.svg") top right;
     background-repeat: no-repeat, no-repeat, no-repeat;
     &:before {
         @include before-footer-desktop;
-        background: url("/static/img/ui/desktop/light/footer-filler.svg")
+        background: url("/static/img/ui/desktop/light/all/footer-filler.svg")
             repeat-x;
         right: 1900px;
     }
