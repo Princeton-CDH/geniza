@@ -16,7 +16,7 @@ export default class extends Controller {
     }
 
     setMode(mode) {
-        // Toggle light/dark mode using classes on body element
+        // Toggle light/dark mode using classes on html element
         this.element.classList.add(`${mode}-mode`);
         this.element.classList.remove(
             `${mode === "light" ? "dark" : "light"}-mode`
