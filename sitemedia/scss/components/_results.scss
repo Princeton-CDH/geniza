@@ -229,6 +229,7 @@ section#document-list {
         margin-left: auto;
         margin-top: spacing.$spacing-md;
         justify-content: flex-end;
+        z-index: 3;
         span {
             display: flex;
             flex: 0 1 auto;
@@ -285,7 +286,7 @@ section#document-list {
     .metadata dd,
     .tags {
         position: relative;
-        z-index: 2;
+        z-index: 4;
     }
 }
 
