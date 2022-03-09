@@ -4,8 +4,6 @@
   "assets": [],
   "chunks": {
     "main": [],
-    "search": [],
-    "stimulus_app": [],
-    "viewer": []
+    "stimulus_app": []
   }
 }
