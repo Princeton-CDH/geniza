@@ -27,12 +27,3 @@ main.search {
         padding: 0 spacing.$spacing-md spacing.$spacing-md;
     }
 }
-
-// Applying color per system theme
-.turbo-progress-bar {
-    height: 5px;
-    background-color: #436043;
-    @media (prefers-color-scheme: dark) {
-        background-color: #c37f97;
-    }
-}
