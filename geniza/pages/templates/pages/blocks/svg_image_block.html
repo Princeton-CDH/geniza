@@ -1,0 +1,14 @@
+{# adapted from mep-django #}
+
+{# Render SVGImageBlock with optional caption and description #}
+{% with img_id=value.image.url|slugify %} {# slugify image url for unique id #}
+    <figure {% if value.extended_description %}aria-describedby="{{ img_id }}-desc"{% endif %}>
+        <img role="img" src="{{ value.image.url }}" alt="{{ value.alternative_text }}"/>
+        {% if value.caption %}
+            <figcaption>{{ value.caption }}</figcaption>
+        {% endif %}
+        {% if value.extended_description %}
+            <div class="sr-only" id="{{ img_id }}-desc">{{ value.extended_description }}</div>
+        {% endif %}
+    </figure>
+{% endwith %}

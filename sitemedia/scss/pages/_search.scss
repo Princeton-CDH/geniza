@@ -6,9 +6,9 @@
 @use "../base/container";
 @use "../base/spacing";
 
-#search {
+main.search {
     // Overall page layout
-    main form {
+    form {
         @include container.two-column;
         display: flex;
         flex-direction: column;

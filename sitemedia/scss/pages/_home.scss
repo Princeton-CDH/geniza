@@ -6,7 +6,7 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-#homepage {
+main.homepage {
     // Header text with background
     h1 {
         color: var(--link-primary);
@@ -111,7 +111,7 @@
 }
 
 // Applying background image and gradient per system theme
-#homepage h1 {
+main.homepage h1 {
     @include light-home;
     @media (prefers-color-scheme: dark) {
         @include dark-home;
@@ -119,9 +119,9 @@
 }
 
 // Manual (body-class based) theme overrides
-body.light-mode#homepage h1 {
+body.light-mode main.homepage h1 {
     @include light-home;
 }
-body.dark-mode#homepage h1 {
+body.dark-mode main.homepage h1 {
     @include dark-home;
 }

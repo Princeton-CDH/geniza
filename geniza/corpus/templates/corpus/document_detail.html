@@ -25,7 +25,6 @@
     {# include openseadragon if needed #}
     {% if document.has_image or document.iiif_urls %}
         <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/" crossorigin />
-        {% render_bundle_csp "openseadragon" "js" attrs='defer' %}
     {% endif %}
 {% endblock extrascript %}
 
@@ -34,7 +33,7 @@
     <h1 class="sr-only">{{ page_title }}</h1>
     {% include "corpus/snippets/document_header.html" %}
 
-    <div class="container">
+    <div class="container" data-controller="document">
         {# tabs #}
         {% include "corpus/snippets/document_tabs.html" %}
 

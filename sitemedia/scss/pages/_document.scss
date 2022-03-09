@@ -8,7 +8,7 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-body#document {
+main.document {
     // Primary container
     .container {
         display: flex;

@@ -51,7 +51,7 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertContains(
             response,
-            '<section id="iiif-viewer">',
+            '<section id="iiif-viewer" data-controller="iiif">',
         )
 
     def test_viewer_annotations(self, client, document, unpublished_editions):

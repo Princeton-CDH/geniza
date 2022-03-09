@@ -91,7 +91,7 @@ section#document-list {
         flex: 1 1 70%;
         &.has-image {
             @include breakpoints.for-tablet-landscape-up {
-                flex: 1 0 62%;
+                flex: 1 0 60%;
                 align-self: flex-start;
                 padding-right: spacing.$spacing-sm;
             }
@@ -229,6 +229,7 @@ section#document-list {
         margin-left: auto;
         margin-top: spacing.$spacing-md;
         justify-content: flex-end;
+        z-index: 3;
         span {
             display: flex;
             flex: 0 1 auto;
@@ -285,7 +286,7 @@ section#document-list {
     .metadata dd,
     .tags {
         position: relative;
-        z-index: 2;
+        z-index: 4;
     }
 }
 
