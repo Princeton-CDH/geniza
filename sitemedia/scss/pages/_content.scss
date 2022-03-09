@@ -96,24 +96,24 @@
         img {
             align-self: center;
             // svg image styling
-            &:not(.landcsape):not(.portrait) {
-                max-width: 100%;
-                max-height: 100%;
-            }
-        }
-        img.landscape {
-            height: auto;
-            max-width: 280px;
-            @include breakpoints.for-tablet-landscape-up {
-                max-width: 400px;
-            }
-        }
-        img.portrait {
-            width: auto;
             max-width: 100%;
-            max-height: 200px;
-            @include breakpoints.for-tablet-landscape-up {
-                max-height: 300px;
+            max-height: 100%;
+            // landscape image styling
+            &.landscape {
+                height: auto;
+                max-width: 280px;
+                @include breakpoints.for-tablet-landscape-up {
+                    max-width: 400px;
+                }
+            }
+            // portrait image styling
+            &.portrait {
+                width: auto;
+                max-width: 100%;
+                max-height: 200px;
+                @include breakpoints.for-tablet-landscape-up {
+                    max-height: 300px;
+                }
             }
         }
     }
