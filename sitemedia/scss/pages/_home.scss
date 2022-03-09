@@ -119,9 +119,9 @@ main.homepage h1 {
 }
 
 // Manual (body-class based) theme overrides
-body.light-mode main.homepage h1 {
+html.light-mode main.homepage h1 {
     @include light-home;
 }
-body.dark-mode main.homepage h1 {
+html.dark-mode main.homepage h1 {
     @include dark-home;
 }

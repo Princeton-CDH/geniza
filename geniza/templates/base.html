@@ -1,6 +1,6 @@
 {% load static render_bundle_csp i18n wagtailuserbar %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE }}"{% if LANGUAGE_CODE == "ar" or LANGUAGE_CODE == "he" %} dir="rtl"{% endif %}>
+<html lang="{{ LANGUAGE_CODE }}"{% if LANGUAGE_CODE == "ar" or LANGUAGE_CODE == "he" %} dir="rtl"{% endif %} data-controller="theme">
     <head>
         <!-- metadata -->
         <meta charset="UTF-8">
@@ -69,7 +69,7 @@
         {% endif %}
         {% block extrascript %}{% endblock extrascript %}
     </head>
-    <body data-controller="theme">
+    <body>
         {% wagtailuserbar 'bottom-right' %}
         {% if SHOW_TEST_WARNING %}
             {% include 'snippets/test_banner.html' %}

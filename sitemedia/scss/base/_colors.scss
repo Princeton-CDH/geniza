@@ -111,7 +111,7 @@ $off-white: #f7f7f7;
     --filter-active: #c37f97;
 }
 
-body {
+html {
     @include light-mode;
     @media (prefers-color-scheme: dark) {
         @include dark-mode;

@@ -23,8 +23,8 @@ export default class extends Controller {
         );
     }
 
-    initialize() {
-        // On controller initialization, apply system/user preference
+    toggleCheckboxTargetConnected() {
+        // On checkbox connected, apply system/user preference
         if (this.systemDarkMode()) {
             this.setMode("dark");
             this.toggleCheckboxTarget.checked = true;

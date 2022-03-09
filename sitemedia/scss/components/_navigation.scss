@@ -538,9 +538,9 @@ header {
 }
 
 // Manual (body-class based) theme overrides
-body.light-mode #site-nav {
+html.light-mode #site-nav {
     @include light-nav;
 }
-body.dark-mode #site-nav {
+html.dark-mode #site-nav {
     @include dark-nav;
 }
