@@ -71,8 +71,6 @@ class Command(BaseCommand):
         browser.get(
             "http://localhost:8000/en/documents/?per_page=2&sort=scholarship_desc"
         )
-        # open filters
-        browser.find_element_by_css_selector("a#filters-button").click()
         # open document type filter
         browser.find_element_by_css_selector(".doctype-filter summary").click()
         # click the first option
