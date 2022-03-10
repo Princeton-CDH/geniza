@@ -416,6 +416,12 @@ class Document(ModelIndexable):
         help_text="Enter text here if an administrator needs to review this document.",
     )
     old_pgpids = ArrayField(models.IntegerField(), null=True, verbose_name="Old PGPIDs")
+    shelfmark_display_override = models.CharField(
+        "Shelfmark Display Override",
+        blank=True,
+        max_length=500,
+        help_text='Override default display of joins. This is especially useful for continuous shelfmark joins, e.g. "Bodl. MS Heb. d 66/49–50"',
+    )
 
     PUBLIC = "P"
     STATUS_PUBLIC = "Public"
@@ -492,6 +498,9 @@ class Document(ModelIndexable):
     @property
     def shelfmark(self):
         """shelfmarks for associated fragments"""
+        if self.shelfmark_display_override:
+            return self.shelfmark_display_override
+
         # access via textblock so we follow specified order,
         # use dict keys to ensure unique
         return " + ".join(

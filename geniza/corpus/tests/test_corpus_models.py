@@ -420,6 +420,11 @@ class TestDocument:
         # ensure that uncertain shelfmarks are not included in str
         assert doc2.shelfmark == "%s + %s" % (frag2.shelfmark, frag.shelfmark)
 
+        # Ensure that display overrride works
+        override = "T-S 8J22.21-22"
+        doc2.shelfmark_display_override = override
+        assert doc2.shelfmark == override
+
     def test_str(self):
         frag = Fragment.objects.create(shelfmark="Or.1081 2.25")
         doc = Document.objects.create()
