@@ -17,6 +17,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "type": "type_s",
         "status": "status_s",
         "shelfmark": "shelfmark_t",
+        "shelfmark_display_override": "shelfmark_display_override_s",
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
         "description": "description_txt_ens",  # use stemmed version for field search & highlight
