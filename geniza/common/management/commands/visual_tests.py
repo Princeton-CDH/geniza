@@ -44,7 +44,7 @@ class Command(BaseCommand):
         # attribute of each image, and swap out the src attribute for the appropriate image
         # from /static.
         portrait_img = browser.find_element_by_css_selector(
-            "#content-page figure img.portrait"
+            ".content-page figure img.portrait"
         )
         browser.execute_script(
             "arguments[0].setAttribute('srcset',arguments[1])", portrait_img, ""
@@ -55,7 +55,7 @@ class Command(BaseCommand):
             "/static/img/fixtures/test-image-fragment.jpg",
         )
         landscape_image = browser.find_element_by_css_selector(
-            "#content-page figure img.landscape"
+            ".content-page figure img.landscape"
         )
         browser.execute_script(
             "arguments[0].setAttribute('srcset',arguments[1])", landscape_image, ""
