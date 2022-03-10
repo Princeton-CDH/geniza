@@ -71,17 +71,17 @@ class Command(BaseCommand):
         browser.get(
             "http://localhost:8000/en/documents/?per_page=2&sort=scholarship_desc"
         )
+        # open filters
+        browser.find_element_by_css_selector("a#filters-button").click()
         # open document type filter
         browser.find_element_by_css_selector(".doctype-filter summary").click()
         # click the first option
         browser.find_element_by_css_selector(
             ".doctype-filter li:nth-child(1) label"
         ).click()
-        filter_modal_css = "fieldset#filters { display: flex !important; }"
         percy_snapshot(
             browser,
             "Document Search filter%s" % dark_mode_str,
-            percy_css=filter_modal_css,
         )
 
         # document search
