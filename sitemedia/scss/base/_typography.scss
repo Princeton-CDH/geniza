@@ -91,12 +91,12 @@ $text-size-5xl: 2rem; //     = 32px
     }
     &::before {
         margin-top: -#{spacing.$spacing-xl};
-        mask-image: url("/static/img/ui/mobile/light/left-double-quote.svg");
+        mask-image: url("/static/img/ui/mobile/all/left-double-quote.svg");
     }
     &::after {
         display: block;
         margin-top: #{spacing.$spacing-sm};
-        mask-image: url("/static/img/ui/mobile/light/right-double-quote.svg");
+        mask-image: url("/static/img/ui/mobile/all/right-double-quote.svg");
     }
     & + blockquote {
         margin-top: 6rem;
@@ -110,11 +110,11 @@ $text-size-5xl: 2rem; //     = 32px
         }
         &::before {
             margin-top: -3rem;
-            mask-image: url("/static/img/ui/desktop/light/left-double-quote.svg");
+            mask-image: url("/static/img/ui/desktop/all/left-double-quote.svg");
         }
         &::after {
             margin-top: #{spacing.$spacing-md};
-            mask-image: url("/static/img/ui/desktop/light/right-double-quote.svg");
+            mask-image: url("/static/img/ui/desktop/all/right-double-quote.svg");
         }
         & + blockquote {
             margin-top: 8rem;

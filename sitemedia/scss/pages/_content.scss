@@ -39,11 +39,11 @@ main.homepage {
                 left: -#{spacing.$spacing-lg};
                 display: block;
                 background-color: var(--link-primary);
-                mask-image: url("/static/img/ui/mobile/light/bullet.svg");
+                mask-image: url("/static/img/ui/mobile/all/bullet.svg");
                 @include breakpoints.for-tablet-landscape-up {
                     width: 18px;
                     height: 20px;
-                    mask-image: url("/static/img/ui/desktop/light/bullet.svg");
+                    mask-image: url("/static/img/ui/desktop/all/bullet.svg");
                 }
             }
         }
