@@ -513,6 +513,7 @@ class Document(ModelIndexable):
 
     @property
     def certain_join_shelfmarks(self):
+        # ?: This shouldn't require a check with shelfmark_display_override, right?
         return list(
             dict.fromkeys(
                 block.fragment.shelfmark
