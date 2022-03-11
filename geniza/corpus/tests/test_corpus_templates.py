@@ -9,7 +9,7 @@ from django.template.loader import get_template
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
-from geniza.corpus.models import Document, TextBlock
+from geniza.corpus.models import Document, LanguageScript, TextBlock
 from geniza.footnotes.models import Footnote
 
 
@@ -28,7 +28,8 @@ class TestDocumentDetailTemplate:
     def test_first_input(self, client, document):
         """Document detail template should include document first input date"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, '<dd class="secondary">2004</dd>', html=True)
+        # NOTE: now classed as secondary metadata on the <dl>
+        assertContains(response, "<dd>2004</dd>", html=True)
 
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""
@@ -222,6 +223,55 @@ class TestDocumentDetailTemplate:
         assertContains(response, "Other documents on this fragment")
         assertContains(response, join.get_absolute_url())
         assertContains(response, join.title)
+
+    def test_languages_none(self, client, document):
+        response = client.get(document.get_absolute_url())
+        assertNotContains(response, "Primary Language")
+        assertNotContains(response, "Secondary Language")
+
+    def test_languages_primary(self, client, document):
+        judeo_arabic = LanguageScript.objects.create(
+            language="Judaeo-Arabic", script="Hebrew"
+        )
+        # add a language
+        document.languages.add(judeo_arabic)
+        response = client.get(document.get_absolute_url())
+        # should have one primary language
+        assertContains(response, "Primary Language")
+        assertContains(response, str(judeo_arabic))
+        # not plural, no secondary language
+        assertNotContains(response, "Primary Languages")
+        assertNotContains(response, "Secondary Language")
+
+        # add a second language
+        arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
+        document.languages.add(arabic)
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "Primary Languages")
+        assertContains(response, str(judeo_arabic))
+        assertContains(response, str(arabic))
+
+    def test_languages_secondary(self, client, document):
+        judeo_arabic = LanguageScript.objects.create(
+            language="Judaeo-Arabic", script="Hebrew"
+        )
+        # add a secondary language
+        document.secondary_languages.add(judeo_arabic)
+        response = client.get(document.get_absolute_url())
+        # should have one secondary language
+        assertContains(response, "Secondary Language")
+        assertContains(response, str(judeo_arabic))
+        # not plural, no primary language (not likely in real life, but test logic)
+        assertNotContains(response, "Primary Language")
+        assertNotContains(response, "Secondary Languages")
+
+        # add a second secondary language
+        arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
+        document.secondary_languages.add(arabic)
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "Secondary Languages")
+        assertContains(response, str(judeo_arabic))
+        assertContains(response, str(arabic))
 
 
 class TestDocumentScholarshipTemplate:
