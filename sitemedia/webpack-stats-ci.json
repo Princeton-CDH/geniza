@@ -4,10 +4,6 @@
   "assets": [],
   "chunks": {
     "main": [],
-    "search": [],
-    "stimulus_app": [],
-    "submenu": [],
-    "theme_toggle": [],
-    "viewer": []
+    "stimulus_app": []
   }
 }

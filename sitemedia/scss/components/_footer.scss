@@ -280,9 +280,9 @@ footer {
 }
 
 // Manual (body-class based) theme overrides
-body.light-mode footer {
+html.light-mode footer {
     @include light-footer;
 }
-body.dark-mode footer {
+html.dark-mode footer {
     @include dark-footer;
 }

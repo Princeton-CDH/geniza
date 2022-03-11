@@ -1,6 +1,6 @@
 {% load static render_bundle_csp i18n wagtailuserbar %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE }}"{% if LANGUAGE_CODE == "ar" or LANGUAGE_CODE == "he" %} dir="rtl"{% endif %}>
+<html lang="{{ LANGUAGE_CODE }}"{% if LANGUAGE_CODE == "ar" or LANGUAGE_CODE == "he" %} dir="rtl"{% endif %} data-controller="theme">
     <head>
         <!-- metadata -->
         <meta charset="UTF-8">
