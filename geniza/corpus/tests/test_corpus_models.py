@@ -1,4 +1,6 @@
 from datetime import datetime
+from pydoc import Doc
+from telnetlib import DO
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -594,6 +596,22 @@ class TestDocument:
         frag.delete()
         frag2.delete()
         assert doc.fragment_urls() == []
+
+    def test_fragments_other_docs_none(self, document):
+        assert document.fragments_other_docs() == []
+
+    def test_fragments_other_docs(self, document, join):
+        assert document.fragments_other_docs() == [join]
+
+    def test_fragments_other_docs_multiple(self, document, join):
+        doc2 = Document.objects.create()
+        doc2.fragments.add(join.fragments.first())
+        assert join.fragments_other_docs() == [doc2, document]
+
+    def test_fragments_other_docs_suppressed(self, document, join):
+        join.status = Document.SUPPRESSED
+        join.save()
+        assert document.fragments_other_docs() == []
 
     def test_title(self):
         doc = Document.objects.create()

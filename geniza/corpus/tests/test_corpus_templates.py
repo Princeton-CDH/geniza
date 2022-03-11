@@ -211,6 +211,18 @@ class TestDocumentDetailTemplate:
             response, "Download Khan, el-Leithy, Rustow and Vanthieghem's edition"
         )
 
+    def test_other_docs_none(self, document, client):
+        """If there are no other documents, don't show the other docs section"""
+        response = client.get(document.get_absolute_url())
+        assertNotContains(response, "Other documents on this fragment")
+
+    def test_other_docs(self, document, join, client):
+        """If there are other documents, show the other docs section"""
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "Other documents on this fragment")
+        assertContains(response, join.get_absolute_url())
+        assertContains(response, join.title)
+
 
 class TestDocumentScholarshipTemplate:
     def test_source_title(self, client, document, twoauthor_source):
