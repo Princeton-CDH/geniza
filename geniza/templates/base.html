@@ -61,7 +61,6 @@
         {% render_bundle_csp "main" "css" %}
         {% block extrastyle %}{% endblock extrastyle %}
         <!-- scripts -->
-        {% render_bundle_csp "main" "js" attrs='defer' %}
         {% render_bundle_csp "stimulus_app" "js" attrs='defer' %}
         {# analytics #}
         {% if not request.is_preview and GTAGS_ANALYTICS_ID %}
