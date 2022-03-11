@@ -87,28 +87,25 @@
             </ul>
         {% endif %}
     </form>
-    {# keep pagination within the same frame but update history/location #}
-    <turbo-frame id="search-results" data-turbo-action="advance">
-        <section id="document-list">
-            <h1>
-                {% comment %}Translators: number of search results{% endcomment %}
-                {% blocktranslate with count_humanized=paginator.count|intcomma count counter=paginator.count trimmed %}
-                    1 result
-                {% plural %}
-                    {{ count_humanized }} total results
-                {% endblocktranslate %}
-            </h1>
-            {% if is_paginated %}
-                {% include "corpus/snippets/pagination.html" %}
-            {% endif %}
-            <ol>
-                {% for document in documents %}
-                    {% include "corpus/snippets/document_result.html" %}
-                {% endfor %}
-            </ol>
-            {% if is_paginated %}
-                {% include "corpus/snippets/pagination.html" %}
-            {% endif %}
-        </section>
-    </turbo>
+    <section id="document-list">
+        <h1>
+            {% comment %}Translators: number of search results{% endcomment %}
+            {% blocktranslate with count_humanized=paginator.count|intcomma count counter=paginator.count trimmed %}
+                1 result
+            {% plural %}
+                {{ count_humanized }} total results
+            {% endblocktranslate %}
+        </h1>
+        {% if is_paginated %}
+            {% include "corpus/snippets/pagination.html" %}
+        {% endif %}
+        <ol>
+            {% for document in documents %}
+                {% include "corpus/snippets/document_result.html" %}
+            {% endfor %}
+        </ol>
+        {% if is_paginated %}
+            {% include "corpus/snippets/pagination.html" %}
+        {% endif %}
+    </section>
 {% endblock main %}
