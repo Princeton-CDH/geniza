@@ -694,14 +694,14 @@ html[dir="rtl"] #site-nav {
 }
 
 // applying tweaks by body class
-html[dir="rtl"] body.light-mode #site-nav {
+html[dir="rtl"].light-mode #site-nav {
     @include light-nav;
     @include breakpoints.for-tablet-landscape-up {
         @include header-background-desktop-light-rtl;
         @include light-hover-rtl;
     }
 }
-html[dir="rtl"] body.dark-mode #site-nav {
+html[dir="rtl"].dark-mode #site-nav {
     @include dark-nav;
     @include breakpoints.for-tablet-landscape-up {
         @include header-background-desktop-dark-rtl;
