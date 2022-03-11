@@ -68,18 +68,33 @@
                         {% endifchanged %}
                     {% endfor %}
                 {% endif %}
-                {# Translators: Date document was first added to the PGP #}
-                <dt class="secondary">{% translate 'Input date' %}</dt>
-                <dd class="secondary">{{ document.log_entries.last.action_time.year }}</dd>
-                <dt class="secondary">
-                    {# Translators: label for permanent link to a document #}
-                    {% translate 'Permalink' %}
-                </dt>
-                <dd class="secondary">
-                    <a href="{{ document.permalink }}" rel="bookmark">
-                        {{ document.permalink }}
-                    </a>
-                </dd>
+                {% if document.languages.exists %}
+                    <dt>
+                        {# Translators: Primary language label #}
+                        {% blocktranslate count counter=document.languages.count trimmed %}
+                            Primary Language
+                        {% plural %}
+                            Primary Languages
+                        {% endblocktranslate %}
+                    </dt>
+                    {% for lang in document.languages.all %}
+                        <dd>{{ lang }}</dd>
+                    {% endfor %}
+                {% endif %}
+                {% if document.secondary_languages.exists %}
+                    <dt>
+                        {# Translators: Secondary language label #}
+                        {% blocktranslate count counter=document.secondary_languages.count trimmed %}
+                            Secondary Language
+                        {% plural %}
+                            Secondary Languages
+                        {% endblocktranslate %}
+                    </dt>
+                    {% for lang in document.secondary_languages.all %}
+                        <dd>{{ lang }}</dd>
+                    {% endfor %}
+                {% endif %}
+
             </dl>
             {% if document.tags.exists %}
                 {# Translators: label for tags on a document #}
@@ -98,6 +113,22 @@
             </h3>
             <p>{{ document.description|pgp_urlize }}</p>
         </section>
+
+        {# secondary metadata #}
+        <dl class="metadata secondary">
+            {# Translators: Date document was first added to the PGP #}
+            <dt>{% translate 'Input date' %}</dt>
+            <dd>{{ document.log_entries.last.action_time.year }}</dd>
+            <dt>
+                {# Translators: label for permanent link to a document #}
+                {% translate 'Permalink' %}
+            </dt>
+            <dd>
+                <a href="{{ document.permalink }}" rel="bookmark">
+                    {{ document.permalink }}
+                </a>
+            </dd>
+        </dl>
 
         {# link to download transcription if available; admin only for now since plain-text bidi is not great #}
         {% if document.has_transcription and user.is_authenticated %}
