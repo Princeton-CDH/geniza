@@ -3,7 +3,7 @@ psycopg2-binary
 pucas>=0.6
 django-split-settings
 requests
-django-taggit>=1.5.1
+django-taggit>=1.5.1,<2.0
 piffle>=0.4
 taggit-selectize
 django-multiselectfield
