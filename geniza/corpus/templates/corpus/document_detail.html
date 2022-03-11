@@ -1,11 +1,17 @@
 {% extends 'base.html' %}
-{% load static i18n corpus_extras %}
+{% load static i18n render_bundle_csp corpus_extras fullurl %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 {% block extrameta %}
     <link rel="canonical" href="{{ document.permalink }}" />
-
+    {% spaceless %}
+        {% for lang_code in PUBLIC_SITE_LANGUAGES %}
+            {% language lang_code %}
+                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "corpus:document" document.pk %}" />
+            {% endlanguage %}
+        {% endfor %}
+    {% endspaceless %}
     {# digital editions metadata for twitter, slack #}
     {% if document.digital_editions %}
         <meta name="twitter:label1" value="{% blocktranslate count counter=document.editors.count trimmed %}Editor{% plural %}Editors{% endblocktranslate %}">
@@ -103,7 +109,28 @@
                 {% endfor %}
             </section>
         {% endif %}
+
+        {% with document.fragments_other_docs as other_docs %}
+            {% if other_docs %}
+                <section>
+                    <dd class="metadata">
+                        <dt>
+                            {# Translators: Other documents on the same fragment #}
+                            {% blocktranslate count counter=document.fragments.count trimmed %}
+                                Other documents on this fragment
+                            {% plural %}
+                                Other documents on these fragments
+                            {% endblocktranslate %}
+                        </dt>
+                        {% for doc in other_docs %}
+                            <dd><a href="{{ doc.get_absolute_url }}">{{ doc.title }}</a></dd>
+                        {% endfor %}
+                    </section>
+            {% endif %}
+        {% endwith %}
     </div>
+
+
 
     {# viewer #}
     {% if document.has_transcription or document.iiif_urls %}
