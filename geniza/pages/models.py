@@ -5,6 +5,7 @@ from wagtail.admin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.core import blocks
 from wagtail.core.fields import StreamField
 from wagtail.core.models import Page
+from wagtail.documents.blocks import DocumentChooserBlock
 from wagtail.images.blocks import ImageChooserBlock
 
 # Translators: help text for image alternative text
@@ -33,6 +34,36 @@ class CaptionedImageBlock(blocks.StructBlock):
         template = "pages/blocks/captioned_image_block.html"
 
 
+class SVGImageBlock(blocks.StructBlock):
+    """:class:`~wagtail.core.blocks.StructBlock` for an SVG image with
+    alternative text and optional formatted caption. Separate from
+    :class:`CaptionedImageBlock` because Wagtail image handling
+    does not work with SVG."""
+
+    extended_description_help = _(
+        """This text will only be read to \
+    non-sighted users and should describe the major insights or \
+    takeaways from the graphic. Multiple paragraphs are allowed."""
+    )
+
+    # Adapted from mep-django
+
+    image = DocumentChooserBlock()
+    alternative_text = blocks.TextBlock(required=True, help_text=ALT_TEXT_HELP)
+    caption = blocks.RichTextBlock(
+        features=["link", "superscript"],
+        required=False,
+    )
+    extended_description = blocks.RichTextBlock(
+        features=["p"], required=False, help_text=extended_description_help
+    )
+
+    class Meta:
+        icon = "image"
+        label = "SVG"
+        template = "pages/blocks/svg_image_block.html"
+
+
 class BodyContentBlock(blocks.StreamBlock):
     """Common set of content blocks for content pages."""
 
@@ -57,6 +88,7 @@ class BodyContentBlock(blocks.StreamBlock):
         required=False,
     )
     image = CaptionedImageBlock()
+    svg_image = SVGImageBlock()
 
 
 class HomePage(Page):

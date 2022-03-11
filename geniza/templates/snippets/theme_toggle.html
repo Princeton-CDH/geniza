@@ -1,12 +1,8 @@
-{% load i18n static render_bundle_csp %}
+{% load i18n static %}
 
-{% block extrascript %}
-    {% render_bundle_csp "theme_toggle" "js" attrs='defer' %}
-{% endblock %}
-
-<label id="theme-toggle" for="theme-toggle-checkbox" tabindex="0">
+<label id="theme-toggle" for="theme-toggle-checkbox" tabindex="0" data-theme-target="toggleLabel" data-action="keydown->theme#toggleThemeKeyboard">
     {# Translators: label for dark mode/light mode theme switcher #}
     <span class="sr-only">{% translate "Enable dark mode" %}</span>
-    <input type="checkbox" id="theme-toggle-checkbox" tabindex="-1" />
+    <input type="checkbox" id="theme-toggle-checkbox" tabindex="-1" data-theme-target="toggleCheckbox" data-action="change->theme#toggleTheme" />
     <span aria-hidden="true"></span>
 </label>

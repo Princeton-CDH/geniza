@@ -3,7 +3,7 @@ psycopg2-binary
 pucas>=0.6
 django-split-settings
 requests
-django-taggit>=1.5.1
+django-taggit>=1.5.1,<2.0
 piffle>=0.4
 taggit-selectize
 django-multiselectfield
@@ -25,3 +25,4 @@ djiffy>=0.7.2
 natsort
 django-widget-tweaks
 django-csp-helpers
+django-fullurl

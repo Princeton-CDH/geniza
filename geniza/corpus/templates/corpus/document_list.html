@@ -1,17 +1,14 @@
 {% extends 'base.html' %}
-{% load static i18n humanize widget_tweaks render_bundle_csp %}
+{% load static i18n humanize widget_tweaks %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
-{% block extrascript %}
-    {% render_bundle_csp "search" "js" attrs='defer' %}
-{% endblock %}
 
 {% block main %}
     <h1 class="sr-only">{{ page_title }}</h1>
-    <form data-controller="search" data-action="search#submit">
+    <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-action="click@document->search#clickCloseSort">
         <fieldset id="query">
-            {% render_field form.q data-search-target="query" data-action="input->search#updateSort" %}
+            {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
 
             {# Translators: Search submit button #}
             {% translate 'Submit search' as search_label %}
@@ -33,24 +30,24 @@
                 {% translate "Filters" %}
             </a>
             <label for="{{ form.has_transcription.auto_id }}">
-                {{ form.has_transcription }}
+                {% render_field form.has_transcription data-action="search#update" %}
                 {{ form.has_transcription.label }}
             </label>
             <label for="{{ form.has_translation.auto_id }}">
-                {{ form.has_translation }}
+                {% render_field form.has_translation data-action="search#update" %}
                 {{ form.has_translation.label }}
             </label>
             <label for="{{ form.has_discussion.auto_id }}">
-                {{ form.has_discussion }}
+                {% render_field form.has_discussion data-action="search#update" %}
                 {{ form.has_discussion.label }}
             </label>
-            <details class="doctype-filter">
-                <summary>
+            <details class="doctype-filter" data-search-target="doctypeFilter">
+                <summary data-action="click->search#toggleDoctypeFilter">
                     {{ form.doctype.label }}
                 </summary>
-                {{ form.doctype }}
+                {% render_field form.doctype data-action="search#update" %}
             </details>
-            <button type="submit" class="primary">
+            <button type="submit" class="primary" data-action="click->search#applyFilters">
                 {% translate "Apply" %}
             </button>
         </fieldset>
@@ -59,8 +56,8 @@
             <label for="{{ form.sort.html_name }}">
                 {{ form.sort.label }}
             </label>
-            <details class="sort-select" aria-expanded="false">
-                <summary class="sort-select-trigger" data-search-target="sortlabel">
+            <details class="sort-select" aria-expanded="false" data-search-target="sortDetails">
+                <summary class="sort-select-trigger" data-search-target="sortLabel" data-action="keydown->search#shiftTabCloseSort">
                     {% for choice in form.sort.field.choices %}
                         {% if form.sort.value == choice.0 %}
                             {{ choice.1 }}
@@ -72,7 +69,7 @@
                         <span class="sr-only" >{{ toggle_label }}</span>
                     </div>
                 </summary>
-                {% render_field form.sort data-search-target="sort" %}
+                {% render_field form.sort data-search-target="sort" data-action="input->search#changeSort input->search#update keydown->search#keyboardCloseSort" %}
             </details>
         </fieldset>
 

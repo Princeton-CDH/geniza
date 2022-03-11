@@ -604,6 +604,22 @@ class Document(ModelIndexable):
             )
         )
 
+    def fragments_other_docs(self):
+        """List of other documents that are on the same fragment(s) as this
+        document (does not include suppressed documents)"""
+        # get the set of all documents from all fragments, remove current document,
+        # then convert back to a list
+        return list(
+            set(
+                [
+                    doc
+                    for frag in self.fragments.all()
+                    for doc in frag.documents.filter(status=Document.PUBLIC)
+                ]
+            )
+            - {self}
+        )
+
     def has_transcription(self):
         """Admin display field indicating if document has a transcription."""
         return any(note.has_transcription() for note in self.footnotes.all())

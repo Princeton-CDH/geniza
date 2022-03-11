@@ -353,7 +353,7 @@ header {
         }
     }
     // Hover indicator for nav links
-    a::after {
+    a:not(.home-link)::after {
         display: none;
         @include breakpoints.for-tablet-landscape-up {
             content: "\00000a"; // Newline
@@ -398,24 +398,56 @@ header {
     }
 }
 
+// tweaks for RTL header for hebrew, arabic
+html[dir="rtl"] #site-nav {
+    ul#corner-links li.menu-button {
+        margin-right: 11rem;
+    }
+    ul.sub-menu li.menu-button a#back-to-main-menu::before {
+        content: "\f0c4"; // phosphor caret-right icon
+    }
+    li.menu-item.has-submenu a.open-sub-menu::after {
+        content: "\f0c3"; // phosphor caret-left icon
+    }
+    @include breakpoints.for-tablet-landscape-up {
+        ul#menu {
+            margin: 0 spacing.$spacing-xl 0 spacing.$spacing-4xl;
+        }
+        li.menu-item.has-submenu a.open-sub-menu::before {
+            margin-left: 0;
+            margin-right: spacing.$spacing-xs;
+        }
+        li.menu-item,
+        ul.sub-menu li.menu-item {
+            margin: spacing.$spacing-sm 0 0 spacing.$spacing-xs;
+        }
+    }
+}
+
+/*
+** header image handling
+*/
+
 // Header backgrounds for light and dark mode, mobile
 @mixin header-background-mobile-dark {
-    background: url("/static/img/ui/mobile/dark/header-base.svg"),
-        url("/static/img/ui/mobile/dark/header-image.png");
+    background: url("/static/img/ui/mobile/dark/ltr/header-base.svg"),
+        url("/static/img/ui/mobile/dark/ltr/header-image.png");
     background-repeat: no-repeat, no-repeat;
     a.home-link {
-        background: url("/static/img/ui/mobile/dark/logotype.png") no-repeat;
+        background: url("/static/img/logos/mobile/dark/ltr/logotype.png")
+            no-repeat;
         background-size: 160px;
         width: 160px;
         height: 111px;
     }
 }
 @mixin header-background-mobile-light {
-    background: url("/static/img/ui/mobile/light/header-base.svg"),
-        url("/static/img/ui/mobile/light/header-image.png");
+    background: url("/static/img/ui/mobile/light/ltr/header-base.svg"),
+        url("/static/img/ui/mobile/light/ltr/header-image.png");
     background-repeat: no-repeat, no-repeat;
     a.home-link {
-        background: url("/static/img/ui/mobile/light/logotype.png") no-repeat;
+        background: url("/static/img/logos/mobile/light/ltr/logotype.png")
+            no-repeat;
         background-size: 151px;
         width: 151px;
         height: 111px;
@@ -435,32 +467,34 @@ header {
 
 // Header backgrounds for light and dark mode, desktop
 @mixin header-background-desktop-dark {
-    background: url("/static/img/ui/desktop/dark/header-base.svg") top left,
-        url("/static/img/ui/desktop/dark/header-image.png") top left;
+    background: url("/static/img/ui/desktop/dark/ltr/header-base.svg") top left,
+        url("/static/img/ui/desktop/dark/ltr/header-image.png") top left;
     background-repeat: no-repeat, no-repeat;
     &:after {
         @include after-header-desktop;
-        background: url("/static/img/ui/desktop/dark/header-filler.svg")
+        background: url("/static/img/ui/desktop/light/all/header-filler.svg")
             repeat-x;
     }
     a.home-link {
-        background: url("/static/img/ui/desktop/dark/logotype.png") no-repeat;
+        background: url("/static/img/logos/desktop/dark/ltr/logotype.png")
+            no-repeat;
         background-size: 233px 150px;
         width: 233px;
         height: 150px;
     }
 }
 @mixin header-background-desktop-light {
-    background: url("/static/img/ui/desktop/light/header-base.svg") top left,
-        url("/static/img/ui/desktop/light/header-image.png") top left;
+    background: url("/static/img/ui/desktop/light/ltr/header-base.svg") top left,
+        url("/static/img/ui/desktop/light/ltr/header-image.png") top left;
     background-repeat: no-repeat, no-repeat;
     &:after {
         @include after-header-desktop;
-        background: url("/static/img/ui/desktop/light/header-filler.svg")
+        background: url("/static/img/ui/desktop/light/all/header-filler.svg")
             repeat-x;
     }
     a.home-link {
-        background: url("/static/img/ui/desktop/light/logotype.png") no-repeat;
+        background: url("/static/img/logos/desktop/light/ltr/logotype.png")
+            no-repeat;
         background-size: 233px 150px;
         width: 233px;
         height: 150px;
@@ -480,7 +514,7 @@ header {
         @include breakpoints.for-tablet-landscape-up {
             background: none;
             a::after {
-                background: url("/static/img/ui/desktop/light/menu-hover.svg")
+                background: url("/static/img/ui/desktop/light/all/menu-hover.svg")
                     center !important;
                 background-repeat: no-repeat !important;
             }
@@ -490,8 +524,8 @@ header {
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             // Hack to look like submenu is layered underneath the menu
-            background: url("/static/img/ui/desktop/light/submenu-base.svg") top
-                    repeat-x,
+            background: url("/static/img/ui/desktop/light/all/submenu-base.svg")
+                    top repeat-x,
                 linear-gradient(to bottom, var(--background), var(--background))
                     top;
         }
@@ -511,7 +545,7 @@ header {
         @include breakpoints.for-tablet-landscape-up {
             background: none;
             a::after {
-                background: url("/static/img/ui/desktop/dark/menu-hover.svg")
+                background: url("/static/img/ui/desktop/dark/all/menu-hover.svg")
                     center !important;
                 background-repeat: no-repeat !important;
             }
@@ -521,8 +555,8 @@ header {
         background-color: var(--background);
         @include breakpoints.for-tablet-landscape-up {
             // Hack to look like submenu is layered underneath the menu
-            background: url("/static/img/ui/desktop/dark/submenu-base.svg") top
-                    repeat-x,
+            background: url("/static/img/ui/desktop/dark/all/submenu-base.svg")
+                    top repeat-x,
                 linear-gradient(to bottom, var(--background), var(--background))
                     top;
         }
@@ -538,9 +572,139 @@ header {
 }
 
 // Manual (body-class based) theme overrides
-body.light-mode #site-nav {
+html.light-mode #site-nav {
     @include light-nav;
 }
-body.dark-mode #site-nav {
+html.dark-mode #site-nav {
     @include dark-nav;
+}
+
+/*
+** tweaks for themed elements in RTL languages
+*/
+
+// RTL header backgrounds for light and dark mode, desktop
+@mixin header-background-desktop-dark-rtl {
+    background: url("/static/img/ui/desktop/dark/rtl/header-base.svg") top right,
+        url("/static/img/ui/desktop/dark/rtl/header-image.png") top right;
+    background-repeat: no-repeat, no-repeat;
+    &:after {
+        @include after-header-desktop;
+        background: url("/static/img/ui/desktop/dark/all/header-filler.svg")
+            repeat-x;
+        top: -0.5px;
+        left: 0;
+        right: 1950px;
+    }
+    a.home-link {
+        background: url("/static/img/logos/desktop/dark/rtl/logotype.png")
+            no-repeat;
+        background-size: 228px 149px;
+        width: 228px;
+        height: 149px;
+    }
+}
+@mixin header-background-desktop-light-rtl {
+    background: url("/static/img/ui/desktop/light/rtl/header-base.svg") top
+            right,
+        url("/static/img/ui/desktop/light/rtl/header-image.png") top right;
+    background-repeat: no-repeat, no-repeat;
+    &:after {
+        @include after-header-desktop;
+        background: url("/static/img/ui/desktop/light/all/header-filler.svg")
+            repeat-x;
+        top: -0.5px;
+        left: 0;
+        right: 1950px;
+    }
+    a.home-link {
+        background: url("/static/img/logos/desktop/light/rtl/logotype.png")
+            no-repeat;
+        background-size: 228px 149px;
+        width: 228px;
+        height: 149px;
+    }
+}
+
+// nav item hover images
+@mixin light-hover-rtl {
+    ul#menu a::after,
+    ul.sub-menu a::after {
+        background: url("/static/img/ui/desktop/light/all/menu-hover.svg") right !important;
+        background-repeat: no-repeat !important;
+        transform: scaleX(-1) translateX(20px);
+    }
+    ul.sub-menu a::after {
+        transform: scaleX(-1) translateX(10px) !important;
+    }
+}
+
+@mixin dark-hover-rtl {
+    ul#menu a::after,
+    ul.sub-menu a::after {
+        background: url("/static/img/ui/desktop/dark/all/menu-hover.svg") right !important;
+        background-repeat: no-repeat !important;
+        transform: scaleX(-1) translateX(20px);
+    }
+    ul.sub-menu a::after {
+        transform: scaleX(-1) translateX(10px) !important;
+    }
+}
+
+// Header backgrounds for light and dark mode, mobile
+@mixin header-background-mobile-dark {
+    background: url("/static/img/ui/mobile/dark/rtl/header-base.svg") top right,
+        url("/static/img/ui/mobile/dark/rtl/header-image.png") top right;
+    background-repeat: no-repeat, no-repeat;
+    a.home-link {
+        background: url("/static/img/logos/mobile/dark/rtl/logotype.png")
+            no-repeat;
+        background-size: 151px 111px;
+        width: 151px;
+        height: 111px;
+    }
+}
+@mixin header-background-mobile-light {
+    background: url("/static/img/ui/mobile/light/rtl/header-base.svg") top right,
+        url("/static/img/ui/mobile/light/rtl/header-image.png") top right;
+    background-repeat: no-repeat, no-repeat;
+    a.home-link {
+        background: url("/static/img/logos/mobile/light/rtl/logotype.png")
+            no-repeat;
+        background-size: 151px 112px;
+        width: 151px;
+        height: 112px;
+    }
+}
+
+// applying tweaks by system theme
+html[dir="rtl"] #site-nav {
+    @include light-nav;
+    @include breakpoints.for-tablet-landscape-up {
+        @include header-background-desktop-light-rtl;
+        @include light-hover-rtl;
+    }
+    @media (prefers-color-scheme: dark) {
+        @include dark-nav;
+        @include breakpoints.for-tablet-landscape-up {
+            @include header-background-desktop-dark-rtl;
+            @include dark-hover-rtl;
+        }
+    }
+}
+
+// applying tweaks by body class
+html[dir="rtl"].light-mode #site-nav {
+    @include light-nav;
+    @include breakpoints.for-tablet-landscape-up {
+        @include header-background-desktop-light-rtl;
+        @include light-hover-rtl;
+    }
+}
+html[dir="rtl"].dark-mode #site-nav {
+    @include dark-nav;
+    @include breakpoints.for-tablet-landscape-up {
+        @include header-background-desktop-dark-rtl;
+        @include dark-hover-rtl;
+    }
 }

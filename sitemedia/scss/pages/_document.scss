@@ -8,7 +8,7 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-body#document {
+main.document {
     // Primary container
     .container {
         display: flex;
@@ -35,8 +35,10 @@ body#document {
                 padding-right: 0;
                 margin: spacing.$spacing-3xl 0 0;
             }
-            // Lighter color metadata
-            .secondary {
+            // Lighter color metadata; secondary class on dl or dd/dt
+            .secondary,
+            &.secondary dd,
+            &.secondary dt {
                 color: var(--on-background-alt);
             }
             dt {

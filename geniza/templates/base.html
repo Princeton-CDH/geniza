@@ -1,6 +1,6 @@
 {% load static render_bundle_csp i18n wagtailuserbar %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE }}">
+<html lang="{{ LANGUAGE_CODE }}"{% if LANGUAGE_CODE == "ar" or LANGUAGE_CODE == "he" %} dir="rtl"{% endif %} data-controller="theme">
     <head>
         <!-- metadata -->
         <meta charset="UTF-8">
@@ -61,7 +61,6 @@
         {% render_bundle_csp "main" "css" %}
         {% block extrastyle %}{% endblock extrastyle %}
         <!-- scripts -->
-        {% render_bundle_csp "main" "js" attrs='defer' %}
         {% render_bundle_csp "stimulus_app" "js" attrs='defer' %}
         {# analytics #}
         {% if not request.is_preview and GTAGS_ANALYTICS_ID %}
@@ -69,7 +68,7 @@
         {% endif %}
         {% block extrascript %}{% endblock extrascript %}
     </head>
-    <body id="{{ page_type }}{% block page_type %}{% endblock page_type %}">
+    <body>
         {% wagtailuserbar 'bottom-right' %}
         {% if SHOW_TEST_WARNING %}
             {% include 'snippets/test_banner.html' %}
@@ -84,7 +83,9 @@
                 {% include "nav.html" %}
             </header>
 
-            <main id="main-content"><turbo-frame id="content">{% block main %}{% endblock main %}</turbo-frame></main>
+            <turbo-frame id="main" data-turbo-action="advance">
+                <main id="main-content"  class="{{ page_type }}{% block page_type %}{% endblock page_type %}">{% block main %}{% endblock main %}</main>
+            </turbo-frame>
             <footer>
                 {% include "footer.html" %}
             </footer>

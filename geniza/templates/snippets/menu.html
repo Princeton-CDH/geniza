@@ -19,11 +19,13 @@
                         aria-haspopup="true"
                         aria-expanded="false"
                         role="button"
+                        data-turbo="false"
                         {% for child_page in top_level_page.localized.get_children.live.in_menu %}
                             {% pageurl child_page.localized as child_page_url %}
                             {% if request.path == child_page_url %}aria-current="page"{% endif %}
                         {% endfor %}
-                    >
+                        data-action="click->menu#clickSubmenu mouseover->menu#openSubmenu mouseout->menu#closeSubmenu"
+                        >
                         {{ top_level_page.localized.title }}
                     </a>
                 {% endif %}

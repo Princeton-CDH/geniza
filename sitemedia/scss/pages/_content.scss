@@ -6,8 +6,8 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-#content-page,
-#homepage {
+main.content-page,
+main.homepage {
     h1 {
         margin-top: -#{spacing.$spacing-sm};
         @include breakpoints.for-tablet-landscape-up {
@@ -39,11 +39,11 @@
                 left: -#{spacing.$spacing-lg};
                 display: block;
                 background-color: var(--link-primary);
-                mask-image: url("/static/img/ui/mobile/light/bullet.svg");
+                mask-image: url("/static/img/ui/mobile/all/bullet.svg");
                 @include breakpoints.for-tablet-landscape-up {
                     width: 18px;
                     height: 20px;
-                    mask-image: url("/static/img/ui/desktop/light/bullet.svg");
+                    mask-image: url("/static/img/ui/desktop/all/bullet.svg");
                 }
             }
         }
@@ -95,20 +95,25 @@
         }
         img {
             align-self: center;
-        }
-        img.landscape {
-            height: auto;
-            max-width: 280px;
-            @include breakpoints.for-tablet-landscape-up {
-                max-width: 400px;
-            }
-        }
-        img.portrait {
-            width: auto;
+            // svg image styling
             max-width: 100%;
-            max-height: 200px;
-            @include breakpoints.for-tablet-landscape-up {
-                max-height: 300px;
+            max-height: 100%;
+            // landscape image styling
+            &.landscape {
+                height: auto;
+                max-width: 280px;
+                @include breakpoints.for-tablet-landscape-up {
+                    max-width: 400px;
+                }
+            }
+            // portrait image styling
+            &.portrait {
+                width: auto;
+                max-width: 100%;
+                max-height: 200px;
+                @include breakpoints.for-tablet-landscape-up {
+                    max-height: 300px;
+                }
             }
         }
     }

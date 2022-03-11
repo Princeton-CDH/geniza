@@ -6,7 +6,7 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-#homepage {
+main.homepage {
     // Header text with background
     h1 {
         color: var(--link-primary);
@@ -33,10 +33,11 @@
             rgba(255, 255, 255, 1),
             rgba(255, 255, 255, 0)
         ),
-        url("/static/img/ui/mobile/light/homepage-center.png") center 65px
+        url("/static/img/ui/mobile/light/all/homepage-center.png") center 65px
             no-repeat,
-        url("/static/img/ui/mobile/light/homepage-left.png") left 65px no-repeat,
-        url("/static/img/ui/mobile/light/homepage-right.png") right 65px
+        url("/static/img/ui/mobile/light/all/homepage-left.png") left 65px
+            no-repeat,
+        url("/static/img/ui/mobile/light/all/homepage-right.png") right 65px
             no-repeat,
         linear-gradient(
             180deg,
@@ -53,12 +54,12 @@
                 rgba(255, 255, 255, 1),
                 rgba(255, 255, 255, 0)
             ),
-            url("/static/img/ui/desktop/light/homepage-center.png") bottom -17px
+            url("/static/img/ui/desktop/light/all/homepage-center.png") bottom -17px
                 center no-repeat,
-            url("/static/img/ui/desktop/light/homepage-left.png") bottom -17px left
-                no-repeat,
-            url("/static/img/ui/desktop/light/homepage-right.png") bottom -17px right
-                no-repeat,
+            url("/static/img/ui/desktop/light/all/homepage-left.png") bottom -17px
+                left no-repeat,
+            url("/static/img/ui/desktop/light/all/homepage-right.png") bottom -17px
+                right no-repeat,
             linear-gradient(
                 180deg,
                 rgba(86, 120, 86, 0.2) 0%,
@@ -76,10 +77,11 @@
             rgba(22, 22, 22, 1),
             rgba(22, 22, 22, 0)
         ),
-        url("/static/img/ui/mobile/dark/homepage-center.png") center 65px
+        url("/static/img/ui/mobile/dark/all/homepage-center.png") center 65px
             no-repeat,
-        url("/static/img/ui/mobile/dark/homepage-left.png") left 65px no-repeat,
-        url("/static/img/ui/mobile/dark/homepage-right.png") right 65px
+        url("/static/img/ui/mobile/dark/all/homepage-left.png") left 65px
+            no-repeat,
+        url("/static/img/ui/mobile/dark/all/homepage-right.png") right 65px
             no-repeat,
         linear-gradient(
             180deg,
@@ -95,12 +97,12 @@
                 rgba(22, 22, 22, 1),
                 rgba(22, 22, 22, 0)
             ),
-            url("/static/img/ui/desktop/dark/homepage-center.png") bottom -17px center
-                no-repeat,
-            url("/static/img/ui/desktop/dark/homepage-left.png") bottom -17px left
-                no-repeat,
-            url("/static/img/ui/desktop/dark/homepage-right.png") bottom -17px right
-                no-repeat,
+            url("/static/img/ui/desktop/dark/all/homepage-center.png") bottom -17px
+                center no-repeat,
+            url("/static/img/ui/desktop/dark/all/homepage-left.png") bottom -17px
+                left no-repeat,
+            url("/static/img/ui/desktop/dark/all/homepage-right.png") bottom -17px
+                right no-repeat,
             linear-gradient(
                 180deg,
                 rgba(195, 127, 151, 0.2) 0%,
@@ -111,7 +113,7 @@
 }
 
 // Applying background image and gradient per system theme
-#homepage h1 {
+main.homepage h1 {
     @include light-home;
     @media (prefers-color-scheme: dark) {
         @include dark-home;
@@ -119,9 +121,9 @@
 }
 
 // Manual (body-class based) theme overrides
-body.light-mode#homepage h1 {
+html.light-mode main.homepage h1 {
     @include light-home;
 }
-body.dark-mode#homepage h1 {
+html.dark-mode main.homepage h1 {
     @include dark-home;
 }

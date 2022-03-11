@@ -111,3 +111,15 @@ nav.pagination {
         content: "\f044"; // phosphor arrow-right icon
     }
 }
+// RTL pagination
+html[dir="rtl"] nav.pagination {
+    // Hebrew and Arabic reversed arrows
+    .prev::before {
+        margin: 0.1rem 0 0 spacing.$spacing-xs;
+        content: "\f044"; // phosphor arrow-right icon
+    }
+    .next::after {
+        margin: 0.1rem spacing.$spacing-xs 0 0;
+        content: "\f03b"; // phosphor arrow-left icon
+    }
+}

@@ -1,6 +1,6 @@
 # Deploy Notes
 
-## 4.3
+## 4.2.1
 
 -   This update includes Solr indexing changes (stripping html tags out of descriptions). Run `python manage.py index` to reindex all content.
 

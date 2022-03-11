@@ -1,5 +1,21 @@
 # Change Log
 
+## 4.3
+
+-   public site
+    -   As a front-end user, I want the document search to automatically reload when I change my search terms, filters, or other options so that I can see the changed results more quickly.
+    -   As a frontend user, I want to see primary and secondary languages when they've been assigned so that I have access to the known information about the document.
+    -   As a frontend user, I want to easily find other documents on the same fragment in order to better interpret the images and gain context.
+    -   As a frontend user, I want to easily select shelfmarks on the document detail page, so that I can copy and paste that information elsewhere.
+-   content/data admin
+    -   As a content editor, I want to add SVG images to content pages so that I can include data visualizations and other scalable images.
+-   public site visual design
+    -   implement tabs for Hebrew / RTL
+    -   wider search results on mobile when search result numbering is lower
+-   maintenance/other
+    -   Implement Turbo to improve internal link speed
+    -   refactor all JS to Stimulus
+
 ## 4.2.1 — bugfix release
 
 -   handle descriptions with tags so they don't cause malformed HTML in search results
