@@ -3,15 +3,14 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-28 17:59-0400\n"
-"PO-Revision-Date: 2022-02-24 22:20\n"
+"PO-Revision-Date: 2022-03-28 22:11\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
-"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 "X-Crowdin-Project: geniza\n"
 "X-Crowdin-Project-ID: 457634\n"
 "X-Crowdin-Language: ar\n"
@@ -50,37 +49,34 @@ msgstr "سجل المنح الدراسية (أقل - موسى)"
 
 #. Translators: label for sort by document date (most recent first)
 #: corpus/forms.py:169
-#, fuzzy
-#| msgid "Document Details"
 msgid "Document Date (Latest-Earliest)"
-msgstr "تفاصيل المستند"
+msgstr "تاريخ المستند (Latest-Earliest)"
 
 #. Translators: label for sort by document date (oldest first)
 #: corpus/forms.py:171
 msgid "Document Date (Earliest-Latest)"
-msgstr ""
+msgstr "تاريخ المستند (آخر)"
 
 #. Translators: label for sort by document input date (most recent first)
 #: corpus/forms.py:173
 msgid "Input Date (Latest-Earliest)"
-msgstr ""
+msgstr "تاريخ الإدخال (Latest-Earliest)"
 
 #. Translators: label for sort by document input date (oldest first)
 #: corpus/forms.py:175
 msgid "Input Date (Earliest-Latest)"
-msgstr ""
+msgstr "تاريخ الإدخال (Earliest-Latest)"
 
 #. Translators: label for filter documents by date
 #: corpus/forms.py:178
-#, fuzzy
-#| msgid "Document Details"
+#| msgid "Search Documents"
 msgid "Document Dates"
-msgstr "تفاصيل المستند"
+msgstr "تواريخ المستند"
 
 #. Translators: label for start year when filtering by date range
 #: corpus/forms.py:180
 msgid "From year"
-msgstr ""
+msgstr "من سنة"
 
 #. Translators: label for end year when filtering by date range
 #: corpus/forms.py:182
@@ -99,27 +95,18 @@ msgstr "نوع المستند"
 
 #. Translators: label for "has transcription" search form filter
 #: corpus/forms.py:205
-#, fuzzy
-#| msgid "1 Transcription"
-#| msgid_plural "%(counter)s Transcriptions"
 msgid "Has Transcription"
-msgstr "%(counter)s النصوص"
+msgstr "لديه نسخ"
 
 #. Translators: label for "has translation" search form filter
 #: corpus/forms.py:209
-#, fuzzy
-#| msgid "1 Translation"
-#| msgid_plural "%(counter)s Translations"
 msgid "Has Translation"
-msgstr "ترجمات %(counter)s"
+msgstr "لديه ترجمة"
 
 #. Translators: label for "has discussion" search form filter
 #: corpus/forms.py:213
-#, fuzzy
-#| msgid "1 Discussion"
-#| msgid_plural "%(counter)s Discussions"
 msgid "Has Discussion"
-msgstr "%(counter)s مناقشات"
+msgstr "لديه مناقشة"
 
 #: corpus/forms.py:253
 msgid "Relevance sort is not available without a keyword search term."
@@ -180,32 +167,30 @@ msgstr "الشرف"
 
 #. Translators: label for date of this document, if known
 #: corpus/templates/corpus/document_detail.html:73
-#, fuzzy
-#| msgid "Document Type"
 msgid "Document Date"
-msgstr "نوع المستند"
+msgstr ""
 
 #. Translators: Primary language label
 #: corpus/templates/corpus/document_detail.html:77
 msgid "Primary Language"
 msgid_plural "Primary Languages"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
-msgstr[4] ""
-msgstr[5] ""
+msgstr[0] "اللغات الأساسية"
+msgstr[1] "اللغة الأساسية"
+msgstr[2] "اللغات الأساسية"
+msgstr[3] "اللغات الأساسية"
+msgstr[4] "اللغات الأساسية"
+msgstr[5] "اللغات الأساسية"
 
 #. Translators: Secondary language label
 #: corpus/templates/corpus/document_detail.html:90
 msgid "Secondary Language"
 msgid_plural "Secondary Languages"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
-msgstr[4] ""
-msgstr[5] ""
+msgstr[0] "اللغات الثانوية"
+msgstr[1] "اللغة الثانوية"
+msgstr[2] "اللغات الثانوية"
+msgstr[3] "اللغات الثانوية"
+msgstr[4] "اللغات الثانوية"
+msgstr[5] "اللغات الثانوية"
 
 #. Translators: label for tags on a document
 #: corpus/templates/corpus/document_detail.html:104
@@ -233,12 +218,12 @@ msgstr "رابط دائم"
 #: corpus/templates/corpus/document_detail.html:153
 msgid "Other documents on this fragment"
 msgid_plural "Other documents on these fragments"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
-msgstr[4] ""
-msgstr[5] ""
+msgstr[0] "وثائق أخرى بشأن هذه الشظايا"
+msgstr[1] "وثائق أخرى عن هذا الجزء"
+msgstr[2] "وثائق أخرى بشأن هذه الشظايا"
+msgstr[3] "وثائق أخرى بشأن هذه الشظايا"
+msgstr[4] "وثائق أخرى بشأن هذه الشظايا"
+msgstr[5] "وثائق أخرى بشأن هذه الشظايا"
 
 #. Translators: Search submit button
 #: corpus/templates/corpus/document_list.html:14
@@ -248,16 +233,16 @@ msgstr "إرسال البحث"
 #: corpus/templates/corpus/document_list.html:19
 #: corpus/templates/corpus/document_list.html:30
 msgid "Filters"
-msgstr ""
+msgstr "فلاتر"
 
 #. Translators: label for 'filters' close button for mobile navigation
 #: corpus/templates/corpus/document_list.html:25
 msgid "Close filter options"
-msgstr ""
+msgstr "إغلاق خيارات التصفية"
 
 #: corpus/templates/corpus/document_list.html:51
 msgid "Apply"
-msgstr ""
+msgstr "تطبيق"
 
 #. Translators: Button to open or close sort options menu
 #: corpus/templates/corpus/document_list.html:67
@@ -455,19 +440,14 @@ msgid "Discussion"
 msgstr "المناقشة"
 
 #: pages/models.py:13
-msgid ""
-"Alternative text for visually impaired users to\n"
+msgid "Alternative text for visually impaired users to\n"
 "briefly communicate the intended message of the image in this context."
-msgstr ""
-"نص بديل للمستخدمين ضعاف البصر\n"
+msgstr "نص بديل للمستخدمين ضعاف البصر\n"
 "لإيصال الرسالة المقصودة للصورة في هذا السياق بإيجاز."
 
 #: pages/models.py:44
-msgid ""
-"This text will only be read to     non-sighted users and should describe the "
-"major insights or     takeaways from the graphic. Multiple paragraphs are "
-"allowed."
-msgstr ""
+msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
+msgstr "هذا النص سوف يقرأ فقط للمستخدمين غير المبصرين ويجب أن يصف الرؤى الرئيسية أو الاستحواذ من الرسوم. يسمح بفقرات متعددة."
 
 #. Translators: title for Not Found (404) error page
 #: templates/404.html:5 templates/404.html:13
@@ -598,3 +578,4 @@ msgstr "العودة إلى القائمة الرئيسية"
 #: templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
 msgstr "تمكين الوضع المظلم"
+

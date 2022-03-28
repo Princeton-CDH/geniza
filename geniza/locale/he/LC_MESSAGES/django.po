@@ -3,15 +3,14 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-28 17:59-0400\n"
-"PO-Revision-Date: 2022-02-24 22:20\n"
+"PO-Revision-Date: 2022-03-28 22:11\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
-"%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
 "X-Crowdin-Project: geniza\n"
 "X-Crowdin-Project-ID: 457634\n"
 "X-Crowdin-Language: he\n"
@@ -50,10 +49,8 @@ msgstr "רשומות קשורות (מהקטן לגדול)"
 
 #. Translators: label for sort by document date (most recent first)
 #: corpus/forms.py:169
-#, fuzzy
-#| msgid "Document Details"
 msgid "Document Date (Latest-Earliest)"
-msgstr "פרטי מסמך"
+msgstr ""
 
 #. Translators: label for sort by document date (oldest first)
 #: corpus/forms.py:171
@@ -72,10 +69,9 @@ msgstr ""
 
 #. Translators: label for filter documents by date
 #: corpus/forms.py:178
-#, fuzzy
-#| msgid "Document Details"
+#| msgid "Search Documents"
 msgid "Document Dates"
-msgstr "פרטי מסמך"
+msgstr ""
 
 #. Translators: label for start year when filtering by date range
 #: corpus/forms.py:180
@@ -99,26 +95,18 @@ msgstr "סוג המסמך"
 
 #. Translators: label for "has transcription" search form filter
 #: corpus/forms.py:205
-#, fuzzy
-#| msgid "1 Transcription"
-#| msgid_plural "%(counter)s Transcriptions"
 msgid "Has Transcription"
-msgstr "תעתוק אחד"
+msgstr ""
 
 #. Translators: label for "has translation" search form filter
 #: corpus/forms.py:209
-#, fuzzy
-#| msgid "Translation"
 msgid "Has Translation"
-msgstr "תרגום"
+msgstr ""
 
 #. Translators: label for "has discussion" search form filter
 #: corpus/forms.py:213
-#, fuzzy
-#| msgid "1 Discussion"
-#| msgid_plural "%(counter)s Discussions"
 msgid "Has Discussion"
-msgstr "דיון אחד"
+msgstr ""
 
 #: corpus/forms.py:253
 msgid "Relevance sort is not available without a keyword search term."
@@ -177,10 +165,8 @@ msgstr "מספר מדף"
 
 #. Translators: label for date of this document, if known
 #: corpus/templates/corpus/document_detail.html:73
-#, fuzzy
-#| msgid "Document Type"
 msgid "Document Date"
-msgstr "סוג המסמך"
+msgstr ""
 
 #. Translators: Primary language label
 #: corpus/templates/corpus/document_detail.html:77
@@ -436,16 +422,12 @@ msgid "Discussion"
 msgstr "דיון"
 
 #: pages/models.py:13
-msgid ""
-"Alternative text for visually impaired users to\n"
+msgid "Alternative text for visually impaired users to\n"
 "briefly communicate the intended message of the image in this context."
 msgstr ""
 
 #: pages/models.py:44
-msgid ""
-"This text will only be read to     non-sighted users and should describe the "
-"major insights or     takeaways from the graphic. Multiple paragraphs are "
-"allowed."
+msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
 msgstr ""
 
 #. Translators: title for Not Found (404) error page
@@ -577,3 +559,4 @@ msgstr "חזרה לתפריט הראשי"
 #: templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
 msgstr ""
+
