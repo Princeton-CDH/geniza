@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-28 17:59-0400\n"
-"PO-Revision-Date: 2022-03-28 22:11\n"
+"PO-Revision-Date: 2022-03-28 23:11\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -81,7 +81,7 @@ msgstr "من سنة"
 #. Translators: label for end year when filtering by date range
 #: corpus/forms.py:182
 msgid "To year"
-msgstr ""
+msgstr "إلى السنة"
 
 #. Translators: label for form sort field
 #: corpus/forms.py:190
@@ -168,7 +168,7 @@ msgstr "الشرف"
 #. Translators: label for date of this document, if known
 #: corpus/templates/corpus/document_detail.html:73
 msgid "Document Date"
-msgstr ""
+msgstr "تاريخ المستند"
 
 #. Translators: Primary language label
 #: corpus/templates/corpus/document_detail.html:77
