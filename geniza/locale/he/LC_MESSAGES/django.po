@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-11 10:21-0500\n"
+"POT-Creation-Date: 2022-03-28 17:59-0400\n"
 "PO-Revision-Date: 2022-02-24 22:20\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -48,18 +48,57 @@ msgstr "רשומות קשורות (מהגדול לקטן)"
 msgid "Scholarship Records (Least–Most)"
 msgstr "רשומות קשורות (מהקטן לגדול)"
 
-#. Translators: label for form sort field
+#. Translators: label for sort by document date (most recent first)
+#: corpus/forms.py:169
+#, fuzzy
+#| msgid "Document Details"
+msgid "Document Date (Latest-Earliest)"
+msgstr "פרטי מסמך"
+
+#. Translators: label for sort by document date (oldest first)
 #: corpus/forms.py:171
+msgid "Document Date (Earliest-Latest)"
+msgstr ""
+
+#. Translators: label for sort by document input date (most recent first)
+#: corpus/forms.py:173
+msgid "Input Date (Latest-Earliest)"
+msgstr ""
+
+#. Translators: label for sort by document input date (oldest first)
+#: corpus/forms.py:175
+msgid "Input Date (Earliest-Latest)"
+msgstr ""
+
+#. Translators: label for filter documents by date
+#: corpus/forms.py:178
+#, fuzzy
+#| msgid "Document Details"
+msgid "Document Dates"
+msgstr "פרטי מסמך"
+
+#. Translators: label for start year when filtering by date range
+#: corpus/forms.py:180
+msgid "From year"
+msgstr ""
+
+#. Translators: label for end year when filtering by date range
+#: corpus/forms.py:182
+msgid "To year"
+msgstr ""
+
+#. Translators: label for form sort field
+#: corpus/forms.py:190
 msgid "Sort by"
 msgstr "מיון לפי"
 
 #. Translators: label for document type search form filter
-#: corpus/forms.py:182
+#: corpus/forms.py:201
 msgid "Document Type"
 msgstr "סוג המסמך"
 
 #. Translators: label for "has transcription" search form filter
-#: corpus/forms.py:186
+#: corpus/forms.py:205
 #, fuzzy
 #| msgid "1 Transcription"
 #| msgid_plural "%(counter)s Transcriptions"
@@ -67,21 +106,21 @@ msgid "Has Transcription"
 msgstr "תעתוק אחד"
 
 #. Translators: label for "has translation" search form filter
-#: corpus/forms.py:190
+#: corpus/forms.py:209
 #, fuzzy
 #| msgid "Translation"
 msgid "Has Translation"
 msgstr "תרגום"
 
 #. Translators: label for "has discussion" search form filter
-#: corpus/forms.py:194
+#: corpus/forms.py:213
 #, fuzzy
 #| msgid "1 Discussion"
 #| msgid_plural "%(counter)s Discussions"
 msgid "Has Discussion"
 msgstr "דיון אחד"
 
-#: corpus/forms.py:234
+#: corpus/forms.py:253
 msgid "Relevance sort is not available without a keyword search term."
 msgstr ""
 
@@ -136,8 +175,15 @@ msgstr "מטא-דאטא"
 msgid "Shelfmark"
 msgstr "מספר מדף"
 
+#. Translators: label for date of this document, if known
+#: corpus/templates/corpus/document_detail.html:73
+#, fuzzy
+#| msgid "Document Type"
+msgid "Document Date"
+msgstr "סוג המסמך"
+
 #. Translators: Primary language label
-#: corpus/templates/corpus/document_detail.html:74
+#: corpus/templates/corpus/document_detail.html:77
 msgid "Primary Language"
 msgid_plural "Primary Languages"
 msgstr[0] ""
@@ -146,7 +192,7 @@ msgstr[2] ""
 msgstr[3] ""
 
 #. Translators: Secondary language label
-#: corpus/templates/corpus/document_detail.html:87
+#: corpus/templates/corpus/document_detail.html:90
 msgid "Secondary Language"
 msgid_plural "Secondary Languages"
 msgstr[0] ""
@@ -155,29 +201,29 @@ msgstr[2] ""
 msgstr[3] ""
 
 #. Translators: label for tags on a document
-#: corpus/templates/corpus/document_detail.html:101
+#: corpus/templates/corpus/document_detail.html:104
 #: corpus/templates/corpus/snippets/document_result.html:93
 msgid "Tags"
 msgstr "תגים"
 
 #. Translators: label for document description
-#: corpus/templates/corpus/document_detail.html:112
+#: corpus/templates/corpus/document_detail.html:115
 msgid "Description"
 msgstr "תיאור"
 
 #. Translators: Date document was first added to the PGP
-#: corpus/templates/corpus/document_detail.html:120
+#: corpus/templates/corpus/document_detail.html:123
 #: corpus/templates/corpus/snippets/document_result.html:18
 msgid "Input date"
 msgstr "תאריך קלט"
 
 #. Translators: label for permanent link to a document
-#: corpus/templates/corpus/document_detail.html:124
+#: corpus/templates/corpus/document_detail.html:127
 msgid "Permalink"
 msgstr "קישור קבוע"
 
 #. Translators: Other documents on the same fragment
-#: corpus/templates/corpus/document_detail.html:150
+#: corpus/templates/corpus/document_detail.html:153
 msgid "Other documents on this fragment"
 msgid_plural "Other documents on these fragments"
 msgstr[0] ""
@@ -426,7 +472,7 @@ msgstr ""
 msgid "Django site admin"
 msgstr "ניהול האתר"
 
-#: templates/base.html:79
+#: templates/base.html:78
 msgid "Skip to main content"
 msgstr "דילוג לתוכן"
 
