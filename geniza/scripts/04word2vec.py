@@ -109,7 +109,7 @@ def vectorize(list_of_docs, model):
 
 PARAMS = dict(
     MAX_DOCS=None,                    # for quick code testing - int or None (all docs)
-    MIN_LEN=0,                        # words less than this length will be filtered
+    MIN_LEN=2,                        # words less than this length will be filtered
     MAX_LEN=100,                      # words more than this length will be filtered
     ALLOWED_TAGS=[                    # POS tags to consider; None or empty to consider all
                                       # See https://github.com/explosion/spaCy/blob/b7ba7f78a28ef71fca60415d0165e27a058d1946/spacy/glossary.py#L17
@@ -141,6 +141,7 @@ PARAMS = dict(
     WORD2VEC_EPOCHS=10,
 
     AFFINITY_N_DOCS=None,
+    AFFINITY_DAMPING=0.8
 )
 
 
@@ -158,7 +159,7 @@ if __name__ == '__main__':
     run_id = f'{run_id:04}'
 
     output_dir = os.path.join('results', run_id)
-    os.makedirs(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
     logger.addHandler(logging.FileHandler(os.path.join(output_dir, 'log.txt')))
     shutil.copy(__file__, output_dir)
     with open(os.path.join(output_dir, 'params.txt'), 'w') as f:
@@ -179,11 +180,19 @@ if __name__ == '__main__':
     logger.info(f'After dropping records with missing description, no. of records = {len(df)}')
     df['tags'] = df['tags'].str.lower()
 
-    data = list(df.description)
-    data = process_words(data, stop_words=stop_words, allowed_tags=PARAMS['ALLOWED_TAGS'],
-                         allowed_ners=PARAMS['ALLOWED_NERS'], disallowed_ners=PARAMS['DISALLOWED_NERS'],
-                         min_len=PARAMS['MIN_LEN'], max_len=PARAMS['MAX_LEN'])
-    logger.info(f'After filtering stopwords/short words/lemmatization, no. of records = {len(data)}')
+    data_pkl_file = os.path.join(output_dir, 'data.pik')
+    if not os.path.exists(data_pkl_file):
+        data = list(df.description)
+        data = process_words(data, stop_words=stop_words, allowed_tags=PARAMS['ALLOWED_TAGS'],
+                             allowed_ners=PARAMS['ALLOWED_NERS'], disallowed_ners=PARAMS['DISALLOWED_NERS'],
+                             min_len=PARAMS['MIN_LEN'], max_len=PARAMS['MAX_LEN'])
+        logger.info(f'After filtering stopwords/short words/lemmatization, no. of records = {len(data)}')
+
+        with open(data_pkl_file, 'wb') as f:
+            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
+    else:
+        with open(data_pkl_file, 'rb') as f:
+            data = pickle.load(f)
 
     if not os.path.exists(os.path.join(output_dir, 'wvmodel.bin')):
         model = Word2Vec(
@@ -199,20 +208,20 @@ if __name__ == '__main__':
         with open(os.path.join(output_dir, 'wvmodel_keys.txt'), 'w') as f:
             f.write('\n'.join(model.wv.index_to_key))
     else:
-        model = Word2Vec.load('wvmodel.bin')
+        model = Word2Vec.load(os.path.join(output_dir, 'wvmodel.bin'))
 
     wv = model.wv
     # # wv = api.load('word2vec-google-news-300')  # pre-trained model
     # plot_word2vec_model(model)
 
-    print(wv.most_similar('father', topn=20))
+    # print(wv.most_similar('father', topn=20))
 
     n_docs = PARAMS['AFFINITY_N_DOCS']
     X = vectorize(data[:n_docs], model=model)
     logger.info(f'Vectorization of {n_docs} documents done.')
 
     logger.info('Fitting AffinityPropagation model to documents..')
-    af = AffinityPropagation(verbose=True, random_state=43423, damping=0.5).fit(X)
+    af = AffinityPropagation(verbose=True, random_state=43423, damping=PARAMS['AFFINITY_DAMPING']).fit(X)
     cluster_centers_indices = af.cluster_centers_indices_
     labels = af.labels_
 
@@ -226,6 +235,7 @@ if __name__ == '__main__':
             for doc in docs:
                 row = df.iloc[doc]
                 f.write(f'<a target="_blank" href="{row.url}">{row.pgpid}</a><br/>')
+                f.write('Tags: <i>' + str(row.tags) + '</i><br/>')
                 f.write(str(row.description) + '<br/>')
 
     n_clusters_ = len(cluster_centers_indices)
