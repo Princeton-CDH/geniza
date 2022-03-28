@@ -68,6 +68,9 @@
                         {% endifchanged %}
                     {% endfor %}
                 {% endif %}
+                {# NOTE: placeholder to populate translation string #}
+                {# Translators: label for date of this document, if known #}
+                <!-- {% translate "Document Date" %} -->
                 {% if document.languages.exists %}
                     <dt>
                         {# Translators: Primary language label #}
