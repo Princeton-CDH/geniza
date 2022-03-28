@@ -35,55 +35,33 @@ from sklearn.decomposition import PCA
 logger = logging.getLogger(__name__)
 
 
-def process_words(texts, stop_words, allowed_tags=None, allowed_ners=None, disallowed_ners=None, min_len=3, max_len=30):
+def process_words(texts, stop_words, disallowed_ners=None, min_len=3, max_len=30):
     # python -m spacy download en_core_web_sm
     # English pipeline optimized for CPU. Components: tok2vec, tagger, parser, senter, ner, attribute_ruler, lemmatizer.
     # Other pipelines at https://spacy.io/models/en
     nlp = spacy.load('en_core_web_sm')
 
-    # simple_preprocess => Convert a document into a list of lowercase tokens, ignoring tokens that are too short or too long
-    texts_ = []
-    for i, doc in enumerate(texts):
-        text = [word for word in simple_preprocess(str(doc), deacc=False, min_len=min_len, max_len=max_len) if
-             word not in stop_words]
-        texts_.append(text)
-    texts = texts_
-
-    _n = sum(len(text) for text in texts)
-    logger.info(f'Total no. of tokens after simple preprocessing = {_n}')
-
     texts_out = []
+
     # implement lemmatization and filter out unwanted part of speech tags
-    for i, sent in enumerate(texts):
-        doc = nlp(' '.join(sent))
+    for i, sentence in enumerate(texts):
+        doc = nlp(sentence)
         doctext = doc.text
         ents = list(doc.ents)
 
-        text_out = []
         if disallowed_ners is not None:
             # Filtering out disallowed NERs should be done prior to splitting the sentence using whitespace.
             disallowed_tokens = []
             for ent in ents:
                 if ent.label_ in disallowed_ners:
-                    disallowed_tokens.append(ent.text)
+                    disallowed_tokens.append(ent.text.lower())
 
-            for disallowed_token in disallowed_tokens:
-                doctext = doctext.replace(disallowed_token, '')
+        tokens = [token.lemma_ for token in doc]
+        # simple_preprocess => lowercase; ignore tokens that are too short or too long
+        tokens = [t for t in simple_preprocess(' '.join(tokens), deacc=False, min_len=min_len, max_len=max_len)
+                  if t not in stop_words and t not in disallowed_tokens]
+        texts_out.append(tokens)
 
-            # Recreate doc and ents
-            doc = nlp(' '.join([x for x in doctext.split(' ') if x.strip()]))  # collapse multiple whitespace into one
-            ents = list(doc.ents)
-
-        if allowed_tags == ['NOUN']:
-            for ent in ents:
-                if (not allowed_ners) or (ent.label_ in allowed_ners):
-                    text_out.append(ent.text)
-        else:
-            for token in doc:
-                if (not allowed_tags) or (token.pos_ in allowed_tags):
-                    text_out.append(token.lemma_)
-
-        texts_out.append(text_out)
     return texts_out
 
 
@@ -109,19 +87,13 @@ def vectorize(list_of_docs, model):
 
 PARAMS = dict(
     MAX_DOCS=None,                    # for quick code testing - int or None (all docs)
-    MIN_LEN=2,                        # words less than this length will be filtered
+    MIN_LEN=3,                        # words less than this length will be filtered
     MAX_LEN=100,                      # words more than this length will be filtered
-    ALLOWED_TAGS=[                    # POS tags to consider; None or empty to consider all
-                                      # See https://github.com/explosion/spaCy/blob/b7ba7f78a28ef71fca60415d0165e27a058d1946/spacy/glossary.py#L17
-    ],
-    ALLOWED_NERS=[                    # Named-entities to consider; None or empty to consider all
-                                      # Only applicable when ALLOWED_TAGS = ['NOUN'] (only)
-                                      # See https://github.com/explosion/spaCy/blob/b7ba7f78a28ef71fca60415d0165e27a058d1946/spacy/glossary.py#L318
-                                      # e.g. muslim=NORP, islam=ORG, damascus=GPE
-    ],
     DISALLOWED_NERS=[                 # Named-entities to filter out
+                                      # See https://github.com/explosion/spaCy/blob/b7ba7f78a28ef71fca60415d0165e27a058d1946/spacy/glossary.py#L318
         'PERSON',
-        'GPE'
+        'GPE',
+        'ORG'
     ],
     BIGRAM=False,                     # Form bigrams before creating corpus?
     BIGRAM_MIN_PMI=5,                 # Min. PMI in order to create bigrams (determine by manual inspection of generated bigrams.txt)
@@ -183,8 +155,7 @@ if __name__ == '__main__':
     data_pkl_file = os.path.join(output_dir, 'data.pik')
     if not os.path.exists(data_pkl_file):
         data = list(df.description)
-        data = process_words(data, stop_words=stop_words, allowed_tags=PARAMS['ALLOWED_TAGS'],
-                             allowed_ners=PARAMS['ALLOWED_NERS'], disallowed_ners=PARAMS['DISALLOWED_NERS'],
+        data = process_words(data, stop_words=stop_words, disallowed_ners=PARAMS['DISALLOWED_NERS'],
                              min_len=PARAMS['MIN_LEN'], max_len=PARAMS['MAX_LEN'])
         logger.info(f'After filtering stopwords/short words/lemmatization, no. of records = {len(data)}')
 
