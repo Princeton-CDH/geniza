@@ -1,0 +1,7 @@
+No. of records = 31968
+After dropping records with missing description, no. of records = 31858
+After filtering stopwords/short words/lemmatization, no. of records = 31858
+Vectorization of None documents done.
+Fitting AffinityPropagation model to documents..
+Estimated number of clusters: 6265
+Silhouette Coefficient: 0.15925773113038805
