@@ -1,6 +1,7 @@
 import sys
 from collections import Counter
 import textwrap
+from glob import glob
 from pprint import pprint
 import os
 import shutil
@@ -138,10 +139,11 @@ if __name__ == '__main__':
         pprint(PARAMS, f)
 
     _stop_words = []
-    stopwords_file = 'stopwords.txt'
-    if os.path.exists(stopwords_file):
-        _stop_words = [l.lower() for l in open(stopwords_file, 'r').read().splitlines() if l.strip() and not l.startswith('#')]
-        shutil.copy(stopwords_file, os.path.join(output_dir, stopwords_file))
+    os.makedirs(f'{output_dir}/stopwords', exist_ok=True)
+    for filename in glob('stopwords/*.txt'):
+        _stop_words.extend([l.lower() for l in open(filename, 'r').read().splitlines() if l.strip()
+                            and not l.startswith('#')])
+        shutil.copy(filename, os.path.join(output_dir, filename))
     # ----------- Copy script and params -------------- #
 
     stop_words = _stop_words + nltk.corpus.stopwords.words('english')  # nltk.download('stopwords')
