@@ -3,7 +3,7 @@
 {# edit link #}
 {% if perms.corpus.change_document %}
     <div class="edit-link-container">
-        <a class="edit-link" href="{% url 'admin:corpus_document_change' document.id %}">
+        <a class="edit-link" href="{% url 'admin:corpus_document_change' document.id %}" data-turbo="false">
             <i class="ph-pencil"></i>
             {# Translators: Document edit link for admins #}
             <span>{% translate 'Edit' %}</span>

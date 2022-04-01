@@ -1,5 +1,9 @@
 # Change Log
 
+## 4.3.1
+
+-   bugfix: edit link on public document detail page wasn't loading correctly due to Turbo
+
 ## 4.3
 
 -   public site

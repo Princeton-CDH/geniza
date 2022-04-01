@@ -161,6 +161,25 @@ class DocumentSearchForm(forms.Form):
         # Translators: label for ascending sort by number of scholarship records
         ("scholarship_asc", _("Scholarship Records (Least–Most)")),
     ]
+    # NOTE: adding sort options and filters here to populate strings for translation;
+    # this functionality is not yet implemented, but these translation strings
+    # should be used when it is
+    planned_sort_choices = [
+        # Translators: label for sort by document date (most recent first)
+        ("docdate", _("Document Date (Latest-Earliest)")),
+        # Translators: label for sort by document date (oldest first)
+        ("docdate2", _("Document Date (Earliest-Latest)")),
+        # Translators: label for sort by document input date (most recent first)
+        ("input_date", _("Input Date (Latest-Earliest)")),
+        # Translators: label for sort by document input date (oldest first)
+        ("input_date2", _("Input Date (Earliest-Latest)")),
+    ]
+    # Translators: label for filter documents by date
+    _("Document Dates")
+    # Translators: label for start year when filtering by date range
+    _("From year")
+    # Translators: label for end year when filtering by date range
+    _("To year")
 
     # NOTE these are not set by default!
     error_css_class = "error"
