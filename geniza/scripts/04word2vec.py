@@ -109,12 +109,20 @@ PARAMS = dict(
     # No. of topics - numeric or a range
     K=range(10, 50),
 
-    WORD2VEC_VECTOR_SIZE=200,
+    WORD2VEC_VECTOR_SIZE=100,
     WORD2VEC_WINDOW=10,
-    WORD2VEC_EPOCHS=10,
+    WORD2VEC_EPOCHS=20,
 
     AFFINITY_N_DOCS=None,
-    AFFINITY_DAMPING=0.8
+    AFFINITY_DAMPING=0.8,
+
+    # Parameters that determine initial preference values
+
+    # How many tags to consider (most common to least common)
+    AFFINITY_PREFERENCE_N_TAGS=100,
+    # Specific tags to ignore when determining most common tags
+    AFFINITY_PREFERENCE_BAD_TAGS=('arabic', 'arabic script', 'arabic address', 'arabic literary', 'fgp stub', 'late ja', 'late heb', 'illness letter 969–1517',
+            '11th c', '12th c', '13th c', '16th c', '18th c', '19th c', '20th c', 'cudl', 'nahray b nissim')
 )
 
 
@@ -153,6 +161,24 @@ if __name__ == '__main__':
     df = df.dropna(subset=['description'])
     logger.info(f'After dropping records with missing description, no. of records = {len(df)}')
     df['tags'] = df['tags'].str.lower()
+    df['tags'].fillna('', inplace=True)
+
+    # -------------- Find common tags --------------- #
+    tags = Counter()
+    tag_dict = {}
+    for i, row in df.iterrows():
+        try:
+            _tags = row.tags.split(',')
+        except:
+            continue
+        else:
+            for tag in _tags:
+                tag = tag.strip().lower().replace(':', '').replace('.', '').replace(';', '').replace('(', '').replace(')', '')
+                if tag not in PARAMS['AFFINITY_PREFERENCE_BAD_TAGS']:
+                    tags.update([tag])
+
+    common_tags = [t[0] for t in tags.most_common(PARAMS['AFFINITY_PREFERENCE_N_TAGS'])]
+    # -------------- Find common tags --------------- #
 
     data_pkl_file = os.path.join(output_dir, 'data.pik')
     if not os.path.exists(data_pkl_file):
@@ -195,9 +221,41 @@ if __name__ == '__main__':
 
     logger.info('Fitting AffinityPropagation model to documents..')
     af = AffinityPropagation(verbose=True, random_state=43423, damping=PARAMS['AFFINITY_DAMPING']).fit(X)
-    cluster_centers_indices = af.cluster_centers_indices_
-    labels = af.labels_
 
+    # If we didn't specify starting preference values, it would have been the median (for all data points):
+    median_preference = np.median(af.affinity_matrix_)
+    logger.info(f'Median Preference Value of AF model: {median_preference}')
+    min_preference = np.min(af.affinity_matrix_)
+    logger.info(f'Min Preference Value of AF model: {min_preference}')
+    max_preference = np.max(af.affinity_matrix_)
+    logger.info(f'Max Preference Value of AF model: {max_preference}')
+
+    cluster_centers_indices = af.cluster_centers_indices_
+    n_clusters_ = len(cluster_centers_indices)
+    logger.info(f'Estimated number of clusters: {n_clusters_}')
+
+    initial_preference = max_preference
+
+    df['preference'] = min_preference
+    for common_tag in common_tags:
+        matching_indices = np.where(df.tags.str.contains(common_tag))[0]
+        if len(matching_indices) > 0:
+            randomly_selected_doc_index = np.random.choice(matching_indices, 1)
+            df.iloc[randomly_selected_doc_index]['preference'] = initial_preference
+
+    logger.info(f'Recreating AffinityPropagation after setting initial preference={initial_preference} for select docs')
+    af = AffinityPropagation(
+        verbose=True,
+        random_state=43423,
+        preference=df['preference'].to_numpy(),
+        damping=PARAMS['AFFINITY_DAMPING']
+    ).fit(X)
+
+    cluster_centers_indices = af.cluster_centers_indices_
+    n_clusters_ = len(cluster_centers_indices)
+    logger.info(f'Estimated number of clusters: {n_clusters_}')
+
+    labels = af.labels_
     with open(os.path.join(output_dir, 'affinity_clustering.html'), 'w') as f:
         for label in np.unique(labels):
             f.write(f'<hr/><b>Cluster {label}</b><hr/>')
@@ -210,9 +268,6 @@ if __name__ == '__main__':
                 f.write(f'<a target="_blank" href="{row.url}">{row.pgpid}</a><br/>')
                 f.write('Tags: <i>' + str(row.tags) + '</i><br/>')
                 f.write(str(row.description) + '<br/>')
-
-    n_clusters_ = len(cluster_centers_indices)
-    logger.info(f'Estimated number of clusters: {n_clusters_}')
 
     coeff = metrics.silhouette_score(X, labels, metric='sqeuclidean')
     logger.info(f'Silhouette Coefficient: {coeff}')
