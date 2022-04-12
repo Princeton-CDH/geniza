@@ -15,8 +15,10 @@
         </filter>
         <linearGradient gradientUnits="userSpaceOnUse" x1="-559" y1="110." x2="350" y2="110.5" id="gradient-mobile-light-rtl">
             <stop offset="0" style="stop-color: rgba(255, 255, 255); stop-opacity: 1;"></stop>
-            <stop offset="0.6544" style="stop-color: rgb(255, 255, 255);"></stop>
-            <stop offset="0.661" style="stop-color: rgb(255, 255, 255); stop-opacity: 0.66;"></stop>
+            <stop offset="0.6" style="stop-color: rgb(255, 255, 255); stop-opacity: 1;"></stop>
+            <stop offset="0.66" style="stop-color: rgb(255, 255, 255); stop-opacity: 0.8;"></stop>
+            <stop offset="0.75" style="stop-color: rgb(255, 255, 255); stop-opacity: 0.67;"></stop>
+            <stop offset="0.9" style="stop-color: rgb(255, 255, 255); stop-opacity: 0.25;"></stop>
             <stop offset="1" style="stop-color: rgb(255, 255, 255, 0);"></stop>
         </linearGradient>
     </defs>
