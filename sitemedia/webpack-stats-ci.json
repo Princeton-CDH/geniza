@@ -3,7 +3,6 @@
   "publicPath": "/static/bundles/",
   "assets": [],
   "chunks": {
-    "main": [],
-    "stimulus_app": []
+    "main": []
   }
 }
