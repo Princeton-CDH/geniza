@@ -8,12 +8,12 @@
 @use "../base/typography";
 
 header {
-    z-index: 4;
+    z-index: 5;
 }
 #site-nav {
     display: flex;
     flex-flow: row wrap;
-    z-index: 5;
+    z-index: 6;
     @include breakpoints.for-tablet-landscape-up {
         flex-flow: row nowrap;
         align-items: center;
@@ -24,7 +24,7 @@ header {
     // Logotype, links to homepage
     a.home-link {
         position: absolute;
-        z-index: 7;
+        z-index: 8;
     }
     // Mobile-only menu buttons
     li.menu-button {
@@ -77,7 +77,7 @@ header {
         align-items: center;
         justify-content: flex-end;
         max-width: 100%;
-        z-index: 7;
+        z-index: 8;
         // Direct descendent menu buttons (mobile)
         & > li.menu-button {
             display: flex;
@@ -130,7 +130,7 @@ header {
             & > li.menu-item + li.menu-item {
                 margin-left: spacing.$spacing-sm;
             }
-            z-index: 6;
+            z-index: 7;
         }
         outline-color: var(--primary);
     }
@@ -401,6 +401,7 @@ header {
 // tweaks for RTL header for hebrew, arabic
 html[dir="rtl"] #site-nav {
     ul#corner-links li.menu-button {
+        margin-left: 0;
         margin-right: 11rem;
     }
     ul.sub-menu li.menu-button a#back-to-main-menu::before {
@@ -416,6 +417,9 @@ html[dir="rtl"] #site-nav {
         li.menu-item.has-submenu a.open-sub-menu::before {
             margin-left: 0;
             margin-right: spacing.$spacing-xs;
+        }
+        li.menu-item.has-submenu a.open-sub-menu::after {
+            content: "";
         }
         li.menu-item,
         ul.sub-menu li.menu-item {
