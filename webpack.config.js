@@ -13,8 +13,8 @@ module.exports = (env, options) => ({
         main: [
             // this name ("main") is referenced by django-webpack-loader's {% render_bundle %} tag
             "./sitemedia/scss/main.scss",
+            "./sitemedia/js/stimulus_app.js",
         ],
-        stimulus_app: "./sitemedia/js/stimulus_app.js",
     },
     output: {
         // locations and filenames of bundled files
