@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 21.9b0 # Replace by any tag/version: https://github.com/psf/black/tags
+    rev: 22.3.0 # Replace by any tag/version: https://github.com/psf/black/tags
     hooks:
       - id: black
         # Assumes that your shell's `python` command is linked to python3.6+

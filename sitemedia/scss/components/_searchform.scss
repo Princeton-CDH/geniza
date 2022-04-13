@@ -286,7 +286,7 @@ main.search form {
     fieldset#filters {
         background-color: var(--background);
         max-width: none;
-        z-index: 4;
+        z-index: 5;
         position: fixed;
         width: 100vw;
         height: 100vh;
@@ -352,7 +352,7 @@ main.search form {
             &:active {
                 border: none;
                 outline: 2px solid var(--link-primary);
-                z-index: 2;
+                z-index: 3;
             }
             input[type="checkbox"] {
                 @include a11y.sr-only;
