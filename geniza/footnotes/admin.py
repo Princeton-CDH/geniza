@@ -45,7 +45,6 @@ class SourceFootnoteInline(admin.TabularInline):
         "doc_relation",
         "location",
         "has_transcription",
-        "notes",
         "url",
     )
     readonly_fields = ("object_link", "has_transcription")
