@@ -71,8 +71,9 @@ class Command(BaseCommand):
         browser.get(
             "http://localhost:8000/en/documents/?per_page=2&sort=scholarship_desc#filters"
         )
-        # open document type filter
-        browser.find_element_by_css_selector(".doctype-filter summary").click()
+        # open document type filter programatically
+        doctype_filter = browser.find_element_by_css_selector(".doctype-filter")
+        browser.execute_script("arguments[0].open = true", doctype_filter)
         # click the first option
         browser.find_element_by_css_selector(
             ".doctype-filter li:nth-child(1) label"
