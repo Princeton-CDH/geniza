@@ -88,7 +88,8 @@
             @include typography.headline-3;
             direction: ltr;
         }
-        h1 {
+        h1,
+        h3 {
             text-align: left;
         }
         li {

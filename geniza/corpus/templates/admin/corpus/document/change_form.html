@@ -1,4 +1,16 @@
 {% extends "admin/change_form.html" %}
+{% load static render_bundle_csp  %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    {% render_bundle_csp "iiif" "css" %}
+{% endblock %}
+{% block admin_change_form_document_ready %}
+    {{ block.super }}
+    {% render_bundle_csp "iiif" "js" attrs='defer' %}
+{% endblock %}
+
+
 {% block after_field_sets %}
     {% if original.pk %} {# don't display record history when adding new document #}
         <fieldset class="module aligned">
@@ -17,18 +29,11 @@
             </div>
         </fieldset>
     {% endif %}
-    {% if original.digital_editions %}
+    {% if original.digital_editions or original.has_image %}
         <fieldset class="module aligned transcriptions-field">
             <div class="form-row">
-                <label>Transcription{{ original.digital_editions.count|pluralize }}</label>
-                <ul class="transcriptions">
-                    {% for footnote in original.digital_editions %}
-                        <li>
-                            {% if original.digital_editions|length > 1 %}<h3 class="source">{{ footnote.source|safe }}</h3>{% endif %}
-                            {% include "footnotes/transcription.html" with transcription=footnote.content %}
-                        </li>
-                    {% endfor %}
-                </ul>
+                <label>Transcription{{ original.digital_editions.count|pluralize }}/image{{ original.iiif_images|length|pluralize }}</label>
+                {% include "corpus/snippets/document_transcription.html" with document=original %}
             </div>
         </fieldset>
     {% endif %}

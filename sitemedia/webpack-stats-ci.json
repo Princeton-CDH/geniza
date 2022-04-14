@@ -3,6 +3,7 @@
   "publicPath": "/static/bundles/",
   "assets": [],
   "chunks": {
-    "main": []
+    "main": [],
+    "iiif": []
   }
 }
