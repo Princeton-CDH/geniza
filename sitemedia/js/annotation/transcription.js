@@ -29,11 +29,11 @@ function setupAnnotation() {
 
     function initAnnotation() {
         const anno = Annotorious(window.osd_viewer);
-        // Initialize the toolbar plugin
+        // Initialize the toolbar plugin (will likely add later)
         // Toolbar(anno, document.getElementById('toolbar'));
 
         // Initialize the AnnotationServerStorage plugin
-        var annotationServerConfig = {
+        let annotationServerConfig = {
             annotationEndpoint: "http://0.0.0.0:8888/annotation",
             // testing escriptorium import
             // target: "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00012-00011-000-00001.jp2/info.json",

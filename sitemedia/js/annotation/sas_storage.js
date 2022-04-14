@@ -3,6 +3,9 @@
 import { _ } from "core-js";
 import SimpleAnnotationServerV2Adapter from "./SimpleAnnotationServerV2Adapter";
 
+// define a custom event to indicate that annotations have been loaded
+const AnnoLoadEvent = new Event("annotations-loaded");
+
 // const AnnotationServerStorage = (client, serverConfig, settings) => {
 const AnnotationServerStorage = (anno, settings) => {
     let adapter = new SimpleAnnotationServerV2Adapter(
@@ -13,6 +16,7 @@ const AnnotationServerStorage = (anno, settings) => {
     // load and display annotations from server
     adapter.all().then((annotationPage) => {
         anno.setAnnotations(annotationPage.items);
+        document.dispatchEvent(AnnoLoadEvent);
     });
 
     // Lifecycle event handlers

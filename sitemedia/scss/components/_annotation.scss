@@ -12,7 +12,7 @@ div.annotate {
         font-size: typography.$text-size-md;
     }
 
-    .annotation-editor {
+    div[contenteditable="true"] {
         background-color: white;
         color: black;
         min-height: 3em;
