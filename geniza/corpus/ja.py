@@ -34,7 +34,7 @@ arabic_ja_chars = {
     "ى": "י",
 }
 
-final_letters = {
+he_final_letters = {
     "כֹ": "ך",
     "צ": "ץ",
     "פ": "ף",
@@ -60,12 +60,9 @@ def contains_arabic(text):
 def ar_word_to_ja(word):
     # for a single word
     ja_word = word.translate(arabic_to_ja_table)
-    # convert last letters to final form if necessary
+    # convert last letter to final form if necessary
     last_letter = ja_word[-1]
-    if last_letter in final_letters:
-        print("converting %s to %s" % (last_letter, final_letters[last_letter]))
-    last_letter = final_letters.get(last_letter, last_letter)
-    return f"{ ja_word[:-1] }{ last_letter }"
+    return f"{ ja_word[:-1] }{ he_final_letters.get(last_letter, last_letter) }"
 
 
 def arabic_or_ja(text):
