@@ -3,6 +3,8 @@ import re
 from parasolr.django import AliasedSolrQuerySet
 from piffle.image import IIIFImageClient
 
+from geniza.corpus.ja import arabic_or_ja
+
 
 class DocumentSolrQuerySet(AliasedSolrQuerySet):
     """':class:`~parasolr.django.AliasedSolrQuerySet` for
@@ -71,7 +73,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                 lambda x: "%s:" % self.search_aliases[x.group(1)], search_term
             )
 
-        return search_term
+        return arabic_or_ja(search_term)
 
     # (adapted from mep)
     # edismax alias for searching on admin document pseudo-field
