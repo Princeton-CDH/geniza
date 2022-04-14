@@ -1,0 +1,17 @@
+/* styles for transcription and annotation */
+
+@use "../base/spacing";
+
+// annotation container hidden by default
+div.annotate {
+    display: none;
+
+    .instructions {
+        font-style: italic;
+    }
+}
+
+#enable-annotation {
+    position: absolute;
+    right: spacing.$spacing-sm;
+}

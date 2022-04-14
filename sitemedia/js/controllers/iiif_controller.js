@@ -8,7 +8,7 @@ export default class extends Controller {
 
     iiifContainerTargetConnected() {
         // inject OSD into the iiif container
-        OpenSeadragon({
+        const viewer = OpenSeadragon({
             id: this.iiifContainerTarget.id,
             prefixUrl:
                 "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/",
@@ -18,9 +18,17 @@ export default class extends Controller {
             autoHideControls: false,
             showHomeControl: false,
             showRotationControl: true,
+            // Enable touch rotation on tactile devices
+            gestureSettingsTouch: {
+                pinchRotate: true,
+            },
             crossOriginPolicy: "Anonymous",
         });
+
+        // store OSD viewer instance on the browser window for access with annotations
+        window.osd_viewer = viewer;
     }
+
     iiifContainerTargetDisconnected() {
         // ensure OSD is removed on disconnect by removing all child nodes from target
         while (this.iiifContainerTarget.firstChild) {
@@ -28,5 +36,6 @@ export default class extends Controller {
                 this.iiifContainerTarget.firstChild
             );
         }
+        delete window.osd_viewer;
     }
 }

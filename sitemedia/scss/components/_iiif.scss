@@ -65,7 +65,14 @@
             }
         }
     }
-    // Transcription text
+
+    // Transcription container
+
+    // hide if no content
+    .transcription.no-transcription {
+        display: none;
+    }
+
     .transcription {
         max-width: 60ch;
         @include breakpoints.for-tablet-landscape-up {

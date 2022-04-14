@@ -15,6 +15,7 @@ module.exports = (env, options) => ({
             "./sitemedia/scss/main.scss",
             "./sitemedia/js/stimulus_app.js",
         ],
+        transcription: "./sitemedia/js/annotation/transcription.js",
     },
     output: {
         // locations and filenames of bundled files

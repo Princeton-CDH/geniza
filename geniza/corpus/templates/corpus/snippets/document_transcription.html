@@ -1,5 +1,8 @@
 {% load i18n corpus_extras %}
 <section id="iiif-viewer" data-controller="iiif">
+    {% if user.is_authenticated %} {# TODO: determine proper permission to check here #}
+        <button id="enable-annotation"><i class="ph-pencil"></i> transcribe</button>
+    {% endif %}
     <h1 class="sr-only">
         {# Translators: accessibility label for document images and transcription section #}
         {% translate "Images and transcription" %}
@@ -19,27 +22,36 @@
         <div id="iiif-images" data-iiif-target="iiifContainer" data-iiif-urls="{{ document.iiif_images|iiif_info_json }}" class="{% if not document.has_transcription %}no-transcription{% endif %}">
         </div>
     {% endif %}
-    {% if document.has_transcription %}
-        <div class="transcription{% if not document.has_image %} no-image{% endif %}">
-            <h2>{% translate 'Transcription' %}</h2>
-            {% if document.digital_editions|length > 1 %}
-                {# when there are multiple editions, use disclosure element #}
-                {% for edition in document.digital_editions %}
-                    <details open>
-                        <summary class="source">{{ edition.source.display }}</summary>
-                        <div>{{ edition.content.html|safe }}</div>
-                    </details>
-                {% endfor %}
-            {% else %}
-                <div>{{ document.digital_editions.0.content.html|safe }}</div>
-            {% endif %}
-        </div>
-        <div class="attribution">
-            {% for fragment in document.fragments.all %}
-                {% if fragment.attribution %}
-                    {{ fragment.shelfmark }}: {{ fragment.attribution }}
-                {% endif %}
+    <div class="transcription{% if not document.has_image %} no-image{% endif %}{% if not document.has_transcription %} no-transcription{% endif %}">
+        <h2>{% translate 'Transcription' %}</h2>
+        {% if document.digital_editions|length > 1 %}
+            {# when there are multiple editions, use disclosure element #}
+            {% for edition in document.digital_editions %}
+                <details open>
+                    <summary class="source">{{ edition.source.display }}</summary>
+                    <div>{{ edition.content.html|safe }}</div>
+                </details>
             {% endfor %}
+        {% else %}
+            <div>{{ document.digital_editions.0.content.html|safe }}</div>
+        {% endif %}
+    </div>
+    {% if user.is_authenticated %} {# TODO: determine proper permission to check here #}
+        <div class="annotate">
+            <h2>Transcribe</h2>
+            <p class="instructions">Hold shift and then click on the image and drag
+                to select a rectangular region for the block text you want to transcribe.</p>
         </div>
     {% endif %}
+
+
+    <div class="attribution">
+        {% for fragment in document.fragments.all %}
+            {% if fragment.attribution %}
+                <p><b>{{ fragment.shelfmark }}</b>: {{ fragment.attribution }}</p>
+            {% endif %}
+        {% endfor %}
+    </div>
 </section>
+
+
