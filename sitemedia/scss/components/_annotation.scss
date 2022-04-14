@@ -1,6 +1,7 @@
 /* styles for transcription and annotation */
 
 @use "../base/spacing";
+@use "../base/typography";
 
 // annotation container hidden by default
 div.annotate {
@@ -8,10 +9,18 @@ div.annotate {
 
     .instructions {
         font-style: italic;
+        font-size: typography.$text-size-md;
+    }
+
+    .annotation-editor {
+        background-color: white;
+        color: black;
+        min-height: 3em;
     }
 }
 
+/* toggle button for annotation/transcription */
 #enable-annotation {
     position: absolute;
-    right: spacing.$spacing-sm;
+    right: 2em; // spacing.$spacing-lg;
 }

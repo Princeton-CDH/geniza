@@ -37,7 +37,7 @@
         {% endif %}
     </div>
     {% if user.is_authenticated %} {# TODO: determine proper permission to check here #}
-        <div class="annotate">
+        <div class="annotate" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
             <h2>Transcribe</h2>
             <p class="instructions">Hold shift and then click on the image and drag
                 to select a rectangular region for the block text you want to transcribe.</p>
