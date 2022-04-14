@@ -28,6 +28,7 @@ function setupAnnotation() {
         };
 
     function initAnnotation() {
+        // FIXME: only allow init once!
         const anno = Annotorious(window.osd_viewer);
         // Initialize the toolbar plugin (will likely add later)
         // Toolbar(anno, document.getElementById('toolbar'));

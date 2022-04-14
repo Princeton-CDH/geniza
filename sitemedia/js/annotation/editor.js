@@ -9,14 +9,14 @@ const TranscriptionEditor = (anno) => {
         let container = document.createElement("div");
         container.setAttribute("class", "annotation-display-container");
         let textInput = document.createElement("div");
-        if (annotation.body[0].value) {
+
+        if (annotation.body != undefined && annotation.body.length > 0) {
             textInput.innerHTML = annotation.body[0].value;
         }
         container.append(textInput);
 
         // existing annotation
-        console.log("has anotation id");
-        if (annotation.id) {
+        if (annotation.id != undefined) {
             container.dataset.annotationId = annotation.id;
 
             // when this display is clicked, highlight the zone and make editable
@@ -41,7 +41,7 @@ const TranscriptionEditor = (anno) => {
         }
 
         container.setAttribute("class", "annotation-edit-container");
-        let textInput = container.childNodes[0];
+        let textInput = container.querySelector("div");
         textInput.setAttribute("class", "annotation-editor");
         textInput.setAttribute("contenteditable", "true");
         textInput.focus();
@@ -93,25 +93,49 @@ const TranscriptionEditor = (anno) => {
                 container.remove();
             }
         };
+
+        // if this is a saved annotation, add delete button
+        if (container.dataset.annotationId) {
+            let deleteButton = document.createElement("button");
+            deleteButton.setAttribute("class", "delete");
+            deleteButton.textContent = "Delete";
+            container.append(deleteButton);
+
+            deleteButton.onclick = function () {
+                // NOTE: this does not actually delete from storage
+                // remove the highlight zone from the image
+                anno.removeAnnotation(container.dataset.annotationId);
+                // remove the edit/display container
+                container.remove();
+                // TODO: delete from storage
+                // (but HOW, if the event isn't triggered?)
+            };
+        }
+
+        return container;
     }
 
     function makeReadOnly(container, annotation) {
         // convert a container that has been made editable back to display format
+        // annotation is optional; used to reset content if necessary
         container.setAttribute("class", "annotation-display-container");
         let textInput = container.querySelector("div");
         console.log(textInput);
         textInput.setAttribute("class", "");
         textInput.setAttribute("contenteditable", "false");
         // restore the original content
-        if (annotation != undefined) {
+        if (annotation != undefined && annotation.body != undefined) {
             textInput.innerHTML = annotation.body[0].value;
             // add the annotation again to update the image selection region,
             // in case the user has modified it and wants to cancel
             anno.addAnnotation(annotation);
         }
-        // remove save and cancel buttons (or should we just hide them?)
-        container.querySelector(".save").remove();
-        container.querySelector(".cancel").remove();
+        // remove buttons (or should we just hide them?)
+        container.querySelectorAll("button").forEach(function (button) {
+            button.remove();
+        });
+
+        return container;
     }
 
     function makeAllReadOnly() {
@@ -154,6 +178,10 @@ const TranscriptionEditor = (anno) => {
             '[data-annotation-id="' + annotation.id + '"]'
         );
         makeEditable(displayContainer, annotation);
+    });
+
+    anno.on("deleteAnnotation", function (annotation) {
+        //
     });
 };
 
