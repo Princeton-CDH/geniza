@@ -747,6 +747,9 @@ class TestDocument:
             assert index_data[scholarship_count] == 0
         assert index_data["scholarship_t"] == []
 
+        # no images - has_image bool should be false
+        assert not index_data["has_image_b"]
+
         # add mock images
         img1 = Mock()
         img1.info.return_value = "http://example.co/iiif/ts-1/00001/info.json"
@@ -763,6 +766,7 @@ class TestDocument:
                 "http://example.co/iiif/ts-1/00002",
             ]
             assert index_data["iiif_labels_ss"] == ["label1", "label2"]
+            assert index_data["has_image_b"] is True
 
     def test_index_data_footnotes(
         self, document, source, twoauthor_source, multiauthor_untitledsource
