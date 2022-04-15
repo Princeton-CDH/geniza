@@ -226,7 +226,7 @@ class DocumentSearchForm(forms.Form):
     }
 
     def filters_active(self):
-        # returns True if any filter fields are active in cleaned_data
+        """Check if any filters are active; returns true if form fields other than sort or q are set"""
         if self.is_valid():
             return bool(
                 {
