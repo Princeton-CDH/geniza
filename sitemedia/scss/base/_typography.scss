@@ -24,9 +24,9 @@ $text-size-5xl: 2rem; //     = 32px
 @mixin headline-1 {
     font-family: fonts.$primary-bold;
     font-weight: bold;
-    font-size: $text-size-2xl;
+    font-size: $text-size-3xl;
     @include breakpoints.for-desktop-up {
-        font-size: $text-size-3xl;
+        font-size: $text-size-4xl;
     }
     line-height: 1.5;
 }
@@ -37,13 +37,24 @@ $text-size-5xl: 2rem; //     = 32px
     font-weight: bold;
     font-size: $text-size-xl;
     @include breakpoints.for-desktop-up {
-        font-size: $text-size-2xl;
+        font-size: $text-size-3xl;
     }
     line-height: 1.5;
 }
 
 // H3 — sub-sections only on generic content pages
 @mixin headline-3 {
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+    font-size: $text-size-md;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-xl;
+    }
+    line-height: 1.5;
+}
+
+// H1 - error pages
+@mixin headline-error {
     font-family: fonts.$primary-bold;
     font-weight: bold;
     font-size: $text-size-lg;
