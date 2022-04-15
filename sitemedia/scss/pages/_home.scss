@@ -37,7 +37,7 @@ main.homepage {
             rgba(255, 255, 255, 0.17) 66%,
             rgba(255, 255, 255, 0)
         ),
-        url("/static/img/ui/mobile/light/all/banner-fragment.svg") left 0px
+        url("/static/img/ui/mobile/light/all/banner-fragment.svg") 70% 0px
             no-repeat,
         linear-gradient(
             180deg,
@@ -58,8 +58,8 @@ main.homepage {
             ),
             url("/static/img/ui/desktop/light/all/banner-pgp-text-right.svg")
                 52% 39% no-repeat,
-            url("/static/img/ui/desktop/light/all/banner-fragment.svg") bottom
-                left no-repeat,
+            url("/static/img/ui/desktop/light/all/banner-fragment.svg") 52% 90%
+                no-repeat,
             linear-gradient(
                 180deg,
                 rgba(86, 120, 86, 0.2) 0%,
@@ -79,7 +79,7 @@ main.homepage {
             rgba(22, 22, 22, 0.41) 35.28%,
             rgba(22, 22, 22, 0) 100%
         ),
-        url("/static/img/ui/mobile/dark/all/banner-fragment.svg") left 0px
+        url("/static/img/ui/mobile/dark/all/banner-fragment.svg") 70% 0px
             no-repeat,
         linear-gradient(
             180deg,
@@ -100,8 +100,8 @@ main.homepage {
             ),
             url("/static/img/ui/desktop/dark/all/banner-pgp-text-right.svg") 52%
                 39% no-repeat,
-            url("/static/img/ui/desktop/dark/all/banner-fragment.svg") bottom
-                left no-repeat,
+            url("/static/img/ui/desktop/dark/all/banner-fragment.svg") 52% 90%
+                no-repeat,
             linear-gradient(
                 180deg,
                 rgba(195, 127, 151, 0.2) 0%,
