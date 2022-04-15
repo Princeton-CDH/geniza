@@ -201,7 +201,7 @@ class DocumentSearchForm(forms.Form):
         label=_("Document Type"),
     )
     has_image = BooleanFacetField(
-        # Translators: label for "has transcription" search form filter
+        # Translators: label for "has image" search form filter
         label=_("Has Image"),
     )
     has_transcription = BooleanFacetField(
