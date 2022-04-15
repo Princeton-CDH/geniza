@@ -200,6 +200,10 @@ class DocumentSearchForm(forms.Form):
         # Translators: label for document type search form filter
         label=_("Document Type"),
     )
+    has_image = BooleanFacetField(
+        # Translators: label for "has image" search form filter
+        label=_("Has Image"),
+    )
     has_transcription = BooleanFacetField(
         # Translators: label for "has transcription" search form filter
         label=_("Has Transcription"),
@@ -222,12 +226,14 @@ class DocumentSearchForm(forms.Form):
     }
 
     def filters_active(self):
+        """Check if any filters are active; returns true if form fields other than sort or q are set"""
         if self.is_valid():
-            return (
-                self.cleaned_data["doctype"]
-                or self.cleaned_data["has_transcription"]
-                or self.cleaned_data["has_translation"]
-                or self.cleaned_data["has_discussion"]
+            return bool(
+                {
+                    k: v
+                    for k, v in self.cleaned_data.items()
+                    if k not in ["q", "sort"] and bool(v)
+                }
             )
         return False
 

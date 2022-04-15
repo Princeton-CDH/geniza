@@ -763,6 +763,7 @@ class Document(ModelIndexable):
                     for img in images
                 ],
                 "iiif_labels_ss": [img["label"] for img in images],
+                "has_image_b": len(images) > 0,
             }
         )
 
