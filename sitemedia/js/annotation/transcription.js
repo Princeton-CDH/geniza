@@ -25,6 +25,10 @@ function setupAnnotation() {
             transcriptionContainer.style.display = "none";
 
             initAnnotation();
+            // disable the button so it can't be clicked again (for now)
+            document
+                .getElementById("enable-annotation")
+                .setAttribute("disabled", "disabled");
         };
 
     function initAnnotation() {

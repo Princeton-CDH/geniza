@@ -71,11 +71,13 @@ const TranscriptionEditor = (anno) => {
                 },
             ];
             // TODO: does this get image zone modifications?
+            // FIXME: image zone modification breaks the update (and annotation gets lost!)
             console.log(selection);
             console.log(anno);
             await anno.updateSelected(selection); // .then(function() {
             anno.saveSelected(); // enable when storage works
-            // todo: make the editor inactive
+            // make the editor inactive
+            makeReadOnly(container);
         };
         cancelButton.onclick = function () {
             // cancel the edit
