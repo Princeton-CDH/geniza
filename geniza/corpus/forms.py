@@ -228,13 +228,13 @@ class DocumentSearchForm(forms.Form):
     def filters_active(self):
         # returns True if any filter fields are active in cleaned_data
         if self.is_valid():
-            filter_fields = list(
-                filter(lambda k: k not in ["q", "sort"], self.fields.keys())
+            return bool(
+                {
+                    k: v
+                    for k, v in self.cleaned_data.items()
+                    if k not in ["q", "sort"] and bool(v)
+                }
             )
-            active_fields = dict(
-                filter(lambda i: bool(i[1]), self.cleaned_data.items())
-            ).keys()
-            return bool(set(filter_fields).intersection(set(active_fields)))
         return False
 
     def set_choices_from_facets(self, facets):
