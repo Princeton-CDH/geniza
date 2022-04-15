@@ -25,10 +25,11 @@ $text-size-5xl: 2rem; //     = 32px
     font-family: fonts.$primary-bold;
     font-weight: bold;
     font-size: $text-size-3xl;
+    line-height: 1.5;
     @include breakpoints.for-desktop-up {
         font-size: $text-size-4xl;
+        line-height: 1.4285;
     }
-    line-height: 1.5;
 }
 
 // H2 — section and search result titles
