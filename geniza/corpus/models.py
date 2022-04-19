@@ -669,6 +669,10 @@ class Document(ModelIndexable):
         """All unique sources attached to footnotes on this document."""
         return Source.objects.filter(footnote__document=self).distinct()
 
+    def has_fragment_attribution(self):
+        """Return true if any individual fragments have attributions"""
+        return any([fragment.attribution for fragment in self.fragments.all()])
+
     def attribution(self):
         """Generate a tuple of three attribution components for use in IIIF manifests
         or wherever images/transcriptions need attribution."""

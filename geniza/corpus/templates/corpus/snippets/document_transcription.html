@@ -34,12 +34,19 @@
                 <div>{{ document.digital_editions.0.content.html|h1_to_h3|safe }}</div>
             {% endif %}
         </div>
-        <div class="attribution">
+    {% endif %}
+    {% if document.has_fragment_attribution %}
+        <details class="attribution">
+            <summary>
+                <span>{% translate 'Image Permissions Statement' %}</span>
+            </summary>
             {% for fragment in document.fragments.all %}
                 {% if fragment.attribution %}
-                    {{ fragment.shelfmark }}: {{ fragment.attribution }}
+                    <p class="fragment-attribution">
+                        <span class="shelfmark">{{ fragment.shelfmark }}</span>: {{ fragment.attribution }}
+                    </p>
                 {% endif %}
             {% endfor %}
-        </div>
+        </details>
     {% endif %}
 </section>
