@@ -106,6 +106,9 @@ a#needsreview:target {
         padding: 10px;
     }
 }
+#iiif-viewer .transcription.no-image {
+    max-width: 100%;
+}
 /* rtl is controlled thru html "dir=" attribute */
 .transcription {
     direction: rtl;
@@ -119,7 +122,6 @@ a#needsreview:target {
 }
 
 .transcription li {
-    white-space: pre;
     list-style: none; /* suppress default line numbers */
 }
 
