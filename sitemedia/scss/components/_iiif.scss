@@ -120,15 +120,16 @@
         flex: 1 0 100%;
         margin: 48px 0 0;
         text-align: left;
+        // Label to expand "Image Permissions Statement"
         summary {
             cursor: pointer;
             display: flex;
             align-items: center;
-            // Suppress default details marker
-            list-style-type: none;
             span {
                 @include typography.link;
             }
+            // Suppress default details marker
+            list-style-type: none;
             &::-webkit-details-marker {
                 display: none;
             }
@@ -152,7 +153,11 @@
         span.shelfmark {
             @include typography.permissions-statement-bold;
         }
-        p.fragment-attribution {
+        // list of attributions
+        ul {
+            list-style: none;
+        }
+        li.fragment-attribution {
             margin-top: spacing.$spacing-xs;
         }
         // spacing tweaks for desktop
@@ -161,7 +166,7 @@
             &[open] summary {
                 margin-bottom: spacing.$spacing-md;
             }
-            p.fragment-attribution {
+            li.fragment-attribution {
                 margin-top: 0.75rem;
             }
         }

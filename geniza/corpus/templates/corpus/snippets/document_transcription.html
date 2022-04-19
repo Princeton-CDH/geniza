@@ -41,11 +41,13 @@
                 <span>{% translate 'Image Permissions Statement' %}</span>
             </summary>
             {% for fragment in document.fragments.all %}
-                {% if fragment.attribution %}
-                    <p class="fragment-attribution">
-                        <span class="shelfmark">{{ fragment.shelfmark }}</span>: {{ fragment.attribution }}
-                    </p>
-                {% endif %}
+                <ul>
+                    {% if fragment.attribution %}
+                        <li class="fragment-attribution">
+                            <span class="shelfmark">{{ fragment.shelfmark }}</span>: {{ fragment.attribution }}
+                        </li>
+                    {% endif %}
+                </ul>
             {% endfor %}
         </details>
     {% endif %}
