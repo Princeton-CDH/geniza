@@ -929,6 +929,19 @@ class TestDocument:
         fresh_log_entry = LogEntry.objects.get(pk=log_entry.pk)
         assert fresh_log_entry.object_id is None
 
+    def test_has_fragment_attribution(self, document):
+        assert not document.has_fragment_attribution()
+        manifest = Manifest.objects.create(
+            extra_data={"attribution": "A fake attribution"}
+        )
+        frag = Fragment.objects.create(
+            shelfmark="T-S 8J22.21",
+            manifest=manifest,
+            iiif_url="foo",
+        )
+        document.fragments.add(frag)
+        assert document.has_fragment_attribution()
+
 
 def test_document_merge_with(document, join):
     doc_id = document.id
