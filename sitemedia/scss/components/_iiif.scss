@@ -41,6 +41,7 @@
     // OpenSeaDragon container
     #iiif-images {
         width: 100%;
+        min-height: 320px;
         height: 320px;
         & + .transcription {
             margin-top: spacing.$spacing-md;
@@ -68,7 +69,10 @@
     // Transcription text
     .transcription {
         max-width: 60ch;
+        margin: 0 auto;
+        flex: 1 0 auto;
         @include breakpoints.for-tablet-landscape-up {
+            flex: 1 0 100%;
             /* make a scrollable div; match height with image container */
             max-height: 680px;
             overflow: scroll;
@@ -78,8 +82,6 @@
                 overflow: auto;
             }
         }
-        margin: 0 auto;
-        flex: 1 0 100%;
         * {
             max-width: 100%;
         }
