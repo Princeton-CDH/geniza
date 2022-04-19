@@ -109,9 +109,9 @@ PARAMS = dict(
     # No. of topics - numeric or a range
     K=range(10, 50),
 
-    WORD2VEC_VECTOR_SIZE=100,
+    WORD2VEC_VECTOR_SIZE=200,
     WORD2VEC_WINDOW=10,
-    WORD2VEC_EPOCHS=20,
+    WORD2VEC_EPOCHS=30,
 
     AFFINITY_N_DOCS=None,
     AFFINITY_DAMPING=0.8,
@@ -122,8 +122,33 @@ PARAMS = dict(
     AFFINITY_PREFERENCE_N_TAGS=100,
     # Specific tags to ignore when determining most common tags
     AFFINITY_PREFERENCE_BAD_TAGS=('arabic', 'arabic script', 'arabic address', 'arabic literary', 'fgp stub', 'late ja', 'late heb', 'illness letter 969–1517',
-            '11th c', '12th c', '13th c', '16th c', '18th c', '19th c', '20th c', 'cudl', 'nahray b nissim')
+            '11th c', '12th c', '13th c', '16th c', '18th c', '19th c', '20th c', 'cudl', 'nahray b nissim'),
+
+    AFFINITY_PREFERENCE_N_DESCRIPTIONS=20
 )
+
+
+def generate_html(docs_df, wv, af, X, filename):
+    cluster_centers_indices = af.cluster_centers_indices_
+    n_clusters_ = len(cluster_centers_indices)
+    logger.info(f'Estimated number of clusters: {n_clusters_}')
+
+    labels = af.labels_
+    with open(os.path.join(output_dir, filename), 'w') as f:
+        for label in np.unique(labels):
+            docs = np.where(labels == label)[0]
+            docs_mean_vector = X[docs].mean(axis=0)
+            terms = ', '.join([term for (term, _) in wv.most_similar(docs_mean_vector)])
+            f.write(f'<hr/><b>Cluster {label} ({len(docs)} docs)</b><hr/>')
+            f.write(f'<i>{terms}</i><hr/>')
+            for doc in docs:
+                row = docs_df.iloc[doc]
+                f.write(f'<a target="_blank" href="{row.url}">{row.pgpid}</a><br/>')
+                f.write('Tags: <i>' + str(row.tags) + '</i>')
+                if row['is_exemplar']:
+                    f.write('<p style="color:red;">' + str(row.description) + '</p>')
+                else:
+                    f.write('<p>' + str(row.description) + '</p>')
 
 
 if __name__ == '__main__':
@@ -163,6 +188,18 @@ if __name__ == '__main__':
     df['tags'] = df['tags'].str.lower()
     df['tags'].fillna('', inplace=True)
 
+    # -------------- Add additional columns to Dataframe --------------- #
+    df['preference'] = 0
+    df['is_exemplar'] = False
+    # -------------- Add additional columns to Dataframe --------------- #
+
+    # -------------- Find common descriptions ----------- #
+    descriptions = Counter()
+    for i, row in df.iterrows():
+        descriptions.update([row.description])
+    common_descriptions = [t[0] for t in descriptions.most_common(PARAMS['AFFINITY_PREFERENCE_N_DESCRIPTIONS'])]
+    # -------------- Find common descriptions ----------- #
+
     # -------------- Find common tags --------------- #
     tags = Counter()
     tag_dict = {}
@@ -200,8 +237,7 @@ if __name__ == '__main__':
             workers=8,
             sg=1,
             window=PARAMS['WORD2VEC_WINDOW'],
-            epochs=PARAMS['WORD2VEC_EPOCHS'],
-            seed=12345
+            epochs=PARAMS['WORD2VEC_EPOCHS']
         )
         model.save(os.path.join(output_dir, 'wvmodel.bin'))
         with open(os.path.join(output_dir, 'wvmodel_keys.txt'), 'w') as f:
@@ -220,7 +256,8 @@ if __name__ == '__main__':
     logger.info(f'Vectorization of {n_docs} documents done.')
 
     logger.info('Fitting AffinityPropagation model to documents..')
-    af = AffinityPropagation(verbose=True, random_state=43423, damping=PARAMS['AFFINITY_DAMPING']).fit(X)
+    af = AffinityPropagation(verbose=True, damping=PARAMS['AFFINITY_DAMPING']).fit(X)
+    generate_html(df, wv, af, X, 'affinity_clustering.html')
 
     # If we didn't specify starting preference values, it would have been the median (for all data points):
     median_preference = np.median(af.affinity_matrix_)
@@ -230,67 +267,56 @@ if __name__ == '__main__':
     max_preference = np.max(af.affinity_matrix_)
     logger.info(f'Max Preference Value of AF model: {max_preference}')
 
-    cluster_centers_indices = af.cluster_centers_indices_
-    n_clusters_ = len(cluster_centers_indices)
-    logger.info(f'Estimated number of clusters: {n_clusters_}')
+    exemplar_preference = max_preference
+    df['preference'] = median_preference
 
-    initial_preference = max_preference
-
-    df['preference'] = min_preference
     for common_tag in common_tags:
         matching_indices = np.where(df.tags.str.contains(common_tag))[0]
         if len(matching_indices) > 0:
-            randomly_selected_doc_index = np.random.choice(matching_indices, 1)
-            df.iloc[randomly_selected_doc_index]['preference'] = initial_preference
+            randomly_selected_doc_index = np.random.choice(matching_indices, 1)[0]
+            df.at[randomly_selected_doc_index, 'preference'] = exemplar_preference
+            df.at[randomly_selected_doc_index, 'is_exemplar'] = True
 
-    logger.info(f'Recreating AffinityPropagation after setting initial preference={initial_preference} for select docs')
+    for common_description in common_descriptions:
+        matching_indices = np.where(df.description == common_description)[0]
+        if len(matching_indices) > 0:
+            randomly_selected_doc_index = np.random.choice(matching_indices, 1)[0]
+            df.at[randomly_selected_doc_index, 'preference'] = exemplar_preference
+            df.at[randomly_selected_doc_index, 'is_exemplar'] = True
+
+    logger.info(f'Total no. of exemplars set = {len(df[df.is_exemplar==True])}')
+    logger.info(f'Recreating AffinityPropagation after setting preference={exemplar_preference} for exemplars')
+
     af = AffinityPropagation(
         verbose=True,
-        random_state=43423,
         preference=df['preference'].to_numpy(),
         damping=PARAMS['AFFINITY_DAMPING']
     ).fit(X)
 
-    cluster_centers_indices = af.cluster_centers_indices_
-    n_clusters_ = len(cluster_centers_indices)
-    logger.info(f'Estimated number of clusters: {n_clusters_}')
+    generate_html(df, wv, af, X, 'affinity_clustering_with_preferences.html')
 
-    labels = af.labels_
-    with open(os.path.join(output_dir, 'affinity_clustering.html'), 'w') as f:
-        for label in np.unique(labels):
-            f.write(f'<hr/><b>Cluster {label}</b><hr/>')
-            docs = np.where(labels == label)[0]
-            docs_mean_vector = X[docs].mean(axis=0)
-            terms = ', '.join([term for (term, _) in wv.most_similar(docs_mean_vector)])
-            f.write(f'<i>{terms}</i><hr/>')
-            for doc in docs:
-                row = df.iloc[doc]
-                f.write(f'<a target="_blank" href="{row.url}">{row.pgpid}</a><br/>')
-                f.write('Tags: <i>' + str(row.tags) + '</i><br/>')
-                f.write(str(row.description) + '<br/>')
+    # coeff = metrics.silhouette_score(X, labels, metric='sqeuclidean')
+    # logger.info(f'Silhouette Coefficient: {coeff}')
 
-    coeff = metrics.silhouette_score(X, labels, metric='sqeuclidean')
-    logger.info(f'Silhouette Coefficient: {coeff}')
-
-    plt.close('all')
-    plt.figure(1)
-    plt.clf()
-
-    colors = cycle('bgrcmykbgrcmykbgrcmykbgrcmyk')
-    for k, col in zip(range(n_clusters_), colors):
-        class_members = labels == k
-        cluster_center = X[cluster_centers_indices[k]]
-        plt.plot(X[class_members, 0], X[class_members, 1], col + '.')
-        plt.plot(
-            cluster_center[0],
-            cluster_center[1],
-            'o',
-            markerfacecolor=col,
-            markeredgecolor='k',
-            markersize=14,
-        )
-        for x in X[class_members]:
-            plt.plot([cluster_center[0], x[0]], [cluster_center[1], x[1]], col)
-
-    plt.title(f'Estimated number of clusters: {n_clusters_}')
-    plt.savefig(os.path.join(output_dir, 'clusters.png'))
+    # plt.close('all')
+    # plt.figure(1)
+    # plt.clf()
+    #
+    # colors = cycle('bgrcmykbgrcmykbgrcmykbgrcmyk')
+    # for k, col in zip(range(n_clusters_), colors):
+    #     class_members = labels == k
+    #     cluster_center = X[cluster_centers_indices[k]]
+    #     plt.plot(X[class_members, 0], X[class_members, 1], col + '.')
+    #     plt.plot(
+    #         cluster_center[0],
+    #         cluster_center[1],
+    #         'o',
+    #         markerfacecolor=col,
+    #         markeredgecolor='k',
+    #         markersize=14,
+    #     )
+    #     for x in X[class_members]:
+    #         plt.plot([cluster_center[0], x[0]], [cluster_center[1], x[1]], col)
+    #
+    # plt.title(f'Estimated number of clusters: {n_clusters_}')
+    # plt.savefig(os.path.join(output_dir, 'clusters.png'))
