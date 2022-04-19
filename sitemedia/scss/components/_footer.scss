@@ -61,7 +61,7 @@ footer {
                 }
             }
             li {
-                margin-bottom: 0.5rem;
+                margin-bottom: spacing.$spacing-xs;
             }
             li.has-submenu {
                 grid-row-end: span 20; // Hack to get tight grid
@@ -76,14 +76,14 @@ footer {
         }
         // footer site navigation (desktop)
         @include breakpoints.for-tablet-landscape-up {
-            margin: 0 0 spacing.$spacing-md spacing.$spacing-3xl;
+            margin: 0 0 0 spacing.$spacing-3xl;
         }
     }
 
     // footer links to PGL, CDH
     ul#footer-links {
         & > li {
-            margin-top: 1.5rem;
+            margin-top: spacing.$spacing-lg;
         }
         svg {
             fill: var(--logo);
@@ -112,7 +112,7 @@ footer {
                 }
             }
             @include breakpoints.for-tablet-landscape-up {
-                margin-top: spacing.$spacing-lg;
+                margin: spacing.$spacing-lg 0 spacing.$spacing-xs;
             }
         }
         // footer links (desktop)
@@ -136,7 +136,7 @@ footer {
         margin: spacing.$spacing-md spacing.$spacing-xs;
         border-top: 1px solid var(--on-background);
         @include breakpoints.for-tablet-landscape-up {
-            margin: spacing.$spacing-lg spacing.$spacing-md 0;
+            margin: spacing.$spacing-md spacing.$spacing-md 0;
             padding-top: 0;
             grid-area: legal;
             display: flex;
@@ -232,7 +232,7 @@ html[dir="rtl"] footer {
             }
         }
         @include breakpoints.for-tablet-landscape-up {
-            margin: 0 spacing.$spacing-3xl spacing.$spacing-md 0;
+            margin: 0 spacing.$spacing-3xl 0 0;
         }
     }
     // reverse icons, alignment, and margin in external links
