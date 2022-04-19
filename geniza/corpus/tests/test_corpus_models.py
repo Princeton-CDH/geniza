@@ -930,7 +930,10 @@ class TestDocument:
         assert fresh_log_entry.object_id is None
 
     def test_has_fragment_attribution(self, document):
+        """Should return false when no fragments have attributions,
+        and true when at least one does"""
         assert not document.has_fragment_attribution()
+        # add a manifest (with attribution in extra_data) to fragment
         manifest = Manifest.objects.create(
             extra_data={"attribution": "A fake attribution"}
         )
