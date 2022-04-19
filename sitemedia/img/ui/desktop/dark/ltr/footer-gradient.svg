@@ -11,7 +11,7 @@
             <stop offset="0.1" stop-color="#161616" stop-opacity="0.72" />
             <stop offset="0.7743" stop-color="#161616" stop-opacity="0.72" />
             <stop offset="0.9999" stop-color="#161616" stop-opacity="0.382683" />
-            <stop offset="1" stop-color="#F7F7F7" stop-opacity="0.38" />
+            <stop offset="1" stop-color="#161616" stop-opacity="0.38" />
         </linearGradient>
         <clipPath id="clip0_431_29892">
             <rect width="1981" height="600" fill="white" transform="translate(-541)" />
