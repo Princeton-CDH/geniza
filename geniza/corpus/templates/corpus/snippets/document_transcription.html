@@ -45,8 +45,8 @@
                     {% if fragment.iiif_url %}
                         <li class="fragment-permissions">
                             <span class="shelfmark">{{ fragment.shelfmark }}</span>:
-                            {% if fragment.attribution or fragment.license %}
-                                {% if fragment.attribution %}{{ fragment.attribution }}{% endif %} {% if fragment.license %}{{ fragment.license|format_license }}{% endif %}
+                            {% if fragment.attribution or fragment.manifest.license %}
+                                {% if fragment.attribution %}{{ fragment.attribution }}{% endif %} {% if fragment.manifest.license %}{% include "corpus/snippets/fragment_license_statement.html" %}{% endif %}
                             {% else %}
                                 {% translate "No attribution or license noted." %}
                             {% endif %}

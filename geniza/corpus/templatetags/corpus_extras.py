@@ -116,18 +116,6 @@ def format_attribution(attribution):
 
 
 @register.filter
-def format_license(license_tuple):
-    """Format license from tuple of license-related information from fragment manifest"""
-    (license, rights_statement_id, license_label) = license_tuple
-    return mark_safe(
-        f"""<a href="{ license }" target="_blank">
-        <img class="rights-statement" src="{static('img/rightsstatements_org/')}{ rights_statement_id }.svg"
-           alt="{ license_label }" loading="lazy" />
-    </a>"""
-    )
-
-
-@register.filter
 def h1_to_h3(html):
     """Convert h1 headers to h3 to match other transcription formats,
     used to avoid modeltranslation inserting elements into h1 headers"""

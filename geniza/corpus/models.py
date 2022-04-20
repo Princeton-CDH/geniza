@@ -269,34 +269,6 @@ class Fragment(TrackChangesModel):
             return mark_safe(attribution.replace(cudl_metadata_str, "").strip())
         return None
 
-    @property
-    def license(self):
-        """Generate a tuple of license information for this fragment"""
-        # if there is no iiif for this fragment, bail out
-        if not self.iiif_url:
-            return None
-        # try to use locally cached manifest
-        if self.manifest:
-            license = self.manifest.license
-            rights_statement_id = self.manifest.rights_statement_id
-            license_label = self.manifest.license_label(settings.LANGUAGE_CODE)
-        else:
-            try:
-                # otherwise try to use remote manifest license attribute
-                remote_manifest = IIIFPresentation.from_url(self.iiif_url)
-                try:
-                    license = remote_manifest.license
-                    rights_statement_id = remote_manifest.rights_statement_id
-                    license_label = remote_manifest.license_label
-                except AttributeError:
-                    # license is optional, so ignore if not present
-                    return None
-            except IIIFException:
-                logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
-        if license and rights_statement_id and license_label:
-            return (license, rights_statement_id, license_label)
-        return None
-
     def save(self, *args, **kwargs):
         """Remember how shelfmarks have changed by keeping a semi-colon list
         in the old_shelfmarks field"""

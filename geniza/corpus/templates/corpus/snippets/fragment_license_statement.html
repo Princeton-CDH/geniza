@@ -1,0 +1,8 @@
+{% load static %}
+
+<a href="{{ fragment.manifest.license }}" target="_blank">
+    <svg class="rights-statement" aria-label="{{ fragment.manifest.license_label }}">
+        <title>{{ fragment.manifest.license_label }}</title>
+        <use height="1rem" href="{% static 'img/rightsstatements_org/' %}{{ fragment.manifest.rights_statement_id }}.svg#rightsstatement" />
+    </svg>
+</a>

@@ -160,8 +160,11 @@
         li.fragment-permissions {
             margin-top: spacing.$spacing-xs;
             // Rights statement image
-            img.rights-statement {
-                max-height: 1em;
+            svg.rights-statement {
+                height: 14px;
+                width: 67px;
+                fill: var(--on-background);
+                vertical-align: text-top;
             }
         }
         // spacing tweaks for desktop
@@ -172,6 +175,10 @@
             }
             li.fragment-permissions {
                 margin-top: 0.75rem;
+                svg.rights-statement {
+                    height: 16px;
+                    width: 90px;
+                }
             }
         }
     }
