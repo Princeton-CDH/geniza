@@ -43,6 +43,10 @@ PUCAS_LDAP.update({
     'SEARCH_FILTER': "",
 })
 
+# base url for simple annotation server
+ANNOTATION_SERVER_URL = ""
+# base url for manifest uris used with annotation server
+ANNOTATION_MANIFEST_BASE_URL = "https://geniza.princeton.edu"
 
 # urls to google sheets data published as csv for import
 DATA_IMPORT_URLS = {
@@ -102,3 +106,6 @@ TRANSCRIPTIONS_JSON_FILE = BASE_DIR.parent / "data" / "transcriptions.json"
 #    "he",
 #    "ar",
 # ]
+
+# Google Analytics tracking ID
+# GTAGS_ANALYTICS_ID = ''

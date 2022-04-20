@@ -34,17 +34,19 @@ function setupAnnotation() {
     function initAnnotation() {
         // FIXME: only allow init once!
         const anno = Annotorious(window.osd_viewer);
+        // load configuration variables from django settings
+        const config = JSON.parse(
+            document.getElementById("annotation-config").textContent
+        );
+
         // Initialize the toolbar plugin (will likely add later)
         // Toolbar(anno, document.getElementById('toolbar'));
 
         // Initialize the AnnotationServerStorage plugin
         let annotationServerConfig = {
-            annotationEndpoint: "http://0.0.0.0:8888/annotation",
-            // testing escriptorium import
-            // target: "https://images.lib.cam.ac.uk/iiif/MS-TS-00010-J-00012-00011-000-00001.jp2/info.json",
+            annotationEndpoint: config.server_url,
             target: iiifURLs[0], // target first image for now
-            // annotationEndpoint:   "https://annotations-staging.princeton.edu/annotation",
-            manifest: "https://geniza.princeton.edu" + manifestId,
+            manifest: config.manifest_base_url + manifestId,
         };
         AnnotationServerStorage(anno, annotationServerConfig);
 

@@ -2,6 +2,7 @@ from ast import literal_eval
 from random import randint
 from urllib import request
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
@@ -256,6 +257,11 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "page_type": "document",
                 # preload transcription font when appropriate
                 "page_includes_transcriptions": self.object.has_transcription(),
+                # TODO: will need to be added to admin view also
+                "annotation_config": {
+                    "server_url": settings.ANNOTATION_SERVER_URL,
+                    "manifest_base_url": settings.ANNOTATION_MANIFEST_BASE_URL,
+                },
             }
         )
         return context_data

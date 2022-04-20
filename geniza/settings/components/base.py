@@ -255,6 +255,7 @@ CSP_CONNECT_SRC = [
     "*.lib.cam.ac.uk",
     "*.example.com",
     "iiif-cloud.princeton.edu",
+    "annotations-staging.princeton.edu",
 ]
 
 # allow loading css locally & via inline styles

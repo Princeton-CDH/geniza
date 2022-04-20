@@ -41,6 +41,7 @@
             <h2>Transcribe</h2>
             <p class="instructions">Hold shift and then click on the image and drag
                 to select a rectangular region for the block text you want to transcribe.</p>
+            {{ annotation_config|json_script:"annotation-config" }}
         </div>
     {% endif %}
 
