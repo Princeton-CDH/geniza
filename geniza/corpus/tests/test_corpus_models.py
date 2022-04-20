@@ -239,6 +239,12 @@ class TestFragment(TestCase):
         frag.save()
         assert frag.attribution == "Created by a person"
 
+        # should strip out CUDL metadata sentence
+        frag.manifest.extra_data = {
+            "attribution": "Created by a person. This metadata is published free of restrictions, under the terms of the Creative Commons CC0 1.0 Universal Public Domain Dedication."
+        }
+        assert frag.attribution == "Created by a person."
+
         # fragment with remote manifest
         frag_no_manifest = Fragment(shelfmark="TS 3")
         frag_no_manifest.iiif_url = "http://example.io/manifests/3"
