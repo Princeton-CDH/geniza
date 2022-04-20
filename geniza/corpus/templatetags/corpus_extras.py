@@ -122,7 +122,7 @@ def format_license(license_tuple):
     return mark_safe(
         f"""<a href="{ license }" target="_blank">
         <img class="rights-statement" src="{static('img/rightsstatements_org/')}{ rights_statement_id }.svg"
-           alt="{ license_label }" />
+           alt="{ license_label }" loading="lazy" />
     </a>"""
     )
 
