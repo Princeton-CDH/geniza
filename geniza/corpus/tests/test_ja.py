@@ -11,9 +11,11 @@ def test_contains_arabic():
 
 
 def test_ar_word_to_ja():
-    assert ar_word_to_ja("دينار") == "דיהאר"
+    assert ar_word_to_ja("دينار") == "דינאר"
     assert ar_word_to_ja("مصحف") == "מצחף"
-    assert ar_word_to_ja("سنة") == "סהה"
+    assert ar_word_to_ja("سنة") == "סנה"
+    assert ar_word_to_ja("طباخ") == "טבאך"
+    assert ar_word_to_ja("") == ""
 
 
 def test_arabic_or_ja__no_arabic():
@@ -24,8 +26,8 @@ def test_arabic_or_ja__no_arabic():
 
 def test_arabic_or_ja__arabic():
     # single word — should return match for arabic or judaeo-arabic
-    assert arabic_or_ja("دينار") == "(دينار|דיהאר)"
+    assert arabic_or_ja("دينار") == "(دينار|דינאר)"
     # multiple words — should return match for arabic or judaeo-arabic
-    assert arabic_or_ja("دينار مصحف") == "(دينار|דיהאר) (مصحف|מצחף)"
+    assert arabic_or_ja("دينار مصحف") == "(دينار|דינאר) (مصحف|מצחף)"
     # mixed english and arabic
     assert arabic_or_ja("help مصحف") == "help (مصحف|מצחף)"
