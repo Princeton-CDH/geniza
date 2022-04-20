@@ -24,14 +24,15 @@ import spacy
 from gensim.models.ldamodel import LdaModel
 from nltk.collocations import BigramCollocationFinder, BigramAssocMeasures
 
-from ldamallet import LdaMallet
-
 from sklearn.cluster import AffinityPropagation
 from sklearn import metrics
 
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.metrics import silhouette_samples, silhouette_score
 from sklearn.decomposition import PCA
+
+from ldamallet import LdaMallet
+from utils import generate_cluster_size_figure
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +129,7 @@ PARAMS = dict(
 )
 
 
-def generate_html(docs_df, wv, af, X, filename):
+def generate_html(docs_df, wv, af, X, output_dir, filename):
     cluster_centers_indices = af.cluster_centers_indices_
     n_clusters_ = len(cluster_centers_indices)
     logger.info(f'Estimated number of clusters: {n_clusters_}')
@@ -257,7 +258,8 @@ if __name__ == '__main__':
 
     logger.info('Fitting AffinityPropagation model to documents..')
     af = AffinityPropagation(verbose=True, damping=PARAMS['AFFINITY_DAMPING']).fit(X)
-    generate_html(df, wv, af, X, 'affinity_clustering.html')
+    generate_html(df, wv, af, X, output_dir, 'affinity_clustering.html')
+    generate_cluster_size_figure(af=af, output_dir=output_dir, filename='affinity_clustering.png')
 
     # If we didn't specify starting preference values, it would have been the median (for all data points):
     median_preference = np.median(af.affinity_matrix_)
@@ -293,7 +295,8 @@ if __name__ == '__main__':
         damping=PARAMS['AFFINITY_DAMPING']
     ).fit(X)
 
-    generate_html(df, wv, af, X, 'affinity_clustering_with_preferences.html')
+    generate_html(df, wv, af, X, output_dir, 'affinity_clustering_with_preferences.html')
+    generate_cluster_size_figure(af=af, output_dir=output_dir, filename='affinity_clustering_with_preferences.png')
 
     # coeff = metrics.silhouette_score(X, labels, metric='sqeuclidean')
     # logger.info(f'Silhouette Coefficient: {coeff}')
