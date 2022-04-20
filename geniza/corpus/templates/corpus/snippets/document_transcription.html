@@ -35,20 +35,25 @@
             {% endif %}
         </div>
     {% endif %}
-    {% if document.has_fragment_attribution %}
-        <details class="attribution">
+    {% if document.has_image %}
+        <details class="permissions">
             <summary>
                 <span>{% translate 'Image Permissions Statement' %}</span>
             </summary>
-            {% for fragment in document.fragments.all %}
-                <ul>
-                    {% if fragment.attribution %}
-                        <li class="fragment-attribution">
-                            <span class="shelfmark">{{ fragment.shelfmark }}</span>: {{ fragment.attribution }}
+            <ul>
+                {% for fragment in document.fragments.all %}
+                    {% if fragment.iiif_url %}
+                        <li class="fragment-permissions">
+                            <span class="shelfmark">{{ fragment.shelfmark }}</span>:
+                            {% if fragment.attribution or fragment.license %}
+                                {% if fragment.attribution %}{{ fragment.attribution }}{% endif %} {% if fragment.license %}{{ fragment.license|format_license }}{% endif %}
+                            {% else %}
+                                {% translate "No attribution or license noted." %}
+                            {% endif %}
                         </li>
                     {% endif %}
-                </ul>
-            {% endfor %}
+                {% endfor %}
+            </ul>
         </details>
     {% endif %}
 </section>
