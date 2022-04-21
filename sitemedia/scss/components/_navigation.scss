@@ -53,7 +53,7 @@ header {
             }
         }
         li.menu-button {
-            margin-left: 9.75rem;
+            margin-left: 16.75rem;
             margin-top: 0.66rem;
             a {
                 @include typography.icon-button-md;
@@ -402,7 +402,7 @@ header {
 html[dir="rtl"] #site-nav {
     ul#corner-links li.menu-button {
         margin-left: 0;
-        margin-right: 11rem;
+        margin-right: 16.75rem;
     }
     ul.sub-menu li.menu-button a#back-to-main-menu::before {
         content: "\f0c4"; // phosphor caret-right icon
