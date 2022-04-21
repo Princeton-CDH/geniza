@@ -77,6 +77,7 @@ class Command(BaseCommand):
         return ""
 
     def add_fragment_urls(self, row):
+        """add view and iiif urls to fragment and save if a match is found for the shelfmark"""
         try:
             fragment = Fragment.objects.get(shelfmark=row["shelfmark"])
         except Fragment.DoesNotExist:
@@ -133,7 +134,7 @@ class Command(BaseCommand):
             self.stats["skipped"] += 1
 
     def log_change(self, fragment, message):
-        # create log entry so there is a record of adding/updating urls
+        """create a log entry so there is a record of adding/updating urls"""
         LogEntry.objects.log_action(
             user_id=self.script_user.id,
             content_type_id=self.fragment_contenttype.pk,

@@ -33,7 +33,10 @@ class SourceLanguage(models.Model):
 
 
 class CreatorManager(MultilingualManager):
+    """Custom manager for :class:`Creator` with natural key lookup"""
+
     def get_by_natural_key(self, last_name, first_name):
+        """natural key lookup: based on combination of last name and first name"""
         return self.get(last_name=last_name, first_name=first_name)
 
 
@@ -57,6 +60,7 @@ class Creator(models.Model):
         return ", ".join([n for n in [self.last_name, self.first_name] if n])
 
     def natural_key(self):
+        """natural key: tuple of last name, first name"""
         return (self.last_name, self.first_name)
 
     def firstname_lastname(self):
@@ -388,6 +392,8 @@ class FootnoteQuerySet(models.QuerySet):
 
 
 class Footnote(TrackChangesModel):
+    """a footnote that links a :class:`~geniza.corpus.models.Document` to a :class:`Source`"""
+
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
     location = models.CharField(
         max_length=255,

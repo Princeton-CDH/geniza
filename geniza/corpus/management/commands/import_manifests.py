@@ -66,7 +66,7 @@ class Command(BaseCommand):
         self.associate_manifests()
 
     def associate_manifests(self):
-        # update fragments with iiif urls to add foreign keys to the new manifests
+        """update fragments with iiif urls to add foreign keys to the new manifests"""
         fragments = Fragment.objects.exclude(iiif_url="").filter(manifest__isnull=True)
         for fragment in fragments:
             fragment.manifest = Manifest.objects.filter(uri=fragment.iiif_url).first()

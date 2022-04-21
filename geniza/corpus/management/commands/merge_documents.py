@@ -219,7 +219,7 @@ class Command(BaseCommand):
         return report_rows
 
     def generate_report(self, report_rows, path):
-        # output report of what would be done when in report mode
+        """in report mode, generate a csv file of merge candidates"""
         with open(path, "w") as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(
