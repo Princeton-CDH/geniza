@@ -40,6 +40,7 @@ def querystring_replace(context, **kwargs):
     """Template tag to simplify retaining querystring parameters
     when paging through search results with active filters.
     Example use::
+
         <a href="?{% querystring_replace page=paginator.next_page_number %}">
     """
     # borrowed as-is from derrida codebase
@@ -61,6 +62,7 @@ def natsort(sortable, key=None):
     """Template filter to sort a list naturally, with an optional key to sort on.
     Natural sort will sort strings like ["1", "2", "3", "10"] rather than ["1", "10", "2", "3"].
     Example use::
+
         {% for fn in document.footnotes.all|natsort:"location" %}
             {{ fn.location }}
         {% endfor %}
@@ -73,6 +75,7 @@ def iiif_image(img, args):
     """Add options to resize or otherwise change the display of an iiif
     image; expects an instance of :class:`piffle.iiif.IIIFImageClient`.
     Provide the method and arguments as filter string, i.e.::
+
         {{ myimg|iiif_image:"size:width=225,height=255" }}
     """
     # copied from mep-django
@@ -98,8 +101,7 @@ def iiif_image(img, args):
 @register.filter
 def iiif_info_json(images):
     """Add /info.json to a list of IIIF image IDs and dump to JSON,
-    for OpenSeaDragon to parse. Example use::
-
+    for OpenSeaDragon to parse.
     """
     return json.dumps([image["image"].info() for image in images])
 

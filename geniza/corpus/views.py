@@ -272,7 +272,8 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
 
 
 class DocumentScholarshipView(DocumentDetailView):
-    """List of :class:`~geniza.footnotes.models.Footnote`s for a Document"""
+    """List of :class:`~geniza.footnotes.models.Footnote`
+    references for a single :class:`~geniza.corpus.models.Document`"""
 
     template_name = "corpus/document_scholarship.html"
     viewname = "corpus:document-scholarship"
@@ -594,7 +595,7 @@ def old_pgp_edition(editions):
 
 def old_pgp_tabulate_data(queryset):
     """Takes a :class:`~geniza.corpus.models.Document` queryset and
-    yields rows of data for serialization as csv in :method:`pgp_metadata_for_old_site`"""
+    yields rows of data for serialization as csv in :meth:`pgp_metadata_for_old_site`"""
     # NOTE: This logic assumes that documents will always have a fragment
     for doc in queryset:
         primary_fragment = doc.textblock_set.first().fragment
