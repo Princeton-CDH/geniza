@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+env:
+  DJANGO_ENV: docs
+
 jobs:
   docs:
     name: sphinx documentation
