@@ -108,7 +108,9 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         documents = (
             DocumentSolrQuerySet()
             .filter(status=Document.PUBLIC_LABEL)
-            .facet("has_digital_edition", "has_translation", "has_discussion")
+            .facet(
+                "has_image", "has_digital_edition", "has_translation", "has_discussion"
+            )
             .facet_field("type", exclude="type", sort="value")
         )
 
@@ -152,6 +154,10 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                 typelist = literal_eval(search_opts["doctype"])
                 quoted_typelist = ['"%s"' % doctype for doctype in typelist]
                 documents = documents.filter(type__in=quoted_typelist, tag="type")
+
+            # image filter
+            if search_opts["has_image"] == True:
+                documents = documents.filter(has_image=True)
 
             # scholarship filters
             if search_opts["has_transcription"] == True:

@@ -1,5 +1,9 @@
 # Deploy Notes
 
+## 4.4.0
+
+-   This update includes Solr indexing changes (boolean for image filter). Run `python manage.py index` to reindex all content.
+
 ## 4.2.1
 
 -   This update includes Solr indexing changes (stripping html tags out of descriptions). Run `python manage.py index` to reindex all content.

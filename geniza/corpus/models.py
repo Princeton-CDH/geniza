@@ -251,17 +251,22 @@ class Fragment(TrackChangesModel):
             return None
         # try to use locally cached manifest
         if self.manifest:
-            return mark_safe(self.manifest.extra_data.get("attribution", ""))
-        try:
-            # otherwise try to use remote manifest attribution attribute
-            remote_manifest = IIIFPresentation.from_url(self.iiif_url)
+            attribution = self.manifest.extra_data.get("attribution", "")
+        else:
             try:
-                return mark_safe(remote_manifest.attribution)
-            except AttributeError:
-                # attribution is optional, so ignore if not present
-                return None
-        except IIIFException:
-            logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
+                # otherwise try to use remote manifest attribution attribute
+                remote_manifest = IIIFPresentation.from_url(self.iiif_url)
+                try:
+                    attribution = remote_manifest.attribution
+                except AttributeError:
+                    # attribution is optional, so ignore if not present
+                    attribution = None
+            except IIIFException:
+                logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
+        if attribution:
+            # Remove CUDL metadata string from displayed attribution
+            cudl_metadata_str = "This metadata is published free of restrictions, under the terms of the Creative Commons CC0 1.0 Universal Public Domain Dedication."
+            return mark_safe(attribution.replace(cudl_metadata_str, "").strip())
         return None
 
     def save(self, *args, **kwargs):
@@ -763,6 +768,7 @@ class Document(ModelIndexable):
                     for img in images
                 ],
                 "iiif_labels_ss": [img["label"] for img in images],
+                "has_image_b": len(images) > 0,
             }
         )
 

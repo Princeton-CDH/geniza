@@ -13,7 +13,11 @@ module.exports = (env, options) => ({
         main: [
             // this name ("main") is referenced by django-webpack-loader's {% render_bundle %} tag
             "./sitemedia/scss/main.scss",
-            "./sitemedia/js/stimulus_app.js",
+            "./sitemedia/js/main.js",
+        ],
+        iiif: [
+            "./sitemedia/scss/components/_iiif.scss",
+            "./sitemedia/js/iiif.js",
         ],
         transcription: "./sitemedia/js/annotation/transcription.js",
     },

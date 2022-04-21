@@ -2,14 +2,13 @@ import json
 import re
 
 from django import template
-from django.core.exceptions import ObjectDoesNotExist
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from natsort import natsorted
 from piffle.iiif import IIIFImageClientException
 
 from geniza.common.utils import absolutize_url
-from geniza.corpus.models import Document
 
 register = template.Library()
 

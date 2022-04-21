@@ -64,3 +64,8 @@ class TestDocumentSolrQuerySet:
                 == "http://example.co/iiif/ts-1/00001/info.json"
             )
             assert result_imgs[0][1] == "1r"
+
+    def test_search_term_cleanup__arabic_to_ja(self):
+        dqs = DocumentSolrQuerySet()
+        # confirm arabic to judaeo-arabic runs here
+        dqs._search_term_cleanup("دينار") == "(دينار|דיהאר)"

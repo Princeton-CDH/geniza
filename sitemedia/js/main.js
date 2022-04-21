@@ -3,7 +3,12 @@ import { definitionsFromContext } from "@hotwired/stimulus-webpack-helpers";
 import * as Turbo from "@hotwired/turbo";
 
 const application = Application.start();
-const context = require.context("./controllers", true, /\.js$/);
+// exclude iiif_controller.js
+const context = require.context(
+    "./controllers",
+    true,
+    /^.*\/(?!iiif_controller).*\.js$/
+);
 application.load(definitionsFromContext(context));
 
 // Workarounds to get document details page to scroll to top on "advance" visit;

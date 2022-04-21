@@ -239,6 +239,12 @@ class TestFragment(TestCase):
         frag.save()
         assert frag.attribution == "Created by a person"
 
+        # should strip out CUDL metadata sentence
+        frag.manifest.extra_data = {
+            "attribution": "Created by a person. This metadata is published free of restrictions, under the terms of the Creative Commons CC0 1.0 Universal Public Domain Dedication."
+        }
+        assert frag.attribution == "Created by a person."
+
         # fragment with remote manifest
         frag_no_manifest = Fragment(shelfmark="TS 3")
         frag_no_manifest.iiif_url = "http://example.io/manifests/3"
@@ -747,6 +753,9 @@ class TestDocument:
             assert index_data[scholarship_count] == 0
         assert index_data["scholarship_t"] == []
 
+        # no images - has_image bool should be false
+        assert not index_data["has_image_b"]
+
         # add mock images
         img1 = Mock()
         img1.info.return_value = "http://example.co/iiif/ts-1/00001/info.json"
@@ -763,6 +772,7 @@ class TestDocument:
                 "http://example.co/iiif/ts-1/00002",
             ]
             assert index_data["iiif_labels_ss"] == ["label1", "label2"]
+            assert index_data["has_image_b"] is True
 
     def test_index_data_footnotes(
         self, document, source, twoauthor_source, multiauthor_untitledsource

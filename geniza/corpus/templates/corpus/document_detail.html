@@ -56,7 +56,7 @@
                 {% translate 'Metadata' %}
             </h2>
             {# metadata #}
-            <dl class="metadata">
+            <dl class="metadata primary">
                 <dt>{% translate 'Shelfmark' %}</dt>
                 <dd class="shelfmark">{% include "corpus/snippets/document_shelfmarks.html" %}</dd>
                 {% if document.digital_editions %}
@@ -75,38 +75,45 @@
                         {% endifchanged %}
                     {% endfor %}
                 {% endif %}
-                {# NOTE: placeholder to populate translation string #}
-                {# Translators: label for date of this document, if known #}
-                <!-- {% translate "Document Date" %} -->
-                {% if document.languages.exists %}
-                    <dt>
-                        {# Translators: Primary language label #}
-                        {% blocktranslate count counter=document.languages.count trimmed %}
-                            Primary Language
-                        {% plural %}
-                            Primary Languages
-                        {% endblocktranslate %}
-                    </dt>
-                    {% for lang in document.languages.all %}
-                        <dd>{{ lang }}</dd>
-                    {% endfor %}
-                {% endif %}
-                {% if document.secondary_languages.exists %}
-                    <dt>
-                        {# Translators: Secondary language label #}
-                        {% blocktranslate count counter=document.secondary_languages.count trimmed %}
-                            Secondary Language
-                        {% plural %}
-                            Secondary Languages
-                        {% endblocktranslate %}
-                    </dt>
-                    {% for lang in document.secondary_languages.all %}
-                        <dd>{{ lang }}</dd>
-                    {% endfor %}
-                {% endif %}
-
             </dl>
-            {% if document.tags.exists %}
+            {# secondary metadata #}
+            {% if document.languages.exists or document.secondary_languages.exists %}
+                <dl class="metadata secondary">
+                    {# NOTE: placeholder to populate translation string #}
+                    {# Translators: label for date of this document, if known #}
+                    <!-- {% translate "Document Date" %} -->
+                    {% if document.languages.exists %}
+                        <dt>
+                            {# Translators: Primary language label #}
+                            {% blocktranslate count counter=document.languages.count trimmed %}
+                                Primary Language
+                            {% plural %}
+                                Primary Languages
+                            {% endblocktranslate %}
+                        </dt>
+                        {% for lang in document.languages.all %}
+                            <dd>{{ lang }}</dd>
+                        {% endfor %}
+                    {% endif %}
+                    {% if document.secondary_languages.exists %}
+                        <dt>
+                            {# Translators: Secondary language label #}
+                            {% blocktranslate count counter=document.secondary_languages.count trimmed %}
+                                Secondary Language
+                            {% plural %}
+                                Secondary Languages
+                            {% endblocktranslate %}
+                        </dt>
+                        {% for lang in document.secondary_languages.all %}
+                            <dd>{{ lang }}</dd>
+                        {% endfor %}
+                    {% endif %}
+                </dl>
+            {% endif %}
+        </section>
+
+        {% if document.tags.exists %}
+            <section>
                 {# Translators: label for tags on a document #}
                 <h3 class="sr-only">{% translate 'Tags' %}</h3>
                 <ul class="tags">
@@ -114,31 +121,25 @@
                         <li><a href='{% url "corpus:document-search" %}?q=tag:"{{ tag }}"' rel="tag">{{ tag }}</a></li>
                     {% endfor %}
                 </ul>
-            {% endif %}
+            </section>
+        {% endif %}
+
+        <section class="input-date">
+            {# Translators: Label for date document was first added to the PGP #}
+            <h3 class="sr-only">{% translate 'Input date' %}</h3>
+            {# Translators: Date document was first added to the PGP #}
+            {% blocktranslate with date=document.log_entries.last.action_time.year %}
+                In PGP since {{ date }}
+            {% endblocktranslate %}
         </section>
-        <section>
+
+        <section class="description">
             <h3>
                 {# Translators: label for document description #}
                 {% translate 'Description' %}
             </h3>
             <p>{{ document.description|pgp_urlize }}</p>
         </section>
-
-        {# secondary metadata #}
-        <dl class="metadata secondary">
-            {# Translators: Date document was first added to the PGP #}
-            <dt>{% translate 'Input date' %}</dt>
-            <dd>{{ document.log_entries.last.action_time.year }}</dd>
-            <dt>
-                {# Translators: label for permanent link to a document #}
-                {% translate 'Permalink' %}
-            </dt>
-            <dd>
-                <a href="{{ document.permalink }}" rel="bookmark">
-                    {{ document.permalink }}
-                </a>
-            </dd>
-        </dl>
 
         {# link to download transcription if available; admin only for now since plain-text bidi is not great #}
         {% if document.has_transcription and user.is_authenticated %}
@@ -177,4 +178,18 @@
     {% if document.has_transcription or document.iiif_urls %}
         {% include "corpus/snippets/document_transcription.html" %}
     {% endif %}
+
+    {# tertiary metadata #}
+    <dl class="metadata tertiary">
+        <dt id="permalink">
+            <svg role="presentation"><use xlink:href="{% static 'img/ui/all/all/permalink-icon.svg' %}#permalink-icon" /></svg>
+            {# Translators: label for permanent link to a document #}
+            {% translate 'Permalink' %}
+        </dt>
+        <dd>
+            <a href="{{ document.permalink }}" rel="bookmark">
+                {{ document.permalink }}
+            </a>
+        </dd>
+    </dl>
 {% endblock main %}
