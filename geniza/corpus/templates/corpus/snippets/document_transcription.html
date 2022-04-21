@@ -34,12 +34,26 @@
                 <div>{{ document.digital_editions.0.content.html|h1_to_h3|safe }}</div>
             {% endif %}
         </div>
-        <div class="attribution">
-            {% for fragment in document.fragments.all %}
-                {% if fragment.attribution %}
-                    {{ fragment.shelfmark }}: {{ fragment.attribution }}
-                {% endif %}
-            {% endfor %}
-        </div>
+    {% endif %}
+    {% if document.has_image %}
+        <details class="permissions">
+            <summary>
+                <span>{% translate 'Image Permissions Statement' %}</span>
+            </summary>
+            <ul>
+                {% for fragment in document.fragments.all %}
+                    {% if fragment.iiif_url %}
+                        <li class="fragment-permissions">
+                            <span class="shelfmark">{{ fragment.shelfmark }}</span>:
+                            {% if fragment.attribution or fragment.manifest.license %}
+                                {% if fragment.attribution %}{{ fragment.attribution }}{% endif %} {% if fragment.manifest.license %}{% include "corpus/snippets/fragment_license_statement.html" %}{% endif %}
+                            {% else %}
+                                {% translate "No attribution or license noted." %}
+                            {% endif %}
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </details>
     {% endif %}
 </section>
