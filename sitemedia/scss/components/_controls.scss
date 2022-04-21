@@ -13,9 +13,13 @@ div.controls {
     width: auto;
     flex-direction: row;
     align-items: flex-start;
-    right: spacing.$spacing-sm;
-    top: spacing.$spacing-xs;
+    right: 4rem;
+    top: 1.25rem;
     z-index: 8;
+    @include breakpoints.for-tablet-landscape-up {
+        right: spacing.$spacing-sm;
+        top: spacing.$spacing-xs;
+    }
 
     // Language switcher form
     form#language {
@@ -33,7 +37,6 @@ div.controls {
 
     // Light mode/dark mode theme toggle checkbox
     label#theme-toggle {
-        margin-right: spacing.$spacing-xs;
         @include breakpoints.for-tablet-landscape-up {
             margin-right: spacing.$spacing-md;
         }
@@ -65,8 +68,11 @@ div.controls {
 
 // tweaks for RTL layout for hebrew, arabic
 html[dir="rtl"] div.controls {
-    left: spacing.$spacing-sm;
+    left: 4rem;
     right: auto;
+    @include breakpoints.for-tablet-landscape-up {
+        left: spacing.$spacing-sm;
+    }
     label#theme-toggle {
         margin-right: 0;
         margin-left: spacing.$spacing-xs;
