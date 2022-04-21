@@ -63,18 +63,8 @@ def contains_arabic(text):
     return re_AR_letters.search(text)
 
 
-re_he_final_letters = re.compile(r"(%s)$" % "|".join(he_final_letters.keys()))
-
-
-def ar_word_to_ja(word):
-    # don't process empty string; just return
-    if not word:
-        return word
-    # for a single word
-    ja_word = word.translate(arabic_to_ja_table).strip()
-    # convert last letter to final form if necessary
-    # needs to use regex to handle accented characters, which complicate last letter indexing
-    return re.sub(re_he_final_letters, lambda m: he_final_letters[m.group(0)], ja_word)
+# regex for hebrew letters that have final form; matches on occurrence before word boundary
+re_he_final_letters = re.compile(r"(%s)\b" % "|".join(he_final_letters.keys()))
 
 
 def arabic_to_ja(text):
@@ -83,8 +73,10 @@ def arabic_to_ja(text):
     if not contains_arabic(text):
         return text
 
-    # if there is arabic, split into words and make a pattern
-    return " ".join([ar_word_to_ja(word) for word in re.split(r"\s+", text)])
+    text = text.translate(arabic_to_ja_table).strip()
+    # convert last letter to final form if necessary
+    # needs to use regex to handle accented characters, which complicate last letter indexing
+    return re.sub(re_he_final_letters, lambda m: he_final_letters[m.group(0)], text)
 
 
 def arabic_or_ja(text):
@@ -93,8 +85,9 @@ def arabic_or_ja(text):
         return text
 
     # if there is arabic, split into words and make a pattern
+    # NOTE: this could fail on more complicated queriesn
     words = re.split(r"\s+", text)
-    ja_words = [ar_word_to_ja(word) for word in words]
+    ja_words = [arabic_to_ja(word) for word in words]
     search_words = []
     for word, ja_word in dict(zip(words, ja_words)).items():
         # if the words differ, combine them as an OR
