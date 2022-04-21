@@ -591,6 +591,8 @@ class TestDocumentSearchView:
         assert doc1.id in resulting_ids
         assert doc2.id in resulting_ids
 
+    # TODO: test shelfmark override; search on override and individual shelfmarks
+
     def test_get_solr_sort(self):
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()

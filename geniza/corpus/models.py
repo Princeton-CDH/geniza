@@ -513,27 +513,6 @@ class Document(ModelIndexable):
             )
         )
 
-    # TODO: this is probably not needed anymore
-    @property
-    def certain_join_shelfmarks(self):
-        return list(
-            dict.fromkeys(
-                block.fragment.shelfmark
-                for block in self.textblock_set.filter(certain=True)
-            ).keys()
-        )
-
-    # NOTE: not currently used; remove or revise if this remains unused
-    @property
-    def shelfmark_display(self):
-        """First shelfmark plus join indicator for shorter display."""
-        # NOTE preliminary pending more discussion and implementation of #154:
-        # https://github.com/Princeton-CDH/geniza/issues/154
-        certain = self.certain_join_shelfmarks
-        if not certain:
-            return None
-        return certain[0] + (" + …" if len(certain) > 1 else "")
-
     @property
     def collection(self):
         """collection (abbreviation) for associated fragments"""
