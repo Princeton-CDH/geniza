@@ -19,22 +19,32 @@ const AnnotationServerStorage = (anno, settings) => {
         document.dispatchEvent(AnnoLoadEvent);
     });
 
+    function adjustTargetSource(target) {
+        // annotorious sets the target as a string id;
+        // we need to structure it to add canvas/manifest info
+        if (typeof target.source == "string") {
+            // add manifest id to annotation
+            target.source = {
+                // use the configured target (should be canvas id)
+                id: settings.target,
+                // link to containing manifest
+                partOf: {
+                    id: settings.manifest,
+                },
+            };
+        }
+    }
+
     // create a new annotation
     anno.on("createAnnotation", async (annotation) => {
-        let target_source = annotation.target.source;
-        // add manifest id to annotation
-        annotation.target.source = {
-            // TODO convert from iiif image to canvas id
-            id: settings.target, // target_source,
-            // link to containing manifest
-            partOf: {
-                id: settings.manifest,
-            },
-        };
+        adjustTargetSource(annotation.target);
         adapter.create(annotation).then((resp) => {
-            console.log("createAnnotation: " + resp);
+            // by default, storage reloads all annotations for this page;
+            // signal that annotations have been loaded
+            document.dispatchEvent(AnnoLoadEvent);
         });
         // how to update id for annotorious?
+        anno.addAnnotation(annotation);
         return annotation;
     });
 
@@ -43,8 +53,9 @@ const AnnotationServerStorage = (anno, settings) => {
         // The posted annotation should have an @id which exists in the store
         let newId = annotation.id; // do we need to do anything with this?
         annotation.id = previous.id;
+        // target needs to be updated if the image selection has changed
+        adjustTargetSource(annotation.target);
         adapter.update(annotation);
-
         // add the annotation to annotorious again to make sure the display is up to date
         anno.addAnnotation(annotation);
     });
@@ -53,6 +64,12 @@ const AnnotationServerStorage = (anno, settings) => {
     anno.on("deleteAnnotation", (annotation) => {
         adapter.delete(annotation.id);
     });
+
+    const storagePlugin = {
+        adapter: adapter,
+    };
+
+    return storagePlugin;
 };
 
 export default AnnotationServerStorage;

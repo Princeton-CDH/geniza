@@ -48,10 +48,13 @@ function setupAnnotation() {
             target: iiifURLs[0], // target first image for now
             manifest: config.manifest_base_url + manifestId,
         };
-        AnnotationServerStorage(anno, annotationServerConfig);
+        let storagePlugin = AnnotationServerStorage(
+            anno,
+            annotationServerConfig
+        );
 
         // Initialize the TranscriptionEditor plugin
-        TranscriptionEditor(anno);
+        TranscriptionEditor(anno, storagePlugin);
     }
 }
 

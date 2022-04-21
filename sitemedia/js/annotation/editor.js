@@ -1,6 +1,6 @@
 // custom annotation editor for geniza project
 
-const TranscriptionEditor = (anno) => {
+const TranscriptionEditor = (anno, storage) => {
     // disable the default annotorious editor (headless mode)
     anno.disableEditor = true;
     const annotationContainer = document.querySelector(".annotate");
@@ -58,21 +58,18 @@ const TranscriptionEditor = (anno) => {
         saveButton.onclick = async function () {
             // add the content to the annotation
             selection.motivation = "supplementing";
-            // TODO: handle update!
-            console.log("selection body before updating");
-            console.log(selection.body);
-            selection.body = [
-                {
+            if (selection.body.length == 0) {
+                selection.body.push({
                     type: "TextualBody",
                     purpose: "transcribing",
                     value: textInput.textContent,
                     format: "text/html",
                     // TODO: transcription motivation, language, etc.
-                },
-            ];
-            // FIXME: image zone modification breaks the update (and annotation gets lost!)
-            console.log(selection);
-            console.log(anno);
+                });
+            } else {
+                // assume text content is first body element
+                selection.body[0].value = textInput.textContent;
+            }
             // update with annotorious, then save to storage backend
             await anno.updateSelected(selection);
             anno.saveSelected();
@@ -84,11 +81,8 @@ const TranscriptionEditor = (anno) => {
 
             // clear the selection from the image
             anno.cancelSelected();
-
             // if annotation is unsaved, restore and make read only
             if (container.dataset.annotationId) {
-                console.log("making read only");
-                console.log(container);
                 makeReadOnly(container, selection);
                 // if this was a new annotation, remove the container
             } else {
@@ -104,13 +98,13 @@ const TranscriptionEditor = (anno) => {
             container.append(deleteButton);
 
             deleteButton.onclick = function () {
-                // NOTE: this does not actually delete from storage
                 // remove the highlight zone from the image
                 anno.removeAnnotation(container.dataset.annotationId);
                 // remove the edit/display container
                 container.remove();
-                // TODO: delete from storage
-                // (but HOW, if the event isn't triggered?)
+                // calling removeAnnotation doesn't fire the deleteAnnotation,
+                // so we have to trigger the deletion explicitly
+                storage.adapter.delete(container.dataset.annotationId);
             };
         }
 
@@ -122,7 +116,6 @@ const TranscriptionEditor = (anno) => {
         // annotation is optional; used to reset content if necessary
         container.setAttribute("class", "annotation-display-container");
         let textInput = container.querySelector("div");
-        console.log(textInput);
         textInput.setAttribute("class", "");
         textInput.setAttribute("contenteditable", "false");
         // restore the original content
@@ -133,9 +126,7 @@ const TranscriptionEditor = (anno) => {
             anno.addAnnotation(annotation);
         }
         // remove buttons (or should we just hide them?)
-        container.querySelectorAll("button").forEach(function (button) {
-            button.remove();
-        });
+        container.querySelectorAll("button").forEach((el) => el.remove());
 
         return container;
     }
@@ -150,7 +141,7 @@ const TranscriptionEditor = (anno) => {
     }
 
     // method to create an editor block
-    // container, editable div, buttons to save/cancel
+    // container, editable div, buttons to save/cancel/delete
     function createEditorBlock(selection) {
         // create a new annotation editor block and return
         return makeEditable(createDisplayBlock(selection), selection);
@@ -158,6 +149,12 @@ const TranscriptionEditor = (anno) => {
 
     document.addEventListener("annotations-loaded", function () {
         // custom event triggered by storage plugin
+
+        // remove any existing annotation displays, in case of update
+        annotationContainer
+            .querySelectorAll(".annotation-display-container")
+            .forEach((el) => el.remove());
+        // display all current annotations
         anno.getAnnotations().forEach(function (annotation) {
             annotationContainer.append(createDisplayBlock(annotation));
         });
@@ -165,8 +162,6 @@ const TranscriptionEditor = (anno) => {
 
     // when a new selection is made, instantiate an editor
     anno.on("createSelection", async function (selection) {
-        console.log("create selection");
-
         annotationContainer.append(createEditorBlock(selection));
     });
 
@@ -180,10 +175,6 @@ const TranscriptionEditor = (anno) => {
             '[data-annotation-id="' + annotation.id + '"]'
         );
         makeEditable(displayContainer, annotation);
-    });
-
-    anno.on("deleteAnnotation", function (annotation) {
-        //
     });
 };
 
