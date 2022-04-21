@@ -7,3 +7,5 @@ Code Documentation
 
    corpus
    footnotes
+   common
+   pages
