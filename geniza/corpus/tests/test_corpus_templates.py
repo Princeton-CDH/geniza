@@ -67,7 +67,7 @@ class TestDocumentDetailTemplate:
             content_object=document,
             source=unpublished_editions,
             doc_relation={Footnote.EDITION},
-            content="A piece of text",
+            content={"text": "A piece of text"},
         )
         response = client.get(document.get_absolute_url())
         assertContains(response, '<div class="transcription">')
@@ -103,7 +103,7 @@ class TestDocumentDetailTemplate:
             content_object=document,
             source=source,
             doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content="A piece of text",
+            content={"text": "A piece of text"},
         )
 
         # Digital edition with one author, should have one editor but not multiple
@@ -116,7 +116,7 @@ class TestDocumentDetailTemplate:
             content_object=document,
             source=twoauthor_source,
             doc_relation=Footnote.EDITION,
-            content="B other text",
+            content={"text": "B other text"},
         )
         # Should now be "editors"
         response = client.get(document.get_absolute_url())
