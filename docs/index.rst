@@ -12,6 +12,7 @@ Princeton Geniza Project documentation
 
    architecture
    codedocs/index
+   devnotes
    Change Log <changelog>
 
 .. include:: ../README.rst
