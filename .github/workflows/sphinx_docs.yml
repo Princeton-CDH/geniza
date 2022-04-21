@@ -1,0 +1,60 @@
+name: sphinx docs
+
+on:
+  push: # run on push to main and PR
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  docs:
+    name: sphinx documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Python version to use is stored in the .python-version file, which is the
+      # convention for pyenv: https://github.com/pyenv/pyenv
+      - name: Get Python version
+        run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # We base the python cache on the hash of all requirements files, so that
+      # if any change, the cache is invalidated.
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements/*.txt') }}
+          restore-keys: |
+            pip-${{ hashFiles('requirements/*.txt') }}
+            pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements/docs.txt
+
+      - name: Build Sphinx docs
+        uses: ammaraskar/sphinx-action@master
+        with:
+          docs-folder: "docs/"
+          build-command: "make -b coverage html"
+
+      # for pull requests, report on documentation coverage
+      - name: Report on documentation coverage
+        if: ${{ github.event_name == 'pull_request' }}
+        run: echo `grep missing docs/_build/coverage/python.txt | wc -l ` missing documentation
+
+      # when building on push to main, publish the built docs
+      - name: Deploy built docs to github pages
+        if: ${{ github.event_name == 'push' }}
+        uses: peaceiris/actions-gh-pages@v2
+        env:
+          ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: ./docs/_build/html
+        with:
+          emptyCommits: false
