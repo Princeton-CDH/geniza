@@ -28,8 +28,9 @@ class TestDocumentDetailTemplate:
     def test_first_input(self, client, document):
         """Document detail template should include document first input date"""
         response = client.get(document.get_absolute_url())
-        # NOTE: now classed as secondary metadata on the <dl>
-        assertContains(response, "<dd>2004</dd>", html=True)
+        # NOTE: No longer using definition list
+        print(response.content)
+        assertContains(response, "In PGP since 2004")
 
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""
