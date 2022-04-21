@@ -437,6 +437,14 @@ class TestDocument:
         unsaved_doc = Document()
         assert str(unsaved_doc) == "?? (PGPID ??)"
 
+    def test_historical_date_display(self):
+        """Should display the historical document date with its calendar name"""
+        doc = Document.objects.create(doc_date_original="507", doc_date_calendar="h")
+        assert doc.historical_date_display == "507 Hijrī"
+        # with no calendar, just display the date
+        doc.doc_date_calendar = ""
+        assert doc.historical_date_display == "507"
+
     def test_collection(self):
         # T-S 8J22.21 + T-S NS J193
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21")

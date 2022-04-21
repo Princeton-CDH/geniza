@@ -70,11 +70,27 @@
                 {% endif %}
             </dl>
             {# secondary metadata #}
-            {% if document.languages.exists or document.secondary_languages.exists %}
+            {% if document.languages.exists or document.secondary_languages.exists or document.doc_date_original or document.doc_date_standard %}
                 <dl class="metadata secondary">
-                    {# NOTE: placeholder to populate translation string #}
-                    {# Translators: label for date of this document, if known #}
-                    <!-- {% translate "Document Date" %} -->
+                    {% if document.doc_date_original or document.doc_date_standard %}
+                        <dt>
+                            {# Translators: label for date of this document, if known #}
+                            {% translate "Document Date" %}
+                        </dt>
+                        <dd>
+                            {% if document.doc_date_original %}
+                                <time{% if document.doc_date_standard %} datetime="{{ document.doc_date_standard }}"{% endif %}>
+                                    {{ document.historical_date_display }}{% if document.doc_date_standard %}
+                                        ({{ document.doc_date_standard }})
+                                    {% endif %}
+                                </time>
+                            {% else %}
+                                <time datetime="{{ document.doc_date_standard }}">
+                                    {{ document.doc_date_standard }}
+                                </time>
+                            {% endif %}
+                        </dd>
+                    {% endif %}
                     {% if document.languages.exists %}
                         <dt>
                             {# Translators: Primary language label #}
