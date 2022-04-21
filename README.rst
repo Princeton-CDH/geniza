@@ -1,7 +1,7 @@
 Princeton Geniza Project
 #########################
 
-
+.. sphinx-start-marker-do-not-remove
 
 Python/Django web application for a version 4.x of the `Princeton Geniza Project
 <https://cdh.princeton.edu/projects/princeton-geniza-project/>`_.
@@ -129,7 +129,7 @@ This application has internationalization and translation enabled.
 
 - If you create any new translatable content, you should run `makemessages <https://docs.djangoproject.com/en/3.1/ref/django-admin/#makemessages>`_ to create or update message files. We use a customized version of this command, available in ``/geniza/common/management/commands/makemessages.py``.
 
-	django-admin makemessages
+	django-admin makemessages --all
 
 - Before running the app, you should run `compilemessages <https://docs.djangoproject.com/en/3.1/ref/django-admin/#compilemessages>`_ to generate compiled translations.
 
