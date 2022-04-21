@@ -38,10 +38,7 @@ jobs:
         run: pip install -r requirements/docs.txt
 
       - name: Build Sphinx docs
-        uses: ammaraskar/sphinx-action@master
-        with:
-          docs-folder: "docs/"
-          build-command: "make -b coverage html"
+        run: cd docs && make -b coverage html
 
       # for pull requests, report on documentation coverage
       - name: Report on documentation coverage
