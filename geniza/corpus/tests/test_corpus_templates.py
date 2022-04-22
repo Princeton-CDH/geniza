@@ -10,6 +10,7 @@ from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.corpus.models import Document, LanguageScript, TextBlock
+from geniza.corpus.templatetags.corpus_extras import shelfmark_wrap
 from geniza.footnotes.models import Footnote
 
 
@@ -67,7 +68,7 @@ class TestDocumentDetailTemplate:
             content_object=document,
             source=unpublished_editions,
             doc_relation={Footnote.EDITION},
-            content="A piece of text",
+            content={"text": "A piece of text"},
         )
         response = client.get(document.get_absolute_url())
         assertContains(response, '<div class="transcription">')
@@ -103,7 +104,7 @@ class TestDocumentDetailTemplate:
             content_object=document,
             source=source,
             doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content="A piece of text",
+            content={"text": "A piece of text"},
         )
 
         # Digital edition with one author, should have one editor but not multiple
@@ -116,7 +117,7 @@ class TestDocumentDetailTemplate:
             content_object=document,
             source=twoauthor_source,
             doc_relation=Footnote.EDITION,
-            content="B other text",
+            content={"text": "B other text"},
         )
         # Should now be "editors"
         response = client.get(document.get_absolute_url())
@@ -133,12 +134,7 @@ class TestDocumentDetailTemplate:
         multifragment.save()
         response = client.get(join.get_absolute_url())
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
-        shelfmarks = join.certain_join_shelfmarks
-        assertContains(
-            response,
-            "<span>%s + </span><span>%s</span>" % (shelfmarks[0], shelfmarks[1]),
-            html=True,
-        )
+        assertContains(response, shelfmark_wrap(join.shelfmark), html=True)
 
     def test_download_transcription_link_anonymous(
         self, client, document, unpublished_editions

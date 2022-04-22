@@ -591,6 +591,33 @@ class TestDocumentSearchView:
         assert doc1.id in resulting_ids
         assert doc2.id in resulting_ids
 
+    def test_search_shelfmark_override(self, empty_solr, document):
+        orig_shelfmark = document.shelfmark
+        document.shelfmark_override = "foo 12.34"
+        document.save()
+        # ensure solr index is updated with this test document
+        SolrClient().update.index([document.index_data()], commit=True)
+
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+
+        for shelfmark in [document.shelfmark_override, orig_shelfmark]:
+
+            # keyword search should work
+            print(shelfmark)
+            docsearch_view.request.GET = {"q": shelfmark}
+            qs = docsearch_view.get_queryset()
+            # should return this document
+            assert qs.count() == 1
+            assert qs[0]["pgpid"] == document.id
+
+            # fielded search should work too
+            docsearch_view.request.GET = {"q": "shelfmark:%s" % shelfmark}
+            qs = docsearch_view.get_queryset()
+            # should return this document
+            assert qs.count() == 1
+            assert qs[0]["pgpid"] == document.id
+
     def test_get_solr_sort(self):
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()
