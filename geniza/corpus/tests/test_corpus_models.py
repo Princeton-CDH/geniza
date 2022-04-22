@@ -666,8 +666,9 @@ class TestDocument:
         assert index_data["description_t"] == document.description
         assert index_data["notes_t"] is None  # no notes
         assert index_data["needs_review_t"] is None  # no review notes
+        assert index_data["shelfmark_s"] == document.shelfmark
         for frag in document.fragments.all():
-            assert frag.shelfmark in index_data["shelfmark_ss"]
+            assert frag.shelfmark in index_data["fragment_shelfmark_ss"]
         for tag in document.tags.all():
             assert tag.name in index_data["tags_ss_lower"]
         assert index_data["status_s"] == "Public"

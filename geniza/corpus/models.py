@@ -744,7 +744,7 @@ class Document(ModelIndexable):
                 # index shelfmark display as a string
                 "shelfmark_s": self.shelfmark,
                 # index individual shelfmarks for search
-                "shelfmark_ss": [f.shelfmark for f in fragments],
+                "fragment_shelfmark_ss": [f.shelfmark for f in fragments],
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],
