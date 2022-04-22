@@ -514,6 +514,27 @@ class Document(ModelIndexable):
         )
 
     @property
+    def original_date(self):
+        """Generate formatted display for the document's original/historical date"""
+        return " ".join(
+            [self.doc_date_original, self.get_doc_date_calendar_display()]
+        ).strip()
+
+    @property
+    def document_date(self):
+        """Generate formatted display for combined original and standardized dates"""
+        if self.doc_date_standard:
+            # append "CE" to standardized date if it exists
+            standardized_date = " ".join([self.doc_date_standard, "CE"])
+            # add parentheses to standardized date if original date is also present
+            if self.original_date:
+                standardized_date = "".join(["(", standardized_date, ")"])
+            return " ".join([self.original_date, standardized_date]).strip()
+        else:
+            # if there's no standardized date, just display the historical date
+            return self.original_date
+
+    @property
     def collection(self):
         """collection (abbreviation) for associated fragments"""
         # use set to ensure unique; sort for reliable output order
