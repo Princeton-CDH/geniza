@@ -78,6 +78,9 @@ main.document {
             }
             :first-child {
                 margin-top: 35px;
+                @include breakpoints.for-desktop-up {
+                    margin-top: 0px;
+                }
             }
         }
         // Document tags
