@@ -529,12 +529,7 @@ class Document(ModelIndexable):
 
     @property
     def historical_date_display(self):
-        if self.doc_date_calendar:
-            calendar_name = dict(self.CALENDAR_CHOICES)[self.doc_date_calendar]
-            return f"{self.doc_date_original} {calendar_name}"
-        else:
-            return self.doc_date_original
-
+        return " ".join([self.doc_date_original, self.get_doc_date_calendar_display()]).strip()
     @property
     def collection(self):
         """collection (abbreviation) for associated fragments"""
