@@ -70,55 +70,45 @@
                 {% endif %}
             </dl>
             {# secondary metadata #}
-            {% if document.languages.exists or document.secondary_languages.exists or document.doc_date_original or document.doc_date_standard %}
-                <dl class="metadata secondary">
-                    {% if document.doc_date_original or document.doc_date_standard %}
-                        <dt>
-                            {# Translators: label for date of this document, if known #}
-                            {% translate "Document Date" %}
-                        </dt>
-                        <dd>
-                            {% if document.doc_date_original %}
-                                <time{% if document.doc_date_standard %} datetime="{{ document.doc_date_standard }}"{% endif %}>
-                                    {{ document.historical_date_display }}{% if document.doc_date_standard %}
-                                        ({{ document.doc_date_standard }})
-                                    {% endif %}
-                                </time>
-                            {% else %}
-                                <time datetime="{{ document.doc_date_standard }}">
-                                    {{ document.doc_date_standard }}
-                                </time>
-                            {% endif %}
-                        </dd>
-                    {% endif %}
-                    {% if document.languages.exists %}
-                        <dt>
-                            {# Translators: Primary language label #}
-                            {% blocktranslate count counter=document.languages.count trimmed %}
-                                Primary Language
-                            {% plural %}
-                                Primary Languages
-                            {% endblocktranslate %}
-                        </dt>
-                        {% for lang in document.languages.all %}
-                            <dd>{{ lang }}</dd>
-                        {% endfor %}
-                    {% endif %}
-                    {% if document.secondary_languages.exists %}
-                        <dt>
-                            {# Translators: Secondary language label #}
-                            {% blocktranslate count counter=document.secondary_languages.count trimmed %}
-                                Secondary Language
-                            {% plural %}
-                                Secondary Languages
-                            {% endblocktranslate %}
-                        </dt>
-                        {% for lang in document.secondary_languages.all %}
-                            <dd>{{ lang }}</dd>
-                        {% endfor %}
-                    {% endif %}
-                </dl>
-            {% endif %}
+            <dl class="metadata secondary">
+                {% if document.document_date %}
+                    <dt>
+                        {# Translators: label for date of this document, if known #}
+                        {% translate "Document Date" %}
+                    </dt>
+                    <dd>
+                        <time{% if document.doc_date_standard %} datetime="{{ document.doc_date_standard }}"{% endif %}>
+                            {{ document.document_date }}
+                        </time>
+                    </dd>
+                {% endif %}
+                {% if document.languages.exists %}
+                    <dt>
+                        {# Translators: Primary language label #}
+                        {% blocktranslate count counter=document.languages.count trimmed %}
+                            Primary Language
+                        {% plural %}
+                            Primary Languages
+                        {% endblocktranslate %}
+                    </dt>
+                    {% for lang in document.languages.all %}
+                        <dd>{{ lang }}</dd>
+                    {% endfor %}
+                {% endif %}
+                {% if document.secondary_languages.exists %}
+                    <dt>
+                        {# Translators: Secondary language label #}
+                        {% blocktranslate count counter=document.secondary_languages.count trimmed %}
+                            Secondary Language
+                        {% plural %}
+                            Secondary Languages
+                        {% endblocktranslate %}
+                    </dt>
+                    {% for lang in document.secondary_languages.all %}
+                        <dd>{{ lang }}</dd>
+                    {% endfor %}
+                {% endif %}
+            </dl>
         </section>
 
         {% if document.tags.exists %}

@@ -71,11 +71,13 @@ main.document {
                 margin-top: spacing.$spacing-xs;
             }
         }
-        dl.metadata + dl.metadata {
-            margin-top: 35px;
+        dl.metadata.primary + dl.metadata.secondary {
+            margin-top: 0;
             @include breakpoints.for-desktop-up {
-                margin-top: 0;
                 margin-left: 35px;
+            }
+            :first-child {
+                margin-top: 35px;
             }
         }
         // Document tags
