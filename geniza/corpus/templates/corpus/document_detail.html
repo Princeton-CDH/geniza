@@ -51,7 +51,7 @@
             {# metadata #}
             <dl class="metadata primary">
                 <dt>{% translate 'Shelfmark' %}</dt>
-                <dd class="shelfmark">{% include "corpus/snippets/document_shelfmarks.html" %}</dd>
+                <dd class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</dd>
                 {% if document.digital_editions %}
                     <dt>
                         {# Translators: Editor label #}

@@ -18,7 +18,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "id": "id",  # needed to match results with highlighting
         "type": "type_s",
         "status": "status_s",
-        "shelfmark": "shelfmark_t",
+        "shelfmark": "shelfmark_s",  # string version for display
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
         "description": "description_txt_ens",  # use stemmed version for field search & highlight
@@ -46,14 +46,17 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # regex to convert field aliases used in search to actual solr fields
     # resulting regex will look something like: ((shelfmark|tags|decription|...):
     # adapted from https://stackoverflow.com/a/15448887
-    # - define additional search aliases for site users
-    search_aliases = {
-        # when searching, singular makes more sense for tags & old pgpids
-        "old_pgpid": field_aliases["old_pgpids"],
-        "tag": field_aliases["tags"],
-    }
-    # - update to include all default aliases
-    search_aliases.update(field_aliases)
+    # - start with a copy of default aliases
+    # - define/override additional search aliases for site users
+    search_aliases = field_aliases.copy()
+    search_aliases.update(
+        {
+            # when searching, singular makes more sense for tags & old pgpids
+            "old_pgpid": field_aliases["old_pgpids"],
+            "tag": field_aliases["tags"],
+            "shelfmark": "shelfmark_t",  # search on text version with display override and individual shelfmarks
+        }
+    )
 
     re_solr_fields = re.compile(
         r"(%s):" % "|".join(key for key, val in search_aliases.items() if key != val),

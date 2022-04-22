@@ -393,6 +393,12 @@ class Document(ModelIndexable):
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
     )
+    shelfmark_override = models.CharField(
+        "Shelfmark Override",
+        blank=True,
+        max_length=500,
+        help_text="Override default shelfmark display, e.g. to indicate a range of shelfmarks.",
+    )
     description = models.TextField(blank=True)
     doctype = models.ForeignKey(
         DocumentType,
@@ -499,33 +505,13 @@ class Document(ModelIndexable):
         """shelfmarks for associated fragments"""
         # access via textblock so we follow specified order,
         # use dict keys to ensure unique
-        return " + ".join(
+        return self.shelfmark_override or " + ".join(
             dict.fromkeys(
                 block.fragment.shelfmark
                 for block in self.textblock_set.all()
                 if block.certain  # filter locally instead of in the db
             )
         )
-
-    @property
-    def certain_join_shelfmarks(self):
-        return list(
-            dict.fromkeys(
-                block.fragment.shelfmark
-                for block in self.textblock_set.filter(certain=True)
-            ).keys()
-        )
-
-    # NOTE: not currently used; remove or revise if this remains unused
-    @property
-    def shelfmark_display(self):
-        """First shelfmark plus join indicator for shorter display."""
-        # NOTE preliminary pending more discussion and implementation of #154:
-        # https://github.com/Princeton-CDH/geniza/issues/154
-        certain = self.certain_join_shelfmarks
-        if not certain:
-            return None
-        return certain[0] + (" + …" if len(certain) > 1 else "")
 
     @property
     def collection(self):
@@ -755,7 +741,10 @@ class Document(ModelIndexable):
                 "description_t": strip_tags(self.description_en),
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
-                "shelfmark_ss": self.certain_join_shelfmarks,
+                # index shelfmark display as a string
+                "shelfmark_s": self.shelfmark,
+                # index individual shelfmarks for search
+                "fragment_shelfmark_ss": [f.shelfmark for f in fragments],
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],
