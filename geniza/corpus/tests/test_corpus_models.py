@@ -439,7 +439,7 @@ class TestDocument:
 
     def test_historical_date_display(self):
         """Should display the historical document date with its calendar name"""
-        doc = Document.objects.create(doc_date_original="507", doc_date_calendar="h")
+        doc = Document.objects.create(doc_date_original="507", doc_date_calendar=Document.CALENDAR_HIJRI)
         assert doc.historical_date_display == "507 Hijrī"
         # with no calendar, just display the date
         doc.doc_date_calendar = ""
