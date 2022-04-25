@@ -236,6 +236,7 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
     fields = (
         ("shelfmark", "id", "view_old_pgpids"),
+        "shelfmark_override",
         "doctype",
         ("languages", "secondary_languages"),
         "language_note",

@@ -1,6 +1,6 @@
 from operator import contains
 
-from geniza.corpus.ja import ar_word_to_ja, arabic_or_ja, contains_arabic
+from geniza.corpus.ja import arabic_or_ja, arabic_to_ja, contains_arabic
 
 
 def test_contains_arabic():
@@ -10,10 +10,13 @@ def test_contains_arabic():
     assert contains_arabic(" mixed مصحف and english")
 
 
-def test_ar_word_to_ja():
-    assert ar_word_to_ja("دينار") == "דיהאר"
-    assert ar_word_to_ja("مصحف") == "מצחף"
-    assert ar_word_to_ja("سنة") == "סהה"
+def test_arabic_to_ja():
+    assert arabic_to_ja("دينار") == "דינאר"
+    assert arabic_to_ja("مصحف") == "מצחף"
+    assert arabic_to_ja("سنة") == "סנה"
+    assert arabic_to_ja("طباخ") == "טבאךֹ"
+    assert arabic_to_ja("") == ""
+    assert arabic_to_ja("english text") == "english text"
 
 
 def test_arabic_or_ja__no_arabic():
@@ -24,8 +27,8 @@ def test_arabic_or_ja__no_arabic():
 
 def test_arabic_or_ja__arabic():
     # single word — should return match for arabic or judaeo-arabic
-    assert arabic_or_ja("دينار") == "(دينار|דיהאר)"
+    assert arabic_or_ja("دينار") == "(دينار|דינאר)"
     # multiple words — should return match for arabic or judaeo-arabic
-    assert arabic_or_ja("دينار مصحف") == "(دينار|דיהאר) (مصحف|מצחף)"
+    assert arabic_or_ja("دينار مصحف") == "(دينار|דינאר) (مصحف|מצחף)"
     # mixed english and arabic
     assert arabic_or_ja("help مصحف") == "help (مصحف|מצחף)"

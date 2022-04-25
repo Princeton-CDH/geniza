@@ -316,7 +316,7 @@ class TestFootnoteQuerySet:
             content_object=document,
             location="p.1",
             doc_relation=Footnote.EDITION,
-            content="{'foo': 'bar'}",
+            content={"text": "{'foo': 'bar'}"},
         )
         assert not Footnote.objects.filter(pk=footnote1.pk).includes_footnote(footnote2)
         assert (

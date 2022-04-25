@@ -412,6 +412,12 @@ class Document(ModelIndexable):
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
     )
+    shelfmark_override = models.CharField(
+        "Shelfmark Override",
+        blank=True,
+        max_length=500,
+        help_text="Override default shelfmark display, e.g. to indicate a range of shelfmarks.",
+    )
     description = models.TextField(blank=True)
     doctype = models.ForeignKey(
         DocumentType,
@@ -518,7 +524,7 @@ class Document(ModelIndexable):
         """shelfmarks for associated fragments"""
         # access via textblock so we follow specified order,
         # use dict keys to ensure unique
-        return " + ".join(
+        return self.shelfmark_override or " + ".join(
             dict.fromkeys(
                 block.fragment.shelfmark
                 for block in self.textblock_set.all()
@@ -527,24 +533,25 @@ class Document(ModelIndexable):
         )
 
     @property
-    def certain_join_shelfmarks(self):
-        return list(
-            dict.fromkeys(
-                block.fragment.shelfmark
-                for block in self.textblock_set.filter(certain=True)
-            ).keys()
-        )
+    def original_date(self):
+        """Generate formatted display for the document's original/historical date"""
+        return " ".join(
+            [self.doc_date_original, self.get_doc_date_calendar_display()]
+        ).strip()
 
-    # NOTE: not currently used; remove or revise if this remains unused
     @property
-    def shelfmark_display(self):
-        """First shelfmark plus join indicator for shorter display."""
-        # NOTE preliminary pending more discussion and implementation of #154:
-        # https://github.com/Princeton-CDH/geniza/issues/154
-        certain = self.certain_join_shelfmarks
-        if not certain:
-            return None
-        return certain[0] + (" + …" if len(certain) > 1 else "")
+    def document_date(self):
+        """Generate formatted display for combined original and standardized dates"""
+        if self.doc_date_standard:
+            # append "CE" to standardized date if it exists
+            standardized_date = " ".join([self.doc_date_standard, "CE"])
+            # add parentheses to standardized date if original date is also present
+            if self.original_date:
+                standardized_date = "".join(["(", standardized_date, ")"])
+            return " ".join([self.original_date, standardized_date]).strip()
+        else:
+            # if there's no standardized date, just display the historical date
+            return self.original_date
 
     @property
     def collection(self):
@@ -780,7 +787,10 @@ class Document(ModelIndexable):
                 "description_t": strip_tags(self.description_en),
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
-                "shelfmark_ss": self.certain_join_shelfmarks,
+                # index shelfmark display as a string
+                "shelfmark_s": self.shelfmark,
+                # index individual shelfmarks for search
+                "fragment_shelfmark_ss": [f.shelfmark for f in fragments],
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],

@@ -39,9 +39,12 @@ Remember to add a ``SECRET_KEY`` setting!
     cp -r solr_conf /path/to/solr/server/solr/configsets/geniza
     chown solr:solr -R /path/to/solr/server/solr/configsets/geniza
 
-- Create Solr collection with the configured configset (use create_core with Solr standalone and create_collection with SolrCloud)::
+- Create Solr collection with the configured configset (use `create_core` with Solr standalone and `create_collection` with SolrCloud)::
+    curl "http://localhost:8983/solr/admin/cores?action=CREATE&name=geniza&configSet=geniza"
 
-    solr create -c geniza -n geniza
+.. Note::
+    The command line version of core creation looks like `solr create -c geniza -n geniza`, but in
+    current versions of Solr it creates a new core with a *copy* of the configset instead of a *reference*.
 
 - Index content in Solr::
 

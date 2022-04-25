@@ -163,3 +163,15 @@ def test_pgp_urlize(document, join):
     )
     assert (doc_link + ",") in corpus_extras.pgp_urlize(text_punctuation)
     assert (join_link + ";") in corpus_extras.pgp_urlize(text_punctuation)
+
+
+def test_shelfmark_wrap():
+    assert corpus_extras.shelfmark_wrap("foo") == "<span>foo</span>"
+    assert (
+        corpus_extras.shelfmark_wrap("foo + bar")
+        == "<span>foo</span> + <span>bar</span>"
+    )
+    assert (
+        corpus_extras.shelfmark_wrap("foo + bar + baz")
+        == "<span>foo</span> + <span>bar</span> + <span>baz</span>"
+    )

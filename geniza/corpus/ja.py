@@ -17,21 +17,27 @@ arabic_ja_chars = {
     "س": "ס",
     "ش": "ש",
     "ص": "צ",  # (final form: ץ)
+    "ض": "צ",
     "ط": "ט",
     "ظ": "טֹ",
-    "غ": "ע",
-    "ع": "ג",  # ג or ֹ ג
+    "ع": "ע",
+    "غ": "ג",  # ג or ֹ ג
     "ف": "פ",  # (final form: ף)
     "ق": "ק",
     "ك": "כ",  # (final form: ך)
     "ل": "ל",
     "م": "מ",  # (final form: ם)
     "ن": "נ",  # (final form: ן)
-    "ن": "ה",  # ن or ة
-    "ة": "ה",
+    "ة": "ה",  # ن or ة
+    "ه": "ה",
     "و": "ו",
     "ي": "י",  # ي or ى
     "ى": "י",
+    "ئ": "י",
+    "ؤ": "ו",
+    "أ": "א",
+    "آ": "א",
+    "ء": "",  # ignore
 }
 
 he_final_letters = {
@@ -57,12 +63,20 @@ def contains_arabic(text):
     return re_AR_letters.search(text)
 
 
-def ar_word_to_ja(word):
-    # for a single word
-    ja_word = word.translate(arabic_to_ja_table)
+# regex for hebrew letters that have final form; matches on occurrence before word boundary
+re_he_final_letters = re.compile(r"(%s)\b" % "|".join(he_final_letters.keys()))
+
+
+def arabic_to_ja(text):
+    # handle multiple words
+    # if there is no arabic text, return as is
+    if not contains_arabic(text):
+        return text
+
+    text = text.translate(arabic_to_ja_table).strip()
     # convert last letter to final form if necessary
-    last_letter = ja_word[-1]
-    return f"{ ja_word[:-1] }{ he_final_letters.get(last_letter, last_letter) }"
+    # needs to use regex to handle accented characters, which complicate last letter indexing
+    return re.sub(re_he_final_letters, lambda m: he_final_letters[m.group(0)], text)
 
 
 def arabic_or_ja(text):
@@ -71,8 +85,9 @@ def arabic_or_ja(text):
         return text
 
     # if there is arabic, split into words and make a pattern
+    # NOTE: this could fail on more complicated queriesn
     words = re.split(r"\s+", text)
-    ja_words = [ar_word_to_ja(word) for word in words]
+    ja_words = [arabic_to_ja(word) for word in words]
     search_words = []
     for word, ja_word in dict(zip(words, ja_words)).items():
         # if the words differ, combine them as an OR

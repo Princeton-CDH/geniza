@@ -141,3 +141,12 @@ def pgp_urlize(text):
             text,
         )
     )
+
+
+@register.filter
+def shelfmark_wrap(shelfmark):
+    """Wrap individual shelfmarks in a span within a combined shelfmark,
+    to avoid wrapping mid-shelfmark"""
+    return mark_safe(
+        " + ".join(["<span>%s</span>" % m for m in shelfmark.split(" + ")])
+    )

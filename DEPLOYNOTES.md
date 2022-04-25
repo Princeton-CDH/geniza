@@ -2,7 +2,7 @@
 
 ## 4.4.0
 
--   This update includes Solr indexing changes (boolean for image filter). Run `python manage.py index` to reindex all content.
+-   This update requires Solr indexing changes (image filter, shelfmark override, etc.). Run `python manage.py index` to reindex all content.
 
 ## 4.2.1
 
