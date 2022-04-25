@@ -72,6 +72,9 @@ class SourceFootnoteInline(admin.TabularInline):
             + '<img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>'
         )
 
+    # enable link from inline to edit footnote
+    show_change_link = True
+
 
 class DocumentFootnoteInline(GenericTabularInline):
     """Footnote inline for the Document admin"""
@@ -92,6 +95,8 @@ class DocumentFootnoteInline(GenericTabularInline):
         CharField: {"widget": TextInput(attrs={"size": "10"})},
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
+    # enable link from inline to edit footnote
+    show_change_link = True
 
 
 @admin.register(Source)
