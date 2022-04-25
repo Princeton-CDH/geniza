@@ -8,7 +8,7 @@
             {% if fragment.iiif_url %}
                 <li class="fragment-permissions">
                     {% if fragment.url %}
-                        <a href="{{ fragment.url }}" class="shelfmark">{{ fragment.shelfmark }}</a>:
+                        <a href="{{ fragment.url }}" target="_blank" class="shelfmark">{{ fragment.shelfmark }}</a>:
                     {% else %}
                         <span class="shelfmark">{{ fragment.shelfmark }}</span>:
                     {% endif %}
