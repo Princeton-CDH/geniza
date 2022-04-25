@@ -44,7 +44,7 @@
                 {% for fragment in document.fragments.all %}
                     {% if fragment.iiif_url %}
                         <li class="fragment-permissions">
-                            <span class="shelfmark">{{ fragment.shelfmark }}</span>:
+                            <a{% if fragment.url %} href="{{ fragment.url }}"{% endif %} class="shelfmark">{{ fragment.shelfmark }}</a>:
                             {% if fragment.attribution or fragment.manifest.license %}
                                 {% if fragment.attribution %}{{ fragment.attribution }}{% endif %} {% if fragment.manifest.license %}{% include "corpus/snippets/fragment_license_statement.html" %}{% endif %}
                             {% else %}

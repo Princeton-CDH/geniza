@@ -150,7 +150,7 @@
             margin-bottom: 0.5rem;
         }
         @include typography.permissions-statement;
-        span.shelfmark {
+        a.shelfmark {
             @include typography.permissions-statement-bold;
         }
         // list of attributions/licenses
