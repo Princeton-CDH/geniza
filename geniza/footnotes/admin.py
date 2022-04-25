@@ -13,8 +13,8 @@ from django.forms.widgets import Textarea, TextInput
 from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from django_admin_inline_paginator.admin import TabularInlinePaginated
 from modeltranslation.admin import TabbedTranslationAdmin
-from tabular_export.admin import export_to_csv_response
 
 from geniza.common.admin import custom_empty_field_list_filter
 from geniza.footnotes.models import (
@@ -34,7 +34,7 @@ class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
     extra = 1
 
 
-class SourceFootnoteInline(admin.TabularInline):
+class SourceFootnoteInline(TabularInlinePaginated):
     """Footnote inline for the Source admin"""
 
     model = Footnote
@@ -54,6 +54,8 @@ class SourceFootnoteInline(admin.TabularInline):
     }
     # sort by location to enable browsing through in order
     ordering = ("location",)
+
+    per_page = 100
 
     @admin.display(
         description="object",
