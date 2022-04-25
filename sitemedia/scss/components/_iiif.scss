@@ -125,6 +125,12 @@
             cursor: pointer;
             display: flex;
             align-items: center;
+            &:focus {
+                outline: none;
+                span {
+                    outline: 0.1rem solid var(--focus);
+                }
+            }
             span {
                 @include typography.link;
             }
@@ -150,7 +156,7 @@
             margin-bottom: 0.5rem;
         }
         @include typography.permissions-statement;
-        span.shelfmark {
+        a.shelfmark {
             @include typography.permissions-statement-bold;
         }
         // list of attributions/licenses
