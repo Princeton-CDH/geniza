@@ -156,6 +156,9 @@
             margin-bottom: 0.5rem;
         }
         @include typography.permissions-statement;
+        a.shelfmark {
+            @include typography.link;
+        }
         a.shelfmark,
         span.shelfmark {
             @include typography.permissions-statement-bold;
