@@ -182,7 +182,7 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
                 )
 
     def get_edition_footnote(self, doc, tei, filename):
-        # identify the edition footnote to be updated
+        """identify the edition footnote to be updated"""
         # NOTE: still needs to handle multiple editions, no editions
         editions = doc.footnotes.editions()
 
@@ -227,8 +227,8 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
             return editions.first()
 
     def choose_edition_by_authors(self, tei, editions, doc):
-        # try to choose correct edition from a list based on author names;
-        # use on structured author names in the TEI
+        """Try to choose correct edition from a list based on author names;
+        based on structured author names in the TEI"""
         if tei.source_authors:
             tei_authors = set(tei.source_authors)
             author_matches = []
@@ -246,8 +246,9 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
                 return self.is_it_goitein(tei, doc)
 
     def is_it_goitein(self, tei, doc):
-        # if no edition exists and we can identify based on the TEI as
-        # goitein unpublished editions, create a new footnote
+        """Check if a TEI document is a Goitein edition. If no edition exists
+        and we can identify based on the TEI as a Goitein unpublished edition,
+        then create a new footnote."""
         source_info = str(tei.source[0]).lower()
         if "goitein" in source_info and (
             "unpublished editions" in source_info or "typed texts" in source_info
@@ -259,6 +260,7 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
                     return footnote
 
     def create_goitein_footnote(self, doc):
+        """Create a new footnote for a Goitein unpublished edition"""
         source = Source.objects.filter(
             authors__last_name="Goitein",
             title_en="unpublished editions",
@@ -289,7 +291,7 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
         return footnote
 
     def sync_git(self, gitrepo_url, local_path):
-        # ensure git repository has been cloned and content is up to date
+        """ensure git repository has been cloned and content is up to date"""
 
         # if directory does not yet exist, clone repository
         if not os.path.isdir(local_path):
@@ -303,7 +305,7 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
             Repo(local_path).remotes.origin.pull()
 
     def log_footnote_update(self, footnote, xmlfile):
-        # create a log entry for a footnote that has been updated
+        """create a log entry for a footnote that has been updated"""
         LogEntry.objects.log_action(
             user_id=self.script_user.id,
             content_type_id=self.footnote_contenttype.pk,

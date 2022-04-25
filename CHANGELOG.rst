@@ -1,10 +1,13 @@
-# Change Log
+Change Log
+==========
 
-## 4.3.1
+4.3.1
+-----
 
 -   bugfix: edit link on public document detail page wasn't loading correctly due to Turbo
 
-## 4.3
+4.3
+---
 
 -   public site
     -   As a front-end user, I want the document search to automatically reload when I change my search terms, filters, or other options so that I can see the changed results more quickly.
@@ -20,7 +23,8 @@
     -   Implement Turbo to improve internal link speed
     -   refactor all JS to Stimulus
 
-## 4.2.1 — bugfix release
+4.2.1 — bugfix release
+----------------------
 
 -   handle descriptions with tags so they don't cause malformed HTML in search results
 -   last modified header should not be set for document search if sort is random
@@ -28,7 +32,8 @@
 -   transcription lines should be right-aligned in admin interface
 -   fix twitter/open graph title and description previews for wagtail pages
 
-## 4.2
+4.2
+---
 
 -   public site
     -   As a front-end user, I want keyword searches automatically sorted by relevance, so that I see the most useful results first.
@@ -55,7 +60,8 @@
     -   bugfix: search sort options dropdown shouldn't move following page content down
     -   bugfix: image viewer breaks on mobile for documents with images but no transcriptions
 
-## 4.1
+4.1
+---
 
 -   public site
     -   As a user, I want to see image thumbnails with search results when available, so that I can quickly see which records have images and what they look like.
@@ -77,7 +83,8 @@
     -   setup google analytics
     -   include software version in site footer
 
-## 4.0
+4.0
+---
 
 **Initial public version of Princeton Geniza Project v4.0**
 
@@ -114,7 +121,8 @@
     -   Resolve failing lighthouse tests
     -   Improve handling for IIIF content to work better with PUL/JTS materials
 
-## 0.8
+0.8
+---
 
 -   public site search and document display
     -   As a front-end user, I want to use fields in my keyword searches so I can make my searches more specific and targeted.
@@ -139,7 +147,8 @@
     -   made percy visual review workflow opt-in to avoid paying for excessive screenshots
     -   image files used in site design organized in site media, and organization documented
 
-## 0.7
+0.7
+---
 
 -   document search
     -   As a user I would like to know explicitly when a search result does not have any scholarship records so that I don't have to compare with results that do.
@@ -175,13 +184,15 @@
 -   Implemented visual review workflow with Percy and GitHub Actions
 -   Configured and applied `djhtml` commmit hook for consistent formatting in django templates
 
-## 0.6
+0.6
+---
 
 -   As a content editor, I want duplicate joined documents to be automatically merged without losing their unique metadata, so that I don't have to merge them manually.
 -   Setup for webpack build for frontend scss/js assets and static files
 -   bugfix: 500 error saving documents with footnotes (bad footnote equality check)
 
-## 0.5
+0.5
+---
 
 -   As a Content Editor, I want to see help text for Document Type so that I can make an informed decision while editing documents.
 -   As a content editor, I want a one time consolidation of India Book sources so that the source list correctly represents the book volumes.
@@ -191,7 +202,8 @@
 -   Rename document languages to primary languages and probable languages to secondary languages
 -   Adopted isort python style and configured pre-commit hook
 
-## 0.4
+0.4
+---
 
 -   As a content editor, I would like to input dates in a separate field, so that both content editors and site users can sort and filter documents by date.
 -   As a content editor, I want to import fragment view and IIIF urls from a csv file into the database so that I can provide access to images for fragments.
@@ -206,7 +218,8 @@
 -   removed code related to import
 -   Adopted black code style and configured pre-commit hook
 
-## 0.3
+0.3
+---
 
 -   As a Global Admin, I want new documents created in the database after data import to receive PGPIDs higher than the highest imported PGPID, so that identifiers will be unique and semi-sequential.
 -   As a Global Admin, I want documents associated with language+script based on display name when importing documents from metadata spreadsheet.

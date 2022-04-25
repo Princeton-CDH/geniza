@@ -136,7 +136,7 @@ class Command(BaseCommand):
             )
 
     def generate_test_content_page(self):
-        # Create test content page from fixture
+        """Create a test content page from fixture"""
         with open(
             "geniza/pages/fixtures/example_content_page.html", "r"
         ) as content_fixture:

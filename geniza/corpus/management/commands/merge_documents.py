@@ -15,7 +15,7 @@ that is part of any group of documents to be merged. Required fields are:
 - **group id**: unique identifier for each set of documents to be merged
 - **action**: must be **MERGE** to merge documents; if not, rows will be ignored
 - **pgpid**: document PGPID
-- **role*: "primary" for the main document in each group
+- **role**: "primary" for the main document in each group
 
 Example use::
 
@@ -219,7 +219,7 @@ class Command(BaseCommand):
         return report_rows
 
     def generate_report(self, report_rows, path):
-        # output report of what would be done when in report mode
+        """in report mode, generate a csv file of merge candidates"""
         with open(path, "w") as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerow(
