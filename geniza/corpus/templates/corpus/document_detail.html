@@ -156,11 +156,11 @@
                 <section>
                     <dd class="metadata">
                         <dt>
-                            {# Translators: Other documents on the same fragment #}
+                            {# Translators: Other documents on the same fragment/shelfmark #}
                             {% blocktranslate count counter=document.fragments.count trimmed %}
-                                Other documents on this fragment
+                                Other documents on this shelfmark
                             {% plural %}
-                                Other documents on these fragments
+                                Other documents on these shelfmarks
                             {% endblocktranslate %}
                         </dt>
                         {% for doc in other_docs %}
