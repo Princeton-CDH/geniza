@@ -10,7 +10,8 @@
             <h2 class="title">
                 {# type and shelfmark #}
                 <span class="doctype">{{ document.type }}</span>
-                <span class="shelfmark">{{ document.shelfmark_override|default:document.shelfmark|shelfmark_wrap }}</span>
+                {% firstof document.shelfmark_override document.shelfmark as shelfmark %}
+                <span class="shelfmark">{{ shelfmark|shelfmark_wrap }}</span>
             </h2>
 
             {# metadata #}
