@@ -505,20 +505,12 @@ class TestDocumentSearchView:
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()
         # sort by shelfmark asc
-        docsearch_view.request.GET = {"sort": "shelfmark_asc"}
+        docsearch_view.request.GET = {"sort": "shelfmark"}
         qs = docsearch_view.get_queryset()
         # should return document with shelfmark starting with C first
         assert (
             qs[0]["pgpid"] == document.id
         ), "document with shelfmark CUL Add.2586 returned first"
-
-        # sort by shelfmark desc
-        docsearch_view.request.GET = {"sort": "shelfmark_desc"}
-        qs = docsearch_view.get_queryset()
-        # should return document with shelfmark starting with T first
-        assert (
-            qs[0]["pgpid"] == doc2.id
-        ), "document with shelfmark T-S 16.377 returned first"
 
     def test_doctype_filter(self, document, join, empty_solr):
         """Integration test for document type filter"""
