@@ -512,6 +512,30 @@ class TestDocumentSearchView:
             qs[0]["pgpid"] == document.id
         ), "document with shelfmark CUL Add.2586 returned first"
 
+    def test_input_date_sort(self, document, join, empty_solr):
+        SolrClient().update.index(
+            [
+                document.index_data(),  # input date = 2004
+                join.index_data(),  # input date = 2022
+            ],
+            commit=True,
+        )
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # sort by input date asc
+        docsearch_view.request.GET = {"sort": "input_date_asc"}
+        qs = docsearch_view.get_queryset()
+        # should return document with input date of 2004 first
+        assert (
+            qs[0]["pgpid"] == document.id
+        ), "document with input date 2004 returned first"
+
+        # sort by input date desc
+        docsearch_view.request.GET = {"sort": "input_date_desc"}
+        qs = docsearch_view.get_queryset()
+        # should return document with input date of 2022 first
+        assert qs[0]["pgpid"] == join.id, "document with input date 2022 returned first"
+
     def test_doctype_filter(self, document, join, empty_solr):
         """Integration test for document type filter"""
         SolrClient().update.index(
