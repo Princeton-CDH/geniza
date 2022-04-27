@@ -185,7 +185,7 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = (
         "id",
         "needs_review",  # disabled by default with css
-        "shelfmark",
+        "view_shelfmark",
         "description",
         "doctype",
         "all_tags",
@@ -209,6 +209,13 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     save_as = True
     # display unset document type as Unknown
     empty_value_display = "Unknown"
+
+    @admin.display(
+        description="Shelfmark",
+    )
+    def view_shelfmark(self, obj):
+        """Display shelfmark override as shelfmark in list when available"""
+        return obj.shelfmark_override or obj.shelfmark
 
     # customize old pgpid display so unset does not show up as "Unknown"
     @admin.display(

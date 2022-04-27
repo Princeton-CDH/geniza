@@ -299,6 +299,14 @@ class TestDocumentAdmin:
             assert "description" in headers
             assert "needs_review" in headers
 
+    def test_view_shelfmark(self, document, join):
+        """should return shelfmark override when present, otherwise shelfmark"""
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        # should display shelfmark for a document with no override
+        assert doc_admin.view_shelfmark(join) == join.shelfmark
+        # should display shelfmark override for a document with one
+        assert doc_admin.view_shelfmark(document) == document.shelfmark_override
+
     def test_view_old_pgpids(self):
         doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
         obj = Document()

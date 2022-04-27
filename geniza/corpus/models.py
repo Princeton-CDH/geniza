@@ -510,7 +510,7 @@ class Document(ModelIndexable):
         # ordering = [Least('textblock__fragment__shelfmark')]
 
     def __str__(self):
-        return f"{self.shelfmark or '??'} (PGPID {self.id or '??'})"
+        return f"{self.shelfmark_override or self.shelfmark or '??'} (PGPID {self.id or '??'})"
 
     @staticmethod
     def get_by_any_pgpid(pgpid):
