@@ -524,7 +524,7 @@ class Document(ModelIndexable):
         """shelfmarks for associated fragments"""
         # access via textblock so we follow specified order,
         # use dict keys to ensure unique
-        return self.shelfmark_override or " + ".join(
+        return " + ".join(
             dict.fromkeys(
                 block.fragment.shelfmark
                 for block in self.textblock_set.all()
@@ -793,8 +793,9 @@ class Document(ModelIndexable):
                 "description_t": strip_tags(self.description_en),
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
-                # index shelfmark display as a string
+                # index shelfmark display (full and override) as a string
                 "shelfmark_s": self.shelfmark,
+                "shelfmark_override_s": self.shelfmark_override,
                 # index individual shelfmarks for search
                 "fragment_shelfmark_ss": [f.shelfmark for f in fragments],
                 # library/collection possibly redundant?

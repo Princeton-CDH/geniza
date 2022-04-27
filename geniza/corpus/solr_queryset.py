@@ -18,7 +18,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "id": "id",  # needed to match results with highlighting
         "type": "type_s",
         "status": "status_s",
-        "shelfmark": "shelfmark_s",  # string version for display
+        "shelfmark": "shelfmark_s",  # full string version for metadata display
+        "shelfmark_override": "shelfmark_override_s",  # override string version for title display
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
         "description": "description_txt_ens",  # use stemmed version for field search & highlight

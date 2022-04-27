@@ -16,5 +16,5 @@
     {# Translators: Default label when document does not have a type #}
     {% translate 'Unknown type' as unknown_type %}
     <span class="doctype">{{ document.doctype|default:unknown_type }}</span>
-    <span class="shelfmark" data-action="click->text#copy">{{ document.shelfmark|shelfmark_wrap }}</span>
+    <span class="shelfmark" data-action="click->text#copy">{{ document.shelfmark_override|default:document.shelfmark|shelfmark_wrap }}</span>
 </span>

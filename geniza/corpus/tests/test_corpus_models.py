@@ -428,11 +428,6 @@ class TestDocument:
         # ensure that uncertain shelfmarks are not included in str
         assert doc2.shelfmark == "%s + %s" % (frag2.shelfmark, frag.shelfmark)
 
-    def test_shelfmark_override(self, document):
-        override = "Foo 1-34"
-        document.shelfmark_override = override
-        assert document.shelfmark == override
-
     def test_str(self):
         frag = Fragment.objects.create(shelfmark="Or.1081 2.25")
         doc = Document.objects.create()
@@ -693,6 +688,7 @@ class TestDocument:
         assert index_data["notes_t"] is None  # no notes
         assert index_data["needs_review_t"] is None  # no review notes
         assert index_data["shelfmark_s"] == document.shelfmark
+        assert index_data["shelfmark_override_s"] == document.shelfmark_override
         for frag in document.fragments.all():
             assert frag.shelfmark in index_data["fragment_shelfmark_ss"]
         for tag in document.tags.all():

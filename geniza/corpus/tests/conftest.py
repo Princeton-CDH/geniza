@@ -47,6 +47,7 @@ def make_document(fragment):
     """A real legal document from the PGP."""
     doc = Document.objects.create(
         id=3951,
+        shelfmark_override="Foo 1-34",
         description_en="""Deed of sale in which a father sells to his son a quarter
          of the apartment belonging to him in a house in the al- Mu'tamid
          passage of the Tujib quarter for seventeen dinars. Dated 1233.
