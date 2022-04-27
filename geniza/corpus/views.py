@@ -47,7 +47,7 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         "relevance": "-score",
         "scholarship_desc": "-scholarship_count_i",
         "scholarship_asc": "scholarship_count_i",
-        #        'name': 'sort_name_isort'
+        "shelfmark": "shelfmark_s",
     }
 
     def dispatch(self, request, *args, **kwargs):

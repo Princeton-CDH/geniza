@@ -491,6 +491,27 @@ class TestDocumentSearchView:
             qs[0]["pgpid"] == join.id
         ), "document with matching description and fewest scholarship records returned first"
 
+    def test_shelfmark_sort(self, document, multifragment, empty_solr):
+        """integration test for sorting by shelfmark"""
+        doc2 = Document.objects.create()
+        TextBlock.objects.create(document=doc2, fragment=multifragment)
+        SolrClient().update.index(
+            [
+                document.index_data(),  # shelfmark = CUL Add.2586
+                doc2.index_data(),  # shelfmark = T-S 16.377
+            ],
+            commit=True,
+        )
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # sort by shelfmark asc
+        docsearch_view.request.GET = {"sort": "shelfmark"}
+        qs = docsearch_view.get_queryset()
+        # should return document with shelfmark starting with C first
+        assert (
+            qs[0]["pgpid"] == document.id
+        ), "document with shelfmark CUL Add.2586 returned first"
+
     def test_doctype_filter(self, document, join, empty_solr):
         """Integration test for document type filter"""
         SolrClient().update.index(
