@@ -155,11 +155,14 @@ class DocumentSearchForm(forms.Form):
         ("relevance", _("Relevance")),
         # Translators: label for sort in random order
         ("random", _("Random")),
-        # ("input_date", "Input Date (Latest – Earliest)"),
         # Translators: label for descending sort by number of scholarship records
         ("scholarship_desc", _("Scholarship Records (Most–Least)")),
         # Translators: label for ascending sort by number of scholarship records
         ("scholarship_asc", _("Scholarship Records (Least–Most)")),
+        # Translators: label for ascending sort by shelfmark
+        ("shelfmark_asc", ("Shelfmark (A-Z)")),
+        # Translators: label for descending sort by shelfmark
+        ("shelfmark_desc", ("Shelfmark (Z-A)")),
     ]
     # NOTE: adding sort options and filters here to populate strings for translation;
     # this functionality is not yet implemented, but these translation strings
