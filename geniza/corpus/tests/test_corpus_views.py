@@ -1,17 +1,17 @@
-from http.client import ResponseNotReady
+from datetime import datetime
 from pydoc import doc
 from time import sleep
-from unittest import mock
-from unittest.mock import ANY, Mock, mock_open, patch
+from unittest.mock import ANY, Mock, patch
 
 import pytest
 from django.conf import settings
-from django.contrib.auth.models import Permission, User
-from django.db.models.fields import related
-from django.http.response import Http404
+from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import resolve, reverse
 from django.utils.text import Truncator, slugify
+from django.utils.timezone import get_current_timezone, make_aware
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
 
@@ -513,6 +513,22 @@ class TestDocumentSearchView:
         ), "document with shelfmark CUL Add.2586 returned first"
 
     def test_input_date_sort(self, document, join, empty_solr):
+        """Tests for sorting by input date, ascending and descending"""
+        # set up log entry for join
+        dctype = ContentType.objects.get_for_model(Document)
+        team_user = User.objects.get(username=settings.TEAM_USERNAME)
+        LogEntry.objects.create(
+            user=team_user,
+            object_id=str(join.pk),
+            object_repr=str(join)[:200],
+            content_type=dctype,
+            change_message="Initial data entry (spreadsheet), dated 2022",
+            action_flag=ADDITION,
+            action_time=make_aware(
+                datetime(year=2022, month=1, day=1), timezone=get_current_timezone()
+            ),
+        )
+        # update solr index
         SolrClient().update.index(
             [
                 document.index_data(),  # input date = 2004

@@ -91,19 +91,6 @@ def make_join(fragment, multifragment):
     )
     TextBlock.objects.create(document=doc, fragment=fragment, order=1)
     TextBlock.objects.create(document=doc, fragment=multifragment, order=2)
-    dctype = ContentType.objects.get_for_model(Document)
-    team_user = User.objects.get(username=settings.TEAM_USERNAME)
-    LogEntry.objects.create(
-        user=team_user,
-        object_id=str(doc.pk),
-        object_repr=str(doc)[:200],
-        content_type=dctype,
-        change_message="Initial data entry (spreadsheet), dated 2022",
-        action_flag=ADDITION,
-        action_time=make_aware(
-            datetime(year=2022, month=1, day=1), timezone=get_current_timezone()
-        ),
-    )
     return doc
 
 
