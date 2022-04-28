@@ -4,7 +4,7 @@ from collections import defaultdict
 from itertools import chain
 
 from django.conf import settings
-from django.contrib import messages
+from django.contrib import admin, messages
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
@@ -510,7 +510,7 @@ class Document(ModelIndexable):
         # ordering = [Least('textblock__fragment__shelfmark')]
 
     def __str__(self):
-        return f"{self.shelfmark or '??'} (PGPID {self.id or '??'})"
+        return f"{self.label or '??'} (PGPID {self.id or '??'})"
 
     @staticmethod
     def get_by_any_pgpid(pgpid):
@@ -524,13 +524,20 @@ class Document(ModelIndexable):
         """shelfmarks for associated fragments"""
         # access via textblock so we follow specified order,
         # use dict keys to ensure unique
-        return self.shelfmark_override or " + ".join(
+        return " + ".join(
             dict.fromkeys(
                 block.fragment.shelfmark
                 for block in self.textblock_set.all()
                 if block.certain  # filter locally instead of in the db
             )
         )
+
+    @property
+    @admin.display(description="Shelfmark")
+    def label(self):
+        """Label for this document; by default, based on the combined shelfmarks from all certain
+        associated fragments; uses :attr:`shelfmark_override` if set"""
+        return self.shelfmark_override or self.shelfmark
 
     @property
     def original_date(self):
@@ -681,7 +688,7 @@ class Document(ModelIndexable):
     @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
-        return f"{self.doctype or _('Unknown type')}: {self.shelfmark or '??'}"
+        return f"{self.doctype or _('Unknown type')}: {self.label or '??'}"
 
     def editions(self):
         """All footnotes for this document where the document relation includes
@@ -793,9 +800,9 @@ class Document(ModelIndexable):
                 "description_t": strip_tags(self.description_en),
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
-                # index shelfmark display as a string
-                "shelfmark_s": self.shelfmark,
-                # index individual shelfmarks for search
+                # index shelfmark label as a string (combined shelfmark OR shelfmark override)
+                "shelfmark_s": self.label,
+                # index individual shelfmarks for search (includes uncertain fragments)
                 "fragment_shelfmark_ss": [f.shelfmark for f in fragments],
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
