@@ -27,7 +27,7 @@
                     <li>
                         {# Translators: Accessibilty label for logos of IIIF image providers #}
                         {% translate 'Logo for image provider' as alt_text %}
-                        <img src="{{ fragment.manifest.logo }}" alt="{{ alt_text }}" width="32" height="32" />
+                        <img src="{{ fragment.manifest.logo }}" alt="{{ alt_text }}" width="32" height="32" loading="lazy" />
                     </li>
                 {% endifchanged %}
             {% endif %}
