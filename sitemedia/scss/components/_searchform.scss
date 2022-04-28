@@ -100,7 +100,6 @@ main.search form {
             width: auto;
             height: 2.5rem;
             border-radius: 0;
-            margin-left: 0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -513,6 +512,69 @@ main.search form {
         color: red;
         li {
             @include typography.meta;
+        }
+    }
+}
+
+// tweaks for RTL search form for hebrew, arabic
+html[dir="rtl"] main.search form {
+    // search query box and button
+    fieldset#query {
+        // search box
+        input[type="search"] {
+            margin-right: 0;
+            margin-left: spacing.$spacing-sm;
+            padding: 0 spacing.$spacing-sm 0 0;
+        }
+    }
+    // sort field and label
+    fieldset#sort {
+        // sort options select (uses details/summary)
+        details.sort-select {
+            summary span {
+                margin-right: 0;
+                margin-left: spacing.$spacing-sm;
+            }
+        }
+    }
+
+    // buttons for opening and closing the filter modal
+    a#filters-button,
+    a#close-filters-button {
+        svg {
+            margin-right: 0;
+            margin-left: spacing.$spacing-2xs;
+        }
+    }
+
+    // filter modal
+    fieldset#filters {
+        left: auto;
+        right: 0;
+        // expand form on desktop
+        @include breakpoints.for-tablet-landscape-up {
+            padding: spacing.$spacing-sm spacing.$spacing-sm spacing.$spacing-sm
+                1.275rem;
+            margin: -4.2rem -#{spacing.$spacing-sm} 0 0;
+        }
+        // all filter form inputs that are not nested within a details
+        & > label {
+            span.count {
+                padding-left: 0;
+                padding-right: 1rem;
+            }
+            span.count::after {
+                float: left;
+            }
+        }
+        // document type filter
+        details.doctype-filter {
+            // Label for document type filter
+            summary {
+                &::after {
+                    float: left;
+                }
+            }
         }
     }
 }
