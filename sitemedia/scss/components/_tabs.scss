@@ -13,6 +13,7 @@
     align-content: stretch;
     justify-content: center;
     margin: 0 auto;
+    max-width: none;
     @include typography.nav-link;
     // Tabs styling
     a,
