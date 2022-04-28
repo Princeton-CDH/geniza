@@ -104,6 +104,7 @@ main.search form {
             align-items: center;
             justify-content: center;
             border: none;
+            margin-left: 0; // Needed to prevent wrapping on mobile
             @include form-button-colors;
             @include breakpoints.for-tablet-landscape-up {
                 flex-basis: 3rem;
@@ -525,6 +526,9 @@ html[dir="rtl"] main.search form {
             margin-right: 0;
             margin-left: spacing.$spacing-sm;
             padding: 0 spacing.$spacing-sm 0 0;
+        }
+        button[type="submit"] {
+            margin-right: 0; // Needed to prevent wrapping on mobile
         }
     }
     // sort field and label
