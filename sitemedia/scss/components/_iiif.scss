@@ -177,6 +177,19 @@
                 vertical-align: text-top;
             }
         }
+        // provider logos (interim solution)
+        ul.logos {
+            display: flex;
+            flex-flow: row;
+            margin-top: spacing.$spacing-sm;
+            li img {
+                width: 32px;
+                height: 32px;
+            }
+            li + li {
+                margin-left: spacing.$spacing-xs;
+            }
+        }
         // spacing tweaks for desktop
         @include breakpoints.for-tablet-landscape-up {
             margin: 50px 0 0;

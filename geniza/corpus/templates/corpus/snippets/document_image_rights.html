@@ -8,9 +8,7 @@
             {% if fragment.iiif_url %}
                 <li class="fragment-permissions">
                     {% with fragment.url|yesno:"a,span" as tag %}
-                        <{{ tag }} class="shelfmark"{% if tag == "a" %} href="{{ fragment.url }}" target="_blank"{% endif %}>
-                        {{ fragment.shelfmark }}
-                        </{{ tag }}>:
+                        <{{ tag }} class="shelfmark"{% if tag == "a" %} href="{{ fragment.url }}" target="_blank"{% endif %}>{{ fragment.shelfmark }}</{{ tag }}>:
                     {% endwith %}
                     {{ fragment.attribution|default_if_none:"" }}
                     {% if fragment.manifest.license %}
@@ -22,4 +20,18 @@
             {% endif %}
         {% endfor %}
     </ul>
+    <ul class="logos">
+        {% for fragment in document.fragments.all %}
+            {% if fragment.manifest %}
+                {% ifchanged fragment.manifest.logo %}
+                    <li>
+                        {# Translators: Accessibilty label for logos of IIIF image providers #}
+                        {% translate 'Logo for image provider' as alt_text %}
+                        <img src="{{ fragment.manifest.logo }}" alt="{{ alt_text }}" width="32" height="32" />
+                    </li>
+                {% endifchanged %}
+            {% endif %}
+        {% endfor %}
+    </ul>
+
 </details>
