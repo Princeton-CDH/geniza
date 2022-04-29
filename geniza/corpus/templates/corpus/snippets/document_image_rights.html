@@ -20,17 +20,12 @@
             {% endif %}
         {% endfor %}
     </ul>
+    {% regroup document.fragments.all by manifest.logo as logos_list %}
     <ul class="logos">
-        {% for fragment in document.fragments.all %}
-            {% if fragment.manifest %}
-                {% ifchanged fragment.manifest.logo %}
-                    <li>
-                        {# Translators: Accessibilty label for logos of IIIF image providers #}
-                        {% translate 'Logo for image provider' as alt_text %}
-                        <img src="{{ fragment.manifest.logo }}" alt="{{ alt_text }}" width="32" height="32" loading="lazy" />
-                    </li>
-                {% endifchanged %}
-            {% endif %}
+        {% for logo in logos_list %}
+            <li>
+                <img src="{{ logo.grouper }}" alt="" aria-role="presentation" width="32" height="32" loading="lazy" />
+            </li>
         {% endfor %}
     </ul>
 
