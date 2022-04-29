@@ -10,6 +10,7 @@ from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager
 from multiselectfield import MultiSelectField
 
+from geniza.common.fields import NaturalSortField
 from geniza.common.models import TrackChangesModel
 
 
@@ -401,6 +402,7 @@ class Footnote(TrackChangesModel):
         help_text="Location within the source "
         + "(e.g., document number or page range)",
     )
+    location_sort = NaturalSortField(for_field="location")
 
     EDITION = "E"
     TRANSLATION = "T"
@@ -437,7 +439,7 @@ class Footnote(TrackChangesModel):
     objects = FootnoteQuerySet.as_manager()
 
     class Meta:
-        ordering = ["source", "location"]
+        ordering = ["source", "location_sort"]
 
     def __str__(self):
         choices = dict(self.DOCUMENT_RELATION_TYPES)

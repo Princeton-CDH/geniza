@@ -41,7 +41,7 @@
                             {% if source.list|length > 1 or source.list.0.location or source.list.0.url %}
                                 <dd class="relation">
                                     <ul>
-                                        {% for fn in source.list|natsort:"location" %}
+                                        {% for fn in source.list %}
                                             <li class="location">{% include "corpus/snippets/footnote_location.html" %}</li>
                                         {% endfor %}
                                     </ul>

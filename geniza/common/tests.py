@@ -1,15 +1,17 @@
+from doctest import testmod
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
-from django.db import connection
+from django.db import connection, models
 from django.db.migrations.executor import MigrationExecutor
 from django.http import HttpResponseRedirect
 from django.test import TestCase, TransactionTestCase, override_settings
 
 from geniza.common.admin import LocalUserAdmin, custom_empty_field_list_filter
+from geniza.common.fields import NaturalSortField
 from geniza.common.middleware import PublicLocaleMiddleware
 from geniza.common.utils import absolutize_url, custom_tag_string
 
@@ -111,6 +113,32 @@ class TestCustomEmptyFieldListFilter:
         choices = filter.choices(Mock())
         assert choices[1]["display"] == "nope"
         assert choices[2]["display"] == "yep"
+
+
+class TestSortModel(models.Model):
+    name = models.CharField(max_length=10)
+    name_sort = NaturalSortField("name")
+
+    class Meta:
+        managed = False
+
+
+class TestNaturalSortField:
+    def test_init(self):
+        assert TestSortModel._meta.get_field("name_sort").for_field == "name"
+
+    def test_deconstruct(self):
+        # test deconstruct method per django documentation
+        field_instance = TestSortModel._meta.get_field("name_sort")
+        name, path, args, kwargs = field_instance.deconstruct()
+        new_instance = NaturalSortField(*args, **kwargs)
+        assert field_instance.for_field == new_instance.for_field
+
+    def test_presave(self):
+        testmodel = TestSortModel()
+        testmodel.name = "Test12.3"
+        field_instance = TestSortModel._meta.get_field("name_sort")
+        assert field_instance.pre_save(testmodel, None) == "test000012.000003"
 
 
 # migration test case adapted from

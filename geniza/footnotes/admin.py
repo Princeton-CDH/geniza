@@ -53,8 +53,6 @@ class SourceFootnoteInline(TabularInlinePaginated):
         CharField: {"widget": TextInput(attrs={"size": "10"})},
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
-    # sort by location to enable browsing through in order
-    ordering = ("location",)
 
     per_page = 100
 
