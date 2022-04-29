@@ -88,13 +88,8 @@
     }
 }
 
-// for normal operation, load fonts from local url at /static/fonts
+// load fonts from local url at /static/fonts
 @include declare-fonts("/static/fonts");
-
-// For Percy visual review, load fonts from the production site
-@media only percy {
-    @include declare-fonts("https://geniza.princeton.edu/static/fonts");
-}
 
 // Fallback fonts for ayin and hamza
 @font-face {
