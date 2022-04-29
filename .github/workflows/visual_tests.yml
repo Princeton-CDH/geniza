@@ -60,6 +60,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Decrypt encrypted fonts zip
+        run: |
+          gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.GPG_PASSPHRASE }}" --output sitemedia/fonts.zip sitemedia/fonts.zip.gpg
+
+      - name: Unzip decrypted fonts zip
+        run: |
+          unzip -q -o sitemedia/fonts.zip -d sitemedia
+
       - name: Setup node
         uses: actions/setup-node@v2
         with:
@@ -106,7 +114,7 @@ jobs:
         # NOTE: command line core creation does not seem to actually use the configset
 
       - name: Setup local_settings.py
-        run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4()); print('IS_PERCY = True')" >> geniza/settings/local_settings.py
+        run: python -c "import uuid; print('SECRET_KEY = \'%s\'' % uuid.uuid4())" >> geniza/settings/local_settings.py
 
       - name: Run webpack to process scss/js
         run: npm run build
