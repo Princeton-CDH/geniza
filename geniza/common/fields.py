@@ -1,5 +1,5 @@
 from django.db import models
-from natsort import natsort_key
+from natsort import natsort_keygen, ns
 
 
 class NaturalSortField(models.CharField):
@@ -13,6 +13,8 @@ class NaturalSortField(models.CharField):
         kwargs.setdefault("db_index", True)
         kwargs.setdefault("editable", False)
         kwargs.setdefault("max_length", 255)
+        # treat numbers as integers, ignore case, treat +/- as strings
+        self.natsort_key = natsort_keygen(alg=ns.INT | ns.IGNORECASE | ns.UNSIGNED)
         super().__init__(**kwargs)
 
     def deconstruct(self):
@@ -27,7 +29,7 @@ class NaturalSortField(models.CharField):
         return "".join(
             [
                 self.format_val(k)
-                for k in natsort_key(getattr(model_instance, self.for_field))
+                for k in self.natsort_key(getattr(model_instance, self.for_field))
             ]
         )
 

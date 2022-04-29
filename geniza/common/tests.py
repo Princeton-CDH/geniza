@@ -136,7 +136,7 @@ class TestNaturalSortField:
 
     def test_presave(self):
         testmodel = TestSortModel()
-        testmodel.name = "test12.3"
+        testmodel.name = "Test12.3"
         field_instance = TestSortModel._meta.get_field("name_sort")
         assert field_instance.pre_save(testmodel, None) == "test000012.000003"
 
