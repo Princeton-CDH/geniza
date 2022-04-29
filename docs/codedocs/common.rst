@@ -13,6 +13,12 @@ models
 .. automodule:: geniza.common.models
     :members:
 
+fields
+------
+
+.. automodule:: geniza.common.fields
+    :members:
+
 
 middleware
 ----------
