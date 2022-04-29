@@ -73,15 +73,40 @@ Fonts
 
 Fonts are stored in `sitemedia/fonts/`. Since this project uses paid licensed fonts, this directory is ignored by git and not checked into version control.
 
+Instead, licnsed fonts are stored in an AES-256 encrypted `.zip` archive, and this file is checked into the repo. The encryption key is stored as a GitHub Secret, used by Percy (visual regression testing service) and Lighthouse (accessibility testing serivce) to decrypt and use the fonts in GitHub Actions.
+
 To install fonts locally:
 
 - Download `.woff` and `.woff2` files from the shared Google Drive folder "Geniza – woff files only".
 
 - Create the `fonts` subdirectory::
 
+.. code:: bash
+
     cd sitemedia && mkdir fonts
 
 - Move or copy all the `.woff` and `.woff2` files into that subdirectory.
+
+Alternatively, if you have access to a project maintainer who has the decryption passphrase, you can decrypt and unzip the file with GPG (via the `gpg` package on Unix or `GPGTools <https://gpgtools.org/>`_ on MacOS) and `unzip` or your preferred unzipper:
+
+.. code:: bash
+
+    gpg --quiet --batch --yes --decrypt --passphrase="PASSPHRASE" --output fonts.zip fonts.zip.gpg
+    unzip -q -o sitemedia/fonts.zip -d sitemedia
+
+Where `PASSPHRASE` is the correct passphrase.
+
+If you need to add fonts to the bundle, you will need access to the original font files, either by using the above commands to decrypt and unizp the original encrypted file (recommended), or by following the Google Drive steps. Add your new fonts to the `fonts` directory, and then zip and re-encrypt with the following commands:
+
+.. code:: bash
+
+    cd sitemedia
+    rm -rf fonts.zip.gpg    # Remove the original encrypted file
+    zip -r fonts.zip fonts  # Compress the directory into a new zip file
+    gpg --symmetric --cipher-algo AES256 fonts.zip # Generate a new encrypted file
+    rm -rf fonts.zip        # Remove the unencrypted zip
+
+When prompted after entering the `gpg` command, you must use the same passphrase that was previously used to encrypt the file, or store the new passphrase in GitHub Secrets in a variable called `GPG_PASSPHRASE`.
 
 Static Files
 ~~~~~~~~~~~~
