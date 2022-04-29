@@ -10,20 +10,20 @@ Initial setup and installation:
 
 - Install required python dependencies:
 
-    .. code:: bash
-        pip install -r requirements/dev.txt
+.. code:: bash
+    pip install -r requirements/dev.txt
 
 - Recommended: use `Volta <https://volta.sh/>`_ for Node version management
 
 - Install required javascript dependencies:
 
-    .. code:: bash
-        npm install
+.. code:: bash
+    npm install
 
 - Copy sample local settings and configure for your environment:
 
-    .. code:: bash
-        cp geniza/settings/local_settings.py.sample geniza/settings/local_settings.py
+.. code:: bash
+    cp geniza/settings/local_settings.py.sample geniza/settings/local_settings.py
 
 Remember to add a ``SECRET_KEY`` setting!
 
@@ -31,25 +31,24 @@ Remember to add a ``SECRET_KEY`` setting!
 
 - Run database migrations
 
-    .. code:: bash
-
-        python manage.py migrate
+.. code:: bash
+    python manage.py migrate
 
 - Compile microcopy and translated content to make it available for the application:
 
-    .. code:: bash
-        cd geniza && django-admin compilemessages
+.. code:: bash
+    cd geniza && django-admin compilemessages
 
 - Copy Solr configset into your solr server configset directory. For a local install:
 
-    .. code:: bash
-        cp -r solr_conf /path/to/solr/server/solr/configsets/geniza
-        chown solr:solr -R /path/to/solr/server/solr/configsets/geniza
+.. code:: bash
+    cp -r solr_conf /path/to/solr/server/solr/configsets/geniza
+    chown solr:solr -R /path/to/solr/server/solr/configsets/geniza
 
 - Create Solr collection with the configured configset (use `create_core` with Solr standalone and `create_collection` with SolrCloud):
 
-    .. code:: bash
-        curl "http://localhost:8983/solr/admin/cores?action=CREATE&name=geniza&configSet=geniza"
+.. code:: bash
+    curl "http://localhost:8983/solr/admin/cores?action=CREATE&name=geniza&configSet=geniza"
 
 .. note::
     The command line version of core creation looks like ``solr create -c geniza -n geniza``, but in
@@ -57,8 +56,8 @@ Remember to add a ``SECRET_KEY`` setting!
 
 - Index content in Solr:
 
-    .. code:: bash
-        python manage.py index
+.. code:: bash
+    python manage.py index
 
 
 Install pre-commmit hooks
@@ -66,20 +65,20 @@ Install pre-commmit hooks
 
 We use `pre-commit <https://pre-commit.com/>`_ to install and manage commit hooks to ensure that code is consistently formatted. To install, run:
 
-    .. code:: bash
-        pre-commit install
+.. code:: bash
+    pre-commit install
 
 Current hooks include Black for python code formatting, isort for standardized python imports, djhtml for consistent indentation in django templates, and prettier for javascript, css, and other supported file types.
 
 Standardized code styles were instituted after development had begun on this project. Consequently, ``git blame`` may not reflect the true author of a given line. In order to see a more accurate ``git blame`` execute the following command:
 
-    .. code:: bash
-        git blame <FILE> --ignore-revs-file .git-blame-ignore-revs
+.. code:: bash
+    git blame <FILE> --ignore-revs-file .git-blame-ignore-revs
 
 Or configure your git to always ignore the black revision commit:
 
-    .. code:: bash
-        git config blame.ignoreRevsFile .git-blame-ignore-revs
+.. code:: bash
+    git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 Fonts
 ~~~~~
@@ -94,27 +93,27 @@ To install fonts locally:
 
 - Create the ``fonts`` subdirectory::
 
-    .. code:: bash
-        cd sitemedia && mkdir fonts
+.. code:: bash
+    cd sitemedia && mkdir fonts
 
 - Move or copy all the ``.woff`` and ``.woff2`` files into that subdirectory.
 
 Alternatively, if you have access to a project maintainer who has the decryption passphrase, you can decrypt and unzip the file with GPG (via the ``gpg`` package on Unix or `GPGTools <https://gpgtools.org/>`_ on MacOS) and ``unzip`` or your preferred unzipper:
 
-    .. code:: bash
-        gpg --quiet --batch --yes --decrypt --passphrase="PASSPHRASE" --output fonts.zip fonts.zip.gpg
-        unzip -q -o sitemedia/fonts.zip -d sitemedia
+.. code:: bash
+    gpg --quiet --batch --yes --decrypt --passphrase="PASSPHRASE" --output fonts.zip fonts.zip.gpg
+    unzip -q -o sitemedia/fonts.zip -d sitemedia
 
 Where ``PASSPHRASE`` is the correct passphrase.
 
 If you need to add fonts to the bundle, you will need access to the original font files, either by using the above commands to decrypt and unizp the original encrypted file (recommended), or by following the Google Drive steps. Add your new fonts to the `fonts` directory, and then zip and re-encrypt with the following commands:
 
-    .. code:: bash
-        cd sitemedia
-        rm -rf fonts.zip.gpg    # Remove the original encrypted file
-        zip -r fonts.zip fonts  # Compress the directory into a new zip file
-        gpg --symmetric --cipher-algo AES256 fonts.zip # Generate a new encrypted file
-        rm -rf fonts.zip        # Remove the unencrypted zip
+.. code:: bash
+    cd sitemedia
+    rm -rf fonts.zip.gpg    # Remove the original encrypted file
+    zip -r fonts.zip fonts  # Compress the directory into a new zip file
+    gpg --symmetric --cipher-algo AES256 fonts.zip # Generate a new encrypted file
+    rm -rf fonts.zip        # Remove the unencrypted zip
 
 When prompted after entering the ``gpg`` command, you must use the same passphrase that was previously used to encrypt the file, or store the new passphrase in GitHub Secrets in a variable called ``GPG_PASSPHRASE``.
 
