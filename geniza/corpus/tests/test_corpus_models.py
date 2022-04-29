@@ -429,10 +429,10 @@ class TestDocument:
         assert doc2.shelfmark == "%s + %s" % (frag2.shelfmark, frag.shelfmark)
 
     def test_shelfmark_override(self, document):
-        assert document.label == document.shelfmark
+        assert document.shelfmark_display == document.shelfmark
         override = "Foo 1-34"
         document.shelfmark_override = override
-        assert document.label == override
+        assert document.shelfmark_display == override
 
     def test_str(self):
         frag = Fragment.objects.create(shelfmark="Or.1081 2.25")

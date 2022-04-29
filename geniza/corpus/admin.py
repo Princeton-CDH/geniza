@@ -185,7 +185,7 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = (
         "id",
         "needs_review",  # disabled by default with css
-        "label",  #  = combined shelfmark or shelfmark override
+        "shelfmark_display",  #  = combined shelfmark or shelfmark override
         "description",
         "doctype",
         "all_tags",

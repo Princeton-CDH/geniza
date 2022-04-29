@@ -510,7 +510,7 @@ class Document(ModelIndexable):
         # ordering = [Least('textblock__fragment__shelfmark')]
 
     def __str__(self):
-        return f"{self.label or '??'} (PGPID {self.id or '??'})"
+        return f"{self.shelfmark_display or '??'} (PGPID {self.id or '??'})"
 
     @staticmethod
     def get_by_any_pgpid(pgpid):
@@ -534,7 +534,7 @@ class Document(ModelIndexable):
 
     @property
     @admin.display(description="Shelfmark")
-    def label(self):
+    def shelfmark_display(self):
         """Label for this document; by default, based on the combined shelfmarks from all certain
         associated fragments; uses :attr:`shelfmark_override` if set"""
         return self.shelfmark_override or self.shelfmark
@@ -688,7 +688,7 @@ class Document(ModelIndexable):
     @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
-        return f"{self.doctype or _('Unknown type')}: {self.label or '??'}"
+        return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"
 
     def editions(self):
         """All footnotes for this document where the document relation includes
@@ -801,7 +801,7 @@ class Document(ModelIndexable):
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
                 # index shelfmark label as a string (combined shelfmark OR shelfmark override)
-                "shelfmark_s": self.label,
+                "shelfmark_s": self.shelfmark_display,
                 # index individual shelfmarks for search (includes uncertain fragments)
                 "fragment_shelfmark_ss": [f.shelfmark for f in fragments],
                 # library/collection possibly redundant?
