@@ -8,76 +8,65 @@ Initial setup and installation:
 
 - Recommended: create and activate a python 3.8 virtualenv
 
-- Install required python dependencies:
+- Install required python dependencies::
 
-.. code:: bash
     pip install -r requirements/dev.txt
 
 - Recommended: use `Volta <https://volta.sh/>`_ for Node version management
 
-- Install required javascript dependencies:
+- Install required javascript dependencies::
 
-.. code:: bash
     npm install
 
-- Copy sample local settings and configure for your environment:
+- Copy sample local settings and configure for your environment::
 
-.. code:: bash
     cp geniza/settings/local_settings.py.sample geniza/settings/local_settings.py
 
 Remember to add a ``SECRET_KEY`` setting!
 
 - Create a new database and update your database settings accordingly
 
-- Run database migrations
+- Run database migrations::
 
-.. code:: bash
     python manage.py migrate
 
-- Compile microcopy and translated content to make it available for the application:
+- Compile microcopy and translated content to make it available for the application::
 
-.. code:: bash
     cd geniza && django-admin compilemessages
 
 - Copy Solr configset into your solr server configset directory. For a local install:
 
-.. code:: bash
     cp -r solr_conf /path/to/solr/server/solr/configsets/geniza
     chown solr:solr -R /path/to/solr/server/solr/configsets/geniza
 
-- Create Solr collection with the configured configset (use `create_core` with Solr standalone and `create_collection` with SolrCloud):
+- Create Solr collection with the configured configset (use `create_core` with Solr standalone and `create_collection` with SolrCloud)::
 
-.. code:: bash
     curl "http://localhost:8983/solr/admin/cores?action=CREATE&name=geniza&configSet=geniza"
 
 .. note::
     The command line version of core creation looks like ``solr create -c geniza -n geniza``, but in
     current versions of Solr it creates a new core with a *copy* of the configset instead of a *reference*.
 
-- Index content in Solr:
+- Index content in Solr::
 
-.. code:: bash
     python manage.py index
 
 
 Install pre-commmit hooks
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We use `pre-commit <https://pre-commit.com/>`_ to install and manage commit hooks to ensure that code is consistently formatted. To install, run:
+We use `pre-commit <https://pre-commit.com/>`_ to install and manage commit hooks to ensure that code is consistently formatted. To install, run::
 
-.. code:: bash
     pre-commit install
 
 Current hooks include Black for python code formatting, isort for standardized python imports, djhtml for consistent indentation in django templates, and prettier for javascript, css, and other supported file types.
 
-Standardized code styles were instituted after development had begun on this project. Consequently, ``git blame`` may not reflect the true author of a given line. In order to see a more accurate ``git blame`` execute the following command:
+Standardized code styles were instituted after development had begun on this project. Consequently, ``git blame`` may not reflect the true author of a given line. In order to see a more accurate ``git blame`` execute the following command::
 
-.. code:: bash
     git blame <FILE> --ignore-revs-file .git-blame-ignore-revs
 
-Or configure your git to always ignore the black revision commit:
+Or configure your git to always ignore the black revision commit::
 
-.. code:: bash
     git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 Fonts
@@ -93,22 +82,19 @@ To install fonts locally:
 
 - Create the ``fonts`` subdirectory::
 
-.. code:: bash
     cd sitemedia && mkdir fonts
 
 - Move or copy all the ``.woff`` and ``.woff2`` files into that subdirectory.
 
-Alternatively, if you have access to a project maintainer who has the decryption passphrase, you can decrypt and unzip the file with GPG (via the ``gpg`` package on Unix or `GPGTools <https://gpgtools.org/>`_ on MacOS) and ``unzip`` or your preferred unzipper:
+Alternatively, if you have access to a project maintainer who has the decryption passphrase, you can decrypt and unzip the file with GPG (via the ``gpg`` package on Unix or `GPGTools <https://gpgtools.org/>`_ on MacOS) and ``unzip`` or your preferred unzipper::
 
-.. code:: bash
     gpg --quiet --batch --yes --decrypt --passphrase="PASSPHRASE" --output fonts.zip fonts.zip.gpg
     unzip -q -o sitemedia/fonts.zip -d sitemedia
 
 Where ``PASSPHRASE`` is the correct passphrase.
 
-If you need to add fonts to the bundle, you will need access to the original font files, either by using the above commands to decrypt and unizp the original encrypted file (recommended), or by following the Google Drive steps. Add your new fonts to the `fonts` directory, and then zip and re-encrypt with the following commands:
+If you need to add fonts to the bundle, you will need access to the original font files, either by using the above commands to decrypt and unizp the original encrypted file (recommended), or by following the Google Drive steps. Add your new fonts to the `fonts` directory, and then zip and re-encrypt with the following commands::
 
-.. code:: bash
     cd sitemedia
     rm -rf fonts.zip.gpg    # Remove the original encrypted file
     zip -r fonts.zip fonts  # Compress the directory into a new zip file
