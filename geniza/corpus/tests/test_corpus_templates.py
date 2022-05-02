@@ -223,8 +223,8 @@ class TestDocumentDetailTemplate:
 
     def test_languages_none(self, client, document):
         response = client.get(document.get_absolute_url())
-        assertNotContains(response, "Primary Language")
-        assertNotContains(response, "Secondary Language")
+        assertNotContains(response, "Primary language")
+        assertNotContains(response, "Secondary language")
 
     def test_languages_primary(self, client, document):
         judeo_arabic = LanguageScript.objects.create(
@@ -234,17 +234,17 @@ class TestDocumentDetailTemplate:
         document.languages.add(judeo_arabic)
         response = client.get(document.get_absolute_url())
         # should have one primary language
-        assertContains(response, "Primary Language")
+        assertContains(response, "Primary language")
         assertContains(response, str(judeo_arabic))
         # not plural, no secondary language
-        assertNotContains(response, "Primary Languages")
-        assertNotContains(response, "Secondary Language")
+        assertNotContains(response, "Primary languages")
+        assertNotContains(response, "Secondary language")
 
         # add a second language
         arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
         document.languages.add(arabic)
         response = client.get(document.get_absolute_url())
-        assertContains(response, "Primary Languages")
+        assertContains(response, "Primary languages")
         assertContains(response, str(judeo_arabic))
         assertContains(response, str(arabic))
 
@@ -256,17 +256,17 @@ class TestDocumentDetailTemplate:
         document.secondary_languages.add(judeo_arabic)
         response = client.get(document.get_absolute_url())
         # should have one secondary language
-        assertContains(response, "Secondary Language")
+        assertContains(response, "Secondary language")
         assertContains(response, str(judeo_arabic))
         # not plural, no primary language (not likely in real life, but test logic)
-        assertNotContains(response, "Primary Language")
-        assertNotContains(response, "Secondary Languages")
+        assertNotContains(response, "Primary language")
+        assertNotContains(response, "Secondary languages")
 
         # add a second secondary language
         arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
         document.secondary_languages.add(arabic)
         response = client.get(document.get_absolute_url())
-        assertContains(response, "Secondary Languages")
+        assertContains(response, "Secondary languages")
         assertContains(response, str(judeo_arabic))
         assertContains(response, str(arabic))
 
