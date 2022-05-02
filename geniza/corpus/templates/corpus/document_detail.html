@@ -74,7 +74,7 @@
                 {% if document.document_date %}
                     <dt>
                         {# Translators: label for date of this document, if known #}
-                        {% translate "Document Date" %}
+                        {% translate "Document date" %}
                     </dt>
                     <dd>
                         <time{% if document.doc_date_standard %} datetime="{{ document.doc_date_standard }}"{% endif %}>
@@ -86,9 +86,9 @@
                     <dt>
                         {# Translators: Primary language label #}
                         {% blocktranslate count counter=document.languages.count trimmed %}
-                            Primary Language
+                            Primary language
                         {% plural %}
-                            Primary Languages
+                            Primary languages
                         {% endblocktranslate %}
                     </dt>
                     {% for lang in document.languages.all %}
@@ -99,9 +99,9 @@
                     <dt>
                         {# Translators: Secondary language label #}
                         {% blocktranslate count counter=document.secondary_languages.count trimmed %}
-                            Secondary Language
+                            Secondary language
                         {% plural %}
-                            Secondary Languages
+                            Secondary languages
                         {% endblocktranslate %}
                     </dt>
                     {% for lang in document.secondary_languages.all %}
