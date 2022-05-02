@@ -544,7 +544,7 @@ class Document(ModelIndexable):
         """Generate formatted display for the document's original/historical date"""
         # separate with comma if both date and calendar are present, else just return whichever is present
         # TODO: remove conditional once validation is implemented, since one will never be present alone
-        return ", ".join(
+        return " ".join(
             [
                 v
                 for v in [self.doc_date_original, self.get_doc_date_calendar_display()]
