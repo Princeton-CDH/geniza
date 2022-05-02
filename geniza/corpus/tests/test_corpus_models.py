@@ -448,7 +448,7 @@ class TestDocument:
         doc = Document.objects.create(
             doc_date_original="507", doc_date_calendar=Document.CALENDAR_HIJRI
         )
-        assert doc.original_date == "507, Hijrī"
+        assert doc.original_date == "507 Hijrī"
         # with no calendar, just display the date
         doc.doc_date_calendar = ""
         assert doc.original_date == "507"
@@ -463,7 +463,7 @@ class TestDocument:
         assert doc.document_date == doc.original_date
         # should wrap standard date in parentheses and add CE
         doc.doc_date_standard = "1113/14"
-        assert doc.document_date == "507, Hijrī (1113/14 CE)"
+        assert doc.document_date == "507 Hijrī (1113/14 CE)"
         # should return standard date only, no parentheses
         doc.doc_date_original = ""
         doc.doc_date_calendar = ""
