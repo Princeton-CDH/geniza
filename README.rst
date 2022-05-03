@@ -44,6 +44,8 @@ Python 3.8 / Django 3.2 / Node 16 / Postgresql / Solr 8.6
     :target: https://github.com/Princeton-CDH/geniza/actions/workflows/sphinx_docs.yml
     :alt: Sphinx docs build status
 
+Technical documentation is available at https://princeton-cdh.github.io/geniza/
+
 For developer instructions, see DEVNOTES.
 
 License
