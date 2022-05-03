@@ -432,7 +432,9 @@ class Footnote(TrackChangesModel):
         on_delete=models.CASCADE,
         limit_choices_to=models.Q(app_label="corpus"),
     )
-    object_id = GfkLookupField("content_type")
+    object_id = GfkLookupField(
+        "content_type", help_text="If content type is Document, this is PGPID"
+    )
     content_object = GenericForeignKey()
 
     # replace default queryset with customized version
