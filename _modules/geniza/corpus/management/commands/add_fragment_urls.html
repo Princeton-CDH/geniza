@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geniza.corpus.management.commands.add_fragment_urls &#8212; Princeton Geniza Project 4.4.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css" />
+    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for geniza.corpus.management.commands.add_fragment_urls</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.contrib.admin.models</span> <span class="kn">import</span> <span class="n">CHANGE</span><span class="p">,</span> <span class="n">LogEntry</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span> <span class="nn">django.contrib.contenttypes.models</span> <span class="kn">import</span> <span class="n">ContentType</span>
+<span class="kn">from</span> <span class="nn">django.core.management.base</span> <span class="kn">import</span> <span class="n">BaseCommand</span><span class="p">,</span> <span class="n">CommandError</span>
+<span class="kn">from</span> <span class="nn">parasolr.django.signals</span> <span class="kn">import</span> <span class="n">IndexableSignalHandler</span>
+
+<span class="kn">from</span> <span class="nn">geniza.corpus.models</span> <span class="kn">import</span> <span class="n">Fragment</span>
+
+
+<div class="viewcode-block" id="Command"><a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.add_fragment_urls.Command">[docs]</a><span class="k">class</span> <span class="nc">Command</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Takes a CSV of shelfmarks and view URLs and/or IIIF URLs, update</span>
+<span class="sd">    corresponding Fragment records in the database with those URLs.</span>
+<span class="sd">    Expects CSV headers &#39;shelfmark&#39; and one or both of &#39;url&#39; and &#39;iiif_url&#39;&quot;&quot;&quot;</span>
+
+    <span class="n">help</span> <span class="o">=</span> <span class="vm">__doc__</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fragment_contenttype</span> <span class="o">=</span> <span class="n">ContentType</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get_for_model</span><span class="p">(</span><span class="n">Fragment</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">script_user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">SCRIPT_USERNAME</span><span class="p">)</span>
+
+        <span class="c1"># disconnect solr indexing signals</span>
+        <span class="n">IndexableSignalHandler</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Command.add_arguments"><a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.add_fragment_urls.Command.add_arguments">[docs]</a>    <span class="k">def</span> <span class="nf">add_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;--overwrite&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-d&quot;</span><span class="p">,</span> <span class="s2">&quot;--dryrun&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Command.handle"><a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.add_fragment_urls.Command.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">csv_path</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overwrite</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dryrun</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dryrun&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">csv_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">csvreader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">csvreader</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">&quot;shelfmark&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">row</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span>
+                        <span class="s2">&quot;url&quot;</span> <span class="ow">in</span> <span class="n">row</span> <span class="ow">or</span> <span class="s2">&quot;iiif_url&quot;</span> <span class="ow">in</span> <span class="n">row</span>
+                    <span class="p">):</span>
+                        <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span>
+                            <span class="s2">&quot;CSV must include &#39;shelfmark&#39; and one or both of &#39;url&#39; and &#39;iiif_url&#39;&quot;</span>
+                        <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_fragment_urls</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CommandError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;CSV file not found: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">csv_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URLs added: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;url_added&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;URLs updated: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;url_updated&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;IIIF URLs added: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;iiif_added&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;IIIF URLs updated: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;iiif_updated&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fragments not found: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;not_found&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fragments skipped: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;skipped&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Command.view_to_iiif_url"><a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.add_fragment_urls.Command.view_to_iiif_url">[docs]</a>    <span class="k">def</span> <span class="nf">view_to_iiif_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate IIIF Manifest URL based on view url, if it can</span>
+<span class="sd">        be determined automatically&quot;&quot;&quot;</span>
+
+        <span class="c1"># cambridge iiif manifest links use the same id as view links</span>
+        <span class="c1"># NOTE: should exclude search link like this one:</span>
+        <span class="c1"># https://cudl.lib.cam.ac.uk/search?fileID=&amp;keyword=T-s%2013J33.12&amp;page=1&amp;x=0&amp;y=</span>
+        <span class="k">if</span> <span class="s2">&quot;cudl.lib.cam.ac.uk/view/&quot;</span> <span class="ow">in</span> <span class="n">url</span><span class="p">:</span>
+            <span class="n">iiif_link</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;/view/&quot;</span><span class="p">,</span> <span class="s2">&quot;/iiif/&quot;</span><span class="p">)</span>
+            <span class="c1"># view links end with /1 or /2 but iiif link does not include it</span>
+            <span class="n">iiif_link</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;/\d$&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">iiif_link</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">iiif_link</span>
+
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="Command.add_fragment_urls"><a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.add_fragment_urls.Command.add_fragment_urls">[docs]</a>    <span class="k">def</span> <span class="nf">add_fragment_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;add view and iiif urls to fragment and save if a match is found for the shelfmark&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">fragment</span> <span class="o">=</span> <span class="n">Fragment</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">shelfmark</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;shelfmark&quot;</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">Fragment</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;not_found&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">)</span>
+        <span class="n">iiif_url</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;iiif_url&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">view_to_iiif_url</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">])</span>
+        <span class="n">save_needed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">log_message</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># if there is a view url, add or optionally update it</span>
+        <span class="k">if</span> <span class="n">url</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">fragment</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
+                <span class="n">fragment</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;url_added&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">save_needed</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">log_message</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;added URL&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">fragment</span><span class="o">.</span><span class="n">url</span> <span class="o">!=</span> <span class="n">url</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="s2">&quot;Fragment </span><span class="si">%s</span><span class="s2"> url differs: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fragment</span><span class="p">,</span> <span class="n">fragment</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overwrite</span><span class="p">:</span>
+                    <span class="n">fragment</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;url_updated&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">save_needed</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">log_message</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;updated URL&quot;</span><span class="p">)</span>
+
+        <span class="c1"># similar logic for iiif url</span>
+        <span class="k">if</span> <span class="n">iiif_url</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">fragment</span><span class="o">.</span><span class="n">iiif_url</span><span class="p">:</span>
+                <span class="n">fragment</span><span class="o">.</span><span class="n">iiif_url</span> <span class="o">=</span> <span class="n">iiif_url</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;iiif_added&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">save_needed</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">log_message</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;added IIIF URL&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">fragment</span><span class="o">.</span><span class="n">iiif_url</span> <span class="o">!=</span> <span class="n">iiif_url</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="s2">&quot;Fragment </span><span class="si">%s</span><span class="s2"> IIIF url differs: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="n">fragment</span><span class="p">,</span> <span class="n">fragment</span><span class="o">.</span><span class="n">iiif_url</span><span class="p">,</span> <span class="n">iiif_url</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overwrite</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;iiif_updated&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">fragment</span><span class="o">.</span><span class="n">iiif_url</span> <span class="o">=</span> <span class="n">iiif_url</span>
+                    <span class="n">save_needed</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">log_message</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;updated IIIF URL&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">save_needed</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dryrun</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Set </span><span class="si">{</span><span class="n">fragment</span><span class="si">}</span><span class="s2"> url to </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2"> and iiif to </span><span class="si">{</span><span class="n">iiif_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fragment</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_change</span><span class="p">(</span><span class="n">fragment</span><span class="p">,</span> <span class="s2">&quot; and &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_message</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;skipped&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="Command.log_change"><a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.add_fragment_urls.Command.log_change">[docs]</a>    <span class="k">def</span> <span class="nf">log_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fragment</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;create a log entry so there is a record of adding/updating urls&quot;&quot;&quot;</span>
+        <span class="n">LogEntry</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">log_action</span><span class="p">(</span>
+            <span class="n">user_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">script_user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">content_type_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fragment_contenttype</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+            <span class="n">object_id</span><span class="o">=</span><span class="n">fragment</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+            <span class="n">object_repr</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">fragment</span><span class="p">),</span>
+            <span class="n">change_message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+            <span class="n">action_flag</span><span class="o">=</span><span class="n">CHANGE</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">Princeton Geniza Project</a></h1>
+
+
+
+<p class="blurb">Django web application and other code for Princeton Geniza Project v4.x</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=Princeton-CDH&repo=geniza&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://codecov.io/github/Princeton-CDH/geniza">
+    <img
+    alt="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    src="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    />
+</a>
+</p>
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../codedocs/index.html">Code Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../devnotes.html">Developer Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../changelog.html">Change Log</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script><div class="powered_by">
+    <p>Powered by:</p>
+    <a href="http://cdh.princeton.edu/">
+        <img src="https://cdh.princeton.edu/static/img/CDH_logo.svg"
+            alt="Center for Digital Humanities @ Princeton" />
+    </a>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Center for Digital Humanities @ Princeton.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

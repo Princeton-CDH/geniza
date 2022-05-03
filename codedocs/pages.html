@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Wagtail pages &#8212; Princeton Geniza Project 4.4.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Developer Instructions" href="../devnotes.html" />
+    <link rel="prev" title="Common functionality" href="common.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="wagtail-pages">
+<h1>Wagtail pages<a class="headerlink" href="#wagtail-pages" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<span class="target" id="module-geniza.pages"></span><section id="module-geniza.pages.models">
+<span id="models"></span><h2>models<a class="headerlink" href="#module-geniza.pages.models" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.pages.models.BodyContentBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.pages.models.</span></span><span class="sig-name descname"><span class="pre">BodyContentBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/models.html#BodyContentBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.models.BodyContentBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Common set of content blocks for content pages.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.pages.models.CaptionedImageBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.pages.models.</span></span><span class="sig-name descname"><span class="pre">CaptionedImageBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/models.html#CaptionedImageBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.models.CaptionedImageBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">StructBlock</span></code> for an image with
+alternative text and optional formatted caption, so
+that both caption and alternative text can be context-specific.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.pages.models.ContainerPage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.pages.models.</span></span><span class="sig-name descname"><span class="pre">ContainerPage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/models.html#ContainerPage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.models.ContainerPage" title="Permalink to this definition">¶</a></dt>
+<dd><p>An empty <code class="xref py py-class docutils literal notranslate"><span class="pre">Page</span></code> type that has <a class="reference internal" href="#geniza.pages.models.ContentPage" title="geniza.pages.models.ContentPage"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentPage</span></code></a> instances
+as its subpages.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.pages.models.ContainerPage.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#geniza.pages.models.ContainerPage.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.pages.models.ContainerPage.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.pages.models.ContainerPage.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.pages.models.ContainerPage.serve">
+<span class="sig-name descname"><span class="pre">serve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/models.html#ContainerPage.serve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.models.ContainerPage.serve" title="Permalink to this definition">¶</a></dt>
+<dd><p>override serve method to redirect to parent page instead of rendering</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.pages.models.ContentPage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.pages.models.</span></span><span class="sig-name descname"><span class="pre">ContentPage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/models.html#ContentPage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.models.ContentPage" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simple <code class="xref py py-class docutils literal notranslate"><span class="pre">Page</span></code> type for content pages.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.pages.models.ContentPage.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#geniza.pages.models.ContentPage.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.pages.models.ContentPage.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.pages.models.ContentPage.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.pages.models.ContentPage.get_context">
+<span class="sig-name descname"><span class="pre">get_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/models.html#ContentPage.get_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.models.ContentPage.get_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>add page type to context</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.pages.models.HomePage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.pages.models.</span></span><span class="sig-name descname"><span class="pre">HomePage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/models.html#HomePage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.models.HomePage" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">wagtail.core.models.Page</span></code> model for Geniza home page.</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.pages.models.HomePage.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#geniza.pages.models.HomePage.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.pages.models.HomePage.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.pages.models.HomePage.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.pages.models.HomePage.get_context">
+<span class="sig-name descname"><span class="pre">get_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/models.html#HomePage.get_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.models.HomePage.get_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>add page type to context</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.pages.models.SVGImageBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.pages.models.</span></span><span class="sig-name descname"><span class="pre">SVGImageBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/models.html#SVGImageBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.models.SVGImageBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">StructBlock</span></code> for an SVG image with
+alternative text and optional formatted caption. Separate from
+<a class="reference internal" href="#geniza.pages.models.CaptionedImageBlock" title="geniza.pages.models.CaptionedImageBlock"><code class="xref py py-class docutils literal notranslate"><span class="pre">CaptionedImageBlock</span></code></a> because Wagtail image handling
+does not work with SVG.</p>
+</dd></dl>
+
+</section>
+<section id="module-geniza.pages.management.commands.bootstrap_content">
+<span id="manage-commands"></span><h2>manage commands<a class="headerlink" href="#module-geniza.pages.management.commands.bootstrap_content" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.pages.management.commands.bootstrap_content.Command">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.pages.management.commands.bootstrap_content.</span></span><span class="sig-name descname"><span class="pre">Command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stdout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/management/commands/bootstrap_content.html#Command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.management.commands.bootstrap_content.Command" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="geniza.pages.management.commands.bootstrap_content.Command.add_arguments">
+<span class="sig-name descname"><span class="pre">add_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/management/commands/bootstrap_content.html#Command.add_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.management.commands.bootstrap_content.Command.add_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entry point for subclassed commands to add custom arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.pages.management.commands.bootstrap_content.Command.generate_test_content_page">
+<span class="sig-name descname"><span class="pre">generate_test_content_page</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/management/commands/bootstrap_content.html#Command.generate_test_content_page"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.management.commands.bootstrap_content.Command.generate_test_content_page" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a test content page from fixture</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.pages.management.commands.bootstrap_content.Command.handle">
+<span class="sig-name descname"><span class="pre">handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/pages/management/commands/bootstrap_content.html#Command.handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.pages.management.commands.bootstrap_content.Command.handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bootstrap content for Geniza public project site.
+NOTE: Not idempotent. Will recreate pages if they already exist.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Princeton Geniza Project</a></h1>
+
+
+
+<p class="blurb">Django web application and other code for Princeton Geniza Project v4.x</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=Princeton-CDH&repo=geniza&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://codecov.io/github/Princeton-CDH/geniza">
+    <img
+    alt="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    src="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    />
+</a>
+</p>
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Code Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../devnotes.html">Developer Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+</ul>
+
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Wagtail pages</a><ul>
+<li><a class="reference internal" href="#module-geniza.pages.models">models</a></li>
+<li><a class="reference internal" href="#module-geniza.pages.management.commands.bootstrap_content">manage commands</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script><div class="powered_by">
+    <p>Powered by:</p>
+    <a href="http://cdh.princeton.edu/">
+        <img src="https://cdh.princeton.edu/static/img/CDH_logo.svg"
+            alt="Center for Digital Humanities @ Princeton" />
+    </a>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Center for Digital Humanities @ Princeton.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/codedocs/pages.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

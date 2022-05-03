@@ -1,0 +1,236 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Common functionality &#8212; Princeton Geniza Project 4.4.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Wagtail pages" href="pages.html" />
+    <link rel="prev" title="Scholarship Records" href="footnotes.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="common-functionality">
+<h1>Common functionality<a class="headerlink" href="#common-functionality" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<span class="target" id="module-geniza.common"></span><section id="module-geniza.common.models">
+<span id="models"></span><h2>models<a class="headerlink" href="#module-geniza.common.models" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.common.models.TrackChangesModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.models.</span></span><span class="sig-name descname"><span class="pre">TrackChangesModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#TrackChangesModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.TrackChangesModel" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code> mixin that keeps a copy of initial
+data in order to check if fields have been changed. Change detection
+only works on the current instance of an object.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.common.models.TrackChangesModel.has_changed">
+<span class="sig-name descname"><span class="pre">has_changed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#TrackChangesModel.has_changed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.TrackChangesModel.has_changed" title="Permalink to this definition">¶</a></dt>
+<dd><p>check if a field has been changed</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.common.models.TrackChangesModel.initial_value">
+<span class="sig-name descname"><span class="pre">initial_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#TrackChangesModel.initial_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.TrackChangesModel.initial_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the initial value for a field</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.common.models.TrackChangesModel.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#TrackChangesModel.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.TrackChangesModel.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves data and reset copy of initial data.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-geniza.common.fields">
+<span id="fields"></span><h2>fields<a class="headerlink" href="#module-geniza.common.fields" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.common.fields.NaturalSortField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">NaturalSortField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">for_field</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#NaturalSortField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.NaturalSortField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Natural sort field for Django models.  Takes a field name, and uses
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">natsort</span></code> to generate a natural sort value based on the value of that field.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.common.fields.NaturalSortField.deconstruct">
+<span class="sig-name descname"><span class="pre">deconstruct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#NaturalSortField.deconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.NaturalSortField.deconstruct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return enough information to recreate the field as a 4-tuple:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The name of the field on the model, if contribute_to_class() has
+been run.</p></li>
+<li><p>The import path of the field, including the class:e.g.
+django.db.models.IntegerField This should be the most portable
+version, so less specific may be better.</p></li>
+<li><p>A list of positional arguments.</p></li>
+<li><p>A dict of keyword arguments.</p></li>
+</ul>
+</div></blockquote>
+<p>Note that the positional or keyword arguments must contain values of
+the following types (including inner values of collection types):</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>None, bool, str, int, float, complex, set, frozenset, list, tuple,
+dict</p></li>
+<li><p>UUID</p></li>
+<li><p>datetime.datetime (naive), datetime.date</p></li>
+<li><p>top-level classes, top-level functions - will be referenced by their
+full import path</p></li>
+<li><p>Storage instances - these have their own deconstruct() method</p></li>
+</ul>
+</div></blockquote>
+<p>This is because the values here must be serialized into a text format
+(possibly new Python code, possibly JSON) and these are the only types
+with encoding handlers defined.</p>
+<p>There’s no need to return the exact way the field was instantiated this
+time, just ensure that the resulting field is the same - prefer keyword
+arguments over positional ones, and omit parameters with their default
+values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.common.fields.NaturalSortField.format_val">
+<span class="sig-name descname"><span class="pre">format_val</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#NaturalSortField.format_val"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.NaturalSortField.format_val" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format values that can occur in a natural sort key tuple.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.common.fields.NaturalSortField.pre_save">
+<span class="sig-name descname"><span class="pre">pre_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#NaturalSortField.pre_save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.NaturalSortField.pre_save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the value of the field from <cite>for_field</cite> value before it is saved. Generates a string
+based on the output of <code class="xref py py-meth docutils literal notranslate"><span class="pre">natsort.natsort_key()</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-geniza.common.middleware">
+<span id="middleware"></span><h2>middleware<a class="headerlink" href="#module-geniza.common.middleware" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.common.middleware.PublicLocaleMiddleware">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.middleware.</span></span><span class="sig-name descname"><span class="pre">PublicLocaleMiddleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">get_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/middleware.html#PublicLocaleMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.middleware.PublicLocaleMiddleware" title="Permalink to this definition">¶</a></dt>
+<dd><p>Middleware to redirect anonymous users attempting to access locales that are not in
+the list of public site languages.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Princeton Geniza Project</a></h1>
+
+
+
+<p class="blurb">Django web application and other code for Princeton Geniza Project v4.x</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=Princeton-CDH&repo=geniza&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://codecov.io/github/Princeton-CDH/geniza">
+    <img
+    alt="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    src="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    />
+</a>
+</p>
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../architecture.html">Architecture</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Code Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../devnotes.html">Developer Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+</ul>
+
+
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Common functionality</a><ul>
+<li><a class="reference internal" href="#module-geniza.common.models">models</a></li>
+<li><a class="reference internal" href="#module-geniza.common.fields">fields</a></li>
+<li><a class="reference internal" href="#module-geniza.common.middleware">middleware</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script><div class="powered_by">
+    <p>Powered by:</p>
+    <a href="http://cdh.princeton.edu/">
+        <img src="https://cdh.princeton.edu/static/img/CDH_logo.svg"
+            alt="Center for Digital Humanities @ Princeton" />
+    </a>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Center for Digital Humanities @ Princeton.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/codedocs/common.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

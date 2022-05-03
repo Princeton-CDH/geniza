@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>geniza.corpus.management.commands.generate_fixtures &#8212; Princeton Geniza Project 4.4.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css" />
+    <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+    <script src="../../../../../_static/jquery.js"></script>
+    <script src="../../../../../_static/underscore.js"></script>
+    <script src="../../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for geniza.corpus.management.commands.generate_fixtures</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">remove</span>
+
+<span class="kn">from</span> <span class="nn">django.core.management</span> <span class="kn">import</span> <span class="n">call_command</span>
+<span class="kn">from</span> <span class="nn">django.core.management.base</span> <span class="kn">import</span> <span class="n">BaseCommand</span>
+
+
+<div class="viewcode-block" id="Command"><a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.generate_fixtures.Command">[docs]</a><span class="k">class</span> <span class="nc">Command</span><span class="p">(</span><span class="n">BaseCommand</span><span class="p">):</span>
+<div class="viewcode-block" id="Command.add_arguments"><a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.generate_fixtures.Command.add_arguments">[docs]</a>    <span class="k">def</span> <span class="nf">add_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">):</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;pgpid&quot;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Command.handle"><a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.generate_fixtures.Command.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Export fixtures from the database, given a list of PGPIDs.</span>
+
+<span class="sd">        Example usage with PGPIDs 1, 20, and 1234: python manage.py generate_fixtures 1 20 1234&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;pgpid&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;PGPID list argument is required&quot;</span><span class="p">)</span>
+
+        <span class="n">pgpids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;pgpid&quot;</span><span class="p">]]</span>
+
+        <span class="n">fixtures</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;geniza/corpus/fixtures/documents.json&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;geniza/corpus/fixtures/authorships.json&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;geniza/corpus/fixtures/manifests.json&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;geniza/corpus/fixtures/document_dependents.json&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Dump documents</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fixtures</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f0</span><span class="p">:</span>
+            <span class="n">call_command</span><span class="p">(</span>
+                <span class="s2">&quot;dump_object&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;corpus.document&quot;</span><span class="p">,</span>
+                <span class="n">kitchensink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">natural</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">query</span><span class="o">=</span><span class="s1">&#39;{&quot;pk__in&quot;: </span><span class="si">%s</span><span class="s1">}&#39;</span> <span class="o">%</span> <span class="n">pgpids</span><span class="p">,</span>
+                <span class="n">stdout</span><span class="o">=</span><span class="n">f0</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Dump authorships</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fixtures</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f1</span><span class="p">:</span>
+            <span class="n">call_command</span><span class="p">(</span>
+                <span class="s2">&quot;dump_object&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;footnotes.authorship&quot;</span><span class="p">,</span>
+                <span class="n">kitchensink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">natural</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">query</span><span class="o">=</span><span class="s1">&#39;{&quot;source__footnote__object_id__in&quot;: </span><span class="si">%s</span><span class="s1">}&#39;</span> <span class="o">%</span> <span class="n">pgpids</span><span class="p">,</span>
+                <span class="n">stdout</span><span class="o">=</span><span class="n">f1</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Dump authorships</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fixtures</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f2</span><span class="p">:</span>
+            <span class="n">call_command</span><span class="p">(</span>
+                <span class="s2">&quot;dump_object&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;djiffy.manifest&quot;</span><span class="p">,</span>
+                <span class="n">kitchensink</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">natural</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">query</span><span class="o">=</span><span class="s1">&#39;{&quot;fragment__textblock__document__pk__in&quot;: </span><span class="si">%s</span><span class="s1">}&#39;</span> <span class="o">%</span> <span class="n">pgpids</span><span class="p">,</span>
+                <span class="n">stdout</span><span class="o">=</span><span class="n">f2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># This stdout rerouting is needed with custom_dump and merge_fixtures, but</span>
+        <span class="c1"># the others work with call_command&#39;s stdout kwarg</span>
+
+        <span class="c1"># Dump document related objects</span>
+        <span class="n">sysout</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fixtures</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f3</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">f3</span>
+            <span class="n">call_command</span><span class="p">(</span><span class="s2">&quot;custom_dump&quot;</span><span class="p">,</span> <span class="s2">&quot;document&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">pgpids</span><span class="p">,</span> <span class="n">natural</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Merge all dumped fixtures</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;geniza/corpus/fixtures/ui_ux_test_documents.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">merged</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">merged</span>
+            <span class="n">call_command</span><span class="p">(</span><span class="s2">&quot;merge_fixtures&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">fixtures</span><span class="p">)</span>
+
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">sysout</span>
+
+        <span class="c1"># Clean up unmerged fixtures</span>
+        <span class="k">for</span> <span class="n">unmerged</span> <span class="ow">in</span> <span class="n">fixtures</span><span class="p">:</span>
+            <span class="n">remove</span><span class="p">(</span><span class="n">unmerged</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">Princeton Geniza Project</a></h1>
+
+
+
+<p class="blurb">Django web application and other code for Princeton Geniza Project v4.x</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=Princeton-CDH&repo=geniza&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://codecov.io/github/Princeton-CDH/geniza">
+    <img
+    alt="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    src="https://codecov.io/github/Princeton-CDH/geniza/coverage.svg?branch=master"
+    />
+</a>
+</p>
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../codedocs/index.html">Code Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../devnotes.html">Developer Instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../changelog.html">Change Log</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script><div class="powered_by">
+    <p>Powered by:</p>
+    <a href="http://cdh.princeton.edu/">
+        <img src="https://cdh.princeton.edu/static/img/CDH_logo.svg"
+            alt="Center for Digital Humanities @ Princeton" />
+    </a>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Center for Digital Humanities @ Princeton.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
