@@ -15,6 +15,15 @@
         vertical-align: middle;
     }
 }
+// RTL version of icon mixin
+@mixin icon-and-text-rtl {
+    a::after,
+    span::after {
+        @include typography.icon-button-md;
+        margin: 0 0 0 0.2rem;
+        vertical-align: middle;
+    }
+}
 
 footer {
     * {
@@ -52,7 +61,7 @@ footer {
                 }
             }
             li {
-                margin-bottom: 0.5rem;
+                margin-bottom: spacing.$spacing-xs;
             }
             li.has-submenu {
                 grid-row-end: span 20; // Hack to get tight grid
@@ -67,14 +76,14 @@ footer {
         }
         // footer site navigation (desktop)
         @include breakpoints.for-tablet-landscape-up {
-            margin: 0 0 spacing.$spacing-md spacing.$spacing-3xl;
+            margin: 0 0 0 spacing.$spacing-3xl;
         }
     }
 
     // footer links to PGL, CDH
     ul#footer-links {
         & > li {
-            margin-top: 1.5rem;
+            margin-top: spacing.$spacing-lg;
         }
         svg {
             fill: var(--logo);
@@ -89,16 +98,21 @@ footer {
         }
 
         // social links
-        ul.social li {
-            @include icon-and-text;
-            a.twitter::before {
-                content: "\f341"; // phosphor twitter-logo icon
-            }
-            a.instagram::before {
-                content: "\f1e1"; // phosphor instagram-logo icon
+        ul.social {
+            li {
+                @include icon-and-text;
+                a.twitter::before {
+                    content: "\f341"; // phosphor twitter-logo icon
+                }
+                a.instagram::before {
+                    content: "\f1e1"; // phosphor instagram-logo icon
+                }
+                @include breakpoints.for-tablet-landscape-up {
+                    text-align: right;
+                }
             }
             @include breakpoints.for-tablet-landscape-up {
-                text-align: right;
+                margin: spacing.$spacing-lg 0 spacing.$spacing-xs;
             }
         }
         // footer links (desktop)
@@ -122,7 +136,7 @@ footer {
         margin: spacing.$spacing-md spacing.$spacing-xs;
         border-top: 1px solid var(--on-background);
         @include breakpoints.for-tablet-landscape-up {
-            margin: 0 spacing.$spacing-md;
+            margin: spacing.$spacing-md spacing.$spacing-md 0;
             padding-top: 0;
             grid-area: legal;
             display: flex;
@@ -196,9 +210,86 @@ footer {
 
         // Princeton logo
         svg#princeton-logo {
+            margin-top: 5px;
             fill: var(--logo);
             width: 185px;
             height: 63px;
+        }
+    }
+}
+
+// tweaks for RTL footer for hebrew, arabic
+html[dir="rtl"] footer {
+    // reverse alignment and margins in footer nav
+    nav#footer-nav {
+        ul {
+            li {
+                text-align: right;
+            }
+            li.has-submenu ul li.menu-item {
+                margin-left: 0;
+                margin-right: 1rem;
+            }
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            margin: 0 spacing.$spacing-3xl 0 0;
+        }
+    }
+    // reverse icons, alignment, and margin in external links
+    ul#footer-links {
+        ul.social {
+            li {
+                @include icon-and-text-rtl;
+                a.twitter::before,
+                a.instagram::before {
+                    content: none;
+                }
+                a.twitter::after {
+                    content: "\f341"; // phosphor twitter-logo icon
+                }
+                a.instagram::after {
+                    content: "\f1e1"; // phosphor instagram-logo icon
+                }
+                @include breakpoints.for-tablet-landscape-up {
+                    text-align: left;
+                }
+            }
+            @include breakpoints.for-tablet-landscape-up {
+            }
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            justify-content: flex-end;
+            margin: 0 0 0 spacing.$spacing-3xl;
+        }
+    }
+    // reverse icon, padding, margin, and alignment in legal section
+    ul#legal {
+        li#copyright {
+            @include icon-and-text-rtl;
+            span::before {
+                content: none;
+            }
+            span::after {
+                content: "\f115"; // phosphor copyright icon
+            }
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            li {
+                &:first-child {
+                    text-align: right;
+                    padding-left: 0;
+                    padding-right: spacing.$spacing-3xl;
+                    margin-left: 0;
+                    margin-right: -#{spacing.$spacing-md};
+                }
+                &:last-child {
+                    text-align: left;
+                    padding-right: 0;
+                    padding-left: spacing.$spacing-3xl;
+                    margin-right: 0;
+                    margin-left: -#{spacing.$spacing-md};
+                }
+            }
         }
     }
 }
@@ -231,37 +322,74 @@ footer {
 
 // Footer backgrounds for light and dark mode, desktop
 @mixin footer-background-desktop-dark {
-    background: url("/static/img/ui/desktop/dark/all/footer-gradient.svg") top
+    background: url("/static/img/ui/desktop/dark/ltr/footer-gradient.svg") top
             right,
-        url("/static/img/ui/desktop/dark/all/footer-image.png") top right,
-        url("/static/img/ui/desktop/dark/all/footer-base.svg") top right;
+        url("/static/img/ui/desktop/dark/ltr/footer-image.png") top right,
+        url("/static/img/ui/desktop/dark/ltr/footer-base.svg") top right;
     background-repeat: no-repeat, no-repeat, no-repeat;
     &:before {
         @include before-footer-desktop;
         background: url("/static/img/ui/desktop/dark/all/footer-filler.svg")
             repeat-x;
         right: 1980px;
+        bottom: 0;
+    }
+}
+@mixin footer-background-desktop-dark-rtl {
+    background: url("/static/img/ui/desktop/dark/rtl/footer-gradient.svg") top
+            left,
+        url("/static/img/ui/desktop/dark/rtl/footer-image.png") top left,
+        url("/static/img/ui/desktop/dark/rtl/footer-base.svg") top left;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    &:before {
+        @include before-footer-desktop;
+        background: url("/static/img/ui/desktop/dark/all/footer-filler.svg")
+            repeat-x;
+        right: 0;
+        left: 1960px;
+        bottom: -6px;
     }
 }
 @mixin footer-background-desktop-light {
-    background: url("/static/img/ui/desktop/light/all/footer-gradient.svg") top
+    background: url("/static/img/ui/desktop/light/ltr/footer-gradient.svg") top
             right,
-        url("/static/img/ui/desktop/light/all/footer-image.png") top right,
-        url("/static/img/ui/desktop/light/all/footer-base.svg") top right;
+        url("/static/img/ui/desktop/light/ltr/footer-image.png") top right,
+        url("/static/img/ui/desktop/light/ltr/footer-base.svg") top right;
     background-repeat: no-repeat, no-repeat, no-repeat;
     &:before {
         @include before-footer-desktop;
         background: url("/static/img/ui/desktop/light/all/footer-filler.svg")
             repeat-x;
         right: 1900px;
+        bottom: 0;
     }
 }
-
+@mixin footer-background-desktop-light-rtl {
+    background: url("/static/img/ui/desktop/light/rtl/footer-gradient.svg") top
+            left,
+        url("/static/img/ui/desktop/light/rtl/footer-image.png") top left,
+        url("/static/img/ui/desktop/light/rtl/footer-base.svg") top left;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    &:before {
+        @include before-footer-desktop;
+        background: url("/static/img/ui/desktop/light/all/footer-filler.svg")
+            repeat-x;
+        right: 0;
+        left: 1970px;
+        bottom: 1px;
+    }
+}
 // Nav theme overrides for light mode
 @mixin light-footer {
     @include footer-background-mobile-light;
     @include breakpoints.for-tablet-landscape-up {
         @include footer-background-desktop-light;
+    }
+}
+@mixin light-footer-rtl {
+    @include footer-background-mobile-light;
+    @include breakpoints.for-tablet-landscape-up {
+        @include footer-background-desktop-light-rtl;
     }
 }
 // Nav theme overrides for dark mode
@@ -271,11 +399,23 @@ footer {
         @include footer-background-desktop-dark;
     }
 }
+@mixin dark-footer-rtl {
+    @include footer-background-mobile-dark;
+    @include breakpoints.for-tablet-landscape-up {
+        @include footer-background-desktop-dark-rtl;
+    }
+}
 // Applying background image and gradient per system theme
 footer {
     @include light-footer;
     @media (prefers-color-scheme: dark) {
         @include dark-footer;
+    }
+}
+html[dir="rtl"] footer {
+    @include light-footer-rtl;
+    @media (prefers-color-scheme: dark) {
+        @include dark-footer-rtl;
     }
 }
 
@@ -285,4 +425,11 @@ html.light-mode footer {
 }
 html.dark-mode footer {
     @include dark-footer;
+}
+
+html[dir="rtl"].light-mode footer {
+    @include light-footer-rtl;
+}
+html[dir="rtl"].dark-mode footer {
+    @include dark-footer-rtl;
 }

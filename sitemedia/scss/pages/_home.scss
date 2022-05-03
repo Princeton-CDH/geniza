@@ -9,15 +9,15 @@
 main.homepage {
     // Header text with background
     h1 {
-        color: var(--link-primary);
+        color: transparent;
         z-index: 1;
         margin-top: -5.5rem;
-        padding: 100px spacing.$spacing-3xl 60px;
+        padding: 100px spacing.$spacing-3xl 130px;
         max-width: 100%;
         width: 100%;
         text-align: center;
         @include breakpoints.for-tablet-landscape-up {
-            margin-top: -8rem;
+            margin-top: -6rem;
             padding: 285px 0 180px;
         }
     }
@@ -28,16 +28,16 @@ main.homepage {
 
 // Homepage background, light mode, mobile
 @mixin light-home {
-    background: linear-gradient(
+    background: url("/static/img/ui/mobile/light/all/banner-pgp-text.svg") 70%
+            33% no-repeat,
+        linear-gradient(
             to top,
             rgba(255, 255, 255, 1),
+            rgba(255, 255, 255, 1) 17px,
+            rgba(255, 255, 255, 0.17) 66%,
             rgba(255, 255, 255, 0)
         ),
-        url("/static/img/ui/mobile/light/all/homepage-center.png") center 65px
-            no-repeat,
-        url("/static/img/ui/mobile/light/all/homepage-left.png") left 65px
-            no-repeat,
-        url("/static/img/ui/mobile/light/all/homepage-right.png") right 65px
+        url("/static/img/ui/mobile/light/all/banner-fragment.svg") 70% 0px
             no-repeat,
         linear-gradient(
             180deg,
@@ -45,43 +45,41 @@ main.homepage {
             rgba(86, 120, 86, 0.112) 51.9%,
             rgba(86, 120, 86, 0) 100%
         );
-    background-blend-mode: normal, darken, darken, darken, normal;
 
     // Homepage background, light mode, desktop
     @include breakpoints.for-tablet-landscape-up {
-        background: linear-gradient(
+        background: url("/static/img/ui/desktop/light/all/banner-pgp-text-left.svg")
+                52% 39% no-repeat,
+            linear-gradient(
                 to top,
-                rgba(255, 255, 255, 1),
-                rgba(255, 255, 255, 0)
+                rgba(255, 255, 255, 1) 0%,
+                rgba(255, 255, 255, 0.41) 35.28%,
+                rgba(255, 255, 255, 0) 100%
             ),
-            url("/static/img/ui/desktop/light/all/homepage-center.png") bottom -17px
-                center no-repeat,
-            url("/static/img/ui/desktop/light/all/homepage-left.png") bottom -17px
-                left no-repeat,
-            url("/static/img/ui/desktop/light/all/homepage-right.png") bottom -17px
-                right no-repeat,
+            url("/static/img/ui/desktop/light/all/banner-pgp-text-right.svg")
+                52% 39% no-repeat,
+            url("/static/img/ui/desktop/light/all/banner-fragment.svg") 52% 90%
+                no-repeat,
             linear-gradient(
                 180deg,
                 rgba(86, 120, 86, 0.2) 0%,
                 rgba(86, 120, 86, 0.112) 51.9%,
                 rgba(86, 120, 86, 0) 100%
             );
-        background-blend-mode: normal;
     }
 }
 
 // Homepage background, dark mode, mobile
 @mixin dark-home {
-    background: linear-gradient(
+    background: url("/static/img/ui/mobile/dark/all/banner-pgp-text.svg") 70%
+            33% no-repeat,
+        linear-gradient(
             to top,
             rgba(22, 22, 22, 1),
-            rgba(22, 22, 22, 0)
+            rgba(22, 22, 22, 0.41) 35.28%,
+            rgba(22, 22, 22, 0) 100%
         ),
-        url("/static/img/ui/mobile/dark/all/homepage-center.png") center 65px
-            no-repeat,
-        url("/static/img/ui/mobile/dark/all/homepage-left.png") left 65px
-            no-repeat,
-        url("/static/img/ui/mobile/dark/all/homepage-right.png") right 65px
+        url("/static/img/ui/mobile/dark/all/banner-fragment.svg") 70% 0px
             no-repeat,
         linear-gradient(
             180deg,
@@ -92,21 +90,22 @@ main.homepage {
 
     // Homepage background, dark mode, desktop
     @include breakpoints.for-tablet-landscape-up {
-        background: linear-gradient(
+        background: url("/static/img/ui/desktop/dark/all/banner-pgp-text-left.svg")
+                52% 39% no-repeat,
+            linear-gradient(
                 to top,
-                rgba(22, 22, 22, 1),
-                rgba(22, 22, 22, 0)
+                rgba(22, 22, 22, 1) 0%,
+                rgba(22, 22, 22, 0.12) 30.95%,
+                rgba(22, 22, 22, 0) 100%
             ),
-            url("/static/img/ui/desktop/dark/all/homepage-center.png") bottom -17px
-                center no-repeat,
-            url("/static/img/ui/desktop/dark/all/homepage-left.png") bottom -17px
-                left no-repeat,
-            url("/static/img/ui/desktop/dark/all/homepage-right.png") bottom -17px
-                right no-repeat,
+            url("/static/img/ui/desktop/dark/all/banner-pgp-text-right.svg") 52%
+                39% no-repeat,
+            url("/static/img/ui/desktop/dark/all/banner-fragment.svg") 52% 90%
+                no-repeat,
             linear-gradient(
                 180deg,
                 rgba(195, 127, 151, 0.2) 0%,
-                rgba(195, 127, 151, 0.112) 51.9%,
+                rgba(195, 127, 151, 0.2) 74.18%,
                 rgba(195, 127, 151, 0) 100%
             );
     }

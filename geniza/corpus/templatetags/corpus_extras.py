@@ -2,14 +2,13 @@ import json
 import re
 
 from django import template
-from django.core.exceptions import ObjectDoesNotExist
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from natsort import natsorted
 from piffle.iiif import IIIFImageClientException
 
 from geniza.common.utils import absolutize_url
-from geniza.corpus.models import Document
 
 register = template.Library()
 
@@ -41,6 +40,7 @@ def querystring_replace(context, **kwargs):
     """Template tag to simplify retaining querystring parameters
     when paging through search results with active filters.
     Example use::
+
         <a href="?{% querystring_replace page=paginator.next_page_number %}">
     """
     # borrowed as-is from derrida codebase
@@ -58,22 +58,11 @@ def querystring_replace(context, **kwargs):
 
 
 @register.filter
-def natsort(sortable, key=None):
-    """Template filter to sort a list naturally, with an optional key to sort on.
-    Natural sort will sort strings like ["1", "2", "3", "10"] rather than ["1", "10", "2", "3"].
-    Example use::
-        {% for fn in document.footnotes.all|natsort:"location" %}
-            {{ fn.location }}
-        {% endfor %}
-    """
-    return natsorted(sortable, key=lambda i: getattr(i, key) if key else None)
-
-
-@register.filter
 def iiif_image(img, args):
     """Add options to resize or otherwise change the display of an iiif
     image; expects an instance of :class:`piffle.iiif.IIIFImageClient`.
     Provide the method and arguments as filter string, i.e.::
+
         {{ myimg|iiif_image:"size:width=225,height=255" }}
     """
     # copied from mep-django
@@ -99,14 +88,14 @@ def iiif_image(img, args):
 @register.filter
 def iiif_info_json(images):
     """Add /info.json to a list of IIIF image IDs and dump to JSON,
-    for OpenSeaDragon to parse. Example use::
-
+    for OpenSeaDragon to parse.
     """
     return json.dumps([image["image"].info() for image in images])
 
 
 @register.filter
 def format_attribution(attribution):
+    """format attribution for local manifests (deprecated)"""
     (attribution, additional_restrictions, extra_attrs_set) = attribution
     extra_attrs = "\n".join("<p>%s</p>" % attr for attr in extra_attrs_set)
     return '<div class="attribution"><p>%s</p><p>%s</p>%s</div>' % (
@@ -139,4 +128,13 @@ def pgp_urlize(text):
             placeholder_link,
             text,
         )
+    )
+
+
+@register.filter
+def shelfmark_wrap(shelfmark):
+    """Wrap individual shelfmarks in a span within a combined shelfmark,
+    to avoid wrapping mid-shelfmark"""
+    return mark_safe(
+        " + ".join(["<span>%s</span>" % m for m in shelfmark.split(" + ")])
     )

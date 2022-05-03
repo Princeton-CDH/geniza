@@ -740,7 +740,8 @@
         type_t
         collection_ss
         shelfmark_t^80
-        shelfmark_ss^100
+        shelfmark_s^100
+        fragment_shelfmark_ss^50
         shelfmark_textnum^140
         tags_t
         tags_ss_lower
@@ -762,7 +763,8 @@
       <str name="admin_doc_qf">
         type_s
         shelfmark_t
-        shelfmark_ss
+        shelfmark_s
+        fragment_shelfmark_ss^50
         shelfmark_textnum
         tags_t
         tags_ss_lower

@@ -9,7 +9,7 @@
 main.error {
     text-align: center;
     h1 {
-        @include typography.headline-3;
+        @include typography.headline-error;
     }
     // 404 error header and background image
     h1.e404 {

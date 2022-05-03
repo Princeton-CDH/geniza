@@ -239,6 +239,12 @@ class TestFragment(TestCase):
         frag.save()
         assert frag.attribution == "Created by a person"
 
+        # should strip out CUDL metadata sentence
+        frag.manifest.extra_data = {
+            "attribution": "Created by a person. This metadata is published free of restrictions, under the terms of the Creative Commons CC0 1.0 Universal Public Domain Dedication."
+        }
+        assert frag.attribution == "Created by a person."
+
         # fragment with remote manifest
         frag_no_manifest = Fragment(shelfmark="TS 3")
         frag_no_manifest.iiif_url = "http://example.io/manifests/3"
@@ -422,6 +428,12 @@ class TestDocument:
         # ensure that uncertain shelfmarks are not included in str
         assert doc2.shelfmark == "%s + %s" % (frag2.shelfmark, frag.shelfmark)
 
+    def test_shelfmark_override(self, document):
+        assert document.shelfmark_display == document.shelfmark
+        override = "Foo 1-34"
+        document.shelfmark_override = override
+        assert document.shelfmark_display == override
+
     def test_str(self):
         frag = Fragment.objects.create(shelfmark="Or.1081 2.25")
         doc = Document.objects.create()
@@ -430,6 +442,32 @@ class TestDocument:
 
         unsaved_doc = Document()
         assert str(unsaved_doc) == "?? (PGPID ??)"
+
+    def test_original_date(self):
+        """Should display the historical document date with its calendar name"""
+        doc = Document.objects.create(
+            doc_date_original="507", doc_date_calendar=Document.CALENDAR_HIJRI
+        )
+        assert doc.original_date == "507 Hijrī"
+        # with no calendar, just display the date
+        doc.doc_date_calendar = ""
+        assert doc.original_date == "507"
+
+    def test_document_date(self):
+        """Should combine historical and converted dates"""
+        doc = Document.objects.create(
+            doc_date_original="507",
+            doc_date_calendar=Document.CALENDAR_HIJRI,
+        )
+        # should just use the original_date method
+        assert doc.document_date == doc.original_date
+        # should wrap standard date in parentheses and add CE
+        doc.doc_date_standard = "1113/14"
+        assert doc.document_date == "507 Hijrī (1113/14 CE)"
+        # should return standard date only, no parentheses
+        doc.doc_date_original = ""
+        doc.doc_date_calendar = ""
+        assert doc.document_date == "1113/14 CE"
 
     def test_collection(self):
         # T-S 8J22.21 + T-S NS J193
@@ -624,61 +662,6 @@ class TestDocument:
         TextBlock.objects.create(document=doc, fragment=frag, order=1)
         assert doc.title == "Legal document: s1"
 
-    def test_certain_join_shelfmarks(self):
-        # T-S 8J22.21 (+ T-S NS J193, uncertain)
-        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-        doc = Document.objects.create()
-        TextBlock.objects.create(document=doc, fragment=frag, order=1, certain=True)
-        frag2 = Fragment.objects.create(shelfmark="T-S NS J193")
-        TextBlock.objects.create(document=doc, fragment=frag2, order=2, certain=False)
-        # should only be one shelfmark from certain join
-        assert len(doc.certain_join_shelfmarks) == 1
-        # should be the one with certain=True
-        assert doc.certain_join_shelfmarks[0] == "T-S 8J22.21"
-
-        # Add a third fragment
-        frag3 = Fragment.objects.create(shelfmark="T-S NS J195")
-        TextBlock.objects.create(document=doc, fragment=frag3, certain=True, order=3)
-        # should be length 2
-        assert len(doc.certain_join_shelfmarks) == 2
-        # should maintain order
-        assert doc.certain_join_shelfmarks[1] == "T-S NS J195"
-
-    # NOTE: not currently used; remove or revise if this remains unused
-    def test_shelfmark_display(self):
-        # T-S 8J22.21 + T-S NS J193
-        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-        doc = Document.objects.create()
-        TextBlock.objects.create(document=doc, fragment=frag, order=1)
-        # single fragment
-        assert doc.shelfmark_display == frag.shelfmark
-
-        # add a second text block with the same fragment
-        TextBlock.objects.create(document=doc, fragment=frag)
-        # shelfmark should not repeat
-        assert doc.shelfmark_display == frag.shelfmark
-
-        frag2 = Fragment.objects.create(shelfmark="T-S NS J193")
-        TextBlock.objects.create(document=doc, fragment=frag2, order=2)
-        # multiple fragments: show first shelfmark + join indicator
-        assert doc.shelfmark_display == "%s + …" % frag.shelfmark
-
-        # ensure shelfmark honors order
-        doc2 = Document.objects.create()
-        TextBlock.objects.create(document=doc2, fragment=frag2, order=1)
-        TextBlock.objects.create(document=doc2, fragment=frag, order=2)
-        assert doc2.shelfmark_display == "%s + …" % frag2.shelfmark
-
-        # if no certain shelfmarks, don't return anything
-        doc3 = Document.objects.create()
-        frag3 = Fragment.objects.create(shelfmark="T-S NS J195")
-        TextBlock.objects.create(document=doc3, fragment=frag3, certain=False, order=1)
-        assert doc3.shelfmark_display == None
-
-        # use only the first certain shelfmark
-        TextBlock.objects.create(document=doc3, fragment=frag2, order=2)
-        assert doc3.shelfmark_display == frag2.shelfmark
-
     def test_has_transcription(self, document, source):
         # doc with no footnotes doesn't have transcription
         assert not document.has_transcription()
@@ -710,8 +693,9 @@ class TestDocument:
         assert index_data["description_t"] == document.description
         assert index_data["notes_t"] is None  # no notes
         assert index_data["needs_review_t"] is None  # no review notes
+        assert index_data["shelfmark_s"] == document.shelfmark
         for frag in document.fragments.all():
-            assert frag.shelfmark in index_data["shelfmark_ss"]
+            assert frag.shelfmark in index_data["fragment_shelfmark_ss"]
         for tag in document.tags.all():
             assert tag.name in index_data["tags_ss_lower"]
         assert index_data["status_s"] == "Public"
@@ -747,6 +731,9 @@ class TestDocument:
             assert index_data[scholarship_count] == 0
         assert index_data["scholarship_t"] == []
 
+        # no images - has_image bool should be false
+        assert not index_data["has_image_b"]
+
         # add mock images
         img1 = Mock()
         img1.info.return_value = "http://example.co/iiif/ts-1/00001/info.json"
@@ -763,6 +750,7 @@ class TestDocument:
                 "http://example.co/iiif/ts-1/00002",
             ]
             assert index_data["iiif_labels_ss"] == ["label1", "label2"]
+            assert index_data["has_image_b"] is True
 
     def test_index_data_footnotes(
         self, document, source, twoauthor_source, multiauthor_untitledsource
@@ -804,7 +792,7 @@ class TestDocument:
             content_object=document,
             source=source,
             doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content="some text",
+            content={"text": "some text"},
         )
         translation = Footnote.objects.create(
             content_object=document,
@@ -833,14 +821,14 @@ class TestDocument:
             content_object=document,
             source=source,
             doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content="A piece of text",
+            content={"text": "A piece of text"},
         )
         # footnote with different source
         edition3 = Footnote.objects.create(
             content_object=document,
             source=twoauthor_source,
             doc_relation=Footnote.EDITION,
-            content="B other text",
+            content={"text": "B other text"},
         )
         digital_edition_pks = [ed.pk for ed in document.digital_editions()]
 
@@ -865,7 +853,7 @@ class TestDocument:
             content_object=document,
             source=source,
             doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content="A piece of text",
+            content={"text": "A piece of text"},
         )
 
         # Digital edition with one author, editor should be author of source
@@ -877,7 +865,7 @@ class TestDocument:
             content_object=document,
             source=twoauthor_source,
             doc_relation=Footnote.EDITION,
-            content="B other text",
+            content={"text": "B other text"},
         )
         # Should now be three editors, since this edition's source had two authors
         assert document.editors().count() == 3
@@ -1027,7 +1015,10 @@ def test_document_merge_with_footnotes_transcription(document, join, source):
     Footnote.objects.create(content_object=document, source=source, location="p. 3")
     # page 3 footnote is a near duplicate but adds content
     Footnote.objects.create(
-        content_object=join, source=source, location="p. 3", content="{'foo': 'bar'}"
+        content_object=join,
+        source=source,
+        location="p. 3",
+        content={"text": "{'foo': 'bar'}"},
     )
 
     assert document.footnotes.count() == 1

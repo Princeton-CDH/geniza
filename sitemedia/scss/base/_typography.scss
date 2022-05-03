@@ -24,11 +24,12 @@ $text-size-5xl: 2rem; //     = 32px
 @mixin headline-1 {
     font-family: fonts.$primary-bold;
     font-weight: bold;
-    font-size: $text-size-2xl;
-    @include breakpoints.for-desktop-up {
-        font-size: $text-size-3xl;
-    }
+    font-size: $text-size-3xl;
     line-height: 1.5;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-4xl;
+        line-height: 1.4285;
+    }
 }
 
 // H2 — section and search result titles
@@ -37,13 +38,24 @@ $text-size-5xl: 2rem; //     = 32px
     font-weight: bold;
     font-size: $text-size-xl;
     @include breakpoints.for-desktop-up {
-        font-size: $text-size-2xl;
+        font-size: $text-size-3xl;
     }
     line-height: 1.5;
 }
 
 // H3 — sub-sections only on generic content pages
 @mixin headline-3 {
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+    font-size: $text-size-md;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-xl;
+    }
+    line-height: 1.5;
+}
+
+// H1 - error pages
+@mixin headline-error {
     font-family: fonts.$primary-bold;
     font-weight: bold;
     font-size: $text-size-lg;
@@ -274,7 +286,19 @@ $text-size-5xl: 2rem; //     = 32px
     font-size: 3.5rem;
 }
 
-// Temporary until new logo
-@mixin home-button {
-    font-size: $text-size-5xl;
+// image permissions statement
+@mixin permissions-statement {
+    font-family: fonts.$primary;
+    font-weight: normal;
+    font-size: $text-size-md;
+    line-height: 1.5;
+    @include breakpoints.for-desktop-up {
+        font-size: $text-size-lg;
+        line-height: 1.388;
+    }
+}
+@mixin permissions-statement-bold {
+    @include permissions-statement;
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
 }

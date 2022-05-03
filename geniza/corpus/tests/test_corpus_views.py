@@ -1,17 +1,17 @@
-from http.client import ResponseNotReady
+from datetime import datetime
 from pydoc import doc
 from time import sleep
-from unittest import mock
-from unittest.mock import ANY, Mock, mock_open, patch
+from unittest.mock import ANY, Mock, patch
 
 import pytest
 from django.conf import settings
-from django.contrib.auth.models import Permission, User
-from django.db.models.fields import related
-from django.http.response import Http404
+from django.contrib.admin.models import ADDITION, LogEntry
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import resolve, reverse
 from django.utils.text import Truncator, slugify
+from django.utils.timezone import get_current_timezone, make_aware
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
 
@@ -360,6 +360,7 @@ class TestDocumentSearchView:
                 "has_transcription": "on",
                 "has_discussion": "on",
                 "has_translation": "on",
+                "has_image": "on",
             }
             qs = docsearch_view.get_queryset()
             mock_sqs = mock_queryset_cls.return_value
@@ -490,6 +491,67 @@ class TestDocumentSearchView:
             qs[0]["pgpid"] == join.id
         ), "document with matching description and fewest scholarship records returned first"
 
+    def test_shelfmark_sort(self, document, multifragment, empty_solr):
+        """integration test for sorting by shelfmark"""
+        doc2 = Document.objects.create()
+        TextBlock.objects.create(document=doc2, fragment=multifragment)
+        SolrClient().update.index(
+            [
+                document.index_data(),  # shelfmark = CUL Add.2586
+                doc2.index_data(),  # shelfmark = T-S 16.377
+            ],
+            commit=True,
+        )
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # sort by shelfmark asc
+        docsearch_view.request.GET = {"sort": "shelfmark"}
+        qs = docsearch_view.get_queryset()
+        # should return document with shelfmark starting with C first
+        assert (
+            qs[0]["pgpid"] == document.id
+        ), "document with shelfmark CUL Add.2586 returned first"
+
+    def test_input_date_sort(self, document, join, empty_solr):
+        """Tests for sorting by input date, ascending and descending"""
+        # set up log entry for join
+        dctype = ContentType.objects.get_for_model(Document)
+        team_user = User.objects.get(username=settings.TEAM_USERNAME)
+        LogEntry.objects.create(
+            user=team_user,
+            object_id=str(join.pk),
+            object_repr=str(join)[:200],
+            content_type=dctype,
+            change_message="Initial data entry (spreadsheet), dated 2022",
+            action_flag=ADDITION,
+            action_time=make_aware(
+                datetime(year=2022, month=1, day=1), timezone=get_current_timezone()
+            ),
+        )
+        # update solr index
+        SolrClient().update.index(
+            [
+                document.index_data(),  # input date = 2004
+                join.index_data(),  # input date = 2022
+            ],
+            commit=True,
+        )
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # sort by input date asc
+        docsearch_view.request.GET = {"sort": "input_date_asc"}
+        qs = docsearch_view.get_queryset()
+        # should return document with input date of 2004 first
+        assert (
+            qs[0]["pgpid"] == document.id
+        ), "document with input date 2004 returned first"
+
+        # sort by input date desc
+        docsearch_view.request.GET = {"sort": "input_date_desc"}
+        qs = docsearch_view.get_queryset()
+        # should return document with input date of 2022 first
+        assert qs[0]["pgpid"] == join.id, "document with input date 2022 returned first"
+
     def test_doctype_filter(self, document, join, empty_solr):
         """Integration test for document type filter"""
         SolrClient().update.index(
@@ -589,6 +651,33 @@ class TestDocumentSearchView:
         resulting_ids = [result["pgpid"] for result in qs]
         assert doc1.id in resulting_ids
         assert doc2.id in resulting_ids
+
+    def test_search_shelfmark_override(self, empty_solr, document):
+        orig_shelfmark = document.shelfmark
+        document.shelfmark_override = "foo 12.34"
+        document.save()
+        # ensure solr index is updated with this test document
+        SolrClient().update.index([document.index_data()], commit=True)
+
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+
+        for shelfmark in [document.shelfmark_override, orig_shelfmark]:
+
+            # keyword search should work
+            print(shelfmark)
+            docsearch_view.request.GET = {"q": shelfmark}
+            qs = docsearch_view.get_queryset()
+            # should return this document
+            assert qs.count() == 1
+            assert qs[0]["pgpid"] == document.id
+
+            # fielded search should work too
+            docsearch_view.request.GET = {"q": "shelfmark:%s" % shelfmark}
+            qs = docsearch_view.get_queryset()
+            # should return this document
+            assert qs.count() == 1
+            assert qs[0]["pgpid"] == document.id
 
     def test_get_solr_sort(self):
         docsearch_view = DocumentSearchView()

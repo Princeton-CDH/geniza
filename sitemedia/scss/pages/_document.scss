@@ -22,27 +22,44 @@ main.document {
             display: flex;
             flex-direction: column;
             @include breakpoints.for-desktop-up {
+                margin-top: spacing.$spacing-3xl;
                 flex-direction: row;
-                justify-content: space-between;
+                justify-content: flex-start;
             }
         }
         // Document metadata
-        .metadata {
-            margin: spacing.$spacing-xl spacing.$spacing-xl 0;
+        dl.metadata {
+            display: flex;
+            flex-direction: column;
+            margin: spacing.$spacing-2xl spacing.$spacing-md 0;
             @include typography.meta;
             @include breakpoints.for-desktop-up {
-                flex: 1 0 50%;
+                flex: 1 1 50%;
                 padding-right: 0;
-                margin: spacing.$spacing-3xl 0 0;
+                margin: 0 0 0;
             }
             // Lighter color metadata; secondary class on dl or dd/dt
-            .secondary,
-            &.secondary dd,
-            &.secondary dt {
+            .tertiary,
+            &.tertiary dd,
+            &.tertiary dt {
                 color: var(--on-background-alt);
             }
             dt {
                 margin-bottom: spacing.$spacing-3xs;
+                @include typography.meta-bold;
+                display: flex;
+                align-items: center;
+                &::before {
+                    content: " ";
+                    display: inline-block;
+                    width: 8px;
+                    height: 18px;
+                    background-color: var(--filter-active);
+                    margin-right: 12px;
+                }
+            }
+            dd {
+                margin-left: 20px;
             }
             dd + dt {
                 margin-top: spacing.$spacing-sm;
@@ -53,56 +70,92 @@ main.document {
             dd + dd {
                 margin-top: spacing.$spacing-xs;
             }
-            // hanging "info" phosphor icon before link
-            // disabled for MVP
-            /*
-            dd a::before {
-                color: var(--on-background);
-                font-family: "Phosphor" !important;
-                content: "\f1e0";
-                font-feature-settings: "liga";
-                float: left;
-                text-align: center;
-                margin-left: -#{spacing.$spacing-xl};
+        }
+        dl.metadata.primary + dl.metadata.secondary {
+            margin-top: 0;
+            @include breakpoints.for-desktop-up {
+                margin-left: 35px;
             }
-            */
+            :first-child {
+                margin-top: spacing.$spacing-sm;
+                @include breakpoints.for-desktop-up {
+                    margin-top: 0px;
+                }
+            }
         }
         // Document tags
-        .tags {
-            margin: spacing.$spacing-xl spacing.$spacing-xl 0;
-            align-self: flex-end;
-            text-align: right;
+        ul.tags {
+            margin: 45px spacing.$spacing-md 0;
+            align-self: flex-start;
+            text-align: left;
+            line-height: 2.5625rem;
             @include breakpoints.for-desktop-up {
-                flex: 1 0 50%;
+                flex: 1 0 100%;
                 padding-left: 0;
                 margin: spacing.$spacing-3xl 0 0;
                 align-self: flex-start;
-                justify-self: flex-end;
                 margin-left: 0;
             }
             li {
                 // spacing between tags
-                margin-right: 0;
+                margin-right: 20px;
                 min-width: 48px;
-                & + li {
-                    margin-left: 0.5rem;
-                    padding-top: 24px;
+                &:last-child {
+                    margin-right: 0;
                 }
                 @include typography.meta;
             }
         }
-        // "Description" header
-        h3 {
-            margin: spacing.$spacing-xl 0 spacing.$spacing-md;
+        // Input date "In PGP since" text
+        section.input-date {
+            margin: 12px spacing.$spacing-md 0;
             @include breakpoints.for-desktop-up {
-                margin: spacing.$spacing-3xl 0 spacing.$spacing-md;
+                margin: 12px 0 0;
+            }
+            @include typography.meta;
+            color: var(--input-date-text);
+        }
+        // "Description" header
+        section.description {
+            margin: 64px 0 spacing.$spacing-md;
+            h3 {
+                @include typography.body-bold;
             }
         }
-
+        // link to download transcription
         section.transcription-link {
             margin-top: spacing.$spacing-md;
             @include breakpoints.for-desktop-up {
                 margin-top: spacing.$spacing-xl;
+            }
+        }
+    }
+    dl.metadata.tertiary {
+        margin-top: 51px;
+        padding: 0 20px;
+        width: 100%;
+        @include breakpoints.for-desktop-up {
+            margin-top: 53px;
+            max-width: none;
+            padding: 0 10rem;
+        }
+        // hanging "link" phosphor icon before permalink label
+        dt#permalink {
+            display: flex;
+            align-items: center;
+            @include typography.meta-bold;
+            svg {
+                color: var(--permalink-icon);
+                fill: var(--permalink-icon-bg);
+                width: 22px;
+                height: 22px;
+                margin-right: 12px;
+            }
+            & + dd {
+                margin-left: 34px;
+                a {
+                    text-decoration: none;
+                }
             }
         }
     }

@@ -10,6 +10,7 @@ from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.corpus.models import Document, LanguageScript, TextBlock
+from geniza.corpus.templatetags.corpus_extras import shelfmark_wrap
 from geniza.footnotes.models import Footnote
 
 
@@ -28,8 +29,9 @@ class TestDocumentDetailTemplate:
     def test_first_input(self, client, document):
         """Document detail template should include document first input date"""
         response = client.get(document.get_absolute_url())
-        # NOTE: now classed as secondary metadata on the <dl>
-        assertContains(response, "<dd>2004</dd>", html=True)
+        # NOTE: No longer using definition list
+        print(response.content)
+        assertContains(response, "In PGP since 2004")
 
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""
@@ -66,7 +68,7 @@ class TestDocumentDetailTemplate:
             content_object=document,
             source=unpublished_editions,
             doc_relation={Footnote.EDITION},
-            content="A piece of text",
+            content={"text": "A piece of text"},
         )
         response = client.get(document.get_absolute_url())
         assertContains(response, '<div class="transcription">')
@@ -102,7 +104,7 @@ class TestDocumentDetailTemplate:
             content_object=document,
             source=source,
             doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content="A piece of text",
+            content={"text": "A piece of text"},
         )
 
         # Digital edition with one author, should have one editor but not multiple
@@ -115,7 +117,7 @@ class TestDocumentDetailTemplate:
             content_object=document,
             source=twoauthor_source,
             doc_relation=Footnote.EDITION,
-            content="B other text",
+            content={"text": "B other text"},
         )
         # Should now be "editors"
         response = client.get(document.get_absolute_url())
@@ -132,12 +134,7 @@ class TestDocumentDetailTemplate:
         multifragment.save()
         response = client.get(join.get_absolute_url())
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
-        shelfmarks = join.certain_join_shelfmarks
-        assertContains(
-            response,
-            "<span>%s + </span><span>%s</span>" % (shelfmarks[0], shelfmarks[1]),
-            html=True,
-        )
+        assertContains(response, shelfmark_wrap(join.shelfmark), html=True)
 
     def test_download_transcription_link_anonymous(
         self, client, document, unpublished_editions
@@ -215,12 +212,12 @@ class TestDocumentDetailTemplate:
     def test_other_docs_none(self, document, client):
         """If there are no other documents, don't show the other docs section"""
         response = client.get(document.get_absolute_url())
-        assertNotContains(response, "Other documents on this fragment")
+        assertNotContains(response, "Other documents on this shelfmark")
 
     def test_other_docs(self, document, join, client):
         """If there are other documents, show the other docs section"""
         response = client.get(document.get_absolute_url())
-        assertContains(response, "Other documents on this fragment")
+        assertContains(response, "Other documents on this shelfmark")
         assertContains(response, join.get_absolute_url())
         assertContains(response, join.title)
 

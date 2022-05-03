@@ -30,8 +30,3 @@ ALLOWED_HOSTS = ["*"]
 
 # enable django-dbml for generating dbdocs
 INSTALLED_APPS.append("django_dbml")
-
-# when running in CI, load fonts from production by overriding font base url
-# (needed for Percy and Lighthouse)
-if os.environ.get("CI") or settings.IS_PERCY:
-    FONT_URL_PREFIX = "https://geniza.princeton.edu/static/fonts/"

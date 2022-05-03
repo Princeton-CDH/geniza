@@ -19,7 +19,7 @@
         <div id="iiif-images" data-iiif-target="iiifContainer" data-iiif-urls="{{ document.iiif_images|iiif_info_json }}" class="{% if not document.has_transcription %}no-transcription{% endif %}">
         </div>
     {% endif %}
-    {% if document.has_transcription %}
+    {% if document.digital_editions %}
         <div class="transcription{% if not document.has_image %} no-image{% endif %}">
             <h2>{% translate 'Transcription' %}</h2>
             {% if document.digital_editions|length > 1 %}
@@ -27,19 +27,15 @@
                 {% for edition in document.digital_editions %}
                     <details open>
                         <summary class="source">{{ edition.source.display }}</summary>
-                        <div>{{ edition.content.html|safe }}</div>
+                        <div>{{ edition.content.html|h1_to_h3|safe }}</div>
                     </details>
                 {% endfor %}
             {% else %}
-                <div>{{ document.digital_editions.0.content.html|safe }}</div>
+                <div>{{ document.digital_editions.0.content.html|h1_to_h3|safe }}</div>
             {% endif %}
         </div>
-        <div class="attribution">
-            {% for fragment in document.fragments.all %}
-                {% if fragment.attribution %}
-                    {{ fragment.shelfmark }}: {{ fragment.attribution }}
-                {% endif %}
-            {% endfor %}
-        </div>
+    {% endif %}
+    {% if document.has_image %}
+        {% include "corpus/snippets/document_image_rights.html" %}
     {% endif %}
 </section>

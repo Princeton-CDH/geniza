@@ -100,11 +100,11 @@ main.search form {
             width: auto;
             height: 2.5rem;
             border-radius: 0;
-            margin-left: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             border: none;
+            margin-left: 0; // Needed to prevent wrapping on mobile
             @include form-button-colors;
             @include breakpoints.for-tablet-landscape-up {
                 flex-basis: 3rem;
@@ -286,7 +286,7 @@ main.search form {
     fieldset#filters {
         background-color: var(--background);
         max-width: none;
-        z-index: 4;
+        z-index: 5;
         position: fixed;
         width: 100vw;
         height: 100vh;
@@ -352,7 +352,7 @@ main.search form {
             &:active {
                 border: none;
                 outline: 2px solid var(--link-primary);
-                z-index: 2;
+                z-index: 3;
             }
             input[type="checkbox"] {
                 @include a11y.sr-only;
@@ -513,6 +513,72 @@ main.search form {
         color: red;
         li {
             @include typography.meta;
+        }
+    }
+}
+
+// tweaks for RTL search form for hebrew, arabic
+html[dir="rtl"] main.search form {
+    // search query box and button
+    fieldset#query {
+        // search box
+        input[type="search"] {
+            margin-right: 0;
+            margin-left: spacing.$spacing-sm;
+            padding: 0 spacing.$spacing-sm 0 0;
+        }
+        button[type="submit"] {
+            margin-right: 0; // Needed to prevent wrapping on mobile
+        }
+    }
+    // sort field and label
+    fieldset#sort {
+        // sort options select (uses details/summary)
+        details.sort-select {
+            summary span {
+                margin-right: 0;
+                margin-left: spacing.$spacing-sm;
+            }
+        }
+    }
+
+    // buttons for opening and closing the filter modal
+    a#filters-button,
+    a#close-filters-button {
+        svg {
+            margin-right: 0;
+            margin-left: spacing.$spacing-2xs;
+        }
+    }
+
+    // filter modal
+    fieldset#filters {
+        left: auto;
+        right: 0;
+        // expand form on desktop
+        @include breakpoints.for-tablet-landscape-up {
+            padding: spacing.$spacing-sm spacing.$spacing-sm spacing.$spacing-sm
+                1.275rem;
+            margin: -4.2rem -#{spacing.$spacing-sm} 0 0;
+        }
+        // all filter form inputs that are not nested within a details
+        & > label {
+            span.count {
+                padding-left: 0;
+                padding-right: 1rem;
+            }
+            span.count::after {
+                float: left;
+            }
+        }
+        // document type filter
+        details.doctype-filter {
+            // Label for document type filter
+            summary {
+                &::after {
+                    float: left;
+                }
+            }
         }
     }
 }

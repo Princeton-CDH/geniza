@@ -327,3 +327,91 @@ section#document-list {
         direction: rtl;
     }
 }
+
+// tweaks for RTL search results for hebrew, arabic
+html[dir="rtl"] .search-result {
+    // spacing in between results
+    & + .search-result:before {
+        // separator image (mobile)
+        transform: scale(-1, 1);
+        // separator image (desktop)
+        @include breakpoints.for-tablet-landscape-up {
+            margin-right: spacing.$spacing-2xl;
+            margin-left: 0;
+            right: auto;
+            transform: scale(-1, 1);
+        }
+    }
+    // result number in list
+    .counter {
+        text-align: right;
+        float: right;
+    }
+    // First row on mobile, left column on larger
+    section:first-of-type {
+        margin-right: spacing.$spacing-md;
+        margin-left: 0;
+        &.has-image {
+            @include breakpoints.for-tablet-landscape-up {
+                padding-right: 0;
+                padding-left: spacing.$spacing-sm;
+            }
+        }
+        // document scholarship records
+        .scholarship {
+            & span {
+                padding-right: 0;
+                padding-left: spacing.$spacing-md;
+                &:last-child {
+                    padding-left: 0;
+                }
+            }
+        }
+    }
+    // document images
+    ul.images {
+        li {
+            & + li {
+                left: auto;
+                right: 7.5%;
+            }
+            & + li + li {
+                left: auto;
+                right: 12.5%;
+            }
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            li {
+                & + li {
+                    left: auto;
+                    right: 5%;
+                }
+                & + li + li {
+                    left: auto;
+                    right: 10%;
+                }
+            }
+        }
+    }
+    // "view document details" link
+    a.view-link {
+        margin-left: 0;
+        margin-right: auto;
+        // icon to the left
+        span:after {
+            content: "\f03b"; // phosphor arrow-right icon
+            margin-left: 0;
+            margin-right: spacing.$spacing-2xs;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-left: 0;
+                margin-right: spacing.$spacing-sm;
+            }
+        }
+
+        /* make the whole result block clickable */
+        &:before {
+            left: auto;
+            right: 0;
+        }
+    }
+}

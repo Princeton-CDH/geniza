@@ -13,6 +13,7 @@ from django.forms.widgets import Textarea, TextInput
 from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from django_admin_inline_paginator.admin import TabularInlinePaginated
 from modeltranslation.admin import TabbedTranslationAdmin
 from tabular_export.admin import export_to_csv_response
 
@@ -34,7 +35,7 @@ class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
     extra = 1
 
 
-class SourceFootnoteInline(admin.TabularInline):
+class SourceFootnoteInline(TabularInlinePaginated):
     """Footnote inline for the Source admin"""
 
     model = Footnote
@@ -45,7 +46,6 @@ class SourceFootnoteInline(admin.TabularInline):
         "doc_relation",
         "location",
         "has_transcription",
-        "notes",
         "url",
     )
     readonly_fields = ("object_link", "has_transcription")
@@ -53,6 +53,8 @@ class SourceFootnoteInline(admin.TabularInline):
         CharField: {"widget": TextInput(attrs={"size": "10"})},
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
+
+    per_page = 100
 
     @admin.display(
         description="object",
@@ -72,6 +74,9 @@ class SourceFootnoteInline(admin.TabularInline):
             f'<a href="{edit_path}">{content_obj} '
             + '<img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>'
         )
+
+    # enable link from inline to edit footnote
+    show_change_link = True
 
 
 class DocumentFootnoteInline(GenericTabularInline):
@@ -93,6 +98,8 @@ class DocumentFootnoteInline(GenericTabularInline):
         CharField: {"widget": TextInput(attrs={"size": "10"})},
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
+    # enable link from inline to edit footnote
+    show_change_link = True
 
 
 @admin.register(Source)
