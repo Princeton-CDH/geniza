@@ -35,4 +35,14 @@ html[dir="rtl"] .tags li {
     &:last-of-type {
         margin-left: 0;
     }
+    &::before {
+        content: "";
+    }
+    &::after {
+        display: inline-block;
+        content: "#";
+    }
+    &.more::after {
+        content: "";
+    }
 }

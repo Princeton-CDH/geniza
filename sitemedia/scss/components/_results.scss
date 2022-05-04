@@ -367,6 +367,10 @@ html[dir="rtl"] .search-result {
                 }
             }
         }
+        // document tags
+        ul.tags {
+            align-self: flex-end;
+        }
     }
     // document images
     ul.images {
