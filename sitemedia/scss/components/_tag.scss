@@ -30,10 +30,9 @@
 // tweaks for RTL tags for hebrew, arabic
 html[dir="rtl"] .tags li {
     // spacing between tags
-    margin-right: 0;
-    margin-left: 0.5rem;
-    &:last-of-type {
-        margin-left: 0;
+    margin-right: 0.5rem;
+    &:first-of-type {
+        margin-right: 0;
     }
     &::before {
         content: "";
