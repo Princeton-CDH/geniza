@@ -367,6 +367,11 @@ html[dir="rtl"] .search-result {
                 }
             }
         }
+        // document tags
+        ul.tags {
+            text-align: left;
+            align-self: flex-end;
+        }
     }
     // document images
     ul.images {
@@ -413,5 +418,8 @@ html[dir="rtl"] .search-result {
             left: auto;
             right: 0;
         }
+    }
+    .transcription {
+        align-self: flex-start;
     }
 }
