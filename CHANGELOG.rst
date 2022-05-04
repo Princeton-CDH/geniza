@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+4.4.1
+-----
+
+- bugfix: nav menu button light/dark toggle overlapping on tablet/mobile
+
 4.4
 ---
 -   public site
@@ -13,14 +18,14 @@ Change Log
     -   As a front-end user, I want to see logos for museums and libraries providing image content, so I have a better sense of where the content is coming from.
     -   As a front-end user, I want a way to access the museum or library view of the fragment (when available), so I can see more context about the source.
     -   As a user, I want documents that span fragments with consecutive shelfmarks to have their shelfmark displayed using a range, so that it's easier for me to read.
-    
+
 -   content/data admin
 
     - As a content editor, when I'm editing a source I want footnotes sorted by location so I can review them in the same order they appear in the source.
     - As an admin user in document view, I'd like to be able to zoom on the fragment's IIIF image thumbnail so I can determine the language and check other metadata details as I'm writing or editing a description.
     - bugfix: Bad Request 400 when trying to move attachments
     - bugfix: Long lines in transcriptions break layout in admin interface
-    
+
 -   public site visual design
 
     -   RTL search form for light and dark mode for desktop and mobile
@@ -34,7 +39,7 @@ Change Log
     -   homepage banner for light and dark mode for desktop and mobile
     -   site header for the Hebrew site
     -   pagination for the hebrew site
-    
+
 -   maintenance/other
 
     -   Resolve issue with Percy sporadically failing to load fonts
