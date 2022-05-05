@@ -132,11 +132,24 @@ def display_date_range(earliest, latest):
 
 ## islamic calendar
 
-# TODO: need local overrides / aliases for dates?
+# generate unicode-decoded version of month list for better matching
+islamic_months = [unidecode(m) for m in convertdate.islamic.MONTHS]
+
+# local overrides for months
+islamic_month_aliases = {
+    "Muharram": "al-Muharram",
+    "Rabi' I": "Rabi' al-`Awwal",
+    "Rabi' II": "Rabi' ath-Thani,",  # is comma an error in convertdate?
+    "Jumada I": "Jumada al-`Awwal",
+    "Jumada II": "Jumada ath-Thaniyah,",
+    "Dhu l-Qa`da": "Zu al-Qa`dah",
+    "Dhu l-Hijja": "Zu al-Hijjah",
+}
 
 
 def get_islamic_month(month_name):
-    return convertdate.islamic.MONTHS.index(month_name) + 1
+    month_name = unidecode(month_name)
+    return islamic_months.index(islamic_month_aliases.get(month_name, month_name)) + 1
 
 
 def convert_islamic_date(historic_date):
