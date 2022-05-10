@@ -11,8 +11,12 @@ from django.utils.timezone import get_current_timezone, make_aware
 from geniza.corpus.models import Document, DocumentType, Fragment, Manifest, TextBlock
 from geniza.footnotes.models import Footnote
 
+MockImporter = Mock()
+# as of djiffy 0.7.2, import paths returns a list of objects
+MockImporter.return_value.import_paths.return_value = []
 
-@patch("geniza.corpus.models.ManifestImporter", Mock())
+
+@patch("geniza.corpus.models.ManifestImporter", MockImporter)
 def make_fragment(manifest=True):
     """A real fragment from CUL, with URLs for testing."""
     return Fragment.objects.create(
@@ -27,7 +31,7 @@ def make_fragment(manifest=True):
     )
 
 
-@patch("geniza.corpus.models.ManifestImporter", Mock())
+@patch("geniza.corpus.models.ManifestImporter", MockImporter)
 def make_multifragment(manifest=True):
     """A real multifragment object, with fake URLs for testing."""
     return Fragment.objects.create(
