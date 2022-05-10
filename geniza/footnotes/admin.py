@@ -117,6 +117,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         "notes",
         "other_info",
         "languages__name",
+        "volume",
     )
 
     fields = (
