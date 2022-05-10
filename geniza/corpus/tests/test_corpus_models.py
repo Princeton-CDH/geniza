@@ -350,6 +350,21 @@ class TestFragment(TestCase):
             frag.request, "Error loading IIIF manifest"
         )
 
+    def test_clean(self):
+        manifest_uri = "http://example.com/manifest/1"
+        # strips out redundant uri when present
+        frag = Fragment(
+            shelfmark="TS 1",
+            iiif_url="%(uri)s?manifest=%(uri)s" % {"uri": manifest_uri},
+        )
+        frag.clean()
+        assert frag.iiif_url == manifest_uri
+
+        # does nothing if not present
+        frag.iiif_url = manifest_uri
+        frag.clean()
+        assert frag.iiif_url == manifest_uri
+
 
 @pytest.mark.django_db
 class TestDocumentType:

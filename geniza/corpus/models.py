@@ -274,6 +274,16 @@ class Fragment(TrackChangesModel):
                 )
         return None
 
+    def clean(self):
+        """Custom validation and cleaning; currently only :meth:`clean_iiif_url`"""
+        self.clean_iiif_url()
+
+    def clean_iiif_url(self):
+        """Remove redundant manifest parameter from IIIF url when present"""
+        # some iiif viewers have a terrible convention of repeating the full manifest
+        # url in a query string; strip that out if it's there
+        self.iiif_url = self.iiif_url.split("?manifest=")[0]
+
     def save(self, *args, **kwargs):
         """Remember how shelfmarks have changed by keeping a semi-colon list
         in the old_shelfmarks field"""
