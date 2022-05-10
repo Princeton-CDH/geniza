@@ -256,30 +256,22 @@ class Fragment(TrackChangesModel):
             )
         )
 
+    # CUDL manifests attribution include a metadata statement, but it
+    # is not relevant for us since we aren't displaying their metadata
+    cudl_metadata_str = "This metadata is published free of restrictions, under the terms of the Creative Commons CC0 1.0 Universal Public Domain Dedication."
+
     @property
     def attribution(self):
         """Generate an attribution for this fragment"""
-        # if there is no iiif for this fragment, bail out
-        if not self.iiif_url:
-            return None
-        # try to use locally cached manifest
+        # pull from locally cached manifest
+        # (don't hit remote url if not cached)
         if self.manifest:
             attribution = self.manifest.extra_data.get("attribution", "")
-        else:
-            try:
-                # otherwise try to use remote manifest attribution attribute
-                remote_manifest = IIIFPresentation.from_url(self.iiif_url)
-                try:
-                    attribution = remote_manifest.attribution
-                except AttributeError:
-                    # attribution is optional, so ignore if not present
-                    attribution = None
-            except IIIFException:
-                logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
-        if attribution:
-            # Remove CUDL metadata string from displayed attribution
-            cudl_metadata_str = "This metadata is published free of restrictions, under the terms of the Creative Commons CC0 1.0 Universal Public Domain Dedication."
-            return mark_safe(attribution.replace(cudl_metadata_str, "").strip())
+            if attribution:
+                # Remove CUDL metadata string from displayed attribution
+                return mark_safe(
+                    attribution.replace(self.cudl_metadata_str, "").strip()
+                )
         return None
 
     def save(self, *args, **kwargs):
@@ -299,8 +291,10 @@ class Fragment(TrackChangesModel):
             # if iiif url has changed and there is a value, import and update
             if self.iiif_url:
                 try:
-                    ManifestImporter().import_paths([self.iiif_url])
-                    self.manifest = Manifest.objects.filter(uri=self.iiif_url).first()
+                    # importer should return the relevant manifest
+                    # (either newly imported or already in the database)
+                    imported = ManifestImporter().import_paths([self.iiif_url])
+                    self.manifest = imported[0] if imported else None
                 except (IIIFException, NewConnectionError):
                     # clear out the manifest if there was an error
                     self.manifest = None

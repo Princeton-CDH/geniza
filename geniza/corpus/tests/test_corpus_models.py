@@ -188,6 +188,8 @@ class TestFragment(TestCase):
         frag = Fragment(shelfmark="TS 1")
         frag.iiif_url = "http://example.io/manifests/1"
         frag.manifest = Manifest.objects.create(uri=frag.iiif_url, short_id="m")
+
+        mock_manifestimporter.return_value.import_paths.return_value = [frag.manifest]
         # canvas with image and label
         Canvas.objects.create(
             manifest=frag.manifest,
@@ -211,6 +213,7 @@ class TestFragment(TestCase):
         with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
             mock_iiifpresentation.from_url = Mock()
             mock_iiifpresentation.from_url.side_effect = IIIFException
+            mock_manifestimporter.return_value.import_paths.return_value = []
             frag = Fragment(shelfmark="TS 1")
             frag.iiif_url = "http://example.io/manifests/1"
             frag.save()
@@ -236,6 +239,7 @@ class TestFragment(TestCase):
             short_id="m",
             extra_data={"attribution": "Created by a person"},
         )
+        mock_manifestimporter.return_value.import_paths.return_value = [frag.manifest]
         frag.save()
         assert frag.attribution == "Created by a person"
 
@@ -244,38 +248,6 @@ class TestFragment(TestCase):
             "attribution": "Created by a person. This metadata is published free of restrictions, under the terms of the Creative Commons CC0 1.0 Universal Public Domain Dedication."
         }
         assert frag.attribution == "Created by a person."
-
-        # fragment with remote manifest
-        frag_no_manifest = Fragment(shelfmark="TS 3")
-        frag_no_manifest.iiif_url = "http://example.io/manifests/3"
-        frag_no_manifest.save()
-        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
-            # no attribution, should return None via caught AttributeError
-            mock_iiifpresentation.from_url.return_value = AttrDict({})
-            assert not frag_no_manifest.attribution
-
-            # with attribution
-            mock_iiifpresentation.reset_mock()
-            mock_iiifpresentation.from_url.return_value = AttrDict(
-                {"attribution": "Created by a person"}
-            )
-            assert frag_no_manifest.attribution == "Created by a person"
-
-    @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
-    def test_attribution_iiifexception(self, mock_manifestimporter):
-        # patch IIIFPresentation.from_url to always raise IIIFException
-        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
-            mock_iiifpresentation.from_url = Mock()
-            mock_iiifpresentation.from_url.side_effect = IIIFException
-            frag = Fragment(shelfmark="TS 1")
-            frag.iiif_url = "http://example.io/manifests/1"
-            frag.save()
-            # should raise the exception
-            with self.assertRaises(IIIFException):
-                # should log at level WARN
-                with self.assertLogs(level="WARN"):
-                    frag.attribution
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
@@ -314,6 +286,7 @@ class TestFragment(TestCase):
         frag.save()
         frag.shelfmark = "TS 2"
         frag.save()
+        mock_manifestimporter.return_value.import_paths.return_value = []
         assert frag.old_shelfmarks == "TS 1"
         # should not try to import when there is no url
         assert mock_manifestimporter.call_count == 0
@@ -322,6 +295,7 @@ class TestFragment(TestCase):
         frag.iiif_url = "http://example.io/manifests/1"
         # pre-create manifest that would be imported
         manifest = Manifest.objects.create(uri=frag.iiif_url, short_id="m1")
+        mock_manifestimporter.return_value.import_paths.return_value = [manifest]
         frag.save()
         mock_manifestimporter.assert_called_with()
         mock_manifestimporter.return_value.import_paths.assert_called_with(
@@ -333,6 +307,7 @@ class TestFragment(TestCase):
         # should import when iiif url changes, even if manifest is set
         frag.iiif_url = "http://example.io/manifests/2"
         manifest2 = Manifest.objects.create(uri=frag.iiif_url, short_id="m2")
+        mock_manifestimporter.return_value.import_paths.return_value = [manifest2]
         frag.save()
         mock_manifestimporter.assert_called_with()
         mock_manifestimporter.return_value.import_paths.assert_called_with(
@@ -356,6 +331,8 @@ class TestFragment(TestCase):
         frag.request = Mock()
         # remove any cached manifests
         Manifest.objects.all().delete()
+        # return no manifests
+        mock_manifestimporter.return_value.import_paths.return_value = []
         # mock manifest does nothing, manifest will be unset
         frag.iiif_url = "something"  # needs to be changed to trigger relevant block
         frag.save()
@@ -396,8 +373,13 @@ class TestDocumentType:
         assert DocumentType.objects.get_by_natural_key("SomeType") == doc_type
 
 
+MockImporter = Mock()
+# as of djiffy 0.7.2, import paths returns a list of objects
+MockImporter.return_value.import_paths.return_value = []
+
+
 @pytest.mark.django_db
-@patch("geniza.corpus.models.ManifestImporter", Mock())
+@patch("geniza.corpus.models.ManifestImporter", MockImporter)
 class TestDocument:
     def test_shelfmark(self):
         # T-S 8J22.21 + T-S NS J193
