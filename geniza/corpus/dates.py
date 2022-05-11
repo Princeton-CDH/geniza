@@ -1,10 +1,97 @@
 # methods to convert historical dates to standard dates
 # will be used for reporting and automatic conversion in admin
 import re
+from abc import abstractclassmethod
 from datetime import date
+from enum import Enum
 
 import convertdate
+from django.core.exceptions import ValidationError
+from django.db import models
 from unidecode import unidecode
+
+
+class Calendar:
+    """Codes for supported calendars"""
+
+    #: Hijri calendar (Islamic)
+    HIJRI = "h"
+    #: Kharaji calendar
+    KHARAJI = "k"
+    #: Seleucide calendar
+    SELEUCID = "s"
+    #: Anno Mundi calendar (Hebrew)
+    ANNO_MUNDI = "am"
+
+
+class DocumentDateMixin(models.Model):
+    """Mixin for document date fields (original and standardized),
+    and related logic for displaying, converting,a nd validating dates."""
+
+    doc_date_original = models.CharField(
+        "Date on document (original)",
+        help_text="explicit date on the document, in original format",
+        blank=True,
+        max_length=255,
+    )
+    CALENDAR_CHOICES = (
+        (Calendar.HIJRI, "Hijrī"),
+        (Calendar.KHARAJI, "Kharājī"),
+        (Calendar.SELEUCID, "Seleucid"),
+        (Calendar.ANNO_MUNDI, "Anno Mundi"),
+    )
+    doc_date_calendar = models.CharField(
+        "Calendar",
+        max_length=2,
+        choices=CALENDAR_CHOICES,
+        help_text="Calendar according to which the document gives a date: "
+        + "Hijrī (AH); Kharājī (rare - mostly for fiscal docs); "
+        + "Seleucid (sometimes listed as Minyan Shetarot); Anno Mundi (Hebrew calendar)",
+        blank=True,
+    )
+    doc_date_standard = models.CharField(
+        "Document date (standardized)",
+        help_text="CE date (convert to Julian before 1582, Gregorian after 1582). "
+        + "Use YYYY, YYYY-MM, YYYY-MM-DD format when possible",
+        blank=True,
+        max_length=255,
+    )
+
+    class Meta:
+        abstract = True
+
+    @property
+    def original_date(self):
+        """Generate formatted display for the document's original/historical date"""
+        # combine date and calendar or return empty string
+        return " ".join(
+            [self.doc_date_original, self.get_doc_date_calendar_display()]
+        ).strip()
+
+    @property
+    def document_date(self):
+        """Generate formatted display of combined original and standardized dates"""
+        if self.doc_date_standard:
+            # append "CE" to standardized date if it exists
+            standardized_date = " ".join([self.doc_date_standard, "CE"])
+            # add parentheses to standardized date if original date is also present
+            if self.original_date:
+                standardized_date = "".join(["(", standardized_date, ")"])
+            return " ".join([self.original_date, standardized_date]).strip()
+        else:
+            # if there's no standardized date, just display the historical date
+            return self.original_date
+
+    def clean(self):
+        """
+        Require doc_date_original and doc_date_calendar to be set
+        if either one is present.
+        """
+        if self.doc_date_calendar and not self.doc_date_original:
+            raise ValidationError("Original date is required when calendar is set")
+        if self.doc_date_original and not self.doc_date_calendar:
+            raise ValidationError("Calendar is required when original date is set")
+
 
 hebrew_month_aliases = {
     "Tevet": "Teveth",

@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Lower
@@ -34,6 +33,7 @@ from urllib3.exceptions import HTTPError, NewConnectionError
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
+from geniza.corpus.dates import DocumentDateMixin
 from geniza.footnotes.models import Creator, Footnote, Source
 
 logger = logging.getLogger(__name__)
@@ -409,7 +409,7 @@ class DocumentSignalHandlers:
         DocumentSignalHandlers.related_change(instance, raw, "delete")
 
 
-class Document(ModelIndexable):
+class Document(ModelIndexable, DocumentDateMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
 
@@ -469,40 +469,6 @@ class Document(ModelIndexable):
         help_text="Decide whether a document should be publicly visible",
     )
 
-    # preliminary date fields so dates can be pulled out from descriptions
-    doc_date_original = models.CharField(
-        "Date on document (original)",
-        help_text="explicit date on the document, in original format",
-        blank=True,
-        max_length=255,
-    )
-    CALENDAR_HIJRI = "h"
-    CALENDAR_KHARAJI = "k"
-    CALENDAR_SELEUCID = "s"
-    CALENDAR_ANNOMUNDI = "am"
-    CALENDAR_CHOICES = (
-        (CALENDAR_HIJRI, "Hijrī"),
-        (CALENDAR_KHARAJI, "Kharājī"),
-        (CALENDAR_SELEUCID, "Seleucid"),
-        (CALENDAR_ANNOMUNDI, "Anno Mundi"),
-    )
-    doc_date_calendar = models.CharField(
-        "Calendar",
-        max_length=2,
-        choices=CALENDAR_CHOICES,
-        help_text="Calendar according to which the document gives a date: "
-        + "Hijrī (AH); Kharājī (rare - mostly for fiscal docs); "
-        + "Seleucid (sometimes listed as Minyan Shetarot); Anno Mundi (Hebrew calendar)",
-        blank=True,
-    )
-    doc_date_standard = models.CharField(
-        "Document date (standardized)",
-        help_text="CE date (convert to Julian before 1582, Gregorian after 1582). "
-        + "Use YYYY, YYYY-MM, YYYY-MM-DD format when possible",
-        blank=True,
-        max_length=255,
-    )
-
     footnotes = GenericRelation(Footnote, related_query_name="document")
 
     log_entries = GenericRelation(LogEntry, related_query_name="document")
@@ -517,15 +483,8 @@ class Document(ModelIndexable):
     def __str__(self):
         return f"{self.shelfmark_display or '??'} (PGPID {self.id or '??'})"
 
-    def clean(self):
-        """
-        Require doc_date_original and doc_date_calendar to be set
-        if either one is present.
-        """
-        if self.doc_date_calendar and not self.doc_date_original:
-            raise ValidationError("Original date is required when calendar is set")
-        if self.doc_date_original and not self.doc_date_calendar:
-            raise ValidationError("Calendar is required when original date is set")
+    # inherits clean method from DocumentDateMixin
+    # make sure to call if extending!
 
     @staticmethod
     def get_by_any_pgpid(pgpid):
@@ -553,33 +512,6 @@ class Document(ModelIndexable):
         """Label for this document; by default, based on the combined shelfmarks from all certain
         associated fragments; uses :attr:`shelfmark_override` if set"""
         return self.shelfmark_override or self.shelfmark
-
-    @property
-    def original_date(self):
-        """Generate formatted display for the document's original/historical date"""
-        # separate with comma if both date and calendar are present, else just return whichever is present
-        # TODO: remove conditional once validation is implemented, since one will never be present alone
-        return " ".join(
-            [
-                v
-                for v in [self.doc_date_original, self.get_doc_date_calendar_display()]
-                if v
-            ]
-        ).strip()
-
-    @property
-    def document_date(self):
-        """Generate formatted display for combined original and standardized dates"""
-        if self.doc_date_standard:
-            # append "CE" to standardized date if it exists
-            standardized_date = " ".join([self.doc_date_standard, "CE"])
-            # add parentheses to standardized date if original date is also present
-            if self.original_date:
-                standardized_date = "".join(["(", standardized_date, ")"])
-            return " ".join([self.original_date, standardized_date]).strip()
-        else:
-            # if there's no standardized date, just display the historical date
-            return self.original_date
 
     @property
     def collection(self):

@@ -17,6 +17,7 @@ from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
 from modeltranslation.manager import MultilingualQuerySet
 from piffle.presentation import IIIFException as piffle_IIIFException
 
+from geniza.corpus.dates import Calendar
 from geniza.corpus.models import (
     Collection,
     Document,
@@ -451,7 +452,7 @@ class TestDocument:
 
         # calendar but no date — error
         doc.doc_date_original = ""
-        doc.doc_date_calendar = Document.CALENDAR_HIJRI
+        doc.doc_date_calendar = Calendar.HIJRI
         with pytest.raises(ValidationError):
             doc.clean()
 
@@ -462,7 +463,7 @@ class TestDocument:
     def test_original_date(self):
         """Should display the historical document date with its calendar name"""
         doc = Document.objects.create(
-            doc_date_original="507", doc_date_calendar=Document.CALENDAR_HIJRI
+            doc_date_original="507", doc_date_calendar=Calendar.HIJRI
         )
         assert doc.original_date == "507 Hijrī"
         # with no calendar, just display the date
@@ -473,7 +474,7 @@ class TestDocument:
         """Should combine historical and converted dates"""
         doc = Document.objects.create(
             doc_date_original="507",
-            doc_date_calendar=Document.CALENDAR_HIJRI,
+            doc_date_calendar=Calendar.HIJRI,
         )
         # should just use the original_date method
         assert doc.document_date == doc.original_date
