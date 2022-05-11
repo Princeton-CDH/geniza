@@ -1,8 +1,8 @@
 import * as Annotorious from "@recogito/annotorious-openseadragon";
 //import '@recogito/annotorious-openseadragon/dist/annotorious.min.css';
-import Toolbar from "@recogito/annotorious-toolbar";
-import AnnotationServerStorage from "./sas_storage.js";
-import TranscriptionEditor from "./editor.js";
+//import Toolbar from "@recogito/annotorious-toolbar";
+import AnnotationServerStorage from "annotorious-sas-storage";
+import TranscriptionEditor from "annotorious-tahqiq";
 
 function setupAnnotation() {
     if (window.osd_viewer == undefined) {
@@ -48,13 +48,14 @@ function setupAnnotation() {
             target: iiifURLs[0], // target first image for now
             manifest: config.manifest_base_url + manifestId,
         };
-        let storagePlugin = AnnotationServerStorage(
+        let storagePlugin = new AnnotationServerStorage(
             anno,
             annotationServerConfig
         );
 
         // Initialize the TranscriptionEditor plugin
-        TranscriptionEditor(anno, storagePlugin);
+        const annotationContainer = document.querySelector(".annotate");
+        new TranscriptionEditor(anno, storagePlugin, annotationContainer);
     }
 }
 
