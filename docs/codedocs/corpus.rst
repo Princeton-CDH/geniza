@@ -13,6 +13,12 @@ models
 .. automodule:: geniza.corpus.models
     :members:
 
+dates
+------
+
+.. automodule:: geniza.corpus.dates
+    :members:
+
 views
 -----
 
@@ -38,6 +44,9 @@ manage commands
     :members:
 
 .. automodule:: geniza.corpus.management.commands.sync_transcriptions
+    :members:
+
+.. automodule:: geniza.corpus.management.commands.convert_dates
     :members:
 
 .. automodule:: geniza.corpus.management.commands.generate_fixtures
