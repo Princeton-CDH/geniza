@@ -3,6 +3,7 @@ import csv
 from django.core.management.base import BaseCommand, CommandError
 
 from geniza.corpus.dates import (
+    Calendar,
     convert_hebrew_date,
     convert_islamic_date,
     display_date_range,
@@ -36,7 +37,7 @@ class Command(BaseCommand):
         )
         # for now, limit to hebrew
         dated_docs = dated_docs.filter(
-            doc_date_calendar__in=[Document.CALENDAR_ANNOMUNDI, Document.CALENDAR_HIJRI]
+            doc_date_calendar__in=[Calendar.ANNO_MUNDI, Calendar.HIJRI]
         )
 
         with open(options["report-path"], "w") as csvfile:
@@ -46,9 +47,9 @@ class Command(BaseCommand):
             for doc in dated_docs:
                 error = converted_date = weekday = ""
                 try:
-                    if doc.doc_date_calendar == Document.CALENDAR_ANNOMUNDI:
+                    if doc.doc_date_calendar == Calendar.ANNO_MUNDI:
                         converted_date = convert_hebrew_date(doc.doc_date_original)
-                    if doc.doc_date_calendar == Document.CALENDAR_HIJRI:
+                    if doc.doc_date_calendar == Calendar.HIJRI:
                         converted_date = convert_islamic_date(doc.doc_date_original)
 
                 except ValueError as e:
