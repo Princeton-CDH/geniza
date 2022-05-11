@@ -1,9 +1,6 @@
 from datetime import datetime
-from pydoc import Doc
-from telnetlib import DO
 from unittest import TestCase
 from unittest.mock import Mock, patch
-from xml.dom import ValidationErr
 
 import pytest
 from attrdict import AttrDict
@@ -19,7 +16,6 @@ from django.utils.translation import activate, deactivate_all, get_language
 from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
 from modeltranslation.manager import MultilingualQuerySet
 from piffle.presentation import IIIFException as piffle_IIIFException
-from yaml import DocumentEndToken
 
 from geniza.corpus.models import (
     Collection,
