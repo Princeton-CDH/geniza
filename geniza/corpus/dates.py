@@ -1,13 +1,13 @@
 # methods to convert historical dates to standard dates
 # will be used for reporting and automatic conversion in admin
 import re
-from abc import abstractclassmethod
 from datetime import date
-from enum import Enum
+from lib2to3.pytree import convert
 
 import convertdate
 from django.core.exceptions import ValidationError
 from django.db import models
+from regex import F
 from unidecode import unidecode
 
 
@@ -92,7 +92,27 @@ class DocumentDateMixin(models.Model):
         if self.doc_date_original and not self.doc_date_calendar:
             raise ValidationError("Calendar is required when original date is set")
 
+    #: calendars that can be converted to Julian/Gregorian
+    can_convert_calendar = [Calendar.ANNO_MUNDI, Calendar.HIJRI]
 
+    def standardize_date(self):
+        """
+        Convert the document's original date to a standardized date, if possible.
+        """
+        if (
+            self.doc_date_original
+            and self.doc_date_calendar in self.can_convert_calendar
+        ):
+            pass
+
+
+# Julian Thursday, 4 October 1582, being followed by Gregorian Friday, 15 October
+# cut off between gregorian/julian dates, in julian days
+gregorian_start_jd = convertdate.julianday.from_julian(1582, 10, 5)
+
+
+# PGP month names don't match exactly those used in convertdate;
+# add local aliases to map them
 hebrew_month_aliases = {
     "Tevet": "Teveth",
     "Iyar": "Iyyar",
@@ -103,6 +123,7 @@ hebrew_month_aliases = {
 
 
 def get_hebrew_month(month_name):
+    """Convert Hebrew month name to month number"""
     # use unidecode to simplify handling with/without accents & underdots
     month_name = unidecode(month_name)
     return (
@@ -113,30 +134,49 @@ def get_hebrew_month(month_name):
     )
 
 
-# for testing
-# assert get_hebrew_month("Kislev") == hebrew.KISLEV
-
-
-# these seem to be the only two word month names
-re_hebrew_date = re.compile(
-    # for months, match any non-numeric characters
-    # "(?:(?P<weekday>\w*day), )?(?:(?P<day>\d+) )?(?:(?P<month>[-\w ']+( I{1,2})?) )?(?P<year>\d{3,4})",#
-    "(?:(?P<weekday>\w*day), )?(?:(?P<day>\d+) )?(?:(?P<month>[^\d]+( I{1,2})?) )?(?P<year>\d{3,4})",
+#: regular expression for extracting information from original date string
+re_original_date = re.compile(
+    # for months, match any non-numeric characters, since some month names are multi-word
+    "(?:(?P<weekday>\w+day), )?(?:(?P<day>\d+) )?(?:(?P<month>[^\d]+( I{1,2})?) )?(?P<year>\d{3,4})",
     flags=re.UNICODE,
 )
 
-
+# characters to remove before applying regex to historical date
 ignorechars = str.maketrans({val: "" for val in "[]()"})
 
 
+def get_calendar_month(convertdate_module, month):
+    if convertdate_module == convertdate.hebrew:
+        return get_hebrew_month(month)
+    elif convertdate_module == convertdate.islamic:
+        return get_islamic_month(month)
+
+
 def convert_hebrew_date(historic_date):
+    return standardize_date(historic_date, Calendar.ANNO_MUNDI)
+
+
+def convert_islamic_date(historic_date):
+    return standardize_date(historic_date, Calendar.HIJRI)
+
+
+calendar_converter = {
+    Calendar.ANNO_MUNDI: convertdate.hebrew,
+    Calendar.HIJRI: convertdate.islamic,
+}
+
+
+def standardize_date(historic_date, calendar):
     """
     convert hebrew date in text format to standard date range
     """
     # some historic dates include brackets or parentheses; ignore them
     historic_date = historic_date.translate(ignorechars)
 
-    match = re_hebrew_date.match(historic_date)
+    # get the convertdate calendar module for the specified calendar
+    converter = calendar_converter[calendar]
+
+    match = re_original_date.match(historic_date)
     if not match:
         print("***regex did not match for %s" % historic_date)
     if match:
@@ -149,14 +189,14 @@ def convert_hebrew_date(historic_date):
             if month.lower() in ["spring", "summer", "fall", "winter"]:
                 month = None
             else:
-                month = get_hebrew_month(month)
+                month = get_calendar_month(converter, month)
 
         day = date_info["day"]
         day = int(day) if day else None
         # weekday = date_info["weekday"]  # use for checking
 
         # convert
-        cdate = get_calendar_date(convertdate.hebrew, year, month, day)
+        cdate = get_calendar_date(converter, year, month, day)
         # cdate = get_hebrew_date(year, month, day)
         # if it returned a single date, convert to a tuple for consistency
         if isinstance(cdate, date):
@@ -166,44 +206,69 @@ def convert_hebrew_date(historic_date):
             return cdate
 
 
-def get_calendar_date(calendar, year, month=None, day=None):
-    """ "
-    Convert a date from a supported calendar and return as a :class:`datetime.date` or tuple of dates,
-    if the conversion is ambiguous. Takes year and optional month and day.
+def get_calendar_date(converter, year, month=None, day=None, mode=None):
+    """
+    Convert a date from a supported calendar and return
+    as a :class:`datetime.date` or tuple of dates for a date range,
+    when the conversion is ambiguous. Takes year and optional month and day.
     """
     # NOTE: this raises an error if conversion is out of range
 
-    # if we know month but not day, figure out max and min
+    # if we know month but not day, determine the number of days in the month
+    # then generate standard dates for max and min (earliest and latest)
     if month and not day:
-        # convertdate is inconsistent
-        if hasattr(calendar, "month_days"):
+        # convertdate is inconsistent; should be fixed in 2.4.1
+        if hasattr(converter, "month_days"):
             # hebrew calendar has month_days method
-            month_days = calendar.month_days(year, month)
+            month_days = converter.month_days(year, month)
         else:
             # islamic calendar has month_length
-            month_days = calendar.month_length(year, month)
+            month_days = converter.month_length(year, month)
         # earliest is 1, latest is month_days
-        return get_calendar_date(calendar, year, month, 1), get_calendar_date(
-            calendar, year, month, month_days
+
+        # when mode is latest, only return the last day of the month
+        if mode == "latest":
+            return get_calendar_date(converter, year, month, month_days)
+        # otherwise, return first and last
+        return get_calendar_date(converter, year, month, 1), get_calendar_date(
+            converter, year, month, month_days
         )
 
-    # if we don't know the month, check how many months (i.e. leap year or not)
+    # if we don't know the month, we want to calculate
+    # the earliest and latest
     if not month:
-        if hasattr(calendar, "year_months"):
-            # hebrew calendar has leap years
-            year_months = calendar.year_months(year)
-        else:
-            # number of months in islamic calendar does not vary by year
-            year_months = len(calendar.MONTHS)
+        if converter == convertdate.hebrew:
+            # hebrew calendar civil year starts in Tishri
+            earliest_month = convertdate.hebrew.TISHRI
+            # Elul is the month before Tishri
+            latest_month = convertdate.hebrew.ELUL
 
-        # earliest is 1, latest is month_days
-        # TODO: check if invalid max day causes a problem
-        return get_calendar_date(calendar, year, 1, 1), get_calendar_date(
-            calendar, year, year_months, 30
+        else:
+            # fall back to the number of months;
+            # In Islamic calendar, does not vary by year
+            year_months = len(converter.MONTHS)
+            earliest_month = 1
+            latest_month = year_months
+
+        # return the first day of the first month and the last day of the last month
+        # OR: would it make more sense / be simpler to get the first day
+        # of the next year and subtract one day?
+        return get_calendar_date(converter, year, earliest_month, 1), get_calendar_date(
+            converter, year, latest_month, mode="latest"
         )
 
-    # all values known; convert and return
-    return date(*calendar.to_gregorian(year, month, day))
+    # year/month/day all values determined; convert and return
+    # convert to julian days
+    converted_jd = converter.to_jd(year, month, day)
+    # if before the start of the gregorian calendar, convert to julian
+    if converted_jd < gregorian_start_jd:
+        converted_date = convertdate.julian.from_jd(converted_jd)
+    # otherwise, convert to gregorian
+    else:
+        converted_date = convertdate.gregorian.from_jd(converted_jd)
+
+    # convert tuple of year, month, day to datetime.date
+    return date(*converted_date)
 
 
 def display_date_range(earliest, latest):
@@ -237,35 +302,3 @@ islamic_month_aliases = {
 def get_islamic_month(month_name):
     month_name = unidecode(month_name)
     return islamic_months.index(islamic_month_aliases.get(month_name, month_name)) + 1
-
-
-def convert_islamic_date(historic_date):
-    # TODO: refactor to consolidate with hebrew date, nearly the same logic
-    match = re_hebrew_date.match(historic_date)
-    if not match:
-        print("***regex did not match for %s" % historic_date)
-    if match:
-        date_info = match.groupdict()
-        print(date_info)
-        year = int(date_info["year"])
-        month = date_info["month"]
-
-        if month:
-            # ignore seasons for now
-            if month.lower() in ["spring", "summer", "fall", "winter"]:
-                month = None
-            else:
-                month = get_islamic_month(month)
-
-        day = date_info["day"]
-        day = int(day) if day else None
-
-        # convert
-        cdate = get_calendar_date(convertdate.islamic, year, month, day)
-        # cdate = get_hebrew_date(year, month, day)
-        # if it returned a single date, convert to a tuple for consistency
-        if isinstance(cdate, date):
-            # could check weekday and warn here...
-            return (cdate, cdate)
-        else:
-            return cdate
