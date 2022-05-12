@@ -27,6 +27,39 @@ class Calendar:
     can_convert = [ANNO_MUNDI, HIJRI]
 
 
+class PartialDate:
+    """Simple partial date object to handle parsing and display of
+    dates in the format YYYY, YYYY-MM, or YYYY-MM-DD. Display format
+    is based on known precision of year, month, or day."""
+
+    available_precision = ["year", "month", "day"]
+    # display format determined by precision
+    display_format = {
+        "year": "Y",
+        "month": "F Y",
+        "day": "DATE_FORMAT",  # honors locale formatting
+    }
+
+    def __init__(self, str):
+        # TODO: probably need some validation/error handling here
+        # for real world use
+        date_parts = str.split("-")
+        # since we don't currently support unknown year,
+        # precision can be determined by number of date parts
+        self.precision = self.available_precision[len(date_parts) - 1]
+        # fill in with 1 any unknowns for month/day
+        date_parts += [1] * (3 - len(date_parts))
+        print(date_parts)
+        # cast to integer and convert to datetime.date
+        self.date = date(*[int(p) for p in date_parts])
+
+    def __str__(self):
+        # format the date based on known precision
+        return date_format(
+            self.date, format=self.display_format[self.precision], use_l10n=True
+        )
+
+
 class DocumentDateMixin(models.Model):
     """Mixin for document date fields (original and standardized),
     and related logic for displaying, converting,a nd validating dates."""
@@ -73,23 +106,18 @@ class DocumentDateMixin(models.Model):
 
     @property
     def standard_date(self):
-        """Display standard date in human readable format, when set"""
+        """Display standard date in human readable format, when set."""
         # bail out if there is nothing to display
         if not self.doc_date_standard:
             return
 
         # currently storing in isoformat, with slash if a date range
         dates = self.doc_date_standard.split("/")
-        # we should always have at least one date, if set
-        # NOTE: possibly not in full iso format for user-entered dates
-        # convert isoformat to date object
-        date_parts = [date.fromisoformat(d) for d in dates]
+        # we should always have at least one date, if date is set
+        # convert to local partial date object for precision-aware string formatting
         # join dates with n-dash if more than one;
-        # use django date format filter to convert for locale-aware display;
         # add CE to the end to make calendar system explicit
-        return "%s CE" % " — ".join(
-            [date_format(d, format="DATE_FORMAT", use_l10n=True) for d in date_parts]
-        )
+        return "%s CE" % " — ".join(str(PartialDate(d)) for d in dates)
 
     @property
     def document_date(self):
@@ -101,12 +129,13 @@ class DocumentDateMixin(models.Model):
                 # NOTE: we want no-wrap for individual dates when displaying as html
                 # may want to split out formatted/unformatted versions
                 return mark_safe(
-                    "<span>%s</span> <span>(%s)<span>"
+                    "<span>%s</span> <span>(%s)</span>"
                     % (
                         self.original_date,
                         standardized_date,
                     )
                 )
+            # should we always use spans, or only when both dates are present?
             return standardized_date
         else:
             # if there's no standardized date, just display the historical date
