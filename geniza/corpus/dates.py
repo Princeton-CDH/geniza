@@ -6,6 +6,8 @@ from datetime import date
 import convertdate
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.formats import date_format
+from django.utils.safestring import mark_safe
 from unidecode import unidecode
 
 
@@ -20,6 +22,9 @@ class Calendar:
     SELEUCID = "s"
     #: Anno Mundi calendar (Hebrew)
     ANNO_MUNDI = "am"
+
+    #: calendars that can be converted to Julian/Gregorian
+    can_convert = [ANNO_MUNDI, HIJRI]
 
 
 class DocumentDateMixin(models.Model):
@@ -67,15 +72,42 @@ class DocumentDateMixin(models.Model):
         ).strip()
 
     @property
+    def standard_date(self):
+        """Display standard date in human readable format, when set"""
+        # bail out if there is nothing to display
+        if not self.doc_date_standard:
+            return
+
+        # currently storing in isoformat, with slash if a date range
+        dates = self.doc_date_standard.split("/")
+        # we should always have at least one date, if set
+        # NOTE: possibly not in full iso format for user-entered dates
+        # convert isoformat to date object
+        date_parts = [date.fromisoformat(d) for d in dates]
+        # join dates with n-dash if more than one;
+        # use django date format filter to convert for locale-aware display;
+        # add CE to the end to make calendar system explicit
+        return "%s CE" % " — ".join(
+            [date_format(d, format="DATE_FORMAT", use_l10n=True) for d in date_parts]
+        )
+
+    @property
     def document_date(self):
         """Generate formatted display of combined original and standardized dates"""
         if self.doc_date_standard:
-            # append "CE" to standardized date if it exists
-            standardized_date = " ".join([self.doc_date_standard, "CE"])
+            standardized_date = self.standard_date
             # add parentheses to standardized date if original date is also present
             if self.original_date:
-                standardized_date = "".join(["(", standardized_date, ")"])
-            return " ".join([self.original_date, standardized_date]).strip()
+                # NOTE: we want no-wrap for individual dates when displaying as html
+                # may want to split out formatted/unformatted versions
+                return mark_safe(
+                    "<span>%s</span> <span>(%s)<span>"
+                    % (
+                        self.original_date,
+                        standardized_date,
+                    )
+                )
+            return standardized_date
         else:
             # if there's no standardized date, just display the historical date
             return self.original_date
@@ -90,18 +122,21 @@ class DocumentDateMixin(models.Model):
         if self.doc_date_original and not self.doc_date_calendar:
             raise ValidationError("Calendar is required when original date is set")
 
-    #: calendars that can be converted to Julian/Gregorian
-    can_convert_calendar = [Calendar.ANNO_MUNDI, Calendar.HIJRI]
-
-    def standardize_date(self):
+    def standardize_date(self, update=False):
         """
         Convert the document's original date to a standardized date, if possible.
+        If update is requested, will store the converted value on :attr:`doc_date_standard`
         """
-        if (
-            self.doc_date_original
-            and self.doc_date_calendar in self.can_convert_calendar
-        ):
-            pass
+        # if original date is set and conversion is supported for this calendar,
+        # generate the standardized date
+        if self.doc_date_original and self.doc_date_calendar in Calendar.can_convert:
+            converted_date = display_date_range(
+                *standardize_date(self.doc_date_original, self.doc_date_calendar)
+            )
+            # if update is requested and standard date is unset, save the converted date
+            if update and not self.doc_date_standard:
+                self.doc_date_standard = converted_date
+            return converted_date
 
 
 # Julian Thursday, 4 October 1582, being followed by Gregorian Friday, 15 October
@@ -271,7 +306,7 @@ def get_calendar_date(converter, year, month=None, day=None, mode=None):
 
 def display_date_range(earliest, latest):
     """
-    display a date range in a human readable format
+    display a date range or single date in a isoformat
     """
     # if both dates are the same, only display once
     if earliest == latest:

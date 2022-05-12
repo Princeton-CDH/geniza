@@ -483,6 +483,20 @@ class Document(ModelIndexable, DocumentDateMixin):
     def __str__(self):
         return f"{self.shelfmark_display or '??'} (PGPID {self.id or '??'})"
 
+    def save(self, *args, **kwargs):
+        # update standardized date if appropriate/supported
+        # TODO: could improve by making use of track changes;
+        # should we overwrite standard if original changed?
+        try:
+            self.standardize_date(update=True)
+        except ValueError as e:
+            # report to user when called via django admin and request is set
+            if hasattr(self, "request"):
+                messages.warning(self.request, "Error standardizing date: %s" % e)
+            # otherwise ignore (unsupported date format)
+
+        super().save(*args, **kwargs)
+
     # inherits clean method from DocumentDateMixin
     # make sure to call if extending!
 

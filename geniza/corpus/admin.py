@@ -195,7 +195,14 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         "has_image",
         "is_public",
     )
-    readonly_fields = ("created", "last_modified", "shelfmark", "id", "view_old_pgpids")
+    readonly_fields = (
+        "created",
+        "last_modified",
+        "shelfmark",
+        "id",
+        "view_old_pgpids",
+        "standard_date",
+    )
     search_fields = (
         "fragments__shelfmark",
         "tags__name",
@@ -241,7 +248,12 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         ("languages", "secondary_languages"),
         "language_note",
         "description",
-        ("doc_date_original", "doc_date_calendar", "doc_date_standard"),
+        (
+            "doc_date_original",
+            "doc_date_calendar",
+            "doc_date_standard",
+            "standard_date",
+        ),
         "tags",
         "status",
         ("needs_review", "notes"),
@@ -349,6 +361,10 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
             # for the new model
             obj.created = timezone.now()
             obj.last_modified = None
+
+        # set request on the object so that save method can send messages
+        # if there is an error converting the date
+        obj.request = request
         super().save_model(request, obj, form, change)
 
     # CSV EXPORT -------------------------------------------------------------

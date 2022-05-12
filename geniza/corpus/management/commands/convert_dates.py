@@ -2,17 +2,12 @@ import csv
 
 from django.core.management.base import BaseCommand, CommandError
 
-from geniza.corpus.dates import (
-    Calendar,
-    convert_hebrew_date,
-    convert_islamic_date,
-    display_date_range,
-)
+from geniza.corpus.dates import Calendar, display_date_range, standardize_date
 from geniza.corpus.models import Document
 
 
 class Command(BaseCommand):
-    """Report on date conversions for current data"""
+    """Report on historical date conversions for current data"""
 
     report_fields = [
         "pgpid",
@@ -31,14 +26,15 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        # find all documents with original dates set
+        # NOTE: for now, this script only reports on date conversion
+        # in future, will add an update mode to clean up and standardize
+        # existing dates in the databse
+
+        # find all documents with original dates set;
+        # limit to calendars that we support converting
         dated_docs = Document.objects.exclude(
             doc_date_original="", doc_date_calendar=""
-        )
-        # for now, limit to hebrew
-        dated_docs = dated_docs.filter(
-            doc_date_calendar__in=[Calendar.ANNO_MUNDI, Calendar.HIJRI]
-        )
+        ).filter(doc_date_calendar__in=Calendar.can_convert)
 
         with open(options["report-path"], "w") as csvfile:
             csvwriter = csv.writer(csvfile)
@@ -47,21 +43,17 @@ class Command(BaseCommand):
             for doc in dated_docs:
                 error = converted_date = weekday = ""
                 try:
-                    if doc.doc_date_calendar == Calendar.ANNO_MUNDI:
-                        converted_date = convert_hebrew_date(doc.doc_date_original)
-                    if doc.doc_date_calendar == Calendar.HIJRI:
-                        converted_date = convert_islamic_date(doc.doc_date_original)
+                    converted_date = standardize_date(
+                        doc.doc_date_original, doc.doc_date_calendar
+                    )
 
                 except ValueError as e:
                     error = str(e)  # report if error on conversion
-                # print(
-                #     "\nPGPID %s : %s   =   %s  | %s\n"
-                #     % (doc.id, doc.doc_date_original, doc.doc_date_standard, converted_date)
-                # )
-                # if we have a single date, determine weekday and report
+                # if we have a single date, determine weekday and include in report
                 if converted_date and converted_date[0] == converted_date[1]:
                     weekday = converted_date[0].strftime("%A")
 
+                # output current and converted values in csv
                 csvwriter.writerow(
                     [
                         doc.id,
