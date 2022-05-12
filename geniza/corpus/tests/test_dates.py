@@ -5,7 +5,13 @@ import convertdate
 import pytest
 from django.core.exceptions import ValidationError
 
-from geniza.corpus.dates import Calendar, convert_hebrew_date, get_hebrew_month
+from geniza.corpus.dates import (
+    Calendar,
+    convert_hebrew_date,
+    convert_islamic_date,
+    get_hebrew_month,
+    get_islamic_month,
+)
 from geniza.corpus.models import Document
 
 
@@ -94,3 +100,38 @@ def test_convert_hebrew_date():
     # hebrew civil calendar begins in Tishri, in September
     assert converted_date[0] == date(1871, 9, 16)
     assert converted_date[1] == date(1872, 10, 2)
+
+
+# test islamic date conversion
+def test_get_islamic_month():
+    # month name as used in the convertdate library
+    assert get_islamic_month("Rajab") == 7  # referenced by number, no defines
+    # month name without accents
+    assert get_islamic_month("Safar") == 2
+    # local override
+    assert get_islamic_month("Muharram") == 1
+    assert get_islamic_month("Dhū l-Qaʿda") == 11
+
+
+def test_convert_islamic_date():
+    # single day
+    converted_date = convert_islamic_date("Tuesday, 27 Dhū l-Qaʿda 632")
+    # start/end should be the same
+    assert converted_date[0] == converted_date[1]
+    # expected converted date
+    assert converted_date[1] == date(1235, 8, 13)
+
+    # year/month
+    converted_date = convert_islamic_date("Rajab 495")
+    # expect 1102-04-21/1102-05-20
+    assert converted_date[0] == date(1102, 4, 21)
+    assert converted_date[1] == date(1102, 5, 20)
+
+    # year only
+    converted_date = convert_islamic_date("441")
+    # should be 1049/1050
+    assert converted_date[0].year == 1049
+    assert converted_date[1].year == 1050
+    # 1049-06-05/1050-05-25
+    assert converted_date[0] == date(1049, 6, 5)
+    assert converted_date[1] == date(1050, 5, 25)

@@ -7,6 +7,7 @@ from lib2to3.pytree import convert
 import convertdate
 from django.core.exceptions import ValidationError
 from django.db import models
+from pkg_resources import cleanup_resources
 from regex import F
 from unidecode import unidecode
 
@@ -137,7 +138,7 @@ def get_hebrew_month(month_name):
 #: regular expression for extracting information from original date string
 re_original_date = re.compile(
     # for months, match any non-numeric characters, since some month names are multi-word
-    "(?:(?P<weekday>\w+day), )?(?:(?P<day>\d+) )?(?:(?P<month>[^\d]+( I{1,2})?) )?(?P<year>\d{3,4})",
+    "(?:(?P<weekday>\w+day),? )?(?:(?P<day>\d+) )?(?:(?P<month>[^\d]+( I{1,2})?) )?(?P<year>\d{3,4})",
     flags=re.UNICODE,
 )
 
@@ -291,10 +292,11 @@ islamic_months = [unidecode(m) for m in convertdate.islamic.MONTHS]
 islamic_month_aliases = {
     "Muharram": "al-Muharram",
     "Rabi' I": "Rabi' al-`Awwal",
-    "Rabi' II": "Rabi' ath-Thani,",  # is comma an error in convertdate?
-    "Jumada I": "Jumada al-`Awwal",
+    # NOTE: trailing commas are typeod in convertdate; will be fixed in 2.4.1
+    "Rabi' II": "Rabi' ath-Thani,",
+    "Jumada I": "Jumada al-`Awwal,",
     "Jumada II": "Jumada ath-Thaniyah,",
-    "Dhu l-Qa`da": "Zu al-Qa`dah",
+    "Dhu l-Qa'da": "Zu al-Qa'dah",
     "Dhu l-Hijja": "Zu al-Hijjah",
 }
 
