@@ -10,6 +10,7 @@ from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager
 from multiselectfield import MultiSelectField
 
+from geniza.common.fields import NaturalSortField
 from geniza.common.models import TrackChangesModel
 
 
@@ -33,7 +34,10 @@ class SourceLanguage(models.Model):
 
 
 class CreatorManager(MultilingualManager):
+    """Custom manager for :class:`Creator` with natural key lookup"""
+
     def get_by_natural_key(self, last_name, first_name):
+        """natural key lookup: based on combination of last name and first name"""
         return self.get(last_name=last_name, first_name=first_name)
 
 
@@ -57,6 +61,7 @@ class Creator(models.Model):
         return ", ".join([n for n in [self.last_name, self.first_name] if n])
 
     def natural_key(self):
+        """natural key: tuple of last name, first name"""
         return (self.last_name, self.first_name)
 
     def firstname_lastname(self):
@@ -388,6 +393,8 @@ class FootnoteQuerySet(models.QuerySet):
 
 
 class Footnote(TrackChangesModel):
+    """a footnote that links a :class:`~geniza.corpus.models.Document` to a :class:`Source`"""
+
     source = models.ForeignKey(Source, on_delete=models.CASCADE)
     location = models.CharField(
         max_length=255,
@@ -395,6 +402,7 @@ class Footnote(TrackChangesModel):
         help_text="Location within the source "
         + "(e.g., document number or page range)",
     )
+    location_sort = NaturalSortField(for_field="location")
 
     EDITION = "E"
     TRANSLATION = "T"
@@ -424,14 +432,16 @@ class Footnote(TrackChangesModel):
         on_delete=models.CASCADE,
         limit_choices_to=models.Q(app_label="corpus"),
     )
-    object_id = GfkLookupField("content_type")
+    object_id = GfkLookupField(
+        "content_type", help_text="If content type is Document, this is PGPID"
+    )
     content_object = GenericForeignKey()
 
     # replace default queryset with customized version
     objects = FootnoteQuerySet.as_manager()
 
     class Meta:
-        ordering = ["source", "location"]
+        ordering = ["source", "location_sort"]
 
     def __str__(self):
         choices = dict(self.DOCUMENT_RELATION_TYPES)

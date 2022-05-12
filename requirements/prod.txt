@@ -7,7 +7,9 @@ django-taggit>=1.5.1,<2.0
 piffle>=0.4
 taggit-selectize
 django-multiselectfield
-django-modeltranslation
+# NOTE: as of 2022-04-29, modeltranslation v0.17.6 causes an error in Django admin
+# TypeError: Cannot use multi-field values as a filter value.
+django-modeltranslation==0.17.5
 django-admin-sortable2
 python-dateutil>=2.8
 django-tabular-export
@@ -21,8 +23,9 @@ eulxml
 rich
 wagtail>=2.15.3,<2.16
 wagtail-localize
-djiffy>=0.7.2
+djiffy>=0.7.3
 natsort
 django-widget-tweaks
 django-csp-helpers
 django-fullurl
+django-admin-inline-paginator

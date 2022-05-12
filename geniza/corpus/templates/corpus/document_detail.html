@@ -58,7 +58,7 @@
             {# metadata #}
             <dl class="metadata primary">
                 <dt>{% translate 'Shelfmark' %}</dt>
-                <dd class="shelfmark">{% include "corpus/snippets/document_shelfmarks.html" %}</dd>
+                <dd class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</dd>
                 {% if document.digital_editions %}
                     <dt>
                         {# Translators: Editor label #}
@@ -77,39 +77,45 @@
                 {% endif %}
             </dl>
             {# secondary metadata #}
-            {% if document.languages.exists or document.secondary_languages.exists %}
-                <dl class="metadata secondary">
-                    {# NOTE: placeholder to populate translation string #}
-                    {# Translators: label for date of this document, if known #}
-                    <!-- {% translate "Document Date" %} -->
-                    {% if document.languages.exists %}
-                        <dt>
-                            {# Translators: Primary language label #}
-                            {% blocktranslate count counter=document.languages.count trimmed %}
-                                Primary Language
-                            {% plural %}
-                                Primary Languages
-                            {% endblocktranslate %}
-                        </dt>
-                        {% for lang in document.languages.all %}
-                            <dd>{{ lang }}</dd>
-                        {% endfor %}
-                    {% endif %}
-                    {% if document.secondary_languages.exists %}
-                        <dt>
-                            {# Translators: Secondary language label #}
-                            {% blocktranslate count counter=document.secondary_languages.count trimmed %}
-                                Secondary Language
-                            {% plural %}
-                                Secondary Languages
-                            {% endblocktranslate %}
-                        </dt>
-                        {% for lang in document.secondary_languages.all %}
-                            <dd>{{ lang }}</dd>
-                        {% endfor %}
-                    {% endif %}
-                </dl>
-            {% endif %}
+            <dl class="metadata secondary">
+                {% if document.document_date %}
+                    <dt>
+                        {# Translators: label for date of this document, if known #}
+                        {% translate "Document Date" %}
+                    </dt>
+                    <dd>
+                        <time{% if document.doc_date_standard %} datetime="{{ document.doc_date_standard }}"{% endif %}>
+                            {{ document.document_date }}
+                        </time>
+                    </dd>
+                {% endif %}
+                {% if document.languages.exists %}
+                    <dt>
+                        {# Translators: Primary language label #}
+                        {% blocktranslate count counter=document.languages.count trimmed %}
+                            Primary Language
+                        {% plural %}
+                            Primary Languages
+                        {% endblocktranslate %}
+                    </dt>
+                    {% for lang in document.languages.all %}
+                        <dd>{{ lang }}</dd>
+                    {% endfor %}
+                {% endif %}
+                {% if document.secondary_languages.exists %}
+                    <dt>
+                        {# Translators: Secondary language label #}
+                        {% blocktranslate count counter=document.secondary_languages.count trimmed %}
+                            Secondary Language
+                        {% plural %}
+                            Secondary Languages
+                        {% endblocktranslate %}
+                    </dt>
+                    {% for lang in document.secondary_languages.all %}
+                        <dd>{{ lang }}</dd>
+                    {% endfor %}
+                {% endif %}
+            </dl>
         </section>
 
         {% if document.tags.exists %}
@@ -157,11 +163,11 @@
                 <section>
                     <dd class="metadata">
                         <dt>
-                            {# Translators: Other documents on the same fragment #}
+                            {# Translators: Other documents on the same fragment/shelfmark #}
                             {% blocktranslate count counter=document.fragments.count trimmed %}
-                                Other documents on this fragment
+                                Other documents on this shelfmark
                             {% plural %}
-                                Other documents on these fragments
+                                Other documents on these shelfmarks
                             {% endblocktranslate %}
                         </dt>
                         {% for doc in other_docs %}

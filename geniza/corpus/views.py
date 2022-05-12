@@ -48,7 +48,9 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         "relevance": "-score",
         "scholarship_desc": "-scholarship_count_i",
         "scholarship_asc": "scholarship_count_i",
-        #        'name': 'sort_name_isort'
+        "input_date_desc": "-input_date_dt",
+        "input_date_asc": "input_date_dt",
+        "shelfmark": "shelfmark_s",
     }
 
     def dispatch(self, request, *args, **kwargs):
@@ -63,8 +65,8 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         return super().dispatch(request, *args, **kwargs)
 
     def last_modified(self):
-        # override last modified from solr mixin to not return a value when
-        # sorting by random
+        """override last modified from solr mixin to not return a value when
+        sorting by random"""
         if self.request.GET.get("sort") in [None, "random"]:
             return None
         return super().last_modified()
@@ -79,6 +81,7 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         return self.solr_sort[sort_option]
 
     def get_form_kwargs(self):
+        """get form arguments from request and configured defaults"""
         kwargs = super().get_form_kwargs()
         # use GET instead of default POST/PUT for form data
         form_data = self.request.GET.copy()
@@ -102,7 +105,7 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         return kwargs
 
     def get_queryset(self):
-
+        """Perform requested search and return solr queryset"""
         # limit to documents with published status (i.e., no suppressed documents);
         # get counts of facets, excluding type filter
         documents = (
@@ -188,6 +191,8 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         return paginate_by
 
     def get_context_data(self, **kwargs):
+        """extend context data to add page metadata, highlighting,
+        and update form with facets"""
         context_data = super().get_context_data(**kwargs)
 
         paged_result = context_data["page_obj"].object_list
@@ -216,6 +221,7 @@ class DocumentDetailBase(SolrLastModifiedMixin):
     with current PGPID."""
 
     def get(self, request, *args, **kwargs):
+        """extend GET to check for old pgpid and redirect on 404"""
         try:
             return super().get(request, *args, **kwargs)
         except Http404:
@@ -244,9 +250,11 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
     viewname = "corpus:document"
 
     def page_title(self):
+        """page title, for metadata; uses document title"""
         return self.get_object().title
 
     def page_description(self):
+        """page description, for metadata; uses truncated document description"""
         return Truncator(self.get_object().description).words(20)
 
     def get_queryset(self, *args, **kwargs):
@@ -255,6 +263,7 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
         return queryset.filter(status=Document.PUBLIC)
 
     def get_context_data(self, **kwargs):
+        """extend context data to add page metadata"""
         context_data = super().get_context_data(**kwargs)
         context_data.update(
             {
@@ -278,7 +287,8 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
 
 
 class DocumentScholarshipView(DocumentDetailView):
-    """List of :class:`~geniza.footnotes.models.Footnote`s for a Document"""
+    """List of :class:`~geniza.footnotes.models.Footnote`
+    references for a single :class:`~geniza.corpus.models.Document`"""
 
     template_name = "corpus/document_scholarship.html"
     viewname = "corpus:document-scholarship"
@@ -450,6 +460,7 @@ class DocumentAnnotationListView(DocumentDetailView):
     viewname = "corpus:document-annotations"
 
     def get(self, request, *args, **kwargs):
+        """handle GET request: construct and return JSON annotation list"""
         document = self.get_object()
         digital_editions = document.digital_editions()
         # while sync transcription is in transition, we need to check for
@@ -600,7 +611,7 @@ def old_pgp_edition(editions):
 
 def old_pgp_tabulate_data(queryset):
     """Takes a :class:`~geniza.corpus.models.Document` queryset and
-    yields rows of data for serialization as csv in :method:`pgp_metadata_for_old_site`"""
+    yields rows of data for serialization as csv in :meth:`pgp_metadata_for_old_site`"""
     # NOTE: This logic assumes that documents will always have a fragment
     for doc in queryset:
         primary_fragment = doc.textblock_set.first().fragment

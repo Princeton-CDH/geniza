@@ -4,12 +4,13 @@ from collections import defaultdict
 from itertools import chain
 
 from django.conf import settings
-from django.contrib import messages
+from django.contrib import admin, messages
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Lower
@@ -39,7 +40,10 @@ logger = logging.getLogger(__name__)
 
 
 class CollectionManager(models.Manager):
+    """Custom manager for :class:`Collection` with natural key lookup"""
+
     def get_by_natural_key(self, name, library):
+        """get by natural key: combination of name and library"""
         return self.get(name=name, library=library)
 
 
@@ -93,11 +97,15 @@ class Collection(models.Model):
         return ", ".join(values)
 
     def natural_key(self):
+        """natural key: tuple of name and library"""
         return (self.name, self.library)
 
 
 class LanguageScriptManager(models.Manager):
+    """Custom manager for :class:`LanguageScript` with natural key lookup"""
+
     def get_by_natural_key(self, language, script):
+        """get by natural key: combination of language and script"""
         return self.get(language=language, script=script)
 
 
@@ -139,11 +147,15 @@ class LanguageScript(models.Model):
         return self.display_name or f"{self.language} ({self.script} script)"
 
     def natural_key(self):
+        """natural key: tuple of language and script"""
         return (self.language, self.script)
 
 
 class FragmentManager(models.Manager):
+    """Custom manager for :class:`Fragment` with natural key lookup"""
+
     def get_by_natural_key(self, shelfmark):
+        """get fragment by natural key: shelfmark"""
         return self.get(shelfmark=shelfmark)
 
 
@@ -195,6 +207,7 @@ class Fragment(TrackChangesModel):
         return self.shelfmark
 
     def natural_key(self):
+        """natural key: shelfmark"""
         return (self.shelfmark,)
 
     def iiif_images(self):
@@ -228,6 +241,7 @@ class Fragment(TrackChangesModel):
         return images, labels
 
     def iiif_thumbnails(self):
+        """html for thumbnails of iiif image, for display in admin"""
         # if there are no iiif images for this fragment, bail out
         iiif_images = self.iiif_images()
         if iiif_images is None:
@@ -243,31 +257,33 @@ class Fragment(TrackChangesModel):
             )
         )
 
+    # CUDL manifests attribution include a metadata statement, but it
+    # is not relevant for us since we aren't displaying their metadata
+    cudl_metadata_str = "This metadata is published free of restrictions, under the terms of the Creative Commons CC0 1.0 Universal Public Domain Dedication."
+
     @property
     def attribution(self):
         """Generate an attribution for this fragment"""
-        # if there is no iiif for this fragment, bail out
-        if not self.iiif_url:
-            return None
-        # try to use locally cached manifest
+        # pull from locally cached manifest
+        # (don't hit remote url if not cached)
         if self.manifest:
             attribution = self.manifest.extra_data.get("attribution", "")
-        else:
-            try:
-                # otherwise try to use remote manifest attribution attribute
-                remote_manifest = IIIFPresentation.from_url(self.iiif_url)
-                try:
-                    attribution = remote_manifest.attribution
-                except AttributeError:
-                    # attribution is optional, so ignore if not present
-                    attribution = None
-            except IIIFException:
-                logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
-        if attribution:
-            # Remove CUDL metadata string from displayed attribution
-            cudl_metadata_str = "This metadata is published free of restrictions, under the terms of the Creative Commons CC0 1.0 Universal Public Domain Dedication."
-            return mark_safe(attribution.replace(cudl_metadata_str, "").strip())
+            if attribution:
+                # Remove CUDL metadata string from displayed attribution
+                return mark_safe(
+                    attribution.replace(self.cudl_metadata_str, "").strip()
+                )
         return None
+
+    def clean(self):
+        """Custom validation and cleaning; currently only :meth:`clean_iiif_url`"""
+        self.clean_iiif_url()
+
+    def clean_iiif_url(self):
+        """Remove redundant manifest parameter from IIIF url when present"""
+        # some iiif viewers have a terrible convention of repeating the full manifest
+        # url in a query string; strip that out if it's there
+        self.iiif_url = self.iiif_url.split("?manifest=")[0]
 
     def save(self, *args, **kwargs):
         """Remember how shelfmarks have changed by keeping a semi-colon list
@@ -286,8 +302,10 @@ class Fragment(TrackChangesModel):
             # if iiif url has changed and there is a value, import and update
             if self.iiif_url:
                 try:
-                    ManifestImporter().import_paths([self.iiif_url])
-                    self.manifest = Manifest.objects.filter(uri=self.iiif_url).first()
+                    # importer should return the relevant manifest
+                    # (either newly imported or already in the database)
+                    imported = ManifestImporter().import_paths([self.iiif_url])
+                    self.manifest = imported[0] if imported else None
                 except (IIIFException, NewConnectionError):
                     # clear out the manifest if there was an error
                     self.manifest = None
@@ -306,12 +324,15 @@ class Fragment(TrackChangesModel):
 
 
 class DocumentTypeManager(models.Manager):
+    """Custom manager for :class:`DocumentType` with natural key lookup"""
+
     def get_by_natural_key(self, name):
+        "natural key lookup, based on name"
         return self.get(name_en=name)
 
 
 class DocumentType(models.Model):
-    """The category of document in question."""
+    """Controlled vocabulary of document types."""
 
     name = models.CharField(max_length=255, unique=True)
     display_label = models.CharField(
@@ -326,6 +347,7 @@ class DocumentType(models.Model):
         return self.display_label or self.name
 
     def natural_key(self):
+        """Natural key, name"""
         return (self.name,)
 
 
@@ -376,11 +398,13 @@ class DocumentSignalHandlers:
 
     @staticmethod
     def related_save(sender, instance=None, raw=False, **_kwargs):
+        """reindex associated documents when a related object is saved"""
         # delegate to common method
         DocumentSignalHandlers.related_change(instance, raw, "save")
 
     @staticmethod
     def related_delete(sender, instance=None, raw=False, **_kwargs):
+        """reindex associated documents when a related object is deleted"""
         # delegate to common method
         DocumentSignalHandlers.related_change(instance, raw, "delete")
 
@@ -392,6 +416,12 @@ class Document(ModelIndexable):
     id = models.AutoField("PGPID", primary_key=True)
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
+    )
+    shelfmark_override = models.CharField(
+        "Shelfmark Override",
+        blank=True,
+        max_length=500,
+        help_text="Override default shelfmark display, e.g. to indicate a range of shelfmarks.",
     )
     description = models.TextField(blank=True)
     doctype = models.ForeignKey(
@@ -485,7 +515,17 @@ class Document(ModelIndexable):
         # ordering = [Least('textblock__fragment__shelfmark')]
 
     def __str__(self):
-        return f"{self.shelfmark or '??'} (PGPID {self.id or '??'})"
+        return f"{self.shelfmark_display or '??'} (PGPID {self.id or '??'})"
+
+    def clean(self):
+        """
+        Require doc_date_original and doc_date_calendar to be set
+        if either one is present.
+        """
+        if self.doc_date_calendar and not self.doc_date_original:
+            raise ValidationError("Original date is required when calendar is set")
+        if self.doc_date_original and not self.doc_date_calendar:
+            raise ValidationError("Calendar is required when original date is set")
 
     @staticmethod
     def get_by_any_pgpid(pgpid):
@@ -508,24 +548,38 @@ class Document(ModelIndexable):
         )
 
     @property
-    def certain_join_shelfmarks(self):
-        return list(
-            dict.fromkeys(
-                block.fragment.shelfmark
-                for block in self.textblock_set.filter(certain=True)
-            ).keys()
-        )
-
-    # NOTE: not currently used; remove or revise if this remains unused
-    @property
+    @admin.display(description="Shelfmark")
     def shelfmark_display(self):
-        """First shelfmark plus join indicator for shorter display."""
-        # NOTE preliminary pending more discussion and implementation of #154:
-        # https://github.com/Princeton-CDH/geniza/issues/154
-        certain = self.certain_join_shelfmarks
-        if not certain:
-            return None
-        return certain[0] + (" + …" if len(certain) > 1 else "")
+        """Label for this document; by default, based on the combined shelfmarks from all certain
+        associated fragments; uses :attr:`shelfmark_override` if set"""
+        return self.shelfmark_override or self.shelfmark
+
+    @property
+    def original_date(self):
+        """Generate formatted display for the document's original/historical date"""
+        # separate with comma if both date and calendar are present, else just return whichever is present
+        # TODO: remove conditional once validation is implemented, since one will never be present alone
+        return " ".join(
+            [
+                v
+                for v in [self.doc_date_original, self.get_doc_date_calendar_display()]
+                if v
+            ]
+        ).strip()
+
+    @property
+    def document_date(self):
+        """Generate formatted display for combined original and standardized dates"""
+        if self.doc_date_standard:
+            # append "CE" to standardized date if it exists
+            standardized_date = " ".join([self.doc_date_standard, "CE"])
+            # add parentheses to standardized date if original date is also present
+            if self.original_date:
+                standardized_date = "".join(["(", standardized_date, ")"])
+            return " ".join([self.original_date, standardized_date]).strip()
+        else:
+            # if there's no standardized date, just display the historical date
+            return self.original_date
 
     @property
     def collection(self):
@@ -544,21 +598,25 @@ class Document(ModelIndexable):
         )
 
     def all_languages(self):
+        """comma delimited string of all primary languages for this document"""
         return ", ".join([str(lang) for lang in self.languages.all()])
 
     all_languages.short_description = "Language"
 
     def all_secondary_languages(self):
+        """comma delimited string of all secondary languages for this document"""
         return ",".join([str(lang) for lang in self.secondary_languages.all()])
 
     all_secondary_languages.short_description = "Secondary Language"
 
     def all_tags(self):
+        """comma delimited string of all tags for this document"""
         return ", ".join(t.name for t in self.tags.all())
 
     all_tags.short_description = "tags"
 
     def alphabetized_tags(self):
+        """tags in alphabetical order, case-insensitive sorting"""
         return self.tags.order_by(Lower("name"))
 
     def is_public(self):
@@ -570,6 +628,7 @@ class Document(ModelIndexable):
     is_public.admin_order_field = "status"
 
     def get_absolute_url(self):
+        """url for this document"""
         return reverse("corpus:document", args=[str(self.id)])
 
     @property
@@ -644,7 +703,7 @@ class Document(ModelIndexable):
     @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
-        return f"{self.doctype or _('Unknown type')}: {self.shelfmark or '??'}"
+        return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"
 
     def editions(self):
         """All footnotes for this document where the document relation includes
@@ -710,6 +769,7 @@ class Document(ModelIndexable):
 
     @classmethod
     def total_to_index(cls):
+        """static method to efficiently count the number of documents to index in Solr"""
         # quick count for parasolr indexing (don't do prefetching just to get the total!)
         return cls.objects.count()
 
@@ -755,7 +815,10 @@ class Document(ModelIndexable):
                 "description_t": strip_tags(self.description_en),
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
-                "shelfmark_ss": self.certain_join_shelfmarks,
+                # index shelfmark label as a string (combined shelfmark OR shelfmark override)
+                "shelfmark_s": self.shelfmark_display,
+                # index individual shelfmarks for search (includes uncertain fragments)
+                "fragment_shelfmark_ss": [f.shelfmark for f in fragments],
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],
@@ -1019,9 +1082,11 @@ class Document(ModelIndexable):
 
 @receiver(pre_delete, sender=Document)
 def detach_document_logentries(sender, instance, **kwargs):
-    # To avoid deleting log entries caused by the generic relation
-    # from document to log entries, clear out object id
-    # for associated log entries before deleting the document
+    """:class:`~Document` pre-delete signal handler.
+
+    To avoid deleting log entries caused by the generic relation
+    from document to log entries, clear out object id
+    for associated log entries before deleting the document."""
     instance.log_entries.update(object_id=None)
 
 
@@ -1080,4 +1145,5 @@ class TextBlock(models.Model):
         return " ".join(p for p in parts if p)
 
     def thumbnail(self):
+        """iiif thumbnails for this fragment"""
         return self.fragment.iiif_thumbnails()

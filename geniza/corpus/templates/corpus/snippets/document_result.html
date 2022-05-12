@@ -10,14 +10,15 @@
             <h2 class="title">
                 {# type and shelfmark #}
                 <span class="doctype">{{ document.type }}</span>
-                <span class="shelfmark">{% include "corpus/snippets/document_shelfmarks.html" %}</span>
+                <span class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</span>
             </h2>
 
             {# metadata #}
             <dl class="metadata">
                 <dt>{% translate 'Input date' %}</dt>
                 <dd>{{ document.input_year|default:'unknown' }}</dd>
-                <dt>{% translate 'PGP ID' %}</dt>
+                {# NOTE: Intentionally left untranslated #}
+                <dt>PGP ID</dt>
                 <dd>{{ document.pgpid }}</dd>
             </dl>
 

@@ -52,9 +52,11 @@ header {
                 margin: 0;
             }
         }
+        // "Hamburger menu" button
         li.menu-button {
-            margin-left: 16.75rem;
-            margin-top: 0.66rem;
+            position: absolute;
+            right: 0.25rem;
+            top: 0.66rem;
             a {
                 @include typography.icon-button-md;
             }
@@ -401,8 +403,8 @@ header {
 // tweaks for RTL header for hebrew, arabic
 html[dir="rtl"] #site-nav {
     ul#corner-links li.menu-button {
-        margin-left: 0;
-        margin-right: 16.75rem;
+        left: 0.25rem;
+        right: auto;
     }
     ul.sub-menu li.menu-button a#back-to-main-menu::before {
         content: "\f0c4"; // phosphor caret-right icon

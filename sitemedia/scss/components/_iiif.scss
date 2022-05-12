@@ -132,6 +132,12 @@
             cursor: pointer;
             display: flex;
             align-items: center;
+            &:focus {
+                outline: none;
+                span {
+                    outline: 0.1rem solid var(--focus);
+                }
+            }
             span {
                 @include typography.link;
             }
@@ -157,6 +163,10 @@
             margin-bottom: 0.5rem;
         }
         @include typography.permissions-statement;
+        a.shelfmark {
+            @include typography.link;
+        }
+        a.shelfmark,
         span.shelfmark {
             @include typography.permissions-statement-bold;
         }
@@ -172,6 +182,21 @@
                 width: 67px;
                 fill: var(--on-background);
                 vertical-align: text-top;
+            }
+        }
+        // provider logos (interim solution)
+        ul.logos {
+            display: flex;
+            flex-flow: row;
+            &:not(:empty) {
+                margin-top: spacing.$spacing-sm;
+            }
+            li img {
+                width: 4rem;
+                height: 4rem;
+            }
+            li + li {
+                margin-left: spacing.$spacing-xs;
             }
         }
         // spacing tweaks for desktop

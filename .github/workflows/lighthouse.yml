@@ -24,6 +24,12 @@ jobs:
           - 8983:8983
     steps:
       - uses: actions/checkout@v2
+      - name: Decrypt encrypted fonts zip
+        run: |
+          gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.GPG_PASSPHRASE }}" --output sitemedia/fonts.zip sitemedia/fonts.zip.gpg
+      - name: Unzip decrypted fonts zip
+        run: |
+          unzip -q -o sitemedia/fonts.zip -d sitemedia
       - name: configure solr and create core
         run: |
           docker cp solr_conf ${{ job.services.solr.id }}:/opt/solr/server/solr/configsets/geniza

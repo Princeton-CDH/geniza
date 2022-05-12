@@ -1,6 +1,4 @@
 from datetime import datetime
-from pydoc import Doc
-from telnetlib import DO
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -10,6 +8,7 @@ from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.safestring import SafeString
@@ -188,6 +187,8 @@ class TestFragment(TestCase):
         frag = Fragment(shelfmark="TS 1")
         frag.iiif_url = "http://example.io/manifests/1"
         frag.manifest = Manifest.objects.create(uri=frag.iiif_url, short_id="m")
+
+        mock_manifestimporter.return_value.import_paths.return_value = [frag.manifest]
         # canvas with image and label
         Canvas.objects.create(
             manifest=frag.manifest,
@@ -211,6 +212,7 @@ class TestFragment(TestCase):
         with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
             mock_iiifpresentation.from_url = Mock()
             mock_iiifpresentation.from_url.side_effect = IIIFException
+            mock_manifestimporter.return_value.import_paths.return_value = []
             frag = Fragment(shelfmark="TS 1")
             frag.iiif_url = "http://example.io/manifests/1"
             frag.save()
@@ -236,6 +238,7 @@ class TestFragment(TestCase):
             short_id="m",
             extra_data={"attribution": "Created by a person"},
         )
+        mock_manifestimporter.return_value.import_paths.return_value = [frag.manifest]
         frag.save()
         assert frag.attribution == "Created by a person"
 
@@ -244,38 +247,6 @@ class TestFragment(TestCase):
             "attribution": "Created by a person. This metadata is published free of restrictions, under the terms of the Creative Commons CC0 1.0 Universal Public Domain Dedication."
         }
         assert frag.attribution == "Created by a person."
-
-        # fragment with remote manifest
-        frag_no_manifest = Fragment(shelfmark="TS 3")
-        frag_no_manifest.iiif_url = "http://example.io/manifests/3"
-        frag_no_manifest.save()
-        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
-            # no attribution, should return None via caught AttributeError
-            mock_iiifpresentation.from_url.return_value = AttrDict({})
-            assert not frag_no_manifest.attribution
-
-            # with attribution
-            mock_iiifpresentation.reset_mock()
-            mock_iiifpresentation.from_url.return_value = AttrDict(
-                {"attribution": "Created by a person"}
-            )
-            assert frag_no_manifest.attribution == "Created by a person"
-
-    @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
-    def test_attribution_iiifexception(self, mock_manifestimporter):
-        # patch IIIFPresentation.from_url to always raise IIIFException
-        with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
-            mock_iiifpresentation.from_url = Mock()
-            mock_iiifpresentation.from_url.side_effect = IIIFException
-            frag = Fragment(shelfmark="TS 1")
-            frag.iiif_url = "http://example.io/manifests/1"
-            frag.save()
-            # should raise the exception
-            with self.assertRaises(IIIFException):
-                # should log at level WARN
-                with self.assertLogs(level="WARN"):
-                    frag.attribution
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
@@ -314,6 +285,7 @@ class TestFragment(TestCase):
         frag.save()
         frag.shelfmark = "TS 2"
         frag.save()
+        mock_manifestimporter.return_value.import_paths.return_value = []
         assert frag.old_shelfmarks == "TS 1"
         # should not try to import when there is no url
         assert mock_manifestimporter.call_count == 0
@@ -322,6 +294,7 @@ class TestFragment(TestCase):
         frag.iiif_url = "http://example.io/manifests/1"
         # pre-create manifest that would be imported
         manifest = Manifest.objects.create(uri=frag.iiif_url, short_id="m1")
+        mock_manifestimporter.return_value.import_paths.return_value = [manifest]
         frag.save()
         mock_manifestimporter.assert_called_with()
         mock_manifestimporter.return_value.import_paths.assert_called_with(
@@ -333,6 +306,7 @@ class TestFragment(TestCase):
         # should import when iiif url changes, even if manifest is set
         frag.iiif_url = "http://example.io/manifests/2"
         manifest2 = Manifest.objects.create(uri=frag.iiif_url, short_id="m2")
+        mock_manifestimporter.return_value.import_paths.return_value = [manifest2]
         frag.save()
         mock_manifestimporter.assert_called_with()
         mock_manifestimporter.return_value.import_paths.assert_called_with(
@@ -356,6 +330,8 @@ class TestFragment(TestCase):
         frag.request = Mock()
         # remove any cached manifests
         Manifest.objects.all().delete()
+        # return no manifests
+        mock_manifestimporter.return_value.import_paths.return_value = []
         # mock manifest does nothing, manifest will be unset
         frag.iiif_url = "something"  # needs to be changed to trigger relevant block
         frag.save()
@@ -372,6 +348,21 @@ class TestFragment(TestCase):
         mock_messages.error.assert_called_with(
             frag.request, "Error loading IIIF manifest"
         )
+
+    def test_clean(self):
+        manifest_uri = "http://example.com/manifest/1"
+        # strips out redundant uri when present
+        frag = Fragment(
+            shelfmark="TS 1",
+            iiif_url="%(uri)s?manifest=%(uri)s" % {"uri": manifest_uri},
+        )
+        frag.clean()
+        assert frag.iiif_url == manifest_uri
+
+        # does nothing if not present
+        frag.iiif_url = manifest_uri
+        frag.clean()
+        assert frag.iiif_url == manifest_uri
 
 
 @pytest.mark.django_db
@@ -396,8 +387,13 @@ class TestDocumentType:
         assert DocumentType.objects.get_by_natural_key("SomeType") == doc_type
 
 
+MockImporter = Mock()
+# as of djiffy 0.7.2, import paths returns a list of objects
+MockImporter.return_value.import_paths.return_value = []
+
+
 @pytest.mark.django_db
-@patch("geniza.corpus.models.ManifestImporter", Mock())
+@patch("geniza.corpus.models.ManifestImporter", MockImporter)
 class TestDocument:
     def test_shelfmark(self):
         # T-S 8J22.21 + T-S NS J193
@@ -428,6 +424,12 @@ class TestDocument:
         # ensure that uncertain shelfmarks are not included in str
         assert doc2.shelfmark == "%s + %s" % (frag2.shelfmark, frag.shelfmark)
 
+    def test_shelfmark_override(self, document):
+        assert document.shelfmark_display == document.shelfmark
+        override = "Foo 1-34"
+        document.shelfmark_override = override
+        assert document.shelfmark_display == override
+
     def test_str(self):
         frag = Fragment.objects.create(shelfmark="Or.1081 2.25")
         doc = Document.objects.create()
@@ -436,6 +438,52 @@ class TestDocument:
 
         unsaved_doc = Document()
         assert str(unsaved_doc) == "?? (PGPID ??)"
+
+    def test_clean(self):
+        doc = Document()
+        # no dates; no error
+        doc.clean()
+
+        # original date but no calendar — error
+        doc.doc_date_original = "480"
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # calendar but no date — error
+        doc.doc_date_original = ""
+        doc.doc_date_calendar = Document.CALENDAR_HIJRI
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # both — no error
+        doc.doc_date_original = "350"
+        doc.clean()
+
+    def test_original_date(self):
+        """Should display the historical document date with its calendar name"""
+        doc = Document.objects.create(
+            doc_date_original="507", doc_date_calendar=Document.CALENDAR_HIJRI
+        )
+        assert doc.original_date == "507 Hijrī"
+        # with no calendar, just display the date
+        doc.doc_date_calendar = ""
+        assert doc.original_date == "507"
+
+    def test_document_date(self):
+        """Should combine historical and converted dates"""
+        doc = Document.objects.create(
+            doc_date_original="507",
+            doc_date_calendar=Document.CALENDAR_HIJRI,
+        )
+        # should just use the original_date method
+        assert doc.document_date == doc.original_date
+        # should wrap standard date in parentheses and add CE
+        doc.doc_date_standard = "1113/14"
+        assert doc.document_date == "507 Hijrī (1113/14 CE)"
+        # should return standard date only, no parentheses
+        doc.doc_date_original = ""
+        doc.doc_date_calendar = ""
+        assert doc.document_date == "1113/14 CE"
 
     def test_collection(self):
         # T-S 8J22.21 + T-S NS J193
@@ -630,61 +678,6 @@ class TestDocument:
         TextBlock.objects.create(document=doc, fragment=frag, order=1)
         assert doc.title == "Legal document: s1"
 
-    def test_certain_join_shelfmarks(self):
-        # T-S 8J22.21 (+ T-S NS J193, uncertain)
-        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-        doc = Document.objects.create()
-        TextBlock.objects.create(document=doc, fragment=frag, order=1, certain=True)
-        frag2 = Fragment.objects.create(shelfmark="T-S NS J193")
-        TextBlock.objects.create(document=doc, fragment=frag2, order=2, certain=False)
-        # should only be one shelfmark from certain join
-        assert len(doc.certain_join_shelfmarks) == 1
-        # should be the one with certain=True
-        assert doc.certain_join_shelfmarks[0] == "T-S 8J22.21"
-
-        # Add a third fragment
-        frag3 = Fragment.objects.create(shelfmark="T-S NS J195")
-        TextBlock.objects.create(document=doc, fragment=frag3, certain=True, order=3)
-        # should be length 2
-        assert len(doc.certain_join_shelfmarks) == 2
-        # should maintain order
-        assert doc.certain_join_shelfmarks[1] == "T-S NS J195"
-
-    # NOTE: not currently used; remove or revise if this remains unused
-    def test_shelfmark_display(self):
-        # T-S 8J22.21 + T-S NS J193
-        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-        doc = Document.objects.create()
-        TextBlock.objects.create(document=doc, fragment=frag, order=1)
-        # single fragment
-        assert doc.shelfmark_display == frag.shelfmark
-
-        # add a second text block with the same fragment
-        TextBlock.objects.create(document=doc, fragment=frag)
-        # shelfmark should not repeat
-        assert doc.shelfmark_display == frag.shelfmark
-
-        frag2 = Fragment.objects.create(shelfmark="T-S NS J193")
-        TextBlock.objects.create(document=doc, fragment=frag2, order=2)
-        # multiple fragments: show first shelfmark + join indicator
-        assert doc.shelfmark_display == "%s + …" % frag.shelfmark
-
-        # ensure shelfmark honors order
-        doc2 = Document.objects.create()
-        TextBlock.objects.create(document=doc2, fragment=frag2, order=1)
-        TextBlock.objects.create(document=doc2, fragment=frag, order=2)
-        assert doc2.shelfmark_display == "%s + …" % frag2.shelfmark
-
-        # if no certain shelfmarks, don't return anything
-        doc3 = Document.objects.create()
-        frag3 = Fragment.objects.create(shelfmark="T-S NS J195")
-        TextBlock.objects.create(document=doc3, fragment=frag3, certain=False, order=1)
-        assert doc3.shelfmark_display == None
-
-        # use only the first certain shelfmark
-        TextBlock.objects.create(document=doc3, fragment=frag2, order=2)
-        assert doc3.shelfmark_display == frag2.shelfmark
-
     def test_has_transcription(self, document, source):
         # doc with no footnotes doesn't have transcription
         assert not document.has_transcription()
@@ -716,8 +709,9 @@ class TestDocument:
         assert index_data["description_t"] == document.description
         assert index_data["notes_t"] is None  # no notes
         assert index_data["needs_review_t"] is None  # no review notes
+        assert index_data["shelfmark_s"] == document.shelfmark
         for frag in document.fragments.all():
-            assert frag.shelfmark in index_data["shelfmark_ss"]
+            assert frag.shelfmark in index_data["fragment_shelfmark_ss"]
         for tag in document.tags.all():
             assert tag.name in index_data["tags_ss_lower"]
         assert index_data["status_s"] == "Public"
@@ -814,7 +808,7 @@ class TestDocument:
             content_object=document,
             source=source,
             doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content="some text",
+            content={"text": "some text"},
         )
         translation = Footnote.objects.create(
             content_object=document,
@@ -843,14 +837,14 @@ class TestDocument:
             content_object=document,
             source=source,
             doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content="A piece of text",
+            content={"text": "A piece of text"},
         )
         # footnote with different source
         edition3 = Footnote.objects.create(
             content_object=document,
             source=twoauthor_source,
             doc_relation=Footnote.EDITION,
-            content="B other text",
+            content={"text": "B other text"},
         )
         digital_edition_pks = [ed.pk for ed in document.digital_editions()]
 
@@ -875,7 +869,7 @@ class TestDocument:
             content_object=document,
             source=source,
             doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content="A piece of text",
+            content={"text": "A piece of text"},
         )
 
         # Digital edition with one author, editor should be author of source
@@ -887,7 +881,7 @@ class TestDocument:
             content_object=document,
             source=twoauthor_source,
             doc_relation=Footnote.EDITION,
-            content="B other text",
+            content={"text": "B other text"},
         )
         # Should now be three editors, since this edition's source had two authors
         assert document.editors().count() == 3
@@ -1037,7 +1031,10 @@ def test_document_merge_with_footnotes_transcription(document, join, source):
     Footnote.objects.create(content_object=document, source=source, location="p. 3")
     # page 3 footnote is a near duplicate but adds content
     Footnote.objects.create(
-        content_object=join, source=source, location="p. 3", content="{'foo': 'bar'}"
+        content_object=join,
+        source=source,
+        location="p. 3",
+        content={"text": "{'foo': 'bar'}"},
     )
 
     assert document.footnotes.count() == 1

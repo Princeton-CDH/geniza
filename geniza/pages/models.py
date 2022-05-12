@@ -109,6 +109,7 @@ class HomePage(Page):
         verbose_name = "homepage"
 
     def get_context(self, request):
+        """add page type to context"""
         context = super(HomePage, self).get_context(request)
         context["page_type"] = "homepage"
         return context
@@ -127,7 +128,7 @@ class ContainerPage(Page):
 
     # should not ever actually render
     def serve(self, request):
-        # redirect to parent page instead
+        """override serve method to redirect to parent page instead of rendering"""
         if self.get_parent():
             return HttpResponseRedirect(self.get_parent().get_url(request))
 
@@ -149,6 +150,7 @@ class ContentPage(Page):
     show_in_menus_default = True
 
     def get_context(self, request):
+        """add page type to context"""
         context = super(ContentPage, self).get_context(request)
         context["page_type"] = "content-page"
         return context

@@ -34,7 +34,7 @@ main.document {
             margin: spacing.$spacing-2xl spacing.$spacing-md 0;
             @include typography.meta;
             @include breakpoints.for-desktop-up {
-                flex: 1 0 50%;
+                flex: 1 1 50%;
                 padding-right: 0;
                 margin: 0 0 0;
             }
@@ -71,11 +71,16 @@ main.document {
                 margin-top: spacing.$spacing-xs;
             }
         }
-        dl.metadata + dl.metadata {
-            margin-top: 35px;
+        dl.metadata.primary + dl.metadata.secondary {
+            margin-top: 0;
             @include breakpoints.for-desktop-up {
-                margin-top: 0;
                 margin-left: 35px;
+            }
+            :first-child {
+                margin-top: spacing.$spacing-sm;
+                @include breakpoints.for-desktop-up {
+                    margin-top: 0px;
+                }
             }
         }
         // Document tags
