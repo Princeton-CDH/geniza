@@ -46,6 +46,27 @@ class TestDocumentDateMixin:
         doc.doc_date_calendar = ""
         assert doc.original_date == "507"
 
+    def test_standard_date(self):
+        # no dates; no error
+        doc = Document()
+        assert doc.standard_date is None
+
+        # single day
+        doc.doc_date_standard = "1569-10-23"
+        assert doc.standard_date == "October 23, 1569 CE"
+
+        # date range
+        doc.doc_date_standard = "1839-03-17/1840-03-04"
+        assert doc.standard_date == "March 17, 1839 — March 4, 1840 CE"
+
+        # year/month
+        doc.doc_date_standard = "1839-03"
+        assert doc.standard_date == "March 1839 CE"
+
+        # year only
+        doc.doc_date_standard = "1839"
+        assert doc.standard_date == "1839 CE"
+
     def test_document_date(self):
         """Should combine historical and converted dates"""
         doc = Document(
@@ -55,12 +76,14 @@ class TestDocumentDateMixin:
         # should just use the original_date method
         assert doc.document_date == doc.original_date
         # should wrap standard date in parentheses and add CE
-        doc.doc_date_standard = "1113/14"
-        assert doc.document_date == "507 Hijrī (1113/14 CE)"
+        doc.doc_date_standard = "1113/1114"
+        assert (
+            doc.document_date == "<span>507 Hijrī</span> <span>(1113 — 1114 CE)</span>"
+        )
         # should return standard date only, no parentheses
         doc.doc_date_original = ""
         doc.doc_date_calendar = ""
-        assert doc.document_date == "1113/14 CE"
+        assert doc.document_date == "1113 — 1114 CE"
 
 
 # test hebrew date conversion
