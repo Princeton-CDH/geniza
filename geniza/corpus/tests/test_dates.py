@@ -90,6 +90,28 @@ class TestDocumentDateMixin:
         doc.doc_date_calendar = ""
         assert doc.document_date == "1113 — 1114 CE"
 
+    def test_standardize_date(self):
+        doc = Document()
+        # no dates, nothing done
+        assert doc.standardize_date() is None
+        # unsupported calendar, nothing done
+        doc.doc_date_original = "507"
+        doc.doc_date_calendar = Calendar.KHARAJI
+        assert doc.standardize_date() is None
+
+        # supported calendar, no update
+        doc.doc_date_calendar = Calendar.HIJRI
+        standardized = doc.standardize_date()
+        assert standardized is not None
+        # check converted to detailed display form
+        assert standardized == "1113-06-18/1114-06-06"
+        # not set without update requested
+        assert doc.doc_date_standard == ""
+
+        # update requested, should update
+        standardized = doc.standardize_date(update=True)
+        assert doc.doc_date_standard == standardized
+
 
 # test hebrew date conversion
 def test_get_hebrew_month():
@@ -126,6 +148,12 @@ def test_convert_hebrew_date():
     assert converted_date[0].year == 1871
     assert converted_date[1].year == 1872
     # hebrew civil calendar begins in Tishri, in September
+    assert converted_date[0] == date(1871, 9, 16)
+    assert converted_date[1] == date(1872, 10, 2)
+
+    # season is currently ignored
+    converted_date = convert_hebrew_date("spring 5632")
+    # should be the same as year only
     assert converted_date[0] == date(1871, 9, 16)
     assert converted_date[1] == date(1872, 10, 2)
 
@@ -166,12 +194,11 @@ def test_convert_islamic_date():
 
 
 def test_partialdate():
-    def test_partialdate(self):
-        # single day
-        assert str(PartialDate("1569-10-23")) == "October 23, 1569"
+    # single day
+    assert str(PartialDate("1569-10-23")) == "October 23, 1569"
 
-        # month/year
-        assert str(PartialDate("1569-10")) == "October 1569"
+    # month/year
+    assert str(PartialDate("1569-10")) == "October 1569"
 
-        # year only
-        assert str(PartialDate("1569")) == "1569"
+    # year only
+    assert str(PartialDate("1569")) == "1569"
