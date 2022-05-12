@@ -30,3 +30,4 @@ django-csp-helpers
 django-fullurl
 django-admin-inline-paginator
 convertdate
+unidecode
