@@ -274,8 +274,11 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "page_includes_transcriptions": self.object.has_transcription(),
                 # TODO: will need to be added to admin view also
                 "annotation_config": {
-                    "server_url": settings.ANNOTATION_SERVER_URL,
-                    "manifest_base_url": settings.ANNOTATION_MANIFEST_BASE_URL,
+                    # use getattr to simplify test config; warn if not set?
+                    "server_url": getattr(settings, "ANNOTATION_SERVER_URL", ""),
+                    "manifest_base_url": getattr(
+                        settings, "ANNOTATION_MANIFEST_BASE_URL", ""
+                    ),
                 },
             }
         )
