@@ -8,6 +8,7 @@ from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.safestring import SafeString
