@@ -261,8 +261,7 @@ def standardize_date(historic_date, calendar):
     converter = calendar_converter[calendar]
 
     match = re_original_date.match(historic_date)
-    if not match:
-        print("***regex did not match for %s" % historic_date)
+    # may want to log or debug regex mismatch for dev or reporting
     if match:
         date_info = match.groupdict()
         year = int(date_info["year"])
