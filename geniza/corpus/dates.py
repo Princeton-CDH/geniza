@@ -2,13 +2,10 @@
 # will be used for reporting and automatic conversion in admin
 import re
 from datetime import date
-from lib2to3.pytree import convert
 
 import convertdate
 from django.core.exceptions import ValidationError
 from django.db import models
-from pkg_resources import cleanup_resources
-from regex import F
 from unidecode import unidecode
 
 
