@@ -185,8 +185,9 @@ hebrew_month_aliases = {
 
 
 def get_hebrew_month(month_name):
-    """Convert Hebrew month name to month number"""
-    # use unidecode to simplify handling with/without accents & underdots
+    """Convert Hebrew month name to month number.
+    Supports local month name aliases for alternate spellings."""
+    # use unidecode to simplify handling with/without accents
     month_name = unidecode(month_name)
     return (
         convertdate.hebrew.MONTHS.index(
@@ -208,6 +209,12 @@ ignorechars = str.maketrans({val: "" for val in "[]()"})
 
 
 def get_calendar_month(convertdate_module, month):
+    """ "Convert month name to month number for the specified calendar.
+
+    :param convertdate_module: `convertdate` calendar module to use
+    :param month: string month name
+    :return int: month number
+    """
     if convertdate_module == convertdate.hebrew:
         return get_hebrew_month(month)
     elif convertdate_module == convertdate.islamic:
@@ -215,13 +222,16 @@ def get_calendar_month(convertdate_module, month):
 
 
 def convert_hebrew_date(historic_date):
+    """Convert a date in the Hebrew Anno Mundi calendar to the Julian or Gregorian calendar"""
     return standardize_date(historic_date, Calendar.ANNO_MUNDI)
 
 
 def convert_islamic_date(historic_date):
+    """Convert a date in the Islamic Hijri calendar to the Julian or Gregorian calendar"""
     return standardize_date(historic_date, Calendar.HIJRI)
 
 
+#: mapping between supported calendars and corresponding convertdate module
 calendar_converter = {
     Calendar.ANNO_MUNDI: convertdate.hebrew,
     Calendar.HIJRI: convertdate.islamic,
@@ -363,5 +373,7 @@ islamic_month_aliases = {
 
 
 def get_islamic_month(month_name):
+    """Convert Islamic month name to month number; works
+    with or without accents, and supports local month-name overrides."""
     month_name = unidecode(month_name)
     return islamic_months.index(islamic_month_aliases.get(month_name, month_name)) + 1
