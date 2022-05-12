@@ -5,6 +5,7 @@ from datetime import date
 
 import convertdate
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.formats import date_format
 from django.utils.safestring import mark_safe
@@ -47,9 +48,8 @@ class PartialDate:
         # since we don't currently support unknown year,
         # precision can be determined by number of date parts
         self.precision = self.available_precision[len(date_parts) - 1]
-        # fill in with 1 any unknowns for month/day
+        # fill in unknown month/day as 1
         date_parts += [1] * (3 - len(date_parts))
-        print(date_parts)
         # cast to integer and convert to datetime.date
         self.date = date(*[int(p) for p in date_parts])
 
@@ -85,12 +85,19 @@ class DocumentDateMixin(models.Model):
         + "Seleucid (sometimes listed as Minyan Shetarot); Anno Mundi (Hebrew calendar)",
         blank=True,
     )
+
+    # supports YYYY, YYYY-MM, YYYY-MM-DD and same formats as ranges YYYY/YYYY
+    re_date_format = re.compile(
+        r"^\d{3,4}(-[01]\d(-[0-3]\d)?)?(/\d{3,4}(-[01]\d(-[0-3]\d)?)?)?$"
+    )
+
     doc_date_standard = models.CharField(
         "Document date (standardized)",
         help_text="CE date (convert to Julian before 1582, Gregorian after 1582). "
-        + "Use YYYY, YYYY-MM, YYYY-MM-DD format when possible",
+        + "Use YYYY, YYYY-MM, YYYY-MM-DD format or YYYY-MM-DD/YYYY-MM-DD for date ranges.",
         blank=True,
         max_length=255,
+        validators=[RegexValidator(re_date_format)],
     )
 
     class Meta:
@@ -117,7 +124,12 @@ class DocumentDateMixin(models.Model):
         # convert to local partial date object for precision-aware string formatting
         # join dates with n-dash if more than one;
         # add CE to the end to make calendar system explicit
-        return "%s CE" % " — ".join(str(PartialDate(d)) for d in dates)
+        try:
+            return "%s CE" % " — ".join(str(PartialDate(d)) for d in dates)
+        except ValueError:
+            # dates entered before validation was applied may not parse
+            # as fallback, display as is
+            return "%s CE" % self.doc_date_standard
 
     @property
     def document_date(self):

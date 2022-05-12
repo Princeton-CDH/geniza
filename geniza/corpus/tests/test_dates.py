@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 
 from geniza.corpus.dates import (
     Calendar,
+    PartialDate,
     convert_hebrew_date,
     convert_islamic_date,
     get_hebrew_month,
@@ -66,6 +67,10 @@ class TestDocumentDateMixin:
         # year only
         doc.doc_date_standard = "1839"
         assert doc.standard_date == "1839 CE"
+
+        # fallback behavior for dates in the wrong format
+        doc.doc_date_standard = "1029–38"
+        assert doc.standard_date == "1029–38 CE"
 
     def test_document_date(self):
         """Should combine historical and converted dates"""
@@ -158,3 +163,15 @@ def test_convert_islamic_date():
     # 1049-06-05/1050-05-25
     assert converted_date[0] == date(1049, 6, 5)
     assert converted_date[1] == date(1050, 5, 25)
+
+
+def test_partialdate():
+    def test_partialdate(self):
+        # single day
+        assert str(PartialDate("1569-10-23")) == "October 23, 1569"
+
+        # month/year
+        assert str(PartialDate("1569-10")) == "October 1569"
+
+        # year only
+        assert str(PartialDate("1569")) == "1569"
