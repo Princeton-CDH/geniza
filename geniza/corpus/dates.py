@@ -45,6 +45,8 @@ class PartialDate:
         # TODO: probably need some validation/error handling here
         # for real world use
         date_parts = str.split("-")
+        if len(date_parts) > 3:
+            raise ValueError(f"Error parsing standard date {str}")
         # since we don't currently support unknown year,
         # precision can be determined by number of date parts
         self.precision = self.available_precision[len(date_parts) - 1]
