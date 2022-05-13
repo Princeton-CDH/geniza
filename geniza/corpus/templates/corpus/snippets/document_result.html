@@ -15,6 +15,16 @@
 
             {# metadata #}
             <dl class="metadata">
+                {% if document.document_date %}
+                    <dt>
+                        {% translate "Document Date" %}
+                    </dt>
+                    <dd>
+                        <time>
+                            {{ document.document_date }}
+                        </time>
+                    </dd>
+                {% endif %}
                 <dt>{% translate 'Input date' %}</dt>
                 <dd>{{ document.input_year|default:'unknown' }}</dd>
                 {# NOTE: Intentionally left untranslated #}
