@@ -1,5 +1,4 @@
 from datetime import date
-from lib2to3.pytree import convert
 
 import convertdate
 import pytest
@@ -202,3 +201,10 @@ def test_partialdate():
 
     # year only
     assert str(PartialDate("1569")) == "1569"
+
+    # raise value error for too many parts
+    with pytest.raises(ValueError):
+        PartialDate("1569-10-23-24")
+
+    with pytest.raises(ValueError):
+        PartialDate("1569--10-23")
