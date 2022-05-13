@@ -17,6 +17,7 @@ from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
 from modeltranslation.manager import MultilingualQuerySet
 from piffle.presentation import IIIFException as piffle_IIIFException
 
+from geniza.corpus.dates import Calendar
 from geniza.corpus.models import (
     Collection,
     Document,
@@ -438,52 +439,6 @@ class TestDocument:
 
         unsaved_doc = Document()
         assert str(unsaved_doc) == "?? (PGPID ??)"
-
-    def test_clean(self):
-        doc = Document()
-        # no dates; no error
-        doc.clean()
-
-        # original date but no calendar — error
-        doc.doc_date_original = "480"
-        with pytest.raises(ValidationError):
-            doc.clean()
-
-        # calendar but no date — error
-        doc.doc_date_original = ""
-        doc.doc_date_calendar = Document.CALENDAR_HIJRI
-        with pytest.raises(ValidationError):
-            doc.clean()
-
-        # both — no error
-        doc.doc_date_original = "350"
-        doc.clean()
-
-    def test_original_date(self):
-        """Should display the historical document date with its calendar name"""
-        doc = Document.objects.create(
-            doc_date_original="507", doc_date_calendar=Document.CALENDAR_HIJRI
-        )
-        assert doc.original_date == "507 Hijrī"
-        # with no calendar, just display the date
-        doc.doc_date_calendar = ""
-        assert doc.original_date == "507"
-
-    def test_document_date(self):
-        """Should combine historical and converted dates"""
-        doc = Document.objects.create(
-            doc_date_original="507",
-            doc_date_calendar=Document.CALENDAR_HIJRI,
-        )
-        # should just use the original_date method
-        assert doc.document_date == doc.original_date
-        # should wrap standard date in parentheses and add CE
-        doc.doc_date_standard = "1113/14"
-        assert doc.document_date == "507 Hijrī (1113/14 CE)"
-        # should return standard date only, no parentheses
-        doc.doc_date_original = ""
-        doc.doc_date_calendar = ""
-        assert doc.document_date == "1113/14 CE"
 
     def test_collection(self):
         # T-S 8J22.21 + T-S NS J193
@@ -928,6 +883,27 @@ class TestDocument:
         # get fresh copy of the same log entry
         fresh_log_entry = LogEntry.objects.get(pk=log_entry.pk)
         assert fresh_log_entry.object_id is None
+
+    def test_save_set_standard_date(self, document):
+        document.doc_date_original = "493"
+        document.doc_date_calendar = Calendar.ANNO_MUNDI
+        document.doc_date_standard = ""
+        document.save()
+
+    @patch("geniza.corpus.models.messages")
+    def test_save_set_standard_date_err(self, mock_messages, document):
+        # use a mock to inspect call to request
+        document.request = Mock()
+        # something not parsable
+        document.doc_date_original = "first quarter of 493"
+        document.doc_date_calendar = Calendar.ANNO_MUNDI
+        document.doc_date_standard = ""
+        document.save()
+
+        mock_messages.warning.assert_called_with(
+            document.request,
+            "Error standardizing date: 'first quarter of' is not in list",
+        )
 
 
 def test_document_merge_with(document, join):
