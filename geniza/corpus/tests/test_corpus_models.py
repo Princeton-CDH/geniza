@@ -8,9 +8,9 @@ from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.utils import timezone
+from django.utils.html import strip_tags
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
 from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
@@ -751,6 +751,26 @@ class TestDocument:
 
         for note in [edition, edition2, translation]:
             assert note.display() in index_data["scholarship_t"]
+
+    def test_index_data_document_date(self):
+        document = Document(
+            id=123,
+            doc_date_original="5 Elul 5567",
+            doc_date_calendar=Calendar.ANNO_MUNDI,
+            doc_date_standard="September 8, 1807",
+        )
+        index_data = document.index_data()
+        # should display form of the date without tags
+        assert index_data["document_date_s"] == strip_tags(document.document_date)
+
+        # unparsable standard date shouldn't error, displays as-is
+        document.doc_date_standard = "1145-46"
+        index_data = document.index_data()
+        assert index_data["document_date_s"] == strip_tags(document.document_date)
+
+        # unset date should index as None/empty
+        index_data = Document(id=1234).index_data()
+        assert index_data["document_date_s"] is None
 
     def test_editions(self, document, source):
         # create multiple footnotes to test filtering and sorting
