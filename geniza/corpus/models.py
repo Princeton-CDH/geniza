@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Lower
@@ -20,7 +19,7 @@ from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
-from django.utils.translation import activate, get_language
+from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from djiffy.importer import ManifestImporter
 from djiffy.models import Manifest
@@ -766,6 +765,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "shelfmark_s": self.shelfmark_display,
                 # index individual shelfmarks for search (includes uncertain fragments)
                 "fragment_shelfmark_ss": [f.shelfmark for f in fragments],
+                # combined original/standard document date for display
+                "document_date_s": strip_tags(self.document_date) or None,
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],

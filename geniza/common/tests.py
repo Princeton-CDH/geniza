@@ -115,7 +115,7 @@ class TestCustomEmptyFieldListFilter:
         assert choices[2]["display"] == "yep"
 
 
-class TestSortModel(models.Model):
+class SortModelTester(models.Model):
     name = models.CharField(max_length=10)
     name_sort = NaturalSortField("name")
 
@@ -125,19 +125,19 @@ class TestSortModel(models.Model):
 
 class TestNaturalSortField:
     def test_init(self):
-        assert TestSortModel._meta.get_field("name_sort").for_field == "name"
+        assert SortModelTester._meta.get_field("name_sort").for_field == "name"
 
     def test_deconstruct(self):
         # test deconstruct method per django documentation
-        field_instance = TestSortModel._meta.get_field("name_sort")
+        field_instance = SortModelTester._meta.get_field("name_sort")
         name, path, args, kwargs = field_instance.deconstruct()
         new_instance = NaturalSortField(*args, **kwargs)
         assert field_instance.for_field == new_instance.for_field
 
     def test_presave(self):
-        testmodel = TestSortModel()
+        testmodel = SortModelTester()
         testmodel.name = "Test12.3"
-        field_instance = TestSortModel._meta.get_field("name_sort")
+        field_instance = SortModelTester._meta.get_field("name_sort")
         assert field_instance.pre_save(testmodel, None) == "test000012.000003"
 
 
