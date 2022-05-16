@@ -5,6 +5,7 @@ from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
+from geniza.common.fields import RangeField, RangeWidget
 from geniza.corpus.models import Document
 
 
@@ -195,6 +196,10 @@ class DocumentSearchForm(forms.Form):
         ],
         required=False,
         widget=RadioSelectWithDisabled,
+    )
+    # Translators: label for document date range form filter
+    document_dates = RangeField(
+        label=_("Document Dates"), required=False, widget=RangeWidget(attrs={"size": 4})
     )
 
     doctype = FacetChoiceField(

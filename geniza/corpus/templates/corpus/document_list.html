@@ -29,6 +29,10 @@
                 <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
                 {% translate "Filters" %}
             </a>
+            <label for="{{ form.document_dates.auto_id }}">
+                {{ form.document_dates.label }}
+                {{ form.document_dates }}
+            </label>
             <label for="{{ form.has_image.auto_id }}">
                 {% render_field form.has_image data-action="search#update" %}
                 {{ form.has_image.label }}
