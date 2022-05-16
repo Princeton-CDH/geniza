@@ -84,7 +84,7 @@ class DocumentDateMixin(models.Model):
         choices=CALENDAR_CHOICES,
         help_text="Calendar according to which the document gives a date: "
         + "Hijrī (AH); Kharājī (rare - mostly for fiscal docs); "
-        + "Seleucid (sometimes listed as Minyan Shetarot); Anno Mundi (Hebrew calendar)",
+        + "\nSeleucid (sometimes listed as Minyan Shetarot); Anno Mundi (Hebrew calendar)",
         blank=True,
     )
 
@@ -96,7 +96,8 @@ class DocumentDateMixin(models.Model):
     doc_date_standard = models.CharField(
         "Document date (standardized)",
         help_text="CE date (convert to Julian before 1582, Gregorian after 1582). "
-        + "Use YYYY, YYYY-MM, YYYY-MM-DD format or YYYY-MM-DD/YYYY-MM-DD for date ranges.",
+        + "\nUse YYYY, YYYY-MM, YYYY-MM-DD format or YYYY-MM-DD/YYYY-MM-DD for date ranges. "
+        + "\nLeave blank or clear out to automatically calculate standardized date for supported calendars.",
         blank=True,
         max_length=255,
         validators=[RegexValidator(re_date_format)],
