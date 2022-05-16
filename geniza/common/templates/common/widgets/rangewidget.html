@@ -1,0 +1,4 @@
+{% comment %}
+Template for RangeWidget with numeric start and stop inputs.
+{% endcomment %}
+<div class="inputs">{% spaceless %}{% for subwidget in widget.subwidgets %}{% include subwidget.template_name with widget=subwidget %}{% if forloop.first %} <span class="sr-only">to</span>{% endif %}{% endfor %}{% endspaceless %}</div>
