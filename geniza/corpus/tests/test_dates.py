@@ -111,6 +111,17 @@ class TestDocumentDateMixin:
         standardized = doc.standardize_date(update=True)
         assert doc.doc_date_standard == standardized
 
+    def test_solr_date_range(self):
+        doc = Document()
+        # no dates, returns none
+        assert doc.solr_date_range() is None
+        # single date returned as-is
+        doc.doc_date_standard = "1839-03-17"
+        assert doc.solr_date_range() == "1839-03-17"
+        # date range converted to solr format
+        doc.doc_date_standard = "1839-03-17/1840-03-04"
+        assert doc.solr_date_range() == "[1839-03-17 TO 1840-03-04]"
+
 
 # test hebrew date conversion
 def test_get_hebrew_month():
