@@ -168,6 +168,12 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                 documents = documents.filter(has_discussion=True)
             if search_opts["has_translation"] == True:
                 documents = documents.filter(has_translation=True)
+            if search_opts["document_dates"]:
+                # date range filter; returns tuple of value or None for open-ended range
+                start, end = search_opts["document_dates"]
+                documents = documents.filter(
+                    document_date_dr="[%s TO %s]" % (start or "*", end or "*")
+                )
 
         self.queryset = documents
 
