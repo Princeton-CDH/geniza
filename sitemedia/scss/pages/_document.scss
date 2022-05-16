@@ -115,11 +115,15 @@ main.document {
             @include typography.meta;
             color: var(--input-date-text);
         }
-        // "Description" header
+        // "Description" header and content
         section.description {
             margin: 64px 0 spacing.$spacing-md;
             h3 {
                 @include typography.body-bold;
+            }
+
+            p {
+                white-space: pre-line;
             }
         }
         // link to download transcription
@@ -157,6 +161,16 @@ main.document {
                     text-decoration: none;
                 }
             }
+        }
+    }
+}
+
+section#document-list,
+main.document {
+    // description content
+    .description {
+        p {
+            white-space: pre-line;
         }
     }
 }
