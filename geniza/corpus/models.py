@@ -776,6 +776,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "fragment_shelfmark_ss": [f.shelfmark for f in fragments],
                 # combined original/standard document date for display
                 "document_date_s": strip_tags(self.document_date) or None,
+                # date range for filtering
+                "document_date_dr": self.solr_date_range(),
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],
