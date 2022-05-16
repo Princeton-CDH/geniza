@@ -78,7 +78,7 @@ class LanguageScriptAdmin(admin.ModelAdmin):
     )
 
     document_admin_url = "admin:corpus_document_changelist"
-    search_fields = ("language", "script", "display_name")
+    search_fields = ("language", "display_name")
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
