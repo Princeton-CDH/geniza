@@ -15,6 +15,7 @@
   <fieldType name="booleans" class="solr.BoolField" sortMissingLast="true" multiValued="true"/>
   <fieldType name="date" class="solr.TrieDateField" positionIncrementGap="0" docValues="true" precisionStep="0"/>
   <fieldType name="dates" class="solr.TrieDateField" positionIncrementGap="0" docValues="true" multiValued="true" precisionStep="0"/>
+  <fieldType name="daterange" class="solr.DateRangeField" />
   <fieldType name="descendent_path" class="solr.TextField">
     <analyzer type="index">
       <tokenizer class="solr.PathHierarchyTokenizerFactory" delimiter="/"/>
@@ -188,6 +189,7 @@
   <dynamicField name="*_fs" type="floats" indexed="true" stored="true"/>
   <dynamicField name="*_ds" type="doubles" indexed="true" stored="true"/>
   <dynamicField name="*_dt" type="date" indexed="true" stored="true"/>
+  <dynamicField name="*_dr" type="daterange" indexed="true" stored="false"/>
   <dynamicField name="*_pi" type="pint" indexed="true" stored="true"/>
   <dynamicField name="*_pl" type="plong" indexed="true" stored="true"/>
   <dynamicField name="*_pf" type="pfloat" indexed="true" stored="true"/>
