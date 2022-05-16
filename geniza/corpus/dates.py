@@ -182,6 +182,19 @@ class DocumentDateMixin(models.Model):
                 self.doc_date_standard = converted_date
             return converted_date
 
+    def solr_date_range(self):
+        """
+        Return a Solr date range for the document's standardized date.
+        """
+        if self.doc_date_standard:
+            date_parts = self.doc_date_standard.split("/")
+            # if there's only one date, return it as a single date range
+            if len(date_parts) == 1:
+                return date_parts[0]
+            # if there's more than one date, return it as a range
+            # TODO: do we need to validate to make sure Solr can handle this?
+            return "[%s TO %s]" % tuple(date_parts)
+
 
 # Julian Thursday, 4 October 1582, being followed by Gregorian Friday, 15 October
 # cut off between gregorian/julian dates, in julian days
