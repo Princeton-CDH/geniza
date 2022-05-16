@@ -127,7 +127,7 @@ class TestDocumentAdmin:
             reverse("admin:corpus_document_change", args=(doc.pk,))
         )
         assertContains(
-            response, '<span class="action-time">March 11, 1995</span>', html=True
+            response, '<span class="action-time">11 March, 1995</span>', html=True
         )
         assertContains(
             response, '<span class="action-user">Tom Jones</span>', html=True

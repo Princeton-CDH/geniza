@@ -53,11 +53,11 @@ class TestDocumentDateMixin:
 
         # single day
         doc.doc_date_standard = "1569-10-23"
-        assert doc.standard_date == "October 23, 1569 CE"
+        assert doc.standard_date == "23 October, 1569 CE"
 
         # date range
         doc.doc_date_standard = "1839-03-17/1840-03-04"
-        assert doc.standard_date == "March 17, 1839 — March 4, 1840 CE"
+        assert doc.standard_date == "17 March, 1839 — 4 March, 1840 CE"
 
         # year/month
         doc.doc_date_standard = "1839-03"
@@ -194,7 +194,7 @@ def test_convert_islamic_date():
 
 def test_partialdate():
     # single day
-    assert str(PartialDate("1569-10-23")) == "October 23, 1569"
+    assert str(PartialDate("1569-10-23")) == "23 October, 1569"
 
     # month/year
     assert str(PartialDate("1569-10")) == "October 1569"
