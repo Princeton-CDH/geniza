@@ -19,6 +19,9 @@ export default class extends Controller {
             showHomeControl: false,
             showRotationControl: true,
             crossOriginPolicy: "Anonymous",
+            gestureSettingsTouch: {
+                pinchRotate: true,
+            },
         });
     }
     iiifContainerTargetDisconnected() {
