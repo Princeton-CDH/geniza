@@ -100,6 +100,11 @@ a#needsreview:target {
     font-style: italic;
 }
 
+/* preserve line breaks in field help text */
+.fieldBox .help {
+    white-space: pre-line;
+}
+
 /* Transcription styles in admin */
 @media (min-width: 900px) {
     .form-row #iiif-viewer {
