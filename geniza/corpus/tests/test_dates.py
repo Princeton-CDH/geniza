@@ -217,19 +217,52 @@ def test_convert_islamic_date():
     assert converted_date[1] == date(1050, 5, 25)
 
 
-def test_partialdate():
-    # single day
-    assert str(PartialDate("1569-10-23")) == "23 October, 1569"
+class TestPartialDate:
+    def test_partialdate_str(self):
+        # single day
+        assert str(PartialDate("1569-10-23")) == "23 October, 1569"
 
-    # month/year
-    assert str(PartialDate("1569-10")) == "October 1569"
+        # month/year
+        assert str(PartialDate("1569-10")) == "October 1569"
 
-    # year only
-    assert str(PartialDate("1569")) == "1569"
+        # year only
+        assert str(PartialDate("1569")) == "1569"
 
-    # raise value error for too many parts
-    with pytest.raises(ValueError):
-        PartialDate("1569-10-23-24")
+    def test_partialdate_init(self):
+        # raise value error for too many parts
+        with pytest.raises(ValueError):
+            PartialDate("1569-10-23-24")
 
-    with pytest.raises(ValueError):
-        PartialDate("1569--10-23")
+        with pytest.raises(ValueError):
+            PartialDate("1569--10-23")
+
+    def test_repr(self):
+        assert repr(PartialDate("1569-10")) == "PartialDate(1569-10)"
+
+    def test_isoformat(self):
+        assert PartialDate("1569-10-23").isoformat() == "1569-10-23"
+        assert PartialDate("1569-10").isoformat() == "1569-10"
+        assert PartialDate("1569").isoformat() == "1569"
+
+    def test_isoformat_min(self):
+        assert PartialDate("1569-10-23").isoformat("min", "iso") == "1569-10-23"
+        assert PartialDate("1569-10").isoformat("min", "iso") == "1569-10-01"
+        assert PartialDate("1569").isoformat("min", "iso") == "1569-01-01"
+
+    def test_isoformat_max(self):
+        assert PartialDate("1569-10-23").isoformat("max", "iso") == "1569-10-23"
+        assert PartialDate("1569-10").isoformat("max", "iso") == "1569-10-31"
+        assert PartialDate("1569").isoformat("max", "iso") == "1569-12-31"
+        # handle month-specific maxes
+        assert PartialDate("1569-02").isoformat("max", "iso") == "1569-02-28"
+
+    def test_numeric_format(self):
+        assert PartialDate("1569-10-23").numeric_format("min") == "15691023"
+        assert PartialDate("1569-06").numeric_format("min") == "15690601"
+        assert PartialDate("1569").numeric_format("min") == "15690101"
+
+        assert PartialDate("1569-10-23").numeric_format("max") == "15691023"
+        assert PartialDate("1569-10").numeric_format("max") == "15691031"
+        assert PartialDate("1569").numeric_format("max") == "15691231"
+        # handle month-specific maxes
+        assert PartialDate("1569-02").numeric_format("max") == "15690228"
