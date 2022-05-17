@@ -136,6 +136,28 @@ class TestDocumentDateMixin:
         doc.doc_date_standard = "94 CE"
         assert doc.solr_date_range() is None
 
+    def test_start_date(self):
+        doc = Document()
+        # no dates, returns none
+        assert doc.start_date is None
+        # single date returned as-is
+        doc.doc_date_standard = "1839-03-17"
+        assert doc.start_date == PartialDate("1839-03-17")
+        # start is beginning of date range
+        doc.doc_date_standard = "1839-03-17/1840-03-04"
+        assert doc.start_date == PartialDate("1839-03-17")
+
+    def test_end_date(self):
+        doc = Document()
+        # no dates, returns none
+        assert doc.end_date is None
+        # single date returned as-is
+        doc.doc_date_standard = "1839-03-17"
+        assert doc.end_date == PartialDate("1839-03-17")
+        # end is beginning of date range
+        doc.doc_date_standard = "1839-03-17/1840-03-04"
+        assert doc.end_date == PartialDate("1840-03-04")
+
 
 # test hebrew date conversion
 def test_get_hebrew_month():
@@ -238,6 +260,13 @@ class TestPartialDate:
 
     def test_repr(self):
         assert repr(PartialDate("1569-10")) == "PartialDate(1569-10)"
+
+    def test_eq(self):
+        assert PartialDate("1569-10") == PartialDate("1569-10")
+        assert PartialDate("1569") == PartialDate("1569")
+        assert PartialDate("1569-10") != PartialDate("1569")
+        assert PartialDate("1569-10") != PartialDate("1569-10-23")
+        assert PartialDate("1559-10-23") != PartialDate("1569-10-23")
 
     def test_isoformat(self):
         assert PartialDate("1569-10-23").isoformat() == "1569-10-23"

@@ -768,7 +768,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # combined original/standard document date for display
                 "document_date_s": strip_tags(self.document_date) or None,
                 # date range for filtering
-                "date_dr": self.solr_date_range(),
+                "document_date_dr": self.solr_date_range(),
                 # start/end of document date or date range
                 "start_date_i": self.start_date.numeric_format()
                 if self.start_date
