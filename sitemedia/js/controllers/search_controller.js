@@ -158,9 +158,15 @@ export default class extends Controller {
         // when query is empty, disable sort by relevance
         if (this.queryTarget.value.trim() == "") {
             this.disableRelevanceSort();
-            // if this was triggered by an event and not in sortTargetConnected, sort by relevance
         } else if (event) {
-            this.sortByRelevance();
+            // if this was triggered by an event and not in sortTargetConnected,
+            // and the sort is currently "random" (the default), sort by relevance
+            const sortIsRandom = this.sortTargets.some(
+                (target) => target.value === "random" && target.checked
+            );
+            if (sortIsRandom) {
+                this.sortByRelevance();
+            }
         }
     }
 
