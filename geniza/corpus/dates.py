@@ -1,5 +1,6 @@
 # methods to convert historical dates to standard dates
 # will be used for reporting and automatic conversion in admin
+import calendar
 import re
 from datetime import date
 
@@ -36,15 +37,23 @@ class PartialDate:
     is based on known precision of year, month, or day."""
 
     available_precision = ["year", "month", "day"]
-    # display format determined by precision
+    #: public display format based on date precision
     display_format = {
         "year": "Y",
         "month": "F Y",
         "day": "DATE_FORMAT",  # honors locale formatting
     }
+    #: ISO format based on date precision
+    iso_format = {
+        "year": "%Y",
+        "month": "%Y-%m",
+        "day": "%Y-%m-%d",
+    }
+    #: numeric format for indexing and sorting
+    num_fmt = "%Y%m%d"
 
     def __init__(self, str):
-        # TODO: probably need some validation/error handling here
+        # TODO: probably still need more validation/error handling here
         # for real world use
         date_parts = str.split("-")
         if len(date_parts) > 3:
@@ -66,25 +75,45 @@ class PartialDate:
     def __repr__(self) -> str:
         return f"PartialDate({self.isoformat()})"
 
-    def isoformat(self, mode="min"):
-        # if date is fully known, or earliest date is requested,
-        # return isoformat as-is (since init assumes placeholders of 1 for unknowns)
-        if self.precision == "day" or mode == "min":
-            return self.date.isoformat()
-        month = self.date.month if self.precision == "month" else 12
-        day = 31  # fixme: month specific
-        return date(self.date.year, month, day).isoformat()
+    def isoformat(self, mode="min", fmt="precision"):
+        """Display partial date in ISO format. By default, will display
+        YYYY, YYYY-MM, or YYYY-MM-DD according to known precision. If min
+        or max is requested, will display YYYY-MM-DD for earliest or latest
+        date based on known precision.
 
-    num_fmt = "%Y%m%d"
+        :param mode: how to fill in unknowns: min, or max (default: min)
+        :param fmt: format: precision (default), isoformat, or numeric
+        """
+        # determine possibly unknown parts of the date
+        month = (
+            self.date.month
+            if self.precision in ["month", "day"] or mode == "min"
+            else 12
+        )
+        # if we don't know the day or mode is not min, determine max day
+        # by getting the number of days for this month in this year
+        # (if min, use 1 which is default in init)
+        day = (
+            self.date.day
+            if self.precision == "day" or mode == "min"
+            else calendar.monthrange(self.date.year, month)[1]
+        )
+
+        display_date = date(self.date.year, month, day)
+        # display only known precision
+        if fmt == "precision":
+            return display_date.strftime(self.iso_format[self.precision])
+
+        if fmt == "numeric":
+            return display_date.strftime(self.num_fmt)
+
+        # display full date, unknowns filled in based on min/max
+        return display_date.isoformat()
 
     def numeric_format(self, mode="min"):
-        # if date is fully known, or earliest date is requested,
-        # format as-is (since init assumes placeholders of 1 for unknowns)
-        if self.precision == "day" or mode == "min":
-            return self.date.strftime(self.num_fmt)
-        month = self.date.month if self.precision == "month" else 12
-        day = 31  # fixme: month specific
-        return date(self.date.year, month, day).strftime(self.num_fmt)
+        """ "Date in numeric format for sorting; max or min for unknowns.
+        See :meth:`isoformat` for more details."""
+        return self.isoformat(mode, "numeric")
 
 
 class DocumentDateMixin(TrackChangesModel):
