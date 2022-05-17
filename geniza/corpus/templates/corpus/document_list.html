@@ -29,8 +29,8 @@
                 <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
                 {% translate "Filters" %}
             </a>
-            <label for="{{ form.document_dates.auto_id }}">
-                {{ form.document_dates.label }}
+            <label for="{{ form.document_dates.auto_id }}" class="date-range-label">
+                <span>{{ form.document_dates.label }}</span>
                 {{ form.document_dates }}
             </label>
             <label for="{{ form.has_image.auto_id }}">
