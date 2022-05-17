@@ -160,11 +160,8 @@ export default class extends Controller {
             this.disableRelevanceSort();
         } else if (event) {
             // if this was triggered by an event and not in sortTargetConnected,
-            // and the sort is currently "random" (the default), sort by relevance
-            const sortIsRandom = this.sortTargets.some(
-                (target) => target.value === "random" && target.checked
-            );
-            if (sortIsRandom) {
+            // and the sort is currently the default, sort by relevance
+            if (this.defaultSortElement.checked) {
                 this.sortByRelevance();
             }
         }
