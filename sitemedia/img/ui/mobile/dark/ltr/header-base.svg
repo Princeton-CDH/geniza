@@ -1,24 +1,22 @@
-<svg width="900" height="130" viewBox="0 0 900 130" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g clip-path="url(#clip0_431_29297)">
-        <g filter="url(#filter0_d_431_29297)">
-            <path d="M22.3877 82.463L0.445529 82.463L0.445536 0.500003L900.571 0.5L900.571 82.463L284.138 83.6851L270.7 86.373L260.95 96.5605C260.95 96.5605 247.575 102.186 246.075 102.498C244.575 102.811 239.075 102.498 238.513 100.748C237.95 98.998 244.95 90.998 244.575 89.248C244.2 87.498 227.825 74.123 227.263 72.6855C226.7 71.248 228.325 67.1855 227.263 66.1855C226.2 65.1855 219.263 60.1855 216.95 59.8105C214.638 59.4355 213.388 65.1847 213.388 65.1847L207.624 65.1847C207.624 65.1847 203.624 73.9347 203.874 76.1847C204.124 78.4347 194.929 78.9347 192.402 81.4347C189.874 83.9347 185.861 89.9347 181.624 89.9347C177.388 89.9347 159.388 82.463 159.388 82.463L143.388 71.463L131.388 66.463C131.388 66.463 121.374 64.9627 118.388 66.463C115.402 67.9632 112.374 77.463 108.388 77.463C104.402 77.463 93.1243 71.463 89.388 71.463C85.6516 71.463 82.1243 82.463 78.388 82.463C74.6516 82.463 54.4013 75.213 54.3877 77.463C54.374 79.713 65.2628 86.365 66.3878 89.463C67.5128 92.561 36.8877 112.185 35.3877 110.944C33.8877 109.702 35.3877 89.463 35.3877 89.463L22.3877 82.463Z" fill="url(#gradient-mobile-dark)" />
-        </g>
+<svg width="900" height="151" viewBox="0 0 900 151" fill="none" version="1.1" id="svg115" xmlns="http://www.w3.org/2000/svg">
+    <g filter="url(#filter0_d_1456_38956)" id="g94">
+        <path d="M 305.266 102.3 C 307.721 102.3 318.645 86.808 318.645 86.808 L 320.077 85.039 L 900 85.039 L 900 0 L 320 0 L 0 0 L 0 91.189 L 35.042 91.189 L 44.504 93.082 L 51.37 100.256 C 51.37 100.256 60.788 104.217 61.844 104.437 C 62.901 104.657 66.773 104.437 67.17 103.205 C 67.566 101.972 62.637 96.339 62.901 95.107 C 63.165 93.874 74.695 84.456 75.091 83.444 C 75.488 82.432 74.343 79.571 75.091 78.867 C 75.84 78.163 80.725 74.642 82.353 74.378 C 83.982 74.114 84.862 78.162 84.862 78.162 L 88.92 78.162 C 88.92 78.162 91.737 84.324 91.561 85.908 C 91.385 87.492 97.86 87.844 99.64 89.605 C 101.419 91.365 104.246 95.59 107.229 95.59 C 110.212 95.59 122.887 90.329 122.887 90.329 L 134.153 82.583 L 142.603 79.062 C 142.603 79.062 149.655 78.006 151.758 79.062 C 153.86 80.119 155.992 86.808 158.799 86.808 C 161.606 86.808 169.547 82.583 172.178 82.583 C 174.809 82.583 177.293 90.329 179.924 90.329 C 182.555 90.329 196.815 85.224 196.824 86.808 C 196.834 88.392 189.166 93.077 188.374 95.258 C 187.582 97.44 209.147 111.258 210.203 110.384 C 211.26 109.509 210.203 95.258 210.203 95.258 L 219.358 90.329 L 236.258 90.329 L 244.708 86.808 L 254.566 86.808 L 264.424 95.258 C 264.424 95.258 263.202 100.715 264.424 102.3 C 265.647 103.884 276.395 98.779 276.395 98.779 C 276.395 98.779 278.869 102.3 280.62 102.3 C 282.371 102.3 287.662 95.258 287.662 95.258 C 287.662 95.258 302.811 102.3 305.266 102.3 Z" fill="url(#gradient-mobile-dark)" id="path92"></path>
     </g>
-    <defs>
-        <filter id="filter0_d_431_29297" x="-19.5547" y="-16.5" height="150.5" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-            <feFlood flood-opacity="0" result="BackgroundImageFix" />
-            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
-            <feOffset dy="3" />
-            <feGaussianBlur stdDeviation="10" />
-            <feComposite in2="hardAlpha" operator="out" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0.996078 0 0 0 0 0.996078 0 0 0 0 0.996078 0 0 0 0.5 0" />
-            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_431_29297" />
-            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_431_29297" result="shape" />
+    <defs id="defs113">
+        <filter id="filter0_d_1456_38956" x="0.125" y="0.338989" width="900" height="150.424" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feFlood flood-opacity="0" result="BackgroundImageFix" id="feFlood96"></feFlood>
+            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" id="feColorMatrix98"></feColorMatrix>
+            <feOffset dy="3" id="feOffset100"></feOffset>
+            <feGaussianBlur stdDeviation="10" id="feGaussianBlur102"></feGaussianBlur>
+            <feComposite in2="hardAlpha" operator="out" id="feComposite104"></feComposite>
+            <feColorMatrix type="matrix" values="0 0 0 0 0.996078 0 0 0 0 0.996078 0 0 0 0 0.996078 0 0 0 0.8 0" id="feColorMatrix106"></feColorMatrix>
+            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1456_38956" id="feBlend108"></feBlend>
+            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1456_38956" result="shape" id="feBlend110"></feBlend>
         </filter>
-        <linearGradient gradientUnits="userSpaceOnUse" x1="0" y1="110." x2="320" y2="110.5" id="gradient-mobile-dark">
-            <stop offset="0" style="stop-color: rgba(22, 22, 22, 0);"></stop>
-            <stop offset="0.95" style="stop-color: rgb(22, 22, 22); stop-opacity: 0.95;"></stop>
-            <stop offset="1" style="stop-color: rgb(22, 22, 22);"></stop>
-          </linearGradient>
     </defs>
+    <linearGradient gradientUnits="userSpaceOnUse" x1="0" y1="110." x2="320" y2="110.5" id="gradient-mobile-dark">
+        <stop offset="0" style="stop-color: rgba(22, 22, 22, 0);"></stop>
+        <stop offset="0.95" style="stop-color: rgb(22, 22, 22); stop-opacity: 0.95;"></stop>
+        <stop offset="1" style="stop-color: rgb(22, 22, 22);"></stop>
+    </linearGradient>
 </svg>
