@@ -122,6 +122,20 @@ class TestDocumentDateMixin:
         doc.doc_date_standard = "1839-03-17/1840-03-04"
         assert doc.solr_date_range() == "[1839-03-17 TO 1840-03-04]"
 
+        # invalid content should not error
+        doc.doc_date_standard = "1953/11/14"
+        assert doc.solr_date_range() is None
+        # invalid range format
+        doc.doc_date_standard = "1129/30"
+        assert doc.solr_date_range() is None
+
+        doc.doc_date_standard = "1129-01-01/1130"
+        assert doc.solr_date_range() == "[1129-01-01 TO 1130]"
+
+        # unparsable dates should not error
+        doc.doc_date_standard = "94 CE"
+        assert doc.solr_date_range() is None
+
 
 # test hebrew date conversion
 def test_get_hebrew_month():

@@ -186,13 +186,15 @@ class DocumentDateMixin(models.Model):
         """
         Return a Solr date range for the document's standardized date.
         """
-        if self.doc_date_standard:
+        # only convert if standardized document date is set and passes validation
+        if self.doc_date_standard and self.re_date_format.match(self.doc_date_standard):
             date_parts = self.doc_date_standard.split("/")
+            num_parts = len(date_parts)
             # if there's only one date, return it as a single date range
-            if len(date_parts) == 1:
+            if num_parts == 1:
                 return date_parts[0]
-            # if there's more than one date, return it as a range
-            # TODO: do we need to validate to make sure Solr can handle this?
+
+            # if there's more than one date, return as a range
             return "[%s TO %s]" % tuple(date_parts)
 
 
