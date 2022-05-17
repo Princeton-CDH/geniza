@@ -252,6 +252,7 @@ class TestDocumentSearchView:
     def test_get_form_kwargs(self):
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()
+        docsearch_view.get_range_stats = Mock(return_value={})
         # no params
         docsearch_view.request.GET = {}
         assert docsearch_view.get_form_kwargs() == {
@@ -260,6 +261,7 @@ class TestDocumentSearchView:
             },
             "prefix": None,
             "data": {"sort": "random"},
+            "range_minmax": {},
         }
 
         # keyword search param
@@ -271,6 +273,7 @@ class TestDocumentSearchView:
                 "q": "contract",
                 "sort": "relevance",
             },
+            "range_minmax": {},
         }
 
         # sort search param
@@ -283,6 +286,7 @@ class TestDocumentSearchView:
             "data": {
                 "sort": "scholarship_desc",
             },
+            "range_minmax": {},
         }
 
         # keyword and sort search params
@@ -296,6 +300,7 @@ class TestDocumentSearchView:
                 "q": "contract",
                 "sort": "scholarship_desc",
             },
+            "range_minmax": {},
         }
 
     @pytest.mark.usefixtures("mock_solr_queryset")
@@ -312,6 +317,7 @@ class TestDocumentSearchView:
 
             # keyword search param
             docsearch_view.request.GET = {"q": "six apartments"}
+            docsearch_view.get_range_stats = Mock(return_value={})
             qs = docsearch_view.get_queryset()
 
             mock_queryset_cls.assert_called_with()
@@ -414,6 +420,7 @@ class TestDocumentSearchView:
             docsearch_view.queryset = mock_qs
             docsearch_view.object_list = mock_qs
             docsearch_view.request = rf.get("/documents/")
+            docsearch_view.get_range_stats = Mock(return_value={})
 
             context_data = docsearch_view.get_context_data()
             assert (

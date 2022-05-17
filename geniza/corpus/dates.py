@@ -11,6 +11,8 @@ from django.utils.formats import date_format
 from django.utils.safestring import mark_safe
 from unidecode import unidecode
 
+from geniza.common.models import TrackChangesModel
+
 
 class Calendar:
     """Codes for supported calendars"""
@@ -61,8 +63,31 @@ class PartialDate:
             self.date, format=self.display_format[self.precision], use_l10n=True
         )
 
+    def __repr__(self) -> str:
+        return f"PartialDate({self.isoformat()})"
 
-class DocumentDateMixin(models.Model):
+    def isoformat(self, mode="min"):
+        # if date is fully known, or earliest date is requested,
+        # return isoformat as-is (since init assumes placeholders of 1 for unknowns)
+        if self.precision == "day" or mode == "min":
+            return self.date.isoformat()
+        month = self.date.month if self.precision == "month" else 12
+        day = 31  # fixme: month specific
+        return date(self.date.year, month, day).isoformat()
+
+    num_fmt = "%Y%m%d"
+
+    def numeric_format(self, mode="min"):
+        # if date is fully known, or earliest date is requested,
+        # format as-is (since init assumes placeholders of 1 for unknowns)
+        if self.precision == "day" or mode == "min":
+            return self.date.strftime(self.num_fmt)
+        month = self.date.month if self.precision == "month" else 12
+        day = 31  # fixme: month specific
+        return date(self.date.year, month, day).strftime(self.num_fmt)
+
+
+class DocumentDateMixin(TrackChangesModel):
     """Mixin for document date fields (original and standardized),
     and related logic for displaying, converting,a nd validating dates."""
 
@@ -182,18 +207,61 @@ class DocumentDateMixin(models.Model):
                 self.doc_date_standard = converted_date
             return converted_date
 
+    _parsed_date = {}
+
+    @property
+    def parsed_date(self):
+        """Parse standard date (if set) and return as dictionary
+        of start/end :class:`PartialDate` objects"""
+        # for efficiency, parse and cache standard date into
+        # a dictionary of start/end partial dates.
+        # recalculate if not set or standard date has changed
+        if (
+            self.doc_date_standard
+            and not self._parsed_date
+            or self.has_changed("doc_date_standard")
+        ):
+            try:
+                date_parts = self.doc_date_standard.split("/")
+                start = PartialDate(date_parts[0])
+                # if a single date instead of a range, start and end are the same
+                if len(date_parts) == 1:
+                    end = start
+                else:
+                    end = PartialDate(date_parts[1])
+
+                self._parsed_date = {"start": start, "end": end}
+            except ValueError:
+                # ignore if it can't be parsed (records before validation added)
+                pass
+
+        return self._parsed_date
+
+    @property
+    def start_date(self):
+        """
+        Return the start date of the document's standardized date or date range, if set.
+        """
+        return self.parsed_date.get("start")
+
+    @property
+    def end_date(self):
+        """
+        Return the end date of the document's standardized date or date range, if set.
+        """
+        return self.parsed_date.get("end")
+
     def solr_date_range(self):
         """
         Return a Solr date range for the document's standardized date.
         """
         # only convert if standardized document date is set and passes validation
         if self.doc_date_standard and self.re_date_format.match(self.doc_date_standard):
+            # if we have a single date, return it as is
             date_parts = self.doc_date_standard.split("/")
-            num_parts = len(date_parts)
-            # if there's only one date, return it as a single date range
-            if num_parts == 1:
+            # if a single date instead of a range, start and end are the same
+            if len(date_parts) == 1:
                 return date_parts[0]
-
             # if there's more than one date, return as a range
             return "[%s TO %s]" % tuple(date_parts)
 

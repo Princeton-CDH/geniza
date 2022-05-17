@@ -5,7 +5,7 @@ from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
-from geniza.common.fields import RangeField, RangeWidget
+from geniza.common.fields import RangeField, RangeForm, RangeWidget
 from geniza.corpus.models import Document
 
 
@@ -135,7 +135,7 @@ class BooleanFacetField(FacetFieldMixin, forms.BooleanField):
         self.widget.facet_counts = facet_dict
 
 
-class DocumentSearchForm(forms.Form):
+class DocumentSearchForm(RangeForm):
 
     q = forms.CharField(
         label="Keyword or Phrase",
@@ -156,6 +156,10 @@ class DocumentSearchForm(forms.Form):
         ("relevance", _("Relevance")),
         # Translators: label for sort in random order
         ("random", _("Random")),
+        # Translators: label for sort by document date (most recent first)
+        ("docdate_desc", _("Document Date (Latest-Earliest)")),
+        # Translators: label for sort by document date (oldest first)
+        ("docdate_asc", _("Document Date (Earliest-Latest)")),
         # Translators: label for sort by document input date (most recent first)
         ("input_date_desc", _("Input Date (Latest-Earliest)")),
         # Translators: label for sort by document input date (oldest first)
@@ -167,17 +171,6 @@ class DocumentSearchForm(forms.Form):
         # Translators: label for alphabetical sort by shelfmark
         ("shelfmark", _("Shelfmark (A-Z)")),
     ]
-    # NOTE: adding sort options and filters here to populate strings for translation;
-    # this functionality is not yet implemented, but these translation strings
-    # should be used when it is
-    planned_sort_choices = [
-        # Translators: label for sort by document date (most recent first)
-        ("docdate", _("Document Date (Latest-Earliest)")),
-        # Translators: label for sort by document date (oldest first)
-        ("docdate2", _("Document Date (Earliest-Latest)")),
-    ]
-    # Translators: label for filter documents by date
-    _("Document Dates")
     # Translators: label for start year when filtering by date range
     _("From year")
     # Translators: label for end year when filtering by date range
@@ -197,7 +190,7 @@ class DocumentSearchForm(forms.Form):
         required=False,
         widget=RadioSelectWithDisabled,
     )
-    # Translators: label for document date range form filter
+    # Translators: label for filter documents by date range
     document_dates = RangeField(
         label=_("Document Dates"), required=False, widget=RangeWidget(attrs={"size": 4})
     )
