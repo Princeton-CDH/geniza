@@ -1,8 +1,4 @@
-from datetime import date
-from functools import cached_property
-
 from django.contrib.sitemaps import Sitemap
-from django.core import paginator
 from django.urls import reverse
 from parasolr.utils import solr_timestamp_to_datetime
 
