@@ -92,7 +92,6 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         :rtype: dict
         """
         stats = DocumentSolrQuerySet().stats("start_date_i", "end_date_i").get_stats()
-        print(stats)
         if stats.get("stats_fields"):
             # use minimum from start date and max from end date
             # - we're storing YYYYMMDD as 8-digit number for this we only want year

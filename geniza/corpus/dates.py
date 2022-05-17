@@ -75,6 +75,14 @@ class PartialDate:
     def __repr__(self) -> str:
         return f"PartialDate({self.isoformat()})"
 
+    def __eq__(self, other):
+        if not isinstance(other, PartialDate):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        # equivalent if date and precision are the same
+        return self.date == other.date and self.precision == other.precision
+
     def isoformat(self, mode="min", fmt="precision"):
         """Display partial date in ISO format. By default, will display
         YYYY, YYYY-MM, or YYYY-MM-DD according to known precision. If min
