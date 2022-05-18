@@ -31,6 +31,7 @@
             </a>
             <label for="{{ form.document_dates.auto_id }}" class="date-range-label">
                 <span>{{ form.document_dates.label }}</span>
+                {# NOTE: stimulus action is configured via django widget attrs #}
                 {{ form.document_dates }}
             </label>
             <label for="{{ form.has_image.auto_id }}">
