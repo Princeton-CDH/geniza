@@ -1,5 +1,9 @@
 # Deploy Notes
 
+## 4.5.0
+
+-   Document date functionality in this release requires updating the Solr index. Run `python manage.py index` to reindex all content.
+
 ## 4.4.0
 
 -   This update requires Solr indexing changes (image filter, shelfmark override, etc.). Run `python manage.py index` to reindex all content.
