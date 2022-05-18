@@ -425,12 +425,19 @@ class TestDocumentSearchView:
             # convert integer date to year
             mock_queryset_cls.return_value.get_stats.return_value = {
                 "stats_fields": {
-                    "start_date_i": {"min": 10380101},
-                    "end_date_i": {"max": 10421231},
+                    "start_date_i": {"min": 10380101.0},
+                    "end_date_i": {"max": 10421231.0},
                 }
             }
             stats = docsearch_view.get_range_stats()
             assert stats == {"document_dates": (1038, 1042)}
+
+            # test three-digit year
+            mock_queryset_cls.return_value.get_stats.return_value["stats_fields"][
+                "start_date_i"
+            ]["min"] = 8430101.0
+            stats = docsearch_view.get_range_stats()
+            assert stats == {"document_dates": (843, 1042)}
 
     @pytest.mark.usefixtures("mock_solr_queryset")
     @patch("geniza.corpus.views.DocumentSearchView.get_queryset")
