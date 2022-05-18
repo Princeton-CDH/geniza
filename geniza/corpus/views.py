@@ -99,8 +99,9 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
             min_val = stats["stats_fields"]["start_date_i"]["min"]
             max_val = stats["stats_fields"]["end_date_i"]["max"]
 
-            min_year = int(str(min_val)[:4]) if min_val else None
-            max_year = int(str(max_val)[:4]) if max_val else None
+            # trim from the end to handle 3-digit years; includes .0 at end
+            min_year = int(str(min_val)[:-6]) if min_val else None
+            max_year = int(str(max_val)[:-6]) if max_val else None
             return {"document_dates": (min_year, max_year)}
 
         return {}
