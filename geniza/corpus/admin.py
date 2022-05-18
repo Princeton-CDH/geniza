@@ -88,7 +88,7 @@ class LanguageScriptAdmin(admin.ModelAdmin):
         # make the search too slow for autocomplete.
         # Reset to original, unannotated queryset *only* for autocomplete
         qs = super().get_queryset(request)
-        if request.path == "/admin/autocomplete/":
+        if request and request.path == "/admin/autocomplete/":
             # return without annotations
             return qs
         # otherwise, annotate with counts
