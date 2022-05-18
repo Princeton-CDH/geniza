@@ -102,7 +102,7 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
             # trim from the end to handle 3-digit years; includes .0 at end
             min_year = int(str(min_val)[:-6]) if min_val else None
             max_year = int(str(max_val)[:-6]) if max_val else None
-            return {"document_dates": (min_year, max_year)}
+            return {"docdate": (min_year, max_year)}
 
         return {}
 
@@ -198,9 +198,9 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                 documents = documents.filter(has_discussion=True)
             if search_opts["has_translation"] == True:
                 documents = documents.filter(has_translation=True)
-            if search_opts["document_dates"]:
+            if search_opts["docdate"]:
                 # date range filter; returns tuple of value or None for open-ended range
-                start, end = search_opts["document_dates"]
+                start, end = search_opts["docdate"]
                 documents = documents.filter(
                     document_date_dr="[%s TO %s]" % (start or "*", end or "*")
                 )

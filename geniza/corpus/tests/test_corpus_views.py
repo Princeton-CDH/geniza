@@ -417,7 +417,7 @@ class TestDocumentSearchView:
 
             # should not error if solr returns none
             stats = docsearch_view.get_range_stats()
-            assert stats == {"document_dates": (None, None)}
+            assert stats == {"docdate": (None, None)}
             mock_queryset_cls.return_value.stats.assert_called_with(
                 "start_date_i", "end_date_i"
             )
@@ -430,14 +430,14 @@ class TestDocumentSearchView:
                 }
             }
             stats = docsearch_view.get_range_stats()
-            assert stats == {"document_dates": (1038, 1042)}
+            assert stats == {"docdate": (1038, 1042)}
 
             # test three-digit year
             mock_queryset_cls.return_value.get_stats.return_value["stats_fields"][
                 "start_date_i"
             ]["min"] = 8430101.0
             stats = docsearch_view.get_range_stats()
-            assert stats == {"document_dates": (843, 1042)}
+            assert stats == {"docdate": (843, 1042)}
 
     @pytest.mark.usefixtures("mock_solr_queryset")
     @patch("geniza.corpus.views.DocumentSearchView.get_queryset")
@@ -639,21 +639,21 @@ class TestDocumentSearchView:
         docsearch_view.request = Mock()
 
         # filter by date range after 1100
-        docsearch_view.request.GET = {"document_dates_0": 1100}
+        docsearch_view.request.GET = {"docdate_0": 1100}
         qs = docsearch_view.get_queryset()
         assert qs.count() == 1
         assert qs[0]["pgpid"] == join.id
 
         # filter by date range before 1050
-        docsearch_view.request.GET = {"document_dates_1": 1050}
+        docsearch_view.request.GET = {"docdate_1": 1050}
         qs = docsearch_view.get_queryset()
         assert qs.count() == 1
         assert qs[0]["pgpid"] == document.id
 
         # filter by date range between 1000 and 1100
         docsearch_view.request.GET = {
-            "document_dates_0": 1000,
-            "document_dates_1": 1100,
+            "dodate_0": 1000,
+            "docdate_1": 1100,
         }
         qs = docsearch_view.get_queryset()
         assert qs.count() == 1

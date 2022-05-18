@@ -29,10 +29,10 @@
                 <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
                 {% translate "Filters" %}
             </a>
-            <label for="{{ form.document_dates.auto_id }}" class="date-range-label">
-                <span>{{ form.document_dates.label }}</span>
+            <label for="{{ form.docdate.auto_id }}" class="date-range-label">
+                <span>{{ form.docdate.label }}</span>
                 {# NOTE: stimulus action is configured via django widget attrs #}
-                {{ form.document_dates }}
+                {{ form.docdate }}
             </label>
             <label for="{{ form.has_image.auto_id }}">
                 {% render_field form.has_image data-action="search#update" %}
