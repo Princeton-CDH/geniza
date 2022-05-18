@@ -192,7 +192,9 @@ class DocumentSearchForm(RangeForm):
     )
     # Translators: label for filter documents by date range
     document_dates = RangeField(
-        label=_("Document Dates"), required=False, widget=RangeWidget(attrs={"size": 4})
+        label=_("Document Dates"),
+        required=False,
+        widget=RangeWidget(attrs={"size": 4, "data-action": "input->search#update"}),
     )
 
     doctype = FacetChoiceField(
