@@ -84,13 +84,17 @@ class LanguageScriptAdmin(admin.ModelAdmin):
         css = {"all": ("css/admin-local.css",)}
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .annotate(
-                Count("document", distinct=True),
-                Count("secondary_document", distinct=True),
-            )
+        # The annotations we use for document count on the list view
+        # make the search too slow for autocomplete.
+        # Reset to original, unannotated queryset *only* for autocomplete
+        qs = super().get_queryset(request)
+        if request.path == "/admin/autocomplete/":
+            # return without annotations
+            return qs
+        # otherwise, annotate with counts
+        return qs.annotate(
+            Count("document", distinct=True),
+            Count("secondary_document", distinct=True),
         )
 
     @admin.display(
