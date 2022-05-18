@@ -235,7 +235,6 @@ class TestDocumentSearchView:
         SolrClient().update.index([], commit=True)
         # [d.index_data() for d in [document, suppressed_document]], commit=True
         # )
-        print(suppressed_document.index_data())
 
         docsearch_view = DocumentSearchView()
         # mock request with empty keyword search
@@ -243,8 +242,6 @@ class TestDocumentSearchView:
         docsearch_view.request.GET = {"q": ""}
         qs = docsearch_view.get_queryset()
         result_pgpids = [obj["pgpid"] for obj in qs]
-        print(result_pgpids)
-        print(qs)
         assert qs.count() == 1
         assert document.id in result_pgpids
         assert suppressed_document.id not in result_pgpids
@@ -252,6 +249,7 @@ class TestDocumentSearchView:
     def test_get_form_kwargs(self):
         docsearch_view = DocumentSearchView()
         docsearch_view.request = Mock()
+        docsearch_view.get_range_stats = Mock(return_value={})
         # no params
         docsearch_view.request.GET = {}
         assert docsearch_view.get_form_kwargs() == {
@@ -260,6 +258,7 @@ class TestDocumentSearchView:
             },
             "prefix": None,
             "data": {"sort": "random"},
+            "range_minmax": {},
         }
 
         # keyword search param
@@ -271,6 +270,7 @@ class TestDocumentSearchView:
                 "q": "contract",
                 "sort": "relevance",
             },
+            "range_minmax": {},
         }
 
         # sort search param
@@ -283,6 +283,7 @@ class TestDocumentSearchView:
             "data": {
                 "sort": "scholarship_desc",
             },
+            "range_minmax": {},
         }
 
         # keyword and sort search params
@@ -296,6 +297,7 @@ class TestDocumentSearchView:
                 "q": "contract",
                 "sort": "scholarship_desc",
             },
+            "range_minmax": {},
         }
 
     @pytest.mark.usefixtures("mock_solr_queryset")
@@ -312,6 +314,7 @@ class TestDocumentSearchView:
 
             # keyword search param
             docsearch_view.request.GET = {"q": "six apartments"}
+            docsearch_view.get_range_stats = Mock(return_value={})
             qs = docsearch_view.get_queryset()
 
             mock_queryset_cls.assert_called_with()
@@ -394,6 +397,49 @@ class TestDocumentSearchView:
             assert args[0].startswith("random_")
 
     @pytest.mark.usefixtures("mock_solr_queryset")
+    def test_get_range_stats(self, mock_solr_queryset):
+        with patch(
+            "geniza.corpus.views.DocumentSolrQuerySet",
+            new=self.mock_solr_queryset(
+                DocumentSolrQuerySet, extra_methods=["admin_search", "keyword_search"]
+            ),
+        ) as mock_queryset_cls:
+            # stats = DocumentSolrQuerySet().stats("start_date_i", "end_date_i").get_stats()
+            # mock_queryset_cls.return_value.stats.return_value.get_stats.return_value = {
+            mock_queryset_cls.return_value.get_stats.return_value = {
+                "stats_fields": {
+                    "start_date_i": {"min": None},
+                    "end_date_i": {"max": None},
+                }
+            }
+            docsearch_view = DocumentSearchView()
+            docsearch_view.request = Mock()
+
+            # should not error if solr returns none
+            stats = docsearch_view.get_range_stats()
+            assert stats == {"docdate": (None, None)}
+            mock_queryset_cls.return_value.stats.assert_called_with(
+                "start_date_i", "end_date_i"
+            )
+
+            # convert integer date to year
+            mock_queryset_cls.return_value.get_stats.return_value = {
+                "stats_fields": {
+                    "start_date_i": {"min": 10380101.0},
+                    "end_date_i": {"max": 10421231.0},
+                }
+            }
+            stats = docsearch_view.get_range_stats()
+            assert stats == {"docdate": (1038, 1042)}
+
+            # test three-digit year
+            mock_queryset_cls.return_value.get_stats.return_value["stats_fields"][
+                "start_date_i"
+            ]["min"] = 8430101.0
+            stats = docsearch_view.get_range_stats()
+            assert stats == {"docdate": (843, 1042)}
+
+    @pytest.mark.usefixtures("mock_solr_queryset")
     @patch("geniza.corpus.views.DocumentSearchView.get_queryset")
     def test_get_context_data(self, mock_get_queryset, rf, mock_solr_queryset):
         with patch(
@@ -414,6 +460,7 @@ class TestDocumentSearchView:
             docsearch_view.queryset = mock_qs
             docsearch_view.object_list = mock_qs
             docsearch_view.request = rf.get("/documents/")
+            docsearch_view.get_range_stats = Mock(return_value={})
 
             context_data = docsearch_view.get_context_data()
             assert (
@@ -575,6 +622,43 @@ class TestDocumentSearchView:
         assert qs.count() == 1
         assert qs[0]["pgpid"] == document.id, "Only legal document returned"
 
+    def test_date_range_filter(self, document, join, empty_solr):
+        """Integration test for date range filter"""
+        document.doc_date_standard = "1038"
+        document.save()
+        join.doc_date_standard = "1142-05"
+        join.save()
+        SolrClient().update.index(
+            [
+                document.index_data(),
+                join.index_data(),
+            ],
+            commit=True,
+        )
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+
+        # filter by date range after 1100
+        docsearch_view.request.GET = {"docdate_0": 1100}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+        assert qs[0]["pgpid"] == join.id
+
+        # filter by date range before 1050
+        docsearch_view.request.GET = {"docdate_1": 1050}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+        assert qs[0]["pgpid"] == document.id
+
+        # filter by date range between 1000 and 1100
+        docsearch_view.request.GET = {
+            "dodate_0": 1000,
+            "docdate_1": 1100,
+        }
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+        assert qs[0]["pgpid"] == document.id
+
     def test_shelfmark_boost(self, empty_solr, document, multifragment):
         # integration test for shelfmark field boosting
         # in solr configuration
@@ -665,7 +749,6 @@ class TestDocumentSearchView:
         for shelfmark in [document.shelfmark_override, orig_shelfmark]:
 
             # keyword search should work
-            print(shelfmark)
             docsearch_view.request.GET = {"q": shelfmark}
             qs = docsearch_view.get_queryset()
             # should return this document

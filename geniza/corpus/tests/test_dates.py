@@ -111,6 +111,53 @@ class TestDocumentDateMixin:
         standardized = doc.standardize_date(update=True)
         assert doc.doc_date_standard == standardized
 
+    def test_solr_date_range(self):
+        doc = Document()
+        # no dates, returns none
+        assert doc.solr_date_range() is None
+        # single date returned as-is
+        doc.doc_date_standard = "1839-03-17"
+        assert doc.solr_date_range() == "1839-03-17"
+        # date range converted to solr format
+        doc.doc_date_standard = "1839-03-17/1840-03-04"
+        assert doc.solr_date_range() == "[1839-03-17 TO 1840-03-04]"
+
+        # invalid content should not error
+        doc.doc_date_standard = "1953/11/14"
+        assert doc.solr_date_range() is None
+        # invalid range format
+        doc.doc_date_standard = "1129/30"
+        assert doc.solr_date_range() is None
+
+        doc.doc_date_standard = "1129-01-01/1130"
+        assert doc.solr_date_range() == "[1129-01-01 TO 1130]"
+
+        # unparsable dates should not error
+        doc.doc_date_standard = "94 CE"
+        assert doc.solr_date_range() is None
+
+    def test_start_date(self):
+        doc = Document()
+        # no dates, returns none
+        assert doc.start_date is None
+        # single date returned as-is
+        doc.doc_date_standard = "1839-03-17"
+        assert doc.start_date == PartialDate("1839-03-17")
+        # start is beginning of date range
+        doc.doc_date_standard = "1839-03-17/1840-03-04"
+        assert doc.start_date == PartialDate("1839-03-17")
+
+    def test_end_date(self):
+        doc = Document()
+        # no dates, returns none
+        assert doc.end_date is None
+        # single date returned as-is
+        doc.doc_date_standard = "1839-03-17"
+        assert doc.end_date == PartialDate("1839-03-17")
+        # end is beginning of date range
+        doc.doc_date_standard = "1839-03-17/1840-03-04"
+        assert doc.end_date == PartialDate("1840-03-04")
+
 
 # test hebrew date conversion
 def test_get_hebrew_month():
@@ -192,19 +239,59 @@ def test_convert_islamic_date():
     assert converted_date[1] == date(1050, 5, 25)
 
 
-def test_partialdate():
-    # single day
-    assert str(PartialDate("1569-10-23")) == "23 October, 1569"
+class TestPartialDate:
+    def test_partialdate_str(self):
+        # single day
+        assert str(PartialDate("1569-10-23")) == "23 October, 1569"
 
-    # month/year
-    assert str(PartialDate("1569-10")) == "October 1569"
+        # month/year
+        assert str(PartialDate("1569-10")) == "October 1569"
 
-    # year only
-    assert str(PartialDate("1569")) == "1569"
+        # year only
+        assert str(PartialDate("1569")) == "1569"
 
-    # raise value error for too many parts
-    with pytest.raises(ValueError):
-        PartialDate("1569-10-23-24")
+    def test_partialdate_init(self):
+        # raise value error for too many parts
+        with pytest.raises(ValueError):
+            PartialDate("1569-10-23-24")
 
-    with pytest.raises(ValueError):
-        PartialDate("1569--10-23")
+        with pytest.raises(ValueError):
+            PartialDate("1569--10-23")
+
+    def test_repr(self):
+        assert repr(PartialDate("1569-10")) == "PartialDate(1569-10)"
+
+    def test_eq(self):
+        assert PartialDate("1569-10") == PartialDate("1569-10")
+        assert PartialDate("1569") == PartialDate("1569")
+        assert PartialDate("1569-10") != PartialDate("1569")
+        assert PartialDate("1569-10") != PartialDate("1569-10-23")
+        assert PartialDate("1559-10-23") != PartialDate("1569-10-23")
+
+    def test_isoformat(self):
+        assert PartialDate("1569-10-23").isoformat() == "1569-10-23"
+        assert PartialDate("1569-10").isoformat() == "1569-10"
+        assert PartialDate("1569").isoformat() == "1569"
+
+    def test_isoformat_min(self):
+        assert PartialDate("1569-10-23").isoformat("min", "iso") == "1569-10-23"
+        assert PartialDate("1569-10").isoformat("min", "iso") == "1569-10-01"
+        assert PartialDate("1569").isoformat("min", "iso") == "1569-01-01"
+
+    def test_isoformat_max(self):
+        assert PartialDate("1569-10-23").isoformat("max", "iso") == "1569-10-23"
+        assert PartialDate("1569-10").isoformat("max", "iso") == "1569-10-31"
+        assert PartialDate("1569").isoformat("max", "iso") == "1569-12-31"
+        # handle month-specific maxes
+        assert PartialDate("1569-02").isoformat("max", "iso") == "1569-02-28"
+
+    def test_numeric_format(self):
+        assert PartialDate("1569-10-23").numeric_format("min") == "15691023"
+        assert PartialDate("1569-06").numeric_format("min") == "15690601"
+        assert PartialDate("1569").numeric_format("min") == "15690101"
+
+        assert PartialDate("1569-10-23").numeric_format("max") == "15691023"
+        assert PartialDate("1569-10").numeric_format("max") == "15691031"
+        assert PartialDate("1569").numeric_format("max") == "15691231"
+        # handle month-specific maxes
+        assert PartialDate("1569-02").numeric_format("max") == "15690228"

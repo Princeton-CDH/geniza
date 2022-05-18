@@ -1,5 +1,6 @@
 # methods to convert historical dates to standard dates
 # will be used for reporting and automatic conversion in admin
+import calendar
 import re
 from datetime import date
 
@@ -10,6 +11,8 @@ from django.db import models
 from django.utils.formats import date_format
 from django.utils.safestring import mark_safe
 from unidecode import unidecode
+
+from geniza.common.models import TrackChangesModel
 
 
 class Calendar:
@@ -34,15 +37,23 @@ class PartialDate:
     is based on known precision of year, month, or day."""
 
     available_precision = ["year", "month", "day"]
-    # display format determined by precision
+    #: public display format based on date precision
     display_format = {
         "year": "Y",
         "month": "F Y",
         "day": "DATE_FORMAT",  # honors locale formatting
     }
+    #: ISO format based on date precision
+    iso_format = {
+        "year": "%Y",
+        "month": "%Y-%m",
+        "day": "%Y-%m-%d",
+    }
+    #: numeric format for indexing and sorting
+    num_fmt = "%Y%m%d"
 
     def __init__(self, str):
-        # TODO: probably need some validation/error handling here
+        # TODO: probably still need more validation/error handling here
         # for real world use
         date_parts = str.split("-")
         if len(date_parts) > 3:
@@ -61,8 +72,59 @@ class PartialDate:
             self.date, format=self.display_format[self.precision], use_l10n=True
         )
 
+    def __repr__(self) -> str:
+        return f"PartialDate({self.isoformat()})"
 
-class DocumentDateMixin(models.Model):
+    def __eq__(self, other):
+        if not isinstance(other, PartialDate):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        # equivalent if date and precision are the same
+        return self.date == other.date and self.precision == other.precision
+
+    def isoformat(self, mode="min", fmt="precision"):
+        """Display partial date in ISO format. By default, will display
+        YYYY, YYYY-MM, or YYYY-MM-DD according to known precision. If min
+        or max is requested, will display YYYY-MM-DD for earliest or latest
+        date based on known precision.
+
+        :param mode: how to fill in unknowns: min, or max (default: min)
+        :param fmt: format: precision (default), isoformat, or numeric
+        """
+        # determine possibly unknown parts of the date
+        month = (
+            self.date.month
+            if self.precision in ["month", "day"] or mode == "min"
+            else 12
+        )
+        # if we don't know the day or mode is not min, determine max day
+        # by getting the number of days for this month in this year
+        # (if min, use 1 which is default in init)
+        day = (
+            self.date.day
+            if self.precision == "day" or mode == "min"
+            else calendar.monthrange(self.date.year, month)[1]
+        )
+
+        display_date = date(self.date.year, month, day)
+        # display only known precision
+        if fmt == "precision":
+            return display_date.strftime(self.iso_format[self.precision])
+
+        if fmt == "numeric":
+            return display_date.strftime(self.num_fmt)
+
+        # display full date, unknowns filled in based on min/max
+        return display_date.isoformat()
+
+    def numeric_format(self, mode="min"):
+        """ "Date in numeric format for sorting; max or min for unknowns.
+        See :meth:`isoformat` for more details."""
+        return self.isoformat(mode, "numeric")
+
+
+class DocumentDateMixin(TrackChangesModel):
     """Mixin for document date fields (original and standardized),
     and related logic for displaying, converting,a nd validating dates."""
 
@@ -181,6 +243,64 @@ class DocumentDateMixin(models.Model):
             if update and not self.doc_date_standard:
                 self.doc_date_standard = converted_date
             return converted_date
+
+    _parsed_date = {}
+
+    @property
+    def parsed_date(self):
+        """Parse standard date (if set) and return as dictionary
+        of start/end :class:`PartialDate` objects"""
+        # for efficiency, parse and cache standard date into
+        # a dictionary of start/end partial dates.
+        # recalculate if not set or standard date has changed
+        if (
+            self.doc_date_standard
+            and not self._parsed_date
+            or self.has_changed("doc_date_standard")
+        ):
+            try:
+                date_parts = self.doc_date_standard.split("/")
+                start = PartialDate(date_parts[0])
+                # if a single date instead of a range, start and end are the same
+                if len(date_parts) == 1:
+                    end = start
+                else:
+                    end = PartialDate(date_parts[1])
+
+                self._parsed_date = {"start": start, "end": end}
+            except ValueError:
+                # ignore if it can't be parsed (records before validation added)
+                pass
+
+        return self._parsed_date
+
+    @property
+    def start_date(self):
+        """
+        Return the start date of the document's standardized date or date range, if set.
+        """
+        return self.parsed_date.get("start")
+
+    @property
+    def end_date(self):
+        """
+        Return the end date of the document's standardized date or date range, if set.
+        """
+        return self.parsed_date.get("end")
+
+    def solr_date_range(self):
+        """
+        Return a Solr date range for the document's standardized date.
+        """
+        # only convert if standardized document date is set and passes validation
+        if self.doc_date_standard and self.re_date_format.match(self.doc_date_standard):
+            # if we have a single date, return it as is
+            date_parts = self.doc_date_standard.split("/")
+            # if a single date instead of a range, start and end are the same
+            if len(date_parts) == 1:
+                return date_parts[0]
+            # if there's more than one date, return as a range
+            return "[%s TO %s]" % tuple(date_parts)
 
 
 # Julian Thursday, 4 October 1582, being followed by Gregorian Friday, 15 October

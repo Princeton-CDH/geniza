@@ -757,7 +757,7 @@ class TestDocument:
             id=123,
             doc_date_original="5 Elul 5567",
             doc_date_calendar=Calendar.ANNO_MUNDI,
-            doc_date_standard="September 8, 1807",
+            doc_date_standard="1807-09-08",
         )
         index_data = document.index_data()
         # should display form of the date without tags
