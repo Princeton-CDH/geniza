@@ -191,7 +191,7 @@ class DocumentSearchForm(RangeForm):
         widget=RadioSelectWithDisabled,
     )
     # Translators: label for filter documents by date range
-    document_dates = RangeField(
+    docdate = RangeField(
         label=_("Document Dates"),
         required=False,
         widget=RangeWidget(attrs={"size": 4, "data-action": "input->search#update"}),
