@@ -8,24 +8,41 @@
     {# translation disabled for now since we don't handle them in the system yet #}
     <input type="checkbox" id="translation-on" disabled="true"/><label for="translation-on">show translation</label>
     <div class="panel-container">
-        {% for image_info in document.iiif_images %}
-            <div class="img">
-                <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
-                <img src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
-                    sizes="(max-width: 650px) 50vw, 94vw"
-                    srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
-                    {{ image_info.image|iiif_image:"size:width=500" }} 500w,
-                    {{ image_info.image|iiif_image:"size:width=600" }} 600w,
-                    {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
-            </div>
-            <div class="transcription">
-                {% if forloop.first %}<h3>Transcription</h3>{% endif %}
-                {# display first transcription as single block for now #}
-                {% if forloop.first %}
-                    <div>{{ document.digital_editions.0.content.html|h1_to_h3|safe }}</div>
-                {% endif %}
-            </div>
-        {% endfor %}
+        {% comment %}
+NOTE: if we have more transcription pages than images,
+they won't show in current implementation.
+May want to gather them in the model... (but transcription content format will change)
+Also doesn't currently account for fragments without images.
+        {% endcomment %}
+        {# if we have images, loop based on them #}
+        {% if document.iiif_urls %}
+            {% for image_info in document.iiif_images %}
+                <div class="img">
+                    <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
+                    <img src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
+                        sizes="(max-width: 650px) 50vw, 94vw"
+                        srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
+                        {{ image_info.image|iiif_image:"size:width=500" }} 500w,
+                        {{ image_info.image|iiif_image:"size:width=600" }} 600w,
+                        {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
+                </div>
+                <div class="transcription">
+                    {% if forloop.first %}<h3>Transcription</h3>{% endif %}
+                    {# display transcription in chunks by index #}
+                    <div>{{ document.digital_editions.0.content.html|index:forloop.counter0|h1_to_h3|safe }}</div>
+                </div>
+            {% endfor %}
+            {# if there are no images, loop based on the transcription chunks instead #}
+        {% elif document.has_transcription %}
+            {% for chunk in document.digital_editions.0.content.html %}
+                <div class="img"></div> {# empty image div needed for grid layout #}
+                <div class="transcription">
+                    {% if forloop.first %}<h3>Transcription</h3>{% endif %}
+                    {# display transcription in chunks based on loop index #}
+                    <div>{{ chunk|h1_to_h3|safe }}</div>
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
 
 </section>
