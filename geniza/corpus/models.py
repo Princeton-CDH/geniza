@@ -601,7 +601,12 @@ class Document(ModelIndexable, DocumentDateMixin):
             if frag_images is not None:
                 images, labels = frag_images
                 iiif_images += [
-                    {"image": img, "label": labels[i]} for i, img in enumerate(images)
+                    {
+                        "image": img,
+                        "label": labels[i],
+                        "shelfmark": b.fragment.shelfmark,
+                    }
+                    for i, img in enumerate(images)
                 ]
 
         return iiif_images

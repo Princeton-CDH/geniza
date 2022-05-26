@@ -582,8 +582,12 @@ class TestDocument:
             assert len(images) == 2
             assert isinstance(images[0], dict)
             # dicts should contain the image objects and labels via the mocks
-            assert (images[0]["image"], images[0]["label"]) == (img1, "label1")
-            assert (images[1]["image"], images[1]["label"]) == (img2, "label2")
+            assert images[0]["image"] == img1
+            assert images[0]["label"] == "label1"
+            assert images[0]["shelfmark"] == frag.shelfmark
+            assert images[1]["image"] == img2
+            assert images[1]["label"] == "label2"
+            assert images[1]["shelfmark"] == frag.shelfmark
 
     def test_fragment_urls(self):
         # create example doc with two fragments with URLs

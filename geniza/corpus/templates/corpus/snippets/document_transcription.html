@@ -10,7 +10,7 @@
     <div class="panel-container">
         {% for image_info in document.iiif_images %}
             <div class="img">
-                <h3>{{ image_info.label }}</h3> {# shelfmark not available yet #}
+                <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
                 <img src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
                     sizes="(max-width: 650px) 50vw, 94vw"
                     srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
