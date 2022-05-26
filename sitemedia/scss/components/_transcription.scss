@@ -56,4 +56,22 @@
     #transcription-on:checked ~ .panel-container .transcription {
         height: 100%;
     }
+
+    /* image styles */
+    .img {
+        text-align: center;
+        transition: 0.75s ease;
+        h3 {
+            text-align: left;
+            margin-left: 3%;
+        }
+        img {
+            width: 94vw; /* nearly full-width on mobile */
+            margin: 0 auto;
+            @include breakpoints.for-tablet-landscape-up {
+                width: 650px; /* probably not quite right */
+                max-width: 94%; /* say within grid cell */
+            }
+        }
+    }
 }

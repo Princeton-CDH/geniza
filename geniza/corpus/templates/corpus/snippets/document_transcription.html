@@ -11,7 +11,12 @@
         {% for image_info in document.iiif_images %}
             <div class="img">
                 <h3>{{ image_info.label }}</h3> {# shelfmark not available yet #}
-                <img src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy">
+                <img src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
+                    sizes="(max-width: 650px) 50vw, 94vw"
+                    srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
+                    {{ image_info.image|iiif_image:"size:width=500" }} 500w,
+                    {{ image_info.image|iiif_image:"size:width=600" }} 600w,
+                    {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
             </div>
             <div class="transcription">
                 {% if forloop.first %}<h3>Transcription</h3>{% endif %}
