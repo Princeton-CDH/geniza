@@ -35,6 +35,19 @@ def dict_item(dictionary, key):
     return dictionary.get(key, None)
 
 
+@register.filter
+def index(item, i):
+    """'Template filter to allow accessing list element by variable index.
+    Example use::
+
+        {{ mylist|index:forloop.counter0 }}
+    """
+    try:
+        return item[i]
+    except IndexError:
+        return ""
+
+
 @register.simple_tag(takes_context=True)
 def querystring_replace(context, **kwargs):
     """Template tag to simplify retaining querystring parameters
