@@ -1,4 +1,35 @@
 {% load i18n corpus_extras %}
+<section id="transcription-panel">
+    {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
+    {# images displayed by default; disable if no images are available #}
+    <input type="checkbox" id="images-on"  {% if document.has_image %}checked="true" {% else %} disabled="true"{% endif %}/><label for="images-on">show images</label>
+    {# transcription displayed by default; disable if no content is available #}
+    <input type="checkbox" id="transcription-on" {% if document.digital_editions %}checked="true" {% else %} disabled="true"{% endif %}><label for="transcription-on">show transcription</label>
+    {# translation disabled for now since we don't handle them in the system yet #}
+    <input type="checkbox" id="translation-on" disabled="true"/><label for="translation-on">show translation</label>
+    <div class="panel-container">
+        {% for image_info in document.iiif_images %}
+            <div class="img">
+                <h3>{{ image_info.label }}</h3> {# shelfmark not available yet #}
+                <img src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy">
+            </div>
+            <div class="transcription">
+                {% if forloop.first %}<h3>Transcription</h3>{% endif %}
+                {# display first transcription as single block for now #}
+                {% if forloop.first %}
+                    <div>{{ document.digital_editions.0.content.html|h1_to_h3|safe }}</div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+</section>
+
+{% comment %}
+<hr/>
+OLD panel
+
+
 <section id="iiif-viewer" data-controller="iiif">
     <h1 class="sr-only">
         {# Translators: accessibility label for document images and transcription section #}
@@ -39,3 +70,4 @@
         {% include "corpus/snippets/document_image_rights.html" %}
     {% endif %}
 </section>
+{% endcomment %}

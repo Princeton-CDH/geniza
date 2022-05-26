@@ -1,0 +1,59 @@
+/* styles for image + transcription viewer */
+@use "../base/breakpoints";
+
+#transcription-panel {
+    max-width: none;
+    width: 100%;
+    background-color: var(--background-light);
+
+    .panel-container {
+        display: grid;
+        width: 100%;
+        transition: 0.75s ease;
+        /* when no content panels are selected, don't show anything  */
+        height: 0;
+        overflow: hidden;
+
+        // default column layout is two columns at a time
+        grid-template-columns: 1fr 1fr; /* 1fr;*/
+        justify-content: stretch;
+
+        /* hide panel containers by default */
+        & > div {
+            height: 0; /* ensure not visible when not selected */
+            overflow: hidden;
+            margin: 0 auto; /* center horizontally */
+        }
+    }
+
+    /* if any of the inputs are checked, panel container will be expanded */
+    *:checked ~ .panel-container {
+        height: auto;
+    }
+
+    /* images only */
+    #images-on:checked ~ .panel-container {
+        /* image column full width; transcription column collapsed */
+        grid-template-columns: 100% 0px;
+    }
+
+    #transcription-on:checked ~ .panel-container {
+        /* image column collapsed; transcription column full width */
+        grid-template-columns: 0px 100%;
+    }
+
+    /* both image & transcription checked */
+    #images-on:checked ~ #transcription-on:checked ~ .panel-container {
+        /* for mobile, set to full-width; content will stack in order */
+        grid-template-columns: 100%;
+        @include breakpoints.for-tablet-landscape-up {
+            grid-template-columns: 50% 50%;
+        }
+    }
+
+    /* content panels should have normal height when enabled */
+    #images-on:checked ~ .panel-container .img,
+    #transcription-on:checked ~ .panel-container .transcription {
+        height: 100%;
+    }
+}
