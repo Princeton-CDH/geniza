@@ -86,7 +86,12 @@ class GenizaTei(teimap.Tei):
             if block["label"]:
                 label = block["label"].lower()
                 # maybe "page b " could also be a new page
-                if any([side_label in label for side_label in ["recto", "verso"]]):
+                if any(
+                    [
+                        side_label in label
+                        for side_label in ["recto", "verso", "side ii"]
+                    ]
+                ):
                     # if we have any content, close the previous section
                     if page:
                         # combine all sections in the page and add to the html
