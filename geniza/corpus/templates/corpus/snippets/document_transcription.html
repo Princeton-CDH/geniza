@@ -45,6 +45,10 @@ Also doesn't currently account for fragments without images.
         {% endif %}
     </div>
 
+    {% if document.has_image %}
+        {% include "corpus/snippets/document_image_rights.html" %}
+    {% endif %}
+
 </section>
 
 {% comment %}
@@ -87,9 +91,6 @@ OLD panel
                 <div>{{ document.digital_editions.0.content.html|h1_to_h3|safe }}</div>
             {% endif %}
         </div>
-    {% endif %}
-    {% if document.has_image %}
-        {% include "corpus/snippets/document_image_rights.html" %}
     {% endif %}
 </section>
 {% endcomment %}
