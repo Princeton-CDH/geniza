@@ -1,12 +1,135 @@
 /* styles for image + transcription viewer */
+@use "../base/a11y";
 @use "../base/breakpoints";
+@use "../base/spacing";
+@use "../base/typography";
 
 #transcription-panel {
     max-width: none;
     width: 100%;
-    background-color: var(--background-light);
+    display: flex;
+    flex-flow: row wrap;
+
+    // toggle switches for panels
+    input[type="checkbox"] {
+        // disable browser checkbox UI
+        @include a11y.sr-only;
+
+        // style labels instead
+        & + label {
+            background-color: var(--background-light);
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0;
+            height: 40px;
+            width: 100px;
+            max-width: 100px;
+            @include breakpoints.for-tablet-landscape-up {
+                justify-content: center;
+                height: 95px;
+                width: 87px;
+                max-width: 87px;
+            }
+
+            // svg toggle icons
+            svg {
+                width: 65px;
+                height: 65px;
+                transform: scale(calc(40 / 65));
+                outline: 1.5px solid black;
+                outline-offset: -2px;
+            }
+
+            // left and right margins on first and last toggles
+            &:first-of-type {
+                margin-left: auto;
+                margin-right: 0.5rem;
+            }
+            &:last-of-type {
+                margin-right: auto;
+                margin-left: 0.5rem;
+            }
+        }
+
+        // checkmark icons (mobile only)
+        & + label:after {
+            content: "\f33f"; // phosphor check-circle icon
+            margin-right: 11px;
+        }
+        &:checked + label:after {
+            content: "\fb6c"; // phosphor check-circle-fill icon
+        }
+        & + label:after,
+        &:checked + label:after {
+            display: block;
+            color: var(--secondary);
+            float: right;
+            @include typography.icon-button-md;
+            // disable on desktop
+            @include breakpoints.for-tablet-landscape-up {
+                display: none;
+            }
+        }
+
+        // expand when checked (desktop only)
+        @include breakpoints.for-tablet-landscape-up {
+            &:checked + label {
+                flex: 1 0 auto;
+                max-width: none;
+                // expand icon size
+                svg {
+                    transform: scale(1);
+                }
+            }
+        }
+
+        // disabled toggle colors
+        &:disabled + label {
+            &:after {
+                color: var(--disabled);
+            }
+            svg {
+                fill: var(--disabled);
+                outline-color: var(--disabled);
+            }
+        }
+
+        // special case for images panel toggle (non-svg icon)
+        &#images-on {
+            & + label {
+                background-image: url("/static/img/ui/mobile/all/image-toggle.png");
+                background-position: 11px center;
+                background-repeat: no-repeat;
+                background-size: 40px 40px;
+                @include breakpoints.for-tablet-landscape-up {
+                    background-position: center;
+                    background-image: url("/static/img/ui/desktop/all/image-toggle.png");
+                }
+                // checkbox icon on mobile needs extra margin to make up for svg icon width
+                &:after {
+                    margin-left: 66px;
+                    margin-right: 0;
+                }
+            }
+            &:checked + label {
+                @include breakpoints.for-tablet-landscape-up {
+                    background-image: url("/static/img/ui/desktop/all/image-toggle-selected.png");
+                    background-size: 65px 65px;
+                }
+            }
+            &:disabled + label {
+                background-image: url("/static/img/ui/mobile/all/image-toggle-disabled.png");
+                @include breakpoints.for-tablet-landscape-up {
+                    background-image: url("/static/img/ui/desktop/all/image-toggle-disabled.png");
+                }
+            }
+        }
+    }
 
     .panel-container {
+        background-color: var(--background-light);
+        margin-top: 0.5rem;
         display: grid;
         width: 100%;
         transition: 0.75s ease;
