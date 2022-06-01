@@ -3,6 +3,7 @@
 ## 4.5.0
 
 -   Document date functionality in this release requires updating the Solr index. Run `python manage.py index` to reindex all content.
+-   Run `python manage.py sync_transcriptions` to migrate transcription content to new paged/chunked format
 
 ## 4.4.0
 
