@@ -1,5 +1,5 @@
 {% load i18n corpus_extras %}
-<section id="transcription-panel">
+<section id="itt-panel">
     {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
     {# images displayed by default; disable if no images are available #}
     <input type="checkbox" id="images-on"  {% if document.has_image %}checked="true" {% else %} disabled="true"{% endif %}/><label for="images-on">show images</label>
