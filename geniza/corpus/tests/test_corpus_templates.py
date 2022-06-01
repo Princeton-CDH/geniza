@@ -50,18 +50,22 @@ class TestDocumentDetailTemplate:
         assertContains(response, f"<p>{document.description}</p>", html=True)
 
     def test_viewer(self, client, document):
-        """Document detail template should include viewer for IIIF content"""
+        """Document detail template should include viewer for image/transcription content"""
         response = client.get(document.get_absolute_url())
         assertContains(
             response,
-            '<section id="iiif-viewer" data-controller="iiif">',
+            '<section id="itt-panel">',
         )
 
     def test_viewer_annotations(self, client, document, unpublished_editions):
-        """Document detail template should configure IIIF viewer for annotation display"""
+        """Document detail template should configure image/transcription viewer for annotation display"""
         # fixture does not have annotations
         response = client.get(document.get_absolute_url())
-        assertNotContains(response, '<div class="transcription">')
+        assertNotContains(
+            response,
+            '<input type="checkbox" id="transcription-on" checked="true">',
+            html=True,
+        )
 
         # add a footnote with a digital edition
         Footnote.objects.create(
@@ -71,7 +75,11 @@ class TestDocumentDetailTemplate:
             content={"text": "A piece of text"},
         )
         response = client.get(document.get_absolute_url())
-        assertContains(response, '<div class="transcription">')
+        assertContains(
+            response,
+            '<input type="checkbox" id="transcription-on" checked="true">',
+            html=True,
+        )
 
     def test_no_viewer(self, client, document):
         """Document with no IIIF shouldn't include viewer in template"""
