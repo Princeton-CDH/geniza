@@ -63,7 +63,7 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertNotContains(
             response,
-            '<input type="checkbox" id="transcription-on" checked="true">',
+            '<input type="checkbox" id="transcription-on" checked="true" aria-label="show transcription">',
             html=True,
         )
 
@@ -77,7 +77,7 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertContains(
             response,
-            '<input type="checkbox" id="transcription-on" checked="true">',
+            '<input type="checkbox" id="transcription-on" checked="true" aria-label="show transcription">',
             html=True,
         )
 
