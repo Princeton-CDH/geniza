@@ -135,6 +135,13 @@ class BooleanFacetField(FacetFieldMixin, forms.BooleanField):
         self.widget.facet_counts = facet_dict
 
 
+class YearRangeWidget(RangeWidget):
+    """Extend :class:`django.forms.widgets.RangeWidget` to customize the output and add
+    year start/end labels to the individual inputs."""
+
+    template_name = "corpus/widgets/yearrangewidget.html"
+
+
 class DocumentSearchForm(RangeForm):
 
     q = forms.CharField(
@@ -192,9 +199,11 @@ class DocumentSearchForm(RangeForm):
     )
     # Translators: label for filter documents by date range
     docdate = RangeField(
-        label=_("Document Dates"),
+        label=_("Document Dates (CE)"),
         required=False,
-        widget=RangeWidget(attrs={"size": 4, "data-action": "input->search#update"}),
+        widget=YearRangeWidget(
+            attrs={"size": 4, "data-action": "input->search#update"},
+        ),
     )
 
     doctype = FacetChoiceField(
