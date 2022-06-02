@@ -36,11 +36,12 @@
 
             // svg toggle icons
             svg {
+                fill: var(--toggle-background);
+                color: var(--toggle);
                 width: 65px;
                 height: 65px;
                 transform: scale(calc(40 / 65));
                 outline: 1.5px solid black;
-                outline-offset: -2px;
                 transition: transform 200ms ease;
             }
 
@@ -94,7 +95,8 @@
                 color: var(--disabled);
             }
             svg {
-                fill: var(--disabled);
+                color: var(--disabled);
+                fill: var(--disabled-toggle-background);
                 outline-color: var(--disabled);
             }
         }

@@ -69,6 +69,10 @@ $off-white: #f7f7f7;
     --permalink-icon-bg: #3d3d3d;
     // placeholder text for date input
     --date-placeholder: #595959;
+    // toggle icons for ITT panel
+    --toggle: #161616;
+    --toggle-background: #ffffff;
+    --disabled-toggle-background: #ffffff;
 }
 
 // Dark mode theme colors
@@ -123,6 +127,10 @@ $off-white: #f7f7f7;
     --permalink-icon-bg: #f7f7f7;
     // placeholder text for date input
     --date-placeholder: #ebebeb;
+    // toggle icons for ITT panel
+    --toggle: #161616;
+    --toggle-background: #ffffff;
+    --disabled-toggle-background: #595959;
 }
 
 html {
