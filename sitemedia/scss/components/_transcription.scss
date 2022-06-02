@@ -168,6 +168,7 @@
 
         // image panel spacing
         .img {
+            width: 640px;
             padding-top: 100px;
             &:first-child {
                 padding-top: 120px;
@@ -191,9 +192,8 @@
             margin: 64px 0 50px;
             @include breakpoints.for-tablet-landscape-up {
                 margin: 75px auto 50px;
-                summary {
-                    justify-content: center;
-                }
+                width: 640px;
+                max-width: 640px;
             }
         }
     }
@@ -273,6 +273,7 @@
 
         // image panel spacing
         .img {
+            width: 100%;
             padding-top: 100px;
             &:first-child {
                 padding-top: 120px;
@@ -296,7 +297,7 @@
             display: block;
             margin: 64px 0 50px;
             @include breakpoints.for-tablet-landscape-up {
-                margin: 75px 0 50px 3%;
+                margin: 75px 0 50px;
                 summary {
                     justify-content: flex-start;
                 }
@@ -312,7 +313,7 @@
 
     /* image styles */
     .panel-container div.img {
-        text-align: center;
+        text-align: left;
         * {
             max-width: none;
         }
@@ -322,14 +323,13 @@
             margin-bottom: 12px;
             @include breakpoints.for-tablet-landscape-up {
                 margin-bottom: 18px;
-                margin-left: 3%;
             }
         }
         img {
             width: 94vw; /* nearly full-width on mobile */
             margin: 0 auto;
             @include breakpoints.for-tablet-landscape-up {
-                width: 650px; /* probably not quite right */
+                width: 640px;
                 max-width: 94%; /* say within grid cell */
             }
         }
@@ -351,7 +351,6 @@
             cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: center;
             &:focus {
                 outline: none;
                 span {
@@ -421,6 +420,9 @@
         }
         // spacing tweaks for desktop
         @include breakpoints.for-tablet-landscape-up {
+            summary {
+                justify-content: flex-start;
+            }
             &[open] summary {
                 margin-bottom: spacing.$spacing-md;
             }
