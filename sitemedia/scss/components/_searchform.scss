@@ -398,10 +398,21 @@ main.search form {
             }
             div.inputs {
                 display: flex;
-                flex-flow: column;
+                flex-flow: row wrap;
                 margin-top: spacing.$spacing-xs;
+                label {
+                    flex: 1 0 33%;
+                    display: flex;
+                    align-items: center;
+                    padding: 0 spacing.$spacing-sm;
+                    @include breakpoints.for-tablet-landscape-up {
+                        padding: 0 spacing.$spacing-md;
+                        flex: 1 0 14%;
+                    }
+                }
                 input[type="number"] {
-                    flex: 1 0 2.9375rem;
+                    flex: 1 0 66%;
+                    height: 2.9375rem;
                     max-width: 100%;
                     width: 100%;
                     @include typography.form-option;
@@ -414,6 +425,7 @@ main.search form {
                     border-bottom: 1px solid var(--filter-border);
                     padding: 0 spacing.$spacing-sm;
                     @include breakpoints.for-tablet-landscape-up {
+                        flex: 1 0 86%;
                         padding: 0 spacing.$spacing-md;
                     }
                     &::placeholder {
