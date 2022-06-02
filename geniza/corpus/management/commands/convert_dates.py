@@ -1,4 +1,5 @@
 import csv
+import re
 
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
@@ -24,7 +25,7 @@ class Command(BaseCommand):
     ]
 
     def add_arguments(self, parser):
-        parser.add_argument("mode", choices=["report", "update"])
+        parser.add_argument("mode", choices=["report", "update", "clean"])
         parser.add_argument(
             "report-path", type=str, nargs="?", default="date-conversion-report.csv"
         )
@@ -40,10 +41,16 @@ class Command(BaseCommand):
             doc_date_original="", doc_date_calendar=""
         ).filter(doc_date_calendar__in=Calendar.can_convert)
 
+        if options["mode"] in ["update", "clean"]:
+            self.doc_contenttype = ContentType.objects.get_for_model(Document)
+            self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
+
         if options["mode"] == "report":
             self.report(dated_docs, options["report-path"])
         elif options["mode"] == "update":
             self.standardize_dates(dated_docs)
+        elif options["mode"] == "clean":
+            self.clean_standard_dates()
 
     def report(self, dated_docs, report_path):
         """Generate a CSV report of documents with dates and converted standard dates"""
@@ -79,8 +86,6 @@ class Command(BaseCommand):
 
     def standardize_dates(self, dated_docs):
         """Update documents with dates to standard format"""
-        doc_contenttype = ContentType.objects.get_for_model(Document)
-        script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
         # exclude documents with uncertain digits; looks like [..] or similar;
         # also exclude date ranges, which we don't yet support
@@ -102,8 +107,8 @@ class Command(BaseCommand):
                         doc.save()
                         # create log entry documenting the change
                         LogEntry.objects.log_action(
-                            user_id=script_user.id,
-                            content_type_id=doc_contenttype.pk,
+                            user_id=self.script_user.id,
+                            content_type_id=self.doc_contenttype.pk,
                             object_id=doc.pk,
                             object_repr=str(doc),
                             change_message="Recalculated standard document date",
@@ -119,3 +124,55 @@ class Command(BaseCommand):
                 )
 
         self.stdout.write("Updated %d documents" % updated)
+
+    def clean_standard_dates(self):
+        # find documents with standardized dates that are set but don't match the new validation pattern
+        docs_invalid_dates = Document.objects.exclude(doc_date_standard="").exclude(
+            doc_date_standard__regex=Document.re_date_format.pattern
+        )
+
+        print(
+            "%s documents with invalid standardized dates" % docs_invalid_dates.count()
+        )
+
+        dividers = re.compile(r"[-–/]")
+        updated = 0
+
+        for doc in docs_invalid_dates:
+            standard_date = doc.doc_date_standard
+            # some include CE or C.E., ; remove that
+            standard_date = standard_date.replace("CE", "").replace("C.E.", "")
+            # clean up improperly formatted ranges
+            if dividers.search(standard_date):
+                parts = dividers.split(standard_date)
+                # if there are three parts, assume we have a full date in wrong format,
+                # e.g. 1953/11/14
+                if len(parts) == 3:
+                    # reassemble the parts in iso date format
+                    standard_date = "-".join(parts)
+                # if there are two parts, assume we have a range in wrong format
+                elif len(parts) == 2:
+                    start, end = parts
+                    # if second year is shortened, like 1031–32, then fill in dates
+                    if len(end) < len(start):
+                        # fill in however many digits are missing
+                        end = start[: len(start) - len(end)] + end
+                    # generate the date range in proper format
+                    standard_date = "%s/%s" % (start, end)
+
+                # update the document
+                doc.doc_date_standard = standard_date
+                if doc.has_changed("doc_date_standard"):
+                    doc.save()
+                    # create log entry documenting the change
+                    LogEntry.objects.log_action(
+                        user_id=self.script_user.id,
+                        content_type_id=self.doc_contenttype.pk,
+                        object_id=doc.pk,
+                        object_repr=str(doc),
+                        change_message="Reformatted standard document date",
+                        action_flag=CHANGE,
+                    )
+                    updated += 1
+
+            self.stdout.write("Updated %d documents" % updated)
