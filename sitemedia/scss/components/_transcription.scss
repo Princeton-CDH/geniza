@@ -172,7 +172,7 @@
             &:first-child {
                 padding-top: 120px;
             }
-            &:nth-last-child(2) {
+            &:nth-last-child(3) {
                 padding-bottom: 87px;
             }
             @include breakpoints.for-tablet-landscape-up {
@@ -180,8 +180,19 @@
                 &:first-child {
                     padding-top: 131px;
                 }
-                &:nth-last-child(2) {
+                &:nth-last-child(3) {
                     padding-bottom: 80px;
+                }
+            }
+        }
+
+        // Attribution and license text
+        details.permissions {
+            margin: 64px 0 50px;
+            @include breakpoints.for-tablet-landscape-up {
+                margin: 75px auto 50px;
+                summary {
+                    justify-content: center;
                 }
             }
         }
@@ -202,7 +213,7 @@
                     margin-top: 40px;
                 }
             }
-            &:last-child {
+            &:nth-last-child(2) {
                 padding-bottom: 78px;
             }
             @include breakpoints.for-tablet-landscape-up {
@@ -215,10 +226,15 @@
                         margin-top: 5px;
                     }
                 }
-                &:last-child {
+                &:nth-last-child(2) {
                     padding-bottom: 80px;
                 }
             }
+        }
+
+        // Attribution and license text
+        details.permissions {
+            display: none;
         }
     }
 
@@ -228,7 +244,7 @@
         grid-template-columns: 100%;
         @include breakpoints.for-tablet-landscape-up {
             grid-template-columns: 50% 50%;
-            padding-left: 0;
+            padding-left: 82px;
             padding-right: 95px;
         }
 
@@ -243,7 +259,7 @@
                 // transcription content beneath heading
                 margin-top: 40px;
             }
-            &:last-child {
+            &:nth-last-child(2) {
                 padding-bottom: 87px;
             }
             @include breakpoints.for-tablet-landscape-up {
@@ -261,7 +277,7 @@
             &:first-child {
                 padding-top: 120px;
             }
-            &:nth-last-child(2) {
+            &:nth-last-child(3) {
                 padding-bottom: 0;
             }
             @include breakpoints.for-tablet-landscape-up {
@@ -269,8 +285,20 @@
                 &:first-child {
                     padding-top: 170px;
                 }
-                &:nth-last-child(2) {
+                &:nth-last-child(3) {
                     padding-bottom: 80px;
+                }
+            }
+        }
+
+        // Attribution and license text
+        details.permissions {
+            display: block;
+            margin: 64px 0 50px;
+            @include breakpoints.for-tablet-landscape-up {
+                margin: 75px 0 50px 3%;
+                summary {
+                    justify-content: flex-start;
                 }
             }
         }
@@ -310,6 +338,99 @@
     .panel-container div.transcription {
         & > h3 {
             @include typography.body-bold;
+        }
+    }
+
+    // Attribution and license text
+    details.permissions {
+        align-self: flex-start;
+        flex: 1 0 100%;
+        text-align: left;
+        // Label to expand "Image Permissions Statement"
+        summary {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            &:focus {
+                outline: none;
+                span {
+                    outline: 0.1rem solid var(--focus);
+                }
+            }
+            span {
+                @include typography.link;
+            }
+            // Suppress default details marker
+            list-style-type: none;
+            &::-webkit-details-marker {
+                display: none;
+            }
+            &::after {
+                content: "\f0c2"; // phosphor caret-down icon
+                @include typography.icon-button-md;
+                transition: transform 0.75s ease;
+                display: inline-block;
+                text-decoration: none;
+                margin-left: spacing.$spacing-xs;
+            }
+        }
+        &[open] summary {
+            // Expanded details marker
+            &::after {
+                transform: rotate(-180deg);
+            }
+            margin-bottom: 0.5rem;
+        }
+        @include typography.permissions-statement;
+        a.shelfmark {
+            @include typography.link;
+        }
+        a.shelfmark,
+        span.shelfmark {
+            @include typography.permissions-statement-bold;
+        }
+        // list of attributions/licenses
+        ul {
+            list-style: none;
+        }
+        li.fragment-permissions {
+            margin-top: spacing.$spacing-xs;
+            // Rights statement image
+            svg.rights-statement {
+                height: 14px;
+                width: 67px;
+                fill: var(--on-background);
+                vertical-align: text-top;
+            }
+        }
+        // provider logos (interim solution)
+        ul.logos {
+            display: flex;
+            flex-flow: row;
+            &:not(:empty) {
+                margin-top: spacing.$spacing-sm;
+            }
+            li img {
+                width: 4rem;
+                height: 4rem;
+            }
+            li + li {
+                margin-left: spacing.$spacing-xs;
+            }
+        }
+        // spacing tweaks for desktop
+        @include breakpoints.for-tablet-landscape-up {
+            &[open] summary {
+                margin-bottom: spacing.$spacing-md;
+            }
+            li.fragment-permissions {
+                margin-top: 0.75rem;
+                svg.rights-statement {
+                    height: 16px;
+                    width: 90px;
+                }
+            }
         }
     }
 }

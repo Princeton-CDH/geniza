@@ -49,11 +49,10 @@ Also doesn't currently account for fragments without images.
                 </div>
             {% endfor %}
         {% endif %}
+        {% if document.has_image %}
+            {% include "corpus/snippets/document_image_rights.html" %}
+        {% endif %}
     </div>
-
-    {% if document.has_image %}
-        {% include "corpus/snippets/document_image_rights.html" %}
-    {% endif %}
 
 </section>
 
