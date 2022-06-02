@@ -236,13 +236,13 @@ class DocumentDateMixin(TrackChangesModel):
         # if original date is set and conversion is supported for this calendar,
         # generate the standardized date
         if self.doc_date_original and self.doc_date_calendar in Calendar.can_convert:
-            converted_date = display_date_range(
-                *standardize_date(self.doc_date_original, self.doc_date_calendar)
-            )
-            # if update is requested and standard date is unset, save the converted date
-            if update and not self.doc_date_standard:
-                self.doc_date_standard = converted_date
-            return converted_date
+            std_date = standardize_date(self.doc_date_original, self.doc_date_calendar)
+            if std_date:
+                converted_date = display_date_range(*std_date)
+                # if update is requested and standard date is unset, save the converted date
+                if update and not self.doc_date_standard:
+                    self.doc_date_standard = converted_date
+                return converted_date
 
     _parsed_date = {}
 
