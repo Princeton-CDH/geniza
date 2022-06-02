@@ -1,12 +1,18 @@
-{% load i18n corpus_extras %}
+{% load i18n static corpus_extras %}
 <section id="itt-panel">
     {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
     {# images displayed by default; disable if no images are available #}
-    <input type="checkbox" id="images-on"  {% if document.has_image %}checked="true" {% else %} disabled="true"{% endif %}/><label for="images-on">show images</label>
+    {# translators: label for checkbox toggle to show the images panel for a document #}
+    <input type="checkbox" id="images-on" aria-label="{% translate 'show images' %}" {% if document.has_image %}checked="true" {% else %} disabled="true"{% endif %}/>
+    <label for="images-on"></label>
     {# transcription displayed by default; disable if no content is available #}
-    <input type="checkbox" id="transcription-on" {% if document.digital_editions %}checked="true" {% else %} disabled="true"{% endif %}><label for="transcription-on">show transcription</label>
+    {# translators: label for checkbox toggle to show the transcription panel for a document #}
+    <input type="checkbox" id="transcription-on" aria-label="{% translate 'show transcription' %}" {% if document.digital_editions %}checked="true" {% else %} disabled="true"{% endif %}/>
+    <label for="transcription-on"><svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg></label>
     {# translation disabled for now since we don't handle them in the system yet #}
-    <input type="checkbox" id="translation-on" disabled="true"/><label for="translation-on">show translation</label>
+    {# translators: label for checkbox toggle to show the translation panel for a document #}
+    <input type="checkbox" id="translation-on" aria-label="{% translate 'show translation' %}" disabled="true"/>
+    <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
     <div class="panel-container">
         {% comment %}
 NOTE: if we have more transcription pages than images,
@@ -23,7 +29,7 @@ Also doesn't currently account for fragments without images.
                         sizes="(max-width: 650px) 50vw, 94vw"
                         srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
                         {{ image_info.image|iiif_image:"size:width=500" }} 500w,
-                        {{ image_info.image|iiif_image:"size:width=600" }} 600w,
+                        {{ image_info.image|iiif_image:"size:width=640" }} 640w,
                         {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
                 </div>
                 <div class="transcription">
@@ -43,11 +49,10 @@ Also doesn't currently account for fragments without images.
                 </div>
             {% endfor %}
         {% endif %}
+        {% if document.has_image %}
+            {% include "corpus/snippets/document_image_rights.html" %}
+        {% endif %}
     </div>
-
-    {% if document.has_image %}
-        {% include "corpus/snippets/document_image_rights.html" %}
-    {% endif %}
 
 </section>
 
