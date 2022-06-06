@@ -85,7 +85,8 @@ class Command(BaseCommand):
                 )
 
     def standardize_dates(self, dated_docs):
-        """Update documents with dates to standard format"""
+        """Reconvert and update documents with historical dates with calendars
+        that support conversion."""
 
         # exclude documents with uncertain digits; looks like [..] or similar;
         # also exclude date ranges, which we don't yet support
@@ -126,7 +127,8 @@ class Command(BaseCommand):
         self.stdout.write("Updated %d documents" % updated)
 
     def clean_standard_dates(self):
-        # find documents with standardized dates that are set but don't match the new validation pattern
+        """Find documents with standardized dates that are set
+        but don't match the validation pattern and correct the ones that can be fixed."""
         docs_invalid_dates = Document.objects.exclude(doc_date_standard="").exclude(
             doc_date_standard__regex=Document.re_date_format.pattern
         )

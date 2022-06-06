@@ -98,4 +98,5 @@ def test_convert_date_clean(document, join):
     assert join.doc_date_standard == "1208-10-03"
     assert join.log_entries.exists() == join_logentry_count + 1
     output = stdout.getvalue()
+    assert "2 documents with invalid standardized dates" in output
     assert "Updated 2 documents" in output
