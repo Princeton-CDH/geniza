@@ -133,7 +133,7 @@ class Command(BaseCommand):
             doc_date_standard__regex=Document.re_date_format.pattern
         )
 
-        print(
+        self.stdout.write(
             "%s documents with invalid standardized dates" % docs_invalid_dates.count()
         )
 
