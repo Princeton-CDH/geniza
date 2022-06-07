@@ -364,6 +364,43 @@ class DocumentScholarshipView(DocumentDetailView):
         return context_data
 
 
+class RelatedDocumentView(DocumentDetailView):
+    """List of :class:`~geniza.corpus.models.Document`
+    objects that are related to specific :class:`~geniza.corpus.models.Document`
+    (e.g., by occuring on the same shelfmark)."""
+
+    template_name = "corpus/related_documents.html"
+    viewname = "corpus:related-documents"
+
+    def page_title(self):
+        # Translators: title of related documents page
+        return _("Related documents for %(doc)s") % {"doc": self.get_object().title}
+
+    def page_description(self):
+        # TODO description text
+        doc = self.get_object()
+        count = doc.footnotes.count()
+        # Translators: description of document scholarship page, for search engines
+        return ngettext(
+            "%(count)d scholarship record for %(doc)s",
+            "%(count)d scholarship records for %(doc)s",
+            count,
+        ) % {
+            "count": count,
+            "doc": doc.title,
+        }
+
+    def get_context_data(self, **kwargs):
+        doc = self.get_object()
+        # if there are no related documents, don't serve out this page
+        if not doc.related_documents.count():
+            raise Http404
+
+        context_data = super().get_context_data(**kwargs)
+        context_data.update({"highlighting": {}})  # no solr highlighting
+        return context_data
+
+
 class DocumentTranscriptionText(DocumentDetailView):
     """Return transcription as plain text for download"""
 
