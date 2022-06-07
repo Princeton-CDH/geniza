@@ -3,7 +3,9 @@
     <li class="search-result">
         {# result number #}
         <span class="counter">
-            {{ forloop.counter0|add:page_obj.start_index }}
+            {% with page_obj.start_index|default:1 as start_adjust %}
+                {{ forloop.counter0|add:start_adjust }}
+            {% endwith %}
         </span>
         <section class="{% if document.iiif_images %}has-image{% endif %}">
             {# title #}
