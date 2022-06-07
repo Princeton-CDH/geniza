@@ -332,12 +332,11 @@ class DocumentScholarshipView(DocumentDetailView):
         count = doc.footnotes.count()
         # Translators: description of document scholarship page, for search engines
         return ngettext(
-            "%(count)d scholarship record for %(doc)s",
-            "%(count)d scholarship records for %(doc)s",
+            "%(count)d scholarship record",
+            "%(count)d scholarship records",
             count,
         ) % {
             "count": count,
-            "doc": doc.title,
         }
 
     def get_queryset(self, *args, **kwargs):
@@ -377,17 +376,15 @@ class RelatedDocumentView(DocumentDetailView):
         return _("Related documents for %(doc)s") % {"doc": self.get_object().title}
 
     def page_description(self):
-        # TODO description text
         doc = self.get_object()
-        count = doc.footnotes.count()
-        # Translators: description of document scholarship page, for search engines
+        count = doc.related_documents.count()
+        # Translators: description of related documents page, for search engines
         return ngettext(
-            "%(count)d scholarship record for %(doc)s",
-            "%(count)d scholarship records for %(doc)s",
+            "%(count)d related document",
+            "%(count)d related documents",
             count,
         ) % {
             "count": count,
-            "doc": doc.title,
         }
 
     def get_context_data(self, **kwargs):
