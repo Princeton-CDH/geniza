@@ -177,4 +177,4 @@ class Command(BaseCommand):
                     )
                     updated += 1
 
-            self.stdout.write("Updated %d documents" % updated)
+        self.stdout.write("Updated %d documents" % updated)
