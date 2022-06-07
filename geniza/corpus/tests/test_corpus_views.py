@@ -839,10 +839,7 @@ class TestDocumentScholarshipView:
         response = client.get(
             reverse("corpus:document-scholarship", args=(document.id,))
         )
-        assert (
-            response.context["page_description"]
-            == f"1 scholarship record for {document.title}"
-        )
+        assert response.context["page_description"] == f"1 scholarship record"
 
     def test_get_queryset(self, client, document, source):
         # no footnotes; should 404
