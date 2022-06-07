@@ -335,7 +335,7 @@ def get_hebrew_month(month_name):
 #: regular expression for extracting information from original date string
 re_original_date = re.compile(
     # for months, match any non-numeric characters, since some month names are multi-word
-    "(?:(?P<weekday>\w+day),? )?(?:(?P<day>\d+) )?(?:(?P<month>[^\d]+( I{1,2})?) )?(?P<year>\d{3,4})",
+    r"(?:(?P<weekday>\w+day),? )?(?:(?P<day>\d+) )?(?:(?P<month>[^\d]+( I{1,2})?) )?(?P<year>\d{3,4})",
     flags=re.UNICODE,
 )
 
