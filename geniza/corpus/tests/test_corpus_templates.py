@@ -7,6 +7,7 @@ from django.http.request import HttpRequest, QueryDict
 from django.template.defaultfilters import linebreaks
 from django.template.loader import get_template
 from django.urls import reverse
+from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.corpus.models import Document, LanguageScript, TextBlock
@@ -422,50 +423,24 @@ class TestDocumentTabsSnippet:
         # count should be 2
         assertContains(response, "Scholarship Records (2)")
 
-    def test_external_link_disabled(self, client, document, fragment):
-        """document nav should render external links as disabled (for MVP)"""
-        # remove default URL from fragment
-        fragment.url = ""
-        fragment.save()
+    def test_no_related_docs(self, client, document, empty_solr):
+        """document nav should render inert links tab if no external links"""
         response = client.get(document.get_absolute_url())
-
-        # disabled (not yet implemented) for MVP
+        # uses span, not link
         assertContains(
             response,
-            "<li><span disabled aria-disabled='true'>External Links</span></li>",
+            "<span disabled aria-disabled='true'>Related Documents (0)</span>",
             html=True,
         )
 
-    @pytest.mark.skip("non-MVP feature")
-    def test_no_links(self, client, document, fragment):
-        """document nav should render inert links tab if no external links"""
-        # remove default URL from fragment
-        fragment.url = ""
-        fragment.save()
+    def test_with_related_docs(self, client, document, join, empty_solr):
+        """document nav should render related docs link with count"""
+        Document.index_items([document, join])
+        SolrClient().update.index([], commit=True)
         response = client.get(document.get_absolute_url())
-
-        # uses span, not link
-        assertContains(response, "<span>External Links (0)</span>", html=True)
-
-    @pytest.mark.skip("non-MVP feature")
-    def test_with_links(self, client, document, multifragment):
-        """document nav should render external links link with link counter"""
-        response = client.get(document.get_absolute_url())
-
-        # TODO renders link to external links page
-        # assertContains(
-        #     response, reverse("corpus:document-scholarship", args=[document.pk])
-        # )
 
         # count should be 1
-        assertContains(response, "External Links (1)")
-
-        # associate to another fragment with a URL
-        TextBlock.objects.create(document=document, fragment=multifragment)
-        response = client.get(document.get_absolute_url())
-
-        # count should be 2
-        assertContains(response, "External Links (2)")
+        assertContains(response, "Related Documents (1)")
 
 
 class TestDocumentResult:
