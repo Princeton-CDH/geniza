@@ -3,6 +3,7 @@
 ## 4.5.0
 
 -   Document date functionality in this release requires updating the Solr index. Run `python manage.py index` to reindex all content.
+-   The `convert_dates` manage command should be run to clean up existing standardized dates for use with filtering and sorting. First run `python manage.py convert_dates update` to reconvert dates from supported calendars; then run `python manage.py convert_dates clean` to standardize non-standard formats that can be easily adjusted.
 
 ## 4.4.0
 
