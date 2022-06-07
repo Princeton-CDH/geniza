@@ -213,6 +213,8 @@ def test_get_islamic_month():
     # local override
     assert get_islamic_month("Muharram") == 1
     assert get_islamic_month("Dhū l-Qaʿda") == 11
+    assert get_islamic_month("Rabīʿ I") == 3
+    assert get_islamic_month("Jumädä I") == 5
 
 
 def test_convert_islamic_date():
@@ -237,6 +239,12 @@ def test_convert_islamic_date():
     # 1049-06-05/1050-05-25
     assert converted_date[0] == date(1049, 6, 5)
     assert converted_date[1] == date(1050, 5, 25)
+
+    # failing unexpectedly
+    converted_date = convert_islamic_date("14 Rabīʿ I 934")
+    assert converted_date[0] == date(1527, 12, 8)
+    converted_date = convert_islamic_date("5 Jumädä I 556")
+    assert converted_date[0] == date(1161, 5, 2)
 
 
 class TestPartialDate:
