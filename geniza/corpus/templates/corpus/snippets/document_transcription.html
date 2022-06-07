@@ -1,5 +1,5 @@
 {% load i18n static corpus_extras %}
-<section id="itt-panel">
+<section id="itt-panel" data-controller="iiif">
     {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
     {# images displayed by default; disable if no images are available #}
     {# translators: label for checkbox toggle to show the images panel for a document #}
@@ -23,9 +23,12 @@ Also doesn't currently account for fragments without images.
         {# if we have images, loop based on them #}
         {% if document.iiif_urls %}
             {% for image_info in document.iiif_images %}
-                <div class="img">
+                <div class="img" id="{{ image_info.label }}" data-iiif-url="{{ image_info.image.info }}" data-iiif-target="imageContainer">
                     <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
-                    <img src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
+                    <button data-action="iiif#toggleDeepZoom" class="zoom">
+                        <i class="ph-magnifying-glass-plus"></i>
+                    </button>
+                    <img class="iiif-image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
                         sizes="(max-width: 650px) 50vw, 94vw"
                         srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
                         {{ image_info.image|iiif_image:"size:width=500" }} 500w,

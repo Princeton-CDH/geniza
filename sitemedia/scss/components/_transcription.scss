@@ -144,7 +144,6 @@
 
         // default column layout is two columns at a time
         grid-template-columns: 1fr 1fr; /* 1fr;*/
-        justify-content: stretch;
 
         // interior padding
         padding-left: 10px;
@@ -154,7 +153,7 @@
         & > div {
             height: 0; /* ensure not visible when not selected */
             overflow: hidden;
-            margin: 0 auto; /* center horizontally */
+            max-width: 100%;
         }
     }
 
@@ -167,6 +166,7 @@
     #images-on:checked ~ .panel-container {
         /* image column full width; transcription column collapsed */
         grid-template-columns: 100% 0px;
+        justify-items: center;
 
         // image panel spacing
         .img {
@@ -203,6 +203,7 @@
     #transcription-on:checked ~ .panel-container {
         /* image column collapsed; transcription column full width */
         grid-template-columns: 0px 100%;
+        justify-items: center;
 
         // transcription panel spacing
         .transcription {
@@ -244,10 +245,12 @@
     #images-on:checked ~ #transcription-on:checked ~ .panel-container {
         /* for mobile, set to full-width; content will stack in order */
         grid-template-columns: 100%;
+        justify-items: stretch;
         @include breakpoints.for-tablet-landscape-up {
             grid-template-columns: 50% 50%;
             padding-left: 82px;
             padding-right: 95px;
+            justify-items: start;
         }
 
         // transcription panel spacing
@@ -284,6 +287,7 @@
                 padding-bottom: 0;
             }
             @include breakpoints.for-tablet-landscape-up {
+                width: 640px;
                 padding-top: 107px;
                 &:first-child {
                     padding-top: 170px;
@@ -316,6 +320,10 @@
     /* image styles */
     .panel-container div.img {
         text-align: left;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
         * {
             max-width: none;
         }
@@ -327,12 +335,19 @@
                 margin-bottom: 18px;
             }
         }
+        button.zoom {
+            color: var(--on-background);
+            @include typography.icon-button-md;
+            border: none;
+            background-color: transparent;
+            font-family: inherit;
+            padding: 0;
+            cursor: pointer;
+        }
         img {
             width: 94vw; /* nearly full-width on mobile */
-            margin: 0 auto;
             @include breakpoints.for-tablet-landscape-up {
-                width: 640px;
-                max-width: 94%; /* say within grid cell */
+                max-width: 100%; /* say within grid cell */
             }
         }
     }
