@@ -424,7 +424,7 @@ class TestDocumentTabsSnippet:
         assertContains(response, "Scholarship Records (2)")
 
     def test_no_related_docs(self, client, document, empty_solr):
-        """document nav should render inert links tab if no external links"""
+        """document nav should render disabled related documents tab if no related documents"""
         response = client.get(document.get_absolute_url())
         # uses span, not link
         assertContains(
@@ -654,3 +654,22 @@ class TestSearchPagination:
         ctx = {"page_obj": paginator.page(10), "request": req}
         result = self.template.render(ctx)
         assert f"q=contract&page=9" in html.unescape(result)
+
+
+class TestRelatedDocumentsTemplate:
+    def test_related_list(self, client, document, join, empty_solr):
+        """should render results list for related documents"""
+        Document.index_items([document, join])
+        SolrClient().update.index([], commit=True)
+
+        response = client.get(reverse("corpus:related-documents", args=(document.id,)))
+        assertContains(
+            response, '<section id="document-list" class="related-documents">'
+        )
+        assertContains(response, "<ol>")
+
+        # list should have at least one item
+        assertContains(response, '<li class="search-result">')
+
+        # "join" fixture should be in list
+        assertContains(response, f"<dd>{join.id}</dd>")
