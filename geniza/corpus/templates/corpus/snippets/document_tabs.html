@@ -1,7 +1,7 @@
 {% load i18n %}
 <!-- document detail page navigation -->
 {# Translators: accessibility text label for document detail view tabs navigation #}
-<nav aria-label="{% translate "tabs" %}">
+<nav aria-label="{% translate "tabs" %}" id="tabs">
     <ul class="tabs">
         {% url 'corpus:document' pk=document.pk as document_url %}
         <li><a href="{{ document_url }}"{% if request.path == document_url %} aria-current="page"{% endif %}>{% translate "Document Details" %}</a></li>

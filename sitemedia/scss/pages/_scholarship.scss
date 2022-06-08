@@ -10,9 +10,9 @@ main.scholarship {
     div.container {
         display: flex;
         flex-direction: column;
-        padding: spacing.$spacing-md spacing.$spacing-sm;
+        padding: 0 spacing.$spacing-sm spacing.$spacing-md;
         @include breakpoints.for-desktop-up {
-            padding: spacing.$spacing-md;
+            padding: 0 spacing.$spacing-md spacing.$spacing-md;
         }
     }
     ol {

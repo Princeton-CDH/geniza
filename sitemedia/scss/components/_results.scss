@@ -9,6 +9,12 @@
 @use "../base/colors";
 
 section#document-list {
+    width: 100%;
+    @include container.two-column;
+    display: flex;
+    flex-direction: column;
+    padding: 0 spacing.$spacing-md spacing.$spacing-md;
+
     // count of results
     h1 {
         @include container.two-column;
@@ -110,7 +116,7 @@ section#document-list {
         }
 
         // other document metadata
-        .metadata {
+        dl.metadata-list {
             grid-template-columns: auto 1fr;
             column-gap: 1rem;
         }
@@ -283,7 +289,7 @@ section#document-list {
     /* raise tags & text over clickable pseudo content to allow selection */
     .description,
     .transcription,
-    .metadata dd,
+    dl.metadata-list dd,
     .tags {
         position: relative;
         z-index: 4;
