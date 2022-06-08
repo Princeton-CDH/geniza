@@ -1299,8 +1299,11 @@ class TestDocumentMergeView:
 
 
 class TestRelatdDocumentview:
-    def test_page_title(self, document, client):
+    def test_page_title(self, document, join, client, empty_solr):
         """should use doc title in related documents view meta title"""
+        Document.index_items([document, join])
+        SolrClient().update.index([], commit=True)
+
         response = client.get(reverse("corpus:related-documents", args=(document.id,)))
         assert (
             response.context["page_title"] == f"Related documents for {document.title}"
@@ -1308,7 +1311,6 @@ class TestRelatdDocumentview:
 
     def test_page_description(self, client, document, join, fragment, empty_solr):
         """should use count and pluralization in related documents view meta description"""
-
         Document.index_items([document, join])
         SolrClient().update.index([], commit=True)
 
