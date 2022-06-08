@@ -1,5 +1,4 @@
 from datetime import datetime
-from pydoc import doc
 from time import sleep
 from unittest.mock import ANY, Mock, patch
 
@@ -1297,3 +1296,56 @@ class TestDocumentMergeView:
                 follow=True,
             )
             mock_merge_with.assert_called_with(ANY, "test", user=ANY)
+
+
+class TestRelatdDocumentview:
+    def test_page_title(self, document, client):
+        """should use doc title in related documents view meta title"""
+        response = client.get(reverse("corpus:related-documents", args=(document.id,)))
+        assert (
+            response.context["page_title"] == f"Related documents for {document.title}"
+        )
+
+    def test_page_description(self, client, document, join, fragment, empty_solr):
+        """should use count and pluralization in related documents view meta description"""
+
+        Document.index_items([document, join])
+        SolrClient().update.index([], commit=True)
+
+        # "join" fixture = 1 related document
+        response = client.get(reverse("corpus:related-documents", args=(document.id,)))
+        assert response.context["page_description"] == "1 related document"
+
+        # document on same fragment should add a related document to the other document
+        new_doc = Document.objects.create(
+            doctype=DocumentType.objects.get_or_create(name_en="Legal")[0],
+        )
+        TextBlock.objects.create(document=new_doc, fragment=fragment)
+        Document.index_items([document, join, new_doc])
+        SolrClient().update.index([], commit=True)
+        response = client.get(reverse("corpus:related-documents", args=(document.id,)))
+        assert response.context["page_description"] == "2 related documents"
+
+    def test_get_context_data(self, document, join, client, empty_solr):
+        """should raise 404 on no related, otherwise return inherited context data"""
+        # document on new shelfmark should not have any related documents, so should raise 404
+        new_doc = Document.objects.create(
+            doctype=DocumentType.objects.get_or_create(name_en="Legal")[0],
+        )
+        new_frag = Fragment.objects.create(shelfmark="fake_shelfmark_related_docs")
+        TextBlock.objects.create(document=new_doc, fragment=new_frag)
+        Document.index_items([new_doc, document, join])
+        SolrClient().update.index([], commit=True)
+        response = client.get(reverse("corpus:related-documents", args=(new_doc.id,)))
+        assert response.status_code == 404
+
+        # related document view should otherwise inherit context data function from detail view
+        related_response = client.get(
+            reverse("corpus:related-documents", args=(document.id,))
+        )
+        doc_response = client.get(reverse("corpus:document", args=(document.id,)))
+        assert related_response.status_code == 200
+        assert (
+            related_response.context["page_includes_transcriptions"]
+            == doc_response.context["page_includes_transcriptions"]
+        )

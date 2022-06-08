@@ -392,10 +392,7 @@ class RelatedDocumentView(DocumentDetailView):
         # if there are no related documents, don't serve out this page
         if not doc.related_documents.count():
             raise Http404
-
-        context_data = super().get_context_data(**kwargs)
-        context_data.update({"highlighting": {}})  # no solr highlighting
-        return context_data
+        return super().get_context_data(**kwargs)
 
 
 class DocumentTranscriptionText(DocumentDetailView):
