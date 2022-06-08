@@ -8,15 +8,12 @@
     <h1 class="sr-only">{{ page_title }}</h1>
     <!-- related documents -->
     {% include "corpus/snippets/document_header.html" %}
-    <div class="container">
-        {% include "corpus/snippets/document_tabs.html" %}
-
-        <section id="document-list">
-            <ol>
-                {% for document in document.related_documents %}
-                    {% include "corpus/snippets/document_result.html" %}
-                {% endfor %}
-            </ol>
-        </section>
-    </div>
+    {% include "corpus/snippets/document_tabs.html" %}
+    <section id="document-list" class="related-documents">
+        <ol>
+            {% for document in document.related_documents %}
+                {% include "corpus/snippets/document_result.html" %}
+            {% endfor %}
+        </ol>
+    </section>
 {% endblock main %}
