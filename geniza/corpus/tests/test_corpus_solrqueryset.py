@@ -1,8 +1,9 @@
 from unittest.mock import patch
 
-from parasolr.django import AliasedSolrQuerySet
+from parasolr.django import AliasedSolrQuerySet, SolrClient
 from piffle.image import IIIFImageClient
 
+from geniza.corpus.models import Document, DocumentType, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 
 
@@ -69,3 +70,27 @@ class TestDocumentSolrQuerySet:
         dqs = DocumentSolrQuerySet()
         # confirm arabic to judaeo-arabic runs here
         dqs._search_term_cleanup("دينار") == "(دينار|דיהאר)"
+
+    def test_related_to(self, document, join, fragment, empty_solr):
+        """should give filtered result: public documents with any shared shelfmarks"""
+
+        # create suppressed document on the same fragment as document fixture
+        suppressed = Document.objects.create(
+            doctype=DocumentType.objects.get_or_create(name_en="Legal")[0],
+            status=Document.SUPPRESSED,
+        )
+        TextBlock.objects.create(document=suppressed, fragment=fragment)
+        Document.index_items([document, join, suppressed])
+        SolrClient().update.index([], commit=True)
+
+        dqs = DocumentSolrQuerySet()
+        related_docs = dqs.related_to(document)
+
+        # should exclude related but suppressed documents
+        assert related_docs.filter(pgpid=suppressed.id).count() == 0
+
+        # should exclude self
+        assert related_docs.filter(pgpid=document.id).count() == 0
+
+        # should include related
+        assert related_docs.filter(pgpid=join.id).count() == 1
