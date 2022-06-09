@@ -33,3 +33,4 @@ django-fullurl
 django-admin-inline-paginator
 convertdate
 unidecode
+iiif_prezi
