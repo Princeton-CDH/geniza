@@ -34,6 +34,7 @@ from urllib3.exceptions import HTTPError, NewConnectionError
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
 from geniza.corpus.dates import DocumentDateMixin
+from geniza.corpus.iiif_utils import get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote, Source
 
@@ -232,7 +233,7 @@ class Fragment(TrackChangesModel):
             try:
                 manifest = IIIFPresentation.from_url(self.iiif_url)
                 for canvas in manifest.sequences[0].canvases:
-                    image_id = canvas.images[0].resource.id
+                    image_id = canvas.images[0].resource.service.id
                     images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
                     # label provides library's recto/verso designation
                     labels.append(canvas.label)
@@ -268,7 +269,9 @@ class Fragment(TrackChangesModel):
         # pull from locally cached manifest
         # (don't hit remote url if not cached)
         if self.manifest:
-            attribution = self.manifest.extra_data.get("attribution", "")
+            attribution = get_iiif_string(
+                self.manifest.extra_data.get("attribution", "")
+            )
             if attribution:
                 # Remove CUDL metadata string from displayed attribution
                 return mark_safe(
