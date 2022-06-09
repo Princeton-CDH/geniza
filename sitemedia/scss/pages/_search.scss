@@ -19,11 +19,4 @@ main.search {
             margin-top: spacing.$spacing-2xl;
         }
     }
-    section#document-list {
-        width: 100%;
-        @include container.two-column;
-        display: flex;
-        flex-direction: column;
-        padding: 0 spacing.$spacing-md spacing.$spacing-md;
-    }
 }
