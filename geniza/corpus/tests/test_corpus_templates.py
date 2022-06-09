@@ -210,18 +210,6 @@ class TestDocumentDetailTemplate:
             response, "Download Khan, el-Leithy, Rustow and Vanthieghem's edition"
         )
 
-    def test_other_docs_none(self, document, client):
-        """If there are no other documents, don't show the other docs section"""
-        response = client.get(document.get_absolute_url())
-        assertNotContains(response, "Other documents on this shelfmark")
-
-    def test_other_docs(self, document, join, client):
-        """If there are other documents, show the other docs section"""
-        response = client.get(document.get_absolute_url())
-        assertContains(response, "Other documents on this shelfmark")
-        assertContains(response, join.get_absolute_url())
-        assertContains(response, join.title)
-
     def test_languages_none(self, client, document):
         response = client.get(document.get_absolute_url())
         assertNotContains(response, "Primary Language")
