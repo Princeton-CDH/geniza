@@ -23,6 +23,7 @@ eulxml
 rich
 wagtail>=2.15.3,<2.16
 wagtail-localize
+# TODO: needs djiffy 0.8 once it is released
 djiffy>=0.7.3
 natsort
 django-widget-tweaks
