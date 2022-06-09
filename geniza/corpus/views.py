@@ -332,12 +332,11 @@ class DocumentScholarshipView(DocumentDetailView):
         count = doc.footnotes.count()
         # Translators: description of document scholarship page, for search engines
         return ngettext(
-            "%(count)d scholarship record for %(doc)s",
-            "%(count)d scholarship records for %(doc)s",
+            "%(count)d scholarship record",
+            "%(count)d scholarship records",
             count,
         ) % {
             "count": count,
-            "doc": doc.title,
         }
 
     def get_queryset(self, *args, **kwargs):
@@ -362,6 +361,38 @@ class DocumentScholarshipView(DocumentDetailView):
             }
         )
         return context_data
+
+
+class RelatedDocumentView(DocumentDetailView):
+    """List of :class:`~geniza.corpus.models.Document`
+    objects that are related to specific :class:`~geniza.corpus.models.Document`
+    (e.g., by occuring on the same shelfmark)."""
+
+    template_name = "corpus/related_documents.html"
+    viewname = "corpus:related-documents"
+
+    def page_title(self):
+        # Translators: title of related documents page
+        return _("Related documents for %(doc)s") % {"doc": self.get_object().title}
+
+    def page_description(self):
+        doc = self.get_object()
+        count = doc.related_documents.count()
+        # Translators: description of related documents page, for search engines
+        return ngettext(
+            "%(count)d related document",
+            "%(count)d related documents",
+            count,
+        ) % {
+            "count": count,
+        }
+
+    def get_context_data(self, **kwargs):
+        doc = self.get_object()
+        # if there are no related documents, don't serve out this page
+        if not doc.related_documents.count():
+            raise Http404
+        return super().get_context_data(**kwargs)
 
 
 class DocumentTranscriptionText(DocumentDetailView):
