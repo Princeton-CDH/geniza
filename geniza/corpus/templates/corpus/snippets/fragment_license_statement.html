@@ -2,7 +2,7 @@
     {% if fragment.manifest.rights_statement_id %}
         <svg class="rights-statement" aria-label="{{ fragment.manifest.license_label }}">
             <title>{{ fragment.manifest.license_label }}</title>
-            <use height="1rem" href="{{ fragment.manifest.license_image }}#rightsstatement" />
+            <use height="1rem" href="{{ fragment.manifest.license_image }}#licenseimg" />
         </svg>
     {% elif fragment.manifest.creativecommons_id %}
         <img src="{{ fragment.manifest.license_image }}" alt="{{ fragment.manifest.license_label }}"/>
