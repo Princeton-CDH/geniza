@@ -2,6 +2,7 @@
 
 from attrdict import AttrMap
 from django.core.serializers.json import DjangoJSONEncoder
+from django.utils.translation import get_language
 from piffle.presentation import IIIFPresentation
 
 from geniza.common.utils import absolutize_url
@@ -67,3 +68,29 @@ class AttrDictEncoder(DjangoJSONEncoder):
         if isinstance(obj, AttrMap):
             return dict(obj)
         return super().default(obj)
+
+
+def get_iiif_string(obj):
+    """Handle iiif values which may be a single string or maybe a list of language-specific strings"""
+
+    # this should maybe be part of piffle or djiffy; consider moving later;
+    # helpful to have django current language logic
+
+    # if it's just a string, return it
+    if isinstance(obj, str):
+        return obj
+    # if it's a list of values with language codes, return the best option
+    elif isinstance(obj, list) and "@language" in obj[0]:
+        # convert into a language-value dictionary for easy lookup
+        # NOTE: spec is more complicated than this, could be en-latn or similar.
+        # Handle with simple case for now
+        lang_val = {i["@language"]: i["@value"] for i in obj}
+        # return the value for the current django language
+        lang = get_language()
+        val = lang_val.get(lang, None)
+        # if no value for current language and it is not english, try english next
+        if not val and lang != "en":
+            val = lang_val.get("en", None)
+
+        # if we didn't find a value for current language or english, return the first value
+        return val or obj[0]["@value"]

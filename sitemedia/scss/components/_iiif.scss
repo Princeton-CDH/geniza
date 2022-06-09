@@ -185,7 +185,7 @@
                 margin-top: spacing.$spacing-sm;
             }
             li img {
-                width: 4rem;
+                width: auto;
                 height: 4rem;
             }
             li + li {
@@ -203,6 +203,9 @@
                 svg.rights-statement {
                     height: 16px;
                     width: 90px;
+                }
+                img {
+                    height: 16px;
                 }
             }
         }
