@@ -1,5 +1,5 @@
 {% extends "admin/change_form.html" %}
-{% load static render_bundle_csp  %}
+{% load static i18n render_bundle_csp  %}
 
 {% block extrastyle %}
     {{ block.super }}
@@ -29,6 +29,29 @@
             </div>
         </fieldset>
     {% endif %}
+    {# display & link to other documents on this fragment if there are any #}
+    {% with original.fragments_other_docs as other_docs %}
+        {% if other_docs %}
+            <section>
+                <h3>
+                    {# Translators: Other documents on the same fragment/shelfmark #}
+                    {% blocktranslate count counter=original.fragments.count trimmed %}
+                        Other documents on this shelfmark
+                    {% plural %}
+                        Other documents on these shelfmarks
+                    {% endblocktranslate %}
+                </h3>
+                <ul>
+                    {% for doc in other_docs %}
+                        <li><a href="{% url 'admin:corpus_document_change' doc.id %}">PGPID {{ doc.id }}</a> {{ doc.title }}
+                            <p>{{ doc.description }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    {% endwith %}
+
     {% if original.digital_editions or original.has_image %}
         <fieldset class="module aligned transcriptions-field">
             <div class="form-row">

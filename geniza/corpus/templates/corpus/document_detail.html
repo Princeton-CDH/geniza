@@ -149,28 +149,8 @@
             </section>
         {% endif %}
 
-        {% with document.fragments_other_docs as other_docs %}
-            {% if other_docs %}
-                <section>
-                    <dl class="metadata-list">
-                        <dt>
-                            {# Translators: Other documents on the same fragment/shelfmark #}
-                            {% blocktranslate count counter=document.fragments.count trimmed %}
-                                Other documents on this shelfmark
-                            {% plural %}
-                                Other documents on these shelfmarks
-                            {% endblocktranslate %}
-                        </dt>
-                        {% for doc in other_docs %}
-                            <dd><a href="{{ doc.get_absolute_url }}">{{ doc.title }}</a></dd>
-                        {% endfor %}
-                    </dl>
-                </section>
-            {% endif %}
-        {% endwith %}
+
     </div>
-
-
 
     {# viewer #}
     {% if document.has_transcription or document.iiif_urls %}
