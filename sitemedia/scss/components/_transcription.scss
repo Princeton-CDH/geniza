@@ -394,6 +394,9 @@
         // list of attributions/licenses
         ul {
             list-style: none;
+            /* adjust for styles applied when embedded in admin document change form */
+            margin-left: 0;
+            padding-left: 0;
         }
         li.fragment-permissions {
             margin-top: spacing.$spacing-xs;
