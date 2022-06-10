@@ -2,6 +2,7 @@
 Importing IIIF manifests to be cached in the database.
 
 """
+import urllib
 
 from django.core.management.base import BaseCommand
 from djiffy.importer import ManifestImporter
@@ -68,8 +69,25 @@ class Command(BaseCommand):
     def associate_manifests(self):
         """update fragments with iiif urls to add foreign keys to the new manifests"""
         fragments = Fragment.objects.exclude(iiif_url="").filter(manifest__isnull=True)
+        self.stdout.write(
+            "%d fragments with iiif url but unlinked manifest" % fragments.count()
+        )
+        updated = 0
         for fragment in fragments:
+            # a set of ~200 manifest urls were entered with double slashes,
+            # resulting in a mismatch with the imported manifest objects.
+            # parse the url and clean up if present
+            parsed = urllib.parse.urlparse(fragment.iiif_url)
+            if parsed.path.startswith("//"):
+                # remove the extra slash and then reassemble the url
+                url_path = parsed.path[1:]
+                fragment.iiif_url = urllib.parse.urlunparse(
+                    (parsed.scheme, parsed.netloc, url_path, "", "", "")
+                )
+
             fragment.manifest = Manifest.objects.filter(uri=fragment.iiif_url).first()
             if fragment.manifest:
                 fragment.save()
-                # TODO log entry?
+                updated += 1
+
+        self.stdout.write("Updated %d fragments with link to manifest" % updated)

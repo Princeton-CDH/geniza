@@ -32,7 +32,11 @@ def dict_item(dictionary, key):
 
         {{ mydict|dict_item:keyvar }}
     """
-    return dictionary.get(key, None)
+    try:
+        return dictionary.get(key, None)
+    except AttributeError:
+        # fail silently if something other than a dict is passed
+        return None
 
 
 @register.filter

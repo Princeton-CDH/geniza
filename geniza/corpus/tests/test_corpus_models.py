@@ -150,7 +150,9 @@ class TestFragment(TestCase):
                                 "images": [
                                     {
                                         "resource": {
-                                            "id": "http://example.co/iiif/ts-1/00001",
+                                            "service": {
+                                                "id": "http://example.co/iiif/ts-1/00001",
+                                            }
                                         }
                                     }
                                 ],
@@ -160,7 +162,9 @@ class TestFragment(TestCase):
                                 "images": [
                                     {
                                         "resource": {
-                                            "id": "http://example.co/iiif/ts-1/00002",
+                                            "service": {
+                                                "id": "http://example.co/iiif/ts-1/00002",
+                                            }
                                         }
                                     }
                                 ],

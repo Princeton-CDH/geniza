@@ -1,0 +1,9 @@
+// -----------------------------------------------------------------------------
+// List of documents related to a given document.
+// -----------------------------------------------------------------------------
+
+@use "../base/container";
+
+section#document-list.related-documents {
+    @include container.two-column;
+}
