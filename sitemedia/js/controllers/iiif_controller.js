@@ -6,18 +6,18 @@ import OpenSeadragon from "openseadragon";
 export default class extends Controller {
     static targets = ["imageContainer"];
 
-    imageContainerTargetDisconnected(element) {
+    imageContainerTargetDisconnected(container) {
         // remove OSD on target disconnect (i.e. leaving page)
-        this.removeOpenSeaDragon(element);
+        const image = container.querySelector("img.iiif-image");
+        this.deactivateDeepZoom(container, image);
     }
     toggleDeepZoom(evt) {
         // Switch between image and OSD, depending on which is currently active
-        const container = evt.target.parentNode.parentNode;
+        const container = evt.currentTarget.parentNode;
         const OSD = container.querySelector(".openseadragon-container");
         const image = container.querySelector("img.iiif-image");
         if (OSD) {
-            container.removeChild(OSD);
-            image.style.display = "block";
+            this.deactivateDeepZoom(container, image);
         } else {
             this.activateDeepZoom(container, image);
         }
@@ -31,7 +31,7 @@ export default class extends Controller {
     }
     addOpenSeaDragon(element, tileSources) {
         // inject OSD into the image container
-        OpenSeadragon({
+        let viewer = OpenSeadragon({
             element,
             prefixUrl:
                 "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/",
@@ -48,5 +48,23 @@ export default class extends Controller {
                 pinchRotate: true,
             },
         });
+        viewer.addHandler("open", function () {
+            // ensure image is positioned in top-left corner of viewer
+            const bounds = viewer.viewport.getBounds();
+            const newBounds = new OpenSeadragon.Rect(
+                0,
+                0,
+                bounds.width,
+                bounds.height
+            );
+            viewer.viewport.fitBounds(newBounds, true);
+        });
+    }
+    deactivateDeepZoom(container, image) {
+        const OSD = container.querySelector(".openseadragon-container");
+        if (OSD && image) {
+            container.removeChild(OSD);
+            image.style.display = "block";
+        }
     }
 }
