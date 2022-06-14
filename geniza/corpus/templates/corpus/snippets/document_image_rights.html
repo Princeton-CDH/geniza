@@ -35,7 +35,12 @@
         {% for provenance in provenance_list %}
             {% if "JTS" in provenance.grouper %}
                 <li>
-                    <img src="{% static 'img/logos/all/all/jts-logo.png' %}" alt="" role="presentation" height="64" loading="lazy" />
+                    <a href="https://www.jtsa.edu/" aria-label="{% translate 'Jewish Theological Seminary homepage' %}">
+                        <svg id="jts">
+                            <title>{% translate 'Jewish Theological Seminary logo' %}</title>
+                            <use href="{% static 'img/logos/all/all/jts-logo.svg' %}#jts-logo" />
+                        </svg>
+                    </a>
                 </li>
             {% endif %}
         {% endfor %}
