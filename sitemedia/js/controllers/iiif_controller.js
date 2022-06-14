@@ -67,7 +67,7 @@ export default class extends Controller {
         });
         const zoomSlider = element.querySelector("input[type='range']");
         const zoomSliderLabel = element.querySelector(
-            "label[for='zoom-slider']"
+            "label[for^='zoom-slider']"
         );
         const image = element.querySelector("img.iiif-image");
         viewer.addHandler("open", () => {

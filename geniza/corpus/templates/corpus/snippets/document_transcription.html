@@ -26,8 +26,8 @@ Also doesn't currently account for fragments without images.
                 <div class="img" id="{{ image_info.label }}" data-iiif-url="{{ image_info.image.info }}" data-iiif-target="imageContainer">
                     <div class="img-header">
                         <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
-                        <input data-action="iiif#handleDeepZoom" type="range" id="zoom-slider" name="zoom-slider" min="1" max="100" value="0" step="0.1">
-                        <label for="zoom-slider">100%</label>
+                        <input data-action="iiif#handleDeepZoom" type="range" id="zoom-slider-{{ forloop.counter0 }}" name="zoom-slider" min="1" max="100" value="0" step="0.1">
+                        <label for="zoom-slider-{{ forloop.counter0 }}">100%</label>
                     </div>
                     <img class="iiif-image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
                         sizes="(max-width: 650px) 50vw, 94vw"

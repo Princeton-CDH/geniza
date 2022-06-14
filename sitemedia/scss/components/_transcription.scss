@@ -272,7 +272,7 @@
                 flex: 1 0 auto;
             }
             // zoom controls
-            input[type="range"]#zoom-slider {
+            input[type="range"][id^="zoom-slider"] {
                 -webkit-appearance: none;
                 appearance: none;
                 background: transparent;
@@ -297,7 +297,7 @@
                 &::-webkit-slider-thumb {
                     -webkit-appearance: none; /* Override default look */
                     appearance: none;
-                    margin-top: -16px; /* Centers thumb on the track */
+                    margin-top: -14px; /* Centers thumb on the track */
                     background-color: var(--filter-active);
                     border-radius: 20px;
                     height: 32px;
@@ -313,7 +313,7 @@
                     outline: 4px solid var(--on-background-light-alt);
                 }
             }
-            label[for="zoom-slider"] {
+            label[for^="zoom-slider"] {
                 text-align: right;
                 flex: 0 1 60px;
                 color: var(--on-background);
