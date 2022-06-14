@@ -1,6 +1,7 @@
 /* styles for image + transcription viewer */
 @use "../base/a11y";
 @use "../base/breakpoints";
+@use "../base/colors";
 @use "../base/spacing";
 @use "../base/typography";
 
@@ -259,19 +260,61 @@
         * {
             max-width: none;
         }
-        h3 {
-            @include typography.body-bold;
-            text-align: left;
-            margin: 8px;
-        }
-        button.zoom {
-            color: var(--on-background);
-            @include typography.icon-button-md;
-            border: none;
-            background-color: transparent;
-            font-family: inherit;
-            padding: 0;
-            cursor: pointer;
+        .img-header {
+            display: flex;
+            align-items: center;
+            h3 {
+                @include typography.body-bold;
+                text-align: left;
+                margin: 8px;
+                display: inline-block;
+                flex: 1 0 auto;
+            }
+            // zoom controls
+            input[type="range"]#zoom-slider {
+                -webkit-appearance: none;
+                appearance: none;
+                background: transparent;
+                cursor: pointer;
+                width: 180px;
+
+                // sadly, these are still vendor-prefixed and can't be combined to reduce redunancy :(
+
+                // range slider background "track"
+                &::-webkit-slider-runnable-track {
+                    background-color: colors.$gray;
+                    border-radius: 4px;
+                    height: 4px;
+                }
+                &::-moz-range-track {
+                    background-color: colors.$gray;
+                    border-radius: 4px;
+                    height: 4px;
+                }
+                // range slider control circle/"thumb"
+                &::-webkit-slider-thumb {
+                    -webkit-appearance: none; /* Override default look */
+                    appearance: none;
+                    margin-top: -16px; /* Centers thumb on the track */
+                    background-color: var(--filter-active);
+                    border-radius: 20px;
+                    height: 36px;
+                    width: 36px;
+                    outline: 4px solid var(--on-background-light-alt);
+                }
+                &::-moz-range-thumb {
+                    background-color: var(--filter-active);
+                    border: none; /*Removes extra border that FF applies*/
+                    border-radius: 20px;
+                    height: 36px;
+                    width: 36px;
+                    outline: 4px solid var(--on-background-light-alt);
+                }
+            }
+            label[for="zoom-slider"] {
+                color: var(--on-background);
+                @include typography.body-bold;
+            }
         }
         img {
             width: 100%;

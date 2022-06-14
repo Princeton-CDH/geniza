@@ -5,20 +5,19 @@ import OpenSeadragon from "openseadragon";
 
 export default class extends Controller {
     static targets = ["imageContainer"];
+    static maxZoomPixelRatio = 2.25;
 
     imageContainerTargetDisconnected(container) {
         // remove OSD on target disconnect (i.e. leaving page)
         const image = container.querySelector("img.iiif-image");
         this.deactivateDeepZoom(container, image);
     }
-    toggleDeepZoom(evt) {
-        // Switch between image and OSD, depending on which is currently active
-        const container = evt.currentTarget.parentNode;
+    handleDeepZoom(evt) {
+        // Enable OSD and/or zoom based on zoom slider level
+        const container = evt.currentTarget.parentNode.parentNode;
         const OSD = container.querySelector(".openseadragon-container");
         const image = container.querySelector("img.iiif-image");
-        if (OSD) {
-            this.deactivateDeepZoom(container, image);
-        } else {
+        if (!OSD) {
             this.activateDeepZoom(container, image);
         }
     }
@@ -47,8 +46,13 @@ export default class extends Controller {
             gestureSettingsTouch: {
                 pinchRotate: true,
             },
+            maxZoomPixelRatio: this.maxZoomPixelRatio,
         });
-        viewer.addHandler("open", function () {
+        const zoomSlider = element.querySelector("input[type='range']");
+        const zoomSliderLabel = element.querySelector(
+            "label[for='zoom-slider']"
+        );
+        viewer.addHandler("open", () => {
             // ensure image is positioned in top-left corner of viewer
             const bounds = viewer.viewport.getBounds();
             const newBounds = new OpenSeadragon.Rect(
@@ -58,6 +62,20 @@ export default class extends Controller {
                 bounds.height
             );
             viewer.viewport.fitBounds(newBounds, true);
+
+            // initialize zoom slider
+            zoomSlider.setAttribute("min", viewer.viewport.getMinZoom());
+            zoomSlider.setAttribute("max", viewer.viewport.getMaxZoom());
+            zoomSlider.addEventListener("input", (evt) => {
+                const zoom = parseFloat(evt.currentTarget.value);
+                viewer.viewport.zoomTo(zoom);
+                zoomSliderLabel.textContent = `${(zoom * 100).toFixed(0)}%`;
+            });
+        });
+        viewer.addHandler("zoom", (evt) => {
+            const { zoom } = evt;
+            zoomSlider.value = parseFloat(zoom);
+            zoomSliderLabel.textContent = `${(zoom * 100).toFixed(0)}%`;
         });
     }
     deactivateDeepZoom(container, image) {
