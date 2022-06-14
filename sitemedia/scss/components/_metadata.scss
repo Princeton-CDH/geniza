@@ -5,7 +5,7 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-.metadata {
+dl.metadata-list {
     display: grid;
     @include typography.meta;
     dd,

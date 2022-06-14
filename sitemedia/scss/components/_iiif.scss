@@ -111,6 +111,108 @@
             padding-top: spacing.$spacing-md;
         }
     }
+
+    // Attribution and license text
+    details.permissions {
+        max-width: 100%;
+        * {
+            max-width: 100%;
+        }
+        align-self: flex-start;
+        flex: 1 0 100%;
+        margin: 48px 0 0;
+        text-align: left;
+        // Label to expand "Image Permissions Statement"
+        summary {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            &:focus {
+                outline: none;
+                span {
+                    outline: 0.1rem solid var(--focus);
+                }
+            }
+            span {
+                @include typography.link;
+            }
+            // Suppress default details marker
+            list-style-type: none;
+            &::-webkit-details-marker {
+                display: none;
+            }
+            &::after {
+                content: "\f0c2"; // phosphor caret-down icon
+                @include typography.icon-button-md;
+                transition: transform 0.75s ease;
+                display: inline-block;
+                text-decoration: none;
+                margin-left: spacing.$spacing-xs;
+            }
+        }
+        &[open] summary {
+            // Expanded details marker
+            &::after {
+                transform: rotate(-180deg);
+            }
+            margin-bottom: 0.5rem;
+        }
+        @include typography.permissions-statement;
+        a.shelfmark {
+            @include typography.link;
+        }
+        a.shelfmark,
+        span.shelfmark {
+            @include typography.permissions-statement-bold;
+        }
+        // list of attributions/licenses
+        ul {
+            list-style: none;
+        }
+        li.fragment-permissions {
+            margin-top: spacing.$spacing-xs;
+            // Rights statement image
+            svg.rights-statement {
+                height: 14px;
+                width: 67px;
+                fill: var(--on-background);
+                vertical-align: text-top;
+            }
+            img {
+                height: 16px;
+                vertical-align: middle;
+            }
+        }
+        // provider logos (interim solution)
+        ul.logos {
+            display: flex;
+            flex-flow: row;
+            &:not(:empty) {
+                margin-top: spacing.$spacing-sm;
+            }
+            li img {
+                width: auto;
+                height: 4rem;
+            }
+            li + li {
+                margin-left: spacing.$spacing-xs;
+            }
+        }
+        // spacing tweaks for desktop
+        @include breakpoints.for-tablet-landscape-up {
+            margin: 50px 0 0;
+            &[open] summary {
+                margin-bottom: spacing.$spacing-md;
+            }
+            li.fragment-permissions {
+                margin-top: 0.75rem;
+                svg.rights-statement {
+                    height: 16px;
+                    width: 90px;
+                }
+            }
+        }
+    }
 }
 
 // OpenSeaDragon full screen

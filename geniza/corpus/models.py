@@ -1,6 +1,6 @@
-import json
 import logging
 from collections import defaultdict
+from functools import cached_property
 from itertools import chain
 
 from django.conf import settings
@@ -34,6 +34,8 @@ from urllib3.exceptions import HTTPError, NewConnectionError
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
 from geniza.corpus.dates import DocumentDateMixin
+from geniza.corpus.iiif_utils import get_iiif_string
+from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote, Source
 
 logger = logging.getLogger(__name__)
@@ -231,7 +233,7 @@ class Fragment(TrackChangesModel):
             try:
                 manifest = IIIFPresentation.from_url(self.iiif_url)
                 for canvas in manifest.sequences[0].canvases:
-                    image_id = canvas.images[0].resource.id
+                    image_id = canvas.images[0].resource.service.id
                     images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
                     # label provides library's recto/verso designation
                     labels.append(canvas.label)
@@ -267,7 +269,9 @@ class Fragment(TrackChangesModel):
         # pull from locally cached manifest
         # (don't hit remote url if not cached)
         if self.manifest:
-            attribution = self.manifest.extra_data.get("attribution", "")
+            attribution = get_iiif_string(
+                self.manifest.extra_data.get("attribution", "")
+            )
             if attribution:
                 # Remove CUDL metadata string from displayed attribution
                 return mark_safe(
@@ -621,7 +625,8 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     def fragments_other_docs(self):
         """List of other documents that are on the same fragment(s) as this
-        document (does not include suppressed documents)"""
+        document (does not include suppressed documents). Returns a list of
+        :class:`~corpus.models.Document` objects."""
         # get the set of all documents from all fragments, remove current document,
         # then convert back to a list
         return list(
@@ -634,6 +639,13 @@ class Document(ModelIndexable, DocumentDateMixin):
             )
             - {self}
         )
+
+    @cached_property
+    def related_documents(self):
+        """List of other documents with any of the same shelfmarks as this
+        document; does not include suppressed documents. Queries Solr and
+        returns a list of :class:`dict` objects."""
+        return DocumentSolrQuerySet().related_to(self)
 
     def has_transcription(self):
         """Admin display field indicating if document has a transcription."""

@@ -41,6 +41,8 @@ class TestCorpusExtrasTemplateTags:
 
 
 def test_dict_item():
+    # no error on non-dict first argument
+    assert corpus_extras.dict_item([], "foo") is None
     # no error on not found
     assert corpus_extras.dict_item({}, "foo") is None
     # string key

@@ -135,6 +135,13 @@ class BooleanFacetField(FacetFieldMixin, forms.BooleanField):
         self.widget.facet_counts = facet_dict
 
 
+class YearRangeWidget(RangeWidget):
+    """Extend :class:`django.forms.widgets.RangeWidget` to customize the output and add
+    year start/end labels to the individual inputs."""
+
+    template_name = "corpus/widgets/yearrangewidget.html"
+
+
 class DocumentSearchForm(RangeForm):
 
     q = forms.CharField(
@@ -157,19 +164,19 @@ class DocumentSearchForm(RangeForm):
         # Translators: label for sort in random order
         ("random", _("Random")),
         # Translators: label for sort by document date (most recent first)
-        ("docdate_desc", _("Document Date (Latest-Earliest)")),
+        ("docdate_desc", _("Document Date (Latest–Earliest)")),
         # Translators: label for sort by document date (oldest first)
-        ("docdate_asc", _("Document Date (Earliest-Latest)")),
-        # Translators: label for sort by document input date (most recent first)
-        ("input_date_desc", _("Input Date (Latest-Earliest)")),
-        # Translators: label for sort by document input date (oldest first)
-        ("input_date_asc", _("Input Date (Earliest-Latest)")),
+        ("docdate_asc", _("Document Date (Earliest–Latest)")),
+        # Translators: label for alphabetical sort by shelfmark
+        ("shelfmark", _("Shelfmark (A–Z)")),
         # Translators: label for descending sort by number of scholarship records
         ("scholarship_desc", _("Scholarship Records (Most–Least)")),
         # Translators: label for ascending sort by number of scholarship records
         ("scholarship_asc", _("Scholarship Records (Least–Most)")),
-        # Translators: label for alphabetical sort by shelfmark
-        ("shelfmark", _("Shelfmark (A-Z)")),
+        # Translators: label for sort by when document was added to PGP (most recent first)
+        ("input_date_desc", _("PGP Input Date (Latest–Earliest)")),
+        # Translators: label for sort by when document was added to PGP (oldest first)
+        ("input_date_asc", _("PGP Input Date (Earliest–Latest)")),
     ]
     # Translators: label for start year when filtering by date range
     _("From year")
@@ -192,9 +199,11 @@ class DocumentSearchForm(RangeForm):
     )
     # Translators: label for filter documents by date range
     docdate = RangeField(
-        label=_("Document Dates"),
+        label=_("Document Dates (CE)"),
         required=False,
-        widget=RangeWidget(attrs={"size": 4, "data-action": "input->search#update"}),
+        widget=YearRangeWidget(
+            attrs={"size": 4, "data-action": "input->search#update"},
+        ),
     )
 
     doctype = FacetChoiceField(
