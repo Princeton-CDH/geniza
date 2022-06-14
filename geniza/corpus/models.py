@@ -283,10 +283,8 @@ class Fragment(TrackChangesModel):
     @property
     def provenance(self):
         """Generate a provenance statement for this fragment"""
-        if self.manifest:
-            provenance = self.manifest.metadata.get("Provenance", "")
-            if provenance:
-                return mark_safe(provenance[0])
+        if self.manifest and self.manifest.metadata:
+            return get_iiif_string(self.manifest.metadata.get("Provenance", ""))
         return None
 
     def clean(self):
