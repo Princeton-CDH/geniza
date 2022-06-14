@@ -113,7 +113,10 @@ def format_attribution(attribution):
 def h1_to_h3(html):
     """Convert h1 headers to h3 to match other transcription formats,
     used to avoid modeltranslation inserting elements into h1 headers"""
-    return html.replace("h1", "h3")
+    try:
+        return html.replace("h1", "h3")
+    except AttributeError:
+        return html
 
 
 @register.filter

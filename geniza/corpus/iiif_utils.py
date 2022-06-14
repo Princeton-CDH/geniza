@@ -94,3 +94,6 @@ def get_iiif_string(obj):
 
         # if we didn't find a value for current language or english, return the first value
         return val or obj[0]["@value"]
+    # if it's a list of strings, return the first value
+    elif isinstance(obj, list) and obj and isinstance(obj[0], str):
+        return obj[0]

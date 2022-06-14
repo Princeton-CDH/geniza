@@ -279,6 +279,13 @@ class Fragment(TrackChangesModel):
                 )
         return None
 
+    @property
+    def provenance(self):
+        """Generate a provenance statement for this fragment"""
+        if self.manifest and self.manifest.metadata:
+            return get_iiif_string(self.manifest.metadata.get("Provenance", ""))
+        return None
+
     def clean(self):
         """Custom validation and cleaning; currently only :meth:`clean_iiif_url`"""
         self.clean_iiif_url()
