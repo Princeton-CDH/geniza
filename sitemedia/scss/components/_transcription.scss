@@ -263,6 +263,7 @@
         .img-header {
             display: flex;
             align-items: center;
+            margin-bottom: 12px;
             h3 {
                 @include typography.body-bold;
                 text-align: left;
@@ -277,6 +278,7 @@
                 background: transparent;
                 cursor: pointer;
                 width: 180px;
+                flex: 0 1 175px;
 
                 // sadly, these are still vendor-prefixed and can't be combined to reduce redunancy :(
 
@@ -298,20 +300,22 @@
                     margin-top: -16px; /* Centers thumb on the track */
                     background-color: var(--filter-active);
                     border-radius: 20px;
-                    height: 36px;
-                    width: 36px;
+                    height: 32px;
+                    width: 32px;
                     outline: 4px solid var(--on-background-light-alt);
                 }
                 &::-moz-range-thumb {
                     background-color: var(--filter-active);
                     border: none; /*Removes extra border that FF applies*/
                     border-radius: 20px;
-                    height: 36px;
-                    width: 36px;
+                    height: 32px;
+                    width: 32px;
                     outline: 4px solid var(--on-background-light-alt);
                 }
             }
             label[for="zoom-slider"] {
+                text-align: right;
+                flex: 0 1 60px;
                 color: var(--on-background);
                 @include typography.body-bold;
             }
