@@ -329,7 +329,7 @@ main.search form {
             }
         }
         // all filter form inputs that are not nested within a details
-        & > label {
+        & > label:not(.date-range-label) {
             flex: 0 0 2.5rem;
             max-width: 100%;
             width: 100%;
@@ -384,6 +384,60 @@ main.search form {
             input:checked:active + span + span.count::after {
                 content: "\f0e8"; // phosphor check-circle icon
             }
+        }
+        // Date range label and input
+        & > label.date-range-label {
+            max-width: 100%;
+            width: 100%;
+            cursor: default;
+            span {
+                margin: 0 spacing.$spacing-sm;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 0;
+                }
+            }
+            div.inputs {
+                display: flex;
+                flex-flow: row wrap;
+                margin-top: spacing.$spacing-xs;
+                label {
+                    flex: 1 0 33%;
+                    display: flex;
+                    align-items: center;
+                    padding: 0 spacing.$spacing-sm;
+                    @include breakpoints.for-tablet-landscape-up {
+                        padding: 0 spacing.$spacing-md;
+                        flex: 1 0 14%;
+                    }
+                }
+                input[type="number"] {
+                    flex: 1 0 66%;
+                    height: 2.9375rem;
+                    max-width: 100%;
+                    width: 100%;
+                    @include typography.form-option;
+                    background-color: var(--background-light);
+                    color: var(--on-background-light);
+                    @include form-drop-shadow;
+                    border-left: none;
+                    border-right: none;
+                    border-top: 1px solid transparent;
+                    border-bottom: 1px solid var(--filter-border);
+                    padding: 0 spacing.$spacing-sm;
+                    @include breakpoints.for-tablet-landscape-up {
+                        flex: 1 0 86%;
+                        padding: 0 spacing.$spacing-md;
+                    }
+                    &::placeholder {
+                        color: var(--date-placeholder);
+                    }
+                    &:focus-within,
+                    &:active {
+                        z-index: 3;
+                    }
+                }
+            }
+            margin-bottom: 0.75rem;
         }
         // document type filter
         details.doctype-filter {

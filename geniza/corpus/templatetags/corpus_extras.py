@@ -32,7 +32,11 @@ def dict_item(dictionary, key):
 
         {{ mydict|dict_item:keyvar }}
     """
-    return dictionary.get(key, None)
+    try:
+        return dictionary.get(key, None)
+    except AttributeError:
+        # fail silently if something other than a dict is passed
+        return None
 
 
 @register.simple_tag(takes_context=True)
@@ -109,7 +113,10 @@ def format_attribution(attribution):
 def h1_to_h3(html):
     """Convert h1 headers to h3 to match other transcription formats,
     used to avoid modeltranslation inserting elements into h1 headers"""
-    return html.replace("h1", "h3")
+    try:
+        return html.replace("h1", "h3")
+    except AttributeError:
+        return html
 
 
 @register.filter

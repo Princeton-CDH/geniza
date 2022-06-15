@@ -79,7 +79,7 @@ class Command(BaseCommand):
     def add_fragment_urls(self, row):
         """add view and iiif urls to fragment and save if a match is found for the shelfmark"""
         try:
-            fragment = Fragment.objects.get(shelfmark=row["shelfmark"])
+            fragment = Fragment.objects.get(shelfmark__iexact=row["shelfmark"])
         except Fragment.DoesNotExist:
             self.stats["not_found"] += 1
             return

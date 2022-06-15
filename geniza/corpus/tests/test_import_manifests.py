@@ -35,6 +35,13 @@ def test_handle(mock_importer, fragment_no_manifest, multifragment_no_manifest):
     assert fragment_no_manifest.iiif_url in args[0]
     assert multifragment_no_manifest.iiif_url in args[0]
 
+    # update with filter
+    command.handle(update=True, filter="cudl")
+    # should match iiif url for fragment but not multifragment
+    args, kwargs = mock_importer.return_value.import_paths.call_args
+    assert fragment_no_manifest.iiif_url in args[0]
+    assert multifragment_no_manifest.iiif_url not in args[0]
+
 
 @pytest.mark.django_db
 @patch("geniza.corpus.management.commands.import_manifests.ManifestImporter")

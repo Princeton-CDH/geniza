@@ -1,0 +1,10 @@
+// -----------------------------------------------------------------------------
+// Styling rules for document shelfmarks and dates.
+// -----------------------------------------------------------------------------
+
+.shelfmark span,
+time span {
+    // Never break in the middle of a shelfmark or a date
+    white-space: nowrap;
+    display: inline-block;
+}

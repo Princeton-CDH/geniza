@@ -54,10 +54,7 @@ jobs:
       # when building on push to main, publish the built docs
       - name: Deploy built docs to github pages
         if: ${{ github.event_name == 'push' }}
-        uses: peaceiris/actions-gh-pages@v2
-        env:
-          ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: ./docs/_build/html
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          emptyCommits: false
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_build/html

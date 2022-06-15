@@ -14,12 +14,13 @@
 @use "components/docheader";
 @use "components/controls";
 @use "components/footer";
-@use "components/shelfmark";
+@use "components/nowrap";
 
 // Page-specific styles
 @use "pages/content";
 @use "pages/document";
 @use "pages/error";
 @use "pages/home";
+@use "pages/related";
 @use "pages/scholarship";
 @use "pages/search";

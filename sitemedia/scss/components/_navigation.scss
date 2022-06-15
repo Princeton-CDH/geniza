@@ -442,9 +442,9 @@ html[dir="rtl"] #site-nav {
     a.home-link {
         background: url("/static/img/logos/mobile/dark/ltr/logotype.png")
             no-repeat;
-        background-size: 160px;
-        width: 160px;
-        height: 111px;
+        background-size: 164px;
+        width: 164px;
+        height: 120px;
     }
 }
 @mixin header-background-mobile-light {
@@ -454,8 +454,8 @@ html[dir="rtl"] #site-nav {
     a.home-link {
         background: url("/static/img/logos/mobile/light/ltr/logotype.png")
             no-repeat;
-        background-size: 151px;
-        width: 151px;
+        background-size: 160px;
+        width: 160px;
         height: 111px;
     }
 }

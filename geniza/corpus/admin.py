@@ -1,15 +1,11 @@
-from collections import namedtuple
-
-from adminsortable2.admin import SortableInlineAdminMixin
+from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
-from django.contrib.admin.models import LogEntry
-from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
-from django.db.models import CharField, Count, F, Q
+from django.db.models import CharField, Count, F
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.forms.widgets import Textarea, TextInput
@@ -18,11 +14,9 @@ from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
-from pyexpat import model
 from tabular_export.admin import export_to_csv_response
 
 from geniza.common.admin import custom_empty_field_list_filter
-from geniza.common.utils import absolutize_url
 from geniza.corpus.models import (
     Collection,
     Document,
@@ -78,19 +72,23 @@ class LanguageScriptAdmin(admin.ModelAdmin):
     )
 
     document_admin_url = "admin:corpus_document_changelist"
-    search_fields = ("language", "script", "display_name")
+    search_fields = ("language", "display_name")
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .annotate(
-                Count("document", distinct=True),
-                Count("secondary_document", distinct=True),
-            )
+        # The annotations we use for document count on the list view
+        # make the search too slow for autocomplete.
+        # Reset to original, unannotated queryset *only* for autocomplete
+        qs = super().get_queryset(request)
+        if request and request.path == "/admin/autocomplete/":
+            # return without annotations
+            return qs
+        # otherwise, annotate with counts
+        return qs.annotate(
+            Count("document", distinct=True),
+            Count("secondary_document", distinct=True),
         )
 
     @admin.display(
@@ -178,7 +176,7 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
 
 
 @admin.register(Document)
-class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     form = DocumentForm
     # NOTE: columns display for default and needs review display
     # are controlled via admin css; update the css if you change the order here
@@ -195,7 +193,14 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         "has_image",
         "is_public",
     )
-    readonly_fields = ("created", "last_modified", "shelfmark", "id", "view_old_pgpids")
+    readonly_fields = (
+        "created",
+        "last_modified",
+        "shelfmark",
+        "id",
+        "view_old_pgpids",
+        "standard_date",
+    )
     search_fields = (
         "fragments__shelfmark",
         "tags__name",
@@ -241,7 +246,12 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         ("languages", "secondary_languages"),
         "language_note",
         "description",
-        ("doc_date_original", "doc_date_calendar", "doc_date_standard"),
+        (
+            "doc_date_original",
+            "doc_date_calendar",
+            "doc_date_standard",
+            "standard_date",
+        ),
         "tags",
         "status",
         ("needs_review", "notes"),
@@ -349,6 +359,10 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
             # for the new model
             obj.created = timezone.now()
             obj.last_modified = None
+
+        # set request on the object so that save method can send messages
+        # if there is an error converting the date
+        obj.request = request
         super().save_model(request, obj, form, change)
 
     # CSV EXPORT -------------------------------------------------------------

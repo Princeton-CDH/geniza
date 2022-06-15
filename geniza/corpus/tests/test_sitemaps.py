@@ -1,5 +1,4 @@
 from datetime import date
-from unittest.mock import patch
 
 from django.urls import reverse
 from parasolr.django import SolrClient

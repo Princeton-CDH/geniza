@@ -23,9 +23,11 @@ eulxml
 rich
 wagtail>=2.15.3,<2.16
 wagtail-localize
-djiffy>=0.7.2
+djiffy>=0.8
 natsort
 django-widget-tweaks
 django-csp-helpers
 django-fullurl
 django-admin-inline-paginator
+convertdate
+unidecode

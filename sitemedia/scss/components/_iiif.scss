@@ -176,6 +176,10 @@
                 fill: var(--on-background);
                 vertical-align: text-top;
             }
+            img {
+                height: 16px;
+                vertical-align: middle;
+            }
         }
         // provider logos (interim solution)
         ul.logos {
@@ -185,11 +189,16 @@
                 margin-top: spacing.$spacing-sm;
             }
             li img {
-                width: 4rem;
+                width: auto;
                 height: 4rem;
             }
             li + li {
                 margin-left: spacing.$spacing-xs;
+            }
+            li svg#jts {
+                width: 8rem;
+                height: 4rem;
+                fill: var(--jts-logo);
             }
         }
         // spacing tweaks for desktop

@@ -1,7 +1,7 @@
 {% load i18n %}
 <!-- document detail page navigation -->
 {# Translators: accessibility text label for document detail view tabs navigation #}
-<nav aria-label="{% translate "tabs" %}">
+<nav aria-label="{% translate "tabs" %}" id="tabs">
     <ul class="tabs">
         {% url 'corpus:document' pk=document.pk as document_url %}
         <li><a href="{{ document_url }}"{% if request.path == document_url %} aria-current="page"{% endif %}>{% translate "Document Details" %}</a></li>
@@ -12,16 +12,11 @@
             <li>{% if n_records > 0 %}<a href="{{ scholarship_url }}"{% if request.path == scholarship_url %} aria-current="page"{% endif %}>{{ srec_text }}</a>{% else %}<span disabled aria-disabled="true">{{ srec_text }}</span>{% endif %}</li>
         {% endwith %}
 
-        {# for MVP: external links is disabled; don't show a count #}
-        {% blocktranslate asvar elink_text %}External Links{% endblocktranslate %}
-        <li><span disabled aria-disabled="true">{{ elink_text }}</span></li>
-        {# preserving so we can get the text translation #}
-        {% with n_links=document.fragment_urls|length %}
-            {# Translators: n_links is number of external links #}
-            {% blocktranslate asvar elink_text %}External Links ({{ n_links }}){% endblocktranslate %}
-            {% comment %} {# after MVP: uncomment when we implement external links #}
-            <li>{% if n_links > 0 %}<a href="#">{{ elink_text }}</a>{% else %}<span>{{ elink_text }}</span>{% endif %}</li>
-            {% endcomment %}
+        {# Translators: n_reldocs is number of related documents #}
+        {% with n_reldocs=document.related_documents.count %}
+            {% blocktranslate asvar reldoc_text %}Related Documents ({{ n_reldocs }}){% endblocktranslate %}
+            {% url 'corpus:related-documents' pk=document.pk as reldoc_url %}
+            <li>{% if n_reldocs > 0 %}<a href="{{ reldoc_url }}"{% if request.path == reldoc_url %} aria-current="page"{% endif %}>{{ reldoc_text }}</a>{% else %}<span disabled aria-disabled="true">{{ reldoc_text }}</span>{% endif %}</li>
         {% endwith %}
     </ul>
 </nav>

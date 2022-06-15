@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n static %}
 <details class="permissions">
     <summary>
         <span>{% translate 'Image Permissions Statement' %}</span>
@@ -10,10 +10,14 @@
                     {% with fragment.url|yesno:"a,span" as tag %}
                         <{{ tag }} class="shelfmark"{% if tag == "a" %} href="{{ fragment.url }}" target="_blank"{% endif %}>{{ fragment.shelfmark }}</{{ tag }}>:
                     {% endwith %}
-                    {{ fragment.attribution|default_if_none:"" }}
+                    {% if fragment.attribution %}
+                        {{ fragment.attribution }}
+                    {% elif fragment.provenance %}
+                        {{ fragment.provenance }}
+                    {% endif %}
                     {% if fragment.manifest.license %}
                         {% include "corpus/snippets/fragment_license_statement.html" %}
-                    {% elif not fragment.attribution %}
+                    {% elif not fragment.attribution and not fragment.provenance %}
                         {% translate "No attribution or license noted." %}
                     {% endif %}
                 </li>
@@ -21,11 +25,24 @@
         {% endfor %}
     </ul>
     {% regroup document.fragments.all by manifest.logo as logos_list %}
+    {% regroup document.fragments.all by provenance as provenance_list %}
     <ul class="logos">
         {% for logo in logos_list %}
             <li>
-                <img src="{{ logo.grouper }}" alt="" role="presentation" width="64" height="64" loading="lazy" />
+                <img src="{{ logo.grouper }}" alt="" role="presentation" height="64" loading="lazy" />
             </li>
+        {% endfor %}
+        {% for provenance in provenance_list %}
+            {% if "JTS" in provenance.grouper %}
+                <li>
+                    <a href="https://www.jtsa.edu/" aria-label="{% translate 'Jewish Theological Seminary homepage' %}">
+                        <svg id="jts">
+                            <title>{% translate 'Jewish Theological Seminary logo' %}</title>
+                            <use href="{% static 'img/logos/all/all/jts-logo.svg' %}#jts-logo" />
+                        </svg>
+                    </a>
+                </li>
+            {% endif %}
         {% endfor %}
     </ul>
 

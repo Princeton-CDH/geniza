@@ -13,12 +13,12 @@ main.document {
     .container {
         display: flex;
         flex-direction: column;
-        padding: spacing.$spacing-md;
+        padding: 0 spacing.$spacing-md spacing.$spacing-md;
         margin-bottom: spacing.$spacing-md;
         @include breakpoints.for-desktop-up {
             margin-bottom: spacing.$spacing-xl;
         }
-        section:first-of-type {
+        section.metadata {
             display: flex;
             flex-direction: column;
             @include breakpoints.for-desktop-up {
@@ -28,7 +28,7 @@ main.document {
             }
         }
         // Document metadata
-        dl.metadata {
+        dl.metadata-list {
             display: flex;
             flex-direction: column;
             margin: spacing.$spacing-2xl spacing.$spacing-md 0;
@@ -71,7 +71,7 @@ main.document {
                 margin-top: spacing.$spacing-xs;
             }
         }
-        dl.metadata.primary + dl.metadata.secondary {
+        dl.metadata-list.primary + dl.metadata-list.secondary {
             margin-top: 0;
             @include breakpoints.for-desktop-up {
                 margin-left: 35px;
@@ -115,11 +115,15 @@ main.document {
             @include typography.meta;
             color: var(--input-date-text);
         }
-        // "Description" header
+        // "Description" header and content
         section.description {
             margin: 64px 0 spacing.$spacing-md;
             h3 {
                 @include typography.body-bold;
+            }
+
+            p {
+                white-space: pre-line;
             }
         }
         // link to download transcription
@@ -130,7 +134,7 @@ main.document {
             }
         }
     }
-    dl.metadata.tertiary {
+    dl.metadata-list.tertiary {
         margin-top: 51px;
         padding: 0 20px;
         width: 100%;
@@ -157,6 +161,16 @@ main.document {
                     text-decoration: none;
                 }
             }
+        }
+    }
+}
+
+section#document-list,
+main.document {
+    // description content
+    .description {
+        p {
+            white-space: pre-line;
         }
     }
 }
