@@ -23,9 +23,7 @@ eulxml
 rich
 wagtail>=2.15.3,<2.16
 wagtail-localize
-# needs djiffy 0.8 once it is released; use develop for now
-#djiffy>=0.8
-git+https://github.com/Princeton-CDH/djiffy.git@develop#egg=djiffy
+djiffy>=0.8
 natsort
 django-widget-tweaks
 django-csp-helpers
