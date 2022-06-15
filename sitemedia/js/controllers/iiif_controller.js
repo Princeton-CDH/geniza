@@ -89,7 +89,7 @@ export default class extends Controller {
                     // Zoom to the chosen percentage
                     viewer.viewport.zoomTo(zoom);
                 }
-                zoomSliderLabel.textContent = `${(zoom * 100).toFixed(0)}%`;
+                this.updateZoomUI(zoom, zoomSlider, zoomSliderLabel);
             });
         });
         viewer.addHandler("zoom", (evt) => {
@@ -101,8 +101,16 @@ export default class extends Controller {
             }
             // Set zoom slider value to the chosen percentage
             zoomSlider.value = parseFloat(zoom);
-            zoomSliderLabel.textContent = `${(zoom * 100).toFixed(0)}%`;
+            this.updateZoomUI(zoom, zoomSlider, zoomSliderLabel);
         });
+    }
+    updateZoomUI(zoom, slider, label) {
+        // update the zoom controls UI with the new value
+        // update the zoom percentage label
+        label.textContent = `${(zoom * 100).toFixed(0)}%`;
+        // update progress indication in slider track
+        const percent = (zoom / slider.getAttribute("max")) * 100;
+        slider.style.background = `linear-gradient(to right, var(--filter-active) 0%, var(--filter-active) ${percent}%, #9e9e9e ${percent}%, #9e9e9e 100%)`;
     }
     resetBounds(viewer) {
         // Reset OSD viewer to the boundaries of the image, position in top left corner

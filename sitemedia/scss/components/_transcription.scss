@@ -275,29 +275,18 @@
             input[type="range"][id^="zoom-slider"] {
                 -webkit-appearance: none;
                 appearance: none;
-                background: transparent;
+                background: colors.$gray;
+                height: 4px;
+                border-radius: 4px;
                 cursor: pointer;
                 width: 180px;
                 flex: 0 1 175px;
 
-                // sadly, these are still vendor-prefixed and can't be combined to reduce redunancy :(
-
-                // range slider background "track"
-                &::-webkit-slider-runnable-track {
-                    background-color: colors.$gray;
-                    border-radius: 4px;
-                    height: 4px;
-                }
-                &::-moz-range-track {
-                    background-color: colors.$gray;
-                    border-radius: 4px;
-                    height: 4px;
-                }
                 // range slider control circle/"thumb"
+                // sadly, these are still vendor-prefixed and can't be combined to reduce redunancy :(
                 &::-webkit-slider-thumb {
-                    -webkit-appearance: none; /* Override default look */
+                    -webkit-appearance: none; /* Override Webkit default appearance */
                     appearance: none;
-                    margin-top: -14px; /* Centers thumb on the track */
                     background-color: var(--filter-active);
                     border-radius: 20px;
                     height: 32px;
@@ -306,7 +295,7 @@
                 }
                 &::-moz-range-thumb {
                     background-color: var(--filter-active);
-                    border: none; /*Removes extra border that FF applies*/
+                    border: none; /* Remove extra border that Firefox applies */
                     border-radius: 20px;
                     height: 32px;
                     width: 32px;
