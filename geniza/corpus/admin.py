@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from adminsortable2.admin import SortableInlineAdminMixin
+from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
@@ -182,7 +182,7 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
 
 
 @admin.register(Document)
-class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     form = DocumentForm
     # NOTE: columns display for default and needs review display
     # are controlled via admin css; update the css if you change the order here
