@@ -6,7 +6,6 @@ from piffle.iiif import IIIFImageClient
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus.templatetags import corpus_extras
-from geniza.footnotes.models import Footnote
 
 
 class TestCorpusExtrasTemplateTags:
