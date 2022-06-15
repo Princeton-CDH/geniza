@@ -13,6 +13,25 @@
     {# translators: label for checkbox toggle to show the translation panel for a document #}
     <input type="checkbox" id="translation-on" aria-label="{% translate 'show translation' %}" disabled="true"/>
     <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
+    <div class="dropdown-container">
+        <div></div>
+        <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails">
+            <summary class="transcription-select-trigger" data-action="keydown->transcription#shiftTabCloseDropdown">
+                <span data-transcription-target="editionShortLabel">Edition: {{ document.digital_editions.0.source.all_authors }}</span>
+            </summary>
+            <ul>
+                {% for ed in document.digital_editions.all %}
+                    <li>
+                        <label for="edition-{{ forloop.counter }}">
+                            <input type="radio" name="transcription" value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="edition-{{ forloop.counter }}" data-edition="ed-{{ ed.pk }}" />
+                            <span>Edition: {{ ed.source.all_authors }}</span>
+                        </label>
+                    </li>
+                {% endfor %}
+            </ul>
+        </details>
+        <div></div>
+    </div>
     <div class="panel-container">
         {% comment %}
 NOTE: if we have more transcription pages than images,
@@ -34,29 +53,14 @@ Also doesn't currently account for fragments without images.
                 </div>
                 <div class="transcription-panel">
                     {% if forloop.first %}
-                        <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails">
-                            <summary class="transcription-select-trigger" data-transcription-target="dropdownLabel" data-action="keydown->transcription#shiftTabCloseDropdown">
-                                <span>Edition: {{ document.digital_editions.0.source.all_authors }}</span>
-                            </summary>
-                            <ul>
-                                {% for ed in document.digital_editions.all %}
-                                    <li>
-                                        <label for="edition-{{ forloop.counter }}">
-                                            <input type="radio" name="transcription" value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="edition-{{ forloop.counter }}" data-edition="ed-{{ ed.pk }}" />
-                                            <span>Edition: {{ ed.source.all_authors }}</span>
-                                        </label>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </details>
                         <h3>Transcription</h3>
-
+                        <span data-transcription-target="editionFullLabel" class="current-transcription">{{ document.digital_editions.0.display|safe }}</span>
                     {% endif %}
 
                     <div class="editions">
                         {# display transcription in chunks by index #}
                         {% for edition in document.digital_editions.all %}
-                            <div class="transcription" id="ed-{{ edition.pk }}">
+                            <div class="transcription" id="ed-{{ edition.pk }}" data-label="{{ edition.display|safe }}">
                                 {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
                             </div>
                         {% endfor %}

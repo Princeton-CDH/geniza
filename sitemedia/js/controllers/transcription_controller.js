@@ -3,7 +3,11 @@
 import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
-    static targets = ["dropdownLabel", "dropdownDetails"];
+    static targets = [
+        "editionShortLabel",
+        "editionFullLabel",
+        "dropdownDetails",
+    ];
 
     // Change transcription dropdown: pseudo-<select> element with radio buttons to allow styling
     // dropdown menu options list
@@ -20,10 +24,13 @@ export default class extends Controller {
             chunk.parentNode.scrollLeft =
                 chunk.offsetLeft - chunk.parentNode.offsetLeft;
         });
-        this.setDropdownLabel(evt.currentTarget.parentElement.textContent);
-    }
-    setDropdownLabel(label) {
-        this.dropdownLabelTarget.children[0].innerHTML = label;
+
+        // Set subheader to show full label for edition
+        this.editionFullLabelTarget.innerHTML = chunks[0].dataset.label;
+
+        // Mimic "header" functionality by copying the shortened edition metadata from option to summary
+        this.editionShortLabelTarget.innerHTML =
+            evt.currentTarget.parentElement.textContent;
     }
 
     keyboardCloseDropdown(e) {
