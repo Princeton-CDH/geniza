@@ -1,4 +1,3 @@
-from doctest import testmod
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
