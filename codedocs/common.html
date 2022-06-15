@@ -1,17 +1,18 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Common functionality &#8212; Princeton Geniza Project 4.4.1 documentation</title>
+    <title>Common functionality &#8212; Princeton Geniza Project 4.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -34,11 +35,11 @@
           <div class="body" role="main">
             
   <section id="common-functionality">
-<h1>Common functionality<a class="headerlink" href="#common-functionality" title="Permalink to this headline">¶</a></h1>
+<h1>Common functionality<a class="headerlink" href="#common-functionality" title="Permalink to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
 <span class="target" id="module-geniza.common"></span><section id="module-geniza.common.models">
-<span id="models"></span><h2>models<a class="headerlink" href="#module-geniza.common.models" title="Permalink to this headline">¶</a></h2>
+<span id="models"></span><h2>models<a class="headerlink" href="#module-geniza.common.models" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.models.TrackChangesModel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.models.</span></span><span class="sig-name descname"><span class="pre">TrackChangesModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#TrackChangesModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.TrackChangesModel" title="Permalink to this definition">¶</a></dt>
@@ -67,7 +68,7 @@ only works on the current instance of an object.</p>
 
 </section>
 <section id="module-geniza.common.fields">
-<span id="fields"></span><h2>fields<a class="headerlink" href="#module-geniza.common.fields" title="Permalink to this headline">¶</a></h2>
+<span id="fields"></span><h2>fields<a class="headerlink" href="#module-geniza.common.fields" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.fields.NaturalSortField">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">NaturalSortField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">for_field</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#NaturalSortField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.NaturalSortField" title="Permalink to this definition">¶</a></dt>
@@ -125,9 +126,97 @@ based on the output of <code class="xref py py-meth docutils literal notranslate
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.common.fields.RangeField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">RangeField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Date range field, for two numeric inputs. Compresses to a tuple of
+two values for the start and end of the range; tuple values set to
+None for no input.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.common.fields.RangeField.compress">
+<span class="sig-name descname"><span class="pre">compress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeField.compress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeField.compress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compress into a single value; returns a two-tuple of range end,
+start.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.common.fields.RangeField.set_min_max">
+<span class="sig-name descname"><span class="pre">set_min_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_val</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeField.set_min_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeField.set_min_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a min and max value for <a class="reference internal" href="#geniza.common.fields.RangeWidget" title="geniza.common.fields.RangeWidget"><code class="xref py py-class docutils literal notranslate"><span class="pre">RangeWidget</span></code></a> attributes
+and placeholders.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – minimum value to set on widget</p></li>
+<li><p><strong>max_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – maximum value to set on widget</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geniza.common.fields.RangeField.widget">
+<span class="sig-name descname"><span class="pre">widget</span></span><a class="headerlink" href="#geniza.common.fields.RangeField.widget" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#geniza.common.fields.RangeWidget" title="geniza.common.fields.RangeWidget"><code class="xref py py-class docutils literal notranslate"><span class="pre">RangeWidget</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.common.fields.RangeForm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">RangeForm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeForm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeForm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Form mixin to initialize min/max values for range fields.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.common.fields.RangeForm.media">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">media</span></span><a class="headerlink" href="#geniza.common.fields.RangeForm.media" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all media required to render the widgets on this form.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.common.fields.RangeForm.set_range_minmax">
+<span class="sig-name descname"><span class="pre">set_range_minmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">range_minmax</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeForm.set_range_minmax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeForm.set_range_minmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the min, max, and placeholder values for all
+<code class="xref py py-class docutils literal notranslate"><span class="pre">RangeField</span></code> instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>range_minmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a>) – a dictionary with form fields as key names and
+tuples of min and max integers as values.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.common.fields.RangeWidget">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.fields.</span></span><span class="sig-name descname"><span class="pre">RangeWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeWidget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>date range widget, for two numeric inputs</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.common.fields.RangeWidget.decompress">
+<span class="sig-name descname"><span class="pre">decompress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/fields.html#RangeWidget.decompress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.fields.RangeWidget.decompress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of decompressed values for the given compressed value.
+The given value can be assumed to be valid, but not necessarily
+non-empty.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.common.fields.RangeWidget.media">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">media</span></span><a class="headerlink" href="#geniza.common.fields.RangeWidget.media" title="Permalink to this definition">¶</a></dt>
+<dd><p>Media for a multiwidget is the combination of all media of the
+subwidgets.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-geniza.common.middleware">
-<span id="middleware"></span><h2>middleware<a class="headerlink" href="#module-geniza.common.middleware" title="Permalink to this headline">¶</a></h2>
+<span id="middleware"></span><h2>middleware<a class="headerlink" href="#module-geniza.common.middleware" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.middleware.PublicLocaleMiddleware">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.middleware.</span></span><span class="sig-name descname"><span class="pre">PublicLocaleMiddleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">get_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/middleware.html#PublicLocaleMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.middleware.PublicLocaleMiddleware" title="Permalink to this definition">¶</a></dt>
@@ -206,7 +295,7 @@ the list of public site languages.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script><div class="powered_by">
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="powered_by">
     <p>Powered by:</p>
     <a href="http://cdh.princeton.edu/">
         <img src="https://cdh.princeton.edu/static/img/CDH_logo.svg"
@@ -221,7 +310,7 @@ the list of public site languages.</p>
       &copy;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

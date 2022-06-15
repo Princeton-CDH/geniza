@@ -1,16 +1,17 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; Princeton Geniza Project 4.4.1 documentation</title>
+    <title>Index &#8212; Princeton Geniza Project 4.5.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,6 +44,7 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
@@ -53,6 +55,7 @@
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
  
 </div>
 <h2 id="A">A</h2>
@@ -61,6 +64,8 @@
       <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.add_fragment_urls.Command.add_arguments">add_arguments() (geniza.corpus.management.commands.add_fragment_urls.Command method)</a>
 
       <ul>
+        <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.convert_dates.Command.add_arguments">(geniza.corpus.management.commands.convert_dates.Command method)</a>
+</li>
         <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.generate_fixtures.Command.add_arguments">(geniza.corpus.management.commands.generate_fixtures.Command method)</a>
 </li>
         <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.import_manifests.Command.add_arguments">(geniza.corpus.management.commands.import_manifests.Command method)</a>
@@ -88,6 +93,8 @@
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.alphabetized_tags">alphabetized_tags() (geniza.corpus.models.Document method)</a>
 </li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.Calendar.ANNO_MUNDI">ANNO_MUNDI (geniza.corpus.dates.Calendar attribute)</a>
+</li>
       <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.import_manifests.Command.associate_manifests">associate_manifests() (geniza.corpus.management.commands.import_manifests.Command method)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Fragment.attribution">attribution (geniza.corpus.models.Fragment property)</a>
@@ -114,10 +121,24 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.Calendar">Calendar (class in geniza.corpus.dates)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.calendar_converter">calendar_converter (in module geniza.corpus.dates)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.Calendar.can_convert">can_convert (geniza.corpus.dates.Calendar attribute)</a>
+</li>
       <li><a href="codedocs/pages.html#geniza.pages.models.CaptionedImageBlock">CaptionedImageBlock (class in geniza.pages.models)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.sync_transcriptions.Command.choose_edition_by_authors">choose_edition_by_authors() (geniza.corpus.management.commands.sync_transcriptions.Command method)</a>
 </li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin.clean">clean() (geniza.corpus.dates.DocumentDateMixin method)</a>
+
+      <ul>
+        <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.clean">(geniza.corpus.models.Document method)</a>
+</li>
+        <li><a href="codedocs/corpus.html#geniza.corpus.models.Fragment.clean">(geniza.corpus.models.Fragment method)</a>
+</li>
+      </ul></li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.clean_fields">clean_fields() (geniza.corpus.models.Document method)</a>
 
       <ul>
@@ -128,6 +149,10 @@
         <li><a href="codedocs/footnotes.html#geniza.footnotes.models.Source.clean_fields">(geniza.footnotes.models.Source method)</a>
 </li>
       </ul></li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.models.Fragment.clean_iiif_url">clean_iiif_url() (geniza.corpus.models.Fragment method)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.convert_dates.Command.clean_standard_dates">clean_standard_dates() (geniza.corpus.management.commands.convert_dates.Command method)</a>
+</li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Collection">Collection (class in geniza.corpus.models)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.collection">collection (geniza.corpus.models.Document property)</a>
@@ -141,6 +166,8 @@
       <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.add_fragment_urls.Command">Command (class in geniza.corpus.management.commands.add_fragment_urls)</a>
 
       <ul>
+        <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.convert_dates.Command">(class in geniza.corpus.management.commands.convert_dates)</a>
+</li>
         <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.generate_fixtures.Command">(class in geniza.corpus.management.commands.generate_fixtures)</a>
 </li>
         <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.import_manifests.Command">(class in geniza.corpus.management.commands.import_manifests)</a>
@@ -154,6 +181,8 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="codedocs/common.html#geniza.common.fields.RangeField.compress">compress() (geniza.common.fields.RangeField method)</a>
+</li>
       <li><a href="codedocs/pages.html#geniza.pages.models.ContainerPage">ContainerPage (class in geniza.pages.models)</a>
 </li>
       <li><a href="codedocs/pages.html#geniza.pages.models.ContainerPage.DoesNotExist">ContainerPage.DoesNotExist</a>
@@ -167,6 +196,10 @@
       <li><a href="codedocs/pages.html#geniza.pages.models.ContentPage.DoesNotExist">ContentPage.DoesNotExist</a>
 </li>
       <li><a href="codedocs/pages.html#geniza.pages.models.ContentPage.MultipleObjectsReturned">ContentPage.MultipleObjectsReturned</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.convert_hebrew_date">convert_hebrew_date() (in module geniza.corpus.dates)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.convert_islamic_date">convert_islamic_date() (in module geniza.corpus.dates)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.sync_transcriptions.Command.create_goitein_footnote">create_goitein_footnote() (geniza.corpus.management.commands.sync_transcriptions.Command method)</a>
 </li>
@@ -184,6 +217,8 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="codedocs/common.html#geniza.common.fields.RangeWidget.decompress">decompress() (geniza.common.fields.RangeWidget method)</a>
+</li>
       <li><a href="codedocs/common.html#geniza.common.fields.NaturalSortField.deconstruct">deconstruct() (geniza.common.fields.NaturalSortField method)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.detach_document_logentries">detach_document_logentries() (in module geniza.corpus.models)</a>
@@ -200,18 +235,24 @@
         <li><a href="codedocs/footnotes.html#geniza.footnotes.models.Source.display">(geniza.footnotes.models.Source method)</a>
 </li>
       </ul></li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.display_date_range">display_date_range() (in module geniza.corpus.dates)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.PartialDate.display_format">display_format (geniza.corpus.dates.PartialDate attribute)</a>
+</li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document">Document (class in geniza.corpus.models)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.DoesNotExist">Document.DoesNotExist</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.MultipleObjectsReturned">Document.MultipleObjectsReturned</a>
 </li>
-      <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.document_date">document_date (geniza.corpus.models.Document property)</a>
-</li>
-      <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentAnnotationListView">DocumentAnnotationListView (class in geniza.corpus.views)</a>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin.document_date">document_date (geniza.corpus.dates.DocumentDateMixin property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentAnnotationListView">DocumentAnnotationListView (class in geniza.corpus.views)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin">DocumentDateMixin (class in geniza.corpus.dates)</a>
+</li>
       <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentDetailBase">DocumentDetailBase (class in geniza.corpus.views)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentDetailView">DocumentDetailView (class in geniza.corpus.views)</a>
@@ -251,6 +292,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.editors">editors() (geniza.corpus.models.Document method)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin.end_date">end_date (geniza.corpus.dates.DocumentDateMixin property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -342,10 +385,24 @@
 </li>
       </ul></li>
       <li>
+    geniza.corpus.dates
+
+      <ul>
+        <li><a href="codedocs/corpus.html#module-geniza.corpus.dates">module</a>
+</li>
+      </ul></li>
+      <li>
     geniza.corpus.management.commands.add_fragment_urls
 
       <ul>
         <li><a href="codedocs/corpus.html#module-geniza.corpus.management.commands.add_fragment_urls">module</a>
+</li>
+      </ul></li>
+      <li>
+    geniza.corpus.management.commands.convert_dates
+
+      <ul>
+        <li><a href="codedocs/corpus.html#module-geniza.corpus.management.commands.convert_dates">module</a>
 </li>
       </ul></li>
       <li>
@@ -425,8 +482,6 @@
         <li><a href="codedocs/pages.html#module-geniza.pages.management.commands.bootstrap_content">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     geniza.pages.models
 
@@ -434,6 +489,8 @@
         <li><a href="codedocs/pages.html#module-geniza.pages.models">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentAnnotationListView.get">get() (geniza.corpus.views.DocumentAnnotationListView method)</a>
 
       <ul>
@@ -464,6 +521,10 @@
         <li><a href="codedocs/footnotes.html#geniza.footnotes.models.CreatorManager.get_by_natural_key">(geniza.footnotes.models.CreatorManager method)</a>
 </li>
       </ul></li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.get_calendar_date">get_calendar_date() (in module geniza.corpus.dates)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.get_calendar_month">get_calendar_month() (in module geniza.corpus.dates)</a>
+</li>
       <li><a href="codedocs/pages.html#geniza.pages.models.ContentPage.get_context">get_context() (geniza.pages.models.ContentPage method)</a>
 
       <ul>
@@ -476,6 +537,8 @@
         <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView.get_context_data">(geniza.corpus.views.DocumentScholarshipView method)</a>
 </li>
         <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_context_data">(geniza.corpus.views.DocumentSearchView method)</a>
+</li>
+        <li><a href="codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView.get_context_data">(geniza.corpus.views.RelatedDocumentView method)</a>
 </li>
       </ul></li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.get_deferred_fields">get_deferred_fields() (geniza.corpus.models.Document method)</a>
@@ -496,7 +559,11 @@
         <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_form_kwargs">(geniza.corpus.views.DocumentSearchView method)</a>
 </li>
       </ul></li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.get_hebrew_month">get_hebrew_month() (in module geniza.corpus.dates)</a>
+</li>
       <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentMerge.get_initial">get_initial() (geniza.corpus.views.DocumentMerge method)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.get_islamic_month">get_islamic_month() (in module geniza.corpus.dates)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.merge_documents.Command.get_merge_candidates">get_merge_candidates() (geniza.corpus.management.commands.merge_documents.Command method)</a>
 </li>
@@ -510,6 +577,8 @@
         <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_queryset">(geniza.corpus.views.DocumentSearchView method)</a>
 </li>
       </ul></li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_range_stats">get_range_stats() (geniza.corpus.views.DocumentSearchView method)</a>
+</li>
       <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentDetailBase.get_solr_lastmodified_filters">get_solr_lastmodified_filters() (geniza.corpus.views.DocumentDetailBase method)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_solr_sort">get_solr_sort() (geniza.corpus.views.DocumentSearchView method)</a>
@@ -531,6 +600,8 @@
       <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.add_fragment_urls.Command.handle">handle() (geniza.corpus.management.commands.add_fragment_urls.Command method)</a>
 
       <ul>
+        <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.convert_dates.Command.handle">(geniza.corpus.management.commands.convert_dates.Command method)</a>
+</li>
         <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.generate_fixtures.Command.handle">(geniza.corpus.management.commands.generate_fixtures.Command method)</a>
 </li>
         <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.import_manifests.Command.handle">(geniza.corpus.management.commands.import_manifests.Command method)</a>
@@ -555,6 +626,8 @@
 </li>
       </ul></li>
       <li><a href="codedocs/footnotes.html#geniza.footnotes.models.Footnote.has_url">has_url() (geniza.footnotes.models.Footnote method)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.Calendar.HIJRI">HIJRI (geniza.corpus.dates.Calendar attribute)</a>
 </li>
       <li><a href="codedocs/pages.html#geniza.pages.models.HomePage">HomePage (class in geniza.pages.models)</a>
 </li>
@@ -582,10 +655,10 @@
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Fragment.iiif_thumbnails">iiif_thumbnails() (geniza.corpus.models.Fragment method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.iiif_urls">iiif_urls() (geniza.corpus.models.Document method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="codedocs/footnotes.html#geniza.footnotes.models.FootnoteQuerySet.includes_footnote">includes_footnote() (geniza.footnotes.models.FootnoteQuerySet method)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.index_data">index_data() (geniza.corpus.models.Document method)</a>
@@ -596,7 +669,19 @@
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.is_public">is_public() (geniza.corpus.models.Document method)</a>
 </li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.PartialDate.iso_format">iso_format (geniza.corpus.dates.PartialDate attribute)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.PartialDate.isoformat">isoformat() (geniza.corpus.dates.PartialDate method)</a>
+</li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.items_to_index">items_to_index() (geniza.corpus.models.Document class method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.Calendar.KHARAJI">KHARAJI (geniza.corpus.dates.Calendar attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -628,6 +713,12 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="codedocs/common.html#geniza.common.fields.RangeForm.media">media (geniza.common.fields.RangeForm property)</a>
+
+      <ul>
+        <li><a href="codedocs/common.html#geniza.common.fields.RangeWidget.media">(geniza.common.fields.RangeWidget property)</a>
+</li>
+      </ul></li>
       <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.merge_documents.Command.merge_group">merge_group() (geniza.corpus.management.commands.merge_documents.Command method)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.merge_with">merge_with() (geniza.corpus.models.Document method)</a>
@@ -652,7 +743,11 @@
 </li>
         <li><a href="codedocs/corpus.html#module-geniza.corpus">geniza.corpus</a>
 </li>
+        <li><a href="codedocs/corpus.html#module-geniza.corpus.dates">geniza.corpus.dates</a>
+</li>
         <li><a href="codedocs/corpus.html#module-geniza.corpus.management.commands.add_fragment_urls">geniza.corpus.management.commands.add_fragment_urls</a>
+</li>
+        <li><a href="codedocs/corpus.html#module-geniza.corpus.management.commands.convert_dates">geniza.corpus.management.commands.convert_dates</a>
 </li>
         <li><a href="codedocs/corpus.html#module-geniza.corpus.management.commands.generate_fixtures">geniza.corpus.management.commands.generate_fixtures</a>
 </li>
@@ -701,6 +796,10 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="codedocs/common.html#geniza.common.fields.NaturalSortField">NaturalSortField (class in geniza.common.fields)</a>
 </li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.PartialDate.num_fmt">num_fmt (geniza.corpus.dates.PartialDate attribute)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.PartialDate.numeric_format">numeric_format() (geniza.corpus.dates.PartialDate method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -713,7 +812,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="codedocs/corpus.html#geniza.corpus.views.old_pgp_tabulate_data">old_pgp_tabulate_data() (in module geniza.corpus.views)</a>
 </li>
-      <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.original_date">original_date (geniza.corpus.models.Document property)</a>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin.original_date">original_date (geniza.corpus.dates.DocumentDateMixin property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -726,20 +825,30 @@
       <ul>
         <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView.page_description">(geniza.corpus.views.DocumentScholarshipView method)</a>
 </li>
+        <li><a href="codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView.page_description">(geniza.corpus.views.RelatedDocumentView method)</a>
+</li>
       </ul></li>
       <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.page_title">page_title() (geniza.corpus.views.DocumentDetailView method)</a>
 
       <ul>
         <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView.page_title">(geniza.corpus.views.DocumentScholarshipView method)</a>
 </li>
+        <li><a href="codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView.page_title">(geniza.corpus.views.RelatedDocumentView method)</a>
+</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin.parsed_date">parsed_date (geniza.corpus.dates.DocumentDateMixin property)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.PartialDate">PartialDate (class in geniza.corpus.dates)</a>
+</li>
       <li><a href="codedocs/corpus.html#geniza.corpus.views.pgp_metadata_for_old_site">pgp_metadata_for_old_site() (in module geniza.corpus.views)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.pgp_urlize">pgp_urlize() (in module geniza.corpus.templatetags.corpus_extras)</a>
 </li>
       <li><a href="codedocs/common.html#geniza.common.fields.NaturalSortField.pre_save">pre_save() (geniza.common.fields.NaturalSortField method)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.models.Fragment.provenance">provenance (geniza.corpus.models.Fragment property)</a>
 </li>
       <li><a href="codedocs/common.html#geniza.common.middleware.PublicLocaleMiddleware">PublicLocaleMiddleware (class in geniza.common.middleware)</a>
 </li>
@@ -757,6 +866,14 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="codedocs/common.html#geniza.common.fields.RangeField">RangeField (class in geniza.common.fields)</a>
+</li>
+      <li><a href="codedocs/common.html#geniza.common.fields.RangeForm">RangeForm (class in geniza.common.fields)</a>
+</li>
+      <li><a href="codedocs/common.html#geniza.common.fields.RangeWidget">RangeWidget (class in geniza.common.fields)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.re_original_date">re_original_date (in module geniza.corpus.dates)</a>
+</li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.refresh_from_db">refresh_from_db() (geniza.corpus.models.Document method)</a>
 
       <ul>
@@ -773,7 +890,13 @@
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.DocumentSignalHandlers.related_delete">related_delete() (geniza.corpus.models.DocumentSignalHandlers static method)</a>
 </li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.related_documents">related_documents (geniza.corpus.models.Document property)</a>
+</li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.DocumentSignalHandlers.related_save">related_save() (geniza.corpus.models.DocumentSignalHandlers static method)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView">RelatedDocumentView (class in geniza.corpus.views)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.convert_dates.Command.report">report() (geniza.corpus.management.commands.convert_dates.Command method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -784,16 +907,28 @@
       <li><a href="codedocs/common.html#geniza.common.models.TrackChangesModel.save">save() (geniza.common.models.TrackChangesModel method)</a>
 
       <ul>
+        <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.save">(geniza.corpus.models.Document method)</a>
+</li>
         <li><a href="codedocs/corpus.html#geniza.corpus.models.Fragment.save">(geniza.corpus.models.Fragment method)</a>
 </li>
       </ul></li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.Calendar.SELEUCID">SELEUCID (geniza.corpus.dates.Calendar attribute)</a>
+</li>
       <li><a href="codedocs/pages.html#geniza.pages.models.ContainerPage.serve">serve() (geniza.pages.models.ContainerPage method)</a>
+</li>
+      <li><a href="codedocs/common.html#geniza.common.fields.RangeField.set_min_max">set_min_max() (geniza.common.fields.RangeField method)</a>
+</li>
+      <li><a href="codedocs/common.html#geniza.common.fields.RangeForm.set_range_minmax">set_range_minmax() (geniza.common.fields.RangeForm method)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.shelfmark">shelfmark (geniza.corpus.models.Document property)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.shelfmark_display">shelfmark_display (geniza.corpus.models.Document property)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.templatetags.corpus_extras.shelfmark_wrap">shelfmark_wrap() (in module geniza.corpus.templatetags.corpus_extras)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin.solr_date_range">solr_date_range() (geniza.corpus.dates.DocumentDateMixin method)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.solr_lastmodified_filters">solr_lastmodified_filters (geniza.corpus.views.DocumentSearchView attribute)</a>
 </li>
       <li><a href="codedocs/footnotes.html#geniza.footnotes.models.Source">Source (class in geniza.footnotes.models)</a>
 </li>
@@ -816,6 +951,18 @@
       <li><a href="codedocs/footnotes.html#geniza.footnotes.models.SourceType.DoesNotExist">SourceType.DoesNotExist</a>
 </li>
       <li><a href="codedocs/footnotes.html#geniza.footnotes.models.SourceType.MultipleObjectsReturned">SourceType.MultipleObjectsReturned</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin.standard_date">standard_date (geniza.corpus.dates.DocumentDateMixin property)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin.standardize_date">standardize_date() (geniza.corpus.dates.DocumentDateMixin method)</a>
+
+      <ul>
+        <li><a href="codedocs/corpus.html#geniza.corpus.dates.standardize_date">(in module geniza.corpus.dates)</a>
+</li>
+      </ul></li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.convert_dates.Command.standardize_dates">standardize_dates() (geniza.corpus.management.commands.convert_dates.Command method)</a>
+</li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.dates.DocumentDateMixin.start_date">start_date (geniza.corpus.dates.DocumentDateMixin property)</a>
 </li>
       <li><a href="codedocs/corpus.html#geniza.corpus.models.Document.status">status (geniza.corpus.models.Document attribute)</a>
 </li>
@@ -853,9 +1000,27 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="codedocs/corpus.html#geniza.corpus.management.commands.add_fragment_urls.Command.view_to_iiif_url">view_to_iiif_url() (geniza.corpus.management.commands.add_fragment_urls.Command method)</a>
 </li>
+      <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentAnnotationListView.viewname">viewname (geniza.corpus.views.DocumentAnnotationListView attribute)</a>
+
+      <ul>
+        <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.viewname">(geniza.corpus.views.DocumentDetailView attribute)</a>
+</li>
+        <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentManifestView.viewname">(geniza.corpus.views.DocumentManifestView attribute)</a>
+</li>
+        <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView.viewname">(geniza.corpus.views.DocumentScholarshipView attribute)</a>
+</li>
+        <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentTranscriptionText.viewname">(geniza.corpus.views.DocumentTranscriptionText attribute)</a>
+</li>
+        <li><a href="codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView.viewname">(geniza.corpus.views.RelatedDocumentView attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.viewname">viewname (geniza.corpus.views.DocumentDetailView attribute)</a>
+      <li><a href="codedocs/common.html#geniza.common.fields.RangeField.widget">widget (geniza.common.fields.RangeField attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -917,7 +1082,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script><div class="powered_by">
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="powered_by">
     <p>Powered by:</p>
     <a href="http://cdh.princeton.edu/">
         <img src="https://cdh.princeton.edu/static/img/CDH_logo.svg"
@@ -932,7 +1097,7 @@
       &copy;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
