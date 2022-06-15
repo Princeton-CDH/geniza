@@ -27,7 +27,6 @@ from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
 from requests.exceptions import ConnectionError
-from taggit.models import Tag
 from taggit_selectize.managers import TaggableManager
 from urllib3.exceptions import HTTPError, NewConnectionError
 

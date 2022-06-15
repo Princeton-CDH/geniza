@@ -1,7 +1,6 @@
 import html
 from unittest.mock import Mock, patch
 
-import pytest
 from django.core.paginator import Paginator
 from django.http.request import HttpRequest, QueryDict
 from django.template.defaultfilters import linebreaks
@@ -10,7 +9,7 @@ from django.urls import reverse
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
 
-from geniza.corpus.models import Document, LanguageScript, TextBlock
+from geniza.corpus.models import Document, LanguageScript
 from geniza.corpus.templatetags.corpus_extras import shelfmark_wrap
 from geniza.footnotes.models import Footnote
 

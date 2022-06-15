@@ -1,14 +1,10 @@
-import os
 from io import StringIO
-from unittest.mock import patch
 
 import pytest
 from django.core.management import call_command
-from django.core.management.base import CommandError
 
 from geniza.corpus.dates import Calendar
 from geniza.corpus.management.commands import convert_dates
-from geniza.corpus.models import Document
 
 
 @pytest.mark.django_db

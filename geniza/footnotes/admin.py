@@ -6,7 +6,7 @@ from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models import Count
-from django.db.models.fields import CharField, TextField, URLField
+from django.db.models.fields import CharField, TextField
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.forms.widgets import Textarea, TextInput
