@@ -20,10 +20,7 @@ export default class extends Controller {
          */
         const edition = evt.currentTarget.dataset.edition;
         const chunks = document.querySelectorAll(`#${edition}`);
-        chunks.forEach((chunk) => {
-            chunk.parentNode.scrollLeft =
-                chunk.offsetLeft - chunk.parentNode.offsetLeft;
-        });
+        this.scrollChunksIntoView(chunks);
 
         // Set subheader to show full label for edition
         this.editionFullLabelTarget.innerHTML = chunks[0].dataset.label;
@@ -57,6 +54,27 @@ export default class extends Controller {
         // of it. This needs to be on the whole document because the click could be from anywhere!
         if (this.dropdownDetailsTarget.open) {
             this.dropdownDetailsTarget.removeAttribute("open");
+        }
+    }
+
+    scrollChunksIntoView(chunks) {
+        // Scroll the selected chunks into view
+        chunks.forEach((chunk) => {
+            chunk.parentNode.scrollLeft =
+                chunk.offsetLeft - chunk.parentNode.offsetLeft;
+        });
+    }
+
+    togglePanel() {
+        // When a panel is closed and reopened, the offsets for the transcription panel
+        // must be recalculated
+        const selectedEditionInput = document.querySelector(
+            'input:checked[type="radio"][name="transcription"]'
+        );
+        if (selectedEditionInput) {
+            const edition = selectedEditionInput.dataset.edition;
+            const chunks = document.querySelectorAll(`#${edition}`);
+            this.scrollChunksIntoView(chunks);
         }
     }
 }
