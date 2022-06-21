@@ -481,8 +481,10 @@
             margin: 30px 0 12px;
         }
         h3 + span.current-transcription {
+            display: block;
             @include typography.meta;
             color: var(--input-date-text);
+            min-height: calc(1rem * 1.5 * 2);
         }
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 0 0;
@@ -492,6 +494,9 @@
             & > h3 {
                 @include typography.body-bold;
                 margin: 27px 0 0;
+            }
+            h3 + span.current-transcription {
+                min-height: calc(1.125rem * 1.5 * 2);
             }
         }
 
