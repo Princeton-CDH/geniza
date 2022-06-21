@@ -15,7 +15,7 @@
     <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
     <div class="dropdown-container">
         <div></div>
-        <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails">
+        <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails"{% if document.digital_editions.count == 1 %} disabled="true"{% endif %}>
             <summary class="transcription-select-trigger" data-action="keydown->transcription#shiftTabCloseDropdown">
                 <span data-transcription-target="editionShortLabel">Edition: {{ document.digital_editions.0.source.all_authors }}</span>
             </summary>

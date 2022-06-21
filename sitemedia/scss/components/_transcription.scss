@@ -88,7 +88,7 @@
                 }
                 // images panel toggle is wider
                 &[for="images-on"] {
-                    flex: 1 0 calc(0.48 * 100vw);
+                    flex: 1 0 calc(0.46 * 100vw);
                 }
                 // expand icon size
                 svg {
@@ -260,6 +260,19 @@
                     }
                 }
             }
+            // disable interaction when only 1 transcription (cannot use :disabled on <details>)
+            &[disabled="true"] {
+                * {
+                    cursor: default;
+                }
+                summary span:active {
+                    @include searchform.box-shadow(var(--on-background-25));
+                }
+                summary span::after,
+                ul {
+                    display: none;
+                }
+            }
             // spacing tweaks for transcription selector on desktop
             @include breakpoints.for-tablet-landscape-up {
                 width: auto;
@@ -307,7 +320,7 @@
         #images-on:checked ~ .dropdown-container {
             // Empty div for spacing
             div:first-child {
-                flex: 1 0 calc(0.48 * 100vw);
+                flex: 1 0 calc(0.46 * 100vw);
             }
         }
     }
