@@ -84,6 +84,25 @@ class TestLanguageScriptAdmin:
         assert f"?secondary_languages__id__exact={french.pk}" in french_secondary_link
         assert "1</a>" in french_secondary_link
 
+    def test_get_queryset(self):
+        arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
+        french = LanguageScript.objects.create(language="French", script="Latin")
+        english = LanguageScript.objects.create(language="English", script="Latin")
+
+        lang_admin = LanguageScriptAdmin(model=LanguageScript, admin_site=admin.site)
+
+        request_factory = RequestFactory()
+        # simulate request for language script list page
+        request = request_factory.post("/admin/corpus/languagescript/")
+        qs = lang_admin.get_queryset(request)
+        # should have count annotations
+        assert hasattr(qs.first(), "document__count")
+
+        # simulate autocomplete request
+        request = request_factory.post("/admin/autocomplete/")
+        qs = lang_admin.get_queryset(request)
+        assert not hasattr(qs.first(), "document__count")
+
 
 class TestDocumentAdmin:
     def test_rev_dates(self, db, admin_client):
@@ -127,7 +146,7 @@ class TestDocumentAdmin:
             reverse("admin:corpus_document_change", args=(doc.pk,))
         )
         assertContains(
-            response, '<span class="action-time">March 11, 1995</span>', html=True
+            response, '<span class="action-time">11 March, 1995</span>', html=True
         )
         assertContains(
             response, '<span class="action-user">Tom Jones</span>', html=True

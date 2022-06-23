@@ -23,6 +23,9 @@ export default class extends Controller {
                 pinchRotate: true,
             },
             crossOriginPolicy: "Anonymous",
+            gestureSettingsTouch: {
+                pinchRotate: true,
+            },
         });
 
         // store OSD viewer instance on the browser window for access with annotations

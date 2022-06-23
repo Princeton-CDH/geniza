@@ -19,6 +19,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "type": "type_s",
         "status": "status_s",
         "shelfmark": "shelfmark_s",  # string version for display
+        "document_date": "document_date_s",  # string version for display
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
         "description": "description_txt_ens",  # use stemmed version for field search & highlight
@@ -94,6 +95,21 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     def keyword_search(self, search_term):
         return self.search(self.keyword_search_qf).raw_query_parameters(
             keyword_query=self._search_term_cleanup(search_term)
+        )
+
+    def related_to(self, document):
+        "Return documents related to the given document (i.e. shares any shelfmarks)"
+
+        # NOTE: using a string query filter because parasolr queryset
+        # # currently doesn't provide any kind of not/exclude filter
+        return (
+            self.filter(status=document.PUBLIC_LABEL)
+            .filter("NOT pgpid_i:%d" % document.id)
+            .filter(
+                fragment_shelfmark_ss__in=[
+                    '"%s"' % f.shelfmark for f in document.fragments.all()
+                ]
+            )
         )
 
     def get_result_document(self, doc):

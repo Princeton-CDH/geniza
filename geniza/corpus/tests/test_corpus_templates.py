@@ -7,6 +7,7 @@ from django.http.request import HttpRequest, QueryDict
 from django.template.defaultfilters import linebreaks
 from django.template.loader import get_template
 from django.urls import reverse
+from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.corpus.models import Document, LanguageScript, TextBlock
@@ -50,18 +51,22 @@ class TestDocumentDetailTemplate:
         assertContains(response, f"<p>{document.description}</p>", html=True)
 
     def test_viewer(self, client, document):
-        """Document detail template should include viewer for IIIF content"""
+        """Document detail template should include viewer for image/transcription content"""
         response = client.get(document.get_absolute_url())
         assertContains(
             response,
-            '<section id="iiif-viewer" data-controller="iiif">',
+            '<section id="itt-panel">',
         )
 
     def test_viewer_annotations(self, client, document, unpublished_editions):
-        """Document detail template should configure IIIF viewer for annotation display"""
+        """Document detail template should configure image/transcription viewer for annotation display"""
         # fixture does not have annotations
         response = client.get(document.get_absolute_url())
-        assertNotContains(response, '<div class="transcription">')
+        assertNotContains(
+            response,
+            '<input type="checkbox" id="transcription-on" checked="true" aria-label="show transcription">',
+            html=True,
+        )
 
         # add a footnote with a digital edition
         Footnote.objects.create(
@@ -71,7 +76,11 @@ class TestDocumentDetailTemplate:
             content={"text": "A piece of text"},
         )
         response = client.get(document.get_absolute_url())
-        assertContains(response, '<div class="transcription">')
+        assertContains(
+            response,
+            '<input type="checkbox" id="transcription-on" checked="true" aria-label="show transcription">',
+            html=True,
+        )
 
     def test_no_viewer(self, client, document):
         """Document with no IIIF shouldn't include viewer in template"""
@@ -208,18 +217,6 @@ class TestDocumentDetailTemplate:
         assertContains(
             response, "Download Khan, el-Leithy, Rustow and Vanthieghem's edition"
         )
-
-    def test_other_docs_none(self, document, client):
-        """If there are no other documents, don't show the other docs section"""
-        response = client.get(document.get_absolute_url())
-        assertNotContains(response, "Other documents on this shelfmark")
-
-    def test_other_docs(self, document, join, client):
-        """If there are other documents, show the other docs section"""
-        response = client.get(document.get_absolute_url())
-        assertContains(response, "Other documents on this shelfmark")
-        assertContains(response, join.get_absolute_url())
-        assertContains(response, join.title)
 
     def test_languages_none(self, client, document):
         response = client.get(document.get_absolute_url())
@@ -422,50 +419,24 @@ class TestDocumentTabsSnippet:
         # count should be 2
         assertContains(response, "Scholarship Records (2)")
 
-    def test_external_link_disabled(self, client, document, fragment):
-        """document nav should render external links as disabled (for MVP)"""
-        # remove default URL from fragment
-        fragment.url = ""
-        fragment.save()
+    def test_no_related_docs(self, client, document, empty_solr):
+        """document nav should render disabled related documents tab if no related documents"""
         response = client.get(document.get_absolute_url())
-
-        # disabled (not yet implemented) for MVP
+        # uses span, not link
         assertContains(
             response,
-            "<li><span disabled aria-disabled='true'>External Links</span></li>",
+            "<span disabled aria-disabled='true'>Related Documents (0)</span>",
             html=True,
         )
 
-    @pytest.mark.skip("non-MVP feature")
-    def test_no_links(self, client, document, fragment):
-        """document nav should render inert links tab if no external links"""
-        # remove default URL from fragment
-        fragment.url = ""
-        fragment.save()
+    def test_with_related_docs(self, client, document, join, empty_solr):
+        """document nav should render related docs link with count"""
+        Document.index_items([document, join])
+        SolrClient().update.index([], commit=True)
         response = client.get(document.get_absolute_url())
-
-        # uses span, not link
-        assertContains(response, "<span>External Links (0)</span>", html=True)
-
-    @pytest.mark.skip("non-MVP feature")
-    def test_with_links(self, client, document, multifragment):
-        """document nav should render external links link with link counter"""
-        response = client.get(document.get_absolute_url())
-
-        # TODO renders link to external links page
-        # assertContains(
-        #     response, reverse("corpus:document-scholarship", args=[document.pk])
-        # )
 
         # count should be 1
-        assertContains(response, "External Links (1)")
-
-        # associate to another fragment with a URL
-        TextBlock.objects.create(document=document, fragment=multifragment)
-        response = client.get(document.get_absolute_url())
-
-        # count should be 2
-        assertContains(response, "External Links (2)")
+        assertContains(response, "Related Documents (1)")
 
 
 class TestDocumentResult:
@@ -679,3 +650,22 @@ class TestSearchPagination:
         ctx = {"page_obj": paginator.page(10), "request": req}
         result = self.template.render(ctx)
         assert f"q=contract&page=9" in html.unescape(result)
+
+
+class TestRelatedDocumentsTemplate:
+    def test_related_list(self, client, document, join, empty_solr):
+        """should render results list for related documents"""
+        Document.index_items([document, join])
+        SolrClient().update.index([], commit=True)
+
+        response = client.get(reverse("corpus:related-documents", args=(document.id,)))
+        assertContains(
+            response, '<section id="document-list" class="related-documents">'
+        )
+        assertContains(response, "<ol>")
+
+        # list should have at least one item
+        assertContains(response, '<li class="search-result">')
+
+        # "join" fixture should be in list
+        assertContains(response, f"<dd>{join.id}</dd>")

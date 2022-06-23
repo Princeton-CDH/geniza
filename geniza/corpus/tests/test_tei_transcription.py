@@ -35,19 +35,28 @@ def test_no_content():
 def test_html():
     tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
     html = tei.text_to_html()
-    # should result in 3 sections
-    assert html.count("<section>") == 3
-    assert "<h1>Right Margin</h1>" in html
-    assert "<li value='1'>מא</li>" in html
-    # three different lines that are # 1
-    assert html.count("<li value='1'>") == 3
+
+    # should be a list with two items
+    assert len(html) == 2
+
+    # first page should have two labels and text content
+    assert html[0].count("<section>") == 2
+    assert "<h1>Right Margin</h1>" in html[0]
+    assert "<li value='1'>מא</li>" in html[0]
+    # two different lines in section 1 that are # 1
+    assert html[0].count("<li value='1'>") == 2
+
+    # second page should have one label and text content
+    assert html[1].count("<section>") == 1
+    assert "<h1>Recto" in html[1]
+    assert "<li value='1'>موﻻى الشيخ ابو العﻻ</li>" in html[1]
 
     # check that the last line / last block is included
-    assert "<li value='6'>الحسن بن ابرهيم</li>" in html
+    assert "<li value='6'>الحسن بن ابرهيم</li>" in html[1]
 
     # assert that missing line number does not result in a line number of "None"
-    assert "<li value='None'>" not in html
-    assert "<li value=''>" not in html
+    assert "<li value='None'>" not in html[0]
+    assert "<li value=''>" not in html[0]
 
 
 def test_text_to_plaintext():

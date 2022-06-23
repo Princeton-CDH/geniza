@@ -8,8 +8,8 @@
     <h1 class="sr-only">{{ page_title }}</h1>
     <!-- document scholarship records -->
     {% include "corpus/snippets/document_header.html" %}
+    {% include "corpus/snippets/document_tabs.html" %}
     <div class="container">
-        {% include "corpus/snippets/document_tabs.html" %}
         <ol>
             {% regroup document.footnotes.all by source as source_list %}
             {% for source in source_list %}

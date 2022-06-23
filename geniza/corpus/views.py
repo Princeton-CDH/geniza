@@ -41,6 +41,7 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
     page_description = _("Search and browse Geniza documents.")
     paginate_by = 50
     initial = {"sort": "random"}
+    # NOTE: does not filter on status, since changing status could modify the page
     solr_lastmodified_filters = {"item_type_s": "document"}
 
     # map form sort to solr sort field
@@ -51,6 +52,8 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         "input_date_desc": "-input_date_dt",
         "input_date_asc": "input_date_dt",
         "shelfmark": "shelfmark_s",
+        "docdate_asc": "start_date_i",
+        "docdate_desc": "-end_date_i",
     }
 
     def dispatch(self, request, *args, **kwargs):
@@ -80,6 +83,30 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
             return "random_%s" % randint(1000, 9999)
         return self.solr_sort[sort_option]
 
+    # NOTE: should cache this, shouldn't really change that frequently
+    def get_range_stats(self):
+        """Return the min and max for range fields based on Solr stats.
+
+        :returns: Dictionary keyed on form field name with a tuple of
+            (min, max) as integers. If stats are not returned from the field,
+            the key is not added to a dictionary.
+        :rtype: dict
+        """
+        stats = DocumentSolrQuerySet().stats("start_date_i", "end_date_i").get_stats()
+        if stats.get("stats_fields"):
+            # use minimum from start date and max from end date
+            # - we're storing YYYYMMDD as 8-digit number for this we only want year
+            # convert to str, take first 4 digits, then convert back to int
+            min_val = stats["stats_fields"]["start_date_i"]["min"]
+            max_val = stats["stats_fields"]["end_date_i"]["max"]
+
+            # trim from the end to handle 3-digit years; includes .0 at end
+            min_year = int(str(min_val)[:-6]) if min_val else None
+            max_year = int(str(max_val)[:-6]) if max_val else None
+            return {"docdate": (min_year, max_year)}
+
+        return {}
+
     def get_form_kwargs(self):
         """get form arguments from request and configured defaults"""
         kwargs = super().get_form_kwargs()
@@ -102,6 +129,9 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
             form_data["sort"] = self.initial["sort"]
 
         kwargs["data"] = form_data
+        # get min/max configuration for document date range field
+        kwargs["range_minmax"] = self.get_range_stats()
+
         return kwargs
 
     def get_queryset(self):
@@ -169,6 +199,12 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                 documents = documents.filter(has_discussion=True)
             if search_opts["has_translation"] == True:
                 documents = documents.filter(has_translation=True)
+            if search_opts["docdate"]:
+                # date range filter; returns tuple of value or None for open-ended range
+                start, end = search_opts["docdate"]
+                documents = documents.filter(
+                    document_date_dr="[%s TO %s]" % (start or "*", end or "*")
+                )
 
         self.queryset = documents
 
@@ -305,12 +341,11 @@ class DocumentScholarshipView(DocumentDetailView):
         count = doc.footnotes.count()
         # Translators: description of document scholarship page, for search engines
         return ngettext(
-            "%(count)d scholarship record for %(doc)s",
-            "%(count)d scholarship records for %(doc)s",
+            "%(count)d scholarship record",
+            "%(count)d scholarship records",
             count,
         ) % {
             "count": count,
-            "doc": doc.title,
         }
 
     def get_queryset(self, *args, **kwargs):
@@ -335,6 +370,38 @@ class DocumentScholarshipView(DocumentDetailView):
             }
         )
         return context_data
+
+
+class RelatedDocumentView(DocumentDetailView):
+    """List of :class:`~geniza.corpus.models.Document`
+    objects that are related to specific :class:`~geniza.corpus.models.Document`
+    (e.g., by occuring on the same shelfmark)."""
+
+    template_name = "corpus/related_documents.html"
+    viewname = "corpus:related-documents"
+
+    def page_title(self):
+        # Translators: title of related documents page
+        return _("Related documents for %(doc)s") % {"doc": self.get_object().title}
+
+    def page_description(self):
+        doc = self.get_object()
+        count = doc.related_documents.count()
+        # Translators: description of related documents page, for search engines
+        return ngettext(
+            "%(count)d related document",
+            "%(count)d related documents",
+            count,
+        ) % {
+            "count": count,
+        }
+
+    def get_context_data(self, **kwargs):
+        doc = self.get_object()
+        # if there are no related documents, don't serve out this page
+        if not doc.related_documents.count():
+            raise Http404
+        return super().get_context_data(**kwargs)
 
 
 class DocumentTranscriptionText(DocumentDetailView):

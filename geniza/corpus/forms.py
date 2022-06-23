@@ -5,6 +5,7 @@ from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
+from geniza.common.fields import RangeField, RangeForm, RangeWidget
 from geniza.corpus.models import Document
 
 
@@ -134,7 +135,14 @@ class BooleanFacetField(FacetFieldMixin, forms.BooleanField):
         self.widget.facet_counts = facet_dict
 
 
-class DocumentSearchForm(forms.Form):
+class YearRangeWidget(RangeWidget):
+    """Extend :class:`django.forms.widgets.RangeWidget` to customize the output and add
+    year start/end labels to the individual inputs."""
+
+    template_name = "corpus/widgets/yearrangewidget.html"
+
+
+class DocumentSearchForm(RangeForm):
 
     q = forms.CharField(
         label="Keyword or Phrase",
@@ -155,28 +163,21 @@ class DocumentSearchForm(forms.Form):
         ("relevance", _("Relevance")),
         # Translators: label for sort in random order
         ("random", _("Random")),
-        # Translators: label for sort by document input date (most recent first)
-        ("input_date_desc", _("Input Date (Latest-Earliest)")),
-        # Translators: label for sort by document input date (oldest first)
-        ("input_date_asc", _("Input Date (Earliest-Latest)")),
+        # Translators: label for sort by document date (most recent first)
+        ("docdate_desc", _("Document Date (Latest–Earliest)")),
+        # Translators: label for sort by document date (oldest first)
+        ("docdate_asc", _("Document Date (Earliest–Latest)")),
+        # Translators: label for alphabetical sort by shelfmark
+        ("shelfmark", _("Shelfmark (A–Z)")),
         # Translators: label for descending sort by number of scholarship records
         ("scholarship_desc", _("Scholarship Records (Most–Least)")),
         # Translators: label for ascending sort by number of scholarship records
         ("scholarship_asc", _("Scholarship Records (Least–Most)")),
-        # Translators: label for alphabetical sort by shelfmark
-        ("shelfmark", _("Shelfmark (A-Z)")),
+        # Translators: label for sort by when document was added to PGP (most recent first)
+        ("input_date_desc", _("PGP Input Date (Latest–Earliest)")),
+        # Translators: label for sort by when document was added to PGP (oldest first)
+        ("input_date_asc", _("PGP Input Date (Earliest–Latest)")),
     ]
-    # NOTE: adding sort options and filters here to populate strings for translation;
-    # this functionality is not yet implemented, but these translation strings
-    # should be used when it is
-    planned_sort_choices = [
-        # Translators: label for sort by document date (most recent first)
-        ("docdate", _("Document Date (Latest-Earliest)")),
-        # Translators: label for sort by document date (oldest first)
-        ("docdate2", _("Document Date (Earliest-Latest)")),
-    ]
-    # Translators: label for filter documents by date
-    _("Document Dates")
     # Translators: label for start year when filtering by date range
     _("From year")
     # Translators: label for end year when filtering by date range
@@ -195,6 +196,14 @@ class DocumentSearchForm(forms.Form):
         ],
         required=False,
         widget=RadioSelectWithDisabled,
+    )
+    # Translators: label for filter documents by date range
+    docdate = RangeField(
+        label=_("Document Dates (CE)"),
+        required=False,
+        widget=YearRangeWidget(
+            attrs={"size": 4, "data-action": "input->search#update"},
+        ),
     )
 
     doctype = FacetChoiceField(

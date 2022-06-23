@@ -7,13 +7,22 @@
 @use "../base/spacing";
 @use "../base/typography";
 
+nav#tabs {
+    max-width: 60ch;
+    padding: spacing.$spacing-md spacing.$spacing-md 0;
+}
 .tabs {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    // on mobile, ensure third tab has enough space
+    grid-template-columns: 0.9fr 0.9fr 1.2fr;
+    @include breakpoints.for-tablet-landscape-up {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
     align-content: stretch;
     justify-content: center;
     margin: 0 auto;
     max-width: none;
+    width: 100%;
     @include typography.nav-link;
     // Tabs styling
     a,
@@ -62,16 +71,6 @@
         // Don't show hover color on current page tab
         &:hover {
             border-bottom-color: var(--secondary);
-        }
-    }
-    // Extra padding to get External Links on two lines
-    li:last-child a,
-    li:last-child span {
-        padding-left: spacing.$spacing-sm;
-        padding-right: spacing.$spacing-sm;
-        @include breakpoints.for-tablet-landscape-up {
-            padding-left: spacing.$spacing-2xl;
-            padding-right: spacing.$spacing-2xl;
         }
     }
 }

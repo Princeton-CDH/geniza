@@ -1,0 +1,5 @@
+{% comment %}
+Template for DateRangeWidget with numeric start and stop inputs.
+{% endcomment %}
+{% load i18n %}
+<div class="inputs">{% spaceless %}{% for subwidget in widget.subwidgets %}<label for={{ subwidget.attrs.id }}>{% if forloop.first %}{% translate "From year" %}{% else %}{% translate "To year" %}{% endif%}</label>{% include subwidget.template_name with widget=subwidget %}{% if forloop.first %} <span class="sr-only">to</span>{% endif %}{% endfor %}{% endspaceless %}</div>

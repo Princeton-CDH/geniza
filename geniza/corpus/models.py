@@ -1,6 +1,6 @@
-import json
 import logging
 from collections import defaultdict
+from functools import cached_property
 from itertools import chain
 
 from django.conf import settings
@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Lower
@@ -20,7 +19,7 @@ from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
-from django.utils.translation import activate, get_language
+from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from djiffy.importer import ManifestImporter
 from djiffy.models import Manifest
@@ -34,6 +33,9 @@ from urllib3.exceptions import HTTPError, NewConnectionError
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
+from geniza.corpus.dates import DocumentDateMixin
+from geniza.corpus.iiif_utils import get_iiif_string
+from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote, Source
 
 logger = logging.getLogger(__name__)
@@ -231,7 +233,7 @@ class Fragment(TrackChangesModel):
             try:
                 manifest = IIIFPresentation.from_url(self.iiif_url)
                 for canvas in manifest.sequences[0].canvases:
-                    image_id = canvas.images[0].resource.id
+                    image_id = canvas.images[0].resource.service.id
                     images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
                     # label provides library's recto/verso designation
                     labels.append(canvas.label)
@@ -267,7 +269,9 @@ class Fragment(TrackChangesModel):
         # pull from locally cached manifest
         # (don't hit remote url if not cached)
         if self.manifest:
-            attribution = self.manifest.extra_data.get("attribution", "")
+            attribution = get_iiif_string(
+                self.manifest.extra_data.get("attribution", "")
+            )
             if attribution:
                 # Remove CUDL metadata string from displayed attribution
                 return mark_safe(
@@ -409,7 +413,7 @@ class DocumentSignalHandlers:
         DocumentSignalHandlers.related_change(instance, raw, "delete")
 
 
-class Document(ModelIndexable):
+class Document(ModelIndexable, DocumentDateMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
 
@@ -469,40 +473,6 @@ class Document(ModelIndexable):
         help_text="Decide whether a document should be publicly visible",
     )
 
-    # preliminary date fields so dates can be pulled out from descriptions
-    doc_date_original = models.CharField(
-        "Date on document (original)",
-        help_text="explicit date on the document, in original format",
-        blank=True,
-        max_length=255,
-    )
-    CALENDAR_HIJRI = "h"
-    CALENDAR_KHARAJI = "k"
-    CALENDAR_SELEUCID = "s"
-    CALENDAR_ANNOMUNDI = "am"
-    CALENDAR_CHOICES = (
-        (CALENDAR_HIJRI, "Hijrī"),
-        (CALENDAR_KHARAJI, "Kharājī"),
-        (CALENDAR_SELEUCID, "Seleucid"),
-        (CALENDAR_ANNOMUNDI, "Anno Mundi"),
-    )
-    doc_date_calendar = models.CharField(
-        "Calendar",
-        max_length=2,
-        choices=CALENDAR_CHOICES,
-        help_text="Calendar according to which the document gives a date: "
-        + "Hijrī (AH); Kharājī (rare - mostly for fiscal docs); "
-        + "Seleucid (sometimes listed as Minyan Shetarot); Anno Mundi (Hebrew calendar)",
-        blank=True,
-    )
-    doc_date_standard = models.CharField(
-        "Document date (standardized)",
-        help_text="CE date (convert to Julian before 1582, Gregorian after 1582). "
-        + "Use YYYY, YYYY-MM, YYYY-MM-DD format when possible",
-        blank=True,
-        max_length=255,
-    )
-
     footnotes = GenericRelation(Footnote, related_query_name="document")
 
     log_entries = GenericRelation(LogEntry, related_query_name="document")
@@ -517,15 +487,22 @@ class Document(ModelIndexable):
     def __str__(self):
         return f"{self.shelfmark_display or '??'} (PGPID {self.id or '??'})"
 
-    def clean(self):
-        """
-        Require doc_date_original and doc_date_calendar to be set
-        if either one is present.
-        """
-        if self.doc_date_calendar and not self.doc_date_original:
-            raise ValidationError("Original date is required when calendar is set")
-        if self.doc_date_original and not self.doc_date_calendar:
-            raise ValidationError("Calendar is required when original date is set")
+    def save(self, *args, **kwargs):
+        # update standardized date if appropriate/supported
+        # TODO: could improve by making use of track changes;
+        # should we overwrite standard if original changed?
+        try:
+            self.standardize_date(update=True)
+        except ValueError as e:
+            # report to user when called via django admin and request is set
+            if hasattr(self, "request"):
+                messages.warning(self.request, "Error standardizing date: %s" % e)
+            # otherwise ignore (unsupported date format)
+
+        super().save(*args, **kwargs)
+
+    # inherits clean method from DocumentDateMixin
+    # make sure to call if extending!
 
     @staticmethod
     def get_by_any_pgpid(pgpid):
@@ -553,33 +530,6 @@ class Document(ModelIndexable):
         """Label for this document; by default, based on the combined shelfmarks from all certain
         associated fragments; uses :attr:`shelfmark_override` if set"""
         return self.shelfmark_override or self.shelfmark
-
-    @property
-    def original_date(self):
-        """Generate formatted display for the document's original/historical date"""
-        # separate with comma if both date and calendar are present, else just return whichever is present
-        # TODO: remove conditional once validation is implemented, since one will never be present alone
-        return " ".join(
-            [
-                v
-                for v in [self.doc_date_original, self.get_doc_date_calendar_display()]
-                if v
-            ]
-        ).strip()
-
-    @property
-    def document_date(self):
-        """Generate formatted display for combined original and standardized dates"""
-        if self.doc_date_standard:
-            # append "CE" to standardized date if it exists
-            standardized_date = " ".join([self.doc_date_standard, "CE"])
-            # add parentheses to standardized date if original date is also present
-            if self.original_date:
-                standardized_date = "".join(["(", standardized_date, ")"])
-            return " ".join([self.original_date, standardized_date]).strip()
-        else:
-            # if there's no standardized date, just display the historical date
-            return self.original_date
 
     @property
     def collection(self):
@@ -655,7 +605,12 @@ class Document(ModelIndexable):
             if frag_images is not None:
                 images, labels = frag_images
                 iiif_images += [
-                    {"image": img, "label": labels[i]} for i, img in enumerate(images)
+                    {
+                        "image": img,
+                        "label": labels[i],
+                        "shelfmark": b.fragment.shelfmark,
+                    }
+                    for i, img in enumerate(images)
                 ]
 
         return iiif_images
@@ -670,7 +625,8 @@ class Document(ModelIndexable):
 
     def fragments_other_docs(self):
         """List of other documents that are on the same fragment(s) as this
-        document (does not include suppressed documents)"""
+        document (does not include suppressed documents). Returns a list of
+        :class:`~corpus.models.Document` objects."""
         # get the set of all documents from all fragments, remove current document,
         # then convert back to a list
         return list(
@@ -683,6 +639,13 @@ class Document(ModelIndexable):
             )
             - {self}
         )
+
+    @cached_property
+    def related_documents(self):
+        """List of other documents with any of the same shelfmarks as this
+        document; does not include suppressed documents. Queries Solr and
+        returns a list of :class:`dict` objects."""
+        return DocumentSolrQuerySet().related_to(self)
 
     def has_transcription(self):
         """Admin display field indicating if document has a transcription."""
@@ -819,6 +782,17 @@ class Document(ModelIndexable):
                 "shelfmark_s": self.shelfmark_display,
                 # index individual shelfmarks for search (includes uncertain fragments)
                 "fragment_shelfmark_ss": [f.shelfmark for f in fragments],
+                # combined original/standard document date for display
+                "document_date_s": strip_tags(self.document_date) or None,
+                # date range for filtering
+                "document_date_dr": self.solr_date_range(),
+                # start/end of document date or date range
+                "start_date_i": self.start_date.numeric_format()
+                if self.start_date
+                else None,
+                "end_date_i": self.end_date.numeric_format(mode="max")
+                if self.end_date
+                else None,
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],

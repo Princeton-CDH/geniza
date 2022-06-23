@@ -32,7 +32,24 @@ def dict_item(dictionary, key):
 
         {{ mydict|dict_item:keyvar }}
     """
-    return dictionary.get(key, None)
+    try:
+        return dictionary.get(key, None)
+    except AttributeError:
+        # fail silently if something other than a dict is passed
+        return None
+
+
+@register.filter
+def index(item, i):
+    """'Template filter to allow accessing list element by variable index.
+    Example use::
+
+        {{ mylist|index:forloop.counter0 }}
+    """
+    try:
+        return item[i]
+    except IndexError:
+        return ""
 
 
 @register.simple_tag(takes_context=True)

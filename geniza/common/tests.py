@@ -5,13 +5,14 @@ import pytest
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
+from django.core.exceptions import ValidationError
 from django.db import connection, models
 from django.db.migrations.executor import MigrationExecutor
 from django.http import HttpResponseRedirect
 from django.test import TestCase, TransactionTestCase, override_settings
 
 from geniza.common.admin import LocalUserAdmin, custom_empty_field_list_filter
-from geniza.common.fields import NaturalSortField
+from geniza.common.fields import NaturalSortField, RangeField, RangeWidget
 from geniza.common.middleware import PublicLocaleMiddleware
 from geniza.common.utils import absolutize_url, custom_tag_string
 
@@ -115,7 +116,7 @@ class TestCustomEmptyFieldListFilter:
         assert choices[2]["display"] == "yep"
 
 
-class TestSortModel(models.Model):
+class SortModelTester(models.Model):
     name = models.CharField(max_length=10)
     name_sort = NaturalSortField("name")
 
@@ -125,19 +126,19 @@ class TestSortModel(models.Model):
 
 class TestNaturalSortField:
     def test_init(self):
-        assert TestSortModel._meta.get_field("name_sort").for_field == "name"
+        assert SortModelTester._meta.get_field("name_sort").for_field == "name"
 
     def test_deconstruct(self):
         # test deconstruct method per django documentation
-        field_instance = TestSortModel._meta.get_field("name_sort")
+        field_instance = SortModelTester._meta.get_field("name_sort")
         name, path, args, kwargs = field_instance.deconstruct()
         new_instance = NaturalSortField(*args, **kwargs)
         assert field_instance.for_field == new_instance.for_field
 
     def test_presave(self):
-        testmodel = TestSortModel()
+        testmodel = SortModelTester()
         testmodel.name = "Test12.3"
-        field_instance = TestSortModel._meta.get_field("name_sort")
+        field_instance = SortModelTester._meta.get_field("name_sort")
         assert field_instance.pre_save(testmodel, None) == "test000012.000003"
 
 
@@ -222,3 +223,37 @@ class TestMiddleware(TestCase):
                 assert not isinstance(response, HttpResponseRedirect)
                 # should continue with middleware chain instead
                 assert response == middleware.get_response(request)
+
+
+# range widget and field tests copied from mep (previously derrida via ppa)
+
+
+def test_range_widget():
+    # range widget decompress logic
+    assert RangeWidget().decompress((None, None)) == [None, None]
+    assert RangeWidget().decompress(None) == [None, None]
+    assert RangeWidget().decompress((100, None)) == [100, None]
+    assert RangeWidget().decompress((None, 250)) == [None, 250]
+    assert RangeWidget().decompress((100, 250)) == [100, 250]
+    assert RangeWidget().decompress(("100", "250")) == [100, 250]
+
+
+def test_range_field():
+    # range widget decompress logic
+    assert RangeField().compress([]) is None
+    assert RangeField().compress([100, None]) == (100, None)
+    assert RangeField().compress([None, 250]) == (None, 250)
+    assert RangeField().compress([100, 250]) == (100, 250)
+
+    # out of order should raise exception
+    with pytest.raises(ValidationError):
+        RangeField().compress([200, 100])
+
+    # test_set_min_max
+    rangefield = RangeField()
+    rangefield.set_min_max(1910, 1930)
+    assert rangefield.widget.attrs["min"] == 1910
+    assert rangefield.widget.attrs["max"] == 1930
+    start_widget, end_widget = rangefield.widget.widgets
+    assert start_widget.attrs["placeholder"] == 1910
+    assert end_widget.attrs["placeholder"] == 1930

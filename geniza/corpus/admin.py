@@ -78,19 +78,23 @@ class LanguageScriptAdmin(admin.ModelAdmin):
     )
 
     document_admin_url = "admin:corpus_document_changelist"
-    search_fields = ("language", "script", "display_name")
+    search_fields = ("language", "display_name")
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .annotate(
-                Count("document", distinct=True),
-                Count("secondary_document", distinct=True),
-            )
+        # The annotations we use for document count on the list view
+        # make the search too slow for autocomplete.
+        # Reset to original, unannotated queryset *only* for autocomplete
+        qs = super().get_queryset(request)
+        if request and request.path == "/admin/autocomplete/":
+            # return without annotations
+            return qs
+        # otherwise, annotate with counts
+        return qs.annotate(
+            Count("document", distinct=True),
+            Count("secondary_document", distinct=True),
         )
 
     @admin.display(
@@ -195,7 +199,14 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         "has_image",
         "is_public",
     )
-    readonly_fields = ("created", "last_modified", "shelfmark", "id", "view_old_pgpids")
+    readonly_fields = (
+        "created",
+        "last_modified",
+        "shelfmark",
+        "id",
+        "view_old_pgpids",
+        "standard_date",
+    )
     search_fields = (
         "fragments__shelfmark",
         "tags__name",
@@ -241,7 +252,12 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         ("languages", "secondary_languages"),
         "language_note",
         "description",
-        ("doc_date_original", "doc_date_calendar", "doc_date_standard"),
+        (
+            "doc_date_original",
+            "doc_date_calendar",
+            "doc_date_standard",
+            "standard_date",
+        ),
         "tags",
         "status",
         ("needs_review", "notes"),
@@ -349,6 +365,10 @@ class DocumentAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
             # for the new model
             obj.created = timezone.now()
             obj.last_modified = None
+
+        # set request on the object so that save method can send messages
+        # if there is an error converting the date
+        obj.request = request
         super().save_model(request, obj, form, change)
 
     # CSV EXPORT -------------------------------------------------------------

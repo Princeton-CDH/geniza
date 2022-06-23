@@ -23,9 +23,13 @@ eulxml
 rich
 wagtail>=2.15.3,<2.16
 wagtail-localize
-djiffy>=0.7.3
+# needs djiffy 0.8 once it is released; use develop for now
+#djiffy>=0.8
+git+https://github.com/Princeton-CDH/djiffy.git@develop#egg=djiffy
 natsort
 django-widget-tweaks
 django-csp-helpers
 django-fullurl
 django-admin-inline-paginator
+convertdate
+unidecode

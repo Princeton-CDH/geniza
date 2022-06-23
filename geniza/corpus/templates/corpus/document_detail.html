@@ -46,17 +46,16 @@
     <!-- document details -->
     <h1 class="sr-only">{{ page_title }}</h1>
     {% include "corpus/snippets/document_header.html" %}
-
+    {# tabs #}
+    {% include "corpus/snippets/document_tabs.html" %}
     <div class="container">
-        {# tabs #}
-        {% include "corpus/snippets/document_tabs.html" %}
-        <section>
+        <section class="metadata">
             <h2 class="sr-only">
                 {# Translators: label for document metadata section (editor, date, input date) #}
                 {% translate 'Metadata' %}
             </h2>
             {# metadata #}
-            <dl class="metadata primary">
+            <dl class="metadata-list primary">
                 <dt>{% translate 'Shelfmark' %}</dt>
                 <dd class="shelfmark">{{ document.shelfmark|shelfmark_wrap }}</dd>
                 {% if document.digital_editions %}
@@ -77,7 +76,7 @@
                 {% endif %}
             </dl>
             {# secondary metadata #}
-            <dl class="metadata secondary">
+            <dl class="metadata-list secondary">
                 {% if document.document_date %}
                     <dt>
                         {# Translators: label for date of this document, if known #}
@@ -158,27 +157,8 @@
             </section>
         {% endif %}
 
-        {% with document.fragments_other_docs as other_docs %}
-            {% if other_docs %}
-                <section>
-                    <dd class="metadata">
-                        <dt>
-                            {# Translators: Other documents on the same fragment/shelfmark #}
-                            {% blocktranslate count counter=document.fragments.count trimmed %}
-                                Other documents on this shelfmark
-                            {% plural %}
-                                Other documents on these shelfmarks
-                            {% endblocktranslate %}
-                        </dt>
-                        {% for doc in other_docs %}
-                            <dd><a href="{{ doc.get_absolute_url }}">{{ doc.title }}</a></dd>
-                        {% endfor %}
-                    </section>
-            {% endif %}
-        {% endwith %}
+
     </div>
-
-
 
     {# viewer #}
     {% if document.has_transcription or document.iiif_urls %}
@@ -186,7 +166,7 @@
     {% endif %}
 
     {# tertiary metadata #}
-    <dl class="metadata tertiary">
+    <dl class="metadata-list tertiary">
         <dt id="permalink">
             <svg role="presentation"><use xlink:href="{% static 'img/ui/all/all/permalink-icon.svg' %}#permalink-icon" /></svg>
             {# Translators: label for permanent link to a document #}
