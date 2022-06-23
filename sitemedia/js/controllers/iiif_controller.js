@@ -121,11 +121,15 @@ export default class extends Controller {
             });
             // initialize mobile zoom toggle
             zoomToggle.addEventListener("input", (evt) => {
+                // always first zoom to 100%
                 viewer.viewport.zoomTo(1.0);
-                this.resetBounds(viewer);
                 if (!evt.currentTarget.checked) {
+                    // wait to reset bounds until element is hidden
+                    setTimeout(() => this.resetBounds(viewer), 300);
                     this.deactivateDeepZoom(element, image);
                 } else {
+                    // reset bounds immediately and zoom to 110%
+                    this.resetBounds(viewer);
                     viewer.viewport.zoomTo(1.1);
                 }
             });
@@ -141,6 +145,12 @@ export default class extends Controller {
             zoomSlider.value = parseFloat(zoom);
             this.updateZoomUI(zoom, zoomSlider, zoomSliderLabel);
         });
+        if (isMobile) {
+            viewer.addHandler("canvas-release", () => {
+                // Handle issue on mobile that causes a scroll trap
+                window.scrollTo(zoomToggle.scrollTop);
+            });
+        }
     }
     updateZoomUI(zoom, slider, label) {
         // update the zoom controls UI with the new value
