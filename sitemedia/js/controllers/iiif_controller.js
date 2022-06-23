@@ -17,10 +17,11 @@ export default class extends Controller {
         const OSD = container.querySelector(".openseadragon-container");
         const image = container.querySelector("img.iiif-image");
         if (!OSD || OSD.style.opacity === "0") {
-            this.activateDeepZoom(container, image);
+            const isMobile = evt.currentTarget.id.startsWith("zoom-toggle");
+            this.activateDeepZoom(container, image, isMobile);
         }
     }
-    activateDeepZoom(container, image) {
+    activateDeepZoom(container, image, isMobile) {
         // hide image and add OpenSeaDragon to container
         const height = container.getBoundingClientRect()["height"];
         let OSD = container.querySelector(".openseadragon-container");
@@ -28,17 +29,25 @@ export default class extends Controller {
         image.classList.remove("visible");
         image.classList.add("hidden");
         if (!OSD) {
-            this.addOpenSeaDragon(container, [container.dataset.iiifUrl]);
-
-            // OSD styles have to be set directly on the element instead of adding a class, due to
-            // its use of inline styles
+            this.addOpenSeaDragon(
+                container,
+                [container.dataset.iiifUrl],
+                isMobile
+            );
             OSD = container.querySelector(".openseadragon-container");
-            OSD.style.position = "absolute";
-            OSD.style.top = "118px";
         }
+        // OSD styles have to be set directly on the element instead of adding a class, due to
+        // its use of inline styles
+        OSD.style.position = "absolute";
         OSD.style.transition = "opacity 300ms ease, visibility 0s ease 0ms";
         OSD.style.visibility = "visible";
         OSD.style.opacity = "1";
+        // OSD needs top offset due to margin, padding, and header elements
+        if (isMobile) {
+            OSD.style.top = "122px";
+        } else {
+            OSD.style.top = "118px";
+        }
     }
     deactivateDeepZoom(container, image) {
         // Hide OSD and show image
@@ -52,7 +61,7 @@ export default class extends Controller {
             image.classList.remove("hidden");
         }
     }
-    addOpenSeaDragon(element, tileSources) {
+    addOpenSeaDragon(element, tileSources, isMobile) {
         // constants for OSD
         const minZoom = 1.0; // Minimum zoom as a multiple of image size
         const maxZoom = 1.5; // Maximum zoom as a multiple of image size
@@ -81,11 +90,17 @@ export default class extends Controller {
         const zoomSliderLabel = element.querySelector(
             "label[for^='zoom-slider']"
         );
+        const zoomToggle = element.querySelector(
+            "input[type='checkbox'][id^='zoom-toggle']"
+        );
         const image = element.querySelector("img.iiif-image");
         viewer.addHandler("open", () => {
             // ensure image is positioned in top-left corner of viewer
             this.resetBounds(viewer);
-
+            if (isMobile) {
+                // zoom to 110% if on mobile
+                viewer.viewport.zoomTo(1.1);
+            }
             // initialize zoom slider
             zoomSlider.setAttribute("min", minZoom);
             zoomSlider.setAttribute("max", viewer.viewport.getMaxZoom());
@@ -103,6 +118,16 @@ export default class extends Controller {
                     viewer.viewport.zoomTo(zoom);
                 }
                 this.updateZoomUI(zoom, zoomSlider, zoomSliderLabel);
+            });
+            // initialize mobile zoom toggle
+            zoomToggle.addEventListener("input", (evt) => {
+                viewer.viewport.zoomTo(1.0);
+                this.resetBounds(viewer);
+                if (!evt.currentTarget.checked) {
+                    this.deactivateDeepZoom(element, image);
+                } else {
+                    viewer.viewport.zoomTo(1.1);
+                }
             });
         });
         viewer.addHandler("zoom", (evt) => {
