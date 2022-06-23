@@ -23,10 +23,10 @@ Also doesn't currently account for fragments without images.
         {# if we have images, loop based on them #}
         {% if document.iiif_urls %}
             {% for image_info in document.iiif_images %}
-                <div class="img" id="{{ image_info.label }}" data-iiif-url="{{ image_info.image.info }}" data-iiif-target="imageContainer">
+                <div class="img" id="{{ image_info.label }}" data-iiif-url="{{ image_info.image.info }}" data-iiif-target="imageContainer" data-action="click->iiif#scrollTo0">
                     <div class="img-header">
                         <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
-                        <input data-action="iiif#handleDeepZoom" type="range" id="zoom-slider-{{ forloop.counter0 }}" name="zoom-slider" min="1" max="100" value="0" step="0.1">
+                        <input data-action="iiif#handleDeepZoom" type="range" id="zoom-slider-{{ forloop.counter0 }}" name="zoom-slider" min="1" max="100" value="0" step="0.01">
                         <label for="zoom-slider-{{ forloop.counter0 }}">100%</label>
                     </div>
                     <img class="iiif-image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
@@ -59,47 +59,3 @@ Also doesn't currently account for fragments without images.
     </div>
 
 </section>
-
-{% comment %}
-<hr/>
-OLD panel
-
-
-<section id="iiif-viewer" data-controller="iiif">
-    <h1 class="sr-only">
-        {# Translators: accessibility label for document images and transcription section #}
-        {% translate "Images and transcription" %}
-    </h1>
-    {% if document.has_image %}
-        <noscript>
-            <ol id="iiif-images-fallback">
-                {% for image_dict in document.iiif_images %}
-                    <li id="image-{{ forloop.counter }}">
-                        <a href="{{ image_dict.image|iiif_image:"size:width=2880" }}">
-                            <img src="{{ image_dict.image|iiif_image:"size:width=500" }}" alt="{{ image_dict.label }}" title="{{ image_dict.label }}" loading="lazy">
-                        </a>
-                    </li>
-                {% endfor %}
-            </ol>
-        </noscript>
-        <div id="iiif-images" data-iiif-target="iiifContainer" data-iiif-urls="{{ document.iiif_images|iiif_info_json }}" class="{% if not document.has_transcription %}no-transcription{% endif %}">
-        </div>
-    {% endif %}
-    {% if document.digital_editions %}
-        <div class="transcription{% if not document.has_image %} no-image{% endif %}">
-            <h2>{% translate 'Transcription' %}</h2>
-            {% if document.digital_editions|length > 1 %}
-                {# when there are multiple editions, use disclosure element #}
-                {% for edition in document.digital_editions %}
-                    <details open>
-                        <summary class="source">{{ edition.source.display }}</summary>
-                        <div>{{ edition.content.html|h1_to_h3|safe }}</div>
-                    </details>
-                {% endfor %}
-            {% else %}
-                <div>{{ document.digital_editions.0.content.html|h1_to_h3|safe }}</div>
-            {% endif %}
-        </div>
-    {% endif %}
-</section>
-{% endcomment %}

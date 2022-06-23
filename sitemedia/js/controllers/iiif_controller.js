@@ -16,28 +16,40 @@ export default class extends Controller {
         const container = evt.currentTarget.parentNode.parentNode;
         const OSD = container.querySelector(".openseadragon-container");
         const image = container.querySelector("img.iiif-image");
-        if (!OSD || OSD.style.display === "none") {
+        if (!OSD || OSD.style.opacity === "0") {
             this.activateDeepZoom(container, image);
         }
     }
     activateDeepZoom(container, image) {
         // hide image and add OpenSeaDragon to container
         const height = container.getBoundingClientRect()["height"];
-        const OSD = container.querySelector(".openseadragon-container");
+        let OSD = container.querySelector(".openseadragon-container");
         container.style.height = `${height}px`;
-        image.style.display = "none";
+        image.classList.remove("visible");
+        image.classList.add("hidden");
         if (!OSD) {
             this.addOpenSeaDragon(container, [container.dataset.iiifUrl]);
-        } else {
-            OSD.style.display = "block";
+
+            // OSD styles have to be set directly on the element instead of adding a class, due to
+            // its use of inline styles
+            OSD = container.querySelector(".openseadragon-container");
+            OSD.style.position = "absolute";
+            OSD.style.top = "118px";
         }
+        OSD.style.transition = "opacity 300ms ease, visibility 0s ease 0ms";
+        OSD.style.visibility = "visible";
+        OSD.style.opacity = "1";
     }
     deactivateDeepZoom(container, image) {
         // Hide OSD and show image
         const OSD = container.querySelector(".openseadragon-container");
         if (OSD && image) {
-            OSD.style.display = "none";
-            image.style.display = "block";
+            OSD.style.transition =
+                "opacity 300ms ease, visibility 0s ease 300ms";
+            OSD.style.visibility = "hidden";
+            OSD.style.opacity = "0";
+            image.classList.add("visible");
+            image.classList.remove("hidden");
         }
     }
     addOpenSeaDragon(element, tileSources) {
@@ -83,8 +95,9 @@ export default class extends Controller {
                 if (zoom <= minZoom) {
                     // When zoomed back out to 100%, deactivate OSD
                     zoom = minZoom;
-                    this.deactivateDeepZoom(element, image);
                     this.resetBounds(viewer);
+                    this.deactivateDeepZoom(element, image);
+                    evt.currentTarget.value = minZoom;
                 } else {
                     // Zoom to the chosen percentage
                     viewer.viewport.zoomTo(zoom);
@@ -122,5 +135,10 @@ export default class extends Controller {
             bounds.height
         );
         viewer.viewport.fitBounds(newBounds, true);
+        viewer.viewport.setRotation(0, true);
+    }
+    scrollTo0(evt) {
+        // Scroll container to top; necessary to prevent scroll issue when OSD is positioned absolutely
+        evt.currentTarget.scrollTop = 0;
     }
 }

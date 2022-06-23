@@ -312,6 +312,16 @@
         img {
             width: 100%;
             margin: 0 auto;
+            &.hidden {
+                transition: opacity 300ms ease, visibility 0s ease 300ms;
+                opacity: 0;
+                visibility: hidden;
+            }
+            &.visible {
+                transition: opacity 300ms ease, visibility 0s ease 0ms;
+                visibility: visible;
+                opacity: 1;
+            }
         }
         @include breakpoints.for-tablet-landscape-up {
             padding: 60px 0 0;
