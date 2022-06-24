@@ -1,5 +1,15 @@
 {% load i18n static corpus_extras %}
-<section id="itt-panel" data-controller="iiif">
+{% if perms.corpus.change_document and not edit_mode %}
+    <a class="editor-navigation" href="{% url 'corpus:document-transcription-editor' document.id %}" data-turbo="false">
+        <i class="ph-pencil"></i>
+        {# Translators: Transcription edit link for admins #}
+        <span>{% translate 'Edit transcription' %}</span>
+    </a>
+{% endif %}
+{% if perms.corpus.change_document and edit_mode %}
+    {{ annotation_config|json_script:"annotation-config" }}
+{% endif %}
+<section id="itt-panel" data-controller="iiif"{% if edit_mode %} class="editor"{% endif %}>
     {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
     {# images displayed by default; disable if no images are available #}
     {# translators: label for checkbox toggle to show the images panel for a document #}
@@ -7,7 +17,7 @@
     <label for="images-on"></label>
     {# transcription displayed by default; disable if no content is available #}
     {# translators: label for checkbox toggle to show the transcription panel for a document #}
-    <input type="checkbox" class="toggle" id="transcription-on" aria-label="{% translate 'show transcription' %}" {% if document.digital_editions %}checked="true" {% else %} disabled="true"{% endif %}/>
+    <input type="checkbox" class="toggle" id="transcription-on" aria-label="{% translate 'show transcription' %}" {% if document.digital_editions or edit_mode %}checked="true" {% else %} disabled="true"{% endif %}/>
     <label for="transcription-on"><svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg></label>
     {# translation disabled for now since we don't handle them in the system yet #}
     {# translators: label for checkbox toggle to show the translation panel for a document #}
@@ -23,7 +33,7 @@ Also doesn't currently account for fragments without images.
         {# if we have images, loop based on them #}
         {% if document.iiif_urls %}
             {% for image_info in document.iiif_images %}
-                <div class="img" id="{{ image_info.label }}" data-iiif-url="{{ image_info.image.info }}" data-iiif-target="imageContainer" data-action="click->iiif#scrollTo0">
+                <div class="img" id="{{ image_info.label }}" data-iiif-url="{{ image_info.image.info }}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-action="click->iiif#scrollTo0">
                     <div class="img-header">
                         <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
                         <input data-action="iiif#handleDeepZoom" type="range" id="zoom-slider-{{ forloop.counter0 }}" name="zoom-slider" min="1" max="100" value="0" step="0.01">
@@ -43,6 +53,16 @@ Also doesn't currently account for fragments without images.
                     {# display transcription in chunks by index #}
                     <div>{{ document.digital_editions.0.content.html|index:forloop.counter0|h1_to_h3|safe }}</div>
                 </div>
+                {% if perms.corpus.change_document and edit_mode %}
+                    <div class="annotate" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
+                        {% if forloop.first %}
+                            <h3>{% translate 'Transcribe' %}</h3>
+                            <p class="instructions">
+                                {% translate 'Hold shift and then click on the image and drag to select a rectangular region for the block text you want to transcribe.' %}
+                            </p>
+                        {% endif %}
+                    </div>
+                {% endif %}
             {% endfor %}
             {# if there are no images, loop based on the transcription chunks instead #}
         {% elif document.has_transcription %}
@@ -53,6 +73,16 @@ Also doesn't currently account for fragments without images.
                     {# display transcription in chunks based on loop index #}
                     <div>{{ chunk|h1_to_h3|safe }}</div>
                 </div>
+                {% if perms.corpus.change_document and edit_mode %}
+                    <div class="annotate" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
+                        {% if forloop.first %}
+                            <h3>{% translate 'Transcribe' %}</h3>
+                            <p class="instructions">
+                                {% translate 'Hold shift and then click on the image and drag to select a rectangular region for the block text you want to transcribe.' %}
+                            </p>
+                        {% endif %}
+                    </div>
+                {% endif %}
             {% endfor %}
         {% endif %}
         {% if document.has_image %}

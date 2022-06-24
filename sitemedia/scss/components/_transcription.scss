@@ -510,6 +510,15 @@
         }
     }
 }
+a.editor-navigation {
+    span {
+        @include typography.link;
+    }
+    i {
+        text-decoration: none;
+    }
+    margin-bottom: 1rem;
+}
 
 // Manual (body-class based) theme overrides
 html.light-mode #itt-panel {

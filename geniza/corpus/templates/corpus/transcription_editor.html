@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static i18n render_bundle_csp corpus_extras fullurl %}
+
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block extrameta %}
+    {% spaceless %}
+        {% for lang_code in PUBLIC_SITE_LANGUAGES %}
+            {% language lang_code %}
+                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "corpus:document" document.pk %}" />
+            {% endlanguage %}
+        {% endfor %}
+    {% endspaceless %}
+{% endblock extrameta %}
+{% block extrascript %}
+    {# include openseadragon if needed #}
+    {% if document.has_image or document.iiif_urls %}
+        <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/" crossorigin />
+
+        <!-- annotorious CSS stylesheet -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@recogito/annotorious-openseadragon@2.7.2/dist/annotorious.min.css">
+    {% endif %}
+{% endblock extrascript %}
+
+{% block main %}
+    <!-- document details -->
+    <h1 class="sr-only">{{ page_title }}</h1>
+    <a class="editor-navigation" href="{% url "corpus:document" document.pk %}">
+        <span>
+            {% blocktranslate with shelfmark=document.shelfmark_display %}
+                Return to {{ shelfmark }}
+            {% endblocktranslate %}
+        </span>
+    </a>
+
+    {# viewer #}
+    {% include "corpus/snippets/document_transcription.html" with edit_mode=True %}
+{% endblock main %}
