@@ -1,17 +1,17 @@
 {% load i18n static corpus_extras %}
-<section id="itt-panel">
+<section id="itt-panel" data-controller="iiif">
     {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
     {# images displayed by default; disable if no images are available #}
     {# translators: label for checkbox toggle to show the images panel for a document #}
-    <input type="checkbox" id="images-on" aria-label="{% translate 'show images' %}" {% if document.has_image %}checked="true" {% else %} disabled="true"{% endif %}/>
+    <input type="checkbox" class="toggle" id="images-on" aria-label="{% translate 'show images' %}" {% if document.has_image %}checked="true" {% else %} disabled="true"{% endif %}/>
     <label for="images-on"></label>
     {# transcription displayed by default; disable if no content is available #}
     {# translators: label for checkbox toggle to show the transcription panel for a document #}
-    <input type="checkbox" id="transcription-on" aria-label="{% translate 'show transcription' %}" {% if document.digital_editions %}checked="true" {% else %} disabled="true"{% endif %}/>
+    <input type="checkbox" class="toggle" id="transcription-on" aria-label="{% translate 'show transcription' %}" {% if document.digital_editions %}checked="true" {% else %} disabled="true"{% endif %}/>
     <label for="transcription-on"><svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg></label>
     {# translation disabled for now since we don't handle them in the system yet #}
     {# translators: label for checkbox toggle to show the translation panel for a document #}
-    <input type="checkbox" id="translation-on" aria-label="{% translate 'show translation' %}" disabled="true"/>
+    <input type="checkbox" class="toggle" id="translation-on" aria-label="{% translate 'show translation' %}" disabled="true"/>
     <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
     <div class="panel-container">
         {% comment %}
@@ -23,9 +23,15 @@ Also doesn't currently account for fragments without images.
         {# if we have images, loop based on them #}
         {% if document.iiif_urls %}
             {% for image_info in document.iiif_images %}
-                <div class="img">
-                    <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
-                    <img src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
+                <div class="img" id="{{ image_info.label }}" data-iiif-url="{{ image_info.image.info }}" data-iiif-target="imageContainer" data-action="click->iiif#scrollTo0">
+                    <div class="img-header">
+                        <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
+                        <input data-action="iiif#handleDeepZoom" type="range" id="zoom-slider-{{ forloop.counter0 }}" name="zoom-slider" min="1" max="100" value="0" step="0.01">
+                        <label for="zoom-slider-{{ forloop.counter0 }}">100%</label>
+                        <input data-action="iiif#handleDeepZoom" type="checkbox" id="zoom-toggle-{{ forloop.counter0 }}" name="zoom-toggle">
+                        <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
+                    </div>
+                    <img class="iiif-image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
                         sizes="(max-width: 650px) 50vw, 94vw"
                         srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
                         {{ image_info.image|iiif_image:"size:width=500" }} 500w,
@@ -55,56 +61,3 @@ Also doesn't currently account for fragments without images.
     </div>
 
 </section>
-
-{% comment %}
-<hr/>
-OLD panel
-
-
-<section id="iiif-viewer" data-controller="iiif">
-    {% if user.is_authenticated %} {# TODO: determine proper permission to check here #}
-        <button id="enable-annotation"><i class="ph-pencil"></i> transcribe</button>
-    {% endif %}
-    <h1 class="sr-only">
-        {# Translators: accessibility label for document images and transcription section #}
-        {% translate "Images and transcription" %}
-    </h1>
-    {% if document.has_image %}
-        <noscript>
-            <ol id="iiif-images-fallback">
-                {% for image_dict in document.iiif_images %}
-                    <li id="image-{{ forloop.counter }}">
-                        <a href="{{ image_dict.image|iiif_image:"size:width=2880" }}">
-                            <img src="{{ image_dict.image|iiif_image:"size:width=500" }}" alt="{{ image_dict.label }}" title="{{ image_dict.label }}" loading="lazy">
-                        </a>
-                    </li>
-                {% endfor %}
-            </ol>
-        </noscript>
-        <div id="iiif-images" data-iiif-target="iiifContainer" data-iiif-urls="{{ document.iiif_images|iiif_info_json }}" class="{% if not document.has_transcription %}no-transcription{% endif %}">
-        </div>
-    {% endif %}
-    <div class="transcription{% if not document.has_image %} no-image{% endif %}{% if not document.has_transcription %} no-transcription{% endif %}">
-        <h2>{% translate 'Transcription' %}</h2>
-        {% if document.digital_editions|length > 1 %}
-            {# when there are multiple editions, use disclosure element #}
-            {% for edition in document.digital_editions %}
-                <details open>
-                    <summary class="source">{{ edition.source.display }}</summary>
-                    <div>{{ edition.content.html|h1_to_h3|safe }}</div>
-                </details>
-            {% endfor %}
-        {% else %}
-            <div>{{ document.digital_editions.0.content.html|h1_to_h3|safe }}</div>
-        {% endif %}
-    </div>
-    {% if user.is_authenticated %} {# TODO: determine proper permission to check here #}
-        <div class="annotate" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
-            <h2>Transcribe</h2>
-            <p class="instructions">Hold shift and then click on the image and drag
-                to select a rectangular region for the block text you want to transcribe.</p>
-            {{ annotation_config|json_script:"annotation-config" }}
-        </div>
-    {% endif %}
-</section>
-{% endcomment %}

@@ -55,7 +55,7 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertContains(
             response,
-            '<section id="itt-panel">',
+            '<section id="itt-panel" data-controller="iiif">',
         )
 
     def test_viewer_annotations(self, client, document, unpublished_editions):
@@ -64,7 +64,7 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertNotContains(
             response,
-            '<input type="checkbox" id="transcription-on" checked="true" aria-label="show transcription">',
+            '<input type="checkbox" class="toggle" id="transcription-on" checked="true" aria-label="show transcription">',
             html=True,
         )
 
@@ -78,7 +78,7 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertContains(
             response,
-            '<input type="checkbox" id="transcription-on" checked="true" aria-label="show transcription">',
+            '<input type="checkbox" class="toggle" id="transcription-on" checked="true" aria-label="show transcription">',
             html=True,
         )
 

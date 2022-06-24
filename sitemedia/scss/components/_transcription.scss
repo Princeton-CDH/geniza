@@ -1,6 +1,7 @@
 /* styles for image + transcription viewer */
 @use "../base/a11y";
 @use "../base/breakpoints";
+@use "../base/colors";
 @use "../base/spacing";
 @use "../base/typography";
 
@@ -11,7 +12,7 @@
     flex-flow: row wrap;
 
     // toggle switches for panels
-    input[type="checkbox"] {
+    input[type="checkbox"].toggle {
         // disable browser checkbox UI
         @include a11y.sr-only;
 
@@ -148,13 +149,12 @@
 
         // default column layout is two columns at a time
         grid-template-columns: 1fr 1fr; /* 1fr;*/
-        justify-content: stretch;
 
         /* hide panel containers by default */
         & > div {
             height: 0; /* ensure not visible when not selected */
             overflow: hidden;
-            margin: 0 auto; /* center horizontally */
+            max-width: 100%;
         }
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 5.55% 0;
@@ -212,6 +212,7 @@
     #images-on:checked ~ #transcription-on:checked ~ .panel-container {
         /* for mobile, set to full-width; content will stack in order */
         grid-template-columns: 100%;
+        justify-items: stretch;
         @include breakpoints.for-tablet-landscape-up {
             grid-template-columns: 50% 50%;
         }
@@ -259,14 +260,117 @@
         * {
             max-width: none;
         }
-        h3 {
-            @include typography.body-bold;
-            text-align: left;
-            margin: 8px;
+        .img-header {
+            display: flex;
+            flex-flow: column;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            @include breakpoints.for-tablet-landscape-up {
+                flex-flow: row;
+                align-items: center;
+                margin-bottom: 12px;
+            }
+            h3 {
+                @include typography.body-bold;
+                text-align: left;
+                margin: 8px;
+                display: inline-block;
+                flex: 1 0 auto;
+            }
+            // zoom control (desktop)
+            input[type="range"][id^="zoom-slider"] {
+                display: none;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: block;
+                }
+                -webkit-appearance: none;
+                appearance: none;
+                background: colors.$gray;
+                height: 4px;
+                border-radius: 4px;
+                cursor: pointer;
+                width: 180px;
+                flex: 0 1 175px;
+
+                // range slider control circle/"thumb"
+                // sadly, these are still vendor-prefixed and can't be combined to reduce redunancy :(
+                &::-webkit-slider-thumb {
+                    -webkit-appearance: none; /* Override Webkit default appearance */
+                    appearance: none;
+                    background-color: var(--filter-active);
+                    border-radius: 20px;
+                    height: 40px;
+                    width: 40px;
+                    border: 4px solid var(--on-background-light-alt);
+                }
+                &::-moz-range-thumb {
+                    background-color: var(--filter-active);
+                    // border: none; /* Remove extra border that Firefox applies */
+                    border-radius: 20px;
+                    height: 32px;
+                    width: 32px;
+                    border: 4px solid var(--on-background-light-alt);
+                }
+            }
+            label[for^="zoom-slider"] {
+                display: none;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: block;
+                }
+                text-align: right;
+                flex: 0 1 60px;
+                color: var(--on-background);
+                @include typography.body-bold;
+            }
+            // zoom control (mobile)
+            input[type="checkbox"][id^="zoom-toggle"] {
+                display: block;
+                @include a11y.sr-only;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: none;
+                }
+                & + label[for^="zoom-toggle"] {
+                    align-self: flex-end;
+                    display: flex;
+                    @include breakpoints.for-tablet-landscape-up {
+                        display: none;
+                    }
+                    align-items: center;
+                    justify-content: flex-end;
+                    text-align: right;
+                    padding-right: 8px;
+                    color: var(--on-background);
+                    @include typography.meta;
+                    &:after {
+                        content: " ";
+                        display: block;
+                        height: 41px;
+                        width: 66px;
+                        margin-left: 8px;
+                        background-image: url("/static/img/ui/mobile/all/deep-zoom-toggle-off.svg");
+                    }
+                }
+                &:checked + label[for^="zoom-toggle"]:after {
+                    background-image: url("/static/img/ui/mobile/light/all/deep-zoom-toggle-on.svg");
+                    @media (prefers-color-scheme: dark) {
+                        background-image: url("/static/img/ui/mobile/dark/all/deep-zoom-toggle-on.svg");
+                    }
+                }
+            }
         }
         img {
             width: 100%;
             margin: 0 auto;
+            &.hidden {
+                transition: opacity 300ms ease, visibility 0s ease 300ms;
+                opacity: 0;
+                visibility: hidden;
+            }
+            &.visible {
+                transition: opacity 300ms ease, visibility 0s ease 0ms;
+                visibility: visible;
+                opacity: 1;
+            }
         }
         @include breakpoints.for-tablet-landscape-up {
             padding: 60px 0 0;
@@ -403,6 +507,28 @@
                     width: 90px;
                 }
             }
+        }
+    }
+}
+
+// Manual (body-class based) theme overrides
+html.light-mode #itt-panel {
+    .panel-container
+        div.img
+        .img-header
+        input[type="checkbox"][id^="zoom-toggle"] {
+        &:checked + label[for^="zoom-toggle"]:after {
+            background-image: url("/static/img/ui/mobile/light/all/deep-zoom-toggle-on.svg");
+        }
+    }
+}
+html.dark-mode #itt-panel {
+    .panel-container
+        div.img
+        .img-header
+        input[type="checkbox"][id^="zoom-toggle"] {
+        &:checked + label[for^="zoom-toggle"]:after {
+            background-image: url("/static/img/ui/mobile/dark/all/deep-zoom-toggle-on.svg");
         }
     }
 }
