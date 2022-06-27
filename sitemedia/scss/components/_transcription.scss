@@ -305,11 +305,16 @@
                 }
                 &::-moz-range-thumb {
                     background-color: var(--filter-active);
-                    // border: none; /* Remove extra border that Firefox applies */
                     border-radius: 20px;
                     height: 32px;
                     width: 32px;
                     border: 4px solid var(--on-background-light-alt);
+                }
+                &:active::-webkit-slider-thumb {
+                    background-color: var(--link-primary);
+                }
+                &:active::-moz-range-thumb {
+                    background-color: var(--link-primary);
                 }
             }
             label[for^="zoom-slider"] {

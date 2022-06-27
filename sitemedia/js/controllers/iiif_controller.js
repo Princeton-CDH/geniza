@@ -103,7 +103,11 @@ export default class extends Controller {
             }
             // initialize zoom slider
             zoomSlider.setAttribute("min", minZoom);
-            zoomSlider.setAttribute("max", viewer.viewport.getMaxZoom());
+            // use toPrecision to ensure no extra pixels on the right of the slider
+            zoomSlider.setAttribute(
+                "max",
+                viewer.viewport.getMaxZoom().toPrecision(2)
+            );
             zoomSlider.addEventListener("input", (evt) => {
                 // Handle changes in the zoom slider
                 let zoom = parseFloat(evt.currentTarget.value);
@@ -117,7 +121,7 @@ export default class extends Controller {
                     // Zoom to the chosen percentage
                     viewer.viewport.zoomTo(zoom);
                 }
-                this.updateZoomUI(zoom, zoomSlider, zoomSliderLabel);
+                this.updateZoomUI(zoom, minZoom, zoomSlider, zoomSliderLabel);
             });
             // initialize mobile zoom toggle
             zoomToggle.addEventListener("input", (evt) => {
@@ -143,7 +147,7 @@ export default class extends Controller {
             }
             // Set zoom slider value to the chosen percentage
             zoomSlider.value = parseFloat(zoom);
-            this.updateZoomUI(zoom, zoomSlider, zoomSliderLabel);
+            this.updateZoomUI(zoom, minZoom, zoomSlider, zoomSliderLabel);
         });
         if (isMobile) {
             viewer.addHandler("canvas-release", () => {
@@ -152,13 +156,17 @@ export default class extends Controller {
             });
         }
     }
-    updateZoomUI(zoom, slider, label) {
+    updateZoomUI(zoom, minZoom, slider, label) {
         // update the zoom controls UI with the new value
         // update the zoom percentage label
         label.textContent = `${(zoom * 100).toFixed(0)}%`;
         // update progress indication in slider track
         const percent = (zoom / slider.getAttribute("max")) * 100;
-        slider.style.background = `linear-gradient(to right, var(--filter-active) 0%, var(--filter-active) ${percent}%, #9e9e9e ${percent}%, #9e9e9e 100%)`;
+        let secondColor = "var(--filter-active)";
+        if (zoom === minZoom) {
+            secondColor = "#9E9E9E";
+        }
+        slider.style.background = `linear-gradient(to right, var(--link-primary) 0%, var(--link-primary) ${percent}%, ${secondColor} ${percent}%, ${secondColor} 100%)`;
     }
     resetBounds(viewer) {
         // Reset OSD viewer to the boundaries of the image, position in top left corner
