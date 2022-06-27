@@ -1,5 +1,5 @@
 {% load i18n static corpus_extras %}
-{% if perms.corpus.change_document and not edit_mode %}
+{% if perms.corpus.change_document and document.iiif_urls and not edit_mode %}
     <a class="editor-navigation" href="{% url 'corpus:document-transcription-editor' document.id %}" data-turbo="false">
         <i class="ph-pencil"></i>
         {# Translators: Transcription edit link for admins #}
@@ -89,5 +89,4 @@ Also doesn't currently account for fragments without images.
             {% include "corpus/snippets/document_image_rights.html" %}
         {% endif %}
     </div>
-
 </section>
