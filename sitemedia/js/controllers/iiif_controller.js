@@ -163,6 +163,9 @@ export default class extends Controller {
             if (isMobile) {
                 // zoom to 110% if on mobile
                 viewer.viewport.zoomTo(1.1);
+                if (!zoomToggle.checked) {
+                    zoomToggle.checked = true;
+                }
             }
             // initialize zoom slider
             zoomSlider.setAttribute("min", minZoom);
@@ -189,16 +192,14 @@ export default class extends Controller {
             zoomToggle.addEventListener("input", (evt) => {
                 // always first zoom to 100%
                 viewer.viewport.zoomTo(1.0);
-                if (!editorSettings) {
-                    if (!evt.currentTarget.checked) {
-                        // wait to reset bounds until element is hidden
-                        setTimeout(() => this.resetBounds(viewer), 300);
-                        this.deactivateDeepZoom(element, image);
-                    } else {
-                        // reset bounds immediately and zoom to 110%
-                        this.resetBounds(viewer);
-                        viewer.viewport.zoomTo(1.1);
-                    }
+                if (!evt.currentTarget.checked) {
+                    // wait to reset bounds until element is hidden
+                    setTimeout(() => this.resetBounds(viewer), 300);
+                    this.deactivateDeepZoom(element, image);
+                } else {
+                    // reset bounds immediately and zoom to 110%
+                    this.resetBounds(viewer);
+                    viewer.viewport.zoomTo(1.1);
                 }
             });
         });
