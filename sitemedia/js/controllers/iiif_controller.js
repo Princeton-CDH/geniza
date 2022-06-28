@@ -165,6 +165,9 @@ export default class extends Controller {
         let secondColor = "var(--filter-active)";
         if (zoom === minZoom) {
             secondColor = "#9E9E9E";
+            slider.classList.remove("active-thumb");
+        } else if (!slider.classList.contains("active-thumb")) {
+            slider.classList.add("active-thumb");
         }
         slider.style.background = `linear-gradient(to right, var(--link-primary) 0%, var(--link-primary) ${percent}%, ${secondColor} ${percent}%, ${secondColor} 100%)`;
     }
