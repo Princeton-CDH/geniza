@@ -185,9 +185,9 @@ export default class extends Controller {
                     if (!editorSettings) {
                         this.resetBounds(viewer);
                         this.deactivateDeepZoom(element, image);
+                        deactivating = true;
                     }
                     evt.currentTarget.value = minZoom;
-                    deactivating = true;
                 } else {
                     // Zoom to the chosen percentage
                     viewer.viewport.zoomTo(zoom);
