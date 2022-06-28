@@ -111,17 +111,24 @@ export default class extends Controller {
             zoomSlider.addEventListener("input", (evt) => {
                 // Handle changes in the zoom slider
                 let zoom = parseFloat(evt.currentTarget.value);
+                let deactivating = false;
                 if (zoom <= minZoom) {
                     // When zoomed back out to 100%, deactivate OSD
                     zoom = minZoom;
                     this.resetBounds(viewer);
                     this.deactivateDeepZoom(element, image);
                     evt.currentTarget.value = minZoom;
+                    deactivating = true;
                 } else {
                     // Zoom to the chosen percentage
                     viewer.viewport.zoomTo(zoom);
                 }
-                this.updateZoomUI(zoom, minZoom, zoomSlider, zoomSliderLabel);
+                this.updateZoomUI(
+                    zoom,
+                    deactivating,
+                    zoomSlider,
+                    zoomSliderLabel
+                );
             });
             // initialize mobile zoom toggle
             zoomToggle.addEventListener("input", (evt) => {
@@ -147,7 +154,7 @@ export default class extends Controller {
             }
             // Set zoom slider value to the chosen percentage
             zoomSlider.value = parseFloat(zoom);
-            this.updateZoomUI(zoom, minZoom, zoomSlider, zoomSliderLabel);
+            this.updateZoomUI(zoom, false, zoomSlider, zoomSliderLabel);
         });
         if (isMobile) {
             viewer.addHandler("canvas-release", () => {
@@ -156,14 +163,14 @@ export default class extends Controller {
             });
         }
     }
-    updateZoomUI(zoom, minZoom, slider, label) {
+    updateZoomUI(zoom, deactivating, slider, label) {
         // update the zoom controls UI with the new value
         // update the zoom percentage label
         label.textContent = `${(zoom * 100).toFixed(0)}%`;
         // update progress indication in slider track
         const percent = (zoom / slider.getAttribute("max")) * 100;
         let secondColor = "var(--filter-active)";
-        if (zoom === minZoom) {
+        if (deactivating) {
             secondColor = "#9E9E9E";
             slider.classList.remove("active-thumb");
         } else if (!slider.classList.contains("active-thumb")) {
