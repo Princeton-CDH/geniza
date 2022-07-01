@@ -26,7 +26,7 @@
                     {% for ed in document.digital_editions.all %}
                         <li>
                             <label for="edition-{{ forloop.counter }}">
-                                <input type="radio" name="transcription" value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="edition-{{ forloop.counter }}" data-edition="ed-{{ ed.pk }}" />
+                                <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="edition-{{ forloop.counter }}" data-edition="ed-{{ ed.pk }}" />
                                 <span>Edition: {{ ed.source.all_authors }}</span>
                             </label>
                         </li>
