@@ -32,14 +32,6 @@
     {% if document.has_image or document.iiif_urls %}
         <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/" crossorigin />
     {% endif %}
-    {# Disable ITT Panel when no JS available #}
-    <noscript>
-        <style>
-            #itt-panel {
-                display: none;
-            }
-        </style>
-    </noscript>
 {% endblock extrascript %}
 
 {% block main %}
