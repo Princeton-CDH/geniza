@@ -13,26 +13,27 @@
     {# translators: label for checkbox toggle to show the translation panel for a document #}
     <input type="checkbox" id="translation-on" aria-label="{% translate 'show translation' %}" disabled="true"/>
     <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
-    <div class="dropdown-container">
-        <div></div>
-        <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails"{% if document.digital_editions.count == 1 %} disabled="true"{% endif %}>
-            <summary class="transcription-select-trigger" data-action="keydown->transcription#shiftTabCloseDropdown">
-                <span data-transcription-target="editionShortLabel">Edition: {{ document.digital_editions.0.source.all_authors }}</span>
-            </summary>
-            <ul>
-                {% for ed in document.digital_editions.all %}
-                    <li>
-                        <label for="edition-{{ forloop.counter }}">
-                            <input type="radio" name="transcription" value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="edition-{{ forloop.counter }}" data-edition="ed-{{ ed.pk }}" />
-                            <span>Edition: {{ ed.source.all_authors }}</span>
-                        </label>
-                    </li>
-                {% endfor %}
-            </ul>
-        </details>
-        <div></div>
-    </div>
     <div class="panel-container">
+        {# label row #}
+        <div class="label-row"></div> {# unused (no image label, needed for column alignment) #}
+        <div class="transcription-panel label-row">
+            <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails"{% if document.digital_editions.count == 1 %} disabled="true"{% endif %}>
+                <summary class="transcription-select-trigger" data-action="keydown->transcription#shiftTabCloseDropdown">
+                    <span data-transcription-target="editionShortLabel">Edition: {{ document.digital_editions.0.source.all_authors }}</span>
+                </summary>
+                <ul>
+                    {% for ed in document.digital_editions.all %}
+                        <li>
+                            <label for="edition-{{ forloop.counter }}">
+                                <input type="radio" name="transcription" value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="edition-{{ forloop.counter }}" data-edition="ed-{{ ed.pk }}" />
+                                <span>Edition: {{ ed.source.all_authors }}</span>
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </details>
+        </div>
+
         {% comment %}
 NOTE: if we have more transcription pages than images,
 they won't show in current implementation.

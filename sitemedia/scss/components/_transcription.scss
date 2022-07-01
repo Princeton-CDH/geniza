@@ -50,11 +50,17 @@
             // left and right margins on first and last toggles
             &:first-of-type {
                 margin-left: auto;
-                margin-right: 0.5rem;
+                margin-right: 9px;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-right: 4px;
+                }
             }
             &:last-of-type {
                 margin-right: auto;
-                margin-left: 0.5rem;
+                margin-left: 9px;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-left: 4px;
+                }
             }
         }
 
@@ -142,173 +148,126 @@
         }
     }
 
-    // Flex container for transcription and translation dropdowns
-    .dropdown-container {
-        max-width: none;
-        * {
-            max-width: none;
-        }
-        display: none;
-        align-items: center;
-        justify-content: space-between;
-        flex: 1 0 100%;
-        margin-top: 0.5rem;
-        background-color: var(--background-light);
-        div,
-        details {
-            transition: all 300ms ease;
-        }
-        flex-flow: column;
-        @include breakpoints.for-tablet-landscape-up {
+    // multiple transcription pseudo-select element
+    details.transcription-select {
+        position: relative;
+        width: 100%;
+        summary {
+            display: flex;
             flex-flow: row;
-            min-height: 2.5rem;
-            div:first-child {
-                margin-left: auto;
-                margin-right: 0.5rem;
+            cursor: pointer;
+            // Suppress default details marker
+            &::-webkit-details-marker {
+                display: none;
             }
-            // Empty div for spacing (will be translation dropdown)
-            div:last-child {
-                width: 87px;
+            // label for current selection
+            span {
+                cursor: pointer;
+                width: 1%;
+                background-color: var(--background);
+                color: var(--on-background);
+                flex: 1 0 auto;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: spacing.$spacing-2xs 0.7rem;
+                @include typography.body-bold;
+                @include searchform.form-drop-shadow;
+                &::after {
+                    content: "\f0c2"; // phosphor caret-down icon
+                    @include typography.icon-button-md;
+                    float: right;
+                }
             }
         }
-
-        // multiple transcription pseudo-select element
-        details.transcription-select {
-            position: relative;
-            width: 100%;
-            summary {
+        // List of transcription options
+        ul {
+            position: absolute;
+            z-index: 20;
+            width: calc(100% - 0.667rem);
+            padding: spacing.$spacing-sm 0;
+            @include searchform.form-drop-shadow;
+            background-color: var(--background);
+            // label for single transcription option
+            li {
                 display: flex;
-                flex-flow: row;
-                cursor: pointer;
-                // Suppress default details marker
-                &::-webkit-details-marker {
-                    display: none;
-                }
-                // label for current selection
-                span {
+                label {
+                    width: 100%;
+                    flex: 0 1 100%;
+                    display: flex;
                     cursor: pointer;
-                    width: 1%;
-                    background-color: var(--background);
-                    color: var(--on-background);
-                    flex: 1 0 auto;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: spacing.$spacing-2xs 0.7rem;
-                    @include typography.body-bold;
-                    @include searchform.form-drop-shadow;
-                    &::after {
-                        content: "\f0c2"; // phosphor caret-down icon
-                        @include typography.icon-button-md;
-                        float: right;
-                    }
-                }
-            }
-            // List of transcription options
-            ul {
-                position: absolute;
-                z-index: 20;
-                width: calc(100% - 0.667rem);
-                padding: spacing.$spacing-sm 0;
-                @include searchform.form-drop-shadow;
-                background-color: var(--background);
-                // label for single transcription option
-                li {
-                    display: flex;
-                    label {
+                    span {
+                        display: flex;
+                        align-items: center;
                         width: 100%;
                         flex: 0 1 100%;
-                        display: flex;
-                        cursor: pointer;
-                        span {
-                            display: flex;
-                            align-items: center;
-                            width: 100%;
-                            flex: 0 1 100%;
-                            padding: spacing.$spacing-sm;
-                            transition: background-color 0.15s ease,
-                                color 0.15s ease;
-                        }
-                        &:hover,
-                        &:focus-within {
-                            background-color: var(--background-gray);
-                            color: var(--on-background-gray);
-                        }
-                        &:hover input[name="transcription"]:focus + span {
-                            background-color: var(--tertiary);
-                            color: var(--on-tertiary);
-                        }
-                        // Checkboxes only visible to screen readers
-                        input[name="transcription"] {
-                            @include a11y.sr-only;
-                            // Selected option
-                            &:checked + span {
-                                @include typography.form-option-sm-bold;
-                            }
-                            &:active + span {
-                                background-color: var(--secondary);
-                                color: var(--on-secondary);
-                            }
-                            &:disabled + span {
-                                color: var(--disabled);
-                                cursor: default;
-                                background-color: var(--background-light);
-                            }
-                        }
-                        // Non-selected options
-                        @include typography.form-option-sm;
+                        padding: spacing.$spacing-sm;
+                        transition: background-color 0.15s ease,
+                            color 0.15s ease;
                     }
+                    &:hover,
+                    &:focus-within {
+                        background-color: var(--background-gray);
+                        color: var(--on-background-gray);
+                    }
+                    &:hover input[name="transcription"]:focus + span {
+                        background-color: var(--tertiary);
+                        color: var(--on-tertiary);
+                    }
+                    // Checkboxes only visible to screen readers
+                    input[name="transcription"] {
+                        @include a11y.sr-only;
+                        // Selected option
+                        &:checked + span {
+                            @include typography.form-option-sm-bold;
+                        }
+                        &:active + span {
+                            background-color: var(--secondary);
+                            color: var(--on-secondary);
+                        }
+                        &:disabled + span {
+                            color: var(--disabled);
+                            cursor: default;
+                            background-color: var(--background-light);
+                        }
+                    }
+                    // Non-selected options
+                    @include typography.form-option-sm;
                 }
             }
-            // disable interaction when only 1 transcription (cannot use :disabled on <details>)
-            &[disabled="true"] {
-                * {
-                    cursor: default;
-                }
-                summary span:active {
-                    @include searchform.box-shadow(var(--on-background-25));
-                }
-                summary span::after,
-                ul {
-                    display: none;
-                }
+        }
+        // disable interaction when only 1 transcription (cannot use :disabled on <details>)
+        &[disabled="true"] {
+            * {
+                cursor: default;
             }
-            // spacing tweaks for transcription selector on desktop
-            @include breakpoints.for-tablet-landscape-up {
-                width: auto;
-                flex: 1 0 calc(0.4 * 100vw);
+            summary span:active {
+                @include searchform.box-shadow(var(--on-background-25));
+            }
+            summary span::after,
+            ul {
+                display: none;
+            }
+        }
+        // spacing tweaks for transcription selector on desktop
+        @include breakpoints.for-tablet-landscape-up {
+            width: auto;
+            flex: 1 0 calc(0.4 * 100vw);
+            min-height: 2.5rem;
+            // label for current selection
+            summary {
                 min-height: 2.5rem;
-                // label for current selection
-                summary {
-                    min-height: 2.5rem;
-                    span {
-                        margin-right: spacing.$spacing-sm;
-                        text-align: center;
-                        padding: spacing.$spacing-2xs 0.7rem
-                            spacing.$spacing-2xs 24px;
-                        display: inline;
-                    }
+                span {
+                    margin-right: spacing.$spacing-sm;
+                    text-align: center;
+                    padding: spacing.$spacing-2xs 0.7rem spacing.$spacing-2xs
+                        24px;
+                    display: inline;
                 }
             }
         }
     }
 
-    // should show dropdown container if any toggles are checked
-    *:checked ~ .dropdown-container {
-        display: flex;
-    }
-    // images only checked, don't show transcription selector
-    #images-on:checked ~ .dropdown-container {
-        details.transcription-select {
-            opacity: 0;
-        }
-    }
-    // transcription checked, show transcription selector
-    #transcription-on:checked ~ .dropdown-container {
-        details.transcription-select {
-            opacity: 1;
-        }
-    }
     @include breakpoints.for-tablet-landscape-up {
         // transcription only checked, ensure empty div for images is small
         #transcription-on:checked ~ .dropdown-container {
@@ -328,6 +287,7 @@
     .panel-container {
         background-color: var(--background-light);
         display: grid;
+        margin-top: 8px;
         width: 100%;
         /* when no content panels are selected, don't show anything  */
         height: 0;
@@ -388,6 +348,13 @@
         div.transcription-panel {
             width: 100%;
             max-width: 604px;
+
+            /* adjust label padding for transcription only view */
+            &.label-row {
+                padding-left: 0;
+                width: 100%;
+                max-width: none;
+            }
         }
 
         // Attribution and license text
@@ -415,6 +382,10 @@
             max-width: none;
             @include breakpoints.for-tablet-landscape-up {
                 padding-left: 5%;
+
+                &.label-row {
+                    padding-left: 6px; /* adjust padding to match toggle */
+                }
             }
         }
 
@@ -477,6 +448,14 @@
             max-width: none;
         }
         padding: 20px 10px 0;
+
+        &.label-row {
+            padding-right: 0;
+            padding-top: 0;
+            @include breakpoints.for-tablet-landscape-up {
+                padding-top: 0.1px; /* show panel background slightly as a top border */
+            }
+        }
         & > h3 {
             margin: 30px 0 12px;
         }
@@ -497,6 +476,20 @@
             }
             h3 + span.current-transcription {
                 min-height: calc(1.125rem * 1.5 * 2);
+            }
+        }
+
+        // edition indicator/switcher
+        &.label-row {
+            margin-top: 1px; /* show a line between space and dropdown */
+            max-width: none;
+
+            @include breakpoints.for-tablet-landscape-up {
+                padding-left: 6px; /* adjust padding to match toggle */
+            }
+
+            & span {
+                width: 100%;
             }
         }
 
