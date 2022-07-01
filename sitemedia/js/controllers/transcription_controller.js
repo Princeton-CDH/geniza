@@ -9,6 +9,13 @@ export default class extends Controller {
         "dropdownDetails",
     ];
 
+    dropdownDetailsTargetConnected() {
+        // edition switcher is disabled by default; enable if more than one edition
+        if (this.dropdownDetailsTarget.dataset.editionCount > 1) {
+            this.dropdownDetailsTarget.removeAttribute("disabled");
+        }
+    }
+
     // Change transcription dropdown: pseudo-<select> element with radio buttons to allow styling
     // dropdown menu options list
 
@@ -19,7 +26,7 @@ export default class extends Controller {
          * button inputs.
          */
         const edition = evt.currentTarget.dataset.edition;
-        const chunks = document.querySelectorAll(`#${edition}`);
+        const chunks = document.querySelectorAll(`.${edition}`);
         this.scrollChunksIntoView(chunks);
 
         // Set subheader to show full label for edition
@@ -73,7 +80,7 @@ export default class extends Controller {
         );
         if (selectedEditionInput) {
             const edition = selectedEditionInput.dataset.edition;
-            const chunks = document.querySelectorAll(`#${edition}`);
+            const chunks = document.querySelectorAll(`.${edition}`);
             this.scrollChunksIntoView(chunks);
         }
     }

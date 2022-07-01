@@ -17,7 +17,8 @@
         {# label row #}
         <div class="label-row"></div> {# unused (no image label, needed for column alignment) #}
         <div class="transcription-panel label-row">
-            <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails"{% if document.digital_editions.count == 1 %} disabled="true"{% endif %}>
+            {# dropdown is disabled by default; enable if javascript is active #}
+            <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-edition-count="{{ document.digital_editions.count }}" disabled="true">
                 <summary class="transcription-select-trigger" data-action="keydown->transcription#shiftTabCloseDropdown">
                     <span data-transcription-target="editionShortLabel">Edition: {{ document.digital_editions.0.source.all_authors }}</span>
                 </summary>
@@ -57,11 +58,10 @@ Also doesn't currently account for fragments without images.
                         <h3>Transcription</h3>
                         <span data-transcription-target="editionFullLabel" class="current-transcription">{{ document.digital_editions.0.display|safe }}</span>
                     {% endif %}
-
                     <div class="editions">
                         {# display transcription in chunks by index #}
                         {% for edition in document.digital_editions.all %}
-                            <div class="transcription" id="ed-{{ edition.pk }}" data-label="{{ edition.display|safe }}">
+                            <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.display|safe }}">
                                 {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
                             </div>
                         {% endfor %}
