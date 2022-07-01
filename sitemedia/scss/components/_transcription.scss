@@ -11,6 +11,8 @@
     display: flex;
     flex-flow: row wrap;
 
+    $toggle-default-width: 87px; /* only applies on tablet up */
+
     // toggle switches for panels
     input[type="checkbox"] {
         // disable browser checkbox UI
@@ -27,11 +29,11 @@
             width: 100px;
             max-width: 100px;
             @include breakpoints.for-tablet-landscape-up {
-                flex: 1 0 87px;
+                flex: 1 0 $toggle-default-width;
                 justify-content: center;
                 height: 95px;
-                width: 87px;
-                max-width: 87px;
+                width: $toggle-default-width;
+                max-width: $toggle-default-width;
                 transition: all 300ms ease;
                 cursor: pointer;
             }
@@ -90,11 +92,12 @@
                 max-width: 100vw;
                 flex: 1 0 auto;
                 &[for="transcription-on"] {
-                    flex: 1 0 calc(0.4 * 100vw);
+                    // transcription is 50% minus the 87px for the transcription toggle minus ~gutter
+                    flex: 1 0 calc(50vw - 87px - 9px);
                 }
-                // images panel toggle is wider
+                // images panel toggle is half width
                 &[for="images-on"] {
-                    flex: 1 0 calc(0.46 * 100vw);
+                    flex: 1 0 50vw;
                 }
                 // expand icon size
                 svg {
@@ -268,22 +271,6 @@
         }
     }
 
-    @include breakpoints.for-tablet-landscape-up {
-        // transcription only checked, ensure empty div for images is small
-        #transcription-on:checked ~ .dropdown-container {
-            div:first-child {
-                width: 87px;
-            }
-        }
-        // images checked, ensure empty div for images is large
-        #images-on:checked ~ .dropdown-container {
-            // Empty div for spacing
-            div:first-child {
-                flex: 1 0 calc(0.46 * 100vw);
-            }
-        }
-    }
-
     .panel-container {
         background-color: var(--background-light);
         display: grid;
@@ -304,7 +291,7 @@
             margin: 0 auto; /* center horizontally */
         }
         @include breakpoints.for-tablet-landscape-up {
-            padding: 0 5.55% 0;
+            padding: 0 $toggle-default-width 0;
         }
     }
 
