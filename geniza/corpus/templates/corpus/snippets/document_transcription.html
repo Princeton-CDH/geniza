@@ -83,7 +83,7 @@ Also doesn't currently account for fragments without images.
                         {% endfor %}
                     </div>
                 </div>
-                {% if perms.corpus.change_document and edit_mode %}
+                {% if edit_mode %}
                     <div class="annotate" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
                         {% if forloop.first %}
                             <h3>{% translate 'Transcribe' %}</h3>
@@ -103,7 +103,7 @@ Also doesn't currently account for fragments without images.
                     {# display transcription in chunks based on loop index #}
                     <div class="transcription">{{ chunk|h1_to_h3|safe }}</div>
                 </div>
-                {% if perms.corpus.change_document and edit_mode %}
+                {% if edit_mode %}
                     <div class="annotate" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
                         {% if forloop.first %}
                             <h3>{% translate 'Transcribe' %}</h3>
