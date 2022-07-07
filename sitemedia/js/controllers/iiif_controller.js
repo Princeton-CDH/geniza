@@ -156,14 +156,6 @@ export default class extends Controller {
             zoomSlider.value = parseFloat(zoom);
             this.updateZoomUI(zoom, false, zoomSlider, zoomSliderLabel);
         });
-        if (isMobile) {
-            viewer.addHandler("canvas-release", () => {
-                // Handle issue on mobile that causes a scroll trap: on canvas-release the OSD
-                // container forcibly scrolls into view, which causes the mobile toggle to become
-                // hidden, making our control inaccessible.
-                window.scrollTo(zoomToggle.scrollTop);
-            });
-        }
     }
     updateZoomUI(zoom, deactivating, slider, label) {
         // update the zoom controls UI with the new value
