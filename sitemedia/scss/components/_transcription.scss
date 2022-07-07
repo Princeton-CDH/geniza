@@ -167,6 +167,7 @@
             span {
                 cursor: pointer;
                 width: 1%;
+                box-sizing: border-box;
                 background-color: var(--background);
                 color: var(--on-background);
                 flex: 1 0 auto;
