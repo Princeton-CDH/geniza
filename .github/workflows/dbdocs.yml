@@ -9,7 +9,7 @@ on:
     branches: [main]
 
 env:
-  NODE_VERSION: 10
+  NODE_VERSION: 16
   DB_NAME: geniza
   DB_USER: geniza
   DB_PASSWORD: geniza

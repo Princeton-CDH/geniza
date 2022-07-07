@@ -1,9 +1,8 @@
 import os.path
 
-from django.db.models.functions import text
 from eulxml import xmlmap
 
-from geniza.corpus.tei_transcriptions import GenizaTei, GenizaTeiLine
+from geniza.corpus.tei_transcriptions import GenizaTei
 
 fixture_dir = os.path.join(os.path.dirname(__file__), "fixtures")
 

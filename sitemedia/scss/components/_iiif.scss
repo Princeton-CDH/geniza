@@ -197,6 +197,11 @@
             li + li {
                 margin-left: spacing.$spacing-xs;
             }
+            li svg#jts {
+                width: 8rem;
+                height: 4rem;
+                fill: var(--jts-logo);
+            }
         }
         // spacing tweaks for desktop
         @include breakpoints.for-tablet-landscape-up {

@@ -22,3 +22,6 @@ def test_get_iiif_string():
     # no english available, should choose first option
     language_vals = [{"@language": "de", "@value": "Universitätsbibliothek Heidelberg"}]
     assert get_iiif_string(language_vals) == "Universitätsbibliothek Heidelberg"
+
+    # list of strings, should return first string
+    assert get_iiif_string(["text", "test"]) == "text"
