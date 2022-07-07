@@ -655,13 +655,13 @@ class DocumentMerge(PermissionRequiredMixin, FormView):
         return super(DocumentMerge, self).form_valid(form)
 
 
-class DocumentTranscriptionEditor(PermissionRequiredMixin, DocumentDetailView):
+class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
     """View for the Transcription Editor page that uses annotorious-tahqiq"""
 
     permission_required = "corpus.change_document"
 
-    template_name = "corpus/transcription_editor.html"
-    viewname = "corpus:document-transcription-editor"
+    template_name = "corpus/document_transcribe.html"
+    viewname = "corpus:document-transcribe"
 
     def page_title(self):
         # Translators: title of transcription editor page

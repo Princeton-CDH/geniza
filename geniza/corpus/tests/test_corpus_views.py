@@ -1353,11 +1353,11 @@ class TestRelatdDocumentview:
         )
 
 
-class TestDocumentTranscriptionEditor:
+class TestDocumentTranscribeView:
     def test_page_title(self, document, admin_client):
         """should use doc title in transcription editor meta title"""
         response = admin_client.get(
-            reverse("corpus:document-transcription-editor", args=(document.id,))
+            reverse("corpus:document-transcribe", args=(document.id,))
         )
         assert (
             response.context["page_title"] == f"Edit transcription for {document.title}"
@@ -1366,7 +1366,7 @@ class TestDocumentTranscriptionEditor:
     def test_permissions(self, document, client):
         """should redirect to login if user does not have change document permissions"""
         response = client.get(
-            reverse("corpus:document-transcription-editor", args=(document.id,))
+            reverse("corpus:document-transcribe", args=(document.id,))
         )
         assert response.status_code == 302
         assert response.url.startswith("/accounts/login/")

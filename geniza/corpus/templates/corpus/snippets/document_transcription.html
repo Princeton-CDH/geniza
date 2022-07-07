@@ -1,13 +1,13 @@
 {% load i18n static corpus_extras %}
-{% if perms.corpus.change_document and document.iiif_urls and not edit_mode %}
-    <a class="editor-navigation" href="{% url 'corpus:document-transcription-editor' document.id %}" data-turbo="false">
+{% if edit_mode %}
+    {{ annotation_config|json_script:"annotation-config" }}
+{% elif perms.corpus.change_document and document.iiif_images %}
+    {# NOTE: document.iiif_images check is temporary, remove once we can use generated canvas ids #}
+    <a class="editor-navigation" href="{% url 'corpus:document-transcribe' document.id %}" data-turbo="false">
         <i class="ph-pencil"></i>
         {# Translators: Transcription edit link for admins #}
-        <span>{% translate 'Edit transcription' %}</span>
+        <span>{% translate 'Add or edit transcription' %}</span>
     </a>
-{% endif %}
-{% if perms.corpus.change_document and edit_mode %}
-    {{ annotation_config|json_script:"annotation-config" }}
 {% endif %}
 <section id="itt-panel"{% if edit_mode %} class="editor"{% endif %} data-controller="transcription" data-action="click@document->transcription#clickCloseDropdown">
     {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}

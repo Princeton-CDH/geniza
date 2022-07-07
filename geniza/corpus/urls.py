@@ -25,8 +25,8 @@ urlpatterns = [
     ),
     path(
         "documents/<int:pk>/transcription-editor",
-        corpus_views.DocumentTranscriptionEditor.as_view(),
-        name="document-transcription-editor",
+        corpus_views.DocumentTranscribeView.as_view(),
+        name="document-transcribe",
     ),
     path(
         "documents/<int:pk>/transcription/<int:transcription_pk>/",
