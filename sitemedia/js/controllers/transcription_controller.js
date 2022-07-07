@@ -13,6 +13,14 @@ export default class extends Controller {
         // edition switcher is disabled by default; enable if more than one edition
         if (this.dropdownDetailsTarget.dataset.editionCount > 1) {
             this.dropdownDetailsTarget.removeAttribute("disabled");
+
+            // if multiple transcriptions, adjust offset when transcription panel resizes
+            this.transcriptionResizeObserver = new ResizeObserver((entries) => {
+                this.resizeTranscriptionPanel();
+            });
+            this.transcriptionResizeObserver.observe(
+                document.querySelector("div.transcription-panel")
+            );
         }
     }
 
@@ -72,9 +80,9 @@ export default class extends Controller {
         });
     }
 
-    togglePanel() {
-        // When a panel is closed and reopened, the offsets for the transcription panel
-        // must be recalculated
+    resizeTranscriptionPanel() {
+        // When transcription panel changes width, recalculate offsets
+        // to make sure the selected transcription is displaying correctly
         const selectedEditionInput = document.querySelector(
             'input:checked[type="radio"][name="transcription"]'
         );

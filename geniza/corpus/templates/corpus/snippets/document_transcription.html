@@ -3,11 +3,11 @@
     {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
     {# images displayed by default; disable if no images are available #}
     {# translators: label for checkbox toggle to show the images panel for a document #}
-    <input type="checkbox" id="images-on" aria-label="{% translate 'show images' %}" {% if document.has_image %}checked="true" {% else %} disabled="true"{% endif %} data-action="transcription#togglePanel"/>
+    <input type="checkbox" id="images-on" aria-label="{% translate 'show images' %}" {% if document.has_image %}checked="true" {% else %} disabled="true"{% endif %}/>
     <label for="images-on"></label>
     {# transcription displayed by default; disable if no content is available #}
     {# translators: label for checkbox toggle to show the transcription panel for a document #}
-    <input type="checkbox" id="transcription-on" aria-label="{% translate 'show transcription' %}" {% if document.digital_editions %}checked="true" {% else %} disabled="true"{% endif %} data-action="transcription#togglePanel"/>
+    <input type="checkbox" id="transcription-on" aria-label="{% translate 'show transcription' %}" {% if document.digital_editions %}checked="true" {% else %} disabled="true"{% endif %}/>
     <label for="transcription-on"><svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg></label>
     {# translation disabled for now since we don't handle them in the system yet #}
     {# translators: label for checkbox toggle to show the translation panel for a document #}
