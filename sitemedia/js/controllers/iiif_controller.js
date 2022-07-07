@@ -46,7 +46,7 @@ export default class extends Controller {
         if (isMobile) {
             OSD.style.top = "122px";
         } else {
-            OSD.style.top = "118px";
+            OSD.style.top = "72px";
         }
     }
     deactivateDeepZoom(container, image) {

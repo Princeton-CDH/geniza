@@ -93,12 +93,12 @@
                 max-width: 100vw;
                 flex: 1 0 auto;
                 &[for="transcription-on"] {
-                    // transcription is 50% minus the 87px for the transcription toggle minus ~gutter
-                    flex: 1 0 calc(50vw - 87px - 9px);
+                    // transcription is 50% minus the 87px for the translation toggle minus ~2xgutter
+                    flex: 1 0 calc(50vw - 87px - 18px);
                 }
-                // images panel toggle is half width
+                // images panel toggle is half width minus ~gutter
                 &[for="images-on"] {
-                    flex: 1 0 50vw;
+                    flex: 1 0 calc(50vw - 9px);
                 }
                 // expand icon size
                 svg {
