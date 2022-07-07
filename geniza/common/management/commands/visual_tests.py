@@ -2,6 +2,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from percy import percy_snapshot
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
 
@@ -29,7 +30,7 @@ class Command(BaseCommand):
         browser.get("http://localhost:8000/")
         if dark_mode:
             # turn on dark mode, save in local storage
-            browser.find_element_by_css_selector("#theme-toggle").send_keys(Keys.ENTER)
+            browser.find_element(By.CSS_SELECTOR, "#theme-toggle").send_keys(Keys.ENTER)
             dark_mode_str = " (dark mode)"
 
         # homepage
@@ -43,8 +44,8 @@ class Command(BaseCommand):
         # /media directory where these images are uploaded by Wagtail. We clear the srcset
         # attribute of each image, and swap out the src attribute for the appropriate image
         # from /static.
-        portrait_img = browser.find_element_by_css_selector(
-            ".content-page figure img.portrait"
+        portrait_img = browser.find_element(
+            By.CSS_SELECTOR, ".content-page figure img.portrait"
         )
         browser.execute_script(
             "arguments[0].setAttribute('srcset',arguments[1])", portrait_img, ""
@@ -54,8 +55,8 @@ class Command(BaseCommand):
             portrait_img,
             "/static/img/fixtures/test-image-fragment.jpg",
         )
-        landscape_image = browser.find_element_by_css_selector(
-            ".content-page figure img.landscape"
+        landscape_image = browser.find_element(
+            By.CSS_SELECTOR, ".content-page figure img.landscape"
         )
         browser.execute_script(
             "arguments[0].setAttribute('srcset',arguments[1])", landscape_image, ""
@@ -72,11 +73,11 @@ class Command(BaseCommand):
             "http://localhost:8000/en/documents/?per_page=2&sort=scholarship_desc#filters"
         )
         # open document type filter programatically
-        doctype_filter = browser.find_element_by_css_selector(".doctype-filter")
+        doctype_filter = browser.find_element(By.CSS_SELECTOR, ".doctype-filter")
         browser.execute_script("arguments[0].open = true", doctype_filter)
         # click the first option
-        browser.find_element_by_css_selector(
-            ".doctype-filter li:nth-child(1) label"
+        browser.find_element(
+            By.CSS_SELECTOR, ".doctype-filter li:nth-child(1) label"
         ).click()
         filter_modal_css = "fieldset#filters { display: flex !important; }"
         percy_snapshot(
@@ -110,7 +111,7 @@ class Command(BaseCommand):
         # about submenu open on both desktop and mobile
         browser.get("http://localhost:8000/en/documents/3504/#menu")
         # open about menu
-        browser.find_element_by_id("open-about-menu").send_keys(Keys.ENTER)
+        browser.find_element(By.ID, "open-about-menu").send_keys(Keys.ENTER)
         # custom CSS to ensure that on mobile, the about menu is in the correct position;
         # and that on desktop, that override does not impact its position
         about_menu_css = "ul#about-menu { visibility: visible !important; width: 100% !important; height: 100vh !important; } @media (min-width: 900px) { ul#about-menu { dispaly: flex !important; width: auto !important; height: auto !important; } }"
