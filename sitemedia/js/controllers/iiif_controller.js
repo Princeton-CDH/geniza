@@ -158,7 +158,9 @@ export default class extends Controller {
         });
         if (isMobile) {
             viewer.addHandler("canvas-release", () => {
-                // Handle issue on mobile that causes a scroll trap
+                // Handle issue on mobile that causes a scroll trap: on canvas-release the OSD
+                // container forcibly scrolls into view, which causes the mobile toggle to become
+                // hidden, making our control inaccessible.
                 window.scrollTo(zoomToggle.scrollTop);
             });
         }
@@ -180,6 +182,7 @@ export default class extends Controller {
     }
     resetBounds(viewer) {
         // Reset OSD viewer to the boundaries of the image, position in top left corner
+        // (cannot use viewport.goHome() without hacks, as its bounds cannot be configured)
         const bounds = viewer.viewport.getBounds();
         const newBounds = new OpenSeadragon.Rect(
             0,
