@@ -1,8 +1,10 @@
 /* styles for image + transcription viewer */
 @use "../base/a11y";
 @use "../base/breakpoints";
+@use "../base/colors";
 @use "../base/spacing";
 @use "../base/typography";
+@use "../components/searchform";
 
 #itt-panel {
     max-width: none;
@@ -10,8 +12,10 @@
     display: flex;
     flex-flow: row wrap;
 
+    $toggle-default-width: 87px; /* only applies on tablet up */
+
     // toggle switches for panels
-    input[type="checkbox"] {
+    input[type="checkbox"].toggle {
         // disable browser checkbox UI
         @include a11y.sr-only;
 
@@ -26,10 +30,11 @@
             width: 100px;
             max-width: 100px;
             @include breakpoints.for-tablet-landscape-up {
+                flex: 1 0 $toggle-default-width;
                 justify-content: center;
                 height: 95px;
-                width: 87px;
-                max-width: 87px;
+                width: $toggle-default-width;
+                max-width: $toggle-default-width;
                 transition: all 300ms ease;
                 cursor: pointer;
             }
@@ -48,11 +53,17 @@
             // left and right margins on first and last toggles
             &:first-of-type {
                 margin-left: auto;
-                margin-right: 0.5rem;
+                margin-right: 9px;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-right: 4px;
+                }
             }
             &:last-of-type {
                 margin-right: auto;
-                margin-left: 0.5rem;
+                margin-left: 9px;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-left: 4px;
+                }
             }
         }
 
@@ -81,9 +92,13 @@
             &:checked + label {
                 max-width: 100vw;
                 flex: 1 0 auto;
-                // images panel toggle is wider
+                &[for="transcription-on"] {
+                    // transcription is 50% minus the 87px for the transcription toggle minus ~gutter
+                    flex: 1 0 calc(50vw - 87px - 9px);
+                }
+                // images panel toggle is half width
                 &[for="images-on"] {
-                    flex: 1 0 20%;
+                    flex: 1 0 50vw;
                 }
                 // expand icon size
                 svg {
@@ -137,10 +152,131 @@
         }
     }
 
+    // multiple transcription pseudo-select element
+    details.transcription-select {
+        position: relative;
+        width: 100%;
+        summary {
+            display: flex;
+            flex-flow: row;
+            cursor: pointer;
+            // Suppress default details marker
+            &::-webkit-details-marker {
+                display: none;
+            }
+            // label for current selection
+            span {
+                cursor: pointer;
+                width: 1%;
+                box-sizing: border-box;
+                background-color: var(--background);
+                color: var(--on-background);
+                flex: 1 0 auto;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: spacing.$spacing-2xs 0.7rem;
+                @include typography.body-bold;
+                @include searchform.form-drop-shadow;
+                &::after {
+                    content: "\f0c2"; // phosphor caret-down icon
+                    @include typography.icon-button-md;
+                    float: right;
+                }
+            }
+        }
+        // List of transcription options
+        ul {
+            position: absolute;
+            z-index: 20;
+            width: calc(100% - 0.667rem);
+            padding: spacing.$spacing-sm 0;
+            @include searchform.form-drop-shadow;
+            background-color: var(--background);
+            // label for single transcription option
+            li {
+                display: flex;
+                label {
+                    width: 100%;
+                    flex: 0 1 100%;
+                    display: flex;
+                    cursor: pointer;
+                    span {
+                        display: flex;
+                        align-items: center;
+                        width: 100%;
+                        flex: 0 1 100%;
+                        padding: spacing.$spacing-sm;
+                        transition: background-color 0.15s ease,
+                            color 0.15s ease;
+                    }
+                    &:hover,
+                    &:focus-within {
+                        background-color: var(--background-gray);
+                        color: var(--on-background-gray);
+                    }
+                    &:hover input[name="transcription"]:focus + span {
+                        background-color: var(--tertiary);
+                        color: var(--on-tertiary);
+                    }
+                    // Checkboxes only visible to screen readers
+                    input[name="transcription"] {
+                        @include a11y.sr-only;
+                        // Selected option
+                        &:checked + span {
+                            @include typography.form-option-sm-bold;
+                        }
+                        &:active + span {
+                            background-color: var(--secondary);
+                            color: var(--on-secondary);
+                        }
+                        &:disabled + span {
+                            color: var(--disabled);
+                            cursor: default;
+                            background-color: var(--background-light);
+                        }
+                    }
+                    // Non-selected options
+                    @include typography.form-option-sm;
+                }
+            }
+        }
+        // disable interaction when only 1 transcription (cannot use :disabled on <details>)
+        &[disabled="true"] {
+            * {
+                cursor: default;
+            }
+            summary span:active {
+                @include searchform.box-shadow(var(--on-background-25));
+            }
+            summary span::after,
+            ul {
+                display: none;
+            }
+        }
+        // spacing tweaks for transcription selector on desktop
+        @include breakpoints.for-tablet-landscape-up {
+            width: auto;
+            flex: 1 0 calc(0.4 * 100vw);
+            min-height: 2.5rem;
+            // label for current selection
+            summary {
+                min-height: 2.5rem;
+                span {
+                    margin-right: spacing.$spacing-sm;
+                    text-align: center;
+                    padding: spacing.$spacing-2xs 0.7rem spacing.$spacing-2xs
+                        24px;
+                    display: inline;
+                }
+            }
+        }
+    }
+
     .panel-container {
         background-color: var(--background-light);
-        margin-top: 0.5rem;
         display: grid;
+        margin-top: 8px;
         width: 100%;
         /* when no content panels are selected, don't show anything  */
         height: 0;
@@ -148,16 +284,15 @@
 
         // default column layout is two columns at a time
         grid-template-columns: 1fr 1fr; /* 1fr;*/
-        justify-content: stretch;
 
         /* hide panel containers by default */
         & > div {
             height: 0; /* ensure not visible when not selected */
             overflow: hidden;
-            margin: 0 auto; /* center horizontally */
+            max-width: 100%;
         }
         @include breakpoints.for-tablet-landscape-up {
-            padding: 0 5.55% 0;
+            padding: 0 $toggle-default-width 0;
         }
     }
 
@@ -198,8 +333,17 @@
         padding-bottom: 30px;
 
         // transcription panel spacing
-        div.transcription {
-            width: auto;
+        div.transcription-panel {
+            width: 100%;
+            max-width: 604px;
+
+            /* adjust label padding for transcription only view */
+            &.label-row {
+                padding-left: 0;
+                width: 100%;
+                max-width: none;
+                overflow: visible;
+            }
         }
 
         // Attribution and license text
@@ -212,6 +356,7 @@
     #images-on:checked ~ #transcription-on:checked ~ .panel-container {
         /* for mobile, set to full-width; content will stack in order */
         grid-template-columns: 100%;
+        justify-items: stretch;
         @include breakpoints.for-tablet-landscape-up {
             grid-template-columns: 50% 50%;
         }
@@ -222,10 +367,15 @@
         }
 
         // transcription panel spacing
-        div.transcription {
+        div.transcription-panel {
             width: 100%;
+            max-width: none;
             @include breakpoints.for-tablet-landscape-up {
                 padding-left: 5%;
+
+                &.label-row {
+                    padding-left: 6px; /* adjust padding to match toggle */
+                }
             }
         }
 
@@ -247,7 +397,7 @@
 
     /* content panels should have normal height when enabled */
     #images-on:checked ~ .panel-container .img,
-    #transcription-on:checked ~ .panel-container .transcription {
+    #transcription-on:checked ~ .panel-container .transcription-panel {
         height: 100%;
     }
 
@@ -259,17 +409,129 @@
         * {
             max-width: none;
         }
-        h3 {
-            @include typography.body-bold;
-            text-align: left;
-            margin: 8px;
+        .img-header {
+            display: flex;
+            flex-flow: column;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            @include breakpoints.for-tablet-landscape-up {
+                flex-flow: row;
+                align-items: center;
+                margin-bottom: 12px;
+            }
+            h3 {
+                @include typography.body-bold;
+                text-align: left;
+                margin: 8px;
+                display: inline-block;
+                flex: 1 0 auto;
+            }
+            // zoom control (desktop)
+            input[type="range"][id^="zoom-slider"] {
+                display: none;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: block;
+                }
+                -webkit-appearance: none;
+                appearance: none;
+                background: colors.$gray;
+                height: 4px;
+                border-radius: 4px;
+                cursor: pointer;
+                width: 180px;
+                flex: 0 1 175px;
+
+                // range slider control circle/"thumb"
+                // sadly, these are still vendor-prefixed and can't be combined to reduce redunancy :(
+                &::-webkit-slider-thumb {
+                    -webkit-appearance: none; /* Override Webkit default appearance */
+                    appearance: none;
+                    background-color: var(--filter-active);
+                    transition: background-color 300ms ease;
+                    border-radius: 20px;
+                    height: 40px;
+                    width: 40px;
+                    border: 4px solid var(--on-background-light-alt);
+                }
+                &::-moz-range-thumb {
+                    background-color: var(--filter-active);
+                    transition: background-color 300ms ease;
+                    border-radius: 20px;
+                    height: 32px;
+                    width: 32px;
+                    border: 4px solid var(--on-background-light-alt);
+                }
+                &.active-thumb {
+                    &::-webkit-slider-thumb {
+                        background-color: var(--link-primary);
+                    }
+                    &::-moz-range-thumb {
+                        background-color: var(--link-primary);
+                    }
+                }
+            }
+            label[for^="zoom-slider"] {
+                display: none;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: block;
+                }
+                text-align: right;
+                flex: 0 1 60px;
+                color: var(--on-background);
+                @include typography.body-bold;
+            }
+            // zoom control (mobile)
+            input[type="checkbox"][id^="zoom-toggle"] {
+                display: block;
+                @include a11y.sr-only;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: none;
+                }
+                & + label[for^="zoom-toggle"] {
+                    align-self: flex-end;
+                    display: flex;
+                    @include breakpoints.for-tablet-landscape-up {
+                        display: none;
+                    }
+                    align-items: center;
+                    justify-content: flex-end;
+                    text-align: right;
+                    padding-right: 8px;
+                    color: var(--on-background);
+                    @include typography.meta;
+                    &:after {
+                        content: " ";
+                        display: block;
+                        height: 41px;
+                        width: 66px;
+                        margin-left: 8px;
+                        background-image: url("/static/img/ui/mobile/all/deep-zoom-toggle-off.svg");
+                    }
+                }
+                &:checked + label[for^="zoom-toggle"]:after {
+                    background-image: url("/static/img/ui/mobile/light/all/deep-zoom-toggle-on.svg");
+                    @media (prefers-color-scheme: dark) {
+                        background-image: url("/static/img/ui/mobile/dark/all/deep-zoom-toggle-on.svg");
+                    }
+                }
+            }
         }
         img {
             width: 100%;
             margin: 0 auto;
+            &.hidden {
+                transition: opacity 300ms ease, visibility 0s ease 300ms;
+                opacity: 0;
+                visibility: hidden;
+            }
+            &.visible {
+                transition: opacity 300ms ease, visibility 0s ease 0ms;
+                visibility: visible;
+                opacity: 1;
+            }
         }
         @include breakpoints.for-tablet-landscape-up {
-            padding: 60px 0 0;
+            padding: 14px 0 0;
             max-width: 640px;
             h3 {
                 margin: 12px 0;
@@ -280,23 +542,66 @@
             }
         }
     }
+
     // transcription panel styles
-    .panel-container div.transcription {
+    .panel-container div.transcription-panel {
+        width: 100%;
         * {
             max-width: none;
         }
         padding: 20px 10px 0;
+
+        &.label-row {
+            padding-right: 0;
+            padding-top: 0;
+            @include breakpoints.for-tablet-landscape-up {
+                padding-top: 0.1px; /* show panel background slightly as a top border */
+            }
+        }
         & > h3 {
-            display: none;
+            margin: 30px 0 12px;
+        }
+        h3 + span.current-transcription {
+            display: block;
+            @include typography.meta;
+            color: var(--input-date-text);
+            min-height: calc(1rem * 1.5 * 2);
         }
         @include breakpoints.for-tablet-landscape-up {
-            padding: 60px 0 0;
-            & > h3 {
-                display: block;
-                @include typography.body-bold;
-            }
+            padding: 0 0 0;
             h3 {
                 margin: 12px 0;
+            }
+            & > h3 {
+                @include typography.body-bold;
+                margin: 27px 0 0;
+            }
+            h3 + span.current-transcription {
+                min-height: calc(1.125rem * 1.5 * 2);
+            }
+        }
+
+        // edition indicator/switcher
+        &.label-row {
+            margin-top: 1px; /* show a line between space and dropdown */
+            max-width: none;
+
+            @include breakpoints.for-tablet-landscape-up {
+                padding-left: 6px; /* adjust padding to match toggle */
+            }
+
+            & span {
+                width: 100%;
+            }
+        }
+
+        // "carousel" for switching between multiple transcriptions
+        div.editions {
+            display: flex;
+            overflow-x: hidden;
+            & > div {
+                flex: 1 0 100%;
+                align-self: flex-start;
             }
         }
     }
@@ -403,6 +708,66 @@
                     width: 90px;
                 }
             }
+        }
+    }
+}
+
+// general transcription styles
+// appear in ITT viewer and in search results
+.transcription {
+    @include typography.transcription;
+    @include typography.hebrew;
+    align-self: flex-end;
+
+    text-align: right;
+    // direction: rtl; /* search results ae mixed rtl/ltr and include unicode order mark characters */
+
+    .search-result & p {
+        white-space: pre-line;
+        text-align: right;
+        // disable site default max character width for reading
+        max-width: none;
+    }
+
+    li {
+        white-space: pre-line;
+        margin-right: 2em; /* shift to make space for line numbers */
+        direction: rtl;
+    }
+
+    /* some transcription styles adapted from local admin site css */
+    li::before {
+        /* use pseudo marker to avoid periods for line numbers */
+        content: attr(value);
+        margin-right: -2em; /* shift outside text margin */
+        text-align: right;
+        float: right;
+        font-weight: bold;
+    }
+
+    li::marker {
+        direction: rtl;
+    }
+}
+
+// Manual (body-class based) theme overrides
+html.light-mode #itt-panel {
+    .panel-container
+        div.img
+        .img-header
+        input[type="checkbox"][id^="zoom-toggle"] {
+        &:checked + label[for^="zoom-toggle"]:after {
+            background-image: url("/static/img/ui/mobile/light/all/deep-zoom-toggle-on.svg");
+        }
+    }
+}
+html.dark-mode #itt-panel {
+    .panel-container
+        div.img
+        .img-header
+        input[type="checkbox"][id^="zoom-toggle"] {
+        &:checked + label[for^="zoom-toggle"]:after {
+            background-image: url("/static/img/ui/mobile/dark/all/deep-zoom-toggle-on.svg");
         }
     }
 }
