@@ -23,9 +23,7 @@
     <h1 class="sr-only">{{ page_title }}</h1>
     <a class="editor-navigation" href="{% url "corpus:document" document.pk %}">
         <span>
-            {% blocktranslate with shelfmark=document.shelfmark_display %}
-                Return to {{ shelfmark }}
-            {% endblocktranslate %}
+            Return to {{ document.title }}
         </span>
     </a>
 
