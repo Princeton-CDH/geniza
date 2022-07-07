@@ -3,6 +3,7 @@
 ## 4.5.0
 
 -   Document date functionality in this release requires updating the Solr index. Run `python manage.py index` to reindex all content.
+-   Run `python manage.py sync_transcriptions` to migrate transcription content to new paged/chunked format
 -   The `convert_dates` manage command should be run to clean up existing standardized dates for use with filtering and sorting. First run `python manage.py convert_dates update` to reconvert dates from supported calendars; then run `python manage.py convert_dates clean` to standardize non-standard formats that can be easily adjusted.
 -   Run `python manage.py import_manifests` to import and link any manifests that are referenced by url but not cached or associated in the database with their corresponding fragments.
 -   Re-import JTS Figgy IIIF manifests with `import_manifests` script to add urls based on case-insensitive shelfmark matches.

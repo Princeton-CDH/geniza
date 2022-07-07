@@ -52,6 +52,15 @@ def test_dict_item():
     assert corpus_extras.dict_item({13: 7}, 13) == 7
 
 
+def test_index():
+    # no error on invalid index
+    assert corpus_extras.index([], 12) is ""
+    # valid index
+    assert corpus_extras.index([1, 2, 3], 1) == 2
+    # valid index, different type
+    assert corpus_extras.index(["a", "b", "c"], 2) == "c"
+
+
 def test_querystring_replace():
     mockrequest = Mock()
     mockrequest.GET = QueryDict("?q=contract")

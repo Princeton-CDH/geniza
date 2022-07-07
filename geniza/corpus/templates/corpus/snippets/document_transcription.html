@@ -1,41 +1,93 @@
-{% load i18n corpus_extras %}
-<section id="iiif-viewer" data-controller="iiif">
-    <h1 class="sr-only">
-        {# Translators: accessibility label for document images and transcription section #}
-        {% translate "Images and transcription" %}
-    </h1>
-    {% if document.has_image %}
-        <noscript>
-            <ol id="iiif-images-fallback">
-                {% for image_dict in document.iiif_images %}
-                    <li id="image-{{ forloop.counter }}">
-                        <a href="{{ image_dict.image|iiif_image:"size:width=2880" }}">
-                            <img src="{{ image_dict.image|iiif_image:"size:width=500" }}" alt="{{ image_dict.label }}" title="{{ image_dict.label }}" loading="lazy">
-                        </a>
-                    </li>
-                {% endfor %}
-            </ol>
-        </noscript>
-        <div id="iiif-images" data-iiif-target="iiifContainer" data-iiif-urls="{{ document.iiif_images|iiif_info_json }}" class="{% if not document.has_transcription %}no-transcription{% endif %}">
+{% load i18n static corpus_extras %}
+<section id="itt-panel" data-controller="transcription" data-action="click@document->transcription#clickCloseDropdown">
+    {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
+    {# images displayed by default; disable if no images are available #}
+    {# translators: label for checkbox toggle to show the images panel for a document #}
+    <input type="checkbox" class="toggle" id="images-on" aria-label="{% translate 'show images' %}" {% if document.has_image %}checked="true" {% else %} disabled="true"{% endif %}/>
+    <label for="images-on"></label>
+    {# transcription displayed by default; disable if no content is available #}
+    {# translators: label for checkbox toggle to show the transcription panel for a document #}
+    <input type="checkbox" class="toggle" id="transcription-on" aria-label="{% translate 'show transcription' %}" {% if document.digital_editions %}checked="true" {% else %} disabled="true"{% endif %}/>
+    <label for="transcription-on"><svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg></label>
+    {# translation disabled for now since we don't handle them in the system yet #}
+    {# translators: label for checkbox toggle to show the translation panel for a document #}
+    <input type="checkbox" class="toggle" id="translation-on" aria-label="{% translate 'show translation' %}" disabled="true"/>
+    <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
+    <div class="panel-container">
+        {# label row #}
+        <div class="label-row"></div> {# unused (no image label, needed for column alignment) #}
+        <div class="transcription-panel label-row">
+            {# dropdown is disabled by default; enable if javascript is active #}
+            <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-edition-count="{{ document.digital_editions.count }}" disabled="true">
+                <summary class="transcription-select-trigger" data-action="keydown->transcription#shiftTabCloseDropdown">
+                    <span data-transcription-target="editionShortLabel">Edition: {{ document.digital_editions.0.source.all_authors }}</span>
+                </summary>
+                <ul>
+                    {% for ed in document.digital_editions.all %}
+                        <li>
+                            <label for="edition-{{ forloop.counter }}">
+                                <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="edition-{{ forloop.counter }}" data-edition="ed-{{ ed.pk }}" />
+                                <span>Edition: {{ ed.source.all_authors }}</span>
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </details>
         </div>
-    {% endif %}
-    {% if document.digital_editions %}
-        <div class="transcription{% if not document.has_image %} no-image{% endif %}">
-            <h2>{% translate 'Transcription' %}</h2>
-            {% if document.digital_editions|length > 1 %}
-                {# when there are multiple editions, use disclosure element #}
-                {% for edition in document.digital_editions %}
-                    <details open>
-                        <summary class="source">{{ edition.source.display }}</summary>
-                        <div>{{ edition.content.html|h1_to_h3|safe }}</div>
-                    </details>
-                {% endfor %}
-            {% else %}
-                <div>{{ document.digital_editions.0.content.html|h1_to_h3|safe }}</div>
-            {% endif %}
-        </div>
-    {% endif %}
-    {% if document.has_image %}
-        {% include "corpus/snippets/document_image_rights.html" %}
-    {% endif %}
+
+        {% comment %}
+NOTE: if we have more transcription pages than images,
+they won't show in current implementation.
+May want to gather them in the model... (but transcription content format will change)
+Also doesn't currently account for fragments without images.
+        {% endcomment %}
+        {# if we have images, loop based on them #}
+        {% if document.iiif_urls %}
+            {% for image_info in document.iiif_images %}
+                <div class="img" id="{{ image_info.label }}" data-controller="iiif" data-iiif-url="{{ image_info.image.info }}" data-iiif-target="imageContainer" data-action="click->iiif#scrollTo0">
+                    <div class="img-header">
+                        <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
+                        <input data-action="iiif#handleDeepZoom" type="range" id="zoom-slider-{{ forloop.counter0 }}" name="zoom-slider" min="1" max="100" value="0" step="0.01">
+                        <label for="zoom-slider-{{ forloop.counter0 }}">100%</label>
+                        <input data-action="iiif#handleDeepZoom" type="checkbox" id="zoom-toggle-{{ forloop.counter0 }}" name="zoom-toggle">
+                        <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
+                    </div>
+                    <img class="iiif-image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
+                        sizes="(max-width: 650px) 50vw, 94vw"
+                        srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
+                        {{ image_info.image|iiif_image:"size:width=500" }} 500w,
+                        {{ image_info.image|iiif_image:"size:width=640" }} 640w,
+                        {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
+                </div>
+                <div class="transcription-panel">
+                    {% if forloop.first %}
+                        <h3>Transcription</h3>
+                        <span data-transcription-target="editionFullLabel" class="current-transcription">{{ document.digital_editions.0.display|safe }}</span>
+                    {% endif %}
+                    <div class="editions">
+                        {# display transcription in chunks by index #}
+                        {% for edition in document.digital_editions.all %}
+                            <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.display|safe }}">
+                                {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+            {# if there are no images, loop based on the transcription chunks instead #}
+        {% elif document.has_transcription %}
+            {% for chunk in document.digital_editions.0.content.html %}
+                <div class="img"></div> {# empty image div needed for grid layout #}
+                <div class="transcription-panel">
+                    {% if forloop.first %}<h3>Transcription</h3>{% endif %}
+                    {# display transcription in chunks based on loop index #}
+                    <div class="transcription">{{ chunk|h1_to_h3|safe }}</div>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% if document.has_image %}
+            {% include "corpus/snippets/document_image_rights.html" %}
+        {% endif %}
+    </div>
+
 </section>

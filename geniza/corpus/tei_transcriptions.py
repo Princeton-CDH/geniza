@@ -76,9 +76,30 @@ class GenizaTei(teimap.Tei):
                 }
             )
 
-        # combine blocks of text into html
+        # combine blocks of text into html, chunked into pages to match sides of images
         html = []
+        page = []
         for block in blocks:
+
+            # if there is a label and it looks like a new side,
+            # start a new section
+            if block["label"]:
+                label = block["label"].lower()
+                # maybe "page b " could also be a new page
+                if any(
+                    [
+                        side_label in label
+                        for side_label in ["recto", "verso", "side ii"]
+                    ]
+                ):
+                    # if we have any content, close the previous section
+                    if page:
+                        # combine all sections in the page and add to the html
+                        html.append("\n".join(page))
+                        # then start a new page
+                        page = []
+
+            # start output for the new block
             output = ["<section>"]
             # add label if we have one
             if block["label"]:
@@ -92,9 +113,12 @@ class GenizaTei(teimap.Tei):
             )
             output.append(text_lines)
             output.append("</section>")
-            html.append("\n".join(output))
+            page.append("\n".join(output))
 
-        return "\n".join(html)
+        # save the last page
+        html.append("\n".join(page))
+
+        return html
 
     rtl_mark = "\u200F"
     ltr_mark = "\u200E"

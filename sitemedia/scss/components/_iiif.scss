@@ -3,6 +3,8 @@
 @use "../base/breakpoints";
 @use "../base/spacing";
 @use "../base/typography";
+// new transcription viewer styles
+@use "../components/transcription";
 
 #iiif-viewer {
     max-width: none;
