@@ -21,9 +21,10 @@
 {% block main %}
     <!-- document details -->
     <h1 class="sr-only">{{ page_title }}</h1>
+    {% include "corpus/snippets/document_header.html" %}
     <a class="editor-navigation" href="{% url "corpus:document" document.pk %}">
         <span>
-            Return to {{ document.title }}
+            Return to document detail page
         </span>
     </a>
 
