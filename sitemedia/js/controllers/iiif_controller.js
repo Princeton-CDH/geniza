@@ -44,7 +44,7 @@ export default class extends Controller {
         OSD.style.opacity = "1";
         // OSD needs top offset due to margin, padding, and header elements
         if (isMobile) {
-            OSD.style.top = "122px";
+            OSD.style.top = "130px";
         } else {
             OSD.style.top = "72px";
         }

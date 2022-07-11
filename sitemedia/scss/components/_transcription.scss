@@ -487,16 +487,21 @@
                 display: block;
                 float: right;
                 margin: 0 0 0 spacing.$spacing-2xs;
+                @include typography.icon-button-lg;
+                min-width: 48px;
+                min-height: 48px;
                 &:last-of-type {
                     margin: 0 spacing.$spacing-md 0 spacing.$spacing-3xs;
                 }
                 @include breakpoints.for-tablet-landscape-up {
+                    min-width: 0px;
+                    min-height: 0px;
+                    @include typography.icon-button-md;
                     margin: 0 0 0 spacing.$spacing-md;
                     &:last-of-type {
                         margin: 0 spacing.$spacing-3xs 0;
                     }
                 }
-                @include typography.icon-button-md;
                 background: none;
                 border: none;
                 padding: 0;
