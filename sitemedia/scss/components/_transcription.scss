@@ -95,10 +95,18 @@
                 &[for="transcription-on"] {
                     // transcription is 50% minus the 87px for the translation toggle minus ~2xgutter
                     flex: 1 0 calc(50vw - 87px - 18px);
+
+                    /* adjust for admin site */
+                    .model-document.change-form & {
+                        flex: 1 0 calc(49% - 87px - 18px);
+                    }
                 }
                 // images panel toggle is half width minus ~gutter
                 &[for="images-on"] {
                     flex: 1 0 calc(50vw - 9px);
+                    .model-document.change-form & {
+                        flex: 1 0 calc(50% - 9px);
+                    }
                 }
                 // expand icon size
                 svg {
@@ -257,7 +265,7 @@
         // spacing tweaks for transcription selector on desktop
         @include breakpoints.for-tablet-landscape-up {
             width: auto;
-            flex: 1 0 calc(0.4 * 100vw);
+            flex: 1 0 40vw;
             min-height: 2.5rem;
             // label for current selection
             summary {
@@ -336,6 +344,7 @@
         div.transcription-panel {
             width: 100%;
             max-width: 604px;
+            margin: auto;
 
             /* adjust label padding for transcription only view */
             &.label-row {
