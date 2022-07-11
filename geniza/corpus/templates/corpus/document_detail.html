@@ -27,12 +27,6 @@
         {% endwith %}
     {% endif %}
 {% endblock extrameta %}
-{% block extrascript %}
-    {# include openseadragon if needed #}
-    {% if document.has_image or document.iiif_urls %}
-        <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/" crossorigin />
-    {% endif %}
-{% endblock extrascript %}
 
 {% block main %}
     <!-- document details -->

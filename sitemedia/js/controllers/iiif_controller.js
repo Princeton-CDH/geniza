@@ -4,7 +4,7 @@ import { Controller } from "@hotwired/stimulus";
 import OpenSeadragon from "openseadragon";
 
 export default class extends Controller {
-    static targets = ["imageContainer"];
+    static targets = ["imageContainer", "rotateLeft", "rotateRight"];
 
     imageContainerTargetDisconnected(container) {
         // remove OSD on target disconnect (i.e. leaving page)
@@ -44,10 +44,13 @@ export default class extends Controller {
         OSD.style.opacity = "1";
         // OSD needs top offset due to margin, padding, and header elements
         if (isMobile) {
-            OSD.style.top = "122px";
+            OSD.style.top = "130px";
         } else {
             OSD.style.top = "72px";
         }
+        // re-enable rotation buttons
+        this.rotateRightTarget.removeAttribute("disabled");
+        this.rotateLeftTarget.removeAttribute("disabled");
     }
     deactivateDeepZoom(container, image) {
         // Hide OSD and show image
@@ -59,6 +62,8 @@ export default class extends Controller {
             OSD.style.opacity = "0";
             image.classList.add("visible");
             image.classList.remove("hidden");
+            this.rotateRightTarget.setAttribute("disabled", "true");
+            this.rotateLeftTarget.setAttribute("disabled", "true");
         }
     }
     addOpenSeaDragon(element, tileSources, isMobile) {
@@ -143,6 +148,13 @@ export default class extends Controller {
                     this.resetBounds(viewer);
                     viewer.viewport.zoomTo(1.1);
                 }
+            });
+            // initialize desktop rotation buttons
+            this.rotateLeftTarget.addEventListener("click", () => {
+                viewer.viewport.setRotation(viewer.viewport.getRotation() - 90);
+            });
+            this.rotateRightTarget.addEventListener("click", () => {
+                viewer.viewport.setRotation(viewer.viewport.getRotation() + 90);
             });
         });
         viewer.addHandler("zoom", (evt) => {

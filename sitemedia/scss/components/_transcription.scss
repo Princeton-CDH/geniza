@@ -411,12 +411,11 @@
         }
         .img-header {
             display: flex;
-            flex-flow: column;
-            align-items: flex-start;
+            flex-flow: row wrap;
+            align-items: center;
             margin-bottom: 8px;
             @include breakpoints.for-tablet-landscape-up {
                 flex-flow: row;
-                align-items: center;
                 margin-bottom: 12px;
             }
             h3 {
@@ -424,7 +423,10 @@
                 text-align: left;
                 margin: 8px;
                 display: inline-block;
-                flex: 1 0 auto;
+                flex: 1 0 100%;
+                @include breakpoints.for-tablet-landscape-up {
+                    flex: 1 0 auto;
+                }
             }
             // zoom control (desktop)
             input[type="range"][id^="zoom-slider"] {
@@ -480,6 +482,42 @@
                 color: var(--on-background);
                 @include typography.body-bold;
             }
+            // rotation controls
+            button.rotate {
+                display: block;
+                // float: right;
+                text-align: center;
+                margin: 0;
+                @include typography.icon-button-lg;
+                min-width: 48px;
+                min-height: 48px;
+                &:last-of-type {
+                    margin: 0 spacing.$spacing-xs 0 0;
+                }
+                @include breakpoints.for-tablet-landscape-up {
+                    min-width: 0px;
+                    min-height: 0px;
+                    @include typography.icon-button-md;
+                    margin: 0 0 0 spacing.$spacing-md;
+                    &:last-of-type {
+                        margin: 0 spacing.$spacing-3xs 0;
+                    }
+                }
+                background: none;
+                border: none;
+                padding: 0;
+                color: var(--on-backround);
+                transition: color 300ms ease;
+                cursor: pointer;
+                &:disabled {
+                    color: var(--disabled);
+                    cursor: default;
+                }
+                i {
+                    // ensure no extra space inside button
+                    display: block;
+                }
+            }
             // zoom control (mobile)
             input[type="checkbox"][id^="zoom-toggle"] {
                 display: block;
@@ -488,7 +526,7 @@
                     display: none;
                 }
                 & + label[for^="zoom-toggle"] {
-                    align-self: flex-end;
+                    flex: 1 0 auto;
                     display: flex;
                     @include breakpoints.for-tablet-landscape-up {
                         display: none;
