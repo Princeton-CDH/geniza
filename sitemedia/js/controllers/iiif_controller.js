@@ -1,76 +1,10 @@
 // controllers/iiif_controller.js
-import * as Annotorious from "@recogito/annotorious-openseadragon";
-
 import { Controller } from "@hotwired/stimulus";
 import OpenSeadragon from "openseadragon";
-import AnnotationServerStorage from "annotorious-sas-storage";
-import TranscriptionEditor from "annotorious-tahqiq";
 
 export default class extends Controller {
     static targets = ["imageContainer"];
 
-    connect() {
-        // if in edit mode: enable deep zoom, annotorious-tahqiq on load
-        const editMode = document
-            .querySelector("#itt-panel")
-            .classList.contains("editor");
-        if (editMode) {
-            // load configuration variables from django settings
-            const config = JSON.parse(
-                document.getElementById("annotation-config").textContent
-            );
-            // initialize OSD and tahqiq
-            const imageContainers = document.querySelectorAll("div.img");
-            // TODO: Better way of determining if we're on mobile?
-            const isMobile = window.innerWidth <= 900;
-            imageContainers.forEach((container) => {
-                // initialize transcription editor
-                const transcriptionContainer = container.nextElementSibling;
-                const annotationContainer =
-                    transcriptionContainer.nextElementSibling;
-                annotationContainer.style.display = "block";
-                transcriptionContainer.style.display = "none";
-
-                // style like transcription viewer
-                // TODO: separate panel and transcription classes; transcription should only apply
-                // to actual transcription blocks
-                annotationContainer.classList.add(
-                    "transcription-panel",
-                    "transcription"
-                );
-
-                // grab iiif URL and manifest for tahqiq
-                const canvasURL = container.dataset.canvasUrl;
-                const manifestId = annotationContainer.dataset.manifest;
-                const editorSettings = {
-                    config,
-                    canvasURL,
-                    manifestId,
-                    annotationContainer,
-                };
-
-                const image = container.querySelector("img.iiif-image");
-                // wait for each image to load fully before enabling OSD so we know its full height
-                if (image.complete) {
-                    this.activateDeepZoom(
-                        container,
-                        image,
-                        isMobile,
-                        editorSettings
-                    );
-                } else {
-                    image.addEventListener("load", () => {
-                        this.activateDeepZoom(
-                            container,
-                            image,
-                            isMobile,
-                            editorSettings
-                        );
-                    });
-                }
-            });
-        }
-    }
     imageContainerTargetDisconnected(container) {
         // remove OSD on target disconnect (i.e. leaving page)
         const image = container.querySelector("img.iiif-image");
@@ -83,10 +17,10 @@ export default class extends Controller {
         const image = container.querySelector("img.iiif-image");
         if (!OSD || OSD.style.opacity === "0") {
             const isMobile = evt.currentTarget.id.startsWith("zoom-toggle");
-            this.activateDeepZoom(container, image, isMobile);
+            this.activateDeepZoom(container, image, { isMobile });
         }
     }
-    activateDeepZoom(container, image, isMobile, editorSettings) {
+    activateDeepZoom(container, image, settings) {
         // hide image and add OpenSeaDragon to container
         const height = container.getBoundingClientRect()["height"];
         let OSD = container.querySelector(".openseadragon-container");
@@ -97,8 +31,7 @@ export default class extends Controller {
             this.addOpenSeaDragon(
                 container,
                 [container.dataset.iiifUrl],
-                isMobile,
-                editorSettings
+                settings
             );
             OSD = container.querySelector(".openseadragon-container");
         }
@@ -109,7 +42,7 @@ export default class extends Controller {
         OSD.style.visibility = "visible";
         OSD.style.opacity = "1";
         // OSD needs top offset due to margin, padding, and header elements
-        if (isMobile) {
+        if (settings.isMobile) {
             OSD.style.top = "122px";
         } else {
             OSD.style.top = "72px";
@@ -128,7 +61,9 @@ export default class extends Controller {
             image.classList.remove("hidden");
         }
     }
-    addOpenSeaDragon(element, tileSources, isMobile, editorSettings) {
+    addOpenSeaDragon(element, tileSources, settings) {
+        const { isMobile } = settings;
+
         // constants for OSD
         const minZoom = 1.0; // Minimum zoom as a multiple of image size
         const maxZoom = 1.5; // Maximum zoom as a multiple of image size
@@ -182,31 +117,16 @@ export default class extends Controller {
                 "max",
                 viewer.viewport.getMaxZoom().toPrecision(2)
             );
-            zoomSlider.addEventListener("input", (evt) => {
-                // Handle changes in the zoom slider
-                let zoom = parseFloat(evt.currentTarget.value);
-                let deactivating = false;
-                if (zoom <= minZoom) {
-                    // When zoomed back out to 100%, deactivate OSD
-                    zoom = minZoom;
-                    viewer.viewport.zoomTo(1.0);
-                    if (!editorSettings) {
-                        this.resetBounds(viewer);
-                        this.deactivateDeepZoom(element, image);
-                        deactivating = true;
-                    }
-                    evt.currentTarget.value = minZoom;
-                } else {
-                    // Zoom to the chosen percentage
-                    viewer.viewport.zoomTo(zoom);
-                }
-                this.updateZoomUI(
-                    zoom,
-                    deactivating,
-                    zoomSlider,
-                    zoomSliderLabel
-                );
-            });
+            zoomSlider.addEventListener(
+                "input",
+                this.handleZoomSliderInput(
+                    element,
+                    image,
+                    zoomSliderLabel,
+                    viewer,
+                    minZoom
+                )
+            );
             // initialize mobile zoom toggle
             zoomToggle.addEventListener("input", (evt) => {
                 // always first zoom to 100%
@@ -233,25 +153,27 @@ export default class extends Controller {
             zoomSlider.value = parseFloat(zoom);
             this.updateZoomUI(zoom, false, zoomSlider, zoomSliderLabel);
         });
-        // if in editor mode, enable annotorious-tahqiq
-        if (editorSettings) {
-            const { config, canvasURL, manifestId, annotationContainer } =
-                editorSettings;
-            const anno = Annotorious(viewer);
-
-            // Initialize the AnnotationServerStorage plugin
-            const annotationServerConfig = {
-                annotationEndpoint: config.server_url,
-                target: canvasURL,
-                manifest: config.manifest_base_url + manifestId,
-            };
-            const storagePlugin = new AnnotationServerStorage(
-                anno,
-                annotationServerConfig
-            );
-            // Initialize the TranscriptionEditor plugin
-            new TranscriptionEditor(anno, storagePlugin, annotationContainer);
-        }
+        return viewer;
+    }
+    handleZoomSliderInput(container, image, label, viewer, minZoom) {
+        return (evt) => {
+            // Handle changes in the zoom slider
+            let zoom = parseFloat(evt.currentTarget.value);
+            let deactivating = false;
+            if (zoom <= minZoom) {
+                // When zoomed back out to 100%, deactivate OSD
+                zoom = minZoom;
+                viewer.viewport.zoomTo(1.0);
+                this.resetBounds(viewer);
+                this.deactivateDeepZoom(container, image);
+                deactivating = true;
+                evt.currentTarget.value = minZoom;
+            } else {
+                // Zoom to the chosen percentage
+                viewer.viewport.zoomTo(zoom);
+            }
+            this.updateZoomUI(zoom, deactivating, evt.currentTarget, label);
+        };
     }
     updateZoomUI(zoom, deactivating, slider, label) {
         // update the zoom controls UI with the new value

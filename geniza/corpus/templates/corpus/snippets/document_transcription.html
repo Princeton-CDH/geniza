@@ -9,7 +9,7 @@
         <span>{% translate 'Add or edit transcription' %}</span>
     </a>
 {% endif %}
-<section id="itt-panel"{% if edit_mode %} class="editor"{% endif %} data-controller="transcription" data-action="click@document->transcription#clickCloseDropdown">
+<section id="itt-panel" data-controller="transcription" data-action="click@document->transcription#clickCloseDropdown">
     {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
     {# images displayed by default; disable if no images are available #}
     {# translators: label for checkbox toggle to show the images panel for a document #}
@@ -54,7 +54,7 @@ Also doesn't currently account for fragments without images.
         {# if we have images, loop based on them #}
         {% if document.iiif_urls %}
             {% for image_info in document.iiif_images %}
-                <div class="img" id="{{ image_info.label }}" data-controller="iiif" data-iiif-url="{{ image_info.image.info }}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-action="click->iiif#scrollTo0">
+                <div class="img" id="{{ image_info.label }}" data-controller="{% if edit_mode %}annotation{% else %}iiif{% endif %}" data-iiif-url="{{ image_info.image.info }}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer" data-action="click->iiif#scrollTo0 click->annotation#scrollTo0">
                     <div class="img-header">
                         <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
                         <input data-action="iiif#handleDeepZoom" type="range" id="zoom-slider-{{ forloop.counter0 }}" name="zoom-slider" min="1" max="100" value="0" step="0.01">
@@ -70,29 +70,30 @@ Also doesn't currently account for fragments without images.
                         {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
                 </div>
                 <div class="transcription-panel">
-                    {% if forloop.first %}
-                        <h3>Transcription</h3>
-                        <span data-transcription-target="editionFullLabel" class="current-transcription">{{ document.digital_editions.0.display|safe }}</span>
-                    {% endif %}
-                    <div class="editions">
-                        {# display transcription in chunks by index #}
-                        {% for edition in document.digital_editions.all %}
-                            <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.display|safe }}">
-                                {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% if edit_mode %}
-                    <div class="annotate" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
+                    {% if edit_mode %}
+                        <div class="annotate transcription" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
+                            {% if forloop.first %}
+                                <h3>{% translate 'Transcribe' %}</h3>
+                                <p class="instructions">
+                                    {% translate 'Hold shift and then click on the image and drag to select a rectangular region for the block text you want to transcribe.' %}
+                                </p>
+                            {% endif %}
+                        </div>
+                    {% else %}
                         {% if forloop.first %}
-                            <h3>{% translate 'Transcribe' %}</h3>
-                            <p class="instructions">
-                                {% translate 'Hold shift and then click on the image and drag to select a rectangular region for the block text you want to transcribe.' %}
-                            </p>
+                            <h3>Transcription</h3>
+                            <span data-transcription-target="editionFullLabel" class="current-transcription">{{ document.digital_editions.0.display|safe }}</span>
                         {% endif %}
-                    </div>
-                {% endif %}
+                        <div class="editions">
+                            {# display transcription in chunks by index #}
+                            {% for edition in document.digital_editions.all %}
+                                <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.display|safe }}">
+                                    {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
             {% endfor %}
             {# if there are no images, loop based on the transcription chunks instead #}
         {% elif document.has_transcription %}

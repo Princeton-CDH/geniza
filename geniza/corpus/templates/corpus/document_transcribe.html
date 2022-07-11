@@ -11,11 +11,15 @@
         {% endfor %}
     {% endspaceless %}
 {% endblock extrameta %}
-{% block extrascript %}
+{% block extrastyle %}
+    {% render_bundle_csp "annotation" "css" %}
     {% if document.has_image or document.iiif_urls %}
         <!-- annotorious CSS stylesheet -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@recogito/annotorious-openseadragon@2.7.2/dist/annotorious.min.css">
     {% endif %}
+{% endblock extrastyle %}
+{% block extrascript %}
+    {% render_bundle_csp "annotation" "js" attrs='defer' %}
 {% endblock extrascript %}
 
 {% block main %}
