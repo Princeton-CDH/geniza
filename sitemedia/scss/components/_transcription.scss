@@ -480,6 +480,31 @@
                 color: var(--on-background);
                 @include typography.body-bold;
             }
+            // rotation controls (desktop)
+            button.rotate {
+                display: none;
+                @include breakpoints.for-tablet-landscape-up {
+                    display: block;
+                }
+                margin: 0 0 0 spacing.$spacing-md;
+                &:last-of-type {
+                    margin: 0 spacing.$spacing-3xs 0;
+                }
+                @include typography.icon-button-md;
+                background: none;
+                border: none;
+                padding: 0;
+                vertical-align: middle;
+                cursor: pointer;
+                &:disabled {
+                    color: var(--disabled);
+                    cursor: default;
+                }
+                i {
+                    // ensure no extra space inside button
+                    display: block;
+                }
+            }
             // zoom control (mobile)
             input[type="checkbox"][id^="zoom-toggle"] {
                 display: block;
