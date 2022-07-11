@@ -411,12 +411,11 @@
         }
         .img-header {
             display: flex;
-            flex-flow: column;
-            align-items: flex-start;
+            flex-flow: row wrap;
+            align-items: center;
             margin-bottom: 8px;
             @include breakpoints.for-tablet-landscape-up {
                 flex-flow: row;
-                align-items: center;
                 margin-bottom: 12px;
             }
             h3 {
@@ -424,7 +423,10 @@
                 text-align: left;
                 margin: 8px;
                 display: inline-block;
-                flex: 1 0 auto;
+                flex: 1 0 100%;
+                @include breakpoints.for-tablet-landscape-up {
+                    flex: 1 0 auto;
+                }
             }
             // zoom control (desktop)
             input[type="range"][id^="zoom-slider"] {
@@ -480,21 +482,24 @@
                 color: var(--on-background);
                 @include typography.body-bold;
             }
-            // rotation controls (desktop)
+            // rotation controls
             button.rotate {
-                display: none;
-                @include breakpoints.for-tablet-landscape-up {
-                    display: block;
-                }
-                margin: 0 0 0 spacing.$spacing-md;
+                display: block;
+                float: right;
+                margin: 0 0 0 spacing.$spacing-2xs;
                 &:last-of-type {
-                    margin: 0 spacing.$spacing-3xs 0;
+                    margin: 0 spacing.$spacing-md 0 spacing.$spacing-3xs;
+                }
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 0 0 0 spacing.$spacing-md;
+                    &:last-of-type {
+                        margin: 0 spacing.$spacing-3xs 0;
+                    }
                 }
                 @include typography.icon-button-md;
                 background: none;
                 border: none;
                 padding: 0;
-                vertical-align: middle;
                 color: var(--on-backround);
                 transition: color 300ms ease;
                 cursor: pointer;
@@ -515,7 +520,7 @@
                     display: none;
                 }
                 & + label[for^="zoom-toggle"] {
-                    align-self: flex-end;
+                    flex: 1 0 auto;
                     display: flex;
                     @include breakpoints.for-tablet-landscape-up {
                         display: none;
