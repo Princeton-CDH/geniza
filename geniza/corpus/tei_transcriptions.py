@@ -37,7 +37,13 @@ class GenizaTei(teimap.Tei):
     def no_content(self):
         return str(self.text).strip() == ""
 
-    def text_to_html(self):
+    new_page_indicators = ["recto", "verso", "side ii"]
+
+    def label_indicates_new_page(self, label):
+        label = label.lower()
+        return any([side_label in label for side_label in self.new_page_indicators])
+
+    def text_to_html(self, block_format=False):
         # convert the TEI text content to basic HTML
         blocks = []
         lines = []
@@ -76,6 +82,10 @@ class GenizaTei(teimap.Tei):
                 }
             )
 
+        # if block format requested, return blocks without further processing
+        if block_format:
+            return blocks
+
         # combine blocks of text into html, chunked into pages to match sides of images
         html = []
         page = []
@@ -84,14 +94,9 @@ class GenizaTei(teimap.Tei):
             # if there is a label and it looks like a new side,
             # start a new section
             if block["label"]:
-                label = block["label"].lower()
                 # maybe "page b " could also be a new page
-                if any(
-                    [
-                        side_label in label
-                        for side_label in ["recto", "verso", "side ii"]
-                    ]
-                ):
+                if self.label_indicates_new_page(block["label"]):
+                    # any([side_label in label for side_label in ["recto", "verso"]]):
                     # if we have any content, close the previous section
                     if page:
                         # combine all sections in the page and add to the html
