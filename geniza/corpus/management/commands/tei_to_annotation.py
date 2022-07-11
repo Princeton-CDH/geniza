@@ -20,12 +20,12 @@ from eulxml import xmlmap
 from git import Repo
 from iiif_prezi import factory
 
+from geniza.corpus.management.commands import sync_transcriptions
 from geniza.corpus.models import Document
 from geniza.corpus.tei_transcriptions import GenizaTei
-from geniza.footnotes.models import Footnote, Source
 
 
-class Command(BaseCommand):
+class Command(sync_transcriptions.Command):
     """Synchronize TEI transcriptions to edition footnote content"""
 
     v_normal = 1  # default verbosity
@@ -42,8 +42,11 @@ class Command(BaseCommand):
 
         self.verbosity = options["verbosity"]
 
+        # NOTE: some overlap with sync transcriptions manage command
+
         # make sure we have latest tei content from git repository
-        # self.sync_git(gitrepo_url, gitrepo_path)
+        # (inherited from sync transcriptions command)
+        self.sync_git(gitrepo_url, gitrepo_path)
 
         self.stats = defaultdict(int)
 
@@ -56,7 +59,7 @@ class Command(BaseCommand):
 
         sas_client = AnnotationStore(settings.ANNOTATION_SERVER_URL)
 
-        # iterate through all tei files in the repository
+        # iterate through tei files to be migrated
         for xmlfile in xmlfiles:
             self.stats["xml"] += 1
             print(xmlfile)
@@ -64,40 +67,14 @@ class Command(BaseCommand):
 
             tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
             # some files are stubs with no content
-            # check if there is no text content; report and skip
-            if tei.no_content():
-                if self.verbosity >= self.v_normal:
-                    self.stdout.write("%s has no text content, skipping" % xmlfile)
-                self.stats["empty_tei"] += 1
+            # check if the tei is ok to proceed; (e.g., empty or only translation content)
+            # if empty, report and skip
+            if not self.check_tei(tei, xmlfile):
                 continue
-            elif not tei.text.lines:
-                self.stdout.write("%s has no lines (translation?), skipping" % xmlfile)
-                self.stats["empty_tei"] += 1
-                continue
-
-            # get the document id from the filename (####.xml)
-            pgpid = os.path.splitext(xmlfile_basename)[0]
-            # in ONE case there is a duplicate id with b suffix on the second
-            try:
-                pgpid = int(pgpid.strip("b"))
-            except ValueError:
-                if self.verbosity >= self.v_normal:
-                    self.stderr.write(
-                        "Failed to generate integer PGPID from %s" % pgpid
-                    )
-                continue
-            # can we rely on pgpid from xml?
-            # but in some cases, it looks like a join 12047 + 12351
-
-            # find the document in the database
-            try:
-                doc = Document.objects.get(
-                    models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
-                )
-            except Document.DoesNotExist:
-                self.stats["document_not_found"] += 1
-                if self.verbosity >= self.v_normal:
-                    self.stdout.write("Document %s not found in database" % pgpid)
+            # get the document for the file based on id / old id
+            doc = self.get_pgp_document(xmlfile_basename)
+            # if document was not found, skip
+            if not doc:
                 continue
 
             # found the document
@@ -107,10 +84,8 @@ class Command(BaseCommand):
             if doc.languages.count() == 1:
                 lang_code = doc.languages.first().iso_code
 
-            # get html chunked roughly by page from the tei
-            # TODO: will need separate annotations within page for labeled text
-            # NOTE: maybe we want to get the blocks that are generated internally instead
-            html_chunks = tei.text_to_html()
+            # get html blocks from the tei
+            html_blocks = tei.text_to_html(block_format=True)
 
             # get canvas objects for the images
             iiif_canvases = []
@@ -123,27 +98,40 @@ class Command(BaseCommand):
                     print("no manifest for %s" % b.fragment)
 
             print(
-                "%s html chunks and %s canvases"
-                % (len(html_chunks), len(iiif_canvases))
+                "%s html blocks and %s canvases"
+                % (len(html_blocks), len(iiif_canvases))
             )
 
             # NOTE: pgpid 1390 folio example; each chunk should be half of the canvas
-            if len(html_chunks) > len(iiif_canvases):
-                self.stdout.write(
-                    "%s has more html chunks than canvases; skipping" % xmlfile
-                )
-                continue
+            # if len(html_chunks) > len(iiif_canvases):
+            #     self.stdout.write(
+            #         "%s has more html chunks than canvases; skipping" % xmlfile
+            #     )
+            #     continue
 
-            for i, html in enumerate(html_chunks):
-                # get corresponding canvas for this section of text (assuming sequences match)
+            # start attaching to first canvas; increment based on chunk label
+            canvas_index = 0
+
+            for i, block in enumerate(html_blocks):
+                # if this is not the first block and the label suggests new image,
+                # increment canvas index
+                if i != 0 and tei.label_indicates_new_page(block["label"]):
+                    canvas_index += 1
+
+                # get the canvas for this section of text
                 # canvas includes canvas id, image id, width, height
-                canvas = iiif_canvases[i]
+                canvas = iiif_canvases[canvas_index]
+
+                annotation_target = canvas.uri
+                # previously image url
+                # annotation_target = str(canvas.image.info())
 
                 # for now, remove existing annotations for this canvas so we can reimport as needed
-                existing_annos = sas_client.search(str(canvas.image.info()))
+                # TODO: clear all canvases once before adding? how to avoid clearing out alt. transcriptions?
+                existing_annos = sas_client.search(annotation_target)
                 print(
                     "Removing %s existing annotation(s) for %s"
-                    % (len(existing_annos), canvas.image.info())
+                    % (len(existing_annos), annotation_target)
                 )
                 for anno in existing_annos:
                     sas_client.delete(anno["@id"])
@@ -158,7 +146,7 @@ class Command(BaseCommand):
                 # NOTE: currently using image id; switch to canvas id here once we switch in the editor
                 anno.add_canvas(
                     "%s#xywh=0,0,%s,%s"
-                    % (canvas.image.info(), canvas.width, canvas.height)
+                    % (annotation_target, canvas.width, canvas.height)
                 )
                 anno.within = {
                     "@type": "sc:Manifest",
@@ -169,17 +157,23 @@ class Command(BaseCommand):
                 }
 
                 # create text body; specify language if known
+                html = " <ul>%s</ul>" % "".join(
+                    "\n <li%s>%s</li>"
+                    % (f" value='{line_number}'" if line_number else "", line)
+                    for line_number, line in block["lines"]
+                    if line.strip()
+                )
                 anno.text(html, format="text/html", language=lang_code)
                 # can we save arbitrary metadata?
                 anno.resource.motivation = "transcription"
-                anno.resource.label = "test Label"
+                anno.resource.label = block["label"]
                 # explicitly indicate text direction; all of our transcriptions are rtl
                 # but NOTE: SAS doesn't seem to be preserving text direction (maybe not a v2 feature)
                 anno.resource.textDirection = "rtl"
                 # we can set arbitrary metadata that SAS will preserve as long as we namespace our properties
-                setattr(anno, "oa:annotatedBy", "username")
+                # setattr(anno, "oa:annotatedBy", "username")
                 setattr(anno, "ext:order", i + 1)
-                setattr(anno, "ext:scholarshiprecord", "footnote/source uri")
+                # setattr(anno, "ext:scholarshiprecord", "footnote/source uri")
 
                 # print(anno.toJSON())
 
