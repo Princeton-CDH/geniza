@@ -37,6 +37,11 @@ class GenizaTei(teimap.Tei):
     def no_content(self):
         return str(self.text).strip() == ""
 
+    def labels_only(self):
+        text_content = str(self.text).strip()
+        label_content = " ".join([str(label).strip() for label in self.labels])
+        return text_content == label_content
+
     def text_to_html(self):
         # convert the TEI text content to basic HTML
         blocks = []

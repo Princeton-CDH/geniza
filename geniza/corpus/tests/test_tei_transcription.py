@@ -31,6 +31,19 @@ def test_no_content():
     assert tei.no_content()
 
 
+def test_labels_only():
+    tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
+    # fixture has both labels and lines
+    assert not tei.labels_only()
+
+    # delete all the line elemens so only labels are left
+    while len(tei.lines):
+        del tei.lines[0]
+
+    # now labels only is true
+    assert tei.labels_only()
+
+
 def test_html():
     tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
     html = tei.text_to_html()

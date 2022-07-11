@@ -166,6 +166,13 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
                 self.stdout.write("%s has no text content, skipping" % xmlfile)
             self.stats["empty_tei"] += 1
             return False
+        elif tei.labels_only():
+            if self.verbosity >= self.v_normal:
+                self.stdout.write(
+                    "%s has labels only, no other text content; skipping" % xmlfile
+                )
+            self.stats["empty_tei"] += 1
+            return False
         elif not tei.text.lines:
             self.stdout.write("%s has no lines (translation?), skipping" % xmlfile)
             self.stats["empty_tei"] += 1
