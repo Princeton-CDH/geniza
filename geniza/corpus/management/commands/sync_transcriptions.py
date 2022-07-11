@@ -159,6 +159,13 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
                 )
 
     def check_tei(self, tei, xmlfile):
+        """Check TEI and report if it is empty, labels only, or has no content.
+
+        :param tei: xmlmap tei instance to check; :class:`~geniza.corpus.tei_transcriptions.GenizaTei`
+        :param xmlfile: xml filename, for reporting
+        :returns: True if check passes; False if the TEI should be skipped.
+        :rtype: bool
+        """
         # some files are stubs with no content
         # check if there is no text content; report and return true or false
         if tei.no_content():
@@ -181,8 +188,11 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
         return True
 
     def get_pgp_document(self, xmlfile_basename):
-        # find the pgp document for a tei file
-        # returns None or Doucment
+        """Find the PGP document for the specified TEI file, based on filename,
+        if possible.
+
+        :returns: instance of :class:`~geniza.corpus.models.Document` or None if not found
+        """
 
         # get the document id from the filename (####.xml)
         pgpid = os.path.splitext(xmlfile_basename)[0]
