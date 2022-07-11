@@ -27,22 +27,25 @@
         {# label row #}
         <div class="label-row"></div> {# unused (no image label, needed for column alignment) #}
         <div class="transcription-panel label-row">
-            {# dropdown is disabled by default; enable if javascript is active #}
-            <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-edition-count="{{ document.digital_editions.count }}" disabled="true">
-                <summary class="transcription-select-trigger" data-action="keydown->transcription#shiftTabCloseDropdown">
-                    <span data-transcription-target="editionShortLabel">Edition: {{ document.digital_editions.0.source.all_authors }}</span>
-                </summary>
-                <ul>
-                    {% for ed in document.digital_editions.all %}
-                        <li>
-                            <label for="edition-{{ forloop.counter }}">
-                                <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="edition-{{ forloop.counter }}" data-edition="ed-{{ ed.pk }}" />
-                                <span>Edition: {{ ed.source.all_authors }}</span>
-                            </label>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </details>
+            {# disable in editor mode #}
+            {% if not edit_mode %}
+                {# dropdown is disabled by default; enable if javascript is active #}
+                <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-edition-count="{{ document.digital_editions.count }}" disabled="true">
+                    <summary class="transcription-select-trigger" data-action="keydown->transcription#shiftTabCloseDropdown">
+                        <span data-transcription-target="editionShortLabel">Edition: {{ document.digital_editions.0.source.all_authors }}</span>
+                    </summary>
+                    <ul>
+                        {% for ed in document.digital_editions.all %}
+                            <li>
+                                <label for="edition-{{ forloop.counter }}">
+                                    <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="edition-{{ forloop.counter }}" data-edition="ed-{{ ed.pk }}" />
+                                    <span>Edition: {{ ed.source.all_authors }}</span>
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </details>
+            {% endif %}
         </div>
 
         {% comment %}
