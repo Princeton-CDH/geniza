@@ -9,7 +9,7 @@
         <span>{% translate 'Add or edit transcription' %}</span>
     </a>
 {% endif %}
-<section id="itt-panel" data-controller="transcription" data-action="click@document->transcription#clickCloseDropdown">
+<section id="itt-panel" {% if not edit_mode %}data-controller="transcription" data-action="click@document->transcription#clickCloseDropdown"{% endif %}>
     {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
     {# images displayed by default; disable if no images are available #}
     {# translators: label for checkbox toggle to show the images panel for a document #}
