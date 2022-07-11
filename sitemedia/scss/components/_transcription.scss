@@ -485,13 +485,14 @@
             // rotation controls
             button.rotate {
                 display: block;
-                float: right;
-                margin: 0 0 0 spacing.$spacing-2xs;
+                // float: right;
+                text-align: center;
+                margin: 0;
                 @include typography.icon-button-lg;
                 min-width: 48px;
                 min-height: 48px;
                 &:last-of-type {
-                    margin: 0 spacing.$spacing-md 0 spacing.$spacing-3xs;
+                    margin: 0 spacing.$spacing-xs 0 0;
                 }
                 @include breakpoints.for-tablet-landscape-up {
                     min-width: 0px;
