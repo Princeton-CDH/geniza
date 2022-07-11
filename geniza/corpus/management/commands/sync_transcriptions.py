@@ -38,6 +38,7 @@ class Command(BaseCommand):
             action="store_true",
             help="Do not save changes to the database",
         )
+        parser.add_argument("files", nargs="*", help="Only sync the specified files.")
 
     # dict of footnotes that have been updated with list of TEI files, to track/prevent
     # TEI files resolving incorrectly to the same edition
@@ -69,47 +70,23 @@ class Command(BaseCommand):
         # keep track of document ids with multiple digitized editions (likely merged records/joins)
         self.multiedition_docs = set()
 
-        # iterate through all tei files in the repository
-        for xmlfile in glob.iglob(os.path.join(gitrepo_path, "*.xml")):
+        # iterate through all tei files in the repository OR specified files
+        xmlfiles = options["files"] or glob.iglob(os.path.join(gitrepo_path, "*.xml"))
+        for xmlfile in xmlfiles:
             self.stats["xml"] += 1
             xmlfile_basename = os.path.basename(xmlfile)
 
             tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
             # some files are stubs with no content
-            # check if there is no text content; report and skip
-            if tei.no_content():
-                if self.verbosity >= self.v_normal:
-                    self.stdout.write("%s has no text content, skipping" % xmlfile)
-                self.stats["empty_tei"] += 1
-                continue
-            elif not tei.text.lines:
-                self.stdout.write("%s has no lines (translation?), skipping" % xmlfile)
-                self.stats["empty_tei"] += 1
+            # check if the tei is ok to proceed; (e.g., empty or only translation content)
+            # if empty, report and skip
+            if not self.check_tei(tei, xmlfile):
                 continue
 
-            # get the document id from the filename (####.xml)
-            pgpid = os.path.splitext(xmlfile_basename)[0]
-            # in ONE case there is a duplicate id with b suffix on the second
-            try:
-                pgpid = int(pgpid.strip("b"))
-            except ValueError:
-                if self.verbosity >= self.v_normal:
-                    self.stderr.write(
-                        "Failed to generate integer PGPID from %s" % pgpid
-                    )
-                continue
-            # can we rely on pgpid from xml?
-            # but in some cases, it looks like a join 12047 + 12351
-
-            # find the document in the database
-            try:
-                doc = Document.objects.get(
-                    models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
-                )
-            except Document.DoesNotExist:
-                self.stats["document_not_found"] += 1
-                if self.verbosity >= self.v_normal:
-                    self.stdout.write("Document %s not found in database" % pgpid)
+            # get the document for the file based on id / old id
+            doc = self.get_pgp_document(xmlfile_basename)
+            # if document was not found, skip
+            if not doc:
                 continue
 
             if doc.fragments.count() > 1:
@@ -180,6 +157,48 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
                     "Footnote pk %s updated more than once: %s"
                     % (footnote_id, ";".join(xmlfiles))
                 )
+
+    def check_tei(self, tei, xmlfile):
+        # some files are stubs with no content
+        # check if there is no text content; report and return true or false
+        if tei.no_content():
+            if self.verbosity >= self.v_normal:
+                self.stdout.write("%s has no text content, skipping" % xmlfile)
+            self.stats["empty_tei"] += 1
+            return False
+        elif not tei.text.lines:
+            self.stdout.write("%s has no lines (translation?), skipping" % xmlfile)
+            self.stats["empty_tei"] += 1
+            return False
+
+        return True
+
+    def get_pgp_document(self, xmlfile_basename):
+        # find the pgp document for a tei file
+        # returns None or Doucment
+
+        # get the document id from the filename (####.xml)
+        pgpid = os.path.splitext(xmlfile_basename)[0]
+        # in ONE case there is a duplicate id with b suffix on the second
+        try:
+            pgpid = int(pgpid.strip("b"))
+        except ValueError:
+            if self.verbosity >= self.v_normal:
+                self.stderr.write("Failed to generate integer PGPID from %s" % pgpid)
+            return
+        # can we rely on pgpid from xml?
+        # but in some cases, it looks like a join 12047 + 12351
+
+        # find the document in the database
+        try:
+            return Document.objects.get(
+                models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
+            )
+        except Document.DoesNotExist:
+            self.stats["document_not_found"] += 1
+            if self.verbosity >= self.v_normal:
+                self.stdout.write("Document %s not found in database" % pgpid)
+            return
 
     def get_edition_footnote(self, doc, tei, filename):
         """identify the edition footnote to be updated"""
