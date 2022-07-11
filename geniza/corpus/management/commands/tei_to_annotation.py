@@ -142,11 +142,13 @@ class Command(sync_transcriptions.Command):
                 # supplement rather than painting over the image
                 # multiple motivations are allowed; add transcription as secondary motivation
                 anno.motivation = ["sc:supplementing", "ext:transcription"]
-                # document the annotation target ("on")
-                # NOTE: currently using image id; switch to canvas id here once we switch in the editor
+                # document the annotation target ("on");
+                # apply to the full canvas using % notation
+                # (using nearly full canvas to make it easier to edit zones)
                 anno.add_canvas(
-                    "%s#xywh=0,0,%s,%s"
-                    % (annotation_target, canvas.width, canvas.height)
+                    "%s#percent:1,1,98,98"
+                    % (annotation_target,)
+                    # previously "%s#xywh=0,0,%s,%s" using canvas width & height
                 )
                 anno.within = {
                     "@type": "sc:Manifest",
