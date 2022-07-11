@@ -51,8 +51,8 @@ they won't show in current implementation.
 May want to gather them in the model... (but transcription content format will change)
 Also doesn't currently account for fragments without images.
         {% endcomment %}
-        {# if we have images, loop based on them #}
         {% if document.iiif_urls %}
+            {# if we have images, loop based on them #}
             {% for image_info in document.iiif_images %}
                 <div class="img" id="{{ image_info.label }}" data-controller="{% if edit_mode %}annotation{% else %}iiif{% endif %}" data-iiif-url="{{ image_info.image.info }}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer" data-action="click->iiif#scrollTo0 click->annotation#scrollTo0">
                     <div class="img-header">
@@ -95,8 +95,8 @@ Also doesn't currently account for fragments without images.
                     {% endif %}
                 </div>
             {% endfor %}
-            {# if there are no images, loop based on the transcription chunks instead #}
         {% elif document.has_transcription %}
+            {# if there are no images, loop based on the transcription chunks instead #}
             {% for chunk in document.digital_editions.0.content.html %}
                 <div class="img"></div> {# empty image div needed for grid layout #}
                 <div class="transcription-panel">
@@ -104,16 +104,6 @@ Also doesn't currently account for fragments without images.
                     {# display transcription in chunks based on loop index #}
                     <div class="transcription">{{ chunk|h1_to_h3|safe }}</div>
                 </div>
-                {% if edit_mode %}
-                    <div class="annotate" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
-                        {% if forloop.first %}
-                            <h3>{% translate 'Transcribe' %}</h3>
-                            <p class="instructions">
-                                {% translate 'Hold shift and then click on the image and drag to select a rectangular region for the block text you want to transcribe.' %}
-                            </p>
-                        {% endif %}
-                    </div>
-                {% endif %}
             {% endfor %}
         {% endif %}
         {% if document.has_image %}
