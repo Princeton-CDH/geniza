@@ -336,6 +336,7 @@
         div.transcription-panel {
             width: 100%;
             max-width: 604px;
+            margin: auto;
 
             /* adjust label padding for transcription only view */
             &.label-row {
