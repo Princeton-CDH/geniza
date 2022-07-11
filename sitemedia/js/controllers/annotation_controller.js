@@ -5,7 +5,13 @@ import TranscriptionEditor from "annotorious-tahqiq";
 import IIIFControler from "./iiif_controller";
 
 export default class extends IIIFControler {
-    static targets = ["imageContainer"];
+    static targets = [
+        "imageContainer",
+        "image",
+        "zoomSlider",
+        "zoomSliderLabel",
+        "zoomToggle",
+    ];
 
     connect() {
         // enable deep zoom, annotorious-tahqiq on load
@@ -19,13 +25,14 @@ export default class extends IIIFControler {
         const isMobile = window.innerWidth <= 900;
 
         // initialize transcription editor
-        const container = this.imageContainerTarget;
-        const transcriptionContainer = container.nextElementSibling;
+        // get sibling outside of controller scope
         const annotationContainer =
-            transcriptionContainer.querySelector(".annotate");
+            this.imageContainerTarget.nextElementSibling.querySelector(
+                ".annotate"
+            );
 
         // grab iiif URL and manifest for tahqiq
-        const canvasURL = container.dataset.canvasUrl;
+        const canvasURL = this.imageContainerTarget.dataset.canvasUrl;
         const manifestId = annotationContainer.dataset.manifest;
         const settings = {
             isMobile,
@@ -35,18 +42,17 @@ export default class extends IIIFControler {
             annotationContainer,
         };
 
-        const image = container.querySelector("img.iiif-image");
         // wait for each image to load fully before enabling OSD so we know its full height
-        if (image.complete) {
-            this.activateDeepZoom(container, image, settings);
+        if (this.imageTarget.complete) {
+            this.activateDeepZoom(settings);
         } else {
-            image.addEventListener("load", () => {
-                this.activateDeepZoom(container, image, settings);
+            this.imageTarget.addEventListener("load", () => {
+                this.activateDeepZoom(settings);
             });
         }
     }
-    addOpenSeaDragon(element, tileSources, settings) {
-        const viewer = super.addOpenSeaDragon(element, tileSources, settings);
+    addOpenSeaDragon(settings) {
+        const viewer = super.addOpenSeaDragon(settings);
         // enable annotorious-tahqiq
         const { config, canvasURL, manifestId, annotationContainer } = settings;
         const anno = Annotorious(viewer);
@@ -65,7 +71,7 @@ export default class extends IIIFControler {
         new TranscriptionEditor(anno, storagePlugin, annotationContainer);
         return viewer;
     }
-    handleZoomSliderInput(container, image, label, viewer, minZoom) {
+    handleZoomSliderInput(viewer, minZoom) {
         return (evt) => {
             // Handle changes in the zoom slider
             let zoom = parseFloat(evt.currentTarget.value);
@@ -78,7 +84,7 @@ export default class extends IIIFControler {
                 // Zoom to the chosen percentage
                 viewer.viewport.zoomTo(zoom);
             }
-            this.updateZoomUI(zoom, false, evt.currentTarget, label);
+            this.updateZoomUI(zoom, false);
         };
     }
 }
