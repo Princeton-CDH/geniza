@@ -24,6 +24,11 @@ urlpatterns = [
         name="related-documents",
     ),
     path(
+        "documents/<int:pk>/transcribe/",
+        corpus_views.DocumentTranscribeView.as_view(),
+        name="document-transcribe",
+    ),
+    path(
         "documents/<int:pk>/transcription/<int:transcription_pk>/",
         corpus_views.DocumentTranscriptionText.as_view(),
         name="document-transcription-text",

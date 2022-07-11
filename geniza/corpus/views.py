@@ -655,6 +655,19 @@ class DocumentMerge(PermissionRequiredMixin, FormView):
         return super(DocumentMerge, self).form_valid(form)
 
 
+class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
+    """View for the Transcription Editor page that uses annotorious-tahqiq"""
+
+    permission_required = "corpus.change_document"
+
+    template_name = "corpus/document_transcribe.html"
+    viewname = "corpus:document-transcribe"
+
+    def page_title(self):
+        # Translators: title of transcription editor page
+        return _("Edit transcription for %(doc)s") % {"doc": self.get_object().title}
+
+
 # --------------- Publish CSV to sync with old PGP site --------------------- #
 
 

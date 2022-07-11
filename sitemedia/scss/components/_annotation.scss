@@ -3,10 +3,7 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-// annotation container hidden by default
 div.annotate {
-    display: none;
-
     .instructions {
         font-style: italic;
         font-size: typography.$text-size-md;
@@ -17,10 +14,4 @@ div.annotate {
         color: black;
         min-height: 3em;
     }
-}
-
-/* toggle button for annotation/transcription */
-#enable-annotation {
-    position: absolute;
-    right: 2em; // spacing.$spacing-lg;
 }

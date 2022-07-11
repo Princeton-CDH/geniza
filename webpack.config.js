@@ -19,7 +19,10 @@ module.exports = (env, options) => ({
             "./sitemedia/scss/components/_iiif.scss",
             "./sitemedia/js/iiif.js",
         ],
-        transcription: "./sitemedia/js/annotation/transcription.js",
+        annotation: [
+            "./sitemedia/scss/annotation.scss",
+            "./sitemedia/js/annotation.js",
+        ],
     },
     output: {
         // locations and filenames of bundled files
