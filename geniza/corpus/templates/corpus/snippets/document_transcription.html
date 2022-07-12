@@ -47,9 +47,9 @@ Also doesn't currently account for fragments without images.
                 <div class="img" id="{{ image_info.label }}" data-controller="iiif" data-iiif-url="{{ image_info.image.info }}" data-iiif-target="imageContainer" data-action="click->iiif#scrollTo0">
                     <div class="img-header">
                         <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
-                        <input data-action="iiif#handleDeepZoom" type="range" id="zoom-slider-{{ forloop.counter0 }}" name="zoom-slider" min="1" max="100" value="0" step="0.01">
-                        <label for="zoom-slider-{{ forloop.counter0 }}">100%</label>
-                        <input data-action="iiif#handleDeepZoom" type="checkbox" id="zoom-toggle-{{ forloop.counter0 }}" name="zoom-toggle">
+                        <input data-iiif-target="zoomSlider" data-action="iiif#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
+                        <label data-iiif-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
+                        <input data-iiif-target="zoomToggle" data-action="iiif#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
                         <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
                         <button type="button" data-iiif-target="rotateLeft" class="rotate" aria-label="{% translate 'Rotate left' %}" disabled>
                             <i class="ph-arrow-counter-clockwise"></i>
@@ -58,7 +58,7 @@ Also doesn't currently account for fragments without images.
                             <i class="ph-arrow-clockwise"></i>
                         </button>
                     </div>
-                    <img class="iiif-image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
+                    <img class="iiif-image" data-iiif-target="image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
                         sizes="(max-width: 650px) 50vw, 94vw"
                         srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
                         {{ image_info.image|iiif_image:"size:width=500" }} 500w,

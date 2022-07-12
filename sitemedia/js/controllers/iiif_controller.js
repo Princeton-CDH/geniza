@@ -4,37 +4,46 @@ import { Controller } from "@hotwired/stimulus";
 import OpenSeadragon from "openseadragon";
 
 export default class extends Controller {
-    static targets = ["imageContainer", "rotateLeft", "rotateRight"];
+    static targets = [
+        "imageContainer",
+        "rotateLeft",
+        "rotateRight",
+        "image",
+        "zoomSlider",
+        "zoomSliderLabel",
+        "zoomToggle",
+    ];
 
-    imageContainerTargetDisconnected(container) {
+    imageContainerTargetDisconnected() {
         // remove OSD on target disconnect (i.e. leaving page)
-        const image = container.querySelector("img.iiif-image");
-        this.deactivateDeepZoom(container, image);
+        this.deactivateDeepZoom();
     }
     handleDeepZoom(evt) {
         // Enable OSD and/or zoom based on zoom slider level
-        const container = evt.currentTarget.parentNode.parentNode;
-        const OSD = container.querySelector(".openseadragon-container");
-        const image = container.querySelector("img.iiif-image");
+        // OSD needs to use DOM queries since it can't be assigned a target
+        const OSD = this.imageContainerTarget.querySelector(
+            ".openseadragon-container"
+        );
         if (!OSD || OSD.style.opacity === "0") {
             const isMobile = evt.currentTarget.id.startsWith("zoom-toggle");
-            this.activateDeepZoom(container, image, isMobile);
+            this.activateDeepZoom({ isMobile });
         }
     }
-    activateDeepZoom(container, image, isMobile) {
+    activateDeepZoom(settings) {
         // hide image and add OpenSeaDragon to container
-        const height = container.getBoundingClientRect()["height"];
-        let OSD = container.querySelector(".openseadragon-container");
-        container.style.height = `${height}px`;
-        image.classList.remove("visible");
-        image.classList.add("hidden");
+        const height =
+            this.imageContainerTarget.getBoundingClientRect()["height"];
+        let OSD = this.imageContainerTarget.querySelector(
+            ".openseadragon-container"
+        );
+        this.imageContainerTarget.style.height = `${height}px`;
+        this.imageTarget.classList.remove("visible");
+        this.imageTarget.classList.add("hidden");
         if (!OSD) {
-            this.addOpenSeaDragon(
-                container,
-                [container.dataset.iiifUrl],
-                isMobile
+            this.addOpenSeaDragon(settings);
+            OSD = this.imageContainerTarget.querySelector(
+                ".openseadragon-container"
             );
-            OSD = container.querySelector(".openseadragon-container");
         }
         // OSD styles have to be set directly on the element instead of adding a class, due to
         // its use of inline styles
@@ -43,8 +52,8 @@ export default class extends Controller {
         OSD.style.visibility = "visible";
         OSD.style.opacity = "1";
         // OSD needs top offset due to margin, padding, and header elements
-        if (isMobile) {
-            OSD.style.top = "130px";
+        if (settings.isMobile) {
+            OSD.style.top = "122px";
         } else {
             OSD.style.top = "72px";
         }
@@ -52,31 +61,35 @@ export default class extends Controller {
         this.rotateRightTarget.removeAttribute("disabled");
         this.rotateLeftTarget.removeAttribute("disabled");
     }
-    deactivateDeepZoom(container, image) {
+    deactivateDeepZoom() {
         // Hide OSD and show image
-        const OSD = container.querySelector(".openseadragon-container");
-        if (OSD && image) {
+        const OSD = this.imageContainerTarget.querySelector(
+            ".openseadragon-container"
+        );
+        if (OSD && this.imageTarget) {
             OSD.style.transition =
                 "opacity 300ms ease, visibility 0s ease 300ms";
             OSD.style.visibility = "hidden";
             OSD.style.opacity = "0";
-            image.classList.add("visible");
-            image.classList.remove("hidden");
+            this.imageTarget.classList.add("visible");
+            this.imageTarget.classList.remove("hidden");
             this.rotateRightTarget.setAttribute("disabled", "true");
             this.rotateLeftTarget.setAttribute("disabled", "true");
         }
     }
-    addOpenSeaDragon(element, tileSources, isMobile) {
+    addOpenSeaDragon(settings) {
+        const { isMobile } = settings;
+
         // constants for OSD
         const minZoom = 1.0; // Minimum zoom as a multiple of image size
         const maxZoom = 1.5; // Maximum zoom as a multiple of image size
 
         // inject OSD into the image container
         let viewer = OpenSeadragon({
-            element,
+            element: this.imageContainerTarget,
             prefixUrl:
                 "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/",
-            tileSources,
+            tileSources: [this.imageContainerTarget.dataset.iiifUrl],
             sequenceMode: false,
             autoHideControls: true,
             showHomeControl: false,
@@ -91,58 +104,35 @@ export default class extends Controller {
             minZoomImageRatio: minZoom,
             maxZoomPixelRatio: maxZoom,
         });
-        const zoomSlider = element.querySelector("input[type='range']");
-        const zoomSliderLabel = element.querySelector(
-            "label[for^='zoom-slider']"
-        );
-        const zoomToggle = element.querySelector(
-            "input[type='checkbox'][id^='zoom-toggle']"
-        );
-        const image = element.querySelector("img.iiif-image");
         viewer.addHandler("open", () => {
             // ensure image is positioned in top-left corner of viewer
             this.resetBounds(viewer);
             if (isMobile) {
                 // zoom to 110% if on mobile
                 viewer.viewport.zoomTo(1.1);
+                if (!this.zoomToggleTarget.checked) {
+                    this.zoomToggleTarget.checked = true;
+                }
             }
             // initialize zoom slider
-            zoomSlider.setAttribute("min", minZoom);
+            this.zoomSliderTarget.setAttribute("min", minZoom);
             // use toPrecision to ensure no extra pixels on the right of the slider
-            zoomSlider.setAttribute(
+            this.zoomSliderTarget.setAttribute(
                 "max",
                 viewer.viewport.getMaxZoom().toPrecision(2)
             );
-            zoomSlider.addEventListener("input", (evt) => {
-                // Handle changes in the zoom slider
-                let zoom = parseFloat(evt.currentTarget.value);
-                let deactivating = false;
-                if (zoom <= minZoom) {
-                    // When zoomed back out to 100%, deactivate OSD
-                    zoom = minZoom;
-                    this.resetBounds(viewer);
-                    this.deactivateDeepZoom(element, image);
-                    evt.currentTarget.value = minZoom;
-                    deactivating = true;
-                } else {
-                    // Zoom to the chosen percentage
-                    viewer.viewport.zoomTo(zoom);
-                }
-                this.updateZoomUI(
-                    zoom,
-                    deactivating,
-                    zoomSlider,
-                    zoomSliderLabel
-                );
-            });
+            this.zoomSliderTarget.addEventListener(
+                "input",
+                this.handleZoomSliderInput(viewer, minZoom)
+            );
             // initialize mobile zoom toggle
-            zoomToggle.addEventListener("input", (evt) => {
+            this.zoomToggleTarget.addEventListener("input", (evt) => {
                 // always first zoom to 100%
                 viewer.viewport.zoomTo(1.0);
                 if (!evt.currentTarget.checked) {
                     // wait to reset bounds until element is hidden
                     setTimeout(() => this.resetBounds(viewer), 300);
-                    this.deactivateDeepZoom(element, image);
+                    this.deactivateDeepZoom();
                 } else {
                     // reset bounds immediately and zoom to 110%
                     this.resetBounds(viewer);
@@ -165,24 +155,46 @@ export default class extends Controller {
                 zoom = minZoom;
             }
             // Set zoom slider value to the chosen percentage
-            zoomSlider.value = parseFloat(zoom);
-            this.updateZoomUI(zoom, false, zoomSlider, zoomSliderLabel);
+            this.zoomSliderTarget.value = parseFloat(zoom);
+            this.updateZoomUI(zoom, false);
         });
     }
-    updateZoomUI(zoom, deactivating, slider, label) {
+    handleZoomSliderInput(viewer, minZoom) {
+        return (evt) => {
+            // Handle changes in the zoom slider
+            let zoom = parseFloat(evt.currentTarget.value);
+            let deactivating = false;
+            if (zoom <= minZoom) {
+                // When zoomed back out to 100%, deactivate OSD
+                zoom = minZoom;
+                viewer.viewport.zoomTo(1.0);
+                this.resetBounds(viewer);
+                this.deactivateDeepZoom();
+                deactivating = true;
+                evt.currentTarget.value = minZoom;
+            } else {
+                // Zoom to the chosen percentage
+                viewer.viewport.zoomTo(zoom);
+            }
+            this.updateZoomUI(zoom, deactivating);
+        };
+    }
+    updateZoomUI(zoom, deactivating) {
         // update the zoom controls UI with the new value
+
         // update the zoom percentage label
-        label.textContent = `${(zoom * 100).toFixed(0)}%`;
+        this.zoomSliderLabelTarget.textContent = `${(zoom * 100).toFixed(0)}%`;
         // update progress indication in slider track
-        const percent = (zoom / slider.getAttribute("max")) * 100;
+        const percent =
+            (zoom / this.zoomSliderTarget.getAttribute("max")) * 100;
         let secondColor = "var(--filter-active)";
         if (deactivating) {
             secondColor = "#9E9E9E";
-            slider.classList.remove("active-thumb");
-        } else if (!slider.classList.contains("active-thumb")) {
-            slider.classList.add("active-thumb");
+            this.zoomSliderTarget.classList.remove("active-thumb");
+        } else if (!this.zoomSliderTarget.classList.contains("active-thumb")) {
+            this.zoomSliderTarget.classList.add("active-thumb");
         }
-        slider.style.background = `linear-gradient(to right, var(--link-primary) 0%, var(--link-primary) ${percent}%, ${secondColor} ${percent}%, ${secondColor} 100%)`;
+        this.zoomSliderTarget.style.background = `linear-gradient(to right, var(--link-primary) 0%, var(--link-primary) ${percent}%, ${secondColor} ${percent}%, ${secondColor} 100%)`;
     }
     resetBounds(viewer) {
         // Reset OSD viewer to the boundaries of the image, position in top left corner
