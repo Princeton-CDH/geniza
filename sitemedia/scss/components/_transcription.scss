@@ -565,11 +565,19 @@
         }
         .deep-zoom-container {
             position: relative;
+            width: 100%;
+            text-align: center;
             img {
-                width: 100%;
-                margin: 0 auto;
+                width: auto;
             }
             .osd {
+                // height of screen, minus height of (controls + padding)
+                height: calc(100vh - 99px);
+                @include breakpoints.for-tablet-landscape-up {
+                    // controls are vertically slimmer on desktop
+                    height: calc(100vh - 58px);
+                }
+                width: 100%;
                 position: absolute !important;
                 top: 0;
             }

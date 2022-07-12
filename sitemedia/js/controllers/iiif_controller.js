@@ -5,7 +5,7 @@ import OpenSeadragon from "openseadragon";
 
 export default class extends Controller {
     static targets = [
-        "imageContainer",
+        "imageHeader",
         "osd",
         "rotateLeft",
         "rotateRight",
@@ -29,12 +29,10 @@ export default class extends Controller {
         }
     }
     activateDeepZoom(settings) {
+        // scroll to top of controls
+        this.imageHeaderTarget.scrollIntoView();
         // hide image and add OpenSeaDragon to container
-        const height = this.imageTarget.getBoundingClientRect()["height"];
-        const width = this.imageTarget.getBoundingClientRect()["width"];
         let OSD = this.osdTarget.querySelector(".openseadragon-container");
-        this.osdTarget.style.height = `${height}px`;
-        this.osdTarget.style.width = `${width}px`;
         if (!OSD) {
             this.addOpenSeaDragon(settings);
         }
@@ -81,6 +79,8 @@ export default class extends Controller {
             maxZoomPixelRatio: maxZoom,
         });
         viewer.addHandler("open", () => {
+            // zoom to current zoom
+            viewer.viewport.zoomTo(parseFloat(this.zoomSliderTarget.value));
             // ensure image is positioned in top-left corner of viewer
             this.resetBounds(viewer);
             if (isMobile) {
@@ -184,9 +184,5 @@ export default class extends Controller {
         );
         viewer.viewport.fitBounds(newBounds, true);
         viewer.viewport.setRotation(0, true);
-    }
-    scrollTo0(evt) {
-        // Scroll container to top; necessary to prevent scroll issue when OSD is positioned absolutely
-        evt.currentTarget.scrollTop = 0;
     }
 }
