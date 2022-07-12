@@ -563,18 +563,28 @@
                 }
             }
         }
-        img {
-            width: 100%;
-            margin: 0 auto;
-            &.hidden {
-                transition: opacity 300ms ease, visibility 0s ease 300ms;
-                opacity: 0;
-                visibility: hidden;
+        .deep-zoom-container {
+            position: relative;
+            img {
+                width: 100%;
+                margin: 0 auto;
             }
-            &.visible {
-                transition: opacity 300ms ease, visibility 0s ease 0ms;
-                visibility: visible;
-                opacity: 1;
+            .osd-inner-container {
+                position: absolute !important;
+                top: 0;
+            }
+            img,
+            .osd-inner-container {
+                &.hidden {
+                    transition: opacity 300ms ease, visibility 0s ease 300ms;
+                    opacity: 0;
+                    visibility: hidden;
+                }
+                &.visible {
+                    transition: opacity 300ms ease, visibility 0s ease 0ms;
+                    visibility: visible;
+                    opacity: 1;
+                }
             }
         }
         @include breakpoints.for-tablet-landscape-up {
