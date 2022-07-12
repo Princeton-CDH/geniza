@@ -569,12 +569,12 @@
                 width: 100%;
                 margin: 0 auto;
             }
-            .osd-inner-container {
+            .osd {
                 position: absolute !important;
                 top: 0;
             }
             img,
-            .osd-inner-container {
+            .osd {
                 &.hidden {
                     transition: opacity 300ms ease, visibility 0s ease 300ms;
                     opacity: 0;

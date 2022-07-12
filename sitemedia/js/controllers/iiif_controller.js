@@ -6,7 +6,7 @@ import OpenSeadragon from "openseadragon";
 export default class extends Controller {
     static targets = [
         "imageContainer",
-        "osdInner",
+        "osd",
         "rotateLeft",
         "rotateRight",
         "image",
@@ -15,17 +15,15 @@ export default class extends Controller {
         "zoomToggle",
     ];
 
-    osdInnerTargetDisconnected() {
+    osdTargetDisconnected() {
         // remove OSD on target disconnect (i.e. leaving page)
         this.deactivateDeepZoom();
     }
     handleDeepZoom(evt) {
         // Enable OSD and/or zoom based on zoom slider level
         // OSD needs to use DOM queries since it can't be assigned a target
-        const OSD = this.osdInnerTarget.querySelector(
-            ".openseadragon-container"
-        );
-        if (!OSD || this.osdInnerTarget.classList.contains("hidden")) {
+        const OSD = this.osdTarget.querySelector(".openseadragon-container");
+        if (!OSD || this.osdTarget.classList.contains("hidden")) {
             const isMobile = evt.currentTarget.id.startsWith("zoom-toggle");
             this.activateDeepZoom({ isMobile });
         }
@@ -34,24 +32,24 @@ export default class extends Controller {
         // hide image and add OpenSeaDragon to container
         const height = this.imageTarget.getBoundingClientRect()["height"];
         const width = this.imageTarget.getBoundingClientRect()["width"];
-        let OSD = this.osdInnerTarget.querySelector(".openseadragon-container");
-        this.osdInnerTarget.style.height = `${height}px`;
-        this.osdInnerTarget.style.width = `${width}px`;
+        let OSD = this.osdTarget.querySelector(".openseadragon-container");
+        this.osdTarget.style.height = `${height}px`;
+        this.osdTarget.style.width = `${width}px`;
         if (!OSD) {
             this.addOpenSeaDragon(settings);
         }
         this.imageTarget.classList.remove("visible");
         this.imageTarget.classList.add("hidden");
-        this.osdInnerTarget.classList.remove("hidden");
-        this.osdInnerTarget.classList.add("visible");
+        this.osdTarget.classList.remove("hidden");
+        this.osdTarget.classList.add("visible");
         this.rotateRightTarget.removeAttribute("disabled");
         this.rotateLeftTarget.removeAttribute("disabled");
     }
     deactivateDeepZoom() {
         this.imageTarget.classList.add("visible");
         this.imageTarget.classList.remove("hidden");
-        this.osdInnerTarget.classList.remove("visible");
-        this.osdInnerTarget.classList.add("hidden");
+        this.osdTarget.classList.remove("visible");
+        this.osdTarget.classList.add("hidden");
         this.rotateRightTarget.setAttribute("disabled", "true");
         this.rotateLeftTarget.setAttribute("disabled", "true");
     }
@@ -64,10 +62,10 @@ export default class extends Controller {
 
         // inject OSD into the image container
         let viewer = OpenSeadragon({
-            element: this.osdInnerTarget,
+            element: this.osdTarget,
             prefixUrl:
                 "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/",
-            tileSources: [this.osdInnerTarget.dataset.iiifUrl],
+            tileSources: [this.osdTarget.dataset.iiifUrl],
             sequenceMode: false,
             autoHideControls: true,
             showHomeControl: false,
