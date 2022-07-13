@@ -109,3 +109,6 @@ TRANSCRIPTIONS_JSON_FILE = BASE_DIR.parent / "data" / "transcriptions.json"
 
 # Google Analytics tracking ID
 # GTAGS_ANALYTICS_ID = ''
+
+# TinyMCE API key
+# TINY_API_KEY = '';

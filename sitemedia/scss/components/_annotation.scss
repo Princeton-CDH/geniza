@@ -9,7 +9,8 @@ div.annotate {
         font-size: typography.$text-size-md;
     }
 
-    div[contenteditable="true"] {
+    div[contenteditable="true"],
+    h3[contenteditable="true"] {
         background-color: white;
         color: black;
         min-height: 3em;
