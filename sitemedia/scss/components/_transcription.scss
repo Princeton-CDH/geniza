@@ -563,18 +563,33 @@
                 }
             }
         }
-        img {
+        .deep-zoom-container {
+            position: relative;
             width: 100%;
-            margin: 0 auto;
-            &.hidden {
-                transition: opacity 300ms ease, visibility 0s ease 300ms;
-                opacity: 0;
-                visibility: hidden;
+            text-align: center;
+            .osd {
+                // height of screen, minus height of (controls + padding)
+                height: calc(100vh - 99px);
+                @include breakpoints.for-tablet-landscape-up {
+                    // controls are vertically slimmer on desktop
+                    height: calc(100vh - 58px);
+                }
+                position: absolute !important;
+                top: 0;
             }
-            &.visible {
-                transition: opacity 300ms ease, visibility 0s ease 0ms;
-                visibility: visible;
-                opacity: 1;
+            img,
+            .osd {
+                width: 100%;
+                &.hidden {
+                    transition: opacity 300ms ease, visibility 0s ease 300ms;
+                    opacity: 0;
+                    visibility: hidden;
+                }
+                &.visible {
+                    transition: opacity 300ms ease, visibility 0s ease 0ms;
+                    visibility: visible;
+                    opacity: 1;
+                }
             }
         }
         @include breakpoints.for-tablet-landscape-up {
