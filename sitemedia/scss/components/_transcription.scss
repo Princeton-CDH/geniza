@@ -567,9 +567,6 @@
             position: relative;
             width: 100%;
             text-align: center;
-            img {
-                width: auto;
-            }
             .osd {
                 // height of screen, minus height of (controls + padding)
                 height: calc(100vh - 99px);
@@ -577,12 +574,12 @@
                     // controls are vertically slimmer on desktop
                     height: calc(100vh - 58px);
                 }
-                width: 100%;
                 position: absolute !important;
                 top: 0;
             }
             img,
             .osd {
+                width: 100%;
                 &.hidden {
                     transition: opacity 300ms ease, visibility 0s ease 300ms;
                     opacity: 0;
