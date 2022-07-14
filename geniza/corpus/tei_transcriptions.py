@@ -90,14 +90,23 @@ class GenizaTei(teimap.Tei):
             # start a new section
             if block["label"]:
                 label = block["label"].lower()
-                # maybe "page b " could also be a new page
-                if any(
-                    [
-                        side_label in label
-                        for side_label in ["recto", "verso", "side ii"]
-                    ]
+                if (
+                    any(
+                        [
+                            side_label in label
+                            for side_label in [
+                                "recto",
+                                "verso",
+                                "side ii",
+                                "page b",
+                                "page 2",
+                            ]
+                        ]
+                    )
+                    or label.startswith("t-s ")
+                    or label.startswith("ts ")
                 ):
-                    # if we have any content, close the previous section
+                    # if we have any content, close the previous sect ion
                     if page:
                         # combine all sections in the page and add to the html
                         html.append("\n".join(page))
