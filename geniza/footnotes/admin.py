@@ -352,6 +352,7 @@ class FootnoteAdmin(admin.ModelAdmin):
                     "doc_relation",
                     "url",
                     "notes",
+                    "content",
                 )
             },
         ),
