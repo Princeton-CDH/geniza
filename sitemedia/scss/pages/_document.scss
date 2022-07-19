@@ -88,22 +88,12 @@ main.document {
             margin: 45px spacing.$spacing-md 0;
             align-self: flex-start;
             text-align: left;
-            line-height: 2.5625rem;
             @include breakpoints.for-desktop-up {
                 flex: 1 0 100%;
                 padding-left: 0;
                 margin: spacing.$spacing-3xl 0 0;
                 align-self: flex-start;
                 margin-left: 0;
-            }
-            li {
-                // spacing between tags
-                margin-right: 20px;
-                min-width: 48px;
-                &:last-child {
-                    margin-right: 0;
-                }
-                @include typography.meta;
             }
         }
         // Input date "In PGP since" text

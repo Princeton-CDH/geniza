@@ -108,9 +108,11 @@
                 {# Translators: label for tags on a document #}
                 <h3 class="sr-only">{% translate 'Tags' %}</h3>
                 <ul class="tags">
-                    {% for tag in document.alphabetized_tags %}
-                        <li><a href='{% url "corpus:document-search" %}?q=tag:"{{ tag }}"' rel="tag">{{ tag }}</a></li>
-                    {% endfor %}
+                    {% spaceless %}
+                        {% for tag in document.alphabetized_tags %}
+                            <li><a href='{% url "corpus:document-search" %}?q=tag:"{{ tag }}"' rel="tag">{{ tag }}</a></li>
+                        {% endfor %}
+                    {% endspaceless %}
                 </ul>
             </section>
         {% endif %}
