@@ -24,7 +24,7 @@ class Annotation(models.Model):
         ordering = ["created"]
 
     def __repr__(self):
-        return f"Annotation(id={self.id})"
+        return f"<Annotation id:{self.id}>"
 
     def get_absolute_url(self):
         return reverse("annotations:annotation", kwargs={"pk": self.pk})
@@ -55,9 +55,6 @@ class Annotation(models.Model):
                 raise ValueError("canonical id differs")
             self.via = data["via"]
             del data["via"]
-
-        print("setting content, data is :")
-        print(data)
 
         self.content = data
 
