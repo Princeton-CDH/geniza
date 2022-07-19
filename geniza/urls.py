@@ -46,6 +46,7 @@ urlpatterns = [
     ),
     # redirect homepage to admin site for now
     path("admin/", admin.site.urls),
+    path("annotations/", include("geniza.annotations.urls", namespace="annotations")),
     path("accounts/", include("pucas.cas_urls")),
     path("i18n/", include("django.conf.urls.i18n")),
     path("taggit/", include("taggit_selectize.urls")),

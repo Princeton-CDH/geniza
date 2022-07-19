@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",
     "geniza.pages.apps.PagesConfig",
+    "geniza.annotations",
 ]
 
 MIDDLEWARE = [

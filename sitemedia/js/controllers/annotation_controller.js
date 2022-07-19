@@ -1,6 +1,8 @@
 import * as Annotorious from "@recogito/annotorious-openseadragon";
-import AnnotationServerStorage from "annotorious-sas-storage";
-import TranscriptionEditor from "annotorious-tahqiq";
+import {
+    TranscriptionEditor,
+    AnnotationServerStorage,
+} from "annotorious-tahqiq";
 
 import IIIFControler from "./iiif_controller";
 
