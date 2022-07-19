@@ -1,13 +1,13 @@
 import json
 
+from django.contrib import admin
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpResponse, JsonResponse
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 
+from geniza.annotations.admin import AnnotationAdmin
 from geniza.annotations.models import Annotation
 
 # NOTE: for PGP, anyone with permission to edit documents
@@ -21,7 +21,6 @@ class AnnotationResponse(JsonResponse):
     content_type = 'application/ld+json; profile="http://www.w3.org/ns/anno.jsonld"'
 
 
-@method_decorator(csrf_exempt, name="dispatch")  # disable csrf for testing with curl
 class AnnotationList(PermissionRequiredMixin, View, MultipleObjectMixin):
     model = Annotation
     http_method_names = ["get", "post"]
@@ -37,18 +36,8 @@ class AnnotationList(PermissionRequiredMixin, View, MultipleObjectMixin):
 
     def get(self, request, *args, **kwargs):
         # strictly speaking, annotations endpoint should return an annotation container,
-        # but that structure looks terrible to work with and we need a way to search,
-        # which is not defined in the w3c annotation protocol.
-
-        # implement something similar to SAS search by uri
         annotations = self.get_queryset()
-        # if a target uri is specified, filter annotations
-        target_uri = self.request.GET.get("target_uri")
-        if target_uri:
-            annotations = annotations.filter(content__target__source__id=target_uri)
-
-        # return json response with list of annotations
-        # TODO: eventually we'll need to limit or paginate this
+        # for now, just return json response with list of all annotations
         return AnnotationResponse(
             {"items": [a.compile() for a in annotations]},
         )
@@ -65,15 +54,46 @@ class AnnotationList(PermissionRequiredMixin, View, MultipleObjectMixin):
         # location header must include annotation's new uri
         resp.location = anno.uri()
 
-        # TODO: should we create log entries to document activity?
+        anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
+        anno_admin.log_addition(request, anno, "Created via API")
 
         return resp
 
 
-@method_decorator(csrf_exempt, name="dispatch")  # disable csrf for testing
+class AnnotationSearch(View, MultipleObjectMixin):
+    model = Annotation
+    http_method_names = ["get"]
+
+    paginate_by = None  # disable pagination for now
+
+    def get(self, request, *args, **kwargs):
+        # implement minimal search by uri
+        # implement something similar to SAS search by uri
+        annotations = self.get_queryset()
+        # if a target uri is specified, filter annotations
+        target_uri = self.request.GET.get("uri")
+        if target_uri:
+            annotations = annotations.filter(content__target__source__id=target_uri)
+        # NOTE: if any params are ignored, they should be removed from id for search uri
+        # and documented in the response as ignored
+
+        # return json response with list of annotations,
+        # in basic AnnotationList format
+        # TODO: eventually we may want pagination
+        # (probably not needed for target uri searches)
+        return JsonResponse(
+            {
+                "@context": "http://iiif.io/api/presentation/2/context.json",
+                "@id": request.build_absolute_uri(),
+                "@type": "sc:AnnotationList",
+                "resources": [a.compile() for a in annotations],
+            },
+        )
+
+
 class AnnotationDetail(PermissionRequiredMixin, View, SingleObjectMixin):
     model = Annotation
-    http_method_names = ["get", "post", "delete"]
+    http_method_names = ["get", "post", "delete", "head"]
 
     def get(self, request, *args, **kwargs):
         # display as json on get
@@ -81,12 +101,12 @@ class AnnotationDetail(PermissionRequiredMixin, View, SingleObjectMixin):
         return AnnotationResponse(anno.compile())
 
     def get_permission_required(self):
-        # GET doesn't require any permission
-        if self.request.method == "GET":
-            return ()
-        # POST and DELETE require permission to create annotations
-        else:
+        # POST and DELETE require permission to modify/remove annotations
+        if self.request.method in ["POST", "DELETE"]:
             return (ANNOTATE_PERMISSION,)
+        # GET/HEAD don't require any permissions
+        else:
+            return ()
 
     def post(self, request, *args, **kwargs):
         # update on post
@@ -95,9 +115,10 @@ class AnnotationDetail(PermissionRequiredMixin, View, SingleObjectMixin):
         json_data = json.loads(request.body)
         anno.set_content(json_data)
         anno.save()
-        print("there are now %d annotations" % Annotation.objects.count())
-        # TODO: create log entry?
 
+        # create log entry to document change
+        anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
+        anno_admin.log_change(request, anno, "Updated via API")
         return AnnotationResponse(anno.compile())
 
     def delete(self, request, *args, **kwargs):
@@ -106,5 +127,7 @@ class AnnotationDetail(PermissionRequiredMixin, View, SingleObjectMixin):
         anno = self.get_object()
         anno.delete()
 
-        # TODO: create log entry?
+        # create log entry to document deletion
+        anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
+        anno_admin.log_deletion(request, anno, repr(anno))
         return HttpResponse(status=204)
