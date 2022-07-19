@@ -18,6 +18,10 @@ class Annotation(models.Model):
     #: uri of annotation when imported from another copy (optional)
     via = models.URLField(blank=True)
 
+    class Meta:
+        # by default, order by creation time
+        ordering = ["created"]
+
     def __repr__(self):
         return f"Annotation(id={self.id})"
 
@@ -27,7 +31,36 @@ class Annotation(models.Model):
     def uri(self):
         return absolutize_url(self.get_absolute_url())
 
+    def set_content(self, data):
+        """Set or update annotation content and model fields."""
+        # remove any values tracked on the model; redundant in json field
+        for val in ["id", "created", "modified", "@context", "type"]:
+            if val in data:
+                del data[val]
+
+        # store via and canonical if set; error if set and different
+        if "canonical" in data:
+            if self.canonical and self.canonical != data["canonical"]:
+                # TODO: custom exception?
+                raise ValueError("canonical id differs")
+            self.canonical = data["canonical"]
+            del data["canonical"]
+        if "via" in data:
+            if self.via and self.via != data["via"]:
+                raise ValueError("canonical id differs")
+            self.via = data["via"]
+            del data["via"]
+
+        print("setting content, data is :")
+        print(data)
+
+        self.content = data
+
     def compile(self):
+        """Combine annotation data and return as a dictionary that
+        can be serialized as JSON."""
+
+        # define these first, so values will be listed in a sensible order
         anno = {
             "@context": "http://www.w3.org/ns/anno.jsonld",
             "id": self.uri(),
@@ -39,6 +72,11 @@ class Annotation(models.Model):
             anno["canonical"] = self.canonical
         if self.via:
             anno["via"] = self.via
-        # FIXME: don't let json values override the content
+        # make a copy of the base annotation data
+        base_anno = anno.copy()
+        # update with the rest of the annotation content
         anno.update(self.content)
+        # overwrite with the base annotation data in case of any collisions
+        # between content and model fields
+        anno.update(base_anno)
         return anno

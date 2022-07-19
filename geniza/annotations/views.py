@@ -34,6 +34,7 @@ class AnnotationList(View, MultipleObjectMixin):
             annotations = annotations.filter(content__target__source__id=target_uri)
 
         # return json response with list of annotations
+        # TODO: eventually we'll need to limit or paginate this
         return AnnotationResponse(
             {"items": [a.compile() for a in annotations]},
         )
@@ -42,14 +43,16 @@ class AnnotationList(View, MultipleObjectMixin):
     def post(self, request, *args, **kwargs):
         # parse request content as json
         json_data = json.loads(request.body)
-        # TODO: generalize logic to a set content method for create/update
-        del json_data["id"]
-        anno = Annotation(content=json_data)
+        anno = Annotation()
+        anno.set_content(json_data)
         anno.save()
         resp = AnnotationResponse(anno.compile())
         resp.status_code = 201  # created
         # location header must include annotation's new uri
         resp.location = anno.uri()
+
+        # TODO: should we create log entries to document activity?
+
         return resp
 
 
@@ -68,8 +71,11 @@ class AnnotationDetail(View, SingleObjectMixin):
         # should use etag / if-match
         anno = self.get_object()
         json_data = json.loads(request.body)
-        anno.content = json_data
+        anno.set_content(json_data)
         anno.save()
+        print("there are now %d annotations" % Annotation.objects.count())
+        # TODO: create log entry?
+
         return AnnotationResponse(anno.compile())
 
     def delete(self, request, *args, **kwargs):
@@ -77,4 +83,6 @@ class AnnotationDetail(View, SingleObjectMixin):
         # deleted uuid should not be reused (relying on low likelihood of uuid collision)
         anno = self.get_object()
         anno.delete()
-        return AnnotationResponse(status=204)
+
+        # TODO: create log entry?
+        return HttpResponse(status=204)
