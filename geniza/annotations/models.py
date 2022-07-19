@@ -1,5 +1,6 @@
 import uuid
 
+from django.contrib import admin
 from django.db import models
 from django.urls import reverse
 
@@ -28,6 +29,10 @@ class Annotation(models.Model):
     def get_absolute_url(self):
         return reverse("annotations:annotation", kwargs={"pk": self.pk})
 
+    @admin.display(
+        ordering="id",
+        description="URI",
+    )
     def uri(self):
         return absolutize_url(self.get_absolute_url())
 
