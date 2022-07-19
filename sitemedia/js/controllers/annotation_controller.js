@@ -64,6 +64,7 @@ export default class extends IIIFControler {
             annotationEndpoint: config.server_url,
             target: canvasURL,
             manifest: config.manifest_base_url + manifestId,
+            csrf_token: config.csrf_token,
         };
         const storagePlugin = new AnnotationServerStorage(
             anno,
