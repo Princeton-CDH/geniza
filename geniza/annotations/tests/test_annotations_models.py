@@ -1,6 +1,7 @@
 import pytest
 
 from geniza.annotations.models import Annotation
+from geniza.common.utils import absolutize_url
 
 
 class TestAnnotation:
@@ -16,12 +17,12 @@ class TestAnnotation:
     @pytest.mark.django_db
     def test_uri(self):
         anno = Annotation()
-        assert anno.uri() == "http://example.com/annotations/%s/" % anno.pk
+        assert anno.uri() == absolutize_url("/annotations/%s/" % anno.pk)
 
     def test_set_content(self):
         content = {
             "@context": "http://www.w3.org/ns/anno.jsonld",
-            "id": "http://example.com/annotations/1",
+            "id": absolutize_url("/annotations/1"),
             "type": "Annotation",
             "foo": "bar",
         }
