@@ -27,8 +27,9 @@ class AnnotationAdmin(admin.ModelAdmin):
         """retrieve pgpid from manifest if available; assumes geniza manifest structure"""
         try:
             manifest = obj.content["target"]["source"]["partOf"]["id"]
-            return manifest.strip("/").split("/")[-3]
-        except (KeyError, TypeError):
+            return int(manifest.strip("/").split("/")[-3])
+        except (KeyError, TypeError, ValueError):
+            # might not be present, or might not be an integer; ignore errors
             return
 
     def target_id(self, obj):
