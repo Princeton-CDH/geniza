@@ -19,6 +19,7 @@ class TestAnnotation:
         anno = Annotation()
         assert anno.uri() == absolutize_url("/annotations/%s/" % anno.pk)
 
+    @pytest.mark.django_db
     def test_set_content(self):
         content = {
             "@context": "http://www.w3.org/ns/anno.jsonld",
