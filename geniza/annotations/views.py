@@ -21,15 +21,17 @@ class AnnotationList(View, MultipleObjectMixin):
     model = Annotation
     http_method_names = ["get", "post"]
 
+    paginate_by = None  # disable pagination for now
+
     def get(self, request, *args, **kwargs):
         # strictly speaking, annotations endpoint should return an annotation container,
         # but that structure looks terrible to work with and we need a way to search,
         # which is not defined in the w3c annotation protocol.
-        annotations = Annotation.objects.all()
-        # implement something similar to SAS search by uri
 
+        # implement something similar to SAS search by uri
+        annotations = self.get_queryset()
         # if a target uri is specified, filter annotations
-        target_uri = request.GET.get("target_uri")
+        target_uri = self.request.GET.get("target_uri")
         if target_uri:
             annotations = annotations.filter(content__target__source__id=target_uri)
 
