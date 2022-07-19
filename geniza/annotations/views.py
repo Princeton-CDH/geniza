@@ -1,15 +1,20 @@
 import json
 
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 
 from geniza.annotations.models import Annotation
+
+# NOTE: for PGP, anyone with permission to edit documents
+# should also have permission to edit or create transcriptions.
+# So, we only check for change document permission
+# instead of add, change, delete annotation permissions.
+ANNOTATE_PERMISSION = "corpus.change_document"
 
 
 class AnnotationResponse(JsonResponse):
@@ -17,11 +22,18 @@ class AnnotationResponse(JsonResponse):
 
 
 @method_decorator(csrf_exempt, name="dispatch")  # disable csrf for testing with curl
-class AnnotationList(View, MultipleObjectMixin):
+class AnnotationList(PermissionRequiredMixin, View, MultipleObjectMixin):
     model = Annotation
     http_method_names = ["get", "post"]
 
     paginate_by = None  # disable pagination for now
+
+    def get_permission_required(self):
+        # POST requires permission to create annotations
+        if self.request.method == "POST":
+            return (ANNOTATE_PERMISSION,)
+        # GET doesn't require any permission
+        return ()
 
     def get(self, request, *args, **kwargs):
         # strictly speaking, annotations endpoint should return an annotation container,
@@ -59,7 +71,7 @@ class AnnotationList(View, MultipleObjectMixin):
 
 
 @method_decorator(csrf_exempt, name="dispatch")  # disable csrf for testing
-class AnnotationDetail(View, SingleObjectMixin):
+class AnnotationDetail(PermissionRequiredMixin, View, SingleObjectMixin):
     model = Annotation
     http_method_names = ["get", "post", "delete"]
 
@@ -67,6 +79,14 @@ class AnnotationDetail(View, SingleObjectMixin):
         # display as json on get
         anno = self.get_object()
         return AnnotationResponse(anno.compile())
+
+    def get_permission_required(self):
+        # GET doesn't require any permission
+        if self.request.method == "GET":
+            return ()
+        # POST and DELETE require permission to create annotations
+        else:
+            return (ANNOTATE_PERMISSION,)
 
     def post(self, request, *args, **kwargs):
         # update on post
