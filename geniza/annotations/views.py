@@ -11,7 +11,9 @@ from django.views.generic.list import MultipleObjectMixin
 
 from geniza.annotations.models import Annotation
 
-ANNO_CONTENT_TYPE = 'application/ld+json; profile="http://www.w3.org/ns/anno.jsonld"'
+
+class AnnotationResponse(JsonResponse):
+    content_type = 'application/ld+json; profile="http://www.w3.org/ns/anno.jsonld"'
 
 
 @method_decorator(csrf_exempt, name="dispatch")  # disable csrf for testing with curl
@@ -32,9 +34,8 @@ class AnnotationList(View, MultipleObjectMixin):
             annotations = annotations.filter(content__target__source__id=target_uri)
 
         # return json response with list of annotations
-        return JsonResponse(
+        return AnnotationResponse(
             {"items": [a.compile() for a in annotations]},
-            content_type=ANNO_CONTENT_TYPE,
         )
 
     # todo check perms
@@ -45,7 +46,7 @@ class AnnotationList(View, MultipleObjectMixin):
         del json_data["id"]
         anno = Annotation(content=json_data)
         anno.save()
-        resp = JsonResponse(anno.compile(), content_type=ANNO_CONTENT_TYPE)
+        resp = AnnotationResponse(anno.compile())
         resp.status_code = 201  # created
         # location header must include annotation's new uri
         resp.location = anno.uri()
@@ -60,7 +61,7 @@ class AnnotationDetail(View, SingleObjectMixin):
     def get(self, request, *args, **kwargs):
         # display as json on get
         anno = self.get_object()
-        return JsonResponse(anno.compile())
+        return AnnotationResponse(anno.compile())
 
     def post(self, request, *args, **kwargs):
         # update on post
@@ -69,11 +70,11 @@ class AnnotationDetail(View, SingleObjectMixin):
         json_data = json.loads(request.body)
         anno.content = json_data
         anno.save()
-        return JsonResponse(anno.compile())
+        return AnnotationResponse(anno.compile())
 
     def delete(self, request, *args, **kwargs):
         # should use etag / if-match
         # deleted uuid should not be reused (relying on low likelihood of uuid collision)
         anno = self.get_object()
         anno.delete()
-        return HttpResponse(status=204)
+        return AnnotationResponse(status=204)
