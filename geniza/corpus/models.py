@@ -607,14 +607,18 @@ class Document(ModelIndexable, DocumentDateMixin):
         """List of IIIF images and labels for images of the Document's Fragments.
         :param filter_side: if TextBlocks have side info, filter images by side (default: False)"""
         iiif_images = []
-        # possible labels for each side in IIIF canvases
-        side_labels = {
-            TextBlock.RECTO: ["1r", "recto"],
-            TextBlock.VERSO: ["1v", "verso"],
-            TextBlock.RECTO_VERSO: ["1r", "recto", "1v", "verso"],
-        }
+
         for b in self.textblock_set.all():
             frag_images = b.fragment.iiif_images()
+            # image indices of this TextBlock's side (0 is recto, 1 is verso)
+            selected = [
+                0
+                if any(b.side == s for s in [TextBlock.RECTO_VERSO, TextBlock.RECTO])
+                else None,
+                1
+                if any(b.side == s for s in [TextBlock.RECTO_VERSO, TextBlock.VERSO])
+                else None,
+            ]
             if frag_images is not None:
                 images, labels = frag_images
                 iiif_images += [
@@ -625,9 +629,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                     }
                     for i, img in enumerate(images)
                     # filter only if filter_side is True and TextBlock has side
-                    if not filter_side
-                    or not b.side
-                    or any(s in labels[i] for s in side_labels[b.side])
+                    if not filter_side or not b.side or i in selected
                 ]
 
         return iiif_images
