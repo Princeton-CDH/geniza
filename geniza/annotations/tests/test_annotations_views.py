@@ -4,7 +4,7 @@ import uuid
 import pytest
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
 from django.urls import reverse
-from pytest_django.asserts import assertContains
+from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.annotations.models import Annotation
 from geniza.annotations.views import AnnotationResponse
@@ -128,3 +128,26 @@ class TestAnnotationDetail:
         # should have log entry for removal
         log_entry = LogEntry.objects.get(object_id=anno_id)
         assert log_entry.action_flag == DELETION
+
+
+@pytest.mark.django_db
+class TestAnnotationSearch:
+    anno_search_url = reverse("annotations:search")
+
+    def test_search_uri(self, client):
+        # content__target__source__id=target_uri)
+        target_uri = "http://example.com/target/1"
+        anno1 = Annotation.objects.create(
+            content={"target": {"source": {"id": target_uri}}}
+        )
+        anno2 = Annotation.objects.create(
+            content={"target": {"source": {"id": "http://example.com/target/2"}}}
+        )
+        response = client.get(self.anno_search_url, {"uri": target_uri})
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/json"
+        # response should indicate annotation list
+        assertContains(response, "sc:AnnotationList")
+        # should bring back only anno1
+        assertContains(response, anno1.uri())
+        assertNotContains(response, anno2.uri())
