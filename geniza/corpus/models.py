@@ -611,6 +611,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         side_labels = {
             TextBlock.RECTO: ["1r", "recto"],
             TextBlock.VERSO: ["1v", "verso"],
+            TextBlock.RECTO_VERSO: ["1r", "recto", "1v", "verso"],
         }
         for b in self.textblock_set.all():
             frag_images = b.fragment.iiif_images()
