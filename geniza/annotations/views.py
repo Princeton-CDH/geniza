@@ -44,14 +44,38 @@ class AnnotationList(
         return ()
 
     def get(self, request, *args, **kwargs):
-        # strictly speaking, annotations endpoint should return an annotation container,
+        # populate queryset
         annotations = self.get_queryset()
-        # for now, just return json response with list of all annotations
-        return AnnotationResponse(
-            {"items": [a.compile() for a in annotations]},
-        )
+
+        # get current uri without any params
+        request_uri = request.build_absolute_uri().split("?")[0]
+        current_page_params = request.GET.copy()
+        current_page_params["page"] = 1  # only one page until we implement pagination
+
+        # simple annotation collection reponse without pagination
+        response_data = {
+            "@context": "http://www.w3.org/ns/anno.jsonld",
+            "type": "AnnotationCollection",
+            "id": request_uri,
+            "total": annotations.count(),
+            "modified": annotations.last().modified.isoformat(),
+            "label": "Princeton Geniza Project Web Annotations",
+            "first": {
+                "id": "%s?%s" % (request_uri, current_page_params.urlencode()),
+                "type": "AnnotationPage",
+                # "next": "http://example.org/annotations/?iris=1&page=1",
+                # display items for the current page of results;
+                # only support full record view for now
+                "items": [a.compile(include_context=False) for a in annotations],
+            },
+            # "last": "http://example.org/annotations/?iris=1&page=42"
+        }
+
+        return AnnotationResponse(response_data)
 
     def post(self, request, *args, **kwargs):
+        # on POST, create a new annotation
+
         # parse request content as json
         json_data = json.loads(request.body)
         anno = Annotation()
@@ -92,9 +116,10 @@ class AnnotationSearch(View, MultipleObjectMixin):
         return JsonResponse(
             {
                 "@context": "http://iiif.io/api/presentation/2/context.json",
-                "@id": request.build_absolute_uri(),
+                "@id": request.build_absolute_uri(),  # @id and not id per iiif search spec
                 "@type": "sc:AnnotationList",
-                "resources": [a.compile() for a in annotations],
+                # context seems to be not required within AnnotationList
+                "resources": [a.compile(include_context=False) for a in annotations],
             },
         )
 

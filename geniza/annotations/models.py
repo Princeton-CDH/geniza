@@ -58,18 +58,27 @@ class Annotation(models.Model):
 
         self.content = data
 
-    def compile(self):
+    def compile(self, include_context=True):
         """Combine annotation data and return as a dictionary that
-        can be serialized as JSON."""
+        can be serialized as JSON.  Includes context by default,
+        but may be omitted when annotation will be included in context
+        that already has it defined."""
 
-        # define these first, so values will be listed in a sensible order
-        anno = {
-            "@context": "http://www.w3.org/ns/anno.jsonld",
-            "id": self.uri(),
-            "type": "Annotation",
-            "created": self.created.isoformat(),
-            "modified": self.modified.isoformat(),
-        }
+        # by default, include annotation context;
+        # redundant when included in annotation list or container
+        anno = {}
+        if include_context:
+            anno = {"@context": "http://www.w3.org/ns/anno.jsonld"}
+
+        # define fields in desired order
+        anno.update(
+            {
+                "id": self.uri(),
+                "type": "Annotation",
+                "created": self.created.isoformat(),
+                "modified": self.modified.isoformat(),
+            }
+        )
         if self.canonical:
             anno["canonical"] = self.canonical
         if self.via:

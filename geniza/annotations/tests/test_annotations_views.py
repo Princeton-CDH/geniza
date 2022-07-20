@@ -21,8 +21,25 @@ class TestAnnotationList:
 
         response = client.get(self.anno_list_url)
         assert response.status_code == 200
+        # should include both annotations; confirm presence by uri
         assertContains(response, anno1.uri())
         assertContains(response, anno2.uri())
+
+        response_data = response.json()
+        # should include total
+        assert response_data["total"] == 2
+        # should include last modified
+        assert response_data["modified"] == anno2.modified.isoformat()
+        # should have type and label
+        assert response_data["type"] == "AnnotationCollection"
+        assert response_data["label"] == "Princeton Geniza Project Web Annotations"
+
+        assertContains(
+            response,
+            "http://www.w3.org/ns/anno.jsonld",
+            1,
+            msg_prefix="annotation context should only be included once",
+        )
 
     def test_post_annotation_list_guest(self, client):
         response = client.post(self.anno_list_url)
