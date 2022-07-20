@@ -1,7 +1,7 @@
 import json
 
 from django.contrib import admin
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import AccessMixin, PermissionRequiredMixin
 from django.http import HttpResponse, JsonResponse
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin
@@ -17,11 +17,20 @@ from geniza.annotations.models import Annotation
 ANNOTATE_PERMISSION = "corpus.change_document"
 
 
+class ApiAccessMixin(AccessMixin):
+    raise_exception = True  # return an error instead of redirecting to login
+
+
 class AnnotationResponse(JsonResponse):
     content_type = 'application/ld+json; profile="http://www.w3.org/ns/anno.jsonld"'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(content_type=self.content_type, *args, **kwargs)
 
-class AnnotationList(PermissionRequiredMixin, View, MultipleObjectMixin):
+
+class AnnotationList(
+    PermissionRequiredMixin, ApiAccessMixin, View, MultipleObjectMixin
+):
     model = Annotation
     http_method_names = ["get", "post"]
 
@@ -42,7 +51,6 @@ class AnnotationList(PermissionRequiredMixin, View, MultipleObjectMixin):
             {"items": [a.compile() for a in annotations]},
         )
 
-    # todo check perms
     def post(self, request, *args, **kwargs):
         # parse request content as json
         json_data = json.loads(request.body)
@@ -52,7 +60,7 @@ class AnnotationList(PermissionRequiredMixin, View, MultipleObjectMixin):
         resp = AnnotationResponse(anno.compile())
         resp.status_code = 201  # created
         # location header must include annotation's new uri
-        resp.location = anno.uri()
+        resp.headers["Location"] = anno.uri()
 
         anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
         anno_admin.log_addition(request, anno, "Created via API")
@@ -91,7 +99,9 @@ class AnnotationSearch(View, MultipleObjectMixin):
         )
 
 
-class AnnotationDetail(PermissionRequiredMixin, View, SingleObjectMixin):
+class AnnotationDetail(
+    PermissionRequiredMixin, ApiAccessMixin, View, SingleObjectMixin
+):
     model = Annotation
     http_method_names = ["get", "post", "delete", "head"]
 
@@ -125,9 +135,9 @@ class AnnotationDetail(PermissionRequiredMixin, View, SingleObjectMixin):
         # should use etag / if-match
         # deleted uuid should not be reused (relying on low likelihood of uuid collision)
         anno = self.get_object()
-        anno.delete()
-
-        # create log entry to document deletion
+        # create log entry to document deletion *BEFORE* deleting
         anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
         anno_admin.log_deletion(request, anno, repr(anno))
+        # then delete
+        anno.delete()
         return HttpResponse(status=204)
