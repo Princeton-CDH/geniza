@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.http import HttpRequest
+from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.utils import translation
 from django.views.i18n import set_language
 
@@ -29,3 +30,20 @@ class PublicLocaleMiddleware:
         # otherwise, continue on with middleware chain
         response = self.get_response(request)
         return response
+
+
+class LocaleMiddleware(DjangoLocaleMiddleware):
+    ### customize locale middleware to exempt some urls from redirects
+    # adapted from https://code.djangoproject.com/ticket/17734
+
+    redirect_exempt_paths = ["admin", "annotations", "accounts"]
+
+    def process_response(self, request, response):
+
+        base_request_path = request.path_info.split("/")[1]
+        if base_request_path in self.redirect_exempt_paths:
+            # Prevent exempt URLs from redirecting to language-prefixed URLs
+            # so that we get the expected 404 instead of a 302 redirect.
+            return response
+
+        return super().process_response(request, response)

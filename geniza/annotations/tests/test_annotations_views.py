@@ -86,9 +86,7 @@ class TestAnnotationDetail:
         assert response.json() == anno.compile()
         assert response.headers["content-type"] == AnnotationResponse.content_type
 
-    @pytest.mark.skip
     def test_get_annotation_notfound(self, client):
-        # NOTE: failing because this currently redirects to /en/annotations/uuid/
         response = client.get(reverse("annotations:annotation", args=[uuid.uuid4()]))
         assert response.status_code == 404
 

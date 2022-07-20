@@ -74,7 +74,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
+    "geniza.common.middleware.LocaleMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "geniza.common.middleware.PublicLocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
