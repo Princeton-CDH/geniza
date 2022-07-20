@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 from tabular_export.admin import export_to_csv_response
+from taggit.models import Tag
 
 from geniza.common.admin import custom_empty_field_list_filter
 from geniza.corpus.models import (
@@ -23,6 +24,7 @@ from geniza.corpus.models import (
     DocumentType,
     Fragment,
     LanguageScript,
+    TagMetadata,
     TextBlock,
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
@@ -592,3 +594,17 @@ class FragmentAdmin(admin.ModelAdmin):
         # if there is an error loading the IIIF manifest
         obj.request = request
         super().save_model(request, obj, form, change)
+
+
+@admin.register(TagMetadata)
+class TagMetadataAdmin(admin.ModelAdmin):
+    list_display = (
+        "tag_name",
+        "document_count",
+    )
+
+    def tag_name(self, obj):
+        return obj.tag.name
+
+    tag_name.admin_order_field = "tag"
+    tag_name.short_description = "Tag Name"

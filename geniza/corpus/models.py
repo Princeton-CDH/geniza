@@ -28,6 +28,7 @@ from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
 from requests.exceptions import ConnectionError
+from taggit.models import Tag
 from taggit_selectize.managers import TaggableManager
 from urllib3.exceptions import HTTPError, NewConnectionError
 
@@ -1132,3 +1133,14 @@ class TextBlock(models.Model):
     def thumbnail(self):
         """iiif thumbnails for this fragment"""
         return self.fragment.iiif_thumbnails()
+
+
+class TagMetadata(models.Model):
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    document_count = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name_plural = "Tag Metadata"
+
+    def __str__(self):
+        return f"{self.tag} {self.document_count}"
