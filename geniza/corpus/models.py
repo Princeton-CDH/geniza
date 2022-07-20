@@ -612,12 +612,8 @@ class Document(ModelIndexable, DocumentDateMixin):
             frag_images = b.fragment.iiif_images()
             # image indices of this TextBlock's side (0 is recto, 1 is verso)
             selected = [
-                0
-                if any(b.side == s for s in [TextBlock.RECTO_VERSO, TextBlock.RECTO])
-                else None,
-                1
-                if any(b.side == s for s in [TextBlock.RECTO_VERSO, TextBlock.VERSO])
-                else None,
+                0 if b.side in [TextBlock.RECTO_VERSO, TextBlock.RECTO] else None,
+                1 if b.side in [TextBlock.RECTO_VERSO, TextBlock.VERSO] else None,
             ]
             if frag_images is not None:
                 images, labels = frag_images
