@@ -1,6 +1,8 @@
 import * as Annotorious from "@recogito/annotorious-openseadragon";
-import AnnotationServerStorage from "annotorious-sas-storage";
-import TranscriptionEditor from "annotorious-tahqiq";
+import {
+    TranscriptionEditor,
+    AnnotationServerStorage,
+} from "annotorious-tahqiq";
 
 import IIIFControler from "./iiif_controller";
 
@@ -62,6 +64,7 @@ export default class extends IIIFControler {
             annotationEndpoint: config.server_url,
             target: canvasURL,
             manifest: config.manifest_base_url + manifestId,
+            csrf_token: config.csrf_token,
         };
         const storagePlugin = new AnnotationServerStorage(
             anno,

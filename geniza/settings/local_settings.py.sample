@@ -43,8 +43,6 @@ PUCAS_LDAP.update({
     'SEARCH_FILTER': "",
 })
 
-# base url for simple annotation server
-ANNOTATION_SERVER_URL = ""
 # base url for manifest uris used with annotation server
 ANNOTATION_MANIFEST_BASE_URL = "https://geniza.princeton.edu"
 

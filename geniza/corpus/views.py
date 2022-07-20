@@ -9,6 +9,7 @@ from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect, HttpResponseRedirect
+from django.middleware.csrf import get_token as csrf_token
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
@@ -665,11 +666,13 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
         context_data.update(
             {
                 "annotation_config": {
+                    # use local annotation server embedded in pgp application
+                    "server_url": absolutize_url(reverse("annotations:list")),
                     # use getattr to simplify test config; warn if not set?
-                    "server_url": getattr(settings, "ANNOTATION_SERVER_URL", ""),
                     "manifest_base_url": getattr(
                         settings, "ANNOTATION_MANIFEST_BASE_URL", ""
                     ),
+                    "csrf_token": csrf_token(self.request),
                 },
                 "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
             }
