@@ -185,6 +185,11 @@ class TestFragment(TestCase):
         assert 'title="1v"' in thumbnails
         assert isinstance(thumbnails, SafeString)
 
+        # test with verso side selected: should add class to 1v img, but not 1r img
+        thumbnails_verso_selected = frag.iiif_thumbnails(selected_side=TextBlock.VERSO)
+        assert 'title="1v" class="selected"' in thumbnails_verso_selected
+        assert 'title="1r" class="selected"' not in thumbnails_verso_selected
+
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
     def test_iiif_images_locally_cached_manifest(self, mock_manifestimporter):
