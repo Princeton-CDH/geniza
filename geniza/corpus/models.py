@@ -603,9 +603,15 @@ class Document(ModelIndexable, DocumentDateMixin):
             )
         )
 
-    def iiif_images(self):
-        """List of IIIF images and labels for images of the Document's Fragments."""
+    def iiif_images(self, filter_side=False):
+        """List of IIIF images and labels for images of the Document's Fragments.
+        :param filter_side: if TextBlocks have side info, filter images by side (default: False)"""
         iiif_images = []
+        # possible labels for each side in IIIF canvases
+        side_labels = {
+            TextBlock.RECTO: ["1r", "recto"],
+            TextBlock.VERSO: ["1v", "verso"],
+        }
         for b in self.textblock_set.all():
             frag_images = b.fragment.iiif_images()
             if frag_images is not None:
@@ -617,6 +623,10 @@ class Document(ModelIndexable, DocumentDateMixin):
                         "shelfmark": b.fragment.shelfmark,
                     }
                     for i, img in enumerate(images)
+                    # filter only if filter_side is True and TextBlock has side
+                    if not filter_side
+                    or not b.side
+                    or any(s in labels[i] for s in side_labels[b.side])
                 ]
 
         return iiif_images
@@ -775,7 +785,8 @@ class Document(ModelIndexable, DocumentDateMixin):
         # get fragments via textblocks for correct order
         # and to take advantage of prefetching
         fragments = [tb.fragment for tb in self.textblock_set.all()]
-        images = self.iiif_images()
+        # filter by side so that search results only show the relevant side image(s)
+        images = self.iiif_images(filter_side=True)
         index_data.update(
             {
                 "pgpid_i": self.id,
