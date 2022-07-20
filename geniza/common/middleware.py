@@ -33,12 +33,15 @@ class PublicLocaleMiddleware:
 
 
 class LocaleMiddleware(DjangoLocaleMiddleware):
-    ### customize locale middleware to exempt some urls from redirects
+    """ "Customize django's default locale middleware to exempt some urls from redirects"""
+
     # adapted from https://code.djangoproject.com/ticket/17734
 
+    #: base paths for urls to exempt from locale redirects
     redirect_exempt_paths = ["admin", "annotations", "accounts"]
 
     def process_response(self, request, response):
+        """exempt untranslated paths from locale redirects"""
 
         base_request_path = request.path_info.split("/")[1]
         if base_request_path in self.redirect_exempt_paths:

@@ -22,6 +22,9 @@ class ApiAccessMixin(AccessMixin):
 
 
 class AnnotationResponse(JsonResponse):
+    """Base class for annotation responses; extends json response to set
+    annotation profile content type."""
+
     content_type = 'application/ld+json; profile="http://www.w3.org/ns/anno.jsonld"'
 
     def __init__(self, *args, **kwargs):
@@ -31,12 +34,16 @@ class AnnotationResponse(JsonResponse):
 class AnnotationList(
     PermissionRequiredMixin, ApiAccessMixin, View, MultipleObjectMixin
 ):
+    """Base annotation endpoint; on GET, returns an annotation collection;
+    on POST with valid credentials and permissions, creates a new annotation."""
+
     model = Annotation
     http_method_names = ["get", "post"]
 
     paginate_by = None  # disable pagination for now
 
     def get_permission_required(self):
+        """return permission required based on request method"""
         # POST requires permission to create annotations
         if self.request.method == "POST":
             return (ANNOTATE_PERMISSION,)
@@ -44,6 +51,7 @@ class AnnotationList(
         return ()
 
     def get(self, request, *args, **kwargs):
+        "generate annotation collection response on GET request"
         # populate queryset
         annotations = self.get_queryset()
 
@@ -74,7 +82,7 @@ class AnnotationList(
         return AnnotationResponse(response_data)
 
     def post(self, request, *args, **kwargs):
-        # on POST, create a new annotation
+        """ "Create a new annotation"""
 
         # parse request content as json
         json_data = json.loads(request.body)
@@ -93,12 +101,17 @@ class AnnotationList(
 
 
 class AnnotationSearch(View, MultipleObjectMixin):
+    """Simple seach endpoint based on IIIF Search API.
+    Returns an annotation list response."""
+
     model = Annotation
     http_method_names = ["get"]
 
     paginate_by = None  # disable pagination for now
 
     def get(self, request, *args, **kwargs):
+        """Search annotations and return an annotation list. Currently only supports
+        search by target uri."""
         # implement minimal search by uri
         # implement something similar to SAS search by uri
         annotations = self.get_queryset()
@@ -127,15 +140,19 @@ class AnnotationSearch(View, MultipleObjectMixin):
 class AnnotationDetail(
     PermissionRequiredMixin, ApiAccessMixin, View, SingleObjectMixin
 ):
+    """View to read, update, or delete a single annotation."""
+
     model = Annotation
     http_method_names = ["get", "post", "delete", "head"]
 
     def get(self, request, *args, **kwargs):
+        """display as annotation"""
         # display as json on get
         anno = self.get_object()
         return AnnotationResponse(anno.compile())
 
     def get_permission_required(self):
+        """return permission required based on request method"""
         # POST and DELETE require permission to modify/remove annotations
         if self.request.method in ["POST", "DELETE"]:
             return (ANNOTATE_PERMISSION,)
@@ -144,7 +161,7 @@ class AnnotationDetail(
             return ()
 
     def post(self, request, *args, **kwargs):
-        # update on post
+        """update the annotation on POST"""
         # should use etag / if-match
         anno = self.get_object()
         json_data = json.loads(request.body)
@@ -157,6 +174,7 @@ class AnnotationDetail(
         return AnnotationResponse(anno.compile())
 
     def delete(self, request, *args, **kwargs):
+        """delete the annotation on DELETE"""
         # should use etag / if-match
         # deleted uuid should not be reused (relying on low likelihood of uuid collision)
         anno = self.get_object()
