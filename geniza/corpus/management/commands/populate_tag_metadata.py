@@ -11,7 +11,6 @@ class Command(BaseCommand):
         tags = Tag.objects.all()
 
         for tag in tags:
-            print(tag.name)
             document_count = Document.objects.filter(tags__name=tag.name).count()
             TagMetadata.objects.create(tag=tag, document_count=document_count)
 
