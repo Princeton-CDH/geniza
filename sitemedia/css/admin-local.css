@@ -221,3 +221,8 @@ a#needsreview:target {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
 }
+
+/* selected side thumbnail for fragment admin */
+img.selected {
+    border: 5px solid var(--accent);
+}

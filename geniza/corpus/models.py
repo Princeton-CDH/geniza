@@ -241,19 +241,28 @@ class Fragment(TrackChangesModel):
 
         return images, labels
 
-    def iiif_thumbnails(self):
+    def iiif_thumbnails(self, selected_side=None):
         """html for thumbnails of iiif image, for display in admin"""
         # if there are no iiif images for this fragment, bail out
         iiif_images = self.iiif_images()
         if iiif_images is None:
             return ""
 
+        # image indices of selected side (0 is recto, 1 is verso)
+        selected = [
+            0 if selected_side in [TextBlock.RECTO_VERSO, TextBlock.RECTO] else None,
+            1 if selected_side in [TextBlock.RECTO_VERSO, TextBlock.VERSO] else None,
+        ]
         images, labels = iiif_images
         return mark_safe(
             " ".join(
                 # include label as title for now
-                '<img src="%s" loading="lazy" height="200" title="%s">'
-                % (img.size(height=200), labels[i])
+                '<img src="%s" loading="lazy" height="200" title="%s" %s>'
+                % (
+                    img.size(height=200),
+                    labels[i],
+                    'class="selected" /' if i in selected else "/",
+                )
                 for i, img in enumerate(images)
             )
         )
@@ -1136,4 +1145,6 @@ class TextBlock(models.Model):
 
     def thumbnail(self):
         """iiif thumbnails for this fragment"""
-        return self.fragment.iiif_thumbnails()
+
+        # pass own side as selected side for admin form
+        return self.fragment.iiif_thumbnails(selected_side=self.side)
