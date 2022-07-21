@@ -76,9 +76,8 @@ Also doesn't currently account for fragments without images.
                         <ul class="excluded-related">
                             {% for related_document in document.related_documents %}
                                 <li>
-                                    {% translate 'Unknown type' as unknown_type %}
                                     <a href="{% url 'corpus:document' related_document.pgpid %}">
-                                        <span class="doctype">{{ related_document.type|default:unknown_type }}</span>
+                                        <span class="doctype">{{ related_document.type }}</span>
                                         <span class="shelfmark">{{ related_document.shelfmark|shelfmark_wrap }}</span>
                                     </a>
                                 </li>
