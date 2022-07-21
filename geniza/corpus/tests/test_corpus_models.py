@@ -186,7 +186,7 @@ class TestFragment(TestCase):
         assert isinstance(thumbnails, SafeString)
 
         # test with verso side selected: should add class to 1v img, but not 1r img
-        thumbnails_verso_selected = frag.iiif_thumbnails(selected_side=TextBlock.VERSO)
+        thumbnails_verso_selected = frag.iiif_thumbnails(indices=[1])
         assert 'title="1v" class="selected"' in thumbnails_verso_selected
         assert 'title="1r" class="selected"' not in thumbnails_verso_selected
 

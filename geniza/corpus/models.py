@@ -241,18 +241,13 @@ class Fragment(TrackChangesModel):
 
         return images, labels
 
-    def iiif_thumbnails(self, selected_side=None):
+    def iiif_thumbnails(self, indices=[]):
         """html for thumbnails of iiif image, for display in admin"""
         # if there are no iiif images for this fragment, bail out
         iiif_images = self.iiif_images()
         if iiif_images is None:
             return ""
 
-        # image indices of selected side (0 is recto, 1 is verso)
-        selected = [
-            0 if selected_side in [TextBlock.RECTO_VERSO, TextBlock.RECTO] else None,
-            1 if selected_side in [TextBlock.RECTO_VERSO, TextBlock.VERSO] else None,
-        ]
         images, labels = iiif_images
         return mark_safe(
             " ".join(
@@ -261,7 +256,7 @@ class Fragment(TrackChangesModel):
                 % (
                     img.size(height=200),
                     labels[i],
-                    'class="selected" /' if i in selected else "/",
+                    'class="selected" /' if i in indices else "/",
                 )
                 for i, img in enumerate(images)
             )
@@ -619,11 +614,6 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         for b in self.textblock_set.all():
             frag_images = b.fragment.iiif_images()
-            # image indices of this TextBlock's side (0 is recto, 1 is verso)
-            selected = [
-                0 if b.side in [TextBlock.RECTO_VERSO, TextBlock.RECTO] else None,
-                1 if b.side in [TextBlock.RECTO_VERSO, TextBlock.VERSO] else None,
-            ]
             if frag_images is not None:
                 images, labels = frag_images
                 iiif_images += [
@@ -633,8 +623,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                         "shelfmark": b.fragment.shelfmark,
                     }
                     for i, img in enumerate(images)
-                    # filter only if filter_side is True and TextBlock has side
-                    if not filter_side or not b.side or i in selected
+                    # include if filter inactive, tb has no side info, or index in tb indices
+                    if not filter_side or not b.side or i in b.image_indices
                 ]
 
         return iiif_images
@@ -1143,8 +1133,20 @@ class TextBlock(models.Model):
         ]
         return " ".join(p for p in parts if p)
 
-    def thumbnail(self):
-        """iiif thumbnails for this fragment"""
+    @property
+    def image_indices(self):
+        """indices, in a list of IIIF images, corresponding to this TextBlock's side"""
+        sides = []
+        if self.side in [TextBlock.RECTO, TextBlock.RECTO_VERSO]:
+            # assume first image is recto
+            sides.append(0)
+        if self.side in [TextBlock.VERSO, TextBlock.RECTO_VERSO]:
+            # assume second image is verso
+            sides.append(1)
+        return sides
 
-        # pass own side as selected side for admin form
-        return self.fragment.iiif_thumbnails(selected_side=self.side)
+    def thumbnail(self):
+        """iiif thumbnails for this TextBlock"""
+
+        # pass self to Fragment.iiif_thumbnails to only get thumbnails for this TextBlock
+        return self.fragment.iiif_thumbnails(indices=self.image_indices)
