@@ -26,6 +26,10 @@ class Command(BaseCommand):
             "--update", action="store_true", help="Update previously imported manifests"
         )
         parser.add_argument(
+            "--filter",
+            help="Limit database manifests to update by url substring (optional)",
+        )
+        parser.add_argument(
             "--associate",
             action="store_true",
             help="Only associate fragments with imported manifests (no import)",
@@ -41,9 +45,13 @@ class Command(BaseCommand):
         iiif_urls = kwargs.get("path")
         # otherwise, import all iiif manifests referenced by fragments in the db
         if not iiif_urls:
-            iiif_urls = set(
-                Fragment.objects.exclude(iiif_url="").values_list("iiif_url", flat=True)
-            )
+            iiif_fragments = Fragment.objects.exclude(iiif_url="")
+            # if a filter was specified, limit the objects to those that match
+            if kwargs.get("filter"):
+                iiif_fragments = iiif_fragments.filter(
+                    iiif_url__contains=kwargs.get("filter")
+                )
+            iiif_urls = set(iiif_fragments.values_list("iiif_url", flat=True))
             # if we're not updating, filter out the ones we already have
             if not kwargs["update"]:
                 already_imported = set(Manifest.objects.values_list("uri", flat=True))

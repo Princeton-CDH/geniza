@@ -5,13 +5,17 @@ import OpenSeadragon from "openseadragon";
 export default class extends Controller {
     static targets = [
         "imageContainer",
+        "imageHeader",
+        "osd",
+        "rotateLeft",
+        "rotateRight",
         "image",
         "zoomSlider",
         "zoomSliderLabel",
         "zoomToggle",
     ];
 
-    imageContainerTargetDisconnected() {
+    osdTargetDisconnected() {
         // remove OSD on target disconnect (i.e. leaving page)
         this.deactivateDeepZoom();
     }
@@ -21,12 +25,14 @@ export default class extends Controller {
         const OSD = this.imageContainerTarget.querySelector(
             ".openseadragon-container"
         );
-        if (!OSD || OSD.style.opacity === "0") {
+        if (!OSD || this.osdTarget.classList.contains("hidden")) {
             const isMobile = evt.currentTarget.id.startsWith("zoom-toggle");
             this.activateDeepZoom({ isMobile });
         }
     }
     activateDeepZoom(settings) {
+        // scroll to top of controls
+        this.imageHeaderTarget.scrollIntoView();
         // hide image and add OpenSeaDragon to container
         const height =
             this.imageContainerTarget.getBoundingClientRect()["height"];
@@ -54,6 +60,13 @@ export default class extends Controller {
         } else {
             OSD.style.top = "72px";
         }
+
+        this.imageTarget.classList.remove("visible");
+        this.imageTarget.classList.add("hidden");
+        this.osdTarget.classList.remove("hidden");
+        this.osdTarget.classList.add("visible");
+        this.rotateRightTarget.removeAttribute("disabled");
+        this.rotateLeftTarget.removeAttribute("disabled");
     }
 
     deactivateDeepZoom() {
@@ -68,8 +81,13 @@ export default class extends Controller {
             OSD.style.opacity = "0";
             this.imageTarget.classList.add("visible");
             this.imageTarget.classList.remove("hidden");
+            this.osdTarget.classList.remove("visible");
+            this.osdTarget.classList.add("hidden");
+            this.rotateRightTarget.setAttribute("disabled", "true");
+            this.rotateLeftTarget.setAttribute("disabled", "true");
         }
     }
+
     addOpenSeaDragon(settings) {
         const { isMobile } = settings;
 
@@ -102,6 +120,8 @@ export default class extends Controller {
             maxZoomPixelRatio: maxZoom,
         });
         viewer.addHandler("open", () => {
+            // zoom to current zoom
+            viewer.viewport.zoomTo(parseFloat(this.zoomSliderTarget.value));
             // ensure image is positioned in top-left corner of viewer
             this.resetBounds(viewer);
             if (isMobile) {
@@ -136,6 +156,13 @@ export default class extends Controller {
                     viewer.viewport.zoomTo(1.1);
                 }
             });
+            // initialize desktop rotation buttons
+            this.rotateLeftTarget.addEventListener("click", () => {
+                viewer.viewport.setRotation(viewer.viewport.getRotation() - 90);
+            });
+            this.rotateRightTarget.addEventListener("click", () => {
+                viewer.viewport.setRotation(viewer.viewport.getRotation() + 90);
+            });
         });
         viewer.addHandler("zoom", (evt) => {
             // Handle changes in the canvas zoom
@@ -150,6 +177,7 @@ export default class extends Controller {
         });
         return viewer;
     }
+
     handleZoomSliderInput(viewer, minZoom) {
         return (evt) => {
             // Handle changes in the zoom slider
@@ -199,9 +227,5 @@ export default class extends Controller {
         );
         viewer.viewport.fitBounds(newBounds, true);
         viewer.viewport.setRotation(0, true);
-    }
-    scrollTo0(evt) {
-        // Scroll container to top; necessary to prevent scroll issue when OSD is positioned absolutely
-        evt.currentTarget.scrollTop = 0;
     }
 }

@@ -6,7 +6,7 @@ from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models import Count
-from django.db.models.fields import CharField, TextField, URLField
+from django.db.models.fields import CharField, TextField
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
 from django.forms.widgets import Textarea, TextInput
@@ -352,6 +352,7 @@ class FootnoteAdmin(admin.ModelAdmin):
                     "doc_relation",
                     "url",
                     "notes",
+                    "content",
                 )
             },
         ),
@@ -380,6 +381,7 @@ class FootnoteAdmin(admin.ModelAdmin):
 
     csv_fields = [
         "document",  # ~ content object
+        "document_id",
         "source",
         "location",
         "doc_relation",
@@ -405,12 +407,13 @@ class FootnoteAdmin(admin.ModelAdmin):
         for footnote in queryset:
             yield [
                 footnote.content_object,
+                footnote.content_object.pk,
                 footnote.source,
                 footnote.location,
                 footnote.doc_relation,
                 footnote.notes,
                 footnote.url,
-                "\n".join(footnote.content["lines"]) if footnote.content else "",
+                footnote.content.get("text", "") if footnote.content else "",
                 f"{url_scheme}{site_domain}/admin/footnotes/footnote/{footnote.id}/change/",
             ]
 

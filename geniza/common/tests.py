@@ -1,4 +1,3 @@
-from doctest import testmod
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -38,6 +37,7 @@ class TestLocalUserAdmin(TestCase):
 
 class TestCommonUtils(TestCase):
     @pytest.mark.django_db
+    @override_settings(ENV="test")  # behaves differently for development environment
     def test_absolutize_url(self):
         # Borrowed from https://github.com/Princeton-CDH/mep-django/blob/main/mep/common/tests.py
         https_url = "https://example.com/some/path/"
@@ -70,6 +70,13 @@ class TestCommonUtils(TestCase):
                 absolutize_url(local_path, mockrqst)
                 == "http://example.org/sub/foo/bar/"
             )
+
+    @pytest.mark.django_db
+    @override_settings(ENV="development")
+    def test_absolutize_url_dev(self):
+        local_path = "/foo/bar/"
+        # should not be https
+        assert absolutize_url(local_path) == "http://example.com/foo/bar/"
 
     def test_custom_tag_string(self):
         assert custom_tag_string("foo") == ["foo"]

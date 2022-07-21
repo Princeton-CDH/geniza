@@ -1,7 +1,5 @@
 from django import forms
-from django.forms import renderers
 from django.template.loader import get_template
-from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 

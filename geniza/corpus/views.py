@@ -1,14 +1,13 @@
 from ast import literal_eval
 from random import randint
-from urllib import request
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect, HttpResponseRedirect
+from django.middleware.csrf import get_token as csrf_token
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
@@ -308,14 +307,6 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "page_type": "document",
                 # preload transcription font when appropriate
                 "page_includes_transcriptions": self.object.has_transcription(),
-                # TODO: will need to be added to admin view also
-                "annotation_config": {
-                    # use getattr to simplify test config; warn if not set?
-                    "server_url": getattr(settings, "ANNOTATION_SERVER_URL", ""),
-                    "manifest_base_url": getattr(
-                        settings, "ANNOTATION_MANIFEST_BASE_URL", ""
-                    ),
-                },
             }
         )
         return context_data
@@ -666,6 +657,25 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
     def page_title(self):
         # Translators: title of transcription editor page
         return _("Edit transcription for %(doc)s") % {"doc": self.get_object().title}
+
+    def get_context_data(self, **kwargs):
+        """Pass annotation configuration and TinyMCE API key to page context"""
+        context_data = super().get_context_data(**kwargs)
+        context_data.update(
+            {
+                "annotation_config": {
+                    # use local annotation server embedded in pgp application
+                    "server_url": absolutize_url(reverse("annotations:list")),
+                    # use getattr to simplify test config; warn if not set?
+                    "manifest_base_url": getattr(
+                        settings, "ANNOTATION_MANIFEST_BASE_URL", ""
+                    ),
+                    "csrf_token": csrf_token(self.request),
+                },
+                "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
+            }
+        )
+        return context_data
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #

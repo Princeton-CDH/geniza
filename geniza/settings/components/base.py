@@ -68,12 +68,13 @@ INSTALLED_APPS = [
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",
     "geniza.pages.apps.PagesConfig",
+    "geniza.annotations",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
+    "geniza.common.middleware.LocaleMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "geniza.common.middleware.PublicLocaleMiddleware",
     "django.middleware.common.CommonMiddleware",

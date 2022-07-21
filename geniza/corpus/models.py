@@ -27,7 +27,6 @@ from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
 from requests.exceptions import ConnectionError
-from taggit.models import Tag
 from taggit_selectize.managers import TaggableManager
 from urllib3.exceptions import HTTPError, NewConnectionError
 
@@ -280,6 +279,13 @@ class Fragment(TrackChangesModel):
                 return mark_safe(
                     attribution.replace(self.cudl_metadata_str, "").strip()
                 )
+        return None
+
+    @property
+    def provenance(self):
+        """Generate a provenance statement for this fragment"""
+        if self.manifest and self.manifest.metadata:
+            return get_iiif_string(self.manifest.metadata.get("Provenance", ""))
         return None
 
     def clean(self):
