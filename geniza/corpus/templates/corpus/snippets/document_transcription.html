@@ -47,7 +47,7 @@ Also doesn't currently account for fragments without images.
                 <div class="img" id="{{ image_info.label }}" data-controller="iiif" data-iiif-target="imageContainer">
                     <div class="img-header" data-iiif-target="imageHeader">
                         <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
-                        {% if not image_info.not_in_document %}
+                        {% if not image_info.excluded %}
                             <input data-iiif-target="zoomSlider" data-action="iiif#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
                             <label data-iiif-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
                             <input data-iiif-target="zoomToggle" data-action="iiif#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
@@ -60,7 +60,7 @@ Also doesn't currently account for fragments without images.
                             </button>
                         {% endif %}
                     </div>
-                    <div class="deep-zoom-container{% if image_info.not_in_document %} excluded{% endif %}">
+                    <div class="deep-zoom-container{% if image_info.excluded %} excluded{% endif %}">
                         <img class="iiif-image" data-iiif-target="image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
                             sizes="(max-width: 650px) 50vw, 94vw"
                             srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
@@ -75,7 +75,7 @@ Also doesn't currently account for fragments without images.
                         <h3>Transcription</h3>
                         <span data-transcription-target="editionFullLabel" class="current-transcription">{{ document.digital_editions.0.display|safe }}</span>
                     {% endif %}
-                    {% if image_info.not_in_document %}
+                    {% if image_info.excluded %}
                         {# if this image isn't actually in this document, link to related documents #}
                         <ul class="excluded-related">
                             {% for related_document in document.related_documents %}

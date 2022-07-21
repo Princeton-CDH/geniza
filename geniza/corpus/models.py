@@ -621,7 +621,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                         "image": img,
                         "label": labels[i],
                         "shelfmark": b.fragment.shelfmark,
-                        "not_in_document": b.side and i not in b.image_indices,
+                        "excluded": b.side and i not in b.image_indices,
                     }
                     for i, img in enumerate(images)
                     # include if filter inactive, tb has no side info, or index in tb indices
