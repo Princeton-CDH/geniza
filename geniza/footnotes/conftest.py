@@ -3,7 +3,6 @@ import pytest
 from geniza.footnotes.models import (
     Authorship,
     Creator,
-    Footnote,
     Source,
     SourceLanguage,
     SourceType,

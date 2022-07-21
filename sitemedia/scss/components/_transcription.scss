@@ -95,10 +95,18 @@
                 &[for="transcription-on"] {
                     // transcription is 50% minus the 87px for the translation toggle minus ~2xgutter
                     flex: 1 0 calc(50vw - 87px - 18px);
+
+                    /* adjust for admin site */
+                    .model-document.change-form & {
+                        flex: 1 0 calc(49% - 87px - 18px);
+                    }
                 }
                 // images panel toggle is half width minus ~gutter
                 &[for="images-on"] {
                     flex: 1 0 calc(50vw - 9px);
+                    .model-document.change-form & {
+                        flex: 1 0 calc(50% - 9px);
+                    }
                 }
                 // expand icon size
                 svg {
@@ -257,7 +265,7 @@
         // spacing tweaks for transcription selector on desktop
         @include breakpoints.for-tablet-landscape-up {
             width: auto;
-            flex: 1 0 calc(0.4 * 100vw);
+            flex: 1 0 40vw;
             min-height: 2.5rem;
             // label for current selection
             summary {
@@ -336,6 +344,7 @@
         div.transcription-panel {
             width: 100%;
             max-width: 604px;
+            margin: auto;
 
             /* adjust label padding for transcription only view */
             &.label-row {
@@ -363,7 +372,7 @@
 
         // image panel spacing
         div.img {
-            margin: 0;
+            margin: 0 auto;
         }
 
         // transcription panel spacing
@@ -411,12 +420,11 @@
         }
         .img-header {
             display: flex;
-            flex-flow: column;
-            align-items: flex-start;
+            flex-flow: row wrap;
+            align-items: center;
             margin-bottom: 8px;
             @include breakpoints.for-tablet-landscape-up {
                 flex-flow: row;
-                align-items: center;
                 margin-bottom: 12px;
             }
             h3 {
@@ -424,7 +432,10 @@
                 text-align: left;
                 margin: 8px;
                 display: inline-block;
-                flex: 1 0 auto;
+                flex: 1 0 100%;
+                @include breakpoints.for-tablet-landscape-up {
+                    flex: 1 0 auto;
+                }
             }
             // zoom control (desktop)
             input[type="range"][id^="zoom-slider"] {
@@ -480,6 +491,42 @@
                 color: var(--on-background);
                 @include typography.body-bold;
             }
+            // rotation controls
+            button.rotate {
+                display: block;
+                // float: right;
+                text-align: center;
+                margin: 0;
+                @include typography.icon-button-lg;
+                min-width: 48px;
+                min-height: 48px;
+                &:last-of-type {
+                    margin: 0 spacing.$spacing-xs 0 0;
+                }
+                @include breakpoints.for-tablet-landscape-up {
+                    min-width: 0px;
+                    min-height: 0px;
+                    @include typography.icon-button-md;
+                    margin: 0 0 0 spacing.$spacing-md;
+                    &:last-of-type {
+                        margin: 0 spacing.$spacing-3xs 0;
+                    }
+                }
+                background: none;
+                border: none;
+                padding: 0;
+                color: var(--on-backround);
+                transition: color 300ms ease;
+                cursor: pointer;
+                &:disabled {
+                    color: var(--disabled);
+                    cursor: default;
+                }
+                i {
+                    // ensure no extra space inside button
+                    display: block;
+                }
+            }
             // zoom control (mobile)
             input[type="checkbox"][id^="zoom-toggle"] {
                 display: block;
@@ -488,7 +535,7 @@
                     display: none;
                 }
                 & + label[for^="zoom-toggle"] {
-                    align-self: flex-end;
+                    flex: 1 0 auto;
                     display: flex;
                     @include breakpoints.for-tablet-landscape-up {
                         display: none;
@@ -516,18 +563,33 @@
                 }
             }
         }
-        img {
+        .deep-zoom-container {
+            position: relative;
             width: 100%;
-            margin: 0 auto;
-            &.hidden {
-                transition: opacity 300ms ease, visibility 0s ease 300ms;
-                opacity: 0;
-                visibility: hidden;
+            text-align: center;
+            .osd {
+                // height of screen, minus height of (controls + padding)
+                height: calc(100vh - 99px);
+                @include breakpoints.for-tablet-landscape-up {
+                    // controls are vertically slimmer on desktop
+                    height: calc(100vh - 58px);
+                }
+                position: absolute !important;
+                top: 0;
             }
-            &.visible {
-                transition: opacity 300ms ease, visibility 0s ease 0ms;
-                visibility: visible;
-                opacity: 1;
+            img,
+            .osd {
+                width: 100%;
+                &.hidden {
+                    transition: opacity 300ms ease, visibility 0s ease 300ms;
+                    opacity: 0;
+                    visibility: hidden;
+                }
+                &.visible {
+                    transition: opacity 300ms ease, visibility 0s ease 0ms;
+                    visibility: visible;
+                    opacity: 1;
+                }
             }
         }
         @include breakpoints.for-tablet-landscape-up {

@@ -1,7 +1,6 @@
 import time
 from datetime import datetime, timedelta
-from unittest import mock
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import Mock, patch
 
 import pytest
 from django.conf import settings

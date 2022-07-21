@@ -210,7 +210,7 @@ class TestFootnoteAdmin:
             source=source,
             content_object=document,
             doc_relation=["E"],
-            content={"lines": ["some text", "a little more text"]},
+            content={"text": "some text\na little more text"},
         )
 
         qs = fnoteadmin.get_queryset("rqst")
@@ -218,6 +218,7 @@ class TestFootnoteAdmin:
         for footnote, footnote_data in zip(qs, fnoteadmin.tabulate_queryset(qs)):
             # test some properties
             assert footnote.content_object in footnote_data
+            assert footnote.content_object.pk in footnote_data
             assert footnote.source in footnote_data
             assert footnote.location in footnote_data
             assert footnote.doc_relation in footnote_data
@@ -225,7 +226,7 @@ class TestFootnoteAdmin:
             assert footnote.url in footnote_data
 
             if footnote.content:
-                assert "\n".join(footnote.content["lines"]) in footnote_data
+                assert footnote.content["text"] in footnote_data
 
             assert (
                 f"https://example.com/admin/footnotes/footnote/{footnote.id}/change/"
@@ -243,7 +244,7 @@ class TestFootnoteAdmin:
             source=source,
             content_object=document,
             doc_relation=["E"],
-            content={"lines": ["some text", "a little more text"]},
+            content={"text": "some text\na little more text"},
         )
 
         with patch.object(fnoteadmin, "tabulate_queryset") as tabulate_queryset:

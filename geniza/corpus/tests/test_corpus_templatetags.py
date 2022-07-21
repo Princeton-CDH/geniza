@@ -6,7 +6,6 @@ from piffle.iiif import IIIFImageClient
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus.templatetags import corpus_extras
-from geniza.footnotes.models import Footnote
 
 
 class TestCorpusExtrasTemplateTags:
@@ -119,8 +118,12 @@ def test_iiif_info_json():
 
 
 def test_h1_to_h3():
+    # should convert H1 to H3
     html = "<div><h1>hi</h1><h3>hello</h3></div>"
     assert corpus_extras.h1_to_h3(html) == "<div><h3>hi</h3><h3>hello</h3></div>"
+
+    # should fail silently / do nothing to input on type mismatch
+    assert corpus_extras.h1_to_h3(["test"]) == ["test"]
 
 
 def test_pgp_urlize(document, join):

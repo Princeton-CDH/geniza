@@ -257,6 +257,24 @@ class TestFragment(TestCase):
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
+    def test_provenance(self, mock_manifestimporter):
+        # fragment with no manifest
+        frag = Fragment(shelfmark="TS 1")
+        assert not frag.provenance
+
+        # fragment with a locally cached manifest
+        frag = Fragment(shelfmark="TS 2")
+        frag.iiif_url = "http://example.io/manifests/2"
+        # manifest with an attribution
+        frag.manifest = Manifest.objects.create(
+            uri=frag.iiif_url, short_id="m", metadata={"Provenance": ["From a place"]}
+        )
+        mock_manifestimporter.return_value.import_paths.return_value = [frag.manifest]
+        frag.save()
+        assert frag.provenance == "From a place"
+
+    @pytest.mark.django_db
+    @patch("geniza.corpus.models.ManifestImporter")
     def test_save(self, mock_manifestimporter):
         frag = Fragment(shelfmark="TS 1")
         frag.save()
