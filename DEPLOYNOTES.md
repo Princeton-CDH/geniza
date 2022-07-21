@@ -1,5 +1,9 @@
 # Deploy Notes
 
+## 4.6.0
+
+-   This update includes Solr indexing changes to show the relevant side(s) of document images in search results. Run `python manage.py index` to reindex all content.
+
 ## 4.5.0
 
 -   Document date functionality in this release requires updating the Solr index. Run `python manage.py index` to reindex all content.

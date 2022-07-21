@@ -241,7 +241,7 @@ class Fragment(TrackChangesModel):
 
         return images, labels
 
-    def iiif_thumbnails(self):
+    def iiif_thumbnails(self, indices=[]):
         """html for thumbnails of iiif image, for display in admin"""
         # if there are no iiif images for this fragment, bail out
         iiif_images = self.iiif_images()
@@ -252,8 +252,12 @@ class Fragment(TrackChangesModel):
         return mark_safe(
             " ".join(
                 # include label as title for now
-                '<img src="%s" loading="lazy" height="200" title="%s">'
-                % (img.size(height=200), labels[i])
+                '<img src="%s" loading="lazy" height="200" title="%s" %s>'
+                % (
+                    img.size(height=200),
+                    labels[i],
+                    'class="selected" /' if i in indices else "/",
+                )
                 for i, img in enumerate(images)
             )
         )
@@ -603,9 +607,11 @@ class Document(ModelIndexable, DocumentDateMixin):
             )
         )
 
-    def iiif_images(self):
-        """List of IIIF images and labels for images of the Document's Fragments."""
+    def iiif_images(self, filter_side=False):
+        """List of IIIF images and labels for images of the Document's Fragments.
+        :param filter_side: if TextBlocks have side info, filter images by side (default: False)"""
         iiif_images = []
+
         for b in self.textblock_set.all():
             frag_images = b.fragment.iiif_images()
             if frag_images is not None:
@@ -617,6 +623,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                         "shelfmark": b.fragment.shelfmark,
                     }
                     for i, img in enumerate(images)
+                    # include if filter inactive, tb has no side info, or index in tb indices
+                    if not filter_side or not b.side or i in b.image_indices
                 ]
 
         return iiif_images
@@ -775,7 +783,8 @@ class Document(ModelIndexable, DocumentDateMixin):
         # get fragments via textblocks for correct order
         # and to take advantage of prefetching
         fragments = [tb.fragment for tb in self.textblock_set.all()]
-        images = self.iiif_images()
+        # filter by side so that search results only show the relevant side image(s)
+        images = self.iiif_images(filter_side=True)
         index_data.update(
             {
                 "pgpid_i": self.id,
@@ -1124,6 +1133,20 @@ class TextBlock(models.Model):
         ]
         return " ".join(p for p in parts if p)
 
+    @property
+    def image_indices(self):
+        """indices, in a list of IIIF images, corresponding to this TextBlock's side"""
+        sides = []
+        if self.side in [TextBlock.RECTO, TextBlock.RECTO_VERSO]:
+            # assume first image is recto
+            sides.append(0)
+        if self.side in [TextBlock.VERSO, TextBlock.RECTO_VERSO]:
+            # assume second image is verso
+            sides.append(1)
+        return sides
+
     def thumbnail(self):
-        """iiif thumbnails for this fragment"""
-        return self.fragment.iiif_thumbnails()
+        """iiif thumbnails for this TextBlock"""
+
+        # pass image_indices to ensure only this TextBlock's side(s) are shown as selected
+        return self.fragment.iiif_thumbnails(indices=self.image_indices)
