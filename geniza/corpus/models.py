@@ -1148,5 +1148,5 @@ class TextBlock(models.Model):
     def thumbnail(self):
         """iiif thumbnails for this TextBlock"""
 
-        # pass self to Fragment.iiif_thumbnails to only get thumbnails for this TextBlock
+        # pass image_indices to ensure only this TextBlock's side(s) are shown as selected
         return self.fragment.iiif_thumbnails(indices=self.image_indices)
