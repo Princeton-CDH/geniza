@@ -15,6 +15,8 @@ from django.utils import timezone
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 from tabular_export.admin import export_to_csv_response
+from taggit.admin import TagAdmin
+from taggit.models import Tag
 
 from geniza.common.admin import custom_empty_field_list_filter
 from geniza.corpus.models import (
@@ -592,3 +594,32 @@ class FragmentAdmin(admin.ModelAdmin):
         # if there is an error loading the IIIF manifest
         obj.request = request
         super().save_model(request, obj, form, change)
+
+
+admin.site.unregister(Tag)
+
+
+@admin.register(Tag)
+class CustomTagAdmin(TagAdmin):
+    list_display = ("name", "slug", "document_count")
+
+    def get_queryset(self, request):
+        # The annotations we use for document count on the list view
+        # make the search too slow for autocomplete.
+        # Reset to original, unannotated queryset *only* for autocomplete
+        qs = super().get_queryset(request)
+        if request and request.path == "/admin/autocomplete/":
+            # return without annotations
+            return qs
+        # otherwise, annotate with counts
+        qs = qs.annotate(
+            # taggit_taggeditem_items is how to reference the taggeditems for tags
+            document_count=Count("taggit_taggeditem_items", distinct=True),
+        )
+        return qs
+
+    def document_count(self, obj):
+        return obj.document_count
+
+    document_count.admin_order_field = "document_count"
+    document_count.short_description = "Document Count"
