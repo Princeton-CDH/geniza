@@ -71,6 +71,10 @@ Also doesn't currently account for fragments without images.
                     </div>
                 </div>
                 <div class="transcription-panel">
+                    {% if forloop.first %}
+                        <h3>Transcription</h3>
+                        <span data-transcription-target="editionFullLabel" class="current-transcription">{{ document.digital_editions.0.display|safe }}</span>
+                    {% endif %}
                     {% if image_info.not_in_document %}
                         {# if this image isn't actually in this document, link to related documents #}
                         <ul class="excluded-related">
@@ -84,10 +88,6 @@ Also doesn't currently account for fragments without images.
                             {% endfor %}
                         </ul>
                     {% else %}
-                        {% if forloop.first %}
-                            <h3>Transcription</h3>
-                            <span data-transcription-target="editionFullLabel" class="current-transcription">{{ document.digital_editions.0.display|safe }}</span>
-                        {% endif %}
                         <div class="editions">
                             {# display transcription in chunks by index #}
                             {% for edition in document.digital_editions.all %}
