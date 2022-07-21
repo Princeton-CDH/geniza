@@ -44,10 +44,10 @@ Also doesn't currently account for fragments without images.
         {# if we have images, loop based on them #}
         {% if document.iiif_urls %}
             {% for image_info in document.iiif_images %}
-                <div class="img" id="{{ image_info.label }}" data-controller="iiif" data-iiif-target="imageContainer">
+                {# only images that are part of the current document are zoomable #}
+                <div class="img" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif" data-iiif-target="imageContainer"{% endif %}>
                     <div class="img-header" data-iiif-target="imageHeader">
                         <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
-                        {# only images that are part of the current document are zoomable #}
                         {% if not image_info.excluded %}
                             <input data-iiif-target="zoomSlider" data-action="iiif#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
                             <label data-iiif-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
