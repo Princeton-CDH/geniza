@@ -591,6 +591,17 @@
                     opacity: 1;
                 }
             }
+            // 60% white overlay for images that are not included in the document (by side)
+            &.excluded::after {
+                position: absolute;
+                content: "";
+                display: block;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(255, 255, 255, 0.6);
+            }
         }
         @include breakpoints.for-tablet-landscape-up {
             padding: 14px 0 0;
@@ -664,6 +675,19 @@
             & > div {
                 flex: 1 0 100%;
                 align-self: flex-start;
+            }
+        }
+
+        // related documents, to appear by excluded image(s)
+        .excluded-related {
+            @include breakpoints.for-tablet-landscape-up {
+                margin-top: 65px;
+            }
+            span.doctype {
+                @include typography.doctype;
+            }
+            span.shelfmark * {
+                @include typography.link;
             }
         }
     }
