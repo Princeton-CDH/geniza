@@ -314,7 +314,10 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                         ],
                     }
                     for doc in self.get_object().related_documents
-                ],
+                ]
+                # skip solr query if none of the associated TextBlocks have side info
+                if any([tb.side for tb in self.get_object().textblock_set.all()])
+                else [],
             }
         )
         return context_data
