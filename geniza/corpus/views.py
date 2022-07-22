@@ -305,6 +305,7 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "page_type": "document",
                 # preload transcription font when appropriate
                 "page_includes_transcriptions": self.object.has_transcription(),
+                # generate list of related documents that can be filtered by image url for links on excluded images
                 "related_documents": [
                     {
                         "document": doc,
