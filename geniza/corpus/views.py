@@ -305,6 +305,15 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "page_type": "document",
                 # preload transcription font when appropriate
                 "page_includes_transcriptions": self.object.has_transcription(),
+                "related_documents": [
+                    {
+                        "document": doc,
+                        "images": [
+                            str(image[0]) for image in doc.get("iiif_images", [])
+                        ],
+                    }
+                    for doc in self.get_object().related_documents
+                ],
             }
         )
         return context_data

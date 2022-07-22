@@ -79,13 +79,15 @@ Also doesn't currently account for fragments without images.
                     {% if image_info.excluded %}
                         {# if this image isn't actually in this document, link to related documents #}
                         <ul class="excluded-related">
-                            {% for related_document in document.related_documents %}
-                                <li>
-                                    <a href="{% url 'corpus:document' related_document.pgpid %}">
-                                        <span class="doctype">{{ related_document.type }}</span>
-                                        <span class="shelfmark">{{ related_document.shelfmark|shelfmark_wrap }}</span>
-                                    </a>
-                                </li>
+                            {% for related in related_documents %}
+                                {% if image_info.image|stringformat:"s" in related.images %}
+                                    <li><a class="view-link" href="{% url 'corpus:document' related.document.pgpid %}">
+                                        {# translators: link to view a related document #}
+                                        {% blocktranslate with type=related.document.type shelfmark=related.document.shelfmark|shelfmark_wrap trimmed %}
+                                            <span>View {{ type }}:&nbsp;{{ shelfmark }}</span>
+                                        {% endblocktranslate %}
+                                    </a></li>
+                                {% endif %}
                             {% endfor %}
                         </ul>
                     {% else %}

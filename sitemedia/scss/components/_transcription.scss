@@ -680,14 +680,32 @@
 
         // related documents, to appear by excluded image(s)
         .excluded-related {
-            @include breakpoints.for-tablet-landscape-up {
-                margin-top: 65px;
+            display: flex;
+            flex-flow: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            &:empty {
+                display: none;
             }
-            span.doctype {
-                @include typography.doctype;
+            a.view-link {
+                margin-top: 0;
+                & > span {
+                    border-bottom: 3px solid var(--background-light);
+                }
+                &:hover > span {
+                    border-bottom-color: var(--icon-button);
+                    @include breakpoints.for-tablet-landscape-up {
+                        border-bottom-color: var(--icon-button-hover);
+                    }
+                }
+                &:active > span {
+                    color: var(--icon-button-active);
+                    border-bottom-color: var(--icon-button);
+                }
             }
-            span.shelfmark * {
-                @include typography.link;
+            li + li a.view-link {
+                margin-top: spacing.$spacing-md;
             }
         }
     }
