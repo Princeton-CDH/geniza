@@ -19,7 +19,9 @@ from django.urls import reverse
 from eulxml import xmlmap
 from git import Repo
 from iiif_prezi import factory
+from rest_framework.authtoken.models import Token
 
+from geniza.common.utils import absolutize_url
 from geniza.corpus.management.commands import sync_transcriptions
 from geniza.corpus.models import Document
 from geniza.corpus.tei_transcriptions import GenizaTei
@@ -36,6 +38,12 @@ class Command(sync_transcriptions.Command):
         )
 
     def handle(self, *args, **options):
+
+        # generate or retrieve a token for script user to use for token-auth
+        token = Token.objects.get_or_create(
+            user=User.objects.get(username=settings.SCRIPT_USERNAME)
+        )[0]
+
         # get settings for remote git repository url and local path
         gitrepo_url = settings.TEI_TRANSCRIPTIONS_GITREPO
         gitrepo_path = settings.TEI_TRANSCRIPTIONS_LOCAL_PATH
@@ -57,7 +65,7 @@ class Command(sync_transcriptions.Command):
         # we may want this for other warnings? but warns every time about missing @id
         manifest_factory.debug_level = "info"  # suppress warning about missing id
 
-        sas_client = AnnotationStore(settings.ANNOTATION_SERVER_URL)
+        annotation_client = AnnotationStore(auth_token=token.key)
 
         # iterate through tei files to be migrated
         for xmlfile in xmlfiles:
@@ -116,6 +124,7 @@ class Command(sync_transcriptions.Command):
                 # if this is not the first block and the label suggests new image,
                 # increment canvas index
                 if i != 0 and tei.label_indicates_new_page(block["label"]):
+                    print("label %s indicates new page" % block["label"])
                     canvas_index += 1
 
                 # get the canvas for this section of text
@@ -128,13 +137,14 @@ class Command(sync_transcriptions.Command):
 
                 # for now, remove existing annotations for this canvas so we can reimport as needed
                 # TODO: clear all canvases once before adding? how to avoid clearing out alt. transcriptions?
-                existing_annos = sas_client.search(annotation_target)
-                print(
-                    "Removing %s existing annotation(s) for %s"
-                    % (len(existing_annos), annotation_target)
-                )
-                for anno in existing_annos:
-                    sas_client.delete(anno["@id"])
+                existing_annos = annotation_client.search(annotation_target)
+                if existing_annos:
+                    print(
+                        "Removing %s existing annotation(s) for %s"
+                        % (len(existing_annos), annotation_target)
+                    )
+                    for anno in existing_annos:
+                        annotation_client.delete(anno["@id"])
 
                 # create a new annotation; working with v2 because that's what SAS supports
                 # don't set an id; allow SAS to generate ids on save
@@ -179,7 +189,7 @@ class Command(sync_transcriptions.Command):
 
                 # print(anno.toJSON())
 
-                created = sas_client.create(anno)
+                created = annotation_client.create(anno)
                 if created:
                     self.stats["created"] += 1
 
@@ -190,26 +200,38 @@ class Command(sync_transcriptions.Command):
 
 
 class AnnotationStore:
-    def __init__(self, annotation_server_url):
-        self.base_url = annotation_server_url
-        self.session = requests.session()  # any headers we want to set?
+    # TODO: migration for script user perms (figure out minimum permissions)
+    # script account needs active, staff, and content editor permissions ?
+    # (maybe...)
+
+    def __init__(self, auth_token):
+        self.base_url = absolutize_url(reverse("annotations:list"))
+        self.search_url = absolutize_url(reverse("annotations:search"))
+        self.session = requests.session()
+        # add authentication token to session headers
+        self.session.headers.update({"Authorization": "Token %s" % auth_token})
+
+        # Request site homepage to get a CSRF token,
+        # since annotation urls are currently csrf-protected.
+        response = self.session.get(absolutize_url("/"))
+        assert response.status_code == 200
+        # set csrf token header
+        self.session.headers.update({"X-CSRFToken": response.cookies["csrftoken"]})
 
     def create(self, anno):
-        response = self.session.post("%s/create" % self.base_url, json=anno.toJSON())
+        response = self.session.post(self.base_url, json=anno.toJSON())
         if response.status_code == requests.codes.created:
             return True
         else:
             response.raise_for_status()
 
     def delete(self, anno_uri):
-        response = self.session.delete(
-            "%s/destroy" % (self.base_url,), params={"uri": anno_uri}
-        )
-        # simple annotation server returns no content either way, whether something was deleted or not...
+        response = self.session.delete(anno_uri)
         # raise if there's an error, otherwise assume it worked
         response.raise_for_status()
 
     def search(self, uri):
-        response = self.session.get("%s/search" % self.base_url, params={"uri": uri})
+        response = self.session.get(self.search_url, params={"uri": uri})
+        # returns an annotation list with a list of resources
         if response.status_code == requests.codes.ok:
-            return response.json()
+            return response.json()["resources"]
