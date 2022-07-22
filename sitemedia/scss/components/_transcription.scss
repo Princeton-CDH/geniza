@@ -692,7 +692,7 @@
                 margin-top: 0;
                 & > span {
                     color: var(--link-primary);
-                    border-bottom: 3px solid var(--link-primary);
+                    border-bottom: 3px solid var(--background-light);
                 }
                 &:hover > span {
                     border-bottom-color: var(--icon-button);
