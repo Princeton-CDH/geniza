@@ -36,7 +36,6 @@ export default class extends Controller {
         const edition = evt.currentTarget.dataset.edition;
         const chunks = document.querySelectorAll(`.${edition}`);
         this.scrollChunksIntoView(chunks);
-        console.log(chunks);
 
         // Set subheader to show full label for edition
         this.editionFullLabelTarget.innerHTML = chunks[0].dataset.label;
