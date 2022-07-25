@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from django.db.models import Count
+from taggit.admin import TagAdmin
+from taggit.models import Tag
 
 
 class LocalUserAdmin(UserAdmin):
@@ -40,6 +43,35 @@ def custom_empty_field_list_filter(title, non_empty_label=None, empty_label=None
             return choices
 
     return CustomEmptyFieldListFilter
+
+
+# unregister default taggit admin so we can register our own
+admin.site.unregister(Tag)
+
+
+# unregister default taggit admin so we can register our own
+admin.site.unregister(Tag)
+
+
+@admin.regster(Tag)
+class CustomTagAdmin(TagAdmin):
+    list_display = ("name", "slug", "item_count")
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(
+                # taggit_taggeditem_items is the reference to the taggeditem object
+                item_count=Count("taggit_taggeditem_items", distinct=True),
+            )
+        )
+
+    def item_count(self, obj):
+        return obj.item_count
+
+    item_count.admin_order_field = "item_count"
+    item_count.short_description = "count"
 
 
 admin.site.unregister(User)
