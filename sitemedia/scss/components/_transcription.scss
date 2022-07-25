@@ -627,7 +627,9 @@
             display: block;
             @include typography.meta;
             color: var(--input-date-text);
-            min-height: calc(1rem * 1.5 * 2);
+            &.multiple {
+                min-height: calc(1rem * 1.5 * 2);
+            }
         }
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 0 0;
@@ -638,7 +640,7 @@
                 @include typography.body-bold;
                 margin: 27px 0 0;
             }
-            h3 + span.current-transcription {
+            h3 + span.current-transcription.multiple {
                 min-height: calc(1.125rem * 1.5 * 2);
             }
         }
