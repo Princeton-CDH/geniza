@@ -88,9 +88,18 @@ Also doesn't currently account for fragments without images.
             {% for chunk in document.digital_editions.0.content.html %}
                 <div class="img"></div> {# empty image div needed for grid layout #}
                 <div class="transcription-panel">
-                    {% if forloop.first %}<h3>Transcription</h3>{% endif %}
-                    {# display transcription in chunks based on loop index #}
-                    <div class="transcription">{{ chunk|h1_to_h3|safe }}</div>
+                    {% if forloop.first %}
+                        <h3>Transcription</h3>
+                        <span data-transcription-target="editionFullLabel" class="current-transcription">{{ document.digital_editions.0.display|safe }}</span>
+                    {% endif %}
+                    <div class="editions">
+                        {# display transcription in chunks based on loop index #}
+                        {% for edition in document.digital_editions.all %}
+                            <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.display|safe }}">
+                                {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             {% endfor %}
         {% endif %}
