@@ -45,6 +45,7 @@ def custom_empty_field_list_filter(title, non_empty_label=None, empty_label=None
     return CustomEmptyFieldListFilter
 
 
+# unregister default taggit admin so we can register our own
 admin.site.unregister(Tag)
 
 
@@ -53,12 +54,14 @@ class CustomTagAdmin(TagAdmin):
     list_display = ("name", "slug", "item_count")
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        qs = qs.annotate(
-            # taggit_taggeditem_items is how to reference the taggeditems for tags
-            item_count=Count("taggit_taggeditem_items", distinct=True),
-        )
-        return qs
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(
+                # taggit_taggeditem_items is the reference to the taggeditem object
+                item_count=Count("taggit_taggeditem_items", distinct=True),
+            )
+         )
 
     def item_count(self, obj):
         return obj.item_count
