@@ -15,4 +15,12 @@ div.annotate {
         color: black;
         min-height: 3em;
     }
+    ol {
+        counter-reset: section;
+    }
+    li::before {
+        /* use pseudo marker to avoid periods for line numbers */
+        counter-increment: section;
+        content: counter(section);
+    }
 }
