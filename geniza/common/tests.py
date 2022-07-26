@@ -2,18 +2,25 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from django.conf import settings
+from django.contrib import admin
 from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import connection, models
 from django.db.migrations.executor import MigrationExecutor
 from django.http import HttpResponseRedirect
-from django.test import TestCase, TransactionTestCase, override_settings
+from django.test import RequestFactory, TestCase, TransactionTestCase, override_settings
+from taggit.models import Tag
 
-from geniza.common.admin import LocalUserAdmin, custom_empty_field_list_filter
+from geniza.common.admin import (
+    CustomTagAdmin,
+    LocalUserAdmin,
+    custom_empty_field_list_filter,
+)
 from geniza.common.fields import NaturalSortField, RangeField, RangeWidget
 from geniza.common.middleware import PublicLocaleMiddleware
 from geniza.common.utils import absolutize_url, custom_tag_string
+from geniza.corpus.models import Document
 
 
 @pytest.mark.django_db
@@ -256,3 +263,40 @@ def test_range_field():
     start_widget, end_widget = rangefield.widget.widgets
     assert start_widget.attrs["placeholder"] == 1910
     assert end_widget.attrs["placeholder"] == 1930
+
+
+@pytest.mark.django_db
+class TestCustomTagAdmin:
+    def test_get_queryset(self):
+        document1 = Document.objects.create()
+        document2 = Document.objects.create()
+        tag_name = "Tag_Ex"
+        document1.tags.add(tag_name)
+        document2.tags.add(tag_name)
+
+        tag_admin = CustomTagAdmin(model=Tag, admin_site=admin.site)
+
+        request_factory = RequestFactory()
+        # simulate request for tag page
+        request = request_factory.post("/admin/taggit/tag/")
+        qs = tag_admin.get_queryset(request)
+        first_item = qs.first()
+        assert hasattr(first_item, "item_count")
+        assert first_item.item_count == 2
+
+    def test_item_count(self):
+        document1 = Document.objects.create()
+        document2 = Document.objects.create()
+        tag_name = "Tag_Ex"
+        document1.tags.add(tag_name)
+        document2.tags.add(tag_name)
+
+        request_factory = RequestFactory()
+        # simulate request for tag page
+        request = request_factory.post("/admin/taggit/tag/")
+        tag_admin = CustomTagAdmin(model=Tag, admin_site=admin.site)
+
+        qs = tag_admin.get_queryset(request)
+        item_count = tag_admin.item_count(qs.first())
+
+        assert item_count == 2
