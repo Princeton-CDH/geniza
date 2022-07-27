@@ -120,7 +120,7 @@ def test_old_pgp_tabulate_data():
     legal_doc = DocumentType.objects.get_or_create(name_en="Legal")[0]
     doc = Document.objects.create(id=36, doctype=legal_doc)
     frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-    TextBlock.objects.create(document=doc, fragment=frag, side="r")
+    TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0])
     doc.fragments.add(frag)
     doc.tags.add("marriage")
 
@@ -205,7 +205,7 @@ def test_pgp_metadata_for_old_site():
     legal_doc = DocumentType.objects.get_or_create(name_en="Legal")[0]
     doc = Document.objects.create(id=36, doctype=legal_doc)
     frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-    TextBlock.objects.create(document=doc, fragment=frag, side="r")
+    TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0])
     doc.fragments.add(frag)
     doc.tags.add("marriage")
 

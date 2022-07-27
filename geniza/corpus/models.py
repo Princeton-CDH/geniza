@@ -241,7 +241,7 @@ class Fragment(TrackChangesModel):
 
         return images, labels
 
-    def iiif_thumbnails(self, indices=[]):
+    def iiif_thumbnails(self, selected=[]):
         """html for thumbnails of iiif image, for display in admin"""
         # if there are no iiif images for this fragment, bail out
         iiif_images = self.iiif_images()
@@ -256,7 +256,7 @@ class Fragment(TrackChangesModel):
                 % (
                     img.size(height=200),
                     labels[i],
-                    'class="selected" /' if i in indices else "/",
+                    'class="selected" /' if i in selected else "/",
                 )
                 for i, img in enumerate(images)
             )
@@ -623,8 +623,10 @@ class Document(ModelIndexable, DocumentDateMixin):
                         "shelfmark": b.fragment.shelfmark,
                     }
                     for i, img in enumerate(images)
-                    # include if filter inactive, tb has no side info, or index in tb indices
-                    if not filter_side or not b.side or i in b.image_indices
+                    # include if filter inactive, no images selected, or this image is selected
+                    if not filter_side
+                    or not len(b.selected_images)
+                    or i in b.selected_images
                 ]
 
         return iiif_images
@@ -1091,15 +1093,15 @@ class TextBlock(models.Model):
             + "Uncheck this box if you are uncertain of a potential join."
         ),
     )
-    RECTO = "r"
-    VERSO = "v"
-    RECTO_VERSO = "rv"
-    RECTO_VERSO_CHOICES = [
-        (RECTO, "recto"),
-        (VERSO, "verso"),
-        (RECTO_VERSO, "recto and verso"),
-    ]
-    side = models.CharField(blank=True, max_length=5, choices=RECTO_VERSO_CHOICES)
+    RECTO = _("recto")
+    VERSO = _("verso")
+    RECTO_VERSO = _("recto and verso")
+    selected_images = ArrayField(
+        models.IntegerField(),
+        default=list,
+        blank=True,
+        verbose_name="Selected image indices",
+    )
     region = models.CharField(
         blank=True,
         max_length=255,
@@ -1127,26 +1129,26 @@ class TextBlock(models.Model):
         parts = [
             self.fragment.shelfmark,
             self.multifragment,
-            self.get_side_display(),
+            self.side or "",
             self.region,
             certainty_str,
         ]
         return " ".join(p for p in parts if p)
 
     @property
-    def image_indices(self):
-        """indices, in a list of IIIF images, corresponding to this TextBlock's side"""
-        sides = []
-        if self.side in [TextBlock.RECTO, TextBlock.RECTO_VERSO]:
-            # assume first image is recto
-            sides.append(0)
-        if self.side in [TextBlock.VERSO, TextBlock.RECTO_VERSO]:
-            # assume second image is verso
-            sides.append(1)
-        return sides
+    def side(self):
+        """Recto/verso side information based on selected image indices"""
+        if len(self.selected_images) == 1:
+            if self.selected_images[0] == 0:
+                return self.RECTO
+            elif self.selected_images[0] == 1:
+                return self.VERSO
+        elif len(self.selected_images) == 2 and all(
+            i in self.selected_images for i in [0, 1]
+        ):
+            return self.RECTO_VERSO
+        return None
 
     def thumbnail(self):
-        """iiif thumbnails for this TextBlock"""
-
-        # pass image_indices to ensure only this TextBlock's side(s) are shown as selected
-        return self.fragment.iiif_thumbnails(indices=self.image_indices)
+        """iiif thumbnails for this TextBlock, with selected images highlighted"""
+        return self.fragment.iiif_thumbnails(selected=self.selected_images)

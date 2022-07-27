@@ -689,7 +689,7 @@ def old_pgp_tabulate_data(queryset):
             library,  # library / collection
             primary_fragment.shelfmark,  # shelfmark
             primary_fragment.old_shelfmarks,  # shelfmark_alt
-            doc.textblock_set.first().get_side_display(),  # recto_verso
+            doc.textblock_set.first().side or "",  # recto_verso
             doc.doctype,  # document type
             " ".join("#" + t.name for t in doc.tags.all()),  # tags
             join_shelfmark if " + " in join_shelfmark else "",  # join

@@ -38,7 +38,7 @@ class FragmentTextBlockInline(admin.TabularInline):
         "document_link",
         "document_description",
         "multifragment",
-        "side",
+        "selected_images",
         "region",
     )
     readonly_fields = ("document_link", "document_description")
@@ -125,7 +125,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     fields = (
         "fragment",
         "multifragment",
-        "side",
+        "selected_images",
         "region",
         "order",
         "certain",
@@ -396,7 +396,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             iiif_urls = [fr.iiif_url for fr in all_fragments]
             view_urls = [fr.url for fr in all_fragments]
             multifrag = [tb.multifragment for tb in all_textblocks]
-            side = [tb.get_side_display() for tb in all_textblocks]
+            side = [tb.side for tb in all_textblocks]
             region = [tb.region for tb in all_textblocks]
             old_shelfmarks = [fragment.old_shelfmarks for fragment in all_fragments]
             libraries = set(
