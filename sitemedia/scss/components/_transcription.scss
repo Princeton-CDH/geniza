@@ -612,7 +612,7 @@
             max-width: none;
         }
         padding: 20px 10px 0;
-
+        // transcription label / switcher
         &.label-row {
             padding-right: 0;
             padding-top: 0;
@@ -623,6 +623,7 @@
         & > h3 {
             margin: 30px 0 12px;
         }
+        // transcription citation
         h3 + span.current-transcription {
             display: block;
             @include typography.meta;
@@ -798,6 +799,14 @@ a.editor-navigation {
         text-align: right;
         // disable site default max character width for reading
         max-width: none;
+    }
+
+    sup {
+        font-size: 75%;
+        line-height: 0;
+        position: relative;
+        vertical-align: baseline;
+        top: -0.5em;
     }
 
     li {
