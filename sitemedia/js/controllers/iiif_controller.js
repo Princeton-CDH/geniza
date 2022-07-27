@@ -149,15 +149,14 @@ export default class extends Controller {
             this.zoomSliderTarget.value = parseFloat(zoom);
             this.updateZoomUI(zoom, false);
         });
-        viewer.addHandler("rotate", (evt) => {
-            // Handle other changes in the canvas rotation (via Magic Trackpad, e.g.)
-            const { degrees } = evt;
-            this.updateRotationUI(-1 * parseInt(degrees));
-        });
     }
     handleRotationInput(viewer) {
         return (evt) => {
-            const angle = parseInt(evt.target.querySelector("input").value);
+            let angle = parseInt(evt.target.querySelector("input").value);
+            // if within a tolerance of +/- 5deg from 0deg, set to 0deg
+            if (angle <= 5 || angle >= 355) {
+                angle = 0;
+            }
             // set rotation to -angle for natural UX
             viewer.viewport.setRotation(-1 * angle);
             this.updateRotationUI(angle, evt);
