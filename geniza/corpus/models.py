@@ -1129,7 +1129,7 @@ class TextBlock(models.Model):
         parts = [
             self.fragment.shelfmark,
             self.multifragment,
-            self.side or "",
+            self.side,
             self.region,
             certainty_str,
         ]
@@ -1147,7 +1147,7 @@ class TextBlock(models.Model):
             i in self.selected_images for i in [0, 1]
         ):
             return self.RECTO_VERSO
-        return None
+        return ""
 
     def thumbnail(self):
         """iiif thumbnails for this TextBlock, with selected images highlighted"""

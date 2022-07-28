@@ -3,12 +3,13 @@ from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db.models import CharField, Count, F
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
-from django.forms.widgets import Textarea, TextInput
+from django.forms.widgets import HiddenInput, Textarea, TextInput
 from django.http import HttpResponseRedirect
 from django.urls import path, resolve, reverse
 from django.utils import timezone
@@ -38,10 +39,10 @@ class FragmentTextBlockInline(admin.TabularInline):
         "document_link",
         "document_description",
         "multifragment",
-        "selected_images",
+        "side",
         "region",
     )
-    readonly_fields = ("document_link", "document_description")
+    readonly_fields = ("document_link", "document_description", "side")
     extra = 1
 
     def document_link(self, obj):
@@ -121,18 +122,25 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
 
     model = TextBlock
     autocomplete_fields = ["fragment"]
-    readonly_fields = ("thumbnail",)
+    readonly_fields = (
+        "thumbnail",
+        "side",
+    )
     fields = (
         "fragment",
         "multifragment",
-        "selected_images",
+        "side",
         "region",
         "order",
         "certain",
         "thumbnail",
+        "selected_images",
     )
     extra = 1
-    formfield_overrides = {CharField: {"widget": TextInput(attrs={"size": "10"})}}
+    formfield_overrides = {
+        CharField: {"widget": TextInput(attrs={"size": "10"})},
+        ArrayField: {"widget": HiddenInput()},  # hidden input for selected_images
+    }
 
 
 class DocumentForm(forms.ModelForm):
