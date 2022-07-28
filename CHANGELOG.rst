@@ -1,6 +1,35 @@
 Change Log
 ==========
 
+4.6
+---
+
+Includes new image+transcription panel display.
+
+- public site
+   - As a user I want to toggle content panels so that I can view image or transcription separately or both at the same time, so I can read the content I am interested in.
+   - As a user I want to see all images and first available transcription for a document, so that I can see and read the content.
+   - As a user I want content panel toggles to be disabled when a record type for a document is not available, so that I know what content is available.
+   - As a user I want to see page side and shelfmark information above each image so that I know what part of the document I’m viewing.
+   - As a user I want to find image source and permissions within the image+transcription panel so that I can find out where fragment images come from and how I can use them.
+   - As a user, I want the full citation for a transcription in context so I know who authored it and where it came from.
+   - As a user I want to click or tap on image controls to turn on deep zoom so I can inspect the image in more detail.
+   - As a desktop user, I want to click to rotate the deep zoom image of a fragment so that I can view it in alternate orientations.
+   - As a desktop user, I want an angle control to rotate the deep zoom image of a fragment, so that I can control the rotation more finely than 90º increments.
+   - As a user, when I search for a document that is only on one side of a fragment, I want to see the relevant image first so that I can preview the document more accurately.
+
+- content/data admin
+    - On the admin site, I want the tag list view to include counts for how many times its used, in order to understand the scope of tags and clean them.
+    - As a content editor, when I select a fragment “side” in the document edit form I want an indicator of which fragment images will be displayed so that I can confirm I’m selecting the correct side or sides.
+    - As an admin, I want TEI transcription synchronization to ignore documents that only contain labels, so that transcription content is prioritized over "see other" labels.
+    - As a content editor, I want to view and edit transcription edit synced from TEI so that I can correct or remove incorrectly synced content when necessary.
+    - bugfix: admin footnote download results in an empty csv file (headers only)
+
+- visual design
+    - bugfix: dark mode header display corrected for wide displays
+    - revise tags display to match larger tap target for accessibility
+    - change text in dark mode to not be pure white, for accessibility
+
 4.5
 ---
 
