@@ -33,7 +33,7 @@ export default class extends Controller {
         // Enable OSD if not enabled
         // OSD needs to use DOM queries since it can't be assigned a target
         const OSD = this.osdTarget.querySelector(".openseadragon-container");
-        if (!OSD || this.osdTarget.classList.contains("hidden")) {
+        if (!OSD || this.osdTarget.classList.contains("hidden-img")) {
             const isMobile = evt.currentTarget.id.startsWith("zoom-toggle");
             this.activateDeepZoom({ isMobile });
             if (evt.currentTarget.classList.contains("rotation")) {
@@ -51,16 +51,16 @@ export default class extends Controller {
             this.addOpenSeaDragon(settings);
         }
         this.imageTarget.classList.remove("visible");
-        this.imageTarget.classList.add("hidden");
-        this.osdTarget.classList.remove("hidden");
+        this.imageTarget.classList.add("hidden-img");
+        this.osdTarget.classList.remove("hidden-img");
         this.osdTarget.classList.add("visible");
         this.rotationTarget.classList.add("active");
     }
     deactivateDeepZoom() {
         this.imageTarget.classList.add("visible");
-        this.imageTarget.classList.remove("hidden");
+        this.imageTarget.classList.remove("hidden-img");
         this.osdTarget.classList.remove("visible");
-        this.osdTarget.classList.add("hidden");
+        this.osdTarget.classList.add("hidden-img");
         this.rotationTarget.classList.remove("active");
         this.updateRotationUI(0);
     }

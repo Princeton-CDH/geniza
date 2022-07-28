@@ -585,7 +585,7 @@
             img,
             .osd {
                 width: 100%;
-                &.hidden {
+                &.hidden-img {
                     transition: opacity 300ms ease, visibility 0s ease 300ms;
                     opacity: 0;
                     visibility: hidden;
