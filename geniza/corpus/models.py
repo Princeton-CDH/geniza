@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Lower
@@ -280,14 +281,12 @@ class Fragment(TrackChangesModel):
                 return mark_safe(
                     attribution.replace(self.cudl_metadata_str, "").strip()
                 )
-        return None
 
     @property
     def provenance(self):
         """Generate a provenance statement for this fragment"""
         if self.manifest and self.manifest.metadata:
             return get_iiif_string(self.manifest.metadata.get("Provenance", ""))
-        return None
 
     def clean(self):
         """Custom validation and cleaning; currently only :meth:`clean_iiif_url`"""
@@ -513,6 +512,15 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     # inherits clean method from DocumentDateMixin
     # make sure to call if extending!
+    def clean(self):
+        """
+        Require doc_date_original and doc_date_calendar to be set
+        if either one is present.
+        """
+        if self.doc_date_calendar and not self.doc_date_original:
+            raise ValidationError("Original date is required when calendar is set")
+        if self.doc_date_original and not self.doc_date_calendar:
+            raise ValidationError("Calendar is required when original date is set")
 
     @staticmethod
     def get_by_any_pgpid(pgpid):
