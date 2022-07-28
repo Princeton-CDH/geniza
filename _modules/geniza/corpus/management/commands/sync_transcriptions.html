@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.management.commands.sync_transcriptions &#8212; Princeton Geniza Project 4.5.0 documentation</title>
+    <title>geniza.corpus.management.commands.sync_transcriptions &#8212; Princeton Geniza Project 4.6.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css" />
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
@@ -71,7 +71,8 @@
             <span class="s2">&quot;--noact&quot;</span><span class="p">,</span>
             <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Do not save changes to the database&quot;</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;files&quot;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Only sync the specified files.&quot;</span><span class="p">)</span></div>
 
     <span class="c1"># dict of footnotes that have been updated with list of TEI files, to track/prevent</span>
     <span class="c1"># TEI files resolving incorrectly to the same edition</span>
@@ -103,47 +104,23 @@
         <span class="c1"># keep track of document ids with multiple digitized editions (likely merged records/joins)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">multiedition_docs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
-        <span class="c1"># iterate through all tei files in the repository</span>
-        <span class="k">for</span> <span class="n">xmlfile</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">iglob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gitrepo_path</span><span class="p">,</span> <span class="s2">&quot;*.xml&quot;</span><span class="p">)):</span>
+        <span class="c1"># iterate through all tei files in the repository OR specified files</span>
+        <span class="n">xmlfiles</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;files&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">glob</span><span class="o">.</span><span class="n">iglob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gitrepo_path</span><span class="p">,</span> <span class="s2">&quot;*.xml&quot;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">xmlfile</span> <span class="ow">in</span> <span class="n">xmlfiles</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;xml&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="n">xmlfile_basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">xmlfile</span><span class="p">)</span>
 
             <span class="n">tei</span> <span class="o">=</span> <span class="n">xmlmap</span><span class="o">.</span><span class="n">load_xmlobject_from_file</span><span class="p">(</span><span class="n">xmlfile</span><span class="p">,</span> <span class="n">GenizaTei</span><span class="p">)</span>
             <span class="c1"># some files are stubs with no content</span>
-            <span class="c1"># check if there is no text content; report and skip</span>
-            <span class="k">if</span> <span class="n">tei</span><span class="o">.</span><span class="n">no_content</span><span class="p">():</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_normal</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> has no text content, skipping&quot;</span> <span class="o">%</span> <span class="n">xmlfile</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;empty_tei&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="k">continue</span>
-            <span class="k">elif</span> <span class="ow">not</span> <span class="n">tei</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lines</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> has no lines (translation?), skipping&quot;</span> <span class="o">%</span> <span class="n">xmlfile</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;empty_tei&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="c1"># check if the tei is ok to proceed; (e.g., empty or only translation content)</span>
+            <span class="c1"># if empty, report and skip</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_tei</span><span class="p">(</span><span class="n">tei</span><span class="p">,</span> <span class="n">xmlfile</span><span class="p">):</span>
                 <span class="k">continue</span>
 
-            <span class="c1"># get the document id from the filename (####.xml)</span>
-            <span class="n">pgpid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">xmlfile_basename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="c1"># in ONE case there is a duplicate id with b suffix on the second</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">pgpid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pgpid</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span>
-            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_normal</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-                        <span class="s2">&quot;Failed to generate integer PGPID from </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pgpid</span>
-                    <span class="p">)</span>
-                <span class="k">continue</span>
-            <span class="c1"># can we rely on pgpid from xml?</span>
-            <span class="c1"># but in some cases, it looks like a join 12047 + 12351</span>
-
-            <span class="c1"># find the document in the database</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">doc</span> <span class="o">=</span> <span class="n">Document</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                    <span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">pgpid</span><span class="p">)</span> <span class="o">|</span> <span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="n">old_pgpids__contains</span><span class="o">=</span><span class="p">[</span><span class="n">pgpid</span><span class="p">])</span>
-                <span class="p">)</span>
-            <span class="k">except</span> <span class="n">Document</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;document_not_found&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_normal</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Document </span><span class="si">%s</span><span class="s2"> not found in database&quot;</span> <span class="o">%</span> <span class="n">pgpid</span><span class="p">)</span>
+            <span class="c1"># get the document for the file based on id / old id</span>
+            <span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pgp_document</span><span class="p">(</span><span class="n">xmlfile_basename</span><span class="p">)</span>
+            <span class="c1"># if document was not found, skip</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">doc</span><span class="p">:</span>
                 <span class="k">continue</span>
 
             <span class="k">if</span> <span class="n">doc</span><span class="o">.</span><span class="n">fragments</span><span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -214,6 +191,65 @@
                     <span class="s2">&quot;Footnote pk </span><span class="si">%s</span><span class="s2"> updated more than once: </span><span class="si">%s</span><span class="s2">&quot;</span>
                     <span class="o">%</span> <span class="p">(</span><span class="n">footnote_id</span><span class="p">,</span> <span class="s2">&quot;;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">xmlfiles</span><span class="p">))</span>
                 <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Command.check_tei"><a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.sync_transcriptions.Command.check_tei">[docs]</a>    <span class="k">def</span> <span class="nf">check_tei</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tei</span><span class="p">,</span> <span class="n">xmlfile</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check TEI and report if it is empty, labels only, or has no content.</span>
+
+<span class="sd">        :param tei: xmlmap tei instance to check; :class:`~geniza.corpus.tei_transcriptions.GenizaTei`</span>
+<span class="sd">        :param xmlfile: xml filename, for reporting</span>
+<span class="sd">        :returns: True if check passes; False if the TEI should be skipped.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># some files are stubs with no content</span>
+        <span class="c1"># check if there is no text content; report and return true or false</span>
+        <span class="k">if</span> <span class="n">tei</span><span class="o">.</span><span class="n">no_content</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_normal</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> has no text content, skipping&quot;</span> <span class="o">%</span> <span class="n">xmlfile</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;empty_tei&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">tei</span><span class="o">.</span><span class="n">labels_only</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_normal</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> has labels only, no other text content; skipping&quot;</span> <span class="o">%</span> <span class="n">xmlfile</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;empty_tei&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">tei</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lines</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> has no lines (translation?), skipping&quot;</span> <span class="o">%</span> <span class="n">xmlfile</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;empty_tei&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Command.get_pgp_document"><a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.sync_transcriptions.Command.get_pgp_document">[docs]</a>    <span class="k">def</span> <span class="nf">get_pgp_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xmlfile_basename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find the PGP document for the specified TEI file, based on filename,</span>
+<span class="sd">        if possible.</span>
+
+<span class="sd">        :returns: instance of :class:`~geniza.corpus.models.Document` or None if not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># get the document id from the filename (####.xml)</span>
+        <span class="n">pgpid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">xmlfile_basename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># in ONE case there is a duplicate id with b suffix on the second</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pgpid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pgpid</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_normal</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Failed to generate integer PGPID from </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pgpid</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="c1"># can we rely on pgpid from xml?</span>
+        <span class="c1"># but in some cases, it looks like a join 12047 + 12351</span>
+
+        <span class="c1"># find the document in the database</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Document</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">pgpid</span><span class="p">)</span> <span class="o">|</span> <span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="n">old_pgpids__contains</span><span class="o">=</span><span class="p">[</span><span class="n">pgpid</span><span class="p">])</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">Document</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="s2">&quot;document_not_found&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbosity</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_normal</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Document </span><span class="si">%s</span><span class="s2"> not found in database&quot;</span> <span class="o">%</span> <span class="n">pgpid</span><span class="p">)</span>
+            <span class="k">return</span></div>
 
 <div class="viewcode-block" id="Command.get_edition_footnote"><a class="viewcode-back" href="../../../../../codedocs/corpus.html#geniza.corpus.management.commands.sync_transcriptions.Command.get_edition_footnote">[docs]</a>    <span class="k">def</span> <span class="nf">get_edition_footnote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">,</span> <span class="n">tei</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;identify the edition footnote to be updated&quot;&quot;&quot;</span>
@@ -420,7 +456,7 @@
       &copy;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

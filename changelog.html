@@ -4,9 +4,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Change Log &#8212; Princeton Geniza Project 4.5.0 documentation</title>
+    <title>Change Log &#8212; Princeton Geniza Project 4.6.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -36,11 +36,52 @@
   <section id="change-log">
 <h1>Change Log<a class="headerlink" href="#change-log" title="Permalink to this heading">¶</a></h1>
 <section id="id1">
-<h2>4.5<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
-<ul>
+<h2>4.6<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
+<p>Includes new image+transcription panel display.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>public site</dt><dd><ul>
+<li><p>As a user I want to toggle content panels so that I can view image or transcription separately or both at the same time, so I can read the content I am interested in.</p></li>
+<li><p>As a user I want to see all images and first available transcription for a document, so that I can see and read the content.</p></li>
+<li><p>As a user I want content panel toggles to be disabled when a record type for a document is not available, so that I know what content is available.</p></li>
+<li><p>As a user I want to see page side and shelfmark information above each image so that I know what part of the document I’m viewing.</p></li>
+<li><p>As a user I want to find image source and permissions within the image+transcription panel so that I can find out where fragment images come from and how I can use them.</p></li>
+<li><p>As a user, I want the full citation for a transcription in context so I know who authored it and where it came from.</p></li>
+<li><p>As a user I want to click or tap on image controls to turn on deep zoom so I can inspect the image in more detail.</p></li>
+<li><p>As a desktop user, I want to click to rotate the deep zoom image of a fragment so that I can view it in alternate orientations.</p></li>
+<li><p>As a desktop user, I want an angle control to rotate the deep zoom image of a fragment, so that I can control the rotation more finely than 90º increments.</p></li>
+<li><p>As a user, when I search for a document that is only on one side of a fragment, I want to see the relevant image first so that I can preview the document more accurately.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>content/data admin</dt><dd><ul>
+<li><p>On the admin site, I want the tag list view to include counts for how many times its used, in order to understand the scope of tags and clean them.</p></li>
+<li><p>As a content editor, when I select a fragment “side” in the document edit form I want an indicator of which fragment images will be displayed so that I can confirm I’m selecting the correct side or sides.</p></li>
+<li><p>As an admin, I want TEI transcription synchronization to ignore documents that only contain labels, so that transcription content is prioritized over “see other” labels.</p></li>
+<li><p>As a content editor, I want to view and edit transcription edit synced from TEI so that I can correct or remove incorrectly synced content when necessary.</p></li>
+<li><p>bugfix: admin footnote download results in an empty csv file (headers only)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>visual design</dt><dd><ul>
+<li><p>bugfix: dark mode header display corrected for wide displays</p></li>
+<li><p>revise tags display to match larger tap target for accessibility</p></li>
+<li><p>change text in dark mode to not be pure white, for accessibility</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+<section id="id2">
+<h2>4.5<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
 <li><p>public site</p>
-<blockquote>
-<div><ul class="simple">
+<ul>
 <li><p>As a user when viewing a document I want to see if there are any related documents so that I can easily discover other documents on the same shelfmarks.</p></li>
 <li><p>As a front end user, I want to filter documents by date so that I can find documents known to be from a particular time period.</p></li>
 <li><p>As a front-end user, I want to sort documents by document date so I can find the oldest or newest records within my search results when document date is known.</p></li>
@@ -51,11 +92,9 @@
 <li><p>bugfix: sort should not automatically switch to relevance when the search term is revised</p></li>
 <li><p>bugfix: server error for documents associated with Heidelberg IIIF (PGPIDs 34016, 34017, 34018)</p></li>
 </ul>
-</div></blockquote>
 </li>
 <li><p>content/data admin</p>
-<blockquote>
-<div><ul class="simple">
+<ul>
 <li><p>As a content editor, I want to see other documents on the same fragment as part of a document detail view in order to ensure I’m not creating a duplicate description.</p></li>
 <li><p>As a content editor, I want Anno Mundi dates automatically converted to standard dates when possible, so that dates can be compared and used for filtering and sorting.</p></li>
 <li><p>As a content editor, I want Hijrī dates automatically converted to standard dates when possible, so that dates can be compared and used for filtering and sorting.</p></li>
@@ -69,25 +108,22 @@
 <li><p>bugfix: spurious error message about caching failure when adding IIIF URLs to Fragment records</p></li>
 <li><p>chore: automatically clean redundant manifest uris generated by some iiif viewers</p></li>
 </ul>
-</div></blockquote>
 </li>
 <li><p>visual design</p>
-<blockquote>
-<div><ul class="simple">
+<ul>
 <li><p>implement the search results page in RTL orientation for Hebrew and Arabic</p></li>
 </ul>
-</div></blockquote>
 </li>
 </ul>
 </section>
-<section id="id2">
-<h2>4.4.1<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<section id="id3">
+<h2>4.4.1<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: nav menu button light/dark toggle overlapping on tablet/mobile</p></li>
 </ul>
 </section>
-<section id="id3">
-<h2>4.4<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
+<section id="id4">
+<h2>4.4<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site</p>
 <ul>
@@ -132,14 +168,14 @@
 </li>
 </ul>
 </section>
-<section id="id4">
-<h2>4.3.1<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h2>
+<section id="id5">
+<h2>4.3.1<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: edit link on public document detail page wasn’t loading correctly due to Turbo</p></li>
 </ul>
 </section>
-<section id="id5">
-<h2>4.3<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h2>
+<section id="id6">
+<h2>4.3<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site
 -   As a front-end user, I want the document search to automatically reload when I change my search terms, filters, or other options so that I can see the changed results more quickly.
@@ -166,8 +202,8 @@
 <li><p>fix twitter/open graph title and description previews for wagtail pages</p></li>
 </ul>
 </section>
-<section id="id6">
-<h2>4.2<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h2>
+<section id="id7">
+<h2>4.2<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site
 -   As a front-end user, I want keyword searches automatically sorted by relevance, so that I see the most useful results first.
@@ -195,8 +231,8 @@
 -   bugfix: image viewer breaks on mobile for documents with images but no transcriptions</p></li>
 </ul>
 </section>
-<section id="id7">
-<h2>4.1<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h2>
+<section id="id8">
+<h2>4.1<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site
 -   As a user, I want to see image thumbnails with search results when available, so that I can quickly see which records have images and what they look like.
@@ -219,8 +255,8 @@
 -   include software version in site footer</p></li>
 </ul>
 </section>
-<section id="id8">
-<h2>4.0<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h2>
+<section id="id9">
+<h2>4.0<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h2>
 <p><strong>Initial public version of Princeton Geniza Project v4.0</strong></p>
 <ul class="simple">
 <li><p>public site
@@ -257,8 +293,8 @@
 -   Improve handling for IIIF content to work better with PUL/JTS materials</p></li>
 </ul>
 </section>
-<section id="id9">
-<h2>0.8<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h2>
+<section id="id10">
+<h2>0.8<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site search and document display
 -   As a front-end user, I want to use fields in my keyword searches so I can make my searches more specific and targeted.
@@ -284,8 +320,8 @@
 -   image files used in site design organized in site media, and organization documented</p></li>
 </ul>
 </section>
-<section id="id10">
-<h2>0.7<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h2>
+<section id="id11">
+<h2>0.7<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>document search
 -   As a user I would like to know explicitly when a search result does not have any scholarship records so that I don’t have to compare with results that do.
@@ -322,16 +358,16 @@
 <li><p>Configured and applied <cite>djhtml</cite> commmit hook for consistent formatting in django templates</p></li>
 </ul>
 </section>
-<section id="id11">
-<h2>0.6<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h2>
+<section id="id12">
+<h2>0.6<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a content editor, I want duplicate joined documents to be automatically merged without losing their unique metadata, so that I don’t have to merge them manually.</p></li>
 <li><p>Setup for webpack build for frontend scss/js assets and static files</p></li>
 <li><p>bugfix: 500 error saving documents with footnotes (bad footnote equality check)</p></li>
 </ul>
 </section>
-<section id="id12">
-<h2>0.5<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h2>
+<section id="id13">
+<h2>0.5<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a Content Editor, I want to see help text for Document Type so that I can make an informed decision while editing documents.</p></li>
 <li><p>As a content editor, I want a one time consolidation of India Book sources so that the source list correctly represents the book volumes.</p></li>
@@ -342,8 +378,8 @@
 <li><p>Adopted isort python style and configured pre-commit hook</p></li>
 </ul>
 </section>
-<section id="id13">
-<h2>0.4<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h2>
+<section id="id14">
+<h2>0.4<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a content editor, I would like to input dates in a separate field, so that both content editors and site users can sort and filter documents by date.</p></li>
 <li><p>As a content editor, I want to import fragment view and IIIF urls from a csv file into the database so that I can provide access to images for fragments.</p></li>
@@ -359,8 +395,8 @@
 <li><p>Adopted black code style and configured pre-commit hook</p></li>
 </ul>
 </section>
-<section id="id14">
-<h2>0.3<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h2>
+<section id="id15">
+<h2>0.3<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a Global Admin, I want new documents created in the database after data import to receive PGPIDs higher than the highest imported PGPID, so that identifiers will be unique and semi-sequential.</p></li>
 <li><p>As a Global Admin, I want documents associated with language+script based on display name when importing documents from metadata spreadsheet.</p></li>
@@ -439,21 +475,22 @@
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Change Log</a><ul>
-<li><a class="reference internal" href="#id1">4.5</a></li>
-<li><a class="reference internal" href="#id2">4.4.1</a></li>
-<li><a class="reference internal" href="#id3">4.4</a></li>
-<li><a class="reference internal" href="#id4">4.3.1</a></li>
-<li><a class="reference internal" href="#id5">4.3</a></li>
+<li><a class="reference internal" href="#id1">4.6</a></li>
+<li><a class="reference internal" href="#id2">4.5</a></li>
+<li><a class="reference internal" href="#id3">4.4.1</a></li>
+<li><a class="reference internal" href="#id4">4.4</a></li>
+<li><a class="reference internal" href="#id5">4.3.1</a></li>
+<li><a class="reference internal" href="#id6">4.3</a></li>
 <li><a class="reference internal" href="#bugfix-release">4.2.1 — bugfix release</a></li>
-<li><a class="reference internal" href="#id6">4.2</a></li>
-<li><a class="reference internal" href="#id7">4.1</a></li>
-<li><a class="reference internal" href="#id8">4.0</a></li>
-<li><a class="reference internal" href="#id9">0.8</a></li>
-<li><a class="reference internal" href="#id10">0.7</a></li>
-<li><a class="reference internal" href="#id11">0.6</a></li>
-<li><a class="reference internal" href="#id12">0.5</a></li>
-<li><a class="reference internal" href="#id13">0.4</a></li>
-<li><a class="reference internal" href="#id14">0.3</a></li>
+<li><a class="reference internal" href="#id7">4.2</a></li>
+<li><a class="reference internal" href="#id8">4.1</a></li>
+<li><a class="reference internal" href="#id9">4.0</a></li>
+<li><a class="reference internal" href="#id10">0.8</a></li>
+<li><a class="reference internal" href="#id11">0.7</a></li>
+<li><a class="reference internal" href="#id12">0.6</a></li>
+<li><a class="reference internal" href="#id13">0.5</a></li>
+<li><a class="reference internal" href="#id14">0.4</a></li>
+<li><a class="reference internal" href="#id15">0.3</a></li>
 </ul>
 </li>
 </ul>
@@ -483,7 +520,7 @@
       &copy;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
