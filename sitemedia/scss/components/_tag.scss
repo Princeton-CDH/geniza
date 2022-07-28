@@ -4,16 +4,26 @@
 
 @use "../base/typography";
 
+.tags {
+    line-height: 2.45rem;
+}
 .tags li {
-    @include typography.meta;
-    text-transform: lowercase;
     display: inline-block;
-    &::before {
-        content: "#";
+    a {
+        @include typography.meta;
+        text-transform: lowercase;
+        display: inline-block;
+        background-color: var(--tag-bg);
+        color: var(--on-background-light-alt);
+        padding: 2px 9px 3px;
+        min-width: 39px; // 48px - 9px padding
+        &::before {
+            content: "#";
+        }
+        text-decoration: none;
     }
-
     // spacing between tags
-    margin-right: 0.5rem;
+    margin-right: 6px;
     &:last-of-type {
         margin-right: 0;
     }
@@ -21,7 +31,8 @@
 
 // "(+ N more)" after a long list of tags
 .tags li.more {
-    color: var(--on-background-alt);
+    background-color: transparent;
+    color: var(--on-background-light-alt);
     &::before {
         content: "";
     }
@@ -30,14 +41,16 @@
 // tweaks for RTL tags for hebrew, arabic
 html[dir="rtl"] .tags li {
     // spacing between tags
-    margin-right: 0.5rem;
+    &:last-of-type {
+        margin-right: 6px;
+    }
     &:first-of-type {
         margin-right: 0;
     }
-    &::before {
+    a::before {
         content: "";
     }
-    &::after {
+    a::after {
         display: inline-block;
         content: "#";
     }

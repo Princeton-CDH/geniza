@@ -186,6 +186,11 @@ class TestFragment(TestCase):
         assert 'title="1v"' in thumbnails
         assert isinstance(thumbnails, SafeString)
 
+        # test with verso side selected: should add class to 1v img, but not 1r img
+        thumbnails_verso_selected = frag.iiif_thumbnails(indices=[1])
+        assert 'title="1v" class="selected"' in thumbnails_verso_selected
+        assert 'title="1r" class="selected"' not in thumbnails_verso_selected
+
     @pytest.mark.django_db
     @patch("geniza.corpus.models.ManifestImporter")
     def test_iiif_images_locally_cached_manifest(self, mock_manifestimporter):
@@ -620,13 +625,13 @@ class TestDocument:
         # Create a document and fragment and a TextBlock to associate them
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-        TextBlock.objects.create(document=doc, fragment=frag, side="r")
+        TextBlock.objects.create(document=doc, fragment=frag, side=TextBlock.RECTO)
         # Mock two IIIF images, mock their size functions
         img1 = Mock()
         img2 = Mock()
         # Mock Fragment.iiif_images() to return those two images and two fake labels
         with patch.object(
-            Fragment, "iiif_images", return_value=([img1, img2], ["label1", "label2"])
+            Fragment, "iiif_images", return_value=([img1, img2], ["1r", "1v"])
         ) as mock_frag_iiif:
             images = doc.iiif_images()
             # Should call the mocked function
@@ -635,8 +640,23 @@ class TestDocument:
             assert len(images) == 2
             assert isinstance(images[0], dict)
             # dicts should contain the image objects and labels via the mocks
-            assert (images[0]["image"], images[0]["label"]) == (img1, "label1")
-            assert (images[1]["image"], images[1]["label"]) == (img2, "label2")
+            assert images[0]["image"] == img1
+            assert images[0]["label"] == "1r"
+            assert images[0]["shelfmark"] == frag.shelfmark
+            assert images[1]["image"] == img2
+            assert images[1]["label"] == "1v"
+            assert images[1]["shelfmark"] == frag.shelfmark
+
+            # Call with filter_side=True
+            images = doc.iiif_images(filter_side=True)
+            # Should call the mocked function again
+            assert mock_frag_iiif.call_count == 2
+            # Should return a list of length one
+            assert len(images) == 1
+            # dict should be the recto side, since the TextBlock's side is R
+            assert images[0]["image"] == img1
+            assert images[0]["label"] == "1r"
+            assert images[0]["shelfmark"] == frag.shelfmark
 
     def test_fragment_urls(self):
         # create example doc with two fragments with URLs

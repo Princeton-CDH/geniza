@@ -60,17 +60,23 @@ $off-white: #f7f7f7;
     --button-focus: #161616;
     // border colors for (unfocused) filters
     --filter-border: rgba(0, 0, 0, 0.25);
-    // active filter, metadata bullet color
+    // active filter, metadata bullet color, zoom slider control
     --filter-active: #7bac7b;
-    // "in PGP since" text
+    // "in PGP since" text, edition text in ITT panel
     --input-date-text: #595959;
     // permalink icon
     --permalink-icon: #f7f7f7;
     --permalink-icon-bg: #3d3d3d;
     // placeholder text for date input
     --date-placeholder: #595959;
+    // toggle icons for ITT panel
+    --toggle: #161616;
+    --toggle-background: #ffffff;
+    --disabled-toggle-background: #ffffff;
     // JTS logo in image permissions
     --jts-logo: #231f20;
+    // tag background color
+    --tag-bg: #e5eee5;
 }
 
 // Dark mode theme colors
@@ -85,19 +91,19 @@ $off-white: #f7f7f7;
     --link-secondary: #b76680;
     --on-primary: #161616;
     --on-secondary: #161616;
-    --on-tertiary: #ffffff;
+    --on-tertiary: #f7f7f7;
     // background colors
     --background: #161616;
     --background-light: #222222;
     --background-gray: #3d3d3d;
     // text on background
-    --on-background: #ffffff;
+    --on-background: #f7f7f7;
     --on-background-alt: #9e9e9e;
     --on-background-25: rgba(122, 122, 122, 0.25);
     --on-background-125: rgba(122, 122, 122, 0.125);
-    --on-background-light: #ffffff;
+    --on-background-light: #f7f7f7;
     --on-background-light-alt: #ebebeb;
-    --on-background-gray: #ffffff;
+    --on-background-gray: #f7f7f7;
     // focused buttons
     --focus: #146feb;
     // disabled links
@@ -108,25 +114,31 @@ $off-white: #f7f7f7;
     // logo fill color
     --logo: #f7f7f7;
     // icon button colors (e.g. "view document details")
-    --icon-button: #ffffff;
-    --icon-button-active: #ffffff;
-    --icon-button-bottom-hover: #ffffff;
+    --icon-button: #f7f7f7;
+    --icon-button-active: #f7f7f7;
+    --icon-button-bottom-hover: #f7f7f7;
     // button colors
-    --button-primary: #ffffff;
+    --button-primary: #f7f7f7;
     --button-focus: #146feb;
     // border colors for (unfocused) filters
     --filter-border: #161616;
-    // active filter, metadata bullet color
+    // active filter, metadata bullet color, zoom slider control
     --filter-active: #c37f97;
-    // "in PGP since" text
+    // "in PGP since" text, edition text in ITT panel
     --input-date-text: #cfcfcf;
     // permalink icon
     --permalink-icon: #3d3d3d;
     --permalink-icon-bg: #f7f7f7;
     // placeholder text for date input
     --date-placeholder: #ebebeb;
+    // toggle icons for ITT panel
+    --toggle: #161616;
+    --toggle-background: #f7f7f7;
+    --disabled-toggle-background: #595959;
     // JTS logo in image permissions
-    --jts-logo: #ffffff;
+    --jts-logo: #f7f7f7;
+    // tag background color
+    --tag-bg: rgba(195, 127, 151, 0.2);
 }
 
 html {

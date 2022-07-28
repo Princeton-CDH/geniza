@@ -466,7 +466,7 @@ html[dir="rtl"] #site-nav {
     content: " ";
     height: 188px;
     display: block;
-    left: 1950px;
+    left: 1961px;
     right: 0;
     top: -1px;
 }
@@ -478,7 +478,7 @@ html[dir="rtl"] #site-nav {
     background-repeat: no-repeat, no-repeat;
     &:after {
         @include after-header-desktop;
-        background: url("/static/img/ui/desktop/light/all/header-filler.svg")
+        background: url("/static/img/ui/desktop/dark/all/header-filler.svg")
             repeat-x;
     }
     a.home-link {

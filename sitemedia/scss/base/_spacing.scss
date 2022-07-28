@@ -13,14 +13,14 @@ $ratio: 1.5;
 
 $spacing-md: $base;
 
-$spacing-sm: math.div($base, $ratio);
-$spacing-xs: math.div($spacing-sm, $ratio);
-$spacing-2xs: math.div($spacing-xs, $ratio);
-$spacing-3xs: math.div($spacing-2xs, $ratio);
-$spacing-4xs: math.div($spacing-3xs, $ratio);
+$spacing-sm: math.div($base, $ratio); //         0.667rem, 10.66px
+$spacing-xs: math.div($spacing-sm, $ratio); //   0.444rem, 7.11px
+$spacing-2xs: math.div($spacing-xs, $ratio); //  0.296rem, 4.74px
+$spacing-3xs: math.div($spacing-2xs, $ratio); // 0.198rem, 3.16px
+$spacing-4xs: math.div($spacing-3xs, $ratio); // 0.131rem, 2.11px
 
-$spacing-lg: $base * $ratio;
-$spacing-xl: $spacing-lg * $ratio;
-$spacing-2xl: $spacing-xl * $ratio;
-$spacing-3xl: $spacing-2xl * $ratio;
-$spacing-4xl: $spacing-3xl * $ratio;
+$spacing-lg: $base * $ratio; //         1.5rem,     24px
+$spacing-xl: $spacing-lg * $ratio; //   2.25rem,    36px
+$spacing-2xl: $spacing-xl * $ratio; //  3.375rem,   54px
+$spacing-3xl: $spacing-2xl * $ratio; // 5.0625rem,  81px
+$spacing-4xl: $spacing-3xl * $ratio; // 7.59375rem, 121.5px

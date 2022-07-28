@@ -1,39 +1,68 @@
 Change Log
 ==========
 
+4.6
+---
+
+Includes new image+transcription panel display.
+
+- public site
+   - As a user I want to toggle content panels so that I can view image or transcription separately or both at the same time, so I can read the content I am interested in.
+   - As a user I want to see all images and first available transcription for a document, so that I can see and read the content.
+   - As a user I want content panel toggles to be disabled when a record type for a document is not available, so that I know what content is available.
+   - As a user I want to see page side and shelfmark information above each image so that I know what part of the document I’m viewing.
+   - As a user I want to find image source and permissions within the image+transcription panel so that I can find out where fragment images come from and how I can use them.
+   - As a user, I want the full citation for a transcription in context so I know who authored it and where it came from.
+   - As a user I want to click or tap on image controls to turn on deep zoom so I can inspect the image in more detail.
+   - As a desktop user, I want to click to rotate the deep zoom image of a fragment so that I can view it in alternate orientations.
+   - As a desktop user, I want an angle control to rotate the deep zoom image of a fragment, so that I can control the rotation more finely than 90º increments.
+   - As a user, when I search for a document that is only on one side of a fragment, I want to see the relevant image first so that I can preview the document more accurately.
+
+- content/data admin
+    - On the admin site, I want the tag list view to include counts for how many times its used, in order to understand the scope of tags and clean them.
+    - As a content editor, when I select a fragment “side” in the document edit form I want an indicator of which fragment images will be displayed so that I can confirm I’m selecting the correct side or sides.
+    - As an admin, I want TEI transcription synchronization to ignore documents that only contain labels, so that transcription content is prioritized over "see other" labels.
+    - As a content editor, I want to view and edit transcription edit synced from TEI so that I can correct or remove incorrectly synced content when necessary.
+    - bugfix: admin footnote download results in an empty csv file (headers only)
+
+- visual design
+    - bugfix: dark mode header display corrected for wide displays
+    - revise tags display to match larger tap target for accessibility
+    - change text in dark mode to not be pure white, for accessibility
+
 4.5
 ---
 
 - public site
 
-   - As a user when viewing a document I want to see if there are any related documents so that I can easily discover other documents on the same shelfmarks.
-   - As a front end user, I want to filter documents by date so that I can find documents known to be from a particular time period.
-   - As a front-end user, I want to sort documents by document date so I can find the oldest or newest records within my search results when document date is known.
-   - As a user, I would like to see historic and converted dates in document search results so that I can easily scan date information when it is known.
-   - As a frontend user, I would like to see converted dates displayed in a standard, readable format so that I can easily understand the calendar information.
-   - As a front-end user, I want to see provenance information for images when available so that I know where images and content is coming from for various shelfmarks.
-   - As a frontend user, I want document descriptions displayed with line breaks from the content editors so that I can more easily read longer or more structured descriptions.
-   - bugfix: sort should not automatically switch to relevance when the search term is revised
-   - bugfix: server error for documents associated with Heidelberg IIIF (PGPIDs 34016, 34017, 34018)
+  - As a user when viewing a document I want to see if there are any related documents so that I can easily discover other documents on the same shelfmarks.
+  - As a front end user, I want to filter documents by date so that I can find documents known to be from a particular time period.
+  - As a front-end user, I want to sort documents by document date so I can find the oldest or newest records within my search results when document date is known.
+  - As a user, I would like to see historic and converted dates in document search results so that I can easily scan date information when it is known.
+  - As a frontend user, I would like to see converted dates displayed in a standard, readable format so that I can easily understand the calendar information.
+  - As a front-end user, I want to see provenance information for images when available so that I know where images and content is coming from for various shelfmarks.
+  - As a frontend user, I want document descriptions displayed with line breaks from the content editors so that I can more easily read longer or more structured descriptions.
+  - bugfix: sort should not automatically switch to relevance when the search term is revised
+  - bugfix: server error for documents associated with Heidelberg IIIF (PGPIDs 34016, 34017, 34018)
 
 - content/data admin
 
-   - As a content editor, I want to see other documents on the same fragment as part of a document detail view in order to ensure I'm not creating a duplicate description.
-   - As a content editor, I want Anno Mundi dates automatically converted to standard dates when possible, so that dates can be compared and used for filtering and sorting.
-   - As a content editor, I want Hijrī dates automatically converted to standard dates when possible, so that dates can be compared and used for filtering and sorting.
-   - As an content editor, I want the Document original date and calendar to be required together, so that I cannot produce incomplete records.
-   - As a content editor, I want standard document dates validated so that I am prevented from entering dates the system can't use for searching and display.
-   - As a content editor, I want standardized dates entered before validation was applied automatically cleaned up so they can be used for filtering and sorting in the public site.
-   - As a content editor, I want fragment url importing to ignore upper/lower case differences when matching shelfmarks, so that I can import urls when the shelfmarks don't match exactly.
-   - bugfix: improve language autocomplete search options on document edit form
-   - bugfix: improve speed of language autocomplete on document edit form
-   - bugfix: search for sources in admin interface doesn't include volume field
-   - bugfix: spurious error message about caching failure when adding IIIF URLs to Fragment records
-   - chore: automatically clean redundant manifest uris generated by some iiif viewers
+  - As a content editor, I want to see other documents on the same fragment as part of a document detail view in order to ensure I'm not creating a duplicate description.
+  - As a content editor, I want Anno Mundi dates automatically converted to standard dates when possible, so that dates can be compared and used for filtering and sorting.
+  - As a content editor, I want Hijrī dates automatically converted to standard dates when possible, so that dates can be compared and used for filtering and sorting.
+  - As an content editor, I want the Document original date and calendar to be required together, so that I cannot produce incomplete records.
+  - As a content editor, I want standard document dates validated so that I am prevented from entering dates the system can't use for searching and display.
+  - As a content editor, I want standardized dates entered before validation was applied automatically cleaned up so they can be used for filtering and sorting in the public site.
+  - As a content editor, I want fragment url importing to ignore upper/lower case differences when matching shelfmarks, so that I can import urls when the shelfmarks don't match exactly.
+  - bugfix: improve language autocomplete search options on document edit form
+  - bugfix: improve speed of language autocomplete on document edit form
+  - bugfix: search for sources in admin interface doesn't include volume field
+  - bugfix: spurious error message about caching failure when adding IIIF URLs to Fragment records
+  - chore: automatically clean redundant manifest uris generated by some iiif viewers
 
 - visual design
 
-    - implement the search results page in RTL orientation for Hebrew and Arabic
+  - implement the search results page in RTL orientation for Hebrew and Arabic
 
 4.4.1
 -----
@@ -42,6 +71,7 @@ Change Log
 
 4.4
 ---
+
 -   public site
 
     - As a front end user, I want a filter for documents that have images, so that I can limit results to documents where I'll have ready access to visuals of the fragments.

@@ -296,44 +296,6 @@ section#document-list {
     }
 }
 
-// styles specific to transcription;
-// appear in search results and in mirador viewer
-.transcription {
-    @include typography.transcription;
-    @include typography.hebrew;
-    align-self: flex-end;
-
-    text-align: right;
-    // direction: rtl; /* search results ae mixed rtl/ltr and include unicode order mark characters */
-
-    .search-result & p {
-        white-space: pre-line;
-        text-align: right;
-        // disable site default max character width for reading
-        max-width: none;
-    }
-
-    li {
-        white-space: pre-line;
-        margin-right: 2em; /* shift to make space for line numbers */
-        direction: rtl;
-    }
-
-    /* some transcription styles adapted from local admin site css */
-    li::before {
-        /* use pseudo marker to avoid periods for line numbers */
-        content: attr(value);
-        margin-right: -2em; /* shift outside text margin */
-        text-align: right;
-        float: right;
-        font-weight: bold;
-    }
-
-    li::marker {
-        direction: rtl;
-    }
-}
-
 // tweaks for RTL search results for hebrew, arabic
 html[dir="rtl"] .search-result {
     // spacing in between results
