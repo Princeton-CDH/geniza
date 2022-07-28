@@ -5,6 +5,7 @@ from django.db import migrations, models
 
 
 def side_to_selected_images(apps, schema_editor):
+    # remap "side" field to "selected images" (indices of recto, verso, both)
     TextBlock = apps.get_model("corpus", "TextBlock")
     tbs_with_side = TextBlock.objects.exclude(side="")
     for tb in tbs_with_side:
@@ -18,6 +19,7 @@ def side_to_selected_images(apps, schema_editor):
 
 
 def selected_images_to_side(apps, schema_editor):
+    # reverse: "selected images" field to "side" (recto, verso, both)
     TextBlock = apps.get_model("corpus", "TextBlock")
     tbs_with_selected = TextBlock.objects.exclude(selected_images__len=0)
     for tb in tbs_with_selected:
