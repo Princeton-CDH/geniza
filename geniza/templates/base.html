@@ -79,11 +79,11 @@
             <a id="skip" class="sr-only-focusable" href="#main-content">{% translate "Skip to main content" %}</a>
             <header>
                 <div class="controls">
-                    {% include "snippets/theme_toggle.html" %}
                     {% include "snippets/language_switcher.html" %}
                 </div>
                 {% include "nav.html" %}
             </header>
+            {% include "snippets/theme_toggle.html" %}
 
             <turbo-frame id="main" data-turbo-action="advance">
                 <main id="main-content"  class="{{ page_type }}{% block page_type %}{% endblock page_type %}">{% block main %}{% endblock main %}</main>
