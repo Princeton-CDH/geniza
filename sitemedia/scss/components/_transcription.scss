@@ -7,10 +7,12 @@
 @use "../components/searchform";
 
 #itt-panel {
+    z-index: 2;
     max-width: none;
     width: 100%;
     display: flex;
     flex-flow: row wrap;
+    background-color: var(--background);
 
     $toggle-default-width: 87px; /* only applies on tablet up */
 

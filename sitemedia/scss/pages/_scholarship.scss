@@ -11,14 +11,14 @@ main.scholarship {
         display: flex;
         flex-direction: column;
         padding: 0 spacing.$spacing-sm spacing.$spacing-md;
-        @include breakpoints.for-desktop-up {
+        @include breakpoints.for-tablet-landscape-up {
             padding: 0 spacing.$spacing-md spacing.$spacing-md;
         }
     }
     ol {
         counter-reset: search-counter;
         margin: spacing.$spacing-2xl 0 spacing.$spacing-xl spacing.$spacing-lg;
-        @include breakpoints.for-desktop-up {
+        @include breakpoints.for-tablet-landscape-up {
             margin: spacing.$spacing-3xl 0 0;
         }
     }
