@@ -1093,9 +1093,9 @@ class TextBlock(models.Model):
             + "Uncheck this box if you are uncertain of a potential join."
         ),
     )
-    RECTO = _("recto")
-    VERSO = _("verso")
-    RECTO_VERSO = _("recto and verso")
+    RECTO = "recto"
+    VERSO = "verso"
+    RECTO_VERSO = "recto and verso"
     selected_images = ArrayField(
         models.IntegerField(),
         default=list,
