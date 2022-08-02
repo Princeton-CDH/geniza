@@ -20,6 +20,7 @@ module.exports = (env, options) => ({
             "./sitemedia/scss/components/_iiif.scss",
             "./sitemedia/js/iiif.js",
         ],
+        admin: ["./sitemedia/js/admin.js"],
     },
     output: {
         // locations and filenames of bundled files
