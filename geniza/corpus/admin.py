@@ -3,12 +3,13 @@ from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db.models import CharField, Count, F
 from django.db.models.functions import Concat
 from django.db.models.query import Prefetch
-from django.forms.widgets import Textarea, TextInput
+from django.forms.widgets import HiddenInput, Textarea, TextInput
 from django.http import HttpResponseRedirect
 from django.urls import path, resolve, reverse
 from django.utils import timezone
@@ -41,7 +42,7 @@ class FragmentTextBlockInline(admin.TabularInline):
         "side",
         "region",
     )
-    readonly_fields = ("document_link", "document_description")
+    readonly_fields = ("document_link", "document_description", "side")
     extra = 1
 
     def document_link(self, obj):
@@ -121,7 +122,10 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
 
     model = TextBlock
     autocomplete_fields = ["fragment"]
-    readonly_fields = ("thumbnail",)
+    readonly_fields = (
+        "thumbnail",
+        "side",
+    )
     fields = (
         "fragment",
         "multifragment",
@@ -130,9 +134,13 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
         "order",
         "certain",
         "thumbnail",
+        "selected_images",
     )
     extra = 1
-    formfield_overrides = {CharField: {"widget": TextInput(attrs={"size": "10"})}}
+    formfield_overrides = {
+        CharField: {"widget": TextInput(attrs={"size": "10"})},
+        ArrayField: {"widget": HiddenInput()},  # hidden input for selected_images
+    }
 
 
 class DocumentForm(forms.ModelForm):
@@ -396,7 +404,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             iiif_urls = [fr.iiif_url for fr in all_fragments]
             view_urls = [fr.url for fr in all_fragments]
             multifrag = [tb.multifragment for tb in all_textblocks]
-            side = [tb.get_side_display() for tb in all_textblocks]
+            side = [tb.side for tb in all_textblocks]
             region = [tb.region for tb in all_textblocks]
             old_shelfmarks = [fragment.old_shelfmarks for fragment in all_fragments]
             libraries = set(

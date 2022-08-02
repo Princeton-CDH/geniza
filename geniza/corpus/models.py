@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Lower
@@ -244,7 +245,7 @@ class Fragment(TrackChangesModel):
 
         return images, labels, canvases
 
-    def iiif_thumbnails(self):
+    def iiif_thumbnails(self, selected=[]):
         """html for thumbnails of iiif image, for display in admin"""
         # if there are no iiif images for this fragment, bail out
         iiif_images = self.iiif_images()
@@ -255,8 +256,12 @@ class Fragment(TrackChangesModel):
         return mark_safe(
             " ".join(
                 # include label as title for now
-                '<img src="%s" loading="lazy" height="200" title="%s">'
-                % (img.size(height=200), labels[i])
+                '<img src="%s" loading="lazy" height="200" title="%s" %s>'
+                % (
+                    img.size(height=200),
+                    labels[i],
+                    'class="selected" /' if i in selected else "/",
+                )
                 for i, img in enumerate(images)
             )
         )
@@ -279,14 +284,12 @@ class Fragment(TrackChangesModel):
                 return mark_safe(
                     attribution.replace(self.cudl_metadata_str, "").strip()
                 )
-        return None
 
     @property
     def provenance(self):
         """Generate a provenance statement for this fragment"""
         if self.manifest and self.manifest.metadata:
             return get_iiif_string(self.manifest.metadata.get("Provenance", ""))
-        return None
 
     def clean(self):
         """Custom validation and cleaning; currently only :meth:`clean_iiif_url`"""
@@ -512,6 +515,15 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     # inherits clean method from DocumentDateMixin
     # make sure to call if extending!
+    def clean(self):
+        """
+        Require doc_date_original and doc_date_calendar to be set
+        if either one is present.
+        """
+        if self.doc_date_calendar and not self.doc_date_original:
+            raise ValidationError("Original date is required when calendar is set")
+        if self.doc_date_original and not self.doc_date_calendar:
+            raise ValidationError("Calendar is required when original date is set")
 
     @staticmethod
     def get_by_any_pgpid(pgpid):
@@ -606,9 +618,11 @@ class Document(ModelIndexable, DocumentDateMixin):
             )
         )
 
-    def iiif_images(self):
-        """List of IIIF images and labels for images of the Document's Fragments."""
+    def iiif_images(self, filter_side=False):
+        """List of IIIF images and labels for images of the Document's Fragments.
+        :param filter_side: if TextBlocks have side info, filter images by side (default: False)"""
         iiif_images = []
+
         for b in self.textblock_set.all():
             frag_images = b.fragment.iiif_images()
             if frag_images is not None:
@@ -621,6 +635,10 @@ class Document(ModelIndexable, DocumentDateMixin):
                         "shelfmark": b.fragment.shelfmark,
                     }
                     for i, img in enumerate(images)
+                    # include if filter inactive, no images selected, or this image is selected
+                    if not filter_side
+                    or not len(b.selected_images)
+                    or i in b.selected_images
                 ]
 
         return iiif_images
@@ -779,7 +797,8 @@ class Document(ModelIndexable, DocumentDateMixin):
         # get fragments via textblocks for correct order
         # and to take advantage of prefetching
         fragments = [tb.fragment for tb in self.textblock_set.all()]
-        images = self.iiif_images()
+        # filter by side so that search results only show the relevant side image(s)
+        images = self.iiif_images(filter_side=True)
         index_data.update(
             {
                 "pgpid_i": self.id,
@@ -1086,15 +1105,15 @@ class TextBlock(models.Model):
             + "Uncheck this box if you are uncertain of a potential join."
         ),
     )
-    RECTO = "r"
-    VERSO = "v"
-    RECTO_VERSO = "rv"
-    RECTO_VERSO_CHOICES = [
-        (RECTO, "recto"),
-        (VERSO, "verso"),
-        (RECTO_VERSO, "recto and verso"),
-    ]
-    side = models.CharField(blank=True, max_length=5, choices=RECTO_VERSO_CHOICES)
+    RECTO = "recto"
+    VERSO = "verso"
+    RECTO_VERSO = "recto and verso"
+    selected_images = ArrayField(
+        models.IntegerField(),
+        default=list,
+        blank=True,
+        verbose_name="Selected image indices",
+    )
     region = models.CharField(
         blank=True,
         max_length=255,
@@ -1122,12 +1141,26 @@ class TextBlock(models.Model):
         parts = [
             self.fragment.shelfmark,
             self.multifragment,
-            self.get_side_display(),
+            self.side,
             self.region,
             certainty_str,
         ]
         return " ".join(p for p in parts if p)
 
+    @property
+    def side(self):
+        """Recto/verso side information based on selected image indices"""
+        if len(self.selected_images) == 1:
+            if self.selected_images[0] == 0:
+                return self.RECTO
+            elif self.selected_images[0] == 1:
+                return self.VERSO
+        elif len(self.selected_images) == 2 and all(
+            i in self.selected_images for i in [0, 1]
+        ):
+            return self.RECTO_VERSO
+        return ""
+
     def thumbnail(self):
-        """iiif thumbnails for this fragment"""
-        return self.fragment.iiif_thumbnails()
+        """iiif thumbnails for this TextBlock, with selected images highlighted"""
+        return self.fragment.iiif_thumbnails(selected=self.selected_images)
