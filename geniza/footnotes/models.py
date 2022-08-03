@@ -1,3 +1,7 @@
+from os import path
+from urllib.parse import urljoin
+
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
@@ -359,6 +363,13 @@ class Source(models.Model):
         else:
             volume = shelfmark.split(" ")[0]
         return volume
+
+    @property
+    def uri(self):
+        """Generate a URI for this source to be used in transcription annotations,
+        in order to filter them by associated source"""
+        manifest_base_url = getattr(settings, "ANNOTATION_MANIFEST_BASE_URL", "")
+        return urljoin(manifest_base_url, path.join("source", str(self.pk)))
 
 
 class FootnoteQuerySet(models.QuerySet):

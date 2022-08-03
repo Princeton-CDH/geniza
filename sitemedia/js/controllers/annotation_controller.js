@@ -70,6 +70,9 @@ export default class extends IIIFControler {
             manifest: config.manifest_base_url + manifestId,
             csrf_token: config.csrf_token,
         };
+        if (config.source_uri) {
+            annotationServerConfig["sourceUri"] = config.source_uri;
+        }
         const storagePlugin = new AnnotationServerStorage(
             anno,
             annotationServerConfig

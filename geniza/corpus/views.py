@@ -26,7 +26,7 @@ from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.templatetags import corpus_extras
-from geniza.footnotes.models import Footnote
+from geniza.footnotes.models import Footnote, Source
 
 
 class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
@@ -661,11 +661,26 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
     def get_context_data(self, **kwargs):
         """Pass annotation configuration and TinyMCE API key to page context"""
         context_data = super().get_context_data(**kwargs)
+
+        # get source uri if source_pk present in kwargs (i.e. editing an existing transcription),
+        # and the source exists
+        source_uri = ""
+        source_pk = self.kwargs.get("source_pk", None)
+        try:
+            source = Source.objects.get(pk=source_pk)
+            source_uri = source.uri
+        except Source.DoesNotExist:
+            # NOTE: Should this raise a 404 if source_pk is not None?
+            # TODO: If source_pk is None, instantiate the scholarship record choice form
+            pass
+
         context_data.update(
             {
                 "annotation_config": {
                     # use local annotation server embedded in pgp application
                     "server_url": absolutize_url(reverse("annotations:list")),
+                    # source uri for filtering, if we are editing an existing transcription
+                    "source_uri": source_uri,
                     # use getattr to simplify test config; warn if not set?
                     "manifest_base_url": getattr(
                         settings, "ANNOTATION_MANIFEST_BASE_URL", ""
@@ -673,6 +688,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     "csrf_token": csrf_token(self.request),
                 },
                 "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
+                # TODO: Pass the scholarship record choice form in context data
             }
         )
         return context_data
