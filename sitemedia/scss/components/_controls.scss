@@ -1,6 +1,6 @@
-// -----------------------------------------------------------------------------
-// Control panel for language switcher form and theme toggle checkbox.
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------
+// Controls for language switcher form and theme toggle checkbox.
+// --------------------------------------------------------------
 
 @use "../base/a11y";
 @use "../base/breakpoints";
@@ -34,35 +34,49 @@ div.controls {
             display: block;
         }
     }
+}
 
-    // Light mode/dark mode theme toggle checkbox
-    label#theme-toggle {
+// light/dark mode toggle
+label#theme-toggle {
+    position: absolute;
+    z-index: 5;
+    display: block;
+    cursor: pointer;
+    top: spacing.$spacing-md;
+    right: 56px;
+    width: 40px;
+    height: 40px;
+    @include breakpoints.for-tablet-landscape-up {
+        top: 45px;
+        right: auto;
+        left: calc(95vw - 70px);
+        width: 70px;
+        height: 70px;
+    }
+    @include breakpoints.for-desktop-up {
+        position: fixed;
+        z-index: 2;
+        top: 247px;
+    }
+    input + span::before {
+        content: "";
+        background-image: url("/static/img/ui/all/all/light-dark-toggle.svg");
+        background-repeat: no-repeat;
+        display: block;
+        height: 40px;
+        width: 40px;
         @include breakpoints.for-tablet-landscape-up {
-            margin-right: spacing.$spacing-md;
+            height: 70px;
+            width: 70px;
         }
-        &::before {
-            content: "\f2fe"; // phosphor sun icon
-            font-family: "Phosphor" !important;
-            color: var(--on-background);
-        }
-        &::after {
-            content: "\f21f"; // phosphor moon icon
-            font-family: "Phosphor" !important;
-            color: var(--on-background);
-        }
-        input + span::before {
-            content: "\f32a"; // phosphor toggle-left icon
-            font-family: "Phosphor" !important;
-            color: var(--on-background);
-        }
-        input:checked + span::before {
-            content: "\f32b"; // phosphor toggle-right icon
-            font-family: "Phosphor" !important;
-            color: var(--on-background);
-        }
-        input {
-            @include a11y.sr-only;
-        }
+        transition: transform 500ms ease;
+        transform: rotate(180deg);
+    }
+    input:checked + span::before {
+        transform: rotate(0deg);
+    }
+    input {
+        @include a11y.sr-only;
     }
 }
 
@@ -72,13 +86,5 @@ html[dir="rtl"] div.controls {
     right: auto;
     @include breakpoints.for-tablet-landscape-up {
         left: spacing.$spacing-sm;
-    }
-    label#theme-toggle {
-        margin-right: 0;
-        margin-left: spacing.$spacing-xs;
-        @include breakpoints.for-tablet-landscape-up {
-            margin-right: 0;
-            margin-left: spacing.$spacing-md;
-        }
     }
 }

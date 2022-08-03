@@ -20,7 +20,7 @@ span#formatted-title {
         @include typography.shelfmark;
     }
     margin: spacing.$spacing-xl spacing.$spacing-md spacing.$spacing-md;
-    @include breakpoints.for-desktop-up {
+    @include breakpoints.for-tablet-landscape-up {
         margin: spacing.$spacing-3xl spacing.$spacing-md spacing.$spacing-2xl;
     }
 }
@@ -44,7 +44,7 @@ span#formatted-title {
             text-decoration: none;
         }
         margin-right: spacing.$spacing-xl;
-        @include breakpoints.for-desktop-up {
+        @include breakpoints.for-tablet-landscape-up {
             margin: spacing.$spacing-xl spacing.$spacing-md;
         }
     }
