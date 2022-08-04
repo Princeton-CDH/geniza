@@ -166,3 +166,23 @@ class TestAnnotationSearch:
         # should bring back only anno1
         assertContains(response, anno1.uri())
         assertNotContains(response, anno2.uri())
+
+    def test_search_source(self, client):
+        # content__contains={"dc:source": source_uri}
+        source_uri = "http://example.com/source/1"
+        anno1 = Annotation.objects.create(content={"dc:source": source_uri})
+        anno2 = Annotation.objects.create(
+            content={"dc:source": "http://example.com/source/2"}
+        )
+        anno3 = Annotation.objects.create(
+            content={"target": {"source": {"id": source_uri}}}
+        )
+        response = client.get(self.anno_search_url, {"source": source_uri})
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/json"
+        # response should indicate annotation list
+        assertContains(response, "sc:AnnotationList")
+        # should bring back only anno1
+        assertContains(response, anno1.uri())
+        assertNotContains(response, anno2.uri())
+        assertNotContains(response, anno3.uri())
