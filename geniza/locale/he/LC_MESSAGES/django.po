@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-04-25 12:59-0400\n"
-"PO-Revision-Date: 2022-08-04 11:38\n"
+"PO-Revision-Date: 2022-08-04 13:32\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -308,10 +308,10 @@ msgstr "מזהה PGP"
 #, python-format
 msgid "1 Transcription"
 msgid_plural "%(counter)s Transcriptions"
-msgstr[0] "תעתוק אחד"
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] "%(counter)s תעתוקים"
+msgstr[0] "תמלול אחד"
+msgstr[1] "%(counter)s תמלולים"
+msgstr[2] "%(counter)s תמלולים"
+msgstr[3] "%(counter)s תמלולים"
 
 #. Translators: number of translations for this document
 #: geniza/corpus/templates/corpus/snippets/document_result.html:68
@@ -497,12 +497,12 @@ msgstr "אינסטגרם"
 #. Translators: accessibility label for Princeton Geniza Lab homepage, for footer
 #: geniza/templates/footer.html:26
 msgid "Princeton Geniza Lab homepage"
-msgstr ""
+msgstr "עמוד הבית Princeton Geniza Lab"
 
 #. Translators: accessibility label for Princeton CDH homepage, for footer
 #: geniza/templates/footer.html:39
 msgid "Princeton Center for Digital Humanities homepage"
-msgstr ""
+msgstr "Princeton Center for Digital Humanities עמוד הבית"
 
 #. Translators: link label for Princeton accessibility assistance page, for footer
 #: geniza/templates/footer.html:58
@@ -512,7 +512,7 @@ msgstr "נגישות"
 #. Translators: official name of Princeton University's board of trustees, for footer
 #: geniza/templates/footer.html:63
 msgid "The Trustees of Princeton University"
-msgstr ""
+msgstr "The Trustees of Princeton University"
 
 #. Translators: Creative Commons license text, for footer
 #: geniza/templates/footer.html:67
@@ -527,7 +527,7 @@ msgstr "גרסת תוכנה"
 #. Translators: official name of Princeton University, for footer
 #: geniza/templates/footer.html:81
 msgid "Princeton University homepage"
-msgstr ""
+msgstr "עמוד הבית Princeton University"
 
 #. Translators: accessibility text label for site navigation
 #: geniza/templates/nav.html:4
@@ -542,7 +542,7 @@ msgstr "דף הבית"
 #. Translators: site name label for 'home' button in main navigation
 #: geniza/templates/nav.html:13
 msgid "The Princeton Geniza Project"
-msgstr ""
+msgstr "The Princeton Geniza Project"
 
 #. Translators: label for 'menu' open button for mobile navigation
 #: geniza/templates/nav.html:24
