@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-04-25 12:59-0400\n"
-"PO-Revision-Date: 2022-06-06 12:55\n"
+"PO-Revision-Date: 2022-08-04 11:38\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -75,12 +75,12 @@ msgstr ""
 #. Translators: label for start year when filtering by date range
 #: geniza/corpus/forms.py:180
 msgid "From year"
-msgstr ""
+msgstr "משנת"
 
 #. Translators: label for end year when filtering by date range
 #: geniza/corpus/forms.py:182
 msgid "To year"
-msgstr ""
+msgstr "עד שנת"
 
 #. Translators: label for form sort field
 #: geniza/corpus/forms.py:190
@@ -95,17 +95,17 @@ msgstr "סוג המסמך"
 #. Translators: label for "has image" search form filter
 #: geniza/corpus/forms.py:205
 msgid "Has Image"
-msgstr ""
+msgstr "קיים תצלום"
 
 #. Translators: label for "has transcription" search form filter
 #: geniza/corpus/forms.py:209
 msgid "Has Transcription"
-msgstr ""
+msgstr "קיים תמלול"
 
 #. Translators: label for "has translation" search form filter
 #: geniza/corpus/forms.py:213
 msgid "Has Translation"
-msgstr ""
+msgstr "קיים תרגום"
 
 #. Translators: label for "has discussion" search form filter
 #: geniza/corpus/forms.py:217
@@ -155,9 +155,9 @@ msgstr "דף הבית"
 msgid "Editor"
 msgid_plural "Editors"
 msgstr[0] "עורך"
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[1] "עורכים"
+msgstr[2] "עורכים"
+msgstr[3] "עורכים"
 
 #. Translators: label for document metadata section (editor, date, input date)
 #: geniza/corpus/templates/corpus/document_detail.html:49
@@ -177,19 +177,19 @@ msgstr ""
 #: geniza/corpus/templates/corpus/document_detail.html:88
 msgid "Primary Language"
 msgid_plural "Primary Languages"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "שפה עיקרית"
+msgstr[1] "שפות עיקריות"
+msgstr[2] "שפות עיקריות"
+msgstr[3] "שפות עיקריות"
 
 #. Translators: Secondary language label
 #: geniza/corpus/templates/corpus/document_detail.html:101
 msgid "Secondary Language"
 msgid_plural "Secondary Languages"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "שפה משנית"
+msgstr[1] "שפות משניות"
+msgstr[2] "שפות משניות"
+msgstr[3] "שפות משניות"
 
 #. Translators: label for tags on a document
 #: geniza/corpus/templates/corpus/document_detail.html:117
@@ -278,7 +278,7 @@ msgstr "כלול"
 #: geniza/corpus/templates/corpus/document_scholarship.html:31
 #, python-format
 msgid "for %(relation)s see"
-msgstr ""
+msgstr "ל%(relation)s ראה"
 
 #. Translators: label for document relations for one footnote with no location or URL
 #: geniza/corpus/templates/corpus/document_scholarship.html:36
@@ -373,7 +373,7 @@ msgstr "קישורים חיצוניים (%(n_links)s)"
 #. Translators: accessibility label for document images and transcription section
 #: geniza/corpus/templates/corpus/snippets/document_transcription.html:5
 msgid "Images and transcription"
-msgstr ""
+msgstr "תצלומים ותמלול"
 
 #: geniza/corpus/templates/corpus/snippets/document_transcription.html:24
 msgid "Transcription"
@@ -382,12 +382,12 @@ msgstr "תעתוק"
 #. Translators: label for a link to a resource with no named location
 #: geniza/corpus/templates/corpus/snippets/footnote_location.html:9
 msgid "online resource"
-msgstr ""
+msgstr "מקור אינטרנטי"
 
 #. Translators: Label for "previous page" button in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:5
 msgid "Previous"
-msgstr ""
+msgstr "הקודם"
 
 #. Translators: Title for link to page number in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:19
@@ -398,7 +398,7 @@ msgstr "%(number)s עמודים"
 #. Translators: Label for "next page" button in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:60
 msgid "Next"
-msgstr ""
+msgstr "הבא"
 
 #. Translators: title of document search page
 #: geniza/corpus/views.py:38
@@ -454,7 +454,7 @@ msgstr ""
 #. Translators: title for Not Found (404) error page
 #: geniza/templates/404.html:5 geniza/templates/404.html:13
 msgid "Not Found"
-msgstr ""
+msgstr "לא נמצא"
 
 #. Translators: description for Not Found (404) error page
 #: geniza/templates/404.html:7 geniza/templates/404.html:14
@@ -464,7 +464,7 @@ msgstr ""
 #. Translators: title for Internal Server Error (500) error page
 #: geniza/templates/500.html:5 geniza/templates/500.html:19
 msgid "Server Error"
-msgstr ""
+msgstr "שגיאת שרת"
 
 #. Translators: description for Internal Server Error (500) error page
 #: geniza/templates/500.html:7 geniza/templates/500.html:20
@@ -487,12 +487,12 @@ msgstr ""
 #. Translators: label for Twitter links in footer
 #: geniza/templates/footer.html:19
 msgid "Twitter"
-msgstr ""
+msgstr "טוויטר"
 
 #. Translators: label for Instagram links in footer
 #: geniza/templates/footer.html:21
 msgid "Instagram"
-msgstr ""
+msgstr "אינסטגרם"
 
 #. Translators: accessibility label for Princeton Geniza Lab homepage, for footer
 #: geniza/templates/footer.html:26
@@ -507,7 +507,7 @@ msgstr ""
 #. Translators: link label for Princeton accessibility assistance page, for footer
 #: geniza/templates/footer.html:58
 msgid "Accessibility"
-msgstr ""
+msgstr "נגישות"
 
 #. Translators: official name of Princeton University's board of trustees, for footer
 #: geniza/templates/footer.html:63
@@ -522,7 +522,7 @@ msgstr ""
 #. Translators: software version, for footer
 #: geniza/templates/footer.html:74
 msgid "software version"
-msgstr ""
+msgstr "גרסת תוכנה"
 
 #. Translators: official name of Princeton University, for footer
 #: geniza/templates/footer.html:81
@@ -579,5 +579,5 @@ msgstr "חזרה לתפריט הראשי"
 #. Translators: label for dark mode/light mode theme switcher
 #: geniza/templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
-msgstr ""
+msgstr "הפעלת מצב כהה"
 
