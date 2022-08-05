@@ -1,20 +1,23 @@
 from ast import literal_eval
 from random import randint
 
+from dal import autocomplete
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.db.models import Q
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.middleware.csrf import get_token as csrf_token
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator, slugify
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
-from django.views.generic import DetailView, FormView, ListView
+from django.views.generic import CreateView, DetailView, FormView, ListView
 from django.views.generic.edit import FormMixin
 from parasolr.django.views import SolrLastModifiedMixin
 from piffle.presentation import IIIFPresentation
@@ -26,6 +29,7 @@ from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.templatetags import corpus_extras
+from geniza.footnotes.forms import FootnoteInlineForm, FootnoteInlineFormSet
 from geniza.footnotes.models import Footnote, Source
 
 
@@ -646,6 +650,69 @@ class DocumentMerge(PermissionRequiredMixin, FormView):
         return super(DocumentMerge, self).form_valid(form)
 
 
+class SourceAutocompleteView(PermissionRequiredMixin, autocomplete.Select2QuerySetView):
+    permission_required = ("corpus.change_document",)
+
+    def get_queryset(self):
+        qs = Source.objects.all()
+        if self.q:
+            qs = qs.filter(
+                Q(title__istartswith=self.q)
+                | Q(authors__first_name__istartswith=self.q)
+                | Q(authors__last_name__istartswith=self.q)
+                | Q(year__istartswith=self.q)
+                | Q(journal__istartswith=self.q)
+                | Q(notes__istartswith=self.q)
+                | Q(other_info__istartswith=self.q)
+                | Q(languages__name__istartswith=self.q)
+                | Q(volume__istartswith=self.q)
+            )
+        return qs
+
+
+class DocumentAddTranscription(PermissionRequiredMixin, CreateView):
+    permission_required = ("corpus.change_document",)
+    template_name = "corpus/add_transcription_source.html"
+    viewname = "corpus:document-add-transcription"
+    model = Footnote
+    form_class = FootnoteInlineForm
+
+    def get_object(self):
+        """Get Document instead of Footnote"""
+        return Document.objects.get(pk=self.kwargs.get("pk"))
+
+    def page_title(self):
+        return "Add a new transcription for %(doc)s" % {"doc": self.get_object().title}
+
+    def post(self, request, *args, **kwargs):
+        """Create footnote linking source to document, then redirect to create view"""
+        source_pk = int(
+            request.POST["footnotes-footnote-content_type-object_id-0-source"]
+        )
+        source = Source.objects.get(pk=source_pk)
+        Footnote.objects.create(
+            source=source,
+            doc_relation=[Footnote.EDITION],
+            content_object=self.get_object(),
+        )
+        return redirect(
+            reverse(
+                "corpus:document-transcribe", args=(self.get_object().id, source_pk)
+            )
+        )
+
+    def get_context_data(self, **kwargs):
+        """Pass footnote inline formset with autocomplete to context"""
+        context_data = super().get_context_data(**kwargs)
+        context_data.update(
+            {
+                "formset": FootnoteInlineFormSet(instance=self.object),
+                "page_title": self.page_title(),
+            }
+        )
+        return context_data
+
+
 class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
     """View for the Transcription Editor page that uses annotorious-tahqiq"""
 
@@ -670,9 +737,10 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
             source = Source.objects.get(pk=source_pk)
             source_uri = source.uri
         except Source.DoesNotExist:
-            # NOTE: Should this raise a 404 if source_pk is not None?
-            # TODO: If source_pk is None, instantiate the scholarship record choice form
-            pass
+            if source_pk is None:
+                redirect()
+            else:
+                raise Http404
 
         context_data.update(
             {
@@ -688,7 +756,6 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     "csrf_token": csrf_token(self.request),
                 },
                 "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
-                # TODO: Pass the scholarship record choice form in context data
             }
         )
         return context_data

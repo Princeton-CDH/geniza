@@ -3,11 +3,11 @@
     {{ annotation_config|json_script:"annotation-config" }}
 {% elif perms.corpus.change_document and document.iiif_images %}
     {# NOTE: document.iiif_images check is temporary, remove once we can use generated canvas ids #}
-    <a class="editor-navigation" href="{% url 'corpus:document-transcribe' document.id %}" data-turbo="false">
+    <a class="editor-navigation" href="{% url 'corpus:document-add-transcription' document.id %}" data-turbo="false">
         <i class="ph-plus-circle"></i>
         <span>Add a new transcription</span>
     </a>
-    {% for ed in document.digital_editions.all %}
+    {% for ed in document.editions.all %}
         <a class="editor-navigation" href="{% url 'corpus:document-transcribe' document.id ed.source.pk %}" data-turbo="false">
             <i class="ph-pencil"></i>
             <span>Edit {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% empty %}[unknown]{% endfor %}'s edition</span>

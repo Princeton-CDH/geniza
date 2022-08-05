@@ -29,6 +29,8 @@ INSTALLED_APPS = [
     "modeltranslation",  # this has to come before admin config
     "wagtail.documents",  # this also has to come first to unregister
     "wagtail.images",  #    this also has to come first to unregister
+    "dal",  # Django autocomplete light
+    "dal_select2",
     "geniza.apps.GenizaAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
