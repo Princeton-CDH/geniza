@@ -1,7 +1,7 @@
 {% extends "admin/change_form.html" %}
 {% block after_field_sets %}
-    {% if original.content %}
+    {% if original.has_transcription %}
         <h2>Transcription</h2>
-        {% include "footnotes/transcription.html" with transcription=original.content %}
+        {{ original.content_html }}
     {% endif %}
 {% endblock after_field_sets %}

@@ -7,7 +7,7 @@
         <i class="ph-plus-circle"></i>
         <span>Add a new transcription</span>
     </a>
-    {% for ed in document.digital_editions.all %}
+    {% for ed in document.editions.all %}
         <a class="editor-navigation" href="{% url 'corpus:document-transcribe' document.id ed.source.pk %}" data-turbo="false">
             <i class="ph-pencil"></i>
             <span>Edit {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% empty %}[unknown]{% endfor %}'s edition</span>
@@ -102,9 +102,9 @@ Also doesn't currently account for fragments without images.
                         <div class="editions">
                             {# display transcription in chunks by index #}
                             {% for edition in document.digital_editions.all %}
-                                <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
+                                {% comment %} <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
                                     {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
-                                </div>
+                                </div> {% endcomment %}
                             {% endfor %}
                         </div>
                     {% endif %}
@@ -112,7 +112,7 @@ Also doesn't currently account for fragments without images.
             {% endfor %}
         {% elif document.has_transcription %}
             {# if there are no images, loop based on the transcription chunks instead #}
-            {% for chunk in document.digital_editions.0.content.html %}
+            {% comment %} {% for chunk in document.digital_editions.0.content.html %}
                 <div class="img"></div> {# empty image div needed for grid layout #}
                 <div class="transcription-panel">
                     {% if forloop.first %}
@@ -130,7 +130,7 @@ Also doesn't currently account for fragments without images.
                         {% endfor %}
                     </div>
                 </div>
-            {% endfor %}
+            {% endfor %} {% endcomment %}
         {% endif %}
         {% if document.has_image %}
             {% include "corpus/snippets/document_image_rights.html" %}

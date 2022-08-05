@@ -61,11 +61,11 @@
                                 <label>Footnote relation</label>
                                 <div>{{ fn.doc_relation }}</div>
                             </div>
-                            {% if fn.content %}
+                            {% if fn.has_transcription %}
                                 <div class="form-row">
                                     <label>Transcription(s)</label>
                                     <div class="transcription-container">
-                                        {% include "footnotes/transcription.html" with transcription=fn.content %}
+                                        {{ fn.content_html }}
                                     </div>
                                 </div>
                             {% endif %}

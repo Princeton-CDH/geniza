@@ -13,6 +13,7 @@ from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager
 from multiselectfield import MultiSelectField
 
+from geniza.annotations.models import Annotation
 from geniza.common.fields import NaturalSortField
 from geniza.common.models import TrackChangesModel
 
@@ -384,7 +385,7 @@ class FootnoteQuerySet(models.QuerySet):
         compare_fields = ["source", "location", "notes"]
         # optionally include content when comparing; include by default
         if include_content:
-            compare_fields.append("content")
+            compare_fields.append("content_text")
 
         for fn in self.all():
             if (
@@ -429,11 +430,7 @@ class Footnote(TrackChangesModel):
         help_text="How does the source relate to this document?",
     )
     notes = models.TextField(blank=True)
-    content = models.JSONField(
-        blank=True,
-        null=True,
-        help_text="Transcription content (transitional; edit with care and only when needed)",
-    )
+    has_transcription = models.BooleanField(default=False)
     url = models.URLField(
         "URL", blank=True, max_length=300, help_text="Link to the source (optional)"
     )
@@ -461,14 +458,6 @@ class Footnote(TrackChangesModel):
         rel = " and ".join([str(choices[c]) for c in self.doc_relation]) or "Footnote"
         return f"{rel} of {self.content_object}"
 
-    def has_transcription(self):
-        """Admin display field indicating presence of digitized transcription."""
-        return bool(self.content)
-
-    has_transcription.short_description = "Digitized Transcription"
-    has_transcription.boolean = True
-    has_transcription.admin_order_field = "content"
-
     def display(self):
         """format footnote for display; used on document detail page
         and metdata export for old pgp site"""
@@ -490,10 +479,22 @@ class Footnote(TrackChangesModel):
     has_url.boolean = True
     has_url.admin_order_field = "url"
 
+    @property
+    def content_html(self):
+        "content as html, if available"
+        if self.has_transcription:
+            doc = self.content_object
+            canvas_uris = [i["canvas"] for i in doc.iiif_images()]
+            annos = Annotation.objects.filter(
+                content__target__source__id__in=canvas_uris,
+                content__contains={"dc:source": self.source.uri},
+            )
+            return "\n".join([anno.content["body"][0]["value"] for anno in annos])
+
+    @property
     def content_text(self):
         "content as plain text, if available"
-        if self.content:
-            return self.content.get("text")
+        return strip_tags(self.content_html)
 
     def iiif_annotation_content(self):
         """Return transcription content from this footnote (if any)

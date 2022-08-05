@@ -677,7 +677,7 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     def has_transcription(self):
         """Admin display field indicating if document has a transcription."""
-        return any(note.has_transcription() for note in self.footnotes.all())
+        return any(note.has_transcription for note in self.footnotes.all())
 
     has_transcription.short_description = "Transcription"
     has_transcription.boolean = True
@@ -700,7 +700,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         """All footnotes for this document where the document relation includes
         edition; footnotes with content will be sorted first."""
         return self.footnotes.filter(doc_relation__contains=Footnote.EDITION).order_by(
-            "content", "source"
+            "source"
         )
 
     def digital_editions(self):
@@ -708,15 +708,15 @@ class Document(ModelIndexable, DocumentDateMixin):
         edition AND the footnote has content."""
         return (
             self.footnotes.filter(doc_relation__contains=Footnote.EDITION)
-            .filter(content__isnull=False)
-            .order_by("content", "source")
+            .filter(has_transcription=True)
+            .order_by("source")
         )
 
     def editors(self):
         """All unique authors of digital editions for this document."""
         return Creator.objects.filter(
             source__footnote__doc_relation__contains=Footnote.EDITION,
-            source__footnote__content__isnull=False,
+            source__footnote__has_transcription=True,
             source__footnote__document=self,
         ).distinct()
 
@@ -746,7 +746,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         pgp = _("Princeton Geniza Project")
         # Translators: attribution for local IIIF manifests
         attribution = _("Compilation by %(pgp)s." % {"pgp": pgp})
-        if self.has_transcription():
+        if self.has_transcription:
             # Translators: attribution for local IIIF manifests that include transcription
             attribution = _("Compilation and transcription by %(pgp)s." % {"pgp": pgp})
         # Translators: manifest attribution note that content from other institutions may have restrictions
@@ -848,8 +848,8 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         for fn in footnotes:
             # if this is an edition/transcription, try to get plain text for indexing
-            if Footnote.EDITION in fn.doc_relation and fn.content:
-                plaintext = fn.content_text()
+            if Footnote.EDITION in fn.doc_relation and fn.has_transcription:
+                plaintext = fn.content_text
                 if plaintext:
                     transcription_texts.append(plaintext)
             # add any doc relations to this footnote's source's set in source_relations
@@ -1041,12 +1041,12 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # if there's a partial match (everything but content)
                 if equiv_fn:
                     # if the new footnote has content, add it
-                    if footnote.content:
+                    if footnote.has_transcription:
                         self.footnotes.add(footnote)
                     # if the partial match has no content, remove it
                     # (if it has any content, then it is different from the new one
                     # and should be preserved)
-                    if not equiv_fn.content:
+                    if not equiv_fn.has_transcription:
                         self.footnotes.remove(equiv_fn)
 
                 # if neither an exact or partial match, add the new footnote

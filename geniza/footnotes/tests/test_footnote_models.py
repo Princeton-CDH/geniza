@@ -233,9 +233,9 @@ class TestFootnote:
         footnote = Footnote(source=source)
         # if there's content, that indicates a digitized transcription
         with patch.object(Footnote, "content_object", new="foo"):
-            assert not footnote.has_transcription()
+            assert not footnote.has_transcription
             footnote.content = "The digitized transcription"
-            assert footnote.has_transcription()
+            assert footnote.has_transcription
 
     def test_display(self, source):
         footnote = Footnote(source=source)

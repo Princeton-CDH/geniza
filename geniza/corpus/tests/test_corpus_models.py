@@ -712,11 +712,11 @@ class TestDocument:
 
     def test_has_transcription(self, document, source):
         # doc with no footnotes doesn't have transcription
-        assert not document.has_transcription()
+        assert not document.has_transcription
 
         # doc with empty footnote doesn't have transcription
         fn = Footnote.objects.create(content_object=document, source=source)
-        assert not document.has_transcription()
+        assert not document.has_transcription
 
         # doc with footnote with content does have a transcription
         fn.content = "The transcription"
