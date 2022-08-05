@@ -1,28 +1,30 @@
 {% extends 'base.html' %}
 
-{% load admin_urls static %}
+{% load admin_urls static render_bundle_csp %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 
+{% block extrascript %}
+    {# jQuery required for autocomplete widget #}
+    <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.min.js' %}"></script>
+    {% render_bundle_csp "annotation" "js" %}
+{% endblock %}
+
 {% block main %}
     <h1>{{ page_title }}</h1>
-    <h2>Select or create source</h2>
-
-    <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.min.js' %}"></script>
+    <h2>Select source</h2>
 
     {{ formset.media }}
-
-    <form action="" method="post">
+    <form method="post" id="add-transcription-source">
         {% csrf_token %}
-        <table style="display: none">
-            {{ formset.empty_form }}
-        </table>
-
-        <fieldset class="module">
-            <table>
-                {{ formset }}
-            </table>
+        <fieldset>
+            {{ formset }}
         </fieldset>
-        <input type="submit" />
+        <button class="primary" type="submit">Create transcription</button>
     </form>
+
+    <h2>Source not yet in the database?</h2>
+    <p>
+        <a href="{% url "admin:footnotes_source_changelist" %}" data-turbo="false">Add a new source record</a>, then return to this page.
+    </p>
 {% endblock %}

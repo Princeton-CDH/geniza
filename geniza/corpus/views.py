@@ -5,6 +5,7 @@ from dal import autocomplete
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
@@ -654,18 +655,18 @@ class SourceAutocompleteView(PermissionRequiredMixin, autocomplete.Select2QueryS
     permission_required = ("corpus.change_document",)
 
     def get_queryset(self):
-        qs = Source.objects.all()
+        qs = Source.objects.all().order_by("authors__last_name")
         if self.q:
             qs = qs.filter(
-                Q(title__istartswith=self.q)
+                Q(title__icontains=self.q)
                 | Q(authors__first_name__istartswith=self.q)
                 | Q(authors__last_name__istartswith=self.q)
                 | Q(year__istartswith=self.q)
-                | Q(journal__istartswith=self.q)
-                | Q(notes__istartswith=self.q)
-                | Q(other_info__istartswith=self.q)
-                | Q(languages__name__istartswith=self.q)
-                | Q(volume__istartswith=self.q)
+                | Q(journal__icontains=self.q)
+                | Q(notes__icontains=self.q)
+                | Q(other_info__icontains=self.q)
+                | Q(languages__name__icontains=self.q)
+                | Q(volume__icontains=self.q)
             )
         return qs
 
@@ -690,10 +691,11 @@ class DocumentAddTranscription(PermissionRequiredMixin, CreateView):
             request.POST["footnotes-footnote-content_type-object_id-0-source"]
         )
         source = Source.objects.get(pk=source_pk)
-        Footnote.objects.create(
+        Footnote.objects.get_or_create(
             source=source,
             doc_relation=[Footnote.EDITION],
-            content_object=self.get_object(),
+            content_type=ContentType.objects.get_for_model(Document),
+            object_id=self.kwargs.get("pk"),
         )
         return redirect(
             reverse(
@@ -708,6 +710,7 @@ class DocumentAddTranscription(PermissionRequiredMixin, CreateView):
             {
                 "formset": FootnoteInlineFormSet(instance=self.object),
                 "page_title": self.page_title(),
+                "page_type": "addsource",
             }
         )
         return context_data
