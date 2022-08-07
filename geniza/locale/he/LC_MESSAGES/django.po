@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-04-25 12:59-0400\n"
-"PO-Revision-Date: 2022-08-07 14:40\n"
+"PO-Revision-Date: 2022-08-07 23:14\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -35,7 +35,7 @@ msgstr "רלוונטיות"
 #. Translators: label for sort in random order
 #: geniza/corpus/forms.py:157
 msgid "Random"
-msgstr ""
+msgstr "אקראי"
 
 #. Translators: label for descending sort by number of scholarship records
 #: geniza/corpus/forms.py:160
@@ -50,12 +50,12 @@ msgstr "רשומות קשורות (מהקטן לגדול)"
 #. Translators: label for sort by document date (most recent first)
 #: geniza/corpus/forms.py:169
 msgid "Document Date (Latest-Earliest)"
-msgstr ""
+msgstr "תאריך המסמך (מאוחר ביותר - מוקדם ביותר)"
 
 #. Translators: label for sort by document date (oldest first)
 #: geniza/corpus/forms.py:171
 msgid "Document Date (Earliest-Latest)"
-msgstr ""
+msgstr "תאריך המסמך (מוקדם ביותר - מאוחר ביותר)"
 
 #. Translators: label for sort by document input date (most recent first)
 #: geniza/corpus/forms.py:173
@@ -114,7 +114,7 @@ msgstr ""
 
 #: geniza/corpus/forms.py:259
 msgid "Relevance sort is not available without a keyword search term."
-msgstr ""
+msgstr "מיון ע״פ רלוונטיות אינו זמין ללא מילת מפתח לחיפוש."
 
 #: geniza/corpus/models.py:703 geniza/templates/base.html:21
 msgid "Princeton Geniza Project"
@@ -171,7 +171,7 @@ msgstr "מספר מדף"
 #. Translators: label for date of this document, if known
 #: geniza/corpus/templates/corpus/document_detail.html:77
 msgid "Document Date"
-msgstr ""
+msgstr "תאריך המסמך"
 
 #. Translators: Primary language label
 #: geniza/corpus/templates/corpus/document_detail.html:88
@@ -284,7 +284,7 @@ msgstr "ל%(relation)s ראה"
 #: geniza/corpus/templates/corpus/document_scholarship.html:36
 #, python-format
 msgid "includes %(relation)s"
-msgstr ""
+msgstr "כולל %(relation)s"
 
 #. Translators: Document edit link for admins
 #: geniza/corpus/templates/corpus/snippets/document_header.html:9
@@ -297,7 +297,7 @@ msgstr ""
 
 #: geniza/corpus/templates/corpus/snippets/document_permissions.html:18
 msgid "No attribution or license noted."
-msgstr ""
+msgstr "לא מצוין ייחוס או רישיון."
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:20
 msgid "PGP ID"
@@ -339,7 +339,7 @@ msgstr "אין רשומות קשורות"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:99
 msgid "more"
-msgstr ""
+msgstr "עוד"
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:117
 msgid "View document details"
@@ -428,7 +428,7 @@ msgstr[3] "%(count)d רשומות קשורות ל %(doc)s"
 #. Translators: Placeholder for when a work has no title available
 #: geniza/footnotes/models.py:197
 msgid "[digital geniza document edition]"
-msgstr ""
+msgstr "[גרסת מסמך גניזה דיגיטלי]"
 
 #: geniza/footnotes/models.py:403
 msgid "Edition"
@@ -445,7 +445,7 @@ msgstr "דיון"
 #: geniza/pages/models.py:13
 msgid "Alternative text for visually impaired users to\n"
 "briefly communicate the intended message of the image in this context."
-msgstr ""
+msgstr "טקסט אלטרנטיבי למשתמשים כבדי ראייה שמטרתו להעביר בתמצית את המסר של התצלום בהקשר זה."
 
 #: geniza/pages/models.py:44
 msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
