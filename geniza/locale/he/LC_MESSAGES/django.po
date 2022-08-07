@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-04-25 12:59-0400\n"
-"PO-Revision-Date: 2022-08-04 13:32\n"
+"PO-Revision-Date: 2022-08-07 14:40\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -118,7 +118,7 @@ msgstr ""
 
 #: geniza/corpus/models.py:703 geniza/templates/base.html:21
 msgid "Princeton Geniza Project"
-msgstr "פרוייקט הגניזה של פרינסטון"
+msgstr "Princeton Geniza Project"
 
 #. Translators: attribution for local IIIF manifests
 #: geniza/corpus/models.py:705
