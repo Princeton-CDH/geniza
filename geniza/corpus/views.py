@@ -740,10 +740,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
             source = Source.objects.get(pk=source_pk)
             source_uri = source.uri
         except Source.DoesNotExist:
-            if source_pk is None:
-                redirect()
-            else:
-                raise Http404
+            raise Http404
 
         context_data.update(
             {
