@@ -112,3 +112,110 @@ class TestConvertSelectedImagesToSide(TestMigrations):
         assert verso_side.side == "v"
         both_sides = TextBlock.objects.get(pk=self.both_sides.pk)
         assert both_sides.side == "rv"
+
+
+@pytest.mark.last
+@pytest.mark.django_db
+class TestMergeDuplicateTags(TestMigrations):
+    app = "corpus"
+    migrate_from = "0033_textblock_selected_images"
+    migrate_to = "0034_merge_duplicate_tags"
+    doc1 = None
+    doc2 = None
+    doc3 = None
+
+    def setUpBeforeMigration(self, apps):
+        ContentType = apps.get_model("contenttypes", "ContentType")
+        Document = apps.get_model("corpus", "Document")
+        Tag = apps.get_model("taggit", "Tag")
+        TaggedItem = apps.get_model("taggit", "TaggedItem")
+        doc_contenttype = ContentType.objects.get(app_label="corpus", model="document")
+
+        self.doc1 = Document.objects.create()
+        self.doc2 = Document.objects.create()
+        self.doc3 = Document.objects.create()
+        goodtag, _ = Tag.objects.get_or_create(name="example", slug="example")
+        badtag1, _ = Tag.objects.get_or_create(name="Exämple", slug="example_1")
+        badtag2, _ = Tag.objects.get_or_create(name="éxample", slug="example_2")
+        badtag3, _ = Tag.objects.get_or_create(
+            name="Ḥalfon b. Menashshe", slug="halfon_b_menashshe"
+        )
+        TaggedItem.objects.get_or_create(
+            tag=goodtag,
+            content_type=doc_contenttype,
+            object_id=self.doc1.pk,
+        )
+        TaggedItem.objects.get_or_create(
+            tag=badtag1,
+            content_type=doc_contenttype,
+            object_id=self.doc2.pk,
+        )
+        TaggedItem.objects.get_or_create(
+            tag=badtag2,  # doc2 will have two variants of this tag collapsed into one
+            content_type=doc_contenttype,
+            object_id=self.doc2.pk,
+        )
+        TaggedItem.objects.get_or_create(
+            tag=badtag2,
+            content_type=doc_contenttype,
+            object_id=self.doc3.pk,
+        )
+        TaggedItem.objects.get_or_create(
+            tag=badtag3,
+            content_type=doc_contenttype,
+            object_id=self.doc3.pk,
+        )
+
+    def test_tags_merged(self):
+        ContentType = self.apps.get_model("contenttypes", "ContentType")
+        LogEntry = self.apps.get_model("admin", "LogEntry")
+        Tag = self.apps.get_model("taggit", "Tag")
+        TaggedItem = self.apps.get_model("taggit", "TaggedItem")
+        doc_contenttype = ContentType.objects.get(app_label="corpus", model="document")
+        tag_contenttype = ContentType.objects.get(app_label="taggit", model="tag")
+
+        # bad tags should be deleted
+        assert Tag.objects.filter(name="Exämple").count() == 0
+        assert Tag.objects.filter(name="éxample").count() == 0
+        assert Tag.objects.filter(name="Ḥalfon b. Menashshe").count() == 0
+
+        # TaggedItems with any of the bad tags should also be deleted
+        assert TaggedItem.objects.filter(tag__name="Exämple").count() == 0
+        assert TaggedItem.objects.filter(tag__name="éxample").count() == 0
+        assert TaggedItem.objects.filter(tag__name="Ḥalfon b. Menashshe").count() == 0
+
+        # should have all three documents tagged with "example", and one tagged with "halfon b. menashshe"
+        assert TaggedItem.objects.filter(tag__name="example").count() == 3
+        assert TaggedItem.objects.filter(tag__name="halfon b. menashshe").count() == 1
+
+        # doc2 should only have one tag, despite being tagged with two variants of "example"
+        assert (
+            TaggedItem.objects.filter(
+                content_type=doc_contenttype, object_id=self.doc2.pk
+            ).count()
+            == 1
+        )
+
+        # should create log entry for tag rename on Tag
+        assert LogEntry.objects.filter(
+            content_type_id=tag_contenttype.pk,
+            change_message='renamed tag "Ḥalfon b. Menashshe" to "halfon b. menashshe"',
+        )
+
+        # should create log entries for tag merge on Document
+        assert (
+            LogEntry.objects.filter(
+                content_type_id=doc_contenttype.pk,
+                object_id=self.doc2.pk,
+                change_message='replaced tag "Exämple" with "example"',
+            ).count()
+            == 1
+        )
+        assert (
+            LogEntry.objects.filter(
+                content_type_id=doc_contenttype.pk,
+                object_id=self.doc3.pk,
+                change_message='replaced tag "éxample" with "example"',
+            ).count()
+            == 1
+        )
