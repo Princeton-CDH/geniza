@@ -683,6 +683,7 @@ class DocumentAddTranscription(PermissionRequiredMixin, CreateView):
         return Document.objects.get(pk=self.kwargs.get("pk"))
 
     def page_title(self):
+        """Title of add transcription page"""
         return "Add a new transcription for %(doc)s" % {"doc": self.get_object().title}
 
     def post(self, request, *args, **kwargs):
@@ -725,8 +726,8 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
     viewname = "corpus:document-transcribe"
 
     def page_title(self):
-        # Translators: title of transcription editor page
-        return _("Edit transcription for %(doc)s") % {"doc": self.get_object().title}
+        """Title of transcription editor page"""
+        return "Edit transcription for %(doc)s" % {"doc": self.get_object().title}
 
     def get_context_data(self, **kwargs):
         """Pass annotation configuration and TinyMCE API key to page context"""
