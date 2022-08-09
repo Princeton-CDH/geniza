@@ -212,7 +212,7 @@ class TestSource:
         with patch("geniza.footnotes.models.getattr") as mock_getattr:
             # mock getattr so we can define manifest base URL here
             mock_getattr.return_value = "http://example.com/"
-            assert source.uri == f"http://example.com/source/{source.pk}"
+            assert source.uri == f"http://example.com/sources/{source.pk}/"
 
 
 class TestFootnote:
