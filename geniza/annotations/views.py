@@ -111,7 +111,8 @@ class AnnotationSearch(View, MultipleObjectMixin):
 
     def get(self, request, *args, **kwargs):
         """Search annotations and return an annotation list. Currently only supports
-        search by target uri."""
+        search by target uri and source uri."""
+        # TODO: Convert this to list when > 2 options
         # implement minimal search by uri
         # implement something similar to SAS search by uri
         annotations = self.get_queryset()
@@ -119,6 +120,12 @@ class AnnotationSearch(View, MultipleObjectMixin):
         target_uri = self.request.GET.get("uri")
         if target_uri:
             annotations = annotations.filter(content__target__source__id=target_uri)
+        source_uri = self.request.GET.get("source")
+        # if a source uri is specified, filter on content__dc:source
+        if source_uri:
+            annotations = annotations.filter(
+                content__contains={"dc:source": source_uri}
+            )
         # NOTE: if any params are ignored, they should be removed from id for search uri
         # and documented in the response as ignored
 

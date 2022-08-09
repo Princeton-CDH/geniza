@@ -26,7 +26,7 @@ from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.templatetags import corpus_extras
-from geniza.footnotes.models import Footnote
+from geniza.footnotes.models import Footnote, Source
 
 
 class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
@@ -661,11 +661,27 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
     def get_context_data(self, **kwargs):
         """Pass annotation configuration and TinyMCE API key to page context"""
         context_data = super().get_context_data(**kwargs)
+
+        # get source uri if source_pk present in kwargs (i.e. editing an existing transcription),
+        # and the source exists
+        source = None
+        source_pk = self.kwargs.get("source_pk", None)
+        # if source_pk is None, it's a new transcription, so no Source query
+        # TODO: once add transcription view is separated, this view should not be called without
+        # source_pk, so we should redirect there if source_pk is none
+        if source_pk is not None:
+            try:
+                source = Source.objects.get(pk=source_pk)
+            except Source.DoesNotExist:
+                raise Http404
+
         context_data.update(
             {
                 "annotation_config": {
                     # use local annotation server embedded in pgp application
                     "server_url": absolutize_url(reverse("annotations:list")),
+                    # source uri for filtering, if we are editing an existing transcription
+                    "source_uri": source.uri if source else "",
                     # use getattr to simplify test config; warn if not set?
                     "manifest_base_url": getattr(
                         settings, "ANNOTATION_MANIFEST_BASE_URL", ""
@@ -673,6 +689,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     "csrf_token": csrf_token(self.request),
                 },
                 "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
+                "source_label": source.all_authors if source else "",
             }
         )
         return context_data

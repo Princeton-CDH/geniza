@@ -25,6 +25,7 @@ from geniza.corpus.views import (
     DocumentMerge,
     DocumentScholarshipView,
     DocumentSearchView,
+    DocumentTranscribeView,
     DocumentTranscriptionText,
     old_pgp_edition,
     old_pgp_tabulate_data,
@@ -1370,3 +1371,15 @@ class TestDocumentTranscribeView:
         )
         assert response.status_code == 302
         assert response.url.startswith("/accounts/login/")
+
+    def test_get_context_data(self, document, source, admin_client):
+        # request with no source_pk
+        response = admin_client.get(
+            reverse("corpus:document-transcribe", args=(document.id,))
+        )
+        assert not response.context["annotation_config"]["source_uri"]
+        # request with source_pk
+        response = admin_client.get(
+            reverse("corpus:document-transcribe", args=(document.id, source.pk))
+        )
+        assert response.context["annotation_config"]["source_uri"] == source.uri

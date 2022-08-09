@@ -206,6 +206,14 @@ class TestSource:
             in source.formatted_display()
         )
 
+    @pytest.mark.django_db
+    def test_uri(self, source):
+        # should generate a URI using set manifest base URL with /source/pk
+        with patch("geniza.footnotes.models.getattr") as mock_getattr:
+            # mock getattr so we can define manifest base URL here
+            mock_getattr.return_value = "http://example.com/"
+            assert source.uri == f"http://example.com/sources/{source.pk}/"
+
 
 class TestFootnote:
     @pytest.mark.django_db
