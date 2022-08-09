@@ -732,21 +732,14 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
         """Pass annotation configuration and TinyMCE API key to page context"""
         context_data = super().get_context_data(**kwargs)
 
-        # get source if source_pk present in kwargs (i.e. editing an existing transcription)
         source = None
-        source_pk = self.kwargs.get("source_pk", None)
-        if source_pk is not None:
-            try:
-                source = Source.objects.get(pk=source_pk)
-            except Source.DoesNotExist:
-                raise Http404
-        else:
-            # if source_pk is None, redirect to add transcription view
-            return HttpResponseRedirect(
-                reverse(
-                    "corpus:document-add-transcription", args=[self.kwargs.get("pk")]
-                )
-            )
+        # source_pk will always be an integer here; otherwise, a different (or no) route
+        # would have matched
+        source_pk = self.kwargs.get("source_pk")
+        try:
+            source = Source.objects.get(pk=source_pk)
+        except Source.DoesNotExist:
+            raise Http404
 
         context_data.update(
             {
@@ -762,7 +755,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     "csrf_token": csrf_token(self.request),
                 },
                 "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
-                "source_label": source.all_authors if source else "",
+                "source_label": source.all_authors() if source else "",
             }
         )
         return context_data

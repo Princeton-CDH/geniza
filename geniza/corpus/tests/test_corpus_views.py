@@ -1355,31 +1355,33 @@ class TestRelatdDocumentview:
 
 
 class TestDocumentTranscribeView:
-    def test_page_title(self, document, admin_client):
+    def test_page_title(self, document, source, admin_client):
         """should use doc title in transcription editor meta title"""
         response = admin_client.get(
-            reverse("corpus:document-transcribe", args=(document.id,))
+            reverse("corpus:document-transcribe", args=(document.id, source.pk))
         )
         assert (
             response.context["page_title"] == f"Edit transcription for {document.title}"
         )
 
-    def test_permissions(self, document, client):
+    def test_permissions(self, document, source, client):
         """should redirect to login if user does not have change document permissions"""
         response = client.get(
-            reverse("corpus:document-transcribe", args=(document.id,))
+            reverse("corpus:document-transcribe", args=(document.id, source.pk))
         )
         assert response.status_code == 302
         assert response.url.startswith("/accounts/login/")
 
     def test_get_context_data(self, document, source, admin_client):
-        # request with no source_pk
-        response = admin_client.get(
-            reverse("corpus:document-transcribe", args=(document.id,))
-        )
-        assert not response.context["annotation_config"]["source_uri"]
-        # request with source_pk
+        # should pass source URI and source label to page context
         response = admin_client.get(
             reverse("corpus:document-transcribe", args=(document.id, source.pk))
         )
         assert response.context["annotation_config"]["source_uri"] == source.uri
+        assert response.context["source_label"] == source.all_authors()
+
+        # non-existent source_pk should 404
+        response = admin_client.get(
+            reverse("corpus:document-transcribe", args=(document.id, 123456789))
+        )
+        assert response.status_code == 404
