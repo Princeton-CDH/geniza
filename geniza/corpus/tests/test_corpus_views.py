@@ -27,6 +27,7 @@ from geniza.corpus.views import (
     DocumentSearchView,
     DocumentTranscribeView,
     DocumentTranscriptionText,
+    SourceAutocompleteView,
     old_pgp_edition,
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
@@ -1385,3 +1386,30 @@ class TestDocumentTranscribeView:
             reverse("corpus:document-transcribe", args=(document.id, 123456789))
         )
         assert response.status_code == 404
+
+
+class TestSourceAutocompleteView:
+    def test_get_queryset(self, source, twoauthor_source):
+        source_autocomplete_view = SourceAutocompleteView()
+        # mock request with empty search
+        source_autocomplete_view.request = Mock()
+        source_autocomplete_view.request.GET = {"q": ""}
+        qs = source_autocomplete_view.get_queryset()
+        # should get two results (all sources)
+        assert qs.count() == 2
+        # should order twoauthor_source first
+        result_pks = [src.pk for src in qs]
+        assert source.pk in result_pks and twoauthor_source.pk in result_pks
+        assert result_pks.index(twoauthor_source.pk) < result_pks.index(source.pk)
+
+        # should filter on author, case insensitive
+        source_autocomplete_view.request.GET = {"q": "orwell"}
+        qs = source_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == source.pk
+
+        # should filter on title, case insensitive
+        source_autocomplete_view.request.GET = {"q": "programming"}
+        qs = source_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == twoauthor_source.pk

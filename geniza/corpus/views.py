@@ -655,19 +655,21 @@ class SourceAutocompleteView(PermissionRequiredMixin, autocomplete.Select2QueryS
     permission_required = ("corpus.change_document",)
 
     def get_queryset(self):
+        """sources filtered by entered query, or all sources, ordered by author last name"""
+        q = self.request.GET.get("q", None)
         qs = Source.objects.all().order_by("authors__last_name")
-        if self.q:
+        if q:
             qs = qs.filter(
-                Q(title__icontains=self.q)
-                | Q(authors__first_name__istartswith=self.q)
-                | Q(authors__last_name__istartswith=self.q)
-                | Q(year__istartswith=self.q)
-                | Q(journal__icontains=self.q)
-                | Q(notes__icontains=self.q)
-                | Q(other_info__icontains=self.q)
-                | Q(languages__name__icontains=self.q)
-                | Q(volume__icontains=self.q)
-            )
+                Q(title__icontains=q)
+                | Q(authors__first_name__istartswith=q)
+                | Q(authors__last_name__istartswith=q)
+                | Q(year__istartswith=q)
+                | Q(journal__icontains=q)
+                | Q(notes__icontains=q)
+                | Q(other_info__icontains=q)
+                | Q(languages__name__icontains=q)
+                | Q(volume__icontains=q)
+            ).distinct()
         return qs
 
 
