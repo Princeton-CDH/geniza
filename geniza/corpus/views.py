@@ -666,13 +666,15 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
         # and the source exists
         source_uri = ""
         source_pk = self.kwargs.get("source_pk", None)
-        try:
-            source = Source.objects.get(pk=source_pk)
-            source_uri = source.uri
-        except Source.DoesNotExist:
-            # NOTE: Should this raise a 404 if source_pk is not None?
-            # TODO: If source_pk is None, instantiate the scholarship record choice form
-            pass
+        # if source_pk is None, it's a new transcription, so no Source query
+        # TODO: once add transcription view is separated, this view should not be called without
+        # source_pk, so we should redirect there if source_pk is none
+        if source_pk is not None:
+            try:
+                source = Source.objects.get(pk=source_pk)
+                source_uri = source.uri
+            except Source.DoesNotExist:
+                raise Http404
 
         context_data.update(
             {
