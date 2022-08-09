@@ -673,7 +673,7 @@ class SourceAutocompleteView(PermissionRequiredMixin, autocomplete.Select2QueryS
         return qs
 
 
-class DocumentAddTranscription(PermissionRequiredMixin, CreateView):
+class DocumentAddTranscriptionView(PermissionRequiredMixin, CreateView):
     permission_required = ("corpus.change_document",)
     template_name = "corpus/add_transcription_source.html"
     viewname = "corpus:document-add-transcription"
@@ -689,7 +689,7 @@ class DocumentAddTranscription(PermissionRequiredMixin, CreateView):
         return "Add a new transcription for %(doc)s" % {"doc": self.get_object().title}
 
     def post(self, request, *args, **kwargs):
-        """Create footnote linking source to document, then redirect to create view"""
+        """Create footnote linking source to document, then redirect to edit transcription view"""
         source_pk = int(
             request.POST["footnotes-footnote-content_type-object_id-0-source"]
         )
