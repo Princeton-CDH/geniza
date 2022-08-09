@@ -70,7 +70,7 @@ label#theme-toggle {
             width: 70px;
         }
         transition: transform 500ms ease;
-        transform: rotate(180deg);
+        transform: rotate(-180deg);
     }
     input:checked + span::before {
         transform: rotate(0deg);
