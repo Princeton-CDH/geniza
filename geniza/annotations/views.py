@@ -112,6 +112,7 @@ class AnnotationSearch(View, MultipleObjectMixin):
     def get(self, request, *args, **kwargs):
         """Search annotations and return an annotation list. Currently only supports
         search by target uri and source uri."""
+        # TODO: Convert this to list when > 2 options
         # implement minimal search by uri
         # implement something similar to SAS search by uri
         annotations = self.get_queryset()
