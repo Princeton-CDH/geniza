@@ -53,4 +53,4 @@ def custom_tag_string(tag_string):
     # Our github issue for taggit: https://github.com/jazzband/django-taggit/issues/783
     if "," not in tag_string:
         tag_string += ","
-    return _parse_tags(unidecode(tag_string).lower())
+    return _parse_tags(unidecode(tag_string))

@@ -87,10 +87,10 @@ class TestCommonUtils(TestCase):
             "responsa",
         ]
         assert custom_tag_string("") == []
-        # should lowercase and remove diacritics
+        # should remove diacritics
         assert custom_tag_string(
             '"Arabic script", "fiscal document",foods,Ḥalfon b. Menashshe'
-        ) == ["arabic script", "fiscal document", "foods", "halfon b. menashshe"]
+        ) == ["Arabic script", "fiscal document", "foods", "Halfon b. Menashshe"]
 
 
 class TestCustomEmptyFieldListFilter:
