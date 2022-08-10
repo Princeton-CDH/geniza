@@ -43,8 +43,8 @@ def custom_tag_string(tag_string):
 
     Expected parsing:
     - 'legal document' -> ["legal document"]
-    - '"fiscal document", Arabic script' -> ["fiscal document", "arabic script"]
-    - '"fiscal document", "Arabic script"' -> ["fiscal document", "arabic script"]
+    - '"fiscal document", Arabic script' -> ["fiscal document", "Arabic script"]
+    - '"fiscal document", "Arabic script"' -> ["fiscal document", "Arabic script"]
     - 'éxämplè' -> ["example"]
 
     This is configured in settings with TAGGIT_TAGS_FROM_STRING.
