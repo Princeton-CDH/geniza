@@ -25,8 +25,13 @@ urlpatterns = [
     ),
     path(
         "documents/<int:pk>/transcribe/",
-        corpus_views.DocumentTranscribeView.as_view(),
-        name="document-transcribe",
+        corpus_views.DocumentAddTranscriptionView.as_view(),
+        name="document-add-transcription",
+    ),
+    path(
+        "source-autocomplete/",
+        corpus_views.SourceAutocompleteView.as_view(),
+        name="source-autocomplete",
     ),
     path(
         "documents/<int:pk>/transcribe/<int:source_pk>/",

@@ -19,18 +19,20 @@ from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import (
+    DocumentAddTranscriptionView,
     DocumentAnnotationListView,
     DocumentDetailView,
     DocumentManifestView,
     DocumentMerge,
     DocumentScholarshipView,
     DocumentSearchView,
-    DocumentTranscribeView,
     DocumentTranscriptionText,
+    SourceAutocompleteView,
     old_pgp_edition,
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
 )
+from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 
@@ -1355,31 +1357,93 @@ class TestRelatdDocumentview:
 
 
 class TestDocumentTranscribeView:
-    def test_page_title(self, document, admin_client):
+    def test_page_title(self, document, source, admin_client):
         """should use doc title in transcription editor meta title"""
         response = admin_client.get(
-            reverse("corpus:document-transcribe", args=(document.id,))
+            reverse("corpus:document-transcribe", args=(document.id, source.pk))
         )
         assert (
             response.context["page_title"] == f"Edit transcription for {document.title}"
         )
 
-    def test_permissions(self, document, client):
+    def test_permissions(self, document, source, client):
         """should redirect to login if user does not have change document permissions"""
         response = client.get(
-            reverse("corpus:document-transcribe", args=(document.id,))
+            reverse("corpus:document-transcribe", args=(document.id, source.pk))
         )
         assert response.status_code == 302
         assert response.url.startswith("/accounts/login/")
 
     def test_get_context_data(self, document, source, admin_client):
-        # request with no source_pk
-        response = admin_client.get(
-            reverse("corpus:document-transcribe", args=(document.id,))
-        )
-        assert not response.context["annotation_config"]["source_uri"]
-        # request with source_pk
+        # should pass source URI and source label to page context
         response = admin_client.get(
             reverse("corpus:document-transcribe", args=(document.id, source.pk))
         )
         assert response.context["annotation_config"]["source_uri"] == source.uri
+        assert response.context["source_label"] == source.all_authors()
+
+        # non-existent source_pk should 404
+        response = admin_client.get(
+            reverse("corpus:document-transcribe", args=(document.id, 123456789))
+        )
+        assert response.status_code == 404
+
+
+class TestSourceAutocompleteView:
+    def test_get_queryset(self, source, twoauthor_source):
+        source_autocomplete_view = SourceAutocompleteView()
+        # mock request with empty search
+        source_autocomplete_view.request = Mock()
+        source_autocomplete_view.request.GET = {"q": ""}
+        qs = source_autocomplete_view.get_queryset()
+        # should get two results (all sources)
+        assert qs.count() == 2
+        # should order twoauthor_source first
+        result_pks = [src.pk for src in qs]
+        assert source.pk in result_pks and twoauthor_source.pk in result_pks
+        assert result_pks.index(twoauthor_source.pk) < result_pks.index(source.pk)
+
+        # should filter on author, case insensitive
+        source_autocomplete_view.request.GET = {"q": "orwell"}
+        qs = source_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == source.pk
+
+        # should filter on title, case insensitive
+        source_autocomplete_view.request.GET = {"q": "programming"}
+        qs = source_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == twoauthor_source.pk
+
+
+class TestDocumentAddTranscriptionView:
+    def test_page_title(self, document, admin_client):
+        # should use title of document in page title
+        response = admin_client.get(
+            reverse("corpus:document-add-transcription", args=(document.id,))
+        )
+        assert (
+            response.context["page_title"]
+            == f"Add a new transcription for {document.title}"
+        )
+
+    def test_post(self, document, source, admin_client):
+        # should redirect to transcription edit view
+        response = admin_client.post(
+            reverse("corpus:document-add-transcription", args=(document.id,)),
+            {"source": source.pk},
+        )
+        assert response.status_code == 302
+        assert response.url == reverse(
+            "corpus:document-transcribe", args=(document.id, source.pk)
+        )
+
+    def test_get_context_data(self, document, admin_client):
+        # should include SourceChoiceForm
+        response = admin_client.get(
+            reverse("corpus:document-add-transcription", args=(document.id,))
+        )
+        assert response.context["form"] == SourceChoiceForm
+
+        # should have page_type "addsource"
+        assert response.context["page_type"] == "addsource"
