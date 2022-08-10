@@ -1,4 +1,5 @@
 import pytest
+from django.conf import settings
 
 from geniza.common.tests import TestMigrations
 
@@ -129,6 +130,7 @@ class TestMergeDuplicateTags(TestMigrations):
         Document = apps.get_model("corpus", "Document")
         Tag = apps.get_model("taggit", "Tag")
         TaggedItem = apps.get_model("taggit", "TaggedItem")
+        User = apps.get_model("auth", "User")
         doc_contenttype = ContentType.objects.get(app_label="corpus", model="document")
 
         self.doc1 = Document.objects.create()
@@ -166,6 +168,9 @@ class TestMergeDuplicateTags(TestMigrations):
             object_id=self.doc3.pk,
         )
 
+        # ensure script user exists
+        User.objects.get_or_create(username=settings.SCRIPT_USERNAME)
+
     def test_tags_merged(self):
         ContentType = self.apps.get_model("contenttypes", "ContentType")
         LogEntry = self.apps.get_model("admin", "LogEntry")
@@ -175,18 +180,19 @@ class TestMergeDuplicateTags(TestMigrations):
         tag_contenttype = ContentType.objects.get(app_label="taggit", model="tag")
 
         # bad tags should be deleted
-        assert Tag.objects.filter(name="Exämple").count() == 0
-        assert Tag.objects.filter(name="éxample").count() == 0
-        assert Tag.objects.filter(name="Ḥalfon b. Menashshe").count() == 0
+        assert not Tag.objects.filter(name="Exämple").exists()
+        assert not Tag.objects.filter(name="éxample").exists()
+        assert not Tag.objects.filter(name="Ḥalfon b. Menashshe").exists()
 
         # TaggedItems with any of the bad tags should also be deleted
-        assert TaggedItem.objects.filter(tag__name="Exämple").count() == 0
-        assert TaggedItem.objects.filter(tag__name="éxample").count() == 0
-        assert TaggedItem.objects.filter(tag__name="Ḥalfon b. Menashshe").count() == 0
+        assert not TaggedItem.objects.filter(tag__name="Exämple").exists()
+        assert not TaggedItem.objects.filter(tag__name="éxample").exists()
+        assert not TaggedItem.objects.filter(tag__name="Ḥalfon b. Menashshe").exists()
 
-        # should have all three documents tagged with "example", and one tagged with "halfon b. menashshe"
-        assert TaggedItem.objects.filter(tag__name="example").count() == 3
-        assert TaggedItem.objects.filter(tag__name="halfon b. menashshe").count() == 1
+        # should have all three documents tagged with "Example", and one tagged with "Halfon b. Menashshe"
+
+        assert TaggedItem.objects.filter(tag__name="Example").count() == 3
+        assert TaggedItem.objects.filter(tag__name="Halfon b. Menashshe").count() == 1
 
         # doc2 should only have one tag, despite being tagged with two variants of "example"
         assert (
@@ -196,26 +202,13 @@ class TestMergeDuplicateTags(TestMigrations):
             == 1
         )
 
-        # should create log entry for tag rename on Tag
+        # should create a log entry for tag rename
+        assert LogEntry.objects.filter(
+            content_type_id=tag_contenttype.pk, change_message="Removed diacritics"
+        ).exists()
+
+        # should create a log entry for tag merge
         assert LogEntry.objects.filter(
             content_type_id=tag_contenttype.pk,
-            change_message='renamed tag "Ḥalfon b. Menashshe" to "halfon b. menashshe"',
-        )
-
-        # should create log entries for tag merge on Document
-        assert (
-            LogEntry.objects.filter(
-                content_type_id=doc_contenttype.pk,
-                object_id=self.doc2.pk,
-                change_message='replaced tag "Exämple" with "example"',
-            ).count()
-            == 1
-        )
-        assert (
-            LogEntry.objects.filter(
-                content_type_id=doc_contenttype.pk,
-                object_id=self.doc3.pk,
-                change_message='replaced tag "éxample" with "example"',
-            ).count()
-            == 1
-        )
+            change_message="Merged example, éxample; removed diacritics",
+        ).exists()
