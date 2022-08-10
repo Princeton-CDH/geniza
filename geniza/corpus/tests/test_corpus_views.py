@@ -1443,7 +1443,7 @@ class TestDocumentAddTranscriptionView:
         response = admin_client.get(
             reverse("corpus:document-add-transcription", args=(document.id,))
         )
-        assert isinstance(response.context["form"], SourceChoiceForm)
+        assert response.context["form"] == SourceChoiceForm
 
         # should have page_type "addsource"
         assert response.context["page_type"] == "addsource"
