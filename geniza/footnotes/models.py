@@ -378,7 +378,7 @@ class Source(models.Model):
     def from_uri(cls, uri):
         """Given a URI for a Source (as used in transcription annotations), return the Source
         object matching the pk"""
-        return cls.objects.get(pk=int(uri.split("/")[-1]))
+        return cls.objects.get(pk=int(uri.split("/")[-2]))
 
 
 class FootnoteQuerySet(models.QuerySet):
