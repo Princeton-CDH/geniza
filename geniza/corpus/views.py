@@ -5,7 +5,6 @@ from dal import autocomplete
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
@@ -18,7 +17,7 @@ from django.utils.safestring import mark_safe
 from django.utils.text import Truncator, slugify
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
-from django.views.generic import CreateView, DetailView, FormView, ListView
+from django.views.generic import DetailView, FormView, ListView
 from django.views.generic.edit import FormMixin
 from parasolr.django.views import SolrLastModifiedMixin
 from piffle.presentation import IIIFPresentation
@@ -30,7 +29,7 @@ from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.templatetags import corpus_extras
-from geniza.footnotes.forms import FootnoteInlineForm, FootnoteInlineFormSet
+from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Footnote, Source
 
 
@@ -663,26 +662,15 @@ class SourceAutocompleteView(PermissionRequiredMixin, autocomplete.Select2QueryS
                 Q(title__icontains=q)
                 | Q(authors__first_name__istartswith=q)
                 | Q(authors__last_name__istartswith=q)
-                | Q(year__istartswith=q)
-                | Q(journal__icontains=q)
-                | Q(notes__icontains=q)
-                | Q(other_info__icontains=q)
-                | Q(languages__name__icontains=q)
-                | Q(volume__icontains=q)
             ).distinct()
         return qs
 
 
-class DocumentAddTranscriptionView(PermissionRequiredMixin, CreateView):
+class DocumentAddTranscriptionView(PermissionRequiredMixin, DetailView):
     permission_required = ("corpus.change_document",)
     template_name = "corpus/add_transcription_source.html"
     viewname = "corpus:document-add-transcription"
-    model = Footnote
-    form_class = FootnoteInlineForm
-
-    def get_object(self):
-        """Get Document instead of Footnote"""
-        return Document.objects.get(pk=self.kwargs.get("pk"))
+    model = Document
 
     def page_title(self):
         """Title of add transcription page"""
@@ -690,28 +678,19 @@ class DocumentAddTranscriptionView(PermissionRequiredMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         """Create footnote linking source to document, then redirect to edit transcription view"""
-        source_pk = int(
-            request.POST["footnotes-footnote-content_type-object_id-0-source"]
-        )
-        source = Source.objects.get(pk=source_pk)
-        Footnote.objects.get_or_create(
-            source=source,
-            doc_relation=[Footnote.EDITION],
-            content_type=ContentType.objects.get_for_model(Document),
-            object_id=self.kwargs.get("pk"),
-        )
         return redirect(
             reverse(
-                "corpus:document-transcribe", args=(self.get_object().id, source_pk)
+                "corpus:document-transcribe",
+                args=(self.get_object().id, int(request.POST["source"])),
             )
         )
 
     def get_context_data(self, **kwargs):
-        """Pass footnote inline formset with autocomplete to context"""
+        """Pass form with autocomplete to context"""
         context_data = super().get_context_data(**kwargs)
         context_data.update(
             {
-                "formset": FootnoteInlineFormSet(instance=self.object),
+                "form": SourceChoiceForm,
                 "page_title": self.page_title(),
                 "page_type": "addsource",
             }
@@ -738,9 +717,8 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
         source = None
         # source_pk will always be an integer here; otherwise, a different (or no) route
         # would have matched
-        source_pk = self.kwargs.get("source_pk")
         try:
-            source = Source.objects.get(pk=source_pk)
+            source = Source.objects.get(pk=self.kwargs.get("source_pk"))
         except Source.DoesNotExist:
             raise Http404
 

@@ -14,11 +14,11 @@
     <h1>{{ page_title }}</h1>
     <h2>Select scholarship record</h2>
 
-    {{ formset.media }}
+    {{ form.media }}
     <form method="post" id="add-transcription-source">
         {% csrf_token %}
         <fieldset>
-            {{ formset }}
+            {{ form }}
         </fieldset>
         {# TODO: add convenience link to an unpublished source where the currently logged in user is the sole author #}
         <button class="primary" type="submit">Create transcription</button>

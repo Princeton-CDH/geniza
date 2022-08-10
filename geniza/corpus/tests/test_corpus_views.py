@@ -6,7 +6,6 @@ import pytest
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import resolve, reverse
@@ -33,6 +32,7 @@ from geniza.corpus.views import (
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
 )
+from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 
@@ -1417,13 +1417,6 @@ class TestSourceAutocompleteView:
 
 
 class TestDocumentAddTranscriptionView:
-    def test_get_object(self, document):
-        # should return a Document despite (for form's sake) model = Footnote
-        add_transcription_view = DocumentAddTranscriptionView(
-            kwargs={"pk": document.pk}
-        )
-        assert isinstance(add_transcription_view.get_object(), Document)
-
     def test_page_title(self, document, admin_client):
         # should use title of document in page title
         response = admin_client.get(
@@ -1435,40 +1428,22 @@ class TestDocumentAddTranscriptionView:
         )
 
     def test_post(self, document, source, admin_client):
-        # should create a new Footnote on the document with passed source
-        assert (
-            Footnote.objects.filter(
-                content_type=ContentType.objects.get_for_model(Document),
-                source=source,
-                object_id=document.pk,
-            ).count()
-            == 0
-        )
+        # should redirect to transcription edit view
         response = admin_client.post(
             reverse("corpus:document-add-transcription", args=(document.id,)),
-            {"footnotes-footnote-content_type-object_id-0-source": source.pk},
+            {"source": source.pk},
         )
-        assert (
-            Footnote.objects.filter(
-                content_type=ContentType.objects.get_for_model(Document),
-                source=source,
-                object_id=document.pk,
-            ).count()
-            == 1
-        )
-
-        # should redirect to transcription edit view
         assert response.status_code == 302
         assert response.url == reverse(
             "corpus:document-transcribe", args=(document.id, source.pk)
         )
 
     def test_get_context_data(self, document, admin_client):
-        # should include FootnoteInlineFormset
+        # should include SourceChoiceForm
         response = admin_client.get(
             reverse("corpus:document-add-transcription", args=(document.id,))
         )
-        assert isinstance(response.context["formset"], BaseGenericInlineFormSet)
+        assert isinstance(response.context["form"], SourceChoiceForm)
 
         # should have page_type "addsource"
         assert response.context["page_type"] == "addsource"

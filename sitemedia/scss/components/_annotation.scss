@@ -30,9 +30,17 @@ main.addsource {
         margin-top: 1rem;
     }
     button {
-        margin-top: 0.5rem;
+        margin: 0.5rem auto 0;
     }
-    span[class^="select2"] {
-        background-color: var(--background) !important;
-    }
+}
+
+span.select2-container li[class^="select2"],
+span.select2-container span[class^="select2"],
+main.addsource .select2-container--default .select2-selection--single,
+main.addsource
+    .select2-container--default
+    .select2-selection--single
+    .select2-selection__rendered {
+    background-color: var(--background);
+    color: var(--on-background);
 }
