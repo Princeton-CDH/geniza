@@ -718,7 +718,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
         # source_pk will always be an integer here; otherwise, a different (or no) route
         # would have matched
         try:
-            source = Source.objects.get(pk=self.kwargs.get("source_pk"))
+            source = Source.objects.get(pk=self.kwargs["source_pk"])
         except Source.DoesNotExist:
             raise Http404
 
