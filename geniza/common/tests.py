@@ -88,9 +88,20 @@ class TestCommonUtils(TestCase):
         ]
         assert custom_tag_string("") == []
         # should remove diacritics
-        assert custom_tag_string(
+        diacritics_tags = custom_tag_string(
             '"Arabic script", "fiscal document",foods,Ḥalfon b. Menashshe'
-        ) == ["Arabic script", "fiscal document", "foods", "Halfon b. Menashshe"]
+        )
+        assert all(
+            [
+                item in diacritics_tags
+                for item in [
+                    "Arabic script",
+                    "fiscal document",
+                    "foods",
+                    "Halfon b. Menashshe",
+                ]
+            ]
+        )
 
 
 class TestCustomEmptyFieldListFilter:
