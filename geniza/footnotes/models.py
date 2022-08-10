@@ -6,6 +6,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
+from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
@@ -372,6 +373,12 @@ class Source(models.Model):
         manifest_base_url = getattr(settings, "ANNOTATION_MANIFEST_BASE_URL", "")
         return urljoin(manifest_base_url, path.join("source", str(self.pk)))
 
+    @classmethod
+    def from_uri(cls, uri):
+        """Given a URI for a Source (as used in transcription annotations), return the Source
+        object matching the pk"""
+        return cls.objects.get(pk=int(uri.split("/")[-1]))
+
 
 class FootnoteQuerySet(models.QuerySet):
     def includes_footnote(self, other, include_content=True):
@@ -418,8 +425,10 @@ class Footnote(TrackChangesModel):
     EDITION = "E"
     TRANSLATION = "T"
     DISCUSSION = "D"
+    DIGITAL_EDITION = "DE"
     DOCUMENT_RELATION_TYPES = (
         (EDITION, _("Edition")),
+        (DIGITAL_EDITION, _("Digital Edition")),
         (TRANSLATION, _("Translation")),
         (DISCUSSION, _("Discussion")),
     )
@@ -430,7 +439,6 @@ class Footnote(TrackChangesModel):
         help_text="How does the source relate to this document?",
     )
     notes = models.TextField(blank=True)
-    has_transcription = models.BooleanField(default=False)
     url = models.URLField(
         "URL", blank=True, max_length=300, help_text="Link to the source (optional)"
     )
@@ -482,13 +490,15 @@ class Footnote(TrackChangesModel):
     @property
     def content_html(self):
         "content as html, if available"
-        if self.has_transcription:
+        if self.DIGITAL_EDITION in self.doc_relation:
             doc = self.content_object
-            canvas_uris = [i["canvas"] for i in doc.iiif_images()]
+            # filter annotations by document manifest and source
             annos = Annotation.objects.filter(
-                content__target__source__id__in=canvas_uris,
+                content__target__source__partOf__id=reverse(
+                    "corpus:document-manifest", args=[doc.pk]
+                ),
                 content__contains={"dc:source": self.source.uri},
-            )
+            )  # TODO: Order to match document/canvas order, then order within canvas
             return "\n".join([anno.content["body"][0]["value"] for anno in annos])
 
     @property

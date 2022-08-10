@@ -532,6 +532,12 @@ class Document(ModelIndexable, DocumentDateMixin):
             models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
         ).first()
 
+    @classmethod
+    def from_manifest_uri(cls, uri):
+        """Given a manifest URI (as used in transcription annotations), find a Document matching
+        its pgpid"""
+        return cls.objects.get(pk=int(uri.strip("/").split("/")[-3]))
+
     @property
     def shelfmark(self):
         """shelfmarks for associated fragments"""
@@ -677,11 +683,12 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     def has_transcription(self):
         """Admin display field indicating if document has a transcription."""
-        return any(note.has_transcription for note in self.footnotes.all())
+        return self.footnotes.filter(
+            doc_relation__contains=Footnote.DIGITAL_EDITION
+        ).exists()
 
     has_transcription.short_description = "Transcription"
     has_transcription.boolean = True
-    has_transcription.admin_order_field = "footnotes__content"
 
     def has_image(self):
         """Admin display field indicating if document has a IIIF image."""
@@ -706,17 +713,14 @@ class Document(ModelIndexable, DocumentDateMixin):
     def digital_editions(self):
         """All footnotes for this document where the document relation includes
         edition AND the footnote has content."""
-        return (
-            self.footnotes.filter(doc_relation__contains=Footnote.EDITION)
-            .filter(has_transcription=True)
-            .order_by("source")
-        )
+        return self.footnotes.filter(
+            doc_relation__contains=Footnote.DIGITAL_EDITION
+        ).order_by("source")
 
     def editors(self):
         """All unique authors of digital editions for this document."""
         return Creator.objects.filter(
-            source__footnote__doc_relation__contains=Footnote.EDITION,
-            source__footnote__has_transcription=True,
+            source__footnote__doc_relation__contains=Footnote.DIGITAL_EDITION,
             source__footnote__document=self,
         ).distinct()
 
@@ -848,7 +852,7 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         for fn in footnotes:
             # if this is an edition/transcription, try to get plain text for indexing
-            if Footnote.EDITION in fn.doc_relation and fn.has_transcription:
+            if Footnote.DIGITAL_EDITION in fn.doc_relation:
                 plaintext = fn.content_text
                 if plaintext:
                     transcription_texts.append(plaintext)
@@ -1041,12 +1045,12 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # if there's a partial match (everything but content)
                 if equiv_fn:
                     # if the new footnote has content, add it
-                    if footnote.has_transcription:
+                    if Footnote.DIGITAL_EDITION in footnote.doc_relation:
                         self.footnotes.add(footnote)
                     # if the partial match has no content, remove it
                     # (if it has any content, then it is different from the new one
                     # and should be preserved)
-                    if not equiv_fn.has_transcription:
+                    if Footnote.DIGITAL_EDITION not in equiv_fn.doc_relation:
                         self.footnotes.remove(equiv_fn)
 
                 # if neither an exact or partial match, add the new footnote

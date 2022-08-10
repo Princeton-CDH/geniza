@@ -10,11 +10,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="footnote",
-            name="has_transcription",
-            field=models.BooleanField(default=False),
-        ),
         migrations.RemoveField(
             model_name="footnote",
             name="content",

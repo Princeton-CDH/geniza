@@ -1,5 +1,5 @@
 from django.apps import AppConfig
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_save
 
 
 class AnnotationsConfig(AppConfig):
@@ -10,5 +10,4 @@ class AnnotationsConfig(AppConfig):
         from geniza.annotations.signals import update_footnote
 
         post_save.connect(update_footnote, sender="annotations.Annotation")
-        post_delete.connect(update_footnote, sender="annotations.Annotation")
         return super().ready()

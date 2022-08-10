@@ -197,7 +197,6 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         "all_tags",
         "all_languages",
         "last_modified",
-        "has_transcription",
         "has_image",
         "is_public",
     )

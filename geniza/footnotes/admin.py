@@ -45,10 +45,9 @@ class SourceFootnoteInline(TabularInlinePaginated):
         "object_id",
         "doc_relation",
         "location",
-        "has_transcription",
         "url",
     )
-    readonly_fields = ("object_link", "has_transcription")
+    readonly_fields = ("object_link",)
     formfield_overrides = {
         CharField: {"widget": TextInput(attrs={"size": "10"})},
         TextField: {"widget": Textarea(attrs={"rows": 4})},
@@ -89,10 +88,8 @@ class DocumentFootnoteInline(GenericTabularInline):
         "doc_relation",
         "location",
         "notes",
-        "has_transcription",
         "url",
     )
-    readonly_fields = ("has_transcription",)
     extra = 1
     formfield_overrides = {
         CharField: {"widget": TextInput(attrs={"size": "10"})},
