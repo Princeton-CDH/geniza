@@ -664,15 +664,16 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
 
         # get source uri if source_pk present in kwargs (i.e. editing an existing transcription),
         # and the source exists
-        source_uri = ""
+        source = None
         source_pk = self.kwargs.get("source_pk", None)
-        try:
-            source = Source.objects.get(pk=source_pk)
-            source_uri = source.uri
-        except Source.DoesNotExist:
-            # NOTE: Should this raise a 404 if source_pk is not None?
-            # TODO: If source_pk is None, instantiate the scholarship record choice form
-            pass
+        # if source_pk is None, it's a new transcription, so no Source query
+        # TODO: once add transcription view is separated, this view should not be called without
+        # source_pk, so we should redirect there if source_pk is none
+        if source_pk is not None:
+            try:
+                source = Source.objects.get(pk=source_pk)
+            except Source.DoesNotExist:
+                raise Http404
 
         context_data.update(
             {
@@ -680,7 +681,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     # use local annotation server embedded in pgp application
                     "server_url": absolutize_url(reverse("annotations:list")),
                     # source uri for filtering, if we are editing an existing transcription
-                    "source_uri": source_uri,
+                    "source_uri": source.uri if source else "",
                     # use getattr to simplify test config; warn if not set?
                     "manifest_base_url": getattr(
                         settings, "ANNOTATION_MANIFEST_BASE_URL", ""
@@ -688,7 +689,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     "csrf_token": csrf_token(self.request),
                 },
                 "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
-                # TODO: Pass the scholarship record choice form in context data
+                "source_label": source.all_authors if source else "",
             }
         )
         return context_data

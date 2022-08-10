@@ -370,8 +370,9 @@ class Source(models.Model):
     def uri(self):
         """Generate a URI for this source to be used in transcription annotations,
         in order to filter them by associated source"""
+        # TODO: add a minimal view with json representation of the source so that this uri resolves
         manifest_base_url = getattr(settings, "ANNOTATION_MANIFEST_BASE_URL", "")
-        return urljoin(manifest_base_url, path.join("source", str(self.pk)))
+        return urljoin(manifest_base_url, path.join("sources", str(self.pk))) + "/"
 
     @classmethod
     def from_uri(cls, uri):
