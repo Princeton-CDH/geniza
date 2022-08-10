@@ -1,4 +1,5 @@
 import pytest
+from django.conf import settings
 
 from geniza.common.tests import TestMigrations
 
@@ -112,3 +113,102 @@ class TestConvertSelectedImagesToSide(TestMigrations):
         assert verso_side.side == "v"
         both_sides = TextBlock.objects.get(pk=self.both_sides.pk)
         assert both_sides.side == "rv"
+
+
+@pytest.mark.last
+@pytest.mark.django_db
+class TestMergeDuplicateTags(TestMigrations):
+    app = "corpus"
+    migrate_from = "0033_textblock_selected_images"
+    migrate_to = "0034_merge_duplicate_tags"
+    doc1 = None
+    doc2 = None
+    doc3 = None
+
+    def setUpBeforeMigration(self, apps):
+        ContentType = apps.get_model("contenttypes", "ContentType")
+        Document = apps.get_model("corpus", "Document")
+        Tag = apps.get_model("taggit", "Tag")
+        TaggedItem = apps.get_model("taggit", "TaggedItem")
+        User = apps.get_model("auth", "User")
+        doc_contenttype = ContentType.objects.get(app_label="corpus", model="document")
+
+        self.doc1 = Document.objects.create()
+        self.doc2 = Document.objects.create()
+        self.doc3 = Document.objects.create()
+        goodtag, _ = Tag.objects.get_or_create(name="example", slug="example")
+        badtag1, _ = Tag.objects.get_or_create(name="Exämple", slug="example_1")
+        badtag2, _ = Tag.objects.get_or_create(name="éxample", slug="example_2")
+        badtag3, _ = Tag.objects.get_or_create(
+            name="Ḥalfon b. Menashshe", slug="halfon_b_menashshe"
+        )
+        TaggedItem.objects.get_or_create(
+            tag=goodtag,
+            content_type=doc_contenttype,
+            object_id=self.doc1.pk,
+        )
+        TaggedItem.objects.get_or_create(
+            tag=badtag1,
+            content_type=doc_contenttype,
+            object_id=self.doc2.pk,
+        )
+        TaggedItem.objects.get_or_create(
+            tag=badtag2,  # doc2 will have two variants of this tag collapsed into one
+            content_type=doc_contenttype,
+            object_id=self.doc2.pk,
+        )
+        TaggedItem.objects.get_or_create(
+            tag=badtag2,
+            content_type=doc_contenttype,
+            object_id=self.doc3.pk,
+        )
+        TaggedItem.objects.get_or_create(
+            tag=badtag3,
+            content_type=doc_contenttype,
+            object_id=self.doc3.pk,
+        )
+
+        # ensure script user exists
+        User.objects.get_or_create(username=settings.SCRIPT_USERNAME)
+
+    def test_tags_merged(self):
+        ContentType = self.apps.get_model("contenttypes", "ContentType")
+        LogEntry = self.apps.get_model("admin", "LogEntry")
+        Tag = self.apps.get_model("taggit", "Tag")
+        TaggedItem = self.apps.get_model("taggit", "TaggedItem")
+        doc_contenttype = ContentType.objects.get(app_label="corpus", model="document")
+        tag_contenttype = ContentType.objects.get(app_label="taggit", model="tag")
+
+        # bad tags should be deleted
+        assert not Tag.objects.filter(name="Exämple").exists()
+        assert not Tag.objects.filter(name="éxample").exists()
+        assert not Tag.objects.filter(name="Ḥalfon b. Menashshe").exists()
+
+        # TaggedItems with any of the bad tags should also be deleted
+        assert not TaggedItem.objects.filter(tag__name="Exämple").exists()
+        assert not TaggedItem.objects.filter(tag__name="éxample").exists()
+        assert not TaggedItem.objects.filter(tag__name="Ḥalfon b. Menashshe").exists()
+
+        # should have all three documents tagged with "Example", and one tagged with "Halfon b. Menashshe"
+
+        assert TaggedItem.objects.filter(tag__name="Example").count() == 3
+        assert TaggedItem.objects.filter(tag__name="Halfon b. Menashshe").count() == 1
+
+        # doc2 should only have one tag, despite being tagged with two variants of "example"
+        assert (
+            TaggedItem.objects.filter(
+                content_type=doc_contenttype, object_id=self.doc2.pk
+            ).count()
+            == 1
+        )
+
+        # should create a log entry for tag rename
+        assert LogEntry.objects.filter(
+            content_type_id=tag_contenttype.pk, change_message="Removed diacritics"
+        ).exists()
+
+        # should create a log entry for tag merge
+        assert LogEntry.objects.filter(
+            content_type_id=tag_contenttype.pk,
+            change_message="Merged example, éxample; removed diacritics",
+        ).exists()

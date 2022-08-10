@@ -79,15 +79,29 @@ class TestCommonUtils(TestCase):
 
     def test_custom_tag_string(self):
         assert custom_tag_string("foo") == ["foo"]
+        # should correctly parse multi-word tags
         assert custom_tag_string("multi-word tag") == ["multi-word tag"]
+        # should parse when mixed with single word tags
         assert custom_tag_string('"legal query", responsa') == [
             "legal query",
             "responsa",
         ]
         assert custom_tag_string("") == []
-        assert custom_tag_string(
+        # should remove diacritics
+        diacritics_tags = custom_tag_string(
             '"Arabic script", "fiscal document",foods,Ḥalfon b. Menashshe'
-        ) == ["Arabic script", "fiscal document", "foods", "Ḥalfon b. Menashshe"]
+        )
+        assert all(
+            [
+                item in diacritics_tags
+                for item in [
+                    "Arabic script",
+                    "fiscal document",
+                    "foods",
+                    "Halfon b. Menashshe",
+                ]
+            ]
+        )
 
 
 class TestCustomEmptyFieldListFilter:
