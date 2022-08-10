@@ -300,7 +300,6 @@ class FootnoteAdmin(admin.ModelAdmin):
         "source",
         "location",
         "notes",
-        "has_transcription",
         "has_url",
     )
     autocomplete_fields = ["source"]
