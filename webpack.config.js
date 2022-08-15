@@ -4,6 +4,7 @@ const Autoprefixer = require("autoprefixer");
 const BundleTracker = require("webpack-bundle-tracker");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+const { IgnorePlugin } = require("webpack");
 
 module.exports = (env, options) => ({
     // NOTE if you add a new entrypoint, update the dummy webpack-stats-ci.json
@@ -19,6 +20,7 @@ module.exports = (env, options) => ({
             "./sitemedia/scss/components/_iiif.scss",
             "./sitemedia/js/iiif.js",
         ],
+        admin: ["./sitemedia/js/admin.js"],
     },
     output: {
         // locations and filenames of bundled files
@@ -90,6 +92,11 @@ module.exports = (env, options) => ({
                 options.mode == "production"
                     ? "[name]-[contenthash].min.css"
                     : "[name].css",
+        }),
+        new IgnorePlugin({
+            // ignore unneeded jquery dependency in angle-input
+            resourceRegExp: /jquery/u,
+            contextRegExp: /angle-input/u,
         }),
     ],
     // configuration for dev server (run using `npm start`)

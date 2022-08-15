@@ -53,12 +53,8 @@ Also doesn't currently account for fragments without images.
                             <label data-iiif-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
                             <input data-iiif-target="zoomToggle" data-action="iiif#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
                             <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
-                            <button type="button" data-iiif-target="rotateLeft" class="rotate" aria-label="{% translate 'Rotate left' %}" disabled>
-                                <i class="ph-arrow-counter-clockwise"></i>
-                            </button>
-                            <button type="button" data-iiif-target="rotateRight" class="rotate" aria-label="{% translate 'Rotate right' %}" disabled>
-                                <i class="ph-arrow-clockwise"></i>
-                            </button>
+                            <div id="rotation-{{ forloop.counter0 }}" class="rotation" data-iiif-target="rotation" data-action="input->iiif#handleDeepZoom change->iiif#handleDeepZoom"></div>
+                            <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">0&deg;</label>
                         {% endif %}
                     </div>
                     <div class="deep-zoom-container{% if image_info.excluded %} excluded{% endif %}">
@@ -74,7 +70,9 @@ Also doesn't currently account for fragments without images.
                 <div class="transcription-panel">
                     {% if forloop.first %}
                         <h3>Transcription</h3>
-                        <span data-transcription-target="editionFullLabel" class="current-transcription">{{ document.digital_editions.0.display|safe }}</span>
+                        <span data-transcription-target="editionFullLabel" class="current-transcription{% if document.digital_editions.count > 1 %} multiple{% endif %}">
+                            {{ document.digital_editions.0.source.formatted_display|safe }}
+                        </span>
                     {% endif %}
                     {% if image_info.excluded %}
                         {# if this image isn't actually in this document, link to related documents #}
@@ -94,7 +92,7 @@ Also doesn't currently account for fragments without images.
                         <div class="editions">
                             {# display transcription in chunks by index #}
                             {% for edition in document.digital_editions.all %}
-                                <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.display|safe }}">
+                                <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
                                     {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
                                 </div>
                             {% endfor %}
@@ -107,9 +105,20 @@ Also doesn't currently account for fragments without images.
             {% for chunk in document.digital_editions.0.content.html %}
                 <div class="img"></div> {# empty image div needed for grid layout #}
                 <div class="transcription-panel">
-                    {% if forloop.first %}<h3>Transcription</h3>{% endif %}
-                    {# display transcription in chunks based on loop index #}
-                    <div class="transcription">{{ chunk|h1_to_h3|safe }}</div>
+                    {% if forloop.first %}
+                        <h3>Transcription</h3>
+                        <span data-transcription-target="editionFullLabel" class="current-transcription{% if document.digital_editions.count > 1 %} multiple{% endif %}">
+                            {{ document.digital_editions.0.source.formatted_display|safe }}
+                        </span>
+                    {% endif %}
+                    <div class="editions">
+                        {# display transcription in chunks based on loop index #}
+                        {% for edition in document.digital_editions.all %}
+                            <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
+                                {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             {% endfor %}
         {% endif %}

@@ -1,13 +1,17 @@
 # Deploy Notes
 
+## 4.7.0
+
+-   A tags migration in this release requires updating the Solr index. Run `python manage.py index` to reindex all content.
+
 ## 4.6.0
 
--   This update includes Solr indexing changes to show the relevant side(s) of document images in search results. Run `python manage.py index` to reindex all content.
+-   Run `python manage.py sync_transcriptions` to migrate transcription content to the new paged/chunked format needed for the new image+transcription panel. Any transcriptions that are not synced correctly should be edited on the footnote in Django Admin as needed.
+-   Reindex content in Solr to show selected images based on document side information in search results: `python manage.py index`
 
 ## 4.5.0
 
 -   Document date functionality in this release requires updating the Solr index. Run `python manage.py index` to reindex all content.
--   Run `python manage.py sync_transcriptions` to migrate transcription content to new paged/chunked format
 -   The `convert_dates` manage command should be run to clean up existing standardized dates for use with filtering and sorting. First run `python manage.py convert_dates update` to reconvert dates from supported calendars; then run `python manage.py convert_dates clean` to standardize non-standard formats that can be easily adjusted.
 -   Run `python manage.py import_manifests` to import and link any manifests that are referenced by url but not cached or associated in the database with their corresponding fragments.
 -   Re-import JTS Figgy IIIF manifests with `import_manifests` script to add urls based on case-insensitive shelfmark matches.

@@ -4,6 +4,7 @@
   "assets": [],
   "chunks": {
     "main": [],
-    "iiif": []
+    "iiif": [],
+    "admin": []
   }
 }

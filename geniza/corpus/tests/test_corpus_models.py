@@ -8,6 +8,7 @@ from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.utils import timezone
 from django.utils.html import strip_tags
@@ -186,7 +187,7 @@ class TestFragment(TestCase):
         assert isinstance(thumbnails, SafeString)
 
         # test with verso side selected: should add class to 1v img, but not 1r img
-        thumbnails_verso_selected = frag.iiif_thumbnails(indices=[1])
+        thumbnails_verso_selected = frag.iiif_thumbnails(selected=[1])
         assert 'title="1v" class="selected"' in thumbnails_verso_selected
         assert 'title="1r" class="selected"' not in thumbnails_verso_selected
 
@@ -467,6 +468,36 @@ class TestDocument:
         unsaved_doc = Document()
         assert str(unsaved_doc) == "?? (PGPID ??)"
 
+    def test_clean(self):
+        doc = Document()
+        # no dates; no error
+        doc.clean()
+
+        # original date but no calendar — error
+        doc.doc_date_original = "480"
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # calendar but no date — error
+        doc.doc_date_original = ""
+        doc.doc_date_calendar = Calendar.HIJRI
+        with pytest.raises(ValidationError):
+            doc.clean()
+
+        # both — no error
+        doc.doc_date_original = "350"
+        doc.clean()
+
+    def test_original_date(self):
+        """Should display the historical document date with its calendar name"""
+        doc = Document.objects.create(
+            doc_date_original="507", doc_date_calendar=Calendar.HIJRI
+        )
+        assert doc.original_date == "507 Hijrī"
+        # with no calendar, just display the date
+        doc.doc_date_calendar = ""
+        assert doc.original_date == "507"
+
     def test_collection(self):
         # T-S 8J22.21 + T-S NS J193
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
@@ -594,7 +625,7 @@ class TestDocument:
         # Create a document and fragment and a TextBlock to associate them
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-        TextBlock.objects.create(document=doc, fragment=frag, side=TextBlock.RECTO)
+        TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0])
         # Mock two IIIF images, mock their size functions
         img1 = Mock()
         img2 = Mock()
@@ -1165,7 +1196,9 @@ class TestTextBlock:
     def test_str(self):
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-        block = TextBlock.objects.create(document=doc, fragment=frag, side="r")
+        block = TextBlock.objects.create(
+            document=doc, fragment=frag, selected_images=[0]
+        )
         assert str(block) == "%s recto" % frag.shelfmark
 
         # with labeled region
@@ -1175,16 +1208,38 @@ class TestTextBlock:
 
         # with uncertainty label
         block2 = TextBlock.objects.create(
-            document=doc, fragment=frag, side="r", certain=False
+            document=doc, fragment=frag, selected_images=[0], certain=False
         )
         assert str(block2) == "%s recto (?)" % frag.shelfmark
 
     def test_thumbnail(self):
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
-        block = TextBlock.objects.create(document=doc, fragment=frag, side="r")
+        block = TextBlock.objects.create(
+            document=doc, fragment=frag, selected_images=[0]
+        )
         with patch.object(frag, "iiif_thumbnails") as mock_frag_thumbnails:
             assert block.thumbnail() == mock_frag_thumbnails.return_value
+
+    def test_side(self):
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        no_side = TextBlock.objects.create(
+            document=doc, fragment=frag, selected_images=[]
+        )
+        assert not no_side.side
+        recto_side = TextBlock.objects.create(
+            document=doc, fragment=frag, selected_images=[0]
+        )
+        assert recto_side.side == "recto"
+        verso_side = TextBlock.objects.create(
+            document=doc, fragment=frag, selected_images=[1]
+        )
+        assert verso_side.side == "verso"
+        both_sides = TextBlock.objects.create(
+            document=doc, fragment=frag, selected_images=[0, 1]
+        )
+        assert both_sides.side == "recto and verso"
 
 
 @pytest.mark.django_db

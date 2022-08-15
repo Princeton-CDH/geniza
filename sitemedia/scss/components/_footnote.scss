@@ -12,7 +12,7 @@
     padding-bottom: spacing.$spacing-md;
     padding: 0 0 spacing.$spacing-md spacing.$spacing-xl;
     margin-left: -#{spacing.$spacing-lg};
-    @include breakpoints.for-desktop-up {
+    @include breakpoints.for-tablet-landscape-up {
         padding-left: spacing.$spacing-xl;
         margin-left: 0;
     }

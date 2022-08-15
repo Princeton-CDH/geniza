@@ -7,10 +7,12 @@
 @use "../components/searchform";
 
 #itt-panel {
+    z-index: 3;
     max-width: none;
     width: 100%;
     display: flex;
     flex-flow: row wrap;
+    background-color: var(--background);
 
     $toggle-default-width: 87px; /* only applies on tablet up */
 
@@ -481,7 +483,8 @@
                     }
                 }
             }
-            label[for^="zoom-slider"] {
+            label[for^="zoom-slider"],
+            label[for^="rotation"] {
                 display: none;
                 @include breakpoints.for-tablet-landscape-up {
                     display: block;
@@ -491,41 +494,45 @@
                 color: var(--on-background);
                 @include typography.body-bold;
             }
-            // rotation controls
-            button.rotate {
-                display: block;
-                // float: right;
-                text-align: center;
-                margin: 0;
-                @include typography.icon-button-lg;
-                min-width: 48px;
-                min-height: 48px;
-                &:last-of-type {
-                    margin: 0 spacing.$spacing-xs 0 0;
-                }
+            // desktop rotation controls
+            div.rotation {
+                display: none;
                 @include breakpoints.for-tablet-landscape-up {
-                    min-width: 0px;
-                    min-height: 0px;
-                    @include typography.icon-button-md;
-                    margin: 0 0 0 spacing.$spacing-md;
-                    &:last-of-type {
-                        margin: 0 spacing.$spacing-3xs 0;
-                    }
-                }
-                background: none;
-                border: none;
-                padding: 0;
-                color: var(--on-backround);
-                transition: color 300ms ease;
-                cursor: pointer;
-                &:disabled {
-                    color: var(--disabled);
-                    cursor: default;
-                }
-                i {
-                    // ensure no extra space inside button
                     display: block;
                 }
+                margin: 0 0 0 spacing.$spacing-md;
+                position: relative;
+                border-radius: 50%;
+                height: 40px;
+                width: 40px;
+                background-color: var(--background-gray);
+                border: 4px solid var(--on-background-light-alt);
+                cursor: pointer;
+                span.angle-input-pivot {
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    top: 50%;
+                    margin-top: -1px;
+                    height: 2px;
+                    &::before {
+                        content: "";
+                        position: absolute;
+                        right: 0;
+                        top: 50%;
+                        margin-top: -8px;
+                        background-color: var(--filter-active);
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                    }
+                }
+                &.active span.angle-input-pivot::before {
+                    background-color: var(--link-primary);
+                }
+            }
+            label[for^="rotation"] {
+                flex: 0 1 45px;
             }
             // zoom control (mobile)
             input[type="checkbox"][id^="zoom-toggle"] {
@@ -580,7 +587,7 @@
             img,
             .osd {
                 width: 100%;
-                &.hidden {
+                &.hidden-img {
                     transition: opacity 300ms ease, visibility 0s ease 300ms;
                     opacity: 0;
                     visibility: hidden;
@@ -638,7 +645,9 @@
             display: block;
             @include typography.meta;
             color: var(--input-date-text);
-            min-height: calc(1rem * 1.5 * 2);
+            &.multiple {
+                min-height: calc(1rem * 1.5 * 2);
+            }
         }
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 0 0;
@@ -649,7 +658,7 @@
                 @include typography.body-bold;
                 margin: 27px 0 0;
             }
-            h3 + span.current-transcription {
+            h3 + span.current-transcription.multiple {
                 min-height: calc(1.125rem * 1.5 * 2);
             }
         }

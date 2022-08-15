@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
 from taggit.utils import _parse_tags
+from unidecode import unidecode
 
 
 def absolutize_url(local_url, request=None):
@@ -37,17 +38,22 @@ def absolutize_url(local_url, request=None):
 
 def custom_tag_string(tag_string):
     """
-    Custom tag parsing for taggit to better support multi-word tags.
+    Custom tag parsing for taggit to better support multi-word tags and case-insensitivity,
+    and to convert any Unicode to ASCII.
 
     Expected parsing:
     - 'legal document' -> ["legal document"]
     - '"fiscal document", Arabic script' -> ["fiscal document", "Arabic script"]
     - '"fiscal document", "Arabic script"' -> ["fiscal document", "Arabic script"]
+    - 'éxämplè' -> ["example"]
 
     This is configured in settings with TAGGIT_TAGS_FROM_STRING.
+
+    NOTE: Only runs on related save (i.e. tagging an instance of another model). For new tags
+    created separately, use a signal handler in :class:`~geniza.corpus.models.TagSignalHandlers`.
     """
     # Stack overflow solution: https://stackoverflow.com/questions/30513783/django-taggit-how-to-allow-multi-word-tags
     # Our github issue for taggit: https://github.com/jazzband/django-taggit/issues/783
     if "," not in tag_string:
         tag_string += ","
-    return _parse_tags(tag_string)
+    return _parse_tags(unidecode(tag_string))

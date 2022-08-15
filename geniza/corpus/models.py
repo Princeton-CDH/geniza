@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Lower
@@ -28,6 +29,7 @@ from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
 from requests.exceptions import ConnectionError
 from taggit_selectize.managers import TaggableManager
+from unidecode import unidecode
 from urllib3.exceptions import HTTPError, NewConnectionError
 
 from geniza.common.models import TrackChangesModel
@@ -241,7 +243,7 @@ class Fragment(TrackChangesModel):
 
         return images, labels
 
-    def iiif_thumbnails(self, indices=[]):
+    def iiif_thumbnails(self, selected=[]):
         """html for thumbnails of iiif image, for display in admin"""
         # if there are no iiif images for this fragment, bail out
         iiif_images = self.iiif_images()
@@ -256,7 +258,7 @@ class Fragment(TrackChangesModel):
                 % (
                     img.size(height=200),
                     labels[i],
-                    'class="selected" /' if i in indices else "/",
+                    'class="selected" /' if i in selected else "/",
                 )
                 for i, img in enumerate(images)
             )
@@ -280,14 +282,12 @@ class Fragment(TrackChangesModel):
                 return mark_safe(
                     attribution.replace(self.cudl_metadata_str, "").strip()
                 )
-        return None
 
     @property
     def provenance(self):
         """Generate a provenance statement for this fragment"""
         if self.manifest and self.manifest.metadata:
             return get_iiif_string(self.manifest.metadata.get("Provenance", ""))
-        return None
 
     def clean(self):
         """Custom validation and cleaning; currently only :meth:`clean_iiif_url`"""
@@ -423,6 +423,15 @@ class DocumentSignalHandlers:
         DocumentSignalHandlers.related_change(instance, raw, "delete")
 
 
+class TagSignalHandlers:
+    """Signal handlers for :class:`taggit.Tag` records."""
+
+    @staticmethod
+    def unidecode_tag(sender, instance, **kwargs):
+        """Convert saved tags to ascii, stripping diacritics."""
+        instance.name = unidecode(instance.name)
+
+
 class Document(ModelIndexable, DocumentDateMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
@@ -513,6 +522,15 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     # inherits clean method from DocumentDateMixin
     # make sure to call if extending!
+    def clean(self):
+        """
+        Require doc_date_original and doc_date_calendar to be set
+        if either one is present.
+        """
+        if self.doc_date_calendar and not self.doc_date_original:
+            raise ValidationError("Original date is required when calendar is set")
+        if self.doc_date_original and not self.doc_date_calendar:
+            raise ValidationError("Calendar is required when original date is set")
 
     @staticmethod
     def get_by_any_pgpid(pgpid):
@@ -621,11 +639,13 @@ class Document(ModelIndexable, DocumentDateMixin):
                         "image": img,
                         "label": labels[i],
                         "shelfmark": b.fragment.shelfmark,
-                        "excluded": b.side and i not in b.image_indices,
+                        "excluded": b.side and i not in b.selected_images,
                     }
                     for i, img in enumerate(images)
-                    # include if filter inactive, tb has no side info, or index in tb indices
-                    if not filter_side or not b.side or i in b.image_indices
+                    # include if filter inactive, no images selected, or this image is selected
+                    if not filter_side
+                    or not len(b.selected_images)
+                    or i in b.selected_images
                 ]
 
         return iiif_images
@@ -1092,15 +1112,15 @@ class TextBlock(models.Model):
             + "Uncheck this box if you are uncertain of a potential join."
         ),
     )
-    RECTO = "r"
-    VERSO = "v"
-    RECTO_VERSO = "rv"
-    RECTO_VERSO_CHOICES = [
-        (RECTO, "recto"),
-        (VERSO, "verso"),
-        (RECTO_VERSO, "recto and verso"),
-    ]
-    side = models.CharField(blank=True, max_length=5, choices=RECTO_VERSO_CHOICES)
+    RECTO = "recto"
+    VERSO = "verso"
+    RECTO_VERSO = "recto and verso"
+    selected_images = ArrayField(
+        models.IntegerField(),
+        default=list,
+        blank=True,
+        verbose_name="Selected image indices",
+    )
     region = models.CharField(
         blank=True,
         max_length=255,
@@ -1128,26 +1148,26 @@ class TextBlock(models.Model):
         parts = [
             self.fragment.shelfmark,
             self.multifragment,
-            self.get_side_display(),
+            self.side,
             self.region,
             certainty_str,
         ]
         return " ".join(p for p in parts if p)
 
     @property
-    def image_indices(self):
-        """indices, in a list of IIIF images, corresponding to this TextBlock's side"""
-        sides = []
-        if self.side in [TextBlock.RECTO, TextBlock.RECTO_VERSO]:
-            # assume first image is recto
-            sides.append(0)
-        if self.side in [TextBlock.VERSO, TextBlock.RECTO_VERSO]:
-            # assume second image is verso
-            sides.append(1)
-        return sides
+    def side(self):
+        """Recto/verso side information based on selected image indices"""
+        if len(self.selected_images) == 1:
+            if self.selected_images[0] == 0:
+                return self.RECTO
+            elif self.selected_images[0] == 1:
+                return self.VERSO
+        elif len(self.selected_images) == 2 and all(
+            i in self.selected_images for i in [0, 1]
+        ):
+            return self.RECTO_VERSO
+        return ""
 
     def thumbnail(self):
-        """iiif thumbnails for this TextBlock"""
-
-        # pass image_indices to ensure only this TextBlock's side(s) are shown as selected
-        return self.fragment.iiif_thumbnails(indices=self.image_indices)
+        """iiif thumbnails for this TextBlock, with selected images highlighted"""
+        return self.fragment.iiif_thumbnails(selected=self.selected_images)
