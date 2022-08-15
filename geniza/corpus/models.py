@@ -2,6 +2,7 @@ import logging
 from collections import defaultdict
 from functools import cached_property
 from itertools import chain
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib import admin, messages
@@ -17,7 +18,7 @@ from django.db.models.functions.text import Lower
 from django.db.models.query import Prefetch
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-from django.urls import reverse
+from django.urls import resolve, reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
@@ -536,7 +537,8 @@ class Document(ModelIndexable, DocumentDateMixin):
     def from_manifest_uri(cls, uri):
         """Given a manifest URI (as used in transcription annotations), find a Document matching
         its pgpid"""
-        return cls.objects.get(pk=int(uri.strip("/").split("/")[-3]))
+        # will raise Resolver404 if url does not resolve
+        return cls.objects.get(pk=resolve(urlparse(uri).path).kwargs["pk"])
 
     @property
     def shelfmark(self):
