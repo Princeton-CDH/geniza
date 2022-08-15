@@ -528,9 +528,6 @@ class DocumentAnnotationListView(DocumentDetailView):
         """handle GET request: construct and return JSON annotation list"""
         document = self.get_object()
         digital_editions = document.digital_editions()
-        # while sync transcription is in transition, we need to check for
-        # html transcription content
-        digital_editions = [de for de in digital_editions if de.content_html]
         # if there is no transcription content, 404
         if not digital_editions:
             raise Http404
