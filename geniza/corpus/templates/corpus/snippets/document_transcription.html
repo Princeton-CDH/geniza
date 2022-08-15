@@ -45,7 +45,7 @@ Also doesn't currently account for fragments without images.
         {% if document.iiif_urls %}
             {% for image_info in document.iiif_images %}
                 {# only images that are part of the current document are zoomable #}
-                <div class="img" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif" data-iiif-target="imageContainer"{% endif %}>
+                <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif" data-iiif-target="imageContainer"{% endif %}>
                     <div class="img-header" data-iiif-target="imageHeader">
                         <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
                         {% if not image_info.excluded %}
@@ -57,7 +57,7 @@ Also doesn't currently account for fragments without images.
                             <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">0&deg;</label>
                         {% endif %}
                     </div>
-                    <div class="deep-zoom-container{% if image_info.excluded %} excluded{% endif %}">
+                    <div class="deep-zoom-container">
                         <img class="iiif-image" data-iiif-target="image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
                             sizes="(max-width: 650px) 50vw, 94vw"
                             srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
@@ -66,6 +66,23 @@ Also doesn't currently account for fragments without images.
                             {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
                         <div class="osd" data-iiif-target="osd" data-iiif-url="{{ image_info.image.info }}"></div>
                     </div>
+                    {% if image_info.excluded %}
+                        {# if this image isn't actually in this document, link to related documents #}
+                        {% spaceless %}
+                            <ul class="excluded-related">
+                                {% for related in related_documents %}
+                                    {% if image_info.image|stringformat:"s" in related.images %}
+                                        <li><a class="view-link" href="{% url 'corpus:document' related.document.pgpid %}">
+                                            {# translators: link to view a related document #}
+                                            {% blocktranslate with type=related.document.type shelfmark=related.document.shelfmark|shelfmark_wrap trimmed %}
+                                                <span>View {{ type }}:&nbsp;{{ shelfmark }}</span>
+                                            {% endblocktranslate %}
+                                        </a></li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% endspaceless %}
+                    {% endif %}
                 </div>
                 <div class="transcription-panel">
                     {% if forloop.first %}
@@ -74,21 +91,7 @@ Also doesn't currently account for fragments without images.
                             {{ document.digital_editions.0.source.formatted_display|safe }}
                         </span>
                     {% endif %}
-                    {% if image_info.excluded %}
-                        {# if this image isn't actually in this document, link to related documents #}
-                        <ul class="excluded-related">
-                            {% for related in related_documents %}
-                                {% if image_info.image|stringformat:"s" in related.images %}
-                                    <li><a class="view-link" href="{% url 'corpus:document' related.document.pgpid %}">
-                                        {# translators: link to view a related document #}
-                                        {% blocktranslate with type=related.document.type shelfmark=related.document.shelfmark|shelfmark_wrap trimmed %}
-                                            <span>View {{ type }}:&nbsp;{{ shelfmark }}</span>
-                                        {% endblocktranslate %}
-                                    </a></li>
-                                {% endif %}
-                            {% endfor %}
-                        </ul>
-                    {% else %}
+                    {% if not image_info.excluded %}
                         <div class="editions">
                             {# display transcription in chunks by index #}
                             {% for edition in document.digital_editions.all %}
