@@ -683,9 +683,13 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     def has_transcription(self):
         """Admin display field indicating if document has a transcription."""
-        return self.footnotes.filter(
-            doc_relation__contains=Footnote.DIGITAL_EDITION
-        ).exists()
+        # avoids an additional DB call for admin list view
+        return any(
+            [
+                Footnote.DIGITAL_EDITION in note.doc_relation
+                for note in self.footnotes.all()
+            ]
+        )
 
     has_transcription.short_description = "Transcription"
     has_transcription.boolean = True
