@@ -29,6 +29,7 @@ from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
 from requests.exceptions import ConnectionError
 from taggit_selectize.managers import TaggableManager
+from unidecode import unidecode
 from urllib3.exceptions import HTTPError, NewConnectionError
 
 from geniza.common.models import TrackChangesModel
@@ -420,6 +421,15 @@ class DocumentSignalHandlers:
         """reindex associated documents when a related object is deleted"""
         # delegate to common method
         DocumentSignalHandlers.related_change(instance, raw, "delete")
+
+
+class TagSignalHandlers:
+    """Signal handlers for :class:`taggit.Tag` records."""
+
+    @staticmethod
+    def unidecode_tag(sender, instance, **kwargs):
+        """Convert saved tags to ascii, stripping diacritics."""
+        instance.name = unidecode(instance.name)
 
 
 class Document(ModelIndexable, DocumentDateMixin):
