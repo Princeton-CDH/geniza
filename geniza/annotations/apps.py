@@ -7,7 +7,7 @@ class AnnotationsConfig(AppConfig):
     name = "geniza.annotations"
 
     def ready(self):
-        from geniza.annotations.signals import update_footnote
+        from geniza.annotations.signals import get_or_create_footnote
 
-        post_save.connect(update_footnote, sender="annotations.Annotation")
+        post_save.connect(get_or_create_footnote, sender="annotations.Annotation")
         return super().ready()
