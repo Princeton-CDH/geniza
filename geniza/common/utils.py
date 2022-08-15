@@ -48,6 +48,9 @@ def custom_tag_string(tag_string):
     - 'éxämplè' -> ["example"]
 
     This is configured in settings with TAGGIT_TAGS_FROM_STRING.
+
+    NOTE: Only runs on related save (i.e. tagging an instance of another model). For new tags
+    created separately, use a signal handler in :class:`~geniza.corpus.models.TagSignalHandlers`.
     """
     # Stack overflow solution: https://stackoverflow.com/questions/30513783/django-taggit-how-to-allow-multi-word-tags
     # Our github issue for taggit: https://github.com/jazzband/django-taggit/issues/783
