@@ -1049,12 +1049,12 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # if there's a partial match (everything but content)
                 if equiv_fn:
                     # if the new footnote has content, add it
-                    if Footnote.DIGITAL_EDITION in footnote.doc_relation:
+                    if footnote.content_text:
                         self.footnotes.add(footnote)
                     # if the partial match has no content, remove it
                     # (if it has any content, then it is different from the new one
                     # and should be preserved)
-                    if Footnote.DIGITAL_EDITION not in equiv_fn.doc_relation:
+                    else:
                         self.footnotes.remove(equiv_fn)
 
                 # if neither an exact or partial match, add the new footnote
