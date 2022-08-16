@@ -711,14 +711,14 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     def editions(self):
         """All footnotes for this document where the document relation includes
-        edition; footnotes with content will be sorted first."""
+        edition."""
         return self.footnotes.filter(doc_relation__contains=Footnote.EDITION).order_by(
             "source"
         )
 
     def digital_editions(self):
         """All footnotes for this document where the document relation includes
-        edition AND the footnote has content."""
+        digital edition."""
         return self.footnotes.filter(
             doc_relation__contains=Footnote.DIGITAL_EDITION
         ).order_by("source")
