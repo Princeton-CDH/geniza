@@ -228,15 +228,6 @@ class TestFootnote:
             footnote.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
             assert str(footnote) == "Edition and Translation of foo"
 
-    @pytest.mark.django_db
-    def test_has_transcription(self, source):
-        footnote = Footnote(source=source)
-        # if there's content, that indicates a digitized transcription
-        with patch.object(Footnote, "content_object", new="foo"):
-            assert not footnote.has_transcription
-            footnote.content = "The digitized transcription"
-            assert footnote.has_transcription
-
     def test_display(self, source):
         footnote = Footnote(source=source)
         assert footnote.display() == "George Orwell, A Nice Cup of Tea."
@@ -303,36 +294,6 @@ class TestFootnoteQuerySet:
         footnote2.notes = "some extra info"
         footnote2.save()
         assert not Footnote.objects.filter(pk=footnote1.pk).includes_footnote(footnote2)
-
-        # different content
-        footnote2.notes = ""
-        footnote2.content = "{}"
-        footnote2.save()
-        assert not Footnote.objects.filter(pk=footnote1.pk).includes_footnote(footnote2)
-
-    @pytest.mark.django_db
-    def test_includes_footnote_ignore_content(self, source, twoauthor_source, document):
-        # same source, content object, location; one with content
-        footnote1 = Footnote.objects.create(
-            source=source,
-            content_object=document,
-            location="p.1",
-            doc_relation=Footnote.EDITION,
-        )
-        footnote2 = Footnote.objects.create(
-            source=source,
-            content_object=document,
-            location="p.1",
-            doc_relation=Footnote.EDITION,
-            content={"text": "{'foo': 'bar'}"},
-        )
-        assert not Footnote.objects.filter(pk=footnote1.pk).includes_footnote(footnote2)
-        assert (
-            Footnote.objects.filter(pk=footnote1.pk).includes_footnote(
-                footnote2, include_content=False
-            )
-            == footnote1
-        )
 
     def test_editions(self, source, twoauthor_source, document):
         # same source, content object, location

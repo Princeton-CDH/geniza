@@ -14,6 +14,7 @@ from django.utils.timezone import get_current_timezone, make_aware
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
 
+from geniza.annotations.models import Annotation
 from geniza.common.utils import absolutize_url
 from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
@@ -994,8 +995,7 @@ class TestDocumentManifestView:
         Footnote.objects.create(
             content_object=document,
             source=source,
-            content={"html": "text"},
-            doc_relation=Footnote.EDITION,
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         response = client.get(reverse(self.view_name, args=[document.pk]))
         assert response.status_code == 200
@@ -1041,8 +1041,7 @@ class TestDocumentAnnotationListView:
         transcription = Footnote.objects.create(
             content_object=document,
             source=source,
-            content={"html": "text"},
-            doc_relation=Footnote.EDITION,
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         mock_manifest = mockiifpres.from_url.return_value
         test_canvas = new_iiif_canvas()
@@ -1073,8 +1072,22 @@ class TestDocumentAnnotationListView:
         Footnote.objects.create(
             content_object=document,
             source=source,
-            content={"html": "here is my transcription text"},
-            doc_relation=Footnote.EDITION,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            content={
+                "body": [{"value": "here is my transcription text"}],
+                "target": {
+                    "source": {
+                        "partOf": {
+                            "id": reverse(
+                                "corpus:document-manifest", kwargs={"pk": document.pk}
+                            )
+                        }
+                    }
+                },
+                "dc:source": source.uri,
+            }
         )
         response = client.get(reverse(self.view_name, args=[document.pk]))
         assert response.status_code == 200
@@ -1102,15 +1115,43 @@ class TestDocumentAnnotationListView:
         Footnote.objects.create(
             content_object=document,
             source=source,
-            content={"html": "here is my transcription text"},
-            doc_relation=Footnote.EDITION,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            content={
+                "body": [{"value": "here is my transcription text"}],
+                "target": {
+                    "source": {
+                        "partOf": {
+                            "id": reverse(
+                                "corpus:document-manifest", kwargs={"pk": document.pk}
+                            )
+                        }
+                    }
+                },
+                "dc:source": source.uri,
+            }
         )
         # and another to the join document
         Footnote.objects.create(
             content_object=join,
             source=source,
-            content={"html": "here is completely different transcription text"},
-            doc_relation=Footnote.EDITION,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            content={
+                "body": [{"value": "here is completely different transcription text"}],
+                "target": {
+                    "source": {
+                        "partOf": {
+                            "id": reverse(
+                                "corpus:document-manifest", kwargs={"pk": join.pk}
+                            )
+                        }
+                    }
+                },
+                "dc:source": source.uri,
+            }
         )
         # request once for document
         client.get(reverse(self.view_name, args=[document.pk]))
@@ -1184,11 +1225,22 @@ class TestDocumentTranscriptionText:
         edition = Footnote.objects.create(
             content_object=document,
             source=source,
-            doc_relation=Footnote.EDITION,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
             content={
-                "html": "some transcription text",
-                "text": "some transcription text",
-            },
+                "body": [{"value": "some transcription text"}],
+                "target": {
+                    "source": {
+                        "partOf": {
+                            "id": reverse(
+                                "corpus:document-manifest", kwargs={"pk": document.pk}
+                            )
+                        }
+                    }
+                },
+                "dc:source": source.uri,
+            }
         )
         response = client.get(
             reverse(

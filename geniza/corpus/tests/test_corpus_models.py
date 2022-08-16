@@ -10,6 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django.utils.safestring import SafeString
@@ -18,6 +19,7 @@ from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
 from modeltranslation.manager import MultilingualQuerySet
 from piffle.presentation import IIIFException as piffle_IIIFException
 
+from geniza.annotations.models import Annotation
 from geniza.corpus.dates import Calendar
 from geniza.corpus.models import (
     Collection,
@@ -712,16 +714,16 @@ class TestDocument:
 
     def test_has_transcription(self, document, source):
         # doc with no footnotes doesn't have transcription
-        assert not document.has_transcription
+        assert not document.has_transcription()
 
         # doc with empty footnote doesn't have transcription
         fn = Footnote.objects.create(content_object=document, source=source)
-        assert not document.has_transcription
+        assert not document.has_transcription()
 
-        # doc with footnote with content does have a transcription
-        fn.content = "The transcription"
+        # doc with digital edition footnote does have a transcription
+        fn.doc_relation = [Footnote.DIGITAL_EDITION]
         fn.save()
-        assert document.has_transcription
+        assert document.has_transcription()
 
     def test_has_image(self, document, fragment):
         # doc with fragment with IIIF url has image
@@ -805,13 +807,28 @@ class TestDocument:
     def test_index_data_footnotes(
         self, document, source, twoauthor_source, multiauthor_untitledsource
     ):
-        # footnote with no content
+        # digital edition footnote
         edition = Footnote.objects.create(
             content_object=document,
             source=source,
-            doc_relation=Footnote.EDITION,
-            content={"text": "transcription lines"},
+            doc_relation=[Footnote.DIGITAL_EDITION],
         )
+        Annotation.objects.create(
+            content={
+                "body": [{"value": "transcription lines"}],
+                "target": {
+                    "source": {
+                        "partOf": {
+                            "id": reverse(
+                                "corpus:document-manifest", kwargs={"pk": document.pk}
+                            )
+                        }
+                    }
+                },
+                "dc:source": source.uri,
+            }
+        )
+        # other footnotes
         edition2 = Footnote.objects.create(
             content_object=document,
             source=twoauthor_source,
@@ -823,7 +840,8 @@ class TestDocument:
             doc_relation=Footnote.TRANSLATION,
         )
         index_data = document.index_data()
-        assert index_data["num_editions_i"] == 2
+        assert index_data["num_editions_i"] == 1
+        assert index_data["has_digital_edition_b"] == True
         assert index_data["num_translations_i"] == 2
         assert index_data["scholarship_count_i"] == 3  # unique sources
         assert index_data["transcription_t"] == ["transcription lines"]
@@ -854,15 +872,13 @@ class TestDocument:
     def test_editions(self, document, source):
         # create multiple footnotes to test filtering and sorting
 
-        # footnote with no content
         edition = Footnote.objects.create(
             content_object=document, source=source, doc_relation=Footnote.EDITION
         )
-        edition2 = Footnote.objects.create(
+        digital_edition = Footnote.objects.create(
             content_object=document,
             source=source,
-            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content={"text": "some text"},
+            doc_relation=[Footnote.DIGITAL_EDITION],
         )
         translation = Footnote.objects.create(
             content_object=document,
@@ -874,10 +890,8 @@ class TestDocument:
         # check that only footnotes with doc relation including edition are included
         # NOTE: comparing by PK rather than using footnote equality check
         assert edition.pk in doc_edition_pks
-        assert edition2.pk in doc_edition_pks
+        assert digital_edition.pk not in doc_edition_pks
         assert translation.pk not in doc_edition_pks
-        # check that edition with content is sorted first
-        assert edition2.pk == doc_edition_pks[0]
 
     def test_digital_editions(self, document, source, twoauthor_source):
         # test filter by content
@@ -886,56 +900,52 @@ class TestDocument:
         edition = Footnote.objects.create(
             content_object=document, source=source, doc_relation=Footnote.EDITION
         )
-        # footnote with content
+        # digital edition
         edition2 = Footnote.objects.create(
             content_object=document,
             source=source,
-            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content={"text": "A piece of text"},
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         # footnote with different source
         edition3 = Footnote.objects.create(
             content_object=document,
             source=twoauthor_source,
-            doc_relation=Footnote.EDITION,
-            content={"text": "B other text"},
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         digital_edition_pks = [ed.pk for ed in document.digital_editions()]
 
-        # No content, should not appear in digital editions
+        # EDITION, should not appear in digital editions
         assert edition.pk not in digital_edition_pks
-        # Has content, should appear in digital editions
+        # DIGITAL_EDITION, should appear in digital editions
         assert edition2.pk in digital_edition_pks
         assert edition3.pk in digital_edition_pks
-        # Edition 2 should be alphabetically first based on its content
+        # Edition 2 should be alphabetically first based on its source
         assert edition2.pk == digital_edition_pks[0]
 
     def test_editors(self, document, source, twoauthor_source):
-        # footnote with no content
+        # footnote with no digital edition
         Footnote.objects.create(
             content_object=document, source=source, doc_relation=Footnote.EDITION
         )
         # No digital editions, so editors count should be 0
         assert document.editors().count() == 0
 
-        # footnote with one author, content
+        # Digital edition with one author
         Footnote.objects.create(
             content_object=document,
             source=source,
-            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content={"text": "A piece of text"},
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
 
         # Digital edition with one author, editor should be author of source
         assert document.editors().count() == 1
         assert document.editors().first() == source.authors.first()
 
-        # footnote with two authors, content
+        # Digital edition with two authors
         Footnote.objects.create(
             content_object=document,
             source=twoauthor_source,
-            doc_relation=Footnote.EDITION,
-            content={"text": "B other text"},
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         # Should now be three editors, since this edition's source had two authors
         assert document.editors().count() == 3
@@ -1099,26 +1109,6 @@ def test_document_merge_with_footnotes(document, join, source):
     document.merge_with([join], "combine footnotes")
     # should only have two footnotes after the merge, because two of them are equal
     assert document.footnotes.count() == 2
-
-
-def test_document_merge_with_footnotes_transcription(document, join, source):
-    # create some footnotes
-    Footnote.objects.create(content_object=document, source=source, location="p. 3")
-    # page 3 footnote is a near duplicate but adds content
-    Footnote.objects.create(
-        content_object=join,
-        source=source,
-        location="p. 3",
-        content={"text": "{'foo': 'bar'}"},
-    )
-
-    assert document.footnotes.count() == 1
-    assert join.footnotes.count() == 1
-    document.merge_with([join], "combine footnotes")
-    # should only have one footnotes after the merge
-    assert document.footnotes.count() == 1
-    # should preserve the footnote with content and remove the one without
-    assert document.footnotes.first().content
 
 
 def test_document_merge_with_log_entries(document, join):
