@@ -310,7 +310,7 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "page_description": self.page_description(),
                 "page_type": "document",
                 # preload transcription font when appropriate
-                "page_includes_transcriptions": self.object.has_transcription,
+                "page_includes_transcriptions": self.object.has_transcription(),
             }
         )
         return context_data
@@ -437,7 +437,7 @@ class DocumentManifestView(DocumentDetailView):
     def get(self, request, *args, **kwargs):
         document = self.get_object()
         # should 404 if no images or no transcription
-        if not document.has_transcription and not document.has_image():
+        if not document.has_transcription() and not document.has_image():
             raise Http404
 
         iiif_urls = document.iiif_urls()
@@ -498,7 +498,7 @@ class DocumentManifestView(DocumentDetailView):
         manifest.attribution = corpus_extras.format_attribution(document.attribution())
 
         # if transcription is available, add an annotation list to first canvas
-        if document.has_transcription:
+        if document.has_transcription():
             other_content = {
                 "@context": "http://iiif.io/api/presentation/2/context.json",
                 "@id": absolutize_url(

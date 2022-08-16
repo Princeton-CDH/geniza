@@ -756,7 +756,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         pgp = _("Princeton Geniza Project")
         # Translators: attribution for local IIIF manifests
         attribution = _("Compilation by %(pgp)s." % {"pgp": pgp})
-        if self.has_transcription:
+        if self.has_transcription():
             # Translators: attribution for local IIIF manifests that include transcription
             attribution = _("Compilation and transcription by %(pgp)s." % {"pgp": pgp})
         # Translators: manifest attribution note that content from other institutions may have restrictions
