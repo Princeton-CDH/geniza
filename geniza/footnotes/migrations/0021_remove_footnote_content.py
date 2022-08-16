@@ -21,9 +21,9 @@ class Migration(migrations.Migration):
             field=MultiSelectField(
                 choices=[
                     ("E", "Edition"),
-                    ("DE", "Digital Edition"),
                     ("T", "Translation"),
                     ("D", "Discussion"),
+                    ("X", "Digital Edition"),
                 ],
                 help_text="How does the source relate to this document?",
                 max_length=8,
