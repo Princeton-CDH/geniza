@@ -508,13 +508,13 @@ class Footnote(TrackChangesModel):
         """
         # For now, since we have no block/canvas information, return the
         # whole thing as a single resource
-        html_content = self.content.get("html")
-        if html_content:
+        html = self.content_html
+        if html:
             # this is the content that should be set as the "resource"
             # of an annotation
             return {
                 "@type": "cnt:ContentAsText",
                 "format": "text/html",
                 # language todo
-                "chars": "<div dir='rtl' class='transcription'>%s</div>" % html_content,
+                "chars": "<div dir='rtl' class='transcription'>%s</div>" % html,
             }

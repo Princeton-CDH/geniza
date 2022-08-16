@@ -409,7 +409,9 @@ class FootnoteAdmin(admin.ModelAdmin):
                 footnote.doc_relation,
                 footnote.notes,
                 footnote.url,
-                footnote.content.get("text", "") if footnote.content else "",
+                footnote.content_text
+                if Footnote.DIGITAL_EDITION in footnote.doc_relation
+                else "",
                 f"{url_scheme}{site_domain}/admin/footnotes/footnote/{footnote.id}/change/",
             ]
 
