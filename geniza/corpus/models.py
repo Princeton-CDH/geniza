@@ -1041,11 +1041,9 @@ class Document(ModelIndexable, DocumentDateMixin):
     def _merge_footnotes(self, doc):
         # combine footnotes; footnote logic for merge_with
         for footnote in doc.footnotes.all():
-            # check for match; remove match if found, otherwise add new footnote
+            # check for match; add new footnote if not a match
             equiv_fn = self.footnotes.includes_footnote(footnote)
-            if equiv_fn:
-                self.footnotes.remove(equiv_fn)
-            else:
+            if not equiv_fn:
                 self.footnotes.add(footnote)
 
     def _merge_logentries(self, doc):
