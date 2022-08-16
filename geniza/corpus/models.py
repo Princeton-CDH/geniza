@@ -223,11 +223,13 @@ class Fragment(TrackChangesModel):
             return None
         images = []
         labels = []
+        canvases = []
         # use images from locally cached manifest if possible
         if self.manifest:
             for canvas in self.manifest.canvases.all():
                 images.append(canvas.image)
                 labels.append(canvas.label)
+                canvases.append(canvas.uri)
 
         # if not cached, load from remote url
         else:
@@ -238,10 +240,11 @@ class Fragment(TrackChangesModel):
                     images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
                     # label provides library's recto/verso designation
                     labels.append(canvas.label)
+                    canvases.append(canvas.uri)
             except (IIIFException, ConnectionError, HTTPError):
                 logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
 
-        return images, labels
+        return images, labels, canvases
 
     def iiif_thumbnails(self, selected=[]):
         """html for thumbnails of iiif image, for display in admin"""
@@ -250,7 +253,7 @@ class Fragment(TrackChangesModel):
         if iiif_images is None:
             return ""
 
-        images, labels = iiif_images
+        images, labels, _ = iiif_images
         return mark_safe(
             " ".join(
                 # include label as title for now
@@ -633,13 +636,13 @@ class Document(ModelIndexable, DocumentDateMixin):
         for b in self.textblock_set.all():
             frag_images = b.fragment.iiif_images()
             if frag_images is not None:
-                images, labels = frag_images
+                images, labels, canvases = frag_images
                 iiif_images += [
                     {
                         "image": img,
                         "label": labels[i],
+                        "canvas": canvases[i],
                         "shelfmark": b.fragment.shelfmark,
-                        "excluded": b.side and i not in b.selected_images,
                     }
                     for i, img in enumerate(images)
                     # include if filter inactive, no images selected, or this image is selected

@@ -158,6 +158,7 @@ class TestFragment(TestCase):
                                     }
                                 ],
                                 "label": "1r",
+                                "uri": "http://example.co/iiif/ts-1/canvas/00001",
                             },
                             {
                                 "images": [
@@ -170,6 +171,7 @@ class TestFragment(TestCase):
                                     }
                                 ],
                                 "label": "1v",
+                                "uri": "http://example.co/iiif/ts-1/canvas/00002",
                             },
                         ]
                     }
@@ -210,7 +212,7 @@ class TestFragment(TestCase):
         )
         frag.save()
         # should return one IIIFImage and one label
-        (images, labels) = frag.iiif_images()
+        (images, labels, _) = frag.iiif_images()
         assert len(images) == 1
         assert isinstance(images[0], IIIFImage)
         assert len(labels) == 1
@@ -631,7 +633,9 @@ class TestDocument:
         img2 = Mock()
         # Mock Fragment.iiif_images() to return those two images and two fake labels
         with patch.object(
-            Fragment, "iiif_images", return_value=([img1, img2], ["1r", "1v"])
+            Fragment,
+            "iiif_images",
+            return_value=([img1, img2], ["1r", "1v"], ["canvas1", "canvas2"]),
         ) as mock_frag_iiif:
             images = doc.iiif_images()
             # Should call the mocked function
@@ -785,7 +789,9 @@ class TestDocument:
         img2.info.return_value = "http://example.co/iiif/ts-1/00002/info.json"
         # Mock Fragment.iiif_images() to return those two images and two fake labels
         with patch.object(
-            Fragment, "iiif_images", return_value=([img1, img2], ["label1", "label2"])
+            Fragment,
+            "iiif_images",
+            return_value=([img1, img2], ["label1", "label2"], ["canvas1", "canvas2"]),
         ):
             index_data = document.index_data()
             # index data should pick up images and labels
