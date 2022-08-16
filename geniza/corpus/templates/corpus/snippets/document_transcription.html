@@ -96,7 +96,7 @@ Also doesn't currently account for fragments without images.
                             {# display transcription in chunks by index #}
                             {% for edition in document.digital_editions.all %}
                                 <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                    {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
+                                    {{ edition.content.html|dict_item:image_info.canvas|default:""|h1_to_h3|safe }}
                                 </div>
                             {% endfor %}
                         </div>
@@ -117,9 +117,13 @@ Also doesn't currently account for fragments without images.
                     <div class="editions">
                         {# display transcription in chunks based on loop index #}
                         {% for edition in document.digital_editions.all %}
-                            <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
-                            </div>
+                            {% for edition_chunk in edition.content.html.values %}
+                                {% if forloop.counter0 == forloop.parentloop.parentloop.counter0 %}
+                                    <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
+                                        {{ edition_chunk|h1_to_h3|safe }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         {% endfor %}
                     </div>
                 </div>
