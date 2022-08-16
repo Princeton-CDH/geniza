@@ -14,6 +14,7 @@ def create_or_delete_footnote(instance, **kwargs):
     delete the Footnote."""
     # get manifest uri from annotation content and match it to a Document
     manifest_uri = instance.content["target"]["source"]["partOf"]["id"]
+    source_uri = instance.content["dc:source"]
     document = Document.from_manifest_uri(manifest_uri)
     # if deleted, created is None; if updated but not deleted, created is False
     deleted = kwargs.get("created") is None
@@ -21,7 +22,7 @@ def create_or_delete_footnote(instance, **kwargs):
     try:
         # try to get a DIGITAL_EDITION footnote for this source and document
         footnote = document.footnotes.get(
-            source=Source.from_uri(instance.content["dc:source"]),
+            source=Source.from_uri(source_uri),
             doc_relation__contains=Footnote.DIGITAL_EDITION,
         )
         # if this Annotation was deleted and no others exist on this source and document,
@@ -30,7 +31,7 @@ def create_or_delete_footnote(instance, **kwargs):
             deleted
             and not Annotation.objects.filter(
                 content__target__source__partOf__id=manifest_uri,
-                content__contains={"dc:source": instance.content["dc:source"]},
+                content__contains={"dc:source": source_uri},
             ).exists()
         ):
             footnote.delete()
@@ -39,7 +40,7 @@ def create_or_delete_footnote(instance, **kwargs):
         if not deleted:
             # create the DIGITAL_EDITION footnote
             footnote = document.footnotes.create(
-                source=Source.from_uri(instance.content["dc:source"]),
+                source=Source.from_uri(source_uri),
                 doc_relation=[Footnote.DIGITAL_EDITION],
             )
             log_footnote_action(footnote, ADDITION)
