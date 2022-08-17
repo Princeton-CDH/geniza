@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: geniza\n"
+"Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-04-25 12:59-0400\n"
-"PO-Revision-Date: 2022-08-01 14:25\n"
+"PO-Revision-Date: 2022-08-17 17:40\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -11,11 +11,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
-"X-Crowdin-Project: geniza\n"
-"X-Crowdin-Project-ID: 457634\n"
+"X-Crowdin-Project: princeton-geniza-project\n"
+"X-Crowdin-Project-ID: 520356\n"
 "X-Crowdin-Language: ar\n"
 "X-Crowdin-File: /develop/geniza/locale/en/LC_MESSAGES/django.po\n"
-"X-Crowdin-File-ID: 28\n"
+"X-Crowdin-File-ID: 12\n"
 
 #. Translators: placeholder for keyword search input
 #: geniza/corpus/forms.py:145
@@ -80,7 +80,7 @@ msgstr "من سنة"
 #. Translators: label for end year when filtering by date range
 #: geniza/corpus/forms.py:182
 msgid "To year"
-msgstr "إلى السنة"
+msgstr ""
 
 #. Translators: label for form sort field
 #: geniza/corpus/forms.py:190
@@ -95,7 +95,7 @@ msgstr "نوع المستند"
 #. Translators: label for "has image" search form filter
 #: geniza/corpus/forms.py:205
 msgid "Has Image"
-msgstr "لديه صورة"
+msgstr ""
 
 #. Translators: label for "has transcription" search form filter
 #: geniza/corpus/forms.py:209
@@ -118,7 +118,7 @@ msgstr "فرز الصلة غير متوفر بدون مصطلح البحث عن 
 
 #: geniza/corpus/models.py:703 geniza/templates/base.html:21
 msgid "Princeton Geniza Project"
-msgstr "مشروع برنستون جينيزا"
+msgstr "Princeton Geniza Project"
 
 #. Translators: attribution for local IIIF manifests
 #: geniza/corpus/models.py:705
@@ -173,7 +173,7 @@ msgstr "الشرف"
 #. Translators: label for date of this document, if known
 #: geniza/corpus/templates/corpus/document_detail.html:77
 msgid "Document Date"
-msgstr "تاريخ المستند"
+msgstr ""
 
 #. Translators: Primary language label
 #: geniza/corpus/templates/corpus/document_detail.html:88
@@ -207,7 +207,7 @@ msgstr "الوسوم"
 #: geniza/corpus/templates/corpus/document_detail.html:128
 #: geniza/corpus/templates/corpus/snippets/document_result.html:18
 msgid "Input date"
-msgstr "Input date"
+msgstr ""
 
 #. Translators: Date document was first added to the PGP
 #: geniza/corpus/templates/corpus/document_detail.html:130
@@ -215,9 +215,7 @@ msgstr "Input date"
 msgid "\n"
 "                In PGP since %(date)s\n"
 "            "
-msgstr "\n"
-"                في PGP منذ %(date)s\n"
-"            "
+msgstr ""
 
 #. Translators: label for document description
 #: geniza/corpus/templates/corpus/document_detail.html:138
@@ -228,12 +226,12 @@ msgstr "الوصف"
 #: geniza/corpus/templates/corpus/document_detail.html:160
 msgid "Other documents on this shelfmark"
 msgid_plural "Other documents on these shelfmarks"
-msgstr[0] "وثائق أخرى بشأن هذه الرفوف"
-msgstr[1] "مستندات أخرى على هذه العلامة"
-msgstr[2] "وثائق أخرى بشأن هذه الرفوف"
-msgstr[3] "وثائق أخرى بشأن هذه الرفوف"
-msgstr[4] "وثائق أخرى بشأن هذه الرفوف"
-msgstr[5] "وثائق أخرى بشأن هذه الرفوف"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
+msgstr[4] ""
+msgstr[5] ""
 
 #. Translators: label for permanent link to a document
 #: geniza/corpus/templates/corpus/document_detail.html:186
@@ -305,15 +303,15 @@ msgstr "تحرير"
 
 #: geniza/corpus/templates/corpus/snippets/document_permissions.html:4
 msgid "Image Permissions Statement"
-msgstr "بيان أذونات الصورة"
+msgstr ""
 
 #: geniza/corpus/templates/corpus/snippets/document_permissions.html:18
 msgid "No attribution or license noted."
-msgstr "لم يتم ملاحظة الإسناد أو الترخيص."
+msgstr ""
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:20
 msgid "PGP ID"
-msgstr "PGP ID"
+msgstr ""
 
 #. Translators: number of editions for this document
 #: geniza/corpus/templates/corpus/snippets/document_result.html:58
@@ -366,7 +364,7 @@ msgstr "عرض تفاصيل المستند"
 #. Translators: accessibility text label for document detail view tabs navigation
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:4
 msgid "tabs"
-msgstr "tabs"
+msgstr ""
 
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:7
 msgid "Document Details"
@@ -494,7 +492,7 @@ msgstr "حدث خطأ في وضع هذه الصفحة معا."
 
 #: geniza/templates/admin/base_site.html:4
 msgid "Django site admin"
-msgstr "Django site admin"
+msgstr ""
 
 #: geniza/templates/base.html:80
 msgid "Skip to main content"
@@ -503,7 +501,7 @@ msgstr "تخطي إلى المحتوى الرئيسي"
 #. Translators: accessibility text label for footer site navigation
 #: geniza/templates/footer.html:4
 msgid "footer navigation"
-msgstr "footer navigation"
+msgstr ""
 
 #. Translators: label for Twitter links in footer
 #: geniza/templates/footer.html:19
