@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-04-25 12:59-0400\n"
-"PO-Revision-Date: 2022-08-17 17:40\n"
+"PO-Revision-Date: 2022-08-17 18:39\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -311,7 +311,7 @@ msgstr ""
 
 #: geniza/corpus/templates/corpus/snippets/document_result.html:20
 msgid "PGP ID"
-msgstr ""
+msgstr "PGP ID"
 
 #. Translators: number of editions for this document
 #: geniza/corpus/templates/corpus/snippets/document_result.html:58
@@ -531,7 +531,7 @@ msgstr "إمكانية الوصول"
 #. Translators: official name of Princeton University's board of trustees, for footer
 #: geniza/templates/footer.html:63
 msgid "The Trustees of Princeton University"
-msgstr "أمناء جامعة برينستون"
+msgstr "The Trustees of Princeton University"
 
 #. Translators: Creative Commons license text, for footer
 #: geniza/templates/footer.html:67
