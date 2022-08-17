@@ -3,6 +3,8 @@ from unittest.mock import patch
 import pytest
 from django.contrib.humanize.templatetags.humanize import ordinal
 
+from geniza.annotations.models import Annotation
+from geniza.corpus.models import Document
 from geniza.footnotes.models import (
     Creator,
     Footnote,
@@ -258,6 +260,34 @@ class TestFootnote:
         assert not footnote.has_url()
         footnote.url = "http://example.com/"
         assert footnote.has_url()
+
+    def test_content_html(self, annotation, twoauthor_source):
+        # should get each associated annotation's body text, separated by newline
+        manifest_uri = annotation.content["target"]["source"]["partOf"]["id"]
+        source_uri = annotation.content["dc:source"]
+        source = Source.from_uri(source_uri)
+        document = Document.from_manifest_uri(manifest_uri)
+        Annotation.objects.create(
+            content={**annotation.content, "body": [{"value": "Second annotation!"}]}
+        )
+        digital_edition = document.footnotes.create(
+            source=source, doc_relation=[Footnote.DIGITAL_EDITION]
+        )
+        assert digital_edition.content_html.split("\n") == [
+            "Test annotation",
+            "Second annotation!",
+        ]
+
+        # should return None if not a digital edition
+        edition = Footnote.objects.create(
+            source=source, content_object=document, doc_relation=[Footnote.EDITION]
+        )
+        assert edition.content_html is None
+
+        # should return empty string if no annotations with content
+        digital_edition.source = twoauthor_source
+        digital_edition.save()
+        assert digital_edition.content_html == ""
 
 
 class TestFootnoteQuerySet:
