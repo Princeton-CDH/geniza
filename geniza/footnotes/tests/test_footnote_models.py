@@ -214,6 +214,18 @@ class TestSource:
             mock_getattr.return_value = "http://example.com/"
             assert source.uri == f"http://example.com/sources/{source.pk}/"
 
+    def test_from_uri(self, source):
+        # should get a source from its generated URI
+        assert Source.from_uri(source.uri).pk == source.pk
+
+        # should raise error on improperly formatted URI
+        with pytest.raises(ValueError):
+            Source.from_uri("http://example.com/")
+        with pytest.raises(ValueError):
+            Source.from_uri("http://example.com/1")
+        with pytest.raises(Source.DoesNotExist):
+            Source.from_uri("http://example.com/-1/")
+
 
 class TestFootnote:
     @pytest.mark.django_db

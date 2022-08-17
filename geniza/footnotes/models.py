@@ -378,6 +378,7 @@ class Source(models.Model):
     def from_uri(cls, uri):
         """Given a URI for a Source (as used in transcription annotations), return the Source
         object matching the pk"""
+        # TODO: Use resolve() when the json source view exists
         return cls.objects.get(pk=int(uri.split("/")[-2]))
 
 

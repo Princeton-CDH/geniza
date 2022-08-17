@@ -10,7 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.urls import reverse
+from django.urls import Resolver404, reverse
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django.utils.safestring import SafeString
@@ -1013,6 +1013,22 @@ class TestDocument:
             document.request,
             "Error standardizing date: 'first quarter of' is not in list",
         )
+
+    def test_from_manifest_uri(self, document):
+        # should resolve correct manifest URI to Document object
+        resolved_doc = Document.from_manifest_uri(
+            reverse("corpus:document-manifest", kwargs={"pk": document.pk})
+        )
+        assert isinstance(resolved_doc, Document)
+        assert resolved_doc.pk == document.pk
+
+        # should fail on bad URI
+        with pytest.raises(Resolver404):
+            Document.from_manifest_uri(f"http://bad.com/example")
+        with pytest.raises(Resolver404):
+            Document.from_manifest_uri(
+                f"http://bad.com/example/not/{document.pk}/a/manifest/"
+            )
 
 
 def test_document_merge_with(document, join):
