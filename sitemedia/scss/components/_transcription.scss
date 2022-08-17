@@ -420,6 +420,10 @@
         * {
             max-width: none;
         }
+        @include breakpoints.for-tablet-landscape-up {
+            max-width: 640px;
+            padding: 14px 0 0;
+        }
         .img-header {
             display: flex;
             flex-flow: row wrap;
@@ -436,6 +440,7 @@
                 display: inline-block;
                 flex: 1 0 100%;
                 @include breakpoints.for-tablet-landscape-up {
+                    margin: 12px 0;
                     flex: 1 0 auto;
                 }
             }
@@ -598,20 +603,113 @@
                     opacity: 1;
                 }
             }
-        }
-        @include breakpoints.for-tablet-landscape-up {
-            padding: 14px 0 0;
-            max-width: 640px;
-            h3 {
-                margin: 12px 0;
-            }
             img {
-                width: 640px;
-                max-width: 100%; /* say within grid cell */
+                @include breakpoints.for-tablet-landscape-up {
+                    width: 640px;
+                    max-width: 100%; /* say within grid cell */
+                }
+            }
+        }
+        // images that are not included in the document
+        &.excluded {
+            .img-header {
+                margin-left: auto;
+                margin-right: auto;
+                width: 198px;
+                @include breakpoints.for-tablet-landscape-up {
+                    width: 400px;
+                }
+            }
+            .deep-zoom-container {
+                margin-left: auto;
+                margin-right: auto;
+                max-width: 198px;
+                max-height: 268px;
+                img {
+                    max-width: 198px;
+                    max-height: 268px;
+                }
+                @include breakpoints.for-tablet-landscape-up {
+                    max-width: 400px;
+                    max-height: 540px;
+                    img {
+                        max-width: 400px;
+                        max-height: 540px;
+                    }
+                }
+                // 60% white overlay over image
+                &::after {
+                    position: absolute;
+                    content: "";
+                    display: block;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(255, 255, 255, 0.6);
+                }
+                // no need for osd div
+                .osd {
+                    display: none;
+                }
+            }
+        }
+        // related documents, to appear by excluded image(s)
+        .excluded-related {
+            display: flex;
+            flex-flow: column;
+            align-items: flex-end;
+            width: 198px;
+            margin: 31px auto;
+            @include breakpoints.for-tablet-landscape-up {
+                width: 400px;
+                margin: 33px auto;
+            }
+            &:empty {
+                display: none;
+            }
+            a.view-link {
+                margin-top: 0;
+                & > span {
+                    color: var(--link-primary);
+                    border-bottom: 3px solid var(--background-light);
+                    // span inside span = shelfmark
+                    & > span {
+                        @include typography.body-bold;
+                    }
+                }
+                &:hover > span {
+                    border-bottom-color: var(--icon-button);
+                    @include breakpoints.for-tablet-landscape-up {
+                        border-bottom-color: var(--icon-button-hover);
+                    }
+                }
+                &:active > span {
+                    border-bottom-color: var(--icon-button);
+                }
+            }
+        }
+        // top spacing for included after excluded image panel
+        &.excluded + div.transcription-panel + div.img,
+        &.excluded
+            + div.transcription-panel
+            + div.img
+            + div.transcription-panel {
+            padding-top: 30px;
+            @include breakpoints.for-tablet-landscape-up {
+                padding-top: 130px;
+            }
+        }
+        // top spacing for excluded after included image panel
+        &:not(.excluded)
+            + div.transcription-panel:not(.label-row)
+            + div.img.excluded {
+            padding-top: 30px;
+            @include breakpoints.for-tablet-landscape-up {
+                padding-top: 130px;
             }
         }
     }
-
     // transcription panel styles
     .panel-container div.transcription-panel {
         width: 100%;

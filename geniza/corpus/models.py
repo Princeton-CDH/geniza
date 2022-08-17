@@ -30,6 +30,7 @@ from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
 from requests.exceptions import ConnectionError
 from taggit_selectize.managers import TaggableManager
+from unidecode import unidecode
 from urllib3.exceptions import HTTPError, NewConnectionError
 
 from geniza.common.models import TrackChangesModel
@@ -426,6 +427,15 @@ class DocumentSignalHandlers:
         DocumentSignalHandlers.related_change(instance, raw, "delete")
 
 
+class TagSignalHandlers:
+    """Signal handlers for :class:`taggit.Tag` records."""
+
+    @staticmethod
+    def unidecode_tag(sender, instance, **kwargs):
+        """Convert saved tags to ascii, stripping diacritics."""
+        instance.name = unidecode(instance.name)
+
+
 class Document(ModelIndexable, DocumentDateMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
@@ -641,6 +651,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                         "label": labels[i],
                         "canvas": canvases[i],
                         "shelfmark": b.fragment.shelfmark,
+                        "excluded": b.side and i not in b.selected_images,
                     }
                     for i, img in enumerate(images)
                     # include if filter inactive, no images selected, or this image is selected
