@@ -106,6 +106,10 @@ class GenizaTei(teimap.Tei):
         if block_format:
             return blocks
 
+        # otherwise, return chunked HTML
+        return self.chunk_html(blocks)
+
+    def chunk_html(self, blocks):
         # combine blocks of text into html, chunked into pages to match sides of images
         html = []
         page = []
