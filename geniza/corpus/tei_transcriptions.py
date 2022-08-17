@@ -37,12 +37,33 @@ class GenizaTei(teimap.Tei):
     def no_content(self):
         return str(self.text).strip() == ""
 
+    # text that generally indicates a new page/image, anywhere in the label
+    new_page_indicators = [
+        "recto",
+        "verso",
+        "side ii",
+        "page b",
+        "page 2",
+        "ע“ב",  # Hebrew label for page 2
+    ]
+    # text that indicates a new page/image at the start of the label
+    new_page_start_indicators = ["t-s ", "ts ", "ena ", "moss. "]
+
+    def label_indicates_new_page(self, label):
+        label = label.lower()
+        return any(
+            [side_label in label for side_label in self.new_page_indicators]
+        ) or any(
+            label.startswith(start_label)
+            for start_label in self.new_page_start_indicators
+        )
+
     def labels_only(self):
         text_content = str(self.text).strip()
         label_content = " ".join([str(label).strip() for label in self.labels])
         return text_content == label_content
 
-    def text_to_html(self):
+    def text_to_html(self, block_format=False):
         # convert the TEI text content to basic HTML
         blocks = []
         lines = []
@@ -81,6 +102,14 @@ class GenizaTei(teimap.Tei):
                 }
             )
 
+        # if block format requested, return blocks without further processing
+        if block_format:
+            return blocks
+
+        # otherwise, return chunked HTML
+        return self.chunk_html(blocks)
+
+    def chunk_html(self, blocks):
         # combine blocks of text into html, chunked into pages to match sides of images
         html = []
         page = []
@@ -89,24 +118,8 @@ class GenizaTei(teimap.Tei):
             # if there is a label and it looks like a new side,
             # start a new section
             if block["label"]:
-                label = block["label"].lower()
-                if (
-                    any(
-                        [
-                            side_label in label
-                            for side_label in [
-                                "recto",
-                                "verso",
-                                "side ii",
-                                "page b",
-                                "page 2",
-                            ]
-                        ]
-                    )
-                    or label.startswith("t-s ")
-                    or label.startswith("ts ")
-                ):
-                    # if we have any content, close the previous sect ion
+                if self.label_indicates_new_page(block["label"]):
+                    # if we have any content, close the previous section
                     if page:
                         # combine all sections in the page and add to the html
                         html.append("\n".join(page))

@@ -226,66 +226,7 @@ section#document-list {
             }
         }
     }
-    // "view document details" link
-    a.view-link {
-        display: flex;
-        flex: 1 0 100%;
-        width: max-content;
-        height: 1.75rem;
-        margin-left: auto;
-        margin-top: spacing.$spacing-md;
-        justify-content: flex-end;
-        z-index: 3;
-        span {
-            display: flex;
-            flex: 0 1 auto;
-            align-items: center;
-            @include typography.meta;
-            border-bottom: 3px solid var(--background);
-            color: var(--icon-button);
-        }
-        // focus styles
-        &:focus span {
-            outline: 0.125rem solid var(--focus);
-            outline-offset: 0.66rem;
-        }
-        // hover and active styles
-        &:hover span,
-        &:active span {
-            outline: none; // keeping focus and hover/active styles distinct
-        }
-        &:hover span {
-            border-bottom-color: var(--icon-button);
-            @include breakpoints.for-tablet-landscape-up {
-                border-bottom-color: var(--icon-button-hover);
-            }
-        }
-        &:active span {
-            color: var(--icon-button-active);
-            border-bottom-color: var(--icon-button);
-        }
-        // icon to the right
-        span:after {
-            font-family: "Phosphor" !important;
-            content: "\f044"; // phosphor arrow-right icon
-            margin-left: spacing.$spacing-2xs;
-            font-size: typography.$text-size-xl;
-            @include breakpoints.for-tablet-landscape-up {
-                margin-left: spacing.$spacing-sm;
-                font-size: typography.$text-size-2xl;
-            }
-        }
 
-        /* make the whole result block clickable */
-        &:before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-    }
     /* raise tags & text over clickable pseudo content to allow selection */
     .description,
     .transcription,
@@ -293,6 +234,66 @@ section#document-list {
     .tags {
         position: relative;
         z-index: 4;
+    }
+    /* make the whole result block clickable */
+    a.view-link:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+// "view document details" link
+a.view-link {
+    display: flex;
+    flex: 1 0 100%;
+    width: max-content;
+    height: 1.75rem;
+    margin-left: auto;
+    margin-top: spacing.$spacing-md;
+    justify-content: flex-end;
+    z-index: 3;
+    & > span {
+        display: flex;
+        flex: 0 1 auto;
+        align-items: center;
+        @include typography.meta;
+        border-bottom: 3px solid var(--background);
+        color: var(--icon-button);
+    }
+    // focus styles
+    &:focus > span {
+        outline: 0.125rem solid var(--focus);
+        outline-offset: 0.66rem;
+    }
+    // hover and active styles
+    &:hover > span,
+    &:active > span {
+        outline: none; // keeping focus and hover/active styles distinct
+    }
+    &:hover > span {
+        border-bottom-color: var(--icon-button);
+        @include breakpoints.for-tablet-landscape-up {
+            border-bottom-color: var(--icon-button-hover);
+        }
+    }
+    &:active > span {
+        color: var(--icon-button-active);
+        border-bottom-color: var(--icon-button);
+    }
+    // icon to the right
+    & > span:after {
+        font-family: "Phosphor" !important;
+        content: "\f044"; // phosphor arrow-right icon
+        margin-left: spacing.$spacing-2xs;
+        font-size: typography.$text-size-xl;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-left: spacing.$spacing-sm;
+            font-size: typography.$text-size-2xl;
+        }
     }
 }
 
