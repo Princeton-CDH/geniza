@@ -1,5 +1,9 @@
 # Deploy Notes
 
+## 4.7.0
+
+-   A tags migration in this release requires updating the Solr index. Run `python manage.py index` to reindex all content.
+
 ## 4.6.0
 
 -   Run `python manage.py sync_transcriptions` to migrate transcription content to the new paged/chunked format needed for the new image+transcription panel. Any transcriptions that are not synced correctly should be edited on the footnote in Django Admin as needed.

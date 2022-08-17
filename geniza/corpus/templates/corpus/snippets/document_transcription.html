@@ -68,15 +68,18 @@ Also doesn't currently account for fragments without images.
         {% if document.iiif_urls %}
             {# if we have images, loop based on them #}
             {% for image_info in document.iiif_images %}
-                <div class="img" id="{{ image_info.label }}" data-controller="{% if edit_mode %}annotation{% else %}iiif{% endif %}" data-iiif-url="{{ image_info.image.info }}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer">
+                {# only images that are part of the current document are zoomable #}
+                <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="{% if edit_mode %}annotation{% else %}iiif{% endif %}" data-iiif-url="{{ image_info.image.info }}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
                     <div class="img-header" data-iiif-target="imageHeader" data-annotation-target="imageHeader">
                         <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
-                        <input data-iiif-target="zoomSlider" data-annotation-target="zoomSlider" data-action="iiif#handleDeepZoom annotation#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
-                        <label data-iiif-target="zoomSliderLabel" data-annotation-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
-                        <input data-iiif-target="zoomToggle" data-annotation-target="zoomToggle" data-action="iiif#handleDeepZoom annotation#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
-                        <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
-                        <div id="rotation-{{ forloop.counter0 }}" class="rotation" data-iiif-target="rotation" data-annotation-target="rotation" data-action="input->iiif#handleDeepZoom change->iiif#handleDeepZoom"></div>
-                        <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel" data-annotation-target="rotationLabel">0&deg;</label>
+                        {% if not image_info.excluded %}
+                            <input data-iiif-target="zoomSlider" data-annotation-target="zoomSlider" data-action="iiif#handleDeepZoom annotation#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
+                            <label data-iiif-target="zoomSliderLabel" data-annotation-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
+                            <input data-iiif-target="zoomToggle" data-annotation-target="zoomToggle" data-action="iiif#handleDeepZoom annotation#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
+                            <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
+                            <div id="rotation-{{ forloop.counter0 }}" class="rotation" data-iiif-target="rotation" data-annotation-target="rotation" data-action="input->iiif#handleDeepZoom change->iiif#handleDeepZoom"></div>
+                            <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel" data-annotation-target="rotationLabel">0&deg;</label>
+                        {% endif %}
                     </div>
                     <div class="deep-zoom-container">
                         <img class="iiif-image" data-iiif-target="image" data-annotation-target="image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
@@ -87,6 +90,23 @@ Also doesn't currently account for fragments without images.
                             {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
                         <div class="osd" data-iiif-target="osd" data-annotation-target="osd" data-iiif-url="{{ image_info.image.info }}"></div>
                     </div>
+                    {% if image_info.excluded %}
+                        {# if this image isn't actually in this document, link to related documents #}
+                        {% spaceless %}
+                            <ul class="excluded-related">
+                                {% for related in related_documents %}
+                                    {% if image_info.image|stringformat:"s" in related.images %}
+                                        <li><a class="view-link" href="{% url 'corpus:document' related.document.pgpid %}">
+                                            {# translators: link to view a related document #}
+                                            {% blocktranslate with type=related.document.type shelfmark=related.document.shelfmark|shelfmark_wrap trimmed %}
+                                                <span>View {{ type }}:&nbsp;{{ shelfmark }}</span>
+                                            {% endblocktranslate %}
+                                        </a></li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% endspaceless %}
+                    {% endif %}
                 </div>
                 <div class="transcription-panel">
                     {% if edit_mode %}
@@ -105,18 +125,20 @@ Also doesn't currently account for fragments without images.
                                 {{ document.digital_editions.0.source.formatted_display|safe }}
                             </span>
                         {% endif %}
-                        <div class="editions">
-                            {# display transcription in chunks by index #}
-                            {% for edition in document.digital_editions.all %}
-                                <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                    {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
-                                </div>
-                            {% endfor %}
-                        </div>
+                        {% if not image_info.excluded %}
+                            <div class="editions">
+                                {# display transcription in chunks by index #}
+                                {% for edition in document.digital_editions.all %}
+                                    <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
+                                        {{ edition.content.html|dict_item:image_info.canvas|default:""|h1_to_h3|safe }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             {% endfor %}
-        {% elif document.has_transcription %}
+        {% else %}
             {# if there are no images, loop based on the transcription chunks instead #}
             {% for chunk in document.digital_editions.0.content.html %}
                 <div class="img"></div> {# empty image div needed for grid layout #}
@@ -130,9 +152,13 @@ Also doesn't currently account for fragments without images.
                     <div class="editions">
                         {# display transcription in chunks based on loop index #}
                         {% for edition in document.digital_editions.all %}
-                            <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                {{ edition.content.html|index:forloop.parentloop.counter0|h1_to_h3|safe }}
-                            </div>
+                            {% for edition_chunk in edition.content.html.values %}
+                                {% if forloop.counter0 == forloop.parentloop.parentloop.counter0 %}
+                                    <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
+                                        {{ edition_chunk|h1_to_h3|safe }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         {% endfor %}
                     </div>
                 </div>

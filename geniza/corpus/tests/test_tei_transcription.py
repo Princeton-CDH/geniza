@@ -44,11 +44,27 @@ def test_labels_only():
     assert tei.labels_only()
 
 
+def test_block_format():
+    tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
+    blocks = tei.text_to_html(block_format=True)
+
+    # should be a list of three items (three sets of lines separated by <label> elements)
+    assert len(blocks) == 3
+
+    # second element in list should have "Right Margin" label and 8 lines
+    assert blocks[1]["label"] == "Right Margin"
+    assert len(blocks[1]["lines"]) == 8
+
+    # should use empty string for missing line number
+    assert blocks[1]["lines"][5][0] == "6"
+    assert blocks[1]["lines"][6][0] == ""
+
+
 def test_html():
     tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
     html = tei.text_to_html()
 
-    # should be a list with two items
+    # should be a list with two items (two pages)
     assert len(html) == 2
 
     # first page should have two labels and text content

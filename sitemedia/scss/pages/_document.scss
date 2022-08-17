@@ -133,6 +133,14 @@ main.document {
             max-width: none;
             padding: 0 10rem;
         }
+        // extra style for hiding the theme toggle on desktop only
+        @include breakpoints.for-desktop-up {
+            z-index: 3;
+            background-color: var(--background);
+            margin-top: 0;
+            margin-bottom: -120px;
+            padding: 53px 10rem 120px;
+        }
         // hanging "link" phosphor icon before permalink label
         dt#permalink {
             display: flex;
