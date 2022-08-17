@@ -690,7 +690,11 @@
             }
         }
         // top spacing for included after excluded image panel
-        &.excluded + div.transcription-panel + div.img {
+        &.excluded + div.transcription-panel + div.img,
+        &.excluded
+            + div.transcription-panel
+            + div.img
+            + div.transcription-panel {
             padding-top: 30px;
             @include breakpoints.for-tablet-landscape-up {
                 padding-top: 130px;
