@@ -643,6 +643,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                         "label": labels[i],
                         "canvas": canvases[i],
                         "shelfmark": b.fragment.shelfmark,
+                        "excluded": b.side and i not in b.selected_images,
                     }
                     for i, img in enumerate(images)
                     # include if filter inactive, no images selected, or this image is selected
