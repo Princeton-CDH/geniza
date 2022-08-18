@@ -57,3 +57,18 @@ def custom_tag_string(tag_string):
     if "," not in tag_string:
         tag_string += ","
     return _parse_tags(unidecode(tag_string))
+
+
+# generate translation tables
+smart_quote_conversion = str.maketrans(
+    {
+        "’": "'",
+        "‘": "'",
+        "”": '"',
+        "“": '"',
+    }
+)
+
+
+def simplify_quotes(text):
+    return text.translate(smart_quote_conversion)
