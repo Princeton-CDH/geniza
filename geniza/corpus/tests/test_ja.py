@@ -32,3 +32,9 @@ def test_arabic_or_ja__arabic():
     assert arabic_or_ja("دينار مصحف") == "(دينار|דינאר) (مصحف|מצחף)"
     # mixed english and arabic
     assert arabic_or_ja("help مصحف") == "help (مصحف|מצחף)"
+
+
+def test_arabic_or_ja_exact_phrase():
+    assert arabic_or_ja('"تعطل شغله"') == '"(تعطل|תעטל) (شغله|שגלה)"'
+    # proximity
+    assert arabic_or_ja('"تعطل شغله"~10') == '"(تعطل|תעטל) (شغله|שגלה)"~10'
