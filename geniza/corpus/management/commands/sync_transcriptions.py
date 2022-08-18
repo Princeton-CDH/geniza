@@ -18,9 +18,11 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
 from django.db import models
+from django.urls import reverse
 from eulxml import xmlmap
 from git import Repo
 
+from geniza.common.utils import absolutize_url
 from geniza.corpus.models import Document
 from geniza.corpus.tei_transcriptions import GenizaTei
 from geniza.footnotes.models import Footnote, Source
@@ -67,6 +69,13 @@ class Command(BaseCommand):
         self.stats["duplicate_footnote"] = 0
         # updates should not happen after initial sync when there are no TEI changes
         self.stats["footnote_updated"] = 0
+        # empty tei may not happen when running on a subset
+        self.stats["empty_tei"] = 0
+        self.stats["document_not_found"] = 0
+        self.stats["joins"] = 0
+        self.stats["no_edition"] = 0
+        self.stats["one_edition"] = 0
+        self.stats["multiple_editions_with_content"] = 0
         # keep track of document ids with multiple digitized editions (likely merged records/joins)
         self.multiedition_docs = set()
 
@@ -110,25 +119,52 @@ class Command(BaseCommand):
                 else:
                     self.footnotes_updated[footnote.pk].append(xmlfile)
 
-                    html = tei.text_to_html()
+                    # convert into html, return in a list of blocks per inferred page/image
+                    html_pages = tei.text_to_html()
                     text = tei.text_to_plaintext()
-                    if html:
-                        footnote.content = {"html": html, "text": text}
-                        if footnote.has_changed("content"):
 
-                            # don't actually save in --noact mode
-                            if not self.noact_mode:
-                                footnote.save()
-                                # create a log entry to document the change
-                                self.log_footnote_update(
-                                    footnote, os.path.basename(xmlfile)
-                                )
-
-                            # count as a change whether in no-act mode or not
-                            self.stats["footnote_updated"] += 1
-                    else:
+                    # if no html was generated, stop processing
+                    if not html_pages:
                         if self.verbosity >= self.v_normal:
                             self.stderr.write("No html generated for %s" % doc.id)
+                        continue
+
+                    html = {}
+                    # assign each page of html to a canvas based on sequence,
+                    # skipping any non-document images
+                    for i, image in enumerate(doc.iiif_images(filter_side=True)):
+                        # stop iterating through images when we run out of pages
+                        if not html_pages:
+                            break
+                        # pop the first page of html off the list
+                        # and assign to the image canvas uri
+                        html[image["canvas"]] = html_pages.pop(0)
+
+                    # if there are any html pages left
+                    # (either document does not have any iiif images, or not all images)
+                    # generate local canvas uris and attach transcription content
+                    if html_pages:
+                        # document manifest url is /documents/pgpid/iiif/manifest/
+                        # create canvas uris parallel to that
+                        canvas_base_uri = "%siiif/canvas/" % doc.permalink
+                        # iterate through any remaining pages and assign to local canvas uris
+                        for i, html_chunk in enumerate(html_pages):
+                            canvas_uri = "%s%d/" % (canvas_base_uri, i)
+                            html[canvas_uri] = html_chunk
+
+                    footnote.content = {"html": html, "text": text}
+                    if footnote.has_changed("content"):
+
+                        # don't actually save in --noact mode
+                        if not self.noact_mode:
+                            footnote.save()
+                            # create a log entry to document the change
+                            self.log_footnote_update(
+                                footnote, os.path.basename(xmlfile)
+                            )
+
+                        # count as a change whether in no-act mode or not
+                        self.stats["footnote_updated"] += 1
 
             # NOTE: in *one* case there is a TEI file with translation content and
             # no transcription; will get reported as empty, but that's ok — it's out of scope

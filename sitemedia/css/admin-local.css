@@ -223,6 +223,9 @@ a#needsreview:target {
 }
 
 /* selected side thumbnail for fragment admin */
-img.selected {
+#textblock_set-group td.field-thumbnail img {
+    cursor: pointer;
+}
+#textblock_set-group td.field-thumbnail img.selected {
     border: 5px solid var(--accent);
 }

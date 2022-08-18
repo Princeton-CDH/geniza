@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-04-25 12:59-0400\n"
-"PO-Revision-Date: 2022-03-28 22:11\n"
+"PO-Revision-Date: 2022-08-01 14:25\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
 "Language: en_US\n"
@@ -200,8 +200,7 @@ msgstr "Input date"
 #. Translators: Date document was first added to the PGP
 #: geniza/corpus/templates/corpus/document_detail.html:130
 #, python-format
-msgid ""
-"\n"
+msgid "\n"
 "                In PGP since %(date)s\n"
 "            "
 msgstr ""
@@ -426,16 +425,12 @@ msgid "Discussion"
 msgstr ""
 
 #: geniza/pages/models.py:13
-msgid ""
-"Alternative text for visually impaired users to\n"
+msgid "Alternative text for visually impaired users to\n"
 "briefly communicate the intended message of the image in this context."
 msgstr ""
 
 #: geniza/pages/models.py:44
-msgid ""
-"This text will only be read to     non-sighted users and should describe the "
-"major insights or     takeaways from the graphic. Multiple paragraphs are "
-"allowed."
+msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
 msgstr ""
 
 #. Translators: title for Not Found (404) error page
@@ -567,3 +562,4 @@ msgstr ""
 #: geniza/templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
 msgstr ""
+

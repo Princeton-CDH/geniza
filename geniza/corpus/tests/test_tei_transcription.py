@@ -44,11 +44,27 @@ def test_labels_only():
     assert tei.labels_only()
 
 
+def test_block_format():
+    tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
+    blocks = tei.text_to_html(block_format=True)
+
+    # should be a list of three items (three sets of lines separated by <label> elements)
+    assert len(blocks) == 3
+
+    # second element in list should have "Right Margin" label and 8 lines
+    assert blocks[1]["label"] == "Right Margin"
+    assert len(blocks[1]["lines"]) == 8
+
+    # should use empty string for missing line number
+    assert blocks[1]["lines"][5][0] == "6"
+    assert blocks[1]["lines"][6][0] == ""
+
+
 def test_html():
     tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
     html = tei.text_to_html()
 
-    # should be a list with two items
+    # should be a list with two items (two pages)
     assert len(html) == 2
 
     # first page should have two labels and text content
@@ -106,3 +122,13 @@ def test_text_to_plaintext_longlines():
     # line is slightly more than 100 because of ltr/rtl marks & line number
     # but should NOT be padded to match the superlongline
     assert len(plaintext_lines[1]) < 110
+
+
+def test_label_indicates_new_page():
+    tei = GenizaTei()
+    assert tei.label_indicates_new_page("recto a") is True
+    assert tei.label_indicates_new_page("on verso") is True
+    assert tei.label_indicates_new_page("T-S ...") is True
+    assert tei.label_indicates_new_page("ENA # ...") is True
+    assert tei.label_indicates_new_page('ע"ב') is True
+    assert tei.label_indicates_new_page("ע“ב") is True

@@ -26,7 +26,7 @@ $text-size-5xl: 2rem; //     = 32px
     font-weight: bold;
     font-size: $text-size-3xl;
     line-height: 1.5;
-    @include breakpoints.for-desktop-up {
+    @include breakpoints.for-tablet-landscape-up {
         font-size: $text-size-4xl;
         line-height: 1.4285;
     }
@@ -37,7 +37,7 @@ $text-size-5xl: 2rem; //     = 32px
     font-family: fonts.$primary-bold;
     font-weight: bold;
     font-size: $text-size-xl;
-    @include breakpoints.for-desktop-up {
+    @include breakpoints.for-tablet-landscape-up {
         font-size: $text-size-3xl;
     }
     line-height: 1.5;
@@ -48,7 +48,7 @@ $text-size-5xl: 2rem; //     = 32px
     font-family: fonts.$primary-bold;
     font-weight: bold;
     font-size: $text-size-md;
-    @include breakpoints.for-desktop-up {
+    @include breakpoints.for-tablet-landscape-up {
         font-size: $text-size-xl;
     }
     line-height: 1.5;
@@ -59,7 +59,7 @@ $text-size-5xl: 2rem; //     = 32px
     font-family: fonts.$primary-bold;
     font-weight: bold;
     font-size: $text-size-lg;
-    @include breakpoints.for-desktop-up {
+    @include breakpoints.for-tablet-landscape-up {
         font-size: $text-size-xl;
     }
     line-height: 1.5;
@@ -204,7 +204,7 @@ $text-size-5xl: 2rem; //     = 32px
 @mixin transcription {
     font-family: fonts.$primary;
     font-size: $text-size-lg;
-    @include breakpoints.for-desktop-up {
+    @include breakpoints.for-tablet-landscape-up {
         font-size: $text-size-xl;
     }
     line-height: 1.4;
@@ -257,7 +257,7 @@ $text-size-5xl: 2rem; //     = 32px
 // Mobile nav menu uses big type
 @mixin mobile-menu {
     font-size: $text-size-2xl;
-    @include breakpoints.for-desktop-up {
+    @include breakpoints.for-tablet-landscape-up {
         font-size: $text-size-lg;
     }
 }
@@ -292,7 +292,7 @@ $text-size-5xl: 2rem; //     = 32px
     font-weight: normal;
     font-size: $text-size-md;
     line-height: 1.5;
-    @include breakpoints.for-desktop-up {
+    @include breakpoints.for-tablet-landscape-up {
         font-size: $text-size-lg;
         line-height: 1.388;
     }

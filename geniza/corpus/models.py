@@ -29,6 +29,7 @@ from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
 from requests.exceptions import ConnectionError
 from taggit_selectize.managers import TaggableManager
+from unidecode import unidecode
 from urllib3.exceptions import HTTPError, NewConnectionError
 
 from geniza.common.models import TrackChangesModel
@@ -222,11 +223,13 @@ class Fragment(TrackChangesModel):
             return None
         images = []
         labels = []
+        canvases = []
         # use images from locally cached manifest if possible
         if self.manifest:
             for canvas in self.manifest.canvases.all():
                 images.append(canvas.image)
                 labels.append(canvas.label)
+                canvases.append(canvas.uri)
 
         # if not cached, load from remote url
         else:
@@ -237,19 +240,20 @@ class Fragment(TrackChangesModel):
                     images.append(IIIFImageClient(*image_id.rsplit("/", 1)))
                     # label provides library's recto/verso designation
                     labels.append(canvas.label)
+                    canvases.append(canvas.uri)
             except (IIIFException, ConnectionError, HTTPError):
                 logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
 
-        return images, labels
+        return images, labels, canvases
 
-    def iiif_thumbnails(self, indices=[]):
+    def iiif_thumbnails(self, selected=[]):
         """html for thumbnails of iiif image, for display in admin"""
         # if there are no iiif images for this fragment, bail out
         iiif_images = self.iiif_images()
         if iiif_images is None:
             return ""
 
-        images, labels = iiif_images
+        images, labels, _ = iiif_images
         return mark_safe(
             " ".join(
                 # include label as title for now
@@ -257,7 +261,7 @@ class Fragment(TrackChangesModel):
                 % (
                     img.size(height=200),
                     labels[i],
-                    'class="selected" /' if i in indices else "/",
+                    'class="selected" /' if i in selected else "/",
                 )
                 for i, img in enumerate(images)
             )
@@ -420,6 +424,15 @@ class DocumentSignalHandlers:
         """reindex associated documents when a related object is deleted"""
         # delegate to common method
         DocumentSignalHandlers.related_change(instance, raw, "delete")
+
+
+class TagSignalHandlers:
+    """Signal handlers for :class:`taggit.Tag` records."""
+
+    @staticmethod
+    def unidecode_tag(sender, instance, **kwargs):
+        """Convert saved tags to ascii, stripping diacritics."""
+        instance.name = unidecode(instance.name)
 
 
 class Document(ModelIndexable, DocumentDateMixin):
@@ -623,16 +636,20 @@ class Document(ModelIndexable, DocumentDateMixin):
         for b in self.textblock_set.all():
             frag_images = b.fragment.iiif_images()
             if frag_images is not None:
-                images, labels = frag_images
+                images, labels, canvases = frag_images
                 iiif_images += [
                     {
                         "image": img,
                         "label": labels[i],
+                        "canvas": canvases[i],
                         "shelfmark": b.fragment.shelfmark,
+                        "excluded": b.side and i not in b.selected_images,
                     }
                     for i, img in enumerate(images)
-                    # include if filter inactive, tb has no side info, or index in tb indices
-                    if not filter_side or not b.side or i in b.image_indices
+                    # include if filter inactive, no images selected, or this image is selected
+                    if not filter_side
+                    or not len(b.selected_images)
+                    or i in b.selected_images
                 ]
 
         return iiif_images
@@ -1099,15 +1116,15 @@ class TextBlock(models.Model):
             + "Uncheck this box if you are uncertain of a potential join."
         ),
     )
-    RECTO = "r"
-    VERSO = "v"
-    RECTO_VERSO = "rv"
-    RECTO_VERSO_CHOICES = [
-        (RECTO, "recto"),
-        (VERSO, "verso"),
-        (RECTO_VERSO, "recto and verso"),
-    ]
-    side = models.CharField(blank=True, max_length=5, choices=RECTO_VERSO_CHOICES)
+    RECTO = "recto"
+    VERSO = "verso"
+    RECTO_VERSO = "recto and verso"
+    selected_images = ArrayField(
+        models.IntegerField(),
+        default=list,
+        blank=True,
+        verbose_name="Selected image indices",
+    )
     region = models.CharField(
         blank=True,
         max_length=255,
@@ -1135,26 +1152,26 @@ class TextBlock(models.Model):
         parts = [
             self.fragment.shelfmark,
             self.multifragment,
-            self.get_side_display(),
+            self.side,
             self.region,
             certainty_str,
         ]
         return " ".join(p for p in parts if p)
 
     @property
-    def image_indices(self):
-        """indices, in a list of IIIF images, corresponding to this TextBlock's side"""
-        sides = []
-        if self.side in [TextBlock.RECTO, TextBlock.RECTO_VERSO]:
-            # assume first image is recto
-            sides.append(0)
-        if self.side in [TextBlock.VERSO, TextBlock.RECTO_VERSO]:
-            # assume second image is verso
-            sides.append(1)
-        return sides
+    def side(self):
+        """Recto/verso side information based on selected image indices"""
+        if len(self.selected_images) == 1:
+            if self.selected_images[0] == 0:
+                return self.RECTO
+            elif self.selected_images[0] == 1:
+                return self.VERSO
+        elif len(self.selected_images) == 2 and all(
+            i in self.selected_images for i in [0, 1]
+        ):
+            return self.RECTO_VERSO
+        return ""
 
     def thumbnail(self):
-        """iiif thumbnails for this TextBlock"""
-
-        # pass image_indices to ensure only this TextBlock's side(s) are shown as selected
-        return self.fragment.iiif_thumbnails(indices=self.image_indices)
+        """iiif thumbnails for this TextBlock, with selected images highlighted"""
+        return self.fragment.iiif_thumbnails(selected=self.selected_images)

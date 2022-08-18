@@ -126,6 +126,19 @@ class TestDocumentSearchForm:
         form.clean()
         assert len(form.errors) == 0
 
+    def test_clean_q(self):
+        form = DocumentSearchForm()
+        form.cleaned_data = {}
+        # no error if keyword not set
+        assert form.clean_q() is None
+        # empty string should also be ok
+        form.cleaned_data["q"] = ""
+        assert form.clean_q() == ""
+
+        # exact phrase with curly quotes
+        form.cleaned_data["q"] = "“awaiting description”"
+        assert form.clean_q() == '"awaiting description"'
+
     def test_filters_active(self):
         # no filters should return false
         form = DocumentSearchForm(data={"q": "test", "sort": "scholarship_desc"})

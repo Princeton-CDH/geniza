@@ -305,6 +305,19 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "page_type": "document",
                 # preload transcription font when appropriate
                 "page_includes_transcriptions": self.object.has_transcription(),
+                # generate list of related documents that can be filtered by image url for links on excluded images
+                "related_documents": [
+                    {
+                        "document": doc,
+                        "images": [
+                            str(image[0]) for image in doc.get("iiif_images", [])
+                        ],
+                    }
+                    for doc in self.get_object().related_documents
+                ]
+                # skip solr query if none of the associated TextBlocks have side info
+                if any([tb.side for tb in self.get_object().textblock_set.all()])
+                else [],
             }
         )
         return context_data
@@ -689,7 +702,7 @@ def old_pgp_tabulate_data(queryset):
             library,  # library / collection
             primary_fragment.shelfmark,  # shelfmark
             primary_fragment.old_shelfmarks,  # shelfmark_alt
-            doc.textblock_set.first().get_side_display(),  # recto_verso
+            doc.textblock_set.first().side,  # recto_verso
             doc.doctype,  # document type
             " ".join("#" + t.name for t in doc.tags.all()),  # tags
             join_shelfmark if " + " in join_shelfmark else "",  # join

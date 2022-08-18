@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 from parasolr.django.indexing import ModelIndexable
+from taggit.models import Tag
 
 from geniza.corpus.models import (
     Document,
@@ -84,3 +85,10 @@ def test_related_delete(mock_indexitems, document, join):
     assert mock_indexitems.call_count == 1
     assert document in mock_indexitems.call_args[0][0]
     assert join not in mock_indexitems.call_args[0][0]
+
+
+@pytest.mark.django_db
+def test_unidecode_tags():
+    # pre_save signal should strip diacritics from tag and convert to ASCII
+    tag = Tag.objects.create(name="mu'ālim", slug="mualim")
+    assert tag.name == "mu'alim"

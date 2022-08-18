@@ -44,6 +44,10 @@ footer {
         flex-flow: row wrap;
         justify-content: space-between;
     }
+    // extra style for hiding the theme toggle on desktop only
+    @include breakpoints.for-desktop-up {
+        z-index: 4;
+    }
 
     // footer site navigation (mobile)
     nav#footer-nav {
