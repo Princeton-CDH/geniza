@@ -14,7 +14,7 @@ Includes new document "excluded images" display, as well as tagging improvements
     - As a content editor I want to select images in the related fragment view in order to determine which images belong with the document.
     - As a content editor, when I search for tags to add to a document I want the search to ignore case so that I don't create variations of the same tag.
     - As a content editor, I want to be able to search for tags with or without diacritics and get the same results.
-    - refined logic for identifying transcription chunks that indicate new image for `sync_transcriptions` script
+    - refined logic for identifying transcription chunks that indicate new image for ``sync_transcriptions`` script
 
 - visual design
     - Implement the light/dark mode toggle so that users can use the site in the UI mode they prefer.
