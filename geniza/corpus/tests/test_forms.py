@@ -130,7 +130,11 @@ class TestDocumentSearchForm:
         form = DocumentSearchForm()
         form.cleaned_data = {}
         # no error if keyword not set
-        assert not form.clean_q()
+        assert form.clean_q() is None
+        # empty string should also be ok
+        form.cleaned_data["q"] = ""
+        assert form.clean_q() == ""
+
         # exact phrase with curly quotes
         form.cleaned_data["q"] = "“awaiting description”"
         assert form.clean_q() == '"awaiting description"'

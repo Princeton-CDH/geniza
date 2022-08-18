@@ -258,10 +258,12 @@ class DocumentSearchForm(RangeForm):
                 self.fields[formfield].populate_from_facets(facet_dict)
 
     def clean_q(self):
+        """Clean keyword search query term; converts any typographic
+        quotes to straight quotes"""
         query = self.cleaned_data.get("q")
         if query:
             return simplify_quotes(query)
-        return query
+        return query  # return since could be None or empty string
 
     def clean(self):
         """Validate form"""

@@ -59,7 +59,7 @@ def custom_tag_string(tag_string):
     return _parse_tags(unidecode(tag_string))
 
 
-# generate translation tables
+# translation table for curly/typograghic single and double quotes
 smart_quote_conversion = str.maketrans(
     {
         "’": "'",
