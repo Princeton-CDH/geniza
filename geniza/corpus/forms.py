@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from geniza.common.fields import RangeField, RangeForm, RangeWidget
+from geniza.common.utils import simplify_quotes
 from geniza.corpus.models import Document
 
 
@@ -255,6 +256,14 @@ class DocumentSearchForm(RangeForm):
             # for each facet, set the corresponding choice field
             if formfield in self.fields:
                 self.fields[formfield].populate_from_facets(facet_dict)
+
+    def clean_q(self):
+        """Clean keyword search query term; converts any typographic
+        quotes to straight quotes"""
+        query = self.cleaned_data.get("q")
+        if query:
+            return simplify_quotes(query)
+        return query  # return since could be None or empty string
 
     def clean(self):
         """Validate form"""
