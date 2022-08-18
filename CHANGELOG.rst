@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+4.7
+---
+
+Includes new document "excluded images" display, as well as a new transcription editor and tagging improvements for content editors.
+
+- public site
+    - As a user viewing document details I want to see which images are not part of the document so that I understand which parts of the fragment are used for the current document.
+    - As a user looking at images for a single document, I want easy access to documents on images from the same fragment that are not part of the current document.
+
+- content/data admin
+    - As a content editor, I want to add block-level transcription to documents with images so that I can make existing transcription content available in the site.
+    - As a content editor, I want to add and edit transcriptions on a separate page from the document detail or admin edit form, so that permissions and saving just the transcription can be managed more easily.
+    - As a content editor I want to select images in the related fragment view in order to determine which images belong with the document.
+    - As a content editor I want to use basic formatting in transcription content so that I can enter lines as numbered lists or tag when the language changes within a document.
+    - As a content editor, when I search for tags to add to a document I want the search to ignore case so that I don't create variations of the same tag.
+    - As a content editor, I want to be able to search for tags with or without diacritics and get the same results.
+    - chore: update transcription editor to use new image+transcription panel viewer
+    - chore: implement Annotorious plugin for side-by-side transcription editing
+    - chore: implement a w3c annotation server to store transcription data
+    - chore: refine logic for identifying transcription chunks that indicate new image
+
+- visual design
+    - Implement the light/dark mode toggle so that users can use the site in the UI mode they prefer.
+
 4.6
 ---
 
