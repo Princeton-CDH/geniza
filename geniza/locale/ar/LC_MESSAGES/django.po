@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-04-25 12:59-0400\n"
-"PO-Revision-Date: 2022-08-21 02:23\n"
+"PO-Revision-Date: 2022-08-21 03:31\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -147,14 +147,14 @@ msgstr "نوع غير معروف"
 #: geniza/corpus/templates/admin/corpus/app_index.html:9
 #: geniza/templates/footer.html:12
 msgid "Home"
-msgstr "المنزل"
+msgstr "الصفحة الرئيسية"
 
 #. Translators: Editor label
 #: geniza/corpus/templates/corpus/document_detail.html:17
 #: geniza/corpus/templates/corpus/document_detail.html:58
 msgid "Editor"
 msgid_plural "Editors"
-msgstr[0] "المحررون"
+msgstr[0] "المحرر"
 msgstr[1] "محرر"
 msgstr[2] "المحررون"
 msgstr[3] "المحررون"
@@ -168,7 +168,7 @@ msgstr "بيانات التعريف"
 
 #: geniza/corpus/templates/corpus/document_detail.html:53
 msgid "Shelfmark"
-msgstr "الشرف"
+msgstr "علامة"
 
 #. Translators: label for date of this document, if known
 #: geniza/corpus/templates/corpus/document_detail.html:77
@@ -179,7 +179,7 @@ msgstr "تاريخ الوثيقة"
 #: geniza/corpus/templates/corpus/document_detail.html:88
 msgid "Primary Language"
 msgid_plural "Primary Languages"
-msgstr[0] "اللغات الأساسية"
+msgstr[0] "اللغة الأساسية"
 msgstr[1] "اللغة الأساسية"
 msgstr[2] "اللغات الأساسية"
 msgstr[3] "اللغات الأساسية"
@@ -190,7 +190,7 @@ msgstr[5] "اللغات الأساسية"
 #: geniza/corpus/templates/corpus/document_detail.html:101
 msgid "Secondary Language"
 msgid_plural "Secondary Languages"
-msgstr[0] "اللغات الثانوية"
+msgstr[0] "اللغة الثانوية"
 msgstr[1] "اللغة الثانوية"
 msgstr[2] "اللغات الثانوية"
 msgstr[3] "اللغات الثانوية"
@@ -201,7 +201,7 @@ msgstr[5] "اللغات الثانوية"
 #: geniza/corpus/templates/corpus/document_detail.html:117
 #: geniza/corpus/templates/corpus/snippets/document_result.html:93
 msgid "Tags"
-msgstr "الوسوم"
+msgstr "العلامات"
 
 #. Translators: Label for date document was first added to the PGP
 #: geniza/corpus/templates/corpus/document_detail.html:128
@@ -228,7 +228,7 @@ msgstr "الوصف"
 #: geniza/corpus/templates/corpus/document_detail.html:160
 msgid "Other documents on this shelfmark"
 msgid_plural "Other documents on these shelfmarks"
-msgstr[0] "مستندات أخرى على هذه العلامة الرفية"
+msgstr[0] "مستندات أخرى على هذه العلامة"
 msgstr[1] ""
 msgstr[2] ""
 msgstr[3] ""
@@ -248,7 +248,7 @@ msgstr "إرسال البحث"
 #: geniza/corpus/templates/corpus/document_list.html:19
 #: geniza/corpus/templates/corpus/document_list.html:30
 msgid "Filters"
-msgstr "فلاتر"
+msgstr "عوامل التصفية"
 
 #. Translators: label for 'filters' close button for mobile navigation
 #: geniza/corpus/templates/corpus/document_list.html:25
@@ -262,7 +262,7 @@ msgstr "تطبيق"
 #. Translators: Button to open or close sort options menu
 #: geniza/corpus/templates/corpus/document_list.html:71
 msgid "Toggle sort options menu"
-msgstr "تبديل قائمة خيارات الفرز"
+msgstr "تبديل قائمة خيارات الترتيب"
 
 #. Translators: number of search results
 #: geniza/corpus/templates/corpus/document_list.html:94
@@ -270,7 +270,7 @@ msgstr "تبديل قائمة خيارات الفرز"
 msgid "1 result"
 msgid_plural "%(count_humanized)s total results"
 msgstr[0] "نتائج %(count_humanized)s"
-msgstr[1] "1 نتيجة"
+msgstr[1] "%(count_humanized)s نتيجة"
 msgstr[2] "نتيجتين %(count_humanized)s"
 msgstr[3] "النتائج %(count_humanized)s"
 msgstr[4] "النتائج %(count_humanized)s"
@@ -321,7 +321,7 @@ msgstr "PGP ID"
 msgid "1 Transcription"
 msgid_plural "%(counter)s Transcriptions"
 msgstr[0] "%(counter)s النصوص"
-msgstr[1] "1 نسخ"
+msgstr[1] "%(counter)s نسخ"
 msgstr[2] "%(counter)s النصوص"
 msgstr[3] "%(counter)s النصوص"
 msgstr[4] "%(counter)s النصوص"
@@ -333,7 +333,7 @@ msgstr[5] "%(counter)s النصوص"
 msgid "1 Translation"
 msgid_plural "%(counter)s Translations"
 msgstr[0] "ترجمات %(counter)s"
-msgstr[1] "1 ترجمة"
+msgstr[1] "%(counter)s ترجمة"
 msgstr[2] "ترجمات %(counter)s"
 msgstr[3] "ترجمات %(counter)s"
 msgstr[4] "ترجمات %(counter)s"
@@ -345,7 +345,7 @@ msgstr[5] "ترجمات %(counter)s"
 msgid "1 Discussion"
 msgid_plural "%(counter)s Discussions"
 msgstr[0] "%(counter)s مناقشات"
-msgstr[1] "1 مناقشة"
+msgstr[1] "%(counter)s مناقشة"
 msgstr[2] "%(counter)s مناقشات"
 msgstr[3] "%(counter)s مناقشات"
 msgstr[4] "%(counter)s مناقشات"
@@ -376,7 +376,7 @@ msgstr "تفاصيل المستند"
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:10
 #, python-format
 msgid "Scholarship Records (%(n_records)s)"
-msgstr "سجل المنح الدراسية (%(n_records)s)"
+msgstr "سجلات المنح الدراسية (%(n_records)s)"
 
 #: geniza/corpus/templates/corpus/snippets/document_tabs.html:16
 msgid "External Links"
@@ -395,12 +395,12 @@ msgstr "الصور والنسخ"
 
 #: geniza/corpus/templates/corpus/snippets/document_transcription.html:24
 msgid "Transcription"
-msgstr "نسخه"
+msgstr "نسخ"
 
 #. Translators: label for a link to a resource with no named location
 #: geniza/corpus/templates/corpus/snippets/footnote_location.html:9
 msgid "online resource"
-msgstr "مورد على الإنترنت"
+msgstr "مورد عبر الإنترنت"
 
 #. Translators: Label for "previous page" button in search results
 #: geniza/corpus/templates/corpus/snippets/pagination.html:5
@@ -448,7 +448,7 @@ msgstr[5] "%(count)d سجل منح دراسية لـ %(doc)s"
 #. Translators: Placeholder for when a work has no title available
 #: geniza/footnotes/models.py:197
 msgid "[digital geniza document edition]"
-msgstr "[طبعة وثيقة عجينة رقمية]"
+msgstr "[طبعة وثيقة جينيزا رقمية]"
 
 #: geniza/footnotes/models.py:403
 msgid "Edition"
@@ -470,17 +470,17 @@ msgstr "نص بديل للمستخدمين ضعاف البصر\n"
 
 #: geniza/pages/models.py:44
 msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
-msgstr "هذا النص سوف يقرأ فقط للمستخدمين غير المبصرين ويجب أن يصف الرؤى الرئيسية أو الاستحواذ من الرسوم. يسمح بفقرات متعددة."
+msgstr "هذا النص سوف يقرأ فقط للمستخدمين غير المبصرين ويجب أن يصف الرؤى أو الأفكار الرئيسية من الرسوم. يسمح بفقرات متعددة."
 
 #. Translators: title for Not Found (404) error page
 #: geniza/templates/404.html:5 geniza/templates/404.html:13
 msgid "Not Found"
-msgstr "غير موجود"
+msgstr "لم يتم العثور عليه"
 
 #. Translators: description for Not Found (404) error page
 #: geniza/templates/404.html:7 geniza/templates/404.html:14
 msgid "Oops, you've hit a lacuna! Page not found."
-msgstr "عفواً، لقد أصابت فراغة! لم يتم العثور على الصفحة."
+msgstr "عفواً، لقد أصبت فراغ! لم يتم العثور على الصفحة."
 
 #. Translators: title for Internal Server Error (500) error page
 #: geniza/templates/500.html:5 geniza/templates/500.html:19
@@ -508,22 +508,22 @@ msgstr "التنقل في التذييل"
 #. Translators: label for Twitter links in footer
 #: geniza/templates/footer.html:19
 msgid "Twitter"
-msgstr "تويتر"
+msgstr "Twitter"
 
 #. Translators: label for Instagram links in footer
 #: geniza/templates/footer.html:21
 msgid "Instagram"
-msgstr "إنستجرام"
+msgstr "Instagram"
 
 #. Translators: accessibility label for Princeton Geniza Lab homepage, for footer
 #: geniza/templates/footer.html:26
 msgid "Princeton Geniza Lab homepage"
-msgstr "الصفحة الرئيسية لمختبر برينستون جينيزا"
+msgstr "الصفحة الرئيسية لـ Princeton Geniza Lab"
 
 #. Translators: accessibility label for Princeton CDH homepage, for footer
 #: geniza/templates/footer.html:39
 msgid "Princeton Center for Digital Humanities homepage"
-msgstr "صفحة الاستقبال لمركز برينستون للعلوم الإنسانية الرقمية"
+msgstr "الصفحة الرئيسية لـ Princeton Center for Digital Humanities"
 
 #. Translators: link label for Princeton accessibility assistance page, for footer
 #: geniza/templates/footer.html:58
@@ -538,7 +538,7 @@ msgstr "The Trustees of Princeton University"
 #. Translators: Creative Commons license text, for footer
 #: geniza/templates/footer.html:67
 msgid "Creative Commons CC-BY license"
-msgstr "ترخيص المشاع الإبداعي CC-BY"
+msgstr "ترخيص Creative Commons CC-BY"
 
 #. Translators: software version, for footer
 #: geniza/templates/footer.html:74
@@ -548,22 +548,22 @@ msgstr "إصدار البرنامج"
 #. Translators: official name of Princeton University, for footer
 #: geniza/templates/footer.html:81
 msgid "Princeton University homepage"
-msgstr "الصفحة الرئيسية لجامعة برينستون"
+msgstr "الصفحة الرئيسية لـ Princeton University"
 
 #. Translators: accessibility text label for site navigation
 #: geniza/templates/nav.html:4
 msgid "main navigation"
-msgstr "الملاحة الرئيسية"
+msgstr "التنقل الرئيسي"
 
 #. Translators: accessibility label for 'home' button in main navigation
 #: geniza/templates/nav.html:11
 msgid "home"
-msgstr "المنزل"
+msgstr "الصفحة الرئيسية"
 
 #. Translators: site name label for 'home' button in main navigation
 #: geniza/templates/nav.html:13
 msgid "The Princeton Geniza Project"
-msgstr "مشروع برينستون جينيزا"
+msgstr "The Princeton Geniza Project"
 
 #. Translators: label for 'menu' open button for mobile navigation
 #: geniza/templates/nav.html:24
@@ -585,12 +585,12 @@ msgstr "قراءة هذه الصفحة في %(language_name)s (%(language_code)s
 #: geniza/templates/snippets/language_switcher.html:24
 msgctxt "choose this option"
 msgid "go"
-msgstr "اذهب"
+msgstr "تنقل"
 
 #. Translators: label for link to 'Search' page in main navigation
 #: geniza/templates/snippets/menu.html:7
 msgid "Search"
-msgstr "البحث"
+msgstr "بحث"
 
 #. Translators: label for main menu back button for mobile navigation
 #: geniza/templates/snippets/sub_menu.html:8
@@ -600,5 +600,5 @@ msgstr "العودة إلى القائمة الرئيسية"
 #. Translators: label for dark mode/light mode theme switcher
 #: geniza/templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
-msgstr "تمكين الوضع المظلم"
+msgstr "تفعيل الوضع المظلم"
 
