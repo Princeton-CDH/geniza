@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-04-25 12:59-0400\n"
-"PO-Revision-Date: 2022-08-18 14:54\n"
+"PO-Revision-Date: 2022-08-21 01:09\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -173,7 +173,7 @@ msgstr "الشرف"
 #. Translators: label for date of this document, if known
 #: geniza/corpus/templates/corpus/document_detail.html:77
 msgid "Document Date"
-msgstr ""
+msgstr "تاريخ الوثيقة"
 
 #. Translators: Primary language label
 #: geniza/corpus/templates/corpus/document_detail.html:88
@@ -207,7 +207,7 @@ msgstr "الوسوم"
 #: geniza/corpus/templates/corpus/document_detail.html:128
 #: geniza/corpus/templates/corpus/snippets/document_result.html:18
 msgid "Input date"
-msgstr ""
+msgstr "تاريخ الإدخال"
 
 #. Translators: Date document was first added to the PGP
 #: geniza/corpus/templates/corpus/document_detail.html:130
