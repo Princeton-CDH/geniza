@@ -153,6 +153,7 @@ class DocumentSearchForm(RangeForm):
                 # Translators: accessible label for keyword search input
                 "aria-label": _("Keyword or Phrase"),
                 "type": "search",
+                "dir": "auto",  # expect mixed ltr/rtl
             }
         ),
     )
