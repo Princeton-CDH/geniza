@@ -1,22 +1,21 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: princeton-geniza-project\n"
+"Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-23 11:50-0400\n"
-"PO-Revision-Date: 2022-08-09 14:58\n"
+"PO-Revision-Date: 2022-08-23 17:13\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
-"%100==4 ? 2 : 3;\n"
-"X-Crowdin-Project: princeton-geniza-project\n"
-"X-Crowdin-Project-ID: 520356\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
+"X-Crowdin-Project: geniza\n"
+"X-Crowdin-Project-ID: 457634\n"
 "X-Crowdin-Language: he\n"
 "X-Crowdin-File: /develop/geniza/locale/en/LC_MESSAGES/django.po\n"
-"X-Crowdin-File-ID: 12\n"
+"X-Crowdin-File-ID: 28\n"
 
 #. Translators: placeholder for keyword search input
 #: corpus/forms.py:152
@@ -36,28 +35,22 @@ msgstr "רלוונטיות"
 #. Translators: label for sort in random order
 #: corpus/forms.py:165
 msgid "Random"
-msgstr "אקראי"
+msgstr ""
 
 #. Translators: label for sort by document date (most recent first)
 #: corpus/forms.py:167
-#, fuzzy
-#| msgid "Document Date (Latest-Earliest)"
 msgid "Document Date (Latest–Earliest)"
-msgstr "תאריך המסמך (מאוחר ביותר - מוקדם ביותר)"
+msgstr ""
 
 #. Translators: label for sort by document date (oldest first)
 #: corpus/forms.py:169
-#, fuzzy
-#| msgid "Document Date (Earliest-Latest)"
 msgid "Document Date (Earliest–Latest)"
-msgstr "תאריך המסמך (מוקדם ביותר - מאוחר ביותר)"
+msgstr ""
 
 #. Translators: label for alphabetical sort by shelfmark
 #: corpus/forms.py:171
-#, fuzzy
-#| msgid "Shelfmark"
 msgid "Shelfmark (A–Z)"
-msgstr "מספר מדף"
+msgstr ""
 
 #. Translators: label for descending sort by number of scholarship records
 #: corpus/forms.py:173
@@ -71,27 +64,23 @@ msgstr "רשומות קשורות (מהקטן לגדול)"
 
 #. Translators: label for sort by when document was added to PGP (most recent first)
 #: corpus/forms.py:177
-#, fuzzy
-#| msgid "Input Date (Latest-Earliest)"
 msgid "PGP Input Date (Latest–Earliest)"
-msgstr "תאריך הוספה (מאוחר ביותר - מוקדם ביותר)"
+msgstr ""
 
 #. Translators: label for sort by when document was added to PGP (oldest first)
 #: corpus/forms.py:179
-#, fuzzy
-#| msgid "Input Date (Earliest-Latest)"
 msgid "PGP Input Date (Earliest–Latest)"
-msgstr "תאריך הוספה (מוקדם ביותר - מאוחר ביותר)"
+msgstr ""
 
 #. Translators: label for start year when filtering by date range
 #: corpus/forms.py:182 corpus/templates/corpus/widgets/yearrangewidget.html:5
 msgid "From year"
-msgstr "משנת"
+msgstr ""
 
 #. Translators: label for end year when filtering by date range
 #: corpus/forms.py:184 corpus/templates/corpus/widgets/yearrangewidget.html:5
 msgid "To year"
-msgstr "עד שנת"
+msgstr ""
 
 #. Translators: label for form sort field
 #: corpus/forms.py:192
@@ -99,10 +88,8 @@ msgid "Sort by"
 msgstr "מיון לפי"
 
 #: corpus/forms.py:202
-#, fuzzy
-#| msgid "Document Dates"
 msgid "Document Dates (CE)"
-msgstr "תאריכי המסמך"
+msgstr ""
 
 #. Translators: label for document type search form filter
 #: corpus/forms.py:211
@@ -112,30 +99,30 @@ msgstr "סוג המסמך"
 #. Translators: label for "has image" search form filter
 #: corpus/forms.py:215
 msgid "Has Image"
-msgstr "קיים תצלום"
+msgstr ""
 
 #. Translators: label for "has transcription" search form filter
 #: corpus/forms.py:219
 msgid "Has Transcription"
-msgstr "קיים תיעתוק"
+msgstr ""
 
 #. Translators: label for "has translation" search form filter
 #: corpus/forms.py:223
 msgid "Has Translation"
-msgstr "קיים תרגום"
+msgstr ""
 
 #. Translators: label for "has discussion" search form filter
 #: corpus/forms.py:227
 msgid "Has Discussion"
-msgstr "קיים דיון"
+msgstr ""
 
 #: corpus/forms.py:277
 msgid "Relevance sort is not available without a keyword search term."
-msgstr "מיון על פי רלוונטיות אינו זמין ללא מילת מפתח לחיפוש."
+msgstr ""
 
 #: corpus/models.py:757 templates/base.html:21
 msgid "Princeton Geniza Project"
-msgstr "Princeton Geniza Project"
+msgstr "פרוייקט הגניזה של פרינסטון"
 
 #. Translators: attribution for local IIIF manifests
 #: corpus/models.py:759
@@ -152,7 +139,7 @@ msgstr "קובץ ותועתק על-ידי %(pgp)s."
 #. Translators: manifest attribution note that content from other institutions may have restrictions
 #: corpus/models.py:764
 msgid "Additional restrictions may apply."
-msgstr "ייתכנו מגבלות נוספות."
+msgstr "קיימות מגבלות נוספות."
 
 #. Translators: Default label when document does not have a type
 #: corpus/models.py:816
@@ -169,10 +156,10 @@ msgstr "דף הבית"
 #: corpus/templates/admin/corpus/document/change_form.html:41
 msgid "Other documents on this shelfmark"
 msgid_plural "Other documents on these shelfmarks"
-msgstr[0] "מסמכים נוספים עם מספר מדף זה"
-msgstr[1] "מסמכים נוספים עם מספרי מדף אלו"
-msgstr[2] "מסמכים נוספים עם מספרי מדף אלו"
-msgstr[3] "מסמכים נוספים עם מספרי מדף אלו"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. Translators: Editor label
 #: corpus/templates/corpus/document_detail.html:17
@@ -180,9 +167,9 @@ msgstr[3] "מסמכים נוספים עם מספרי מדף אלו"
 msgid "Editor"
 msgid_plural "Editors"
 msgstr[0] "עורך"
-msgstr[1] "עורכים"
-msgstr[2] "עורכים"
-msgstr[3] "עורכים"
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. Translators: label for document metadata section (editor, date, input date)
 #: corpus/templates/corpus/document_detail.html:41
@@ -197,25 +184,25 @@ msgstr "מספר מדף"
 #: corpus/templates/corpus/document_detail.html:69
 #: corpus/templates/corpus/snippets/document_result.html:22
 msgid "Document Date"
-msgstr "תאריך המסמך"
+msgstr ""
 
 #. Translators: Primary language label
 #: corpus/templates/corpus/document_detail.html:80
 msgid "Primary Language"
 msgid_plural "Primary Languages"
-msgstr[0] "שפה עיקרית"
-msgstr[1] "שפות עיקריות"
-msgstr[2] "שפות עיקריות"
-msgstr[3] "שפות עיקריות"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. Translators: Secondary language label
 #: corpus/templates/corpus/document_detail.html:93
 msgid "Secondary Language"
 msgid_plural "Secondary Languages"
-msgstr[0] "שפה משנית"
-msgstr[1] "שפות משניות"
-msgstr[2] "שפות משניות"
-msgstr[3] "שפות משניות"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. Translators: label for tags on a document
 #: corpus/templates/corpus/document_detail.html:109
@@ -231,14 +218,10 @@ msgstr "תאריך קלט"
 #. Translators: Date document was first added to the PGP
 #: corpus/templates/corpus/document_detail.html:124
 #, python-format
-msgid ""
-"\n"
+msgid "\n"
 "                In PGP since %(date)s\n"
 "            "
 msgstr ""
-"\n"
-"נמצא בPGP מאז %(date)s\n"
-"            "
 
 #. Translators: label for document description
 #: corpus/templates/corpus/document_detail.html:132
@@ -258,21 +241,21 @@ msgstr "חיפוש"
 #: corpus/templates/corpus/document_list.html:19
 #: corpus/templates/corpus/document_list.html:30
 msgid "Filters"
-msgstr "מסננים"
+msgstr ""
 
 #. Translators: label for 'filters' close button for mobile navigation
 #: corpus/templates/corpus/document_list.html:25
 msgid "Close filter options"
-msgstr "סגור אפשרויות סינון"
+msgstr ""
 
 #: corpus/templates/corpus/document_list.html:60
 msgid "Apply"
-msgstr "החל"
+msgstr ""
 
 #. Translators: Button to open or close sort options menu
 #: corpus/templates/corpus/document_list.html:76
 msgid "Toggle sort options menu"
-msgstr "פתח/סגור תפריט אפשרויות מיון"
+msgstr ""
 
 #. Translators: number of search results
 #: corpus/templates/corpus/document_list.html:99
@@ -298,13 +281,13 @@ msgstr "כלול"
 #: corpus/templates/corpus/document_scholarship.html:31
 #, python-format
 msgid "for %(relation)s see"
-msgstr "ל%(relation)s ראה"
+msgstr ""
 
 #. Translators: label for document relations for one footnote with no location or URL
 #: corpus/templates/corpus/document_scholarship.html:36
 #, python-format
 msgid "includes %(relation)s"
-msgstr "כולל %(relation)s"
+msgstr ""
 
 #. Translators: Document edit link for admins
 #: corpus/templates/corpus/snippets/document_header.html:9
@@ -313,11 +296,11 @@ msgstr "עריכה"
 
 #: corpus/templates/corpus/snippets/document_image_rights.html:4
 msgid "Image Permissions Statement"
-msgstr "תנאי היתר שימוש בתצלום"
+msgstr ""
 
 #: corpus/templates/corpus/snippets/document_image_rights.html:21
 msgid "No attribution or license noted."
-msgstr "לא מצוין ייחוס או רישיון."
+msgstr ""
 
 #: corpus/templates/corpus/snippets/document_image_rights.html:38
 msgid "Jewish Theological Seminary homepage"
@@ -338,8 +321,8 @@ msgstr ""
 msgid "1 Transcription"
 msgid_plural "%(counter)s Transcriptions"
 msgstr[0] "תעתוק אחד"
-msgstr[1] "%(counter)s תעתוקים"
-msgstr[2] "%(counter)s תעתוקים"
+msgstr[1] ""
+msgstr[2] ""
 msgstr[3] "%(counter)s תעתוקים"
 
 #. Translators: number of translations for this document
@@ -347,10 +330,10 @@ msgstr[3] "%(counter)s תעתוקים"
 #, python-format
 msgid "1 Translation"
 msgid_plural "%(counter)s Translations"
-msgstr[0] "תרגום אחד"
-msgstr[1] "%(counter)s תרגומים"
-msgstr[2] "%(counter)s תרגומים"
-msgstr[3] "%(counter)s תרגומים"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] "%(counter)s תעתוקים"
 
 #. Translators: number of sources that discuss this document
 #: corpus/templates/corpus/snippets/document_result.html:92
@@ -358,8 +341,8 @@ msgstr[3] "%(counter)s תרגומים"
 msgid "1 Discussion"
 msgid_plural "%(counter)s Discussions"
 msgstr[0] "דיון אחד"
-msgstr[1] "%(counter)s דיונים"
-msgstr[2] "%(counter)s דיונים"
+msgstr[1] ""
+msgstr[2] ""
 msgstr[3] "%(counter)s דיונים"
 
 #: corpus/templates/corpus/snippets/document_result.html:100
@@ -368,7 +351,7 @@ msgstr "אין רשומות קשורות"
 
 #: corpus/templates/corpus/snippets/document_result.html:114
 msgid "more"
-msgstr "עוד"
+msgstr ""
 
 #: corpus/templates/corpus/snippets/document_result.html:133
 msgid "View document details"
@@ -395,22 +378,16 @@ msgid "Related Documents (%(n_reldocs)s)"
 msgstr ""
 
 #: corpus/templates/corpus/snippets/document_transcription.html:6
-#, fuzzy
-#| msgid "Has Image"
 msgid "show images"
-msgstr "קיים תצלום"
+msgstr ""
 
 #: corpus/templates/corpus/snippets/document_transcription.html:10
-#, fuzzy
-#| msgid "Has Transcription"
 msgid "show transcription"
-msgstr "קיים תיעתוק"
+msgstr ""
 
 #: corpus/templates/corpus/snippets/document_transcription.html:14
-#, fuzzy
-#| msgid "Has Translation"
 msgid "show translation"
-msgstr "קיים תרגום"
+msgstr ""
 
 #: corpus/templates/corpus/snippets/document_transcription.html:56
 msgid "Zoom and Rotate"
@@ -424,12 +401,12 @@ msgstr ""
 #. Translators: label for a link to a resource with no named location
 #: corpus/templates/corpus/snippets/footnote_location.html:9
 msgid "online resource"
-msgstr "מקור אינטרנטי"
+msgstr ""
 
 #. Translators: Label for "previous page" button in search results
 #: corpus/templates/corpus/snippets/pagination.html:5
 msgid "Previous"
-msgstr "הקודם"
+msgstr ""
 
 #. Translators: Title for link to page number in search results
 #: corpus/templates/corpus/snippets/pagination.html:19
@@ -440,7 +417,7 @@ msgstr "%(number)s עמודים"
 #. Translators: Label for "next page" button in search results
 #: corpus/templates/corpus/snippets/pagination.html:60
 msgid "Next"
-msgstr "הבא"
+msgstr ""
 
 #. Translators: title of document search page
 #: corpus/views.py:36
@@ -459,15 +436,13 @@ msgid "Scholarship on %(doc)s"
 msgstr "רשומה קשורה ל-%(doc)s"
 
 #: corpus/views.py:346
-#, fuzzy, python-format
-#| msgid "%(count)d scholarship record for %(doc)s"
-#| msgid_plural "%(count)d scholarship records for %(doc)s"
+#, python-format
 msgid "%(count)d scholarship record"
 msgid_plural "%(count)d scholarship records"
-msgstr[0] "רשומה קשורה %(count)d ל %(doc)s"
-msgstr[1] "%(count)d רשומות קשורות ל %(doc)s"
-msgstr[2] "%(count)d רשומות קשורות ל %(doc)s"
-msgstr[3] "%(count)d רשומות קשורות ל %(doc)s"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. Translators: title of related documents page
 #: corpus/views.py:387
@@ -487,7 +462,7 @@ msgstr[3] ""
 #. Translators: Placeholder for when a work has no title available
 #: footnotes/models.py:201
 msgid "[digital geniza document edition]"
-msgstr "[גרסת מסמך גניזה דיגיטלי]"
+msgstr ""
 
 #: footnotes/models.py:410
 msgid "Edition"
@@ -502,41 +477,33 @@ msgid "Discussion"
 msgstr "דיון"
 
 #: pages/models.py:13
-msgid ""
-"Alternative text for visually impaired users to\n"
+msgid "Alternative text for visually impaired users to\n"
 "briefly communicate the intended message of the image in this context."
 msgstr ""
-"טקסט אלטרנטיבי למשתמשים כבדי ראייה שמטרתו להעביר בתמצית את המסר של התצלום "
-"בהקשר זה."
 
 #: pages/models.py:44
-msgid ""
-"This text will only be read to     non-sighted users and should describe the "
-"major insights or     takeaways from the graphic. Multiple paragraphs are "
-"allowed."
+msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
 msgstr ""
-"טקסט זה יוקרא למשתמשים עיוורים בלבד ותכליתו לתאר את התובנות והמסרים המרכזיים "
-"שעולים מהתוכן הגרפי. ניתן לכלול מספר פסקאות."
 
 #. Translators: title for Not Found (404) error page
 #: templates/404.html:5 templates/404.html:13
 msgid "Not Found"
-msgstr "לא נמצא"
+msgstr ""
 
 #. Translators: description for Not Found (404) error page
 #: templates/404.html:7 templates/404.html:14
 msgid "Oops, you've hit a lacuna! Page not found."
-msgstr "אופס, נתקלת בלאקונה! העמוד המבוקש לא נמצא."
+msgstr ""
 
 #. Translators: title for Internal Server Error (500) error page
 #: templates/500.html:5 templates/500.html:19
 msgid "Server Error"
-msgstr "שגיאת שרת"
+msgstr ""
 
 #. Translators: description for Internal Server Error (500) error page
 #: templates/500.html:7 templates/500.html:20
 msgid "Something went wrong putting this page together."
-msgstr "דבר מה השתבש בהפקת עמוד זה."
+msgstr ""
 
 #: templates/admin/base_site.html:4
 msgid "Django site admin"
@@ -549,52 +516,52 @@ msgstr "דילוג לתוכן"
 #. Translators: accessibility text label for footer site navigation
 #: templates/footer.html:4
 msgid "footer navigation"
-msgstr "ניווט בתחתית העמוד"
+msgstr ""
 
 #. Translators: label for Twitter links in footer
 #: templates/footer.html:19
 msgid "Twitter"
-msgstr "טוויטר"
+msgstr ""
 
 #. Translators: label for Instagram links in footer
 #: templates/footer.html:21
 msgid "Instagram"
-msgstr "אינסטגרם"
+msgstr ""
 
 #. Translators: accessibility label for Princeton Geniza Lab homepage, for footer
 #: templates/footer.html:26
 msgid "Princeton Geniza Lab homepage"
-msgstr "עמוד הבית Princeton Geniza Lab"
+msgstr ""
 
 #. Translators: accessibility label for Princeton CDH homepage, for footer
 #: templates/footer.html:39
 msgid "Princeton Center for Digital Humanities homepage"
-msgstr "Princeton Center for Digital Humanities עמוד הבית"
+msgstr ""
 
 #. Translators: link label for Princeton accessibility assistance page, for footer
 #: templates/footer.html:58
 msgid "Accessibility"
-msgstr "נגישות"
+msgstr ""
 
 #. Translators: official name of Princeton University's board of trustees, for footer
 #: templates/footer.html:63
 msgid "The Trustees of Princeton University"
-msgstr "The Trustees of Princeton University"
+msgstr ""
 
 #. Translators: Creative Commons license text, for footer
 #: templates/footer.html:67
 msgid "Creative Commons CC-BY license"
-msgstr "דרישת ייחוס על פי רישיון ״קריאייטיב קומונס״ (CC-BY)"
+msgstr ""
 
 #. Translators: software version, for footer
 #: templates/footer.html:74
 msgid "software version"
-msgstr "גרסת תוכנה"
+msgstr ""
 
 #. Translators: official name of Princeton University, for footer
 #: templates/footer.html:81
 msgid "Princeton University homepage"
-msgstr "עמוד הבית Princeton University"
+msgstr ""
 
 #. Translators: accessibility text label for site navigation
 #: templates/nav.html:4
@@ -609,7 +576,7 @@ msgstr "דף הבית"
 #. Translators: site name label for 'home' button in main navigation
 #: templates/nav.html:13
 msgid "The Princeton Geniza Project"
-msgstr "The Princeton Geniza Project"
+msgstr ""
 
 #. Translators: label for 'menu' open button for mobile navigation
 #: templates/nav.html:24
@@ -646,20 +613,5 @@ msgstr "חזרה לתפריט הראשי"
 #. Translators: label for dark mode/light mode theme switcher
 #: templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
-msgstr "הפעלת מצב כהה"
+msgstr ""
 
-#~ msgid "PGP ID"
-#~ msgstr "מזהה PGP"
-
-#~ msgid "External Links"
-#~ msgstr "קישורים חיצוניים"
-
-#, python-format
-#~ msgid "External Links (%(n_links)s)"
-#~ msgstr "קישורים חיצוניים (%(n_links)s)"
-
-#~ msgid "Images and transcription"
-#~ msgstr "תצלומים ותעתוק"
-
-#~ msgid "Transcription"
-#~ msgstr "תעתוק"
