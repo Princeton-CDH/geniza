@@ -79,7 +79,8 @@ def arabic_to_ja(text):
     return re.sub(re_he_final_letters, lambda m: he_final_letters[m.group(0)], text)
 
 
-def arabic_or_ja(text):
+def arabic_or_ja(text, boost=True):
+    """Convert text to arabic or judaeo-arabic string; boost arabic by default"""
     # if there is no arabic text, return as is
     if not contains_arabic(text):
         return text
@@ -89,13 +90,18 @@ def arabic_or_ja(text):
     # generate judaeo-arabic equivalents
     ja_words = [arabic_to_ja(word) for word in arabic_words]
     # iterate over the original and converted words together and combine
+
+    # add boosting so arabic matches will be more relevant,
+    # unless boosting is disabled
+    boost = "^2.0" if boost else ""
+
     for i, arabic_word in enumerate(arabic_words):
         ja_word = ja_words[i]
         # if the words differ, combine them as an OR
         # then replace them in the original search query
         # (preserving any existing search syntax like quotes, wildcards, etc)
         if arabic_word != ja_word:
-            ar_or_ja_word = "(%s|%s)" % (arabic_word, ja_word)
+            ar_or_ja_word = "(%s%s|%s)" % (arabic_word, boost, ja_word)
             text = text.replace(arabic_word, ar_or_ja_word)
 
     return text
