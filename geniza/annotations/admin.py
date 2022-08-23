@@ -1,4 +1,5 @@
 import pprint
+from html import escape
 
 from django.contrib import admin
 from django.utils.safestring import mark_safe
@@ -21,7 +22,10 @@ class AnnotationAdmin(admin.ModelAdmin):
 
     def display_content(self, obj):
         """format json content for display in admin"""
-        return mark_safe("<pre>%s</pre>" % pprint.pformat(obj.content, indent=2))
+        # use mark_safe to render <pre>, use escape() to prevent rendering content HTML
+        return mark_safe(
+            "<pre>%s</pre>" % escape(pprint.pformat(obj.content, indent=1))
+        )
 
     def pgpid(self, obj):
         """retrieve pgpid from manifest if available; assumes geniza manifest structure"""
