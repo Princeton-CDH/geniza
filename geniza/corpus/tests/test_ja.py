@@ -27,14 +27,18 @@ def test_arabic_or_ja__no_arabic():
 
 def test_arabic_or_ja__arabic():
     # single word — should return match for arabic or judaeo-arabic
-    assert arabic_or_ja("دينار") == "(دينار|דינאר)"
+    assert arabic_or_ja("دينار", boost=False) == "(دينار|דינאר)"
     # multiple words — should return match for arabic or judaeo-arabic
-    assert arabic_or_ja("دينار مصحف") == "(دينار|דינאר) (مصحف|מצחף)"
+    assert arabic_or_ja("دينار مصحف", boost=False) == "(دينار|דינאר) (مصحف|מצחף)"
     # mixed english and arabic
-    assert arabic_or_ja("help مصحف") == "help (مصحف|מצחף)"
+    assert arabic_or_ja("help مصحف", boost=False) == "help (مصحف|מצחף)"
+    # with boosting
+    assert arabic_or_ja("دينار") == "(دينار^2.0|דינאר)"
 
 
 def test_arabic_or_ja_exact_phrase():
-    assert arabic_or_ja('"تعطل شغله"') == '"(تعطل|תעטל) (شغله|שגלה)"'
+    assert arabic_or_ja('"تعطل شغله"', boost=False) == '"(تعطل|תעטל) (شغله|שגלה)"'
     # proximity
-    assert arabic_or_ja('"تعطل شغله"~10') == '"(تعطل|תעטל) (شغله|שגלה)"~10'
+    assert arabic_or_ja('"تعطل شغله"~10', boost=False) == '"(تعطل|תעטל) (شغله|שגלה)"~10'
+    # with boosting
+    assert arabic_or_ja('"تعطل شغله"') == '"(تعطل^2.0|תעטל) (شغله^2.0|שגלה)"'
