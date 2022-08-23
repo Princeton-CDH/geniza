@@ -17,6 +17,7 @@ from django.db.models.functions.text import Lower
 from django.db.models.query import Prefetch
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
@@ -248,10 +249,23 @@ class Fragment(TrackChangesModel):
 
     def iiif_thumbnails(self, selected=[]):
         """html for thumbnails of iiif image, for display in admin"""
-        # if there are no iiif images for this fragment, bail out
         iiif_images = self.iiif_images()
         if iiif_images is None:
-            return ""
+            # if there are no iiif images for this fragment, use placeholder
+            # images for recto/verso side selection
+            recto_img = static("img/ui/all/all/recto-placeholder.svg")
+            verso_img = static("img/ui/all/all/verso-placeholder.svg")
+            return mark_safe(
+                " ".join(
+                    '<img src="%s" loading="lazy" height="200" title="%s" %s>'
+                    % (
+                        [recto_img, verso_img][i],
+                        ["recto", "verso"][i],
+                        'class="selected" /' if i in selected else "/",
+                    )
+                    for i in range(2)
+                )
+            )
 
         images, labels, _ = iiif_images
         return mark_safe(
