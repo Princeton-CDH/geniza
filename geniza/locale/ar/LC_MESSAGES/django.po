@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-23 11:37-0400\n"
-"PO-Revision-Date: 2022-08-23 15:45\n"
+"POT-Creation-Date: 2022-08-23 11:50-0400\n"
+"PO-Revision-Date: 2022-08-23 15:51\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -413,7 +413,7 @@ msgstr ""
 
 #: corpus/templates/corpus/snippets/document_transcription.html:78
 #, python-format
-msgid "<span>View %(type)s:&nbsp;%(shelfmark)s</span>"
+msgid "View %(type)s:&nbsp;%(shelfmark)s</span>"
 msgstr ""
 
 #. Translators: label for a link to a resource with no named location
