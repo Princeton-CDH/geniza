@@ -418,10 +418,12 @@ class Footnote(TrackChangesModel):
     EDITION = "E"
     TRANSLATION = "T"
     DISCUSSION = "D"
+    DIGITAL_EDITION = "X"
     DOCUMENT_RELATION_TYPES = (
         (EDITION, _("Edition")),
         (TRANSLATION, _("Translation")),
         (DISCUSSION, _("Discussion")),
+        (DIGITAL_EDITION, _("Digital Edition")),
     )
 
     doc_relation = MultiSelectField(
