@@ -735,6 +735,23 @@ class TestDocumentSearchView:
         assert doc1.id in resulting_ids
         assert doc2.id in resulting_ids
 
+    def test_shelfmark_bigram(self, empty_solr, document):
+        # integration test for shelfmark indexing with bigram search
+        # - using empty solr fixture to ensure solr is empty when this test starts
+
+        # document shelfmark CUL Add.2586
+        SolrClient().update.index([document.index_data()], commit=True)
+
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # sort doesn't matter in this case; two characters should be enough
+        docsearch_view.request.GET = {"q": "25"}
+        qs = docsearch_view.get_queryset()
+        # should return the document
+        assert qs.count() == 1
+        resulting_ids = [result["pgpid"] for result in qs]
+        assert document.id in resulting_ids
+
     def test_search_shelfmark_override(self, empty_solr, document):
         orig_shelfmark = document.shelfmark
         document.shelfmark_override = "foo 12.34"
