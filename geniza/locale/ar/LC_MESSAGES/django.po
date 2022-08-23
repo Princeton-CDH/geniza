@@ -1,22 +1,21 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: princeton-geniza-project\n"
+"Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-23 11:50-0400\n"
-"PO-Revision-Date: 2022-08-18 14:54\n"
+"PO-Revision-Date: 2022-08-23 17:13\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
-"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
-"X-Crowdin-Project: princeton-geniza-project\n"
-"X-Crowdin-Project-ID: 520356\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"X-Crowdin-Project: geniza\n"
+"X-Crowdin-Project-ID: 457634\n"
 "X-Crowdin-Language: ar\n"
 "X-Crowdin-File: /develop/geniza/locale/en/LC_MESSAGES/django.po\n"
-"X-Crowdin-File-ID: 12\n"
+"X-Crowdin-File-ID: 28\n"
 
 #. Translators: placeholder for keyword search input
 #: corpus/forms.py:152
@@ -40,24 +39,18 @@ msgstr "عشوائي"
 
 #. Translators: label for sort by document date (most recent first)
 #: corpus/forms.py:167
-#, fuzzy
-#| msgid "Document Date (Latest-Earliest)"
 msgid "Document Date (Latest–Earliest)"
-msgstr "تاريخ المستند (Latest-Earliest)"
+msgstr "تاريخ المستند (Latest–Earliest)"
 
 #. Translators: label for sort by document date (oldest first)
 #: corpus/forms.py:169
-#, fuzzy
-#| msgid "Document Date (Earliest-Latest)"
 msgid "Document Date (Earliest–Latest)"
-msgstr "تاريخ المستند (آخر)"
+msgstr "تاريخ المستند (Earliest–Latest)"
 
 #. Translators: label for alphabetical sort by shelfmark
 #: corpus/forms.py:171
-#, fuzzy
-#| msgid "Shelfmark"
 msgid "Shelfmark (A–Z)"
-msgstr "الشرف"
+msgstr "شريف (A-Z)"
 
 #. Translators: label for descending sort by number of scholarship records
 #: corpus/forms.py:173
@@ -71,17 +64,13 @@ msgstr "سجل المنح الدراسية (أقل - موسى)"
 
 #. Translators: label for sort by when document was added to PGP (most recent first)
 #: corpus/forms.py:177
-#, fuzzy
-#| msgid "Input Date (Latest-Earliest)"
 msgid "PGP Input Date (Latest–Earliest)"
-msgstr "تاريخ الإدخال (Latest-Earliest)"
+msgstr "تاريخ إدخال PGP (Latest–Earliest)"
 
 #. Translators: label for sort by when document was added to PGP (oldest first)
 #: corpus/forms.py:179
-#, fuzzy
-#| msgid "Input Date (Earliest-Latest)"
 msgid "PGP Input Date (Earliest–Latest)"
-msgstr "تاريخ الإدخال (Earliest-Latest)"
+msgstr "تاريخ إدخال PGP (Earliest–Latest)"
 
 #. Translators: label for start year when filtering by date range
 #: corpus/forms.py:182 corpus/templates/corpus/widgets/yearrangewidget.html:5
@@ -91,7 +80,7 @@ msgstr "من سنة"
 #. Translators: label for end year when filtering by date range
 #: corpus/forms.py:184 corpus/templates/corpus/widgets/yearrangewidget.html:5
 msgid "To year"
-msgstr "إلى عام"
+msgstr "إلى السنة"
 
 #. Translators: label for form sort field
 #: corpus/forms.py:192
@@ -99,10 +88,8 @@ msgid "Sort by"
 msgstr "الترتيب حسب"
 
 #: corpus/forms.py:202
-#, fuzzy
-#| msgid "Document Dates"
 msgid "Document Dates (CE)"
-msgstr "تواريخ المستند"
+msgstr "تواريخ المستند (CE)"
 
 #. Translators: label for document type search form filter
 #: corpus/forms.py:211
@@ -112,7 +99,7 @@ msgstr "نوع المستند"
 #. Translators: label for "has image" search form filter
 #: corpus/forms.py:215
 msgid "Has Image"
-msgstr "لديها صورة"
+msgstr "لديه صورة"
 
 #. Translators: label for "has transcription" search form filter
 #: corpus/forms.py:219
@@ -135,7 +122,7 @@ msgstr "فرز الصلة غير متوفر بدون مصطلح البحث عن 
 
 #: corpus/models.py:757 templates/base.html:21
 msgid "Princeton Geniza Project"
-msgstr "Princeton Geniza Project"
+msgstr "مشروع برنستون جينيزا"
 
 #. Translators: attribution for local IIIF manifests
 #: corpus/models.py:759
@@ -169,12 +156,12 @@ msgstr "المنزل"
 #: corpus/templates/admin/corpus/document/change_form.html:41
 msgid "Other documents on this shelfmark"
 msgid_plural "Other documents on these shelfmarks"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
-msgstr[4] ""
-msgstr[5] ""
+msgstr[0] "وثائق أخرى بشأن هذه الرفوف"
+msgstr[1] "مستندات أخرى على هذه العلامة"
+msgstr[2] "وثائق أخرى بشأن هذه الرفوف"
+msgstr[3] "وثائق أخرى بشأن هذه الرفوف"
+msgstr[4] "وثائق أخرى بشأن هذه الرفوف"
+msgstr[5] "وثائق أخرى بشأن هذه الرفوف"
 
 #. Translators: Editor label
 #: corpus/templates/corpus/document_detail.html:17
@@ -201,7 +188,7 @@ msgstr "الشرف"
 #: corpus/templates/corpus/document_detail.html:69
 #: corpus/templates/corpus/snippets/document_result.html:22
 msgid "Document Date"
-msgstr ""
+msgstr "تاريخ المستند"
 
 #. Translators: Primary language label
 #: corpus/templates/corpus/document_detail.html:80
@@ -234,16 +221,17 @@ msgstr "الوسوم"
 #. Translators: Label for date document was first added to the PGP
 #: corpus/templates/corpus/document_detail.html:122
 msgid "Input date"
-msgstr ""
+msgstr "Input date"
 
 #. Translators: Date document was first added to the PGP
 #: corpus/templates/corpus/document_detail.html:124
 #, python-format
-msgid ""
-"\n"
+msgid "\n"
 "                In PGP since %(date)s\n"
 "            "
-msgstr ""
+msgstr "\n"
+"                في PGP منذ %(date)s\n"
+"            "
 
 #. Translators: label for document description
 #: corpus/templates/corpus/document_detail.html:132
@@ -320,24 +308,24 @@ msgstr "تحرير"
 
 #: corpus/templates/corpus/snippets/document_image_rights.html:4
 msgid "Image Permissions Statement"
-msgstr ""
+msgstr "بيان أذونات الصورة"
 
 #: corpus/templates/corpus/snippets/document_image_rights.html:21
 msgid "No attribution or license noted."
-msgstr ""
+msgstr "لم يتم ملاحظة الإسناد أو الترخيص."
 
 #: corpus/templates/corpus/snippets/document_image_rights.html:38
 msgid "Jewish Theological Seminary homepage"
-msgstr ""
+msgstr "صفحة الاستقبال المدرسية اليهودية"
 
 #: corpus/templates/corpus/snippets/document_image_rights.html:40
 msgid "Jewish Theological Seminary logo"
-msgstr ""
+msgstr "شعار المدرسة اللاهوتية اليهودية"
 
 #. Translators: Date document was first added to the PGP
 #: corpus/templates/corpus/snippets/document_result.html:31
 msgid "In PGP since"
-msgstr ""
+msgstr "في PGP منذ"
 
 #. Translators: number of editions for this document
 #: corpus/templates/corpus/snippets/document_result.html:72
@@ -390,7 +378,7 @@ msgstr "عرض تفاصيل المستند"
 #. Translators: accessibility text label for document detail view tabs navigation
 #: corpus/templates/corpus/snippets/document_tabs.html:4
 msgid "tabs"
-msgstr ""
+msgstr "tabs"
 
 #: corpus/templates/corpus/snippets/document_tabs.html:7
 msgid "Document Details"
@@ -405,34 +393,28 @@ msgstr "سجل المنح الدراسية (%(n_records)s)"
 #: corpus/templates/corpus/snippets/document_tabs.html:17
 #, python-format
 msgid "Related Documents (%(n_reldocs)s)"
-msgstr ""
+msgstr "المستندات ذات الصلة (%(n_reldocs)s)"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:6
-#, fuzzy
-#| msgid "Has Image"
 msgid "show images"
-msgstr "لديها صورة"
+msgstr "إظهار الصور"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:10
-#, fuzzy
-#| msgid "Has Transcription"
 msgid "show transcription"
-msgstr "لديه نسخ"
+msgstr "إظهار النسخ"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:14
-#, fuzzy
-#| msgid "Has Translation"
 msgid "show translation"
-msgstr "لديه ترجمة"
+msgstr "إظهار الترجمة"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:56
 msgid "Zoom and Rotate"
-msgstr ""
+msgstr "التكبير والتدوير"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:78
 #, python-format
 msgid "View %(type)s:&nbsp;%(shelfmark)s</span>"
-msgstr ""
+msgstr "عرض %(type)s:&nbsp;%(shelfmark)s</span>"
 
 #. Translators: label for a link to a resource with no named location
 #: corpus/templates/corpus/snippets/footnote_location.html:9
@@ -472,34 +454,32 @@ msgid "Scholarship on %(doc)s"
 msgstr "منحة في %(doc)s"
 
 #: corpus/views.py:346
-#, fuzzy, python-format
-#| msgid "%(count)d scholarship record for %(doc)s"
-#| msgid_plural "%(count)d scholarship records for %(doc)s"
+#, python-format
 msgid "%(count)d scholarship record"
 msgid_plural "%(count)d scholarship records"
-msgstr[0] "%(count)d سجل منح دراسية لـ %(doc)s"
-msgstr[1] "%(count)d سجل منحة دراسية لـ %(doc)s"
-msgstr[2] "%(count)d سجل منح دراسية لـ %(doc)s"
-msgstr[3] "%(count)d سجل منح دراسية لـ %(doc)s"
-msgstr[4] "%(count)d سجل منح دراسية لـ %(doc)s"
-msgstr[5] "%(count)d سجل منح دراسية لـ %(doc)s"
+msgstr[0] "%(count)d من سجلات المنح"
+msgstr[1] "%(count)d سجل منحة"
+msgstr[2] "%(count)d من سجلات المنح"
+msgstr[3] "%(count)d من سجلات المنح"
+msgstr[4] "%(count)d من سجلات المنح"
+msgstr[5] "%(count)d من سجلات المنح"
 
 #. Translators: title of related documents page
 #: corpus/views.py:387
 #, python-format
 msgid "Related documents for %(doc)s"
-msgstr ""
+msgstr "المستندات ذات الصلة لـ %(doc)s"
 
 #: corpus/views.py:394
 #, python-format
 msgid "%(count)d related document"
 msgid_plural "%(count)d related documents"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
-msgstr[4] ""
-msgstr[5] ""
+msgstr[0] "%(count)d مستندات ذات صلة"
+msgstr[1] "%(count)d وثيقة ذات صلة"
+msgstr[2] "%(count)d مستندات ذات صلة"
+msgstr[3] "%(count)d مستندات ذات صلة"
+msgstr[4] "%(count)d مستندات ذات صلة"
+msgstr[5] "%(count)d مستندات ذات صلة"
 
 #. Translators: Placeholder for when a work has no title available
 #: footnotes/models.py:201
@@ -519,21 +499,14 @@ msgid "Discussion"
 msgstr "المناقشة"
 
 #: pages/models.py:13
-msgid ""
-"Alternative text for visually impaired users to\n"
+msgid "Alternative text for visually impaired users to\n"
 "briefly communicate the intended message of the image in this context."
-msgstr ""
-"نص بديل للمستخدمين ضعاف البصر\n"
+msgstr "نص بديل للمستخدمين ضعاف البصر\n"
 "لإيصال الرسالة المقصودة للصورة في هذا السياق بإيجاز."
 
 #: pages/models.py:44
-msgid ""
-"This text will only be read to     non-sighted users and should describe the "
-"major insights or     takeaways from the graphic. Multiple paragraphs are "
-"allowed."
-msgstr ""
-"هذا النص سوف يقرأ فقط للمستخدمين غير المبصرين ويجب أن يصف الرؤى الرئيسية أو "
-"الاستحواذ من الرسوم. يسمح بفقرات متعددة."
+msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
+msgstr "هذا النص سوف يقرأ فقط للمستخدمين غير المبصرين ويجب أن يصف الرؤى الرئيسية أو الاستحواذ من الرسوم. يسمح بفقرات متعددة."
 
 #. Translators: title for Not Found (404) error page
 #: templates/404.html:5 templates/404.html:13
@@ -557,7 +530,7 @@ msgstr "حدث خطأ في وضع هذه الصفحة معا."
 
 #: templates/admin/base_site.html:4
 msgid "Django site admin"
-msgstr ""
+msgstr "Django site admin"
 
 #: templates/base.html:80
 msgid "Skip to main content"
@@ -566,7 +539,7 @@ msgstr "تخطي إلى المحتوى الرئيسي"
 #. Translators: accessibility text label for footer site navigation
 #: templates/footer.html:4
 msgid "footer navigation"
-msgstr ""
+msgstr "footer navigation"
 
 #. Translators: label for Twitter links in footer
 #: templates/footer.html:19
@@ -596,7 +569,7 @@ msgstr "إمكانية الوصول"
 #. Translators: official name of Princeton University's board of trustees, for footer
 #: templates/footer.html:63
 msgid "The Trustees of Princeton University"
-msgstr "The Trustees of Princeton University"
+msgstr "أمناء جامعة برينستون"
 
 #. Translators: Creative Commons license text, for footer
 #: templates/footer.html:67
@@ -665,18 +638,3 @@ msgstr "العودة إلى القائمة الرئيسية"
 msgid "Enable dark mode"
 msgstr "تمكين الوضع المظلم"
 
-#~ msgid "PGP ID"
-#~ msgstr "PGP ID"
-
-#~ msgid "External Links"
-#~ msgstr "الروابط الخارجية"
-
-#, python-format
-#~ msgid "External Links (%(n_links)s)"
-#~ msgstr "الروابط الخارجية (%(n_links)s)"
-
-#~ msgid "Images and transcription"
-#~ msgstr "الصور والنسخ"
-
-#~ msgid "Transcription"
-#~ msgstr "نسخه"
