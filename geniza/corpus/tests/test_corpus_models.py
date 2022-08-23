@@ -136,9 +136,21 @@ class TestFragment(TestCase):
 
     @patch("geniza.corpus.models.IIIFPresentation")
     def test_iiif_thumbnails(self, mockiifpres):
-        # no iiif
+        # no iiif, should use placeholders
         frag = Fragment(shelfmark="TS 1")
-        assert frag.iiif_thumbnails() == ""
+        placeholder_thumbnails = frag.iiif_thumbnails()
+        assert all(
+            img in placeholder_thumbnails
+            for img in ["recto-placeholder.svg", "verso-placeholder.svg"]
+        )
+        assert all(
+            label in placeholder_thumbnails
+            for label in ['title="recto"', 'title="verso"']
+        )
+        # test with recto side selected: should add class to recto img, but not verso img
+        thumbnails_recto_selected = frag.iiif_thumbnails(selected=[0])
+        assert 'title="recto" class="selected"' in thumbnails_recto_selected
+        assert 'title="verso" class="selected"' not in thumbnails_recto_selected
 
         frag.iiif_url = "http://example.co/iiif/ts-1"
         # return simplified part of the manifest we need for this
