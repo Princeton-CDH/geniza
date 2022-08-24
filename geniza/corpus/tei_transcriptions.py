@@ -44,6 +44,7 @@ class GenizaTei(teimap.Tei):
         "side ii",
         "page b",
         "page 2",
+        "page two",
         "ע“ב",  # Hebrew label for page 2
     ]
     # text that indicates a new page/image at the start of the label
