@@ -15,13 +15,13 @@ main.document {
         flex-direction: column;
         padding: 0 spacing.$spacing-md spacing.$spacing-md;
         margin-bottom: spacing.$spacing-md;
-        @include breakpoints.for-desktop-up {
+        @include breakpoints.for-tablet-landscape-up {
             margin-bottom: spacing.$spacing-xl;
         }
         section.metadata {
             display: flex;
             flex-direction: column;
-            @include breakpoints.for-desktop-up {
+            @include breakpoints.for-tablet-landscape-up {
                 margin-top: spacing.$spacing-3xl;
                 flex-direction: row;
                 justify-content: flex-start;
@@ -33,7 +33,7 @@ main.document {
             flex-direction: column;
             margin: spacing.$spacing-2xl spacing.$spacing-md 0;
             @include typography.meta;
-            @include breakpoints.for-desktop-up {
+            @include breakpoints.for-tablet-landscape-up {
                 flex: 1 1 50%;
                 padding-right: 0;
                 margin: 0 0 0;
@@ -63,7 +63,7 @@ main.document {
             }
             dd + dt {
                 margin-top: spacing.$spacing-sm;
-                @include breakpoints.for-desktop-up {
+                @include breakpoints.for-tablet-landscape-up {
                     margin-top: spacing.$spacing-md;
                 }
             }
@@ -73,12 +73,12 @@ main.document {
         }
         dl.metadata-list.primary + dl.metadata-list.secondary {
             margin-top: 0;
-            @include breakpoints.for-desktop-up {
+            @include breakpoints.for-tablet-landscape-up {
                 margin-left: 35px;
             }
             :first-child {
                 margin-top: spacing.$spacing-sm;
-                @include breakpoints.for-desktop-up {
+                @include breakpoints.for-tablet-landscape-up {
                     margin-top: 0px;
                 }
             }
@@ -88,7 +88,7 @@ main.document {
             margin: 45px spacing.$spacing-md 0;
             align-self: flex-start;
             text-align: left;
-            @include breakpoints.for-desktop-up {
+            @include breakpoints.for-tablet-landscape-up {
                 flex: 1 0 100%;
                 padding-left: 0;
                 margin: spacing.$spacing-3xl 0 0;
@@ -99,7 +99,7 @@ main.document {
         // Input date "In PGP since" text
         section.input-date {
             margin: 12px spacing.$spacing-md 0;
-            @include breakpoints.for-desktop-up {
+            @include breakpoints.for-tablet-landscape-up {
                 margin: 12px 0 0;
             }
             @include typography.meta;
@@ -119,7 +119,7 @@ main.document {
         // link to download transcription
         section.transcription-link {
             margin-top: spacing.$spacing-md;
-            @include breakpoints.for-desktop-up {
+            @include breakpoints.for-tablet-landscape-up {
                 margin-top: spacing.$spacing-xl;
             }
         }
@@ -128,10 +128,18 @@ main.document {
         margin-top: 51px;
         padding: 0 20px;
         width: 100%;
-        @include breakpoints.for-desktop-up {
+        @include breakpoints.for-tablet-landscape-up {
             margin-top: 53px;
             max-width: none;
             padding: 0 10rem;
+        }
+        // extra style for hiding the theme toggle on desktop only
+        @include breakpoints.for-desktop-up {
+            z-index: 3;
+            background-color: var(--background);
+            margin-top: 0;
+            margin-bottom: -120px;
+            padding: 53px 10rem 120px;
         }
         // hanging "link" phosphor icon before permalink label
         dt#permalink {

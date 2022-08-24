@@ -221,3 +221,11 @@ a#needsreview:target {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
 }
+
+/* selected side thumbnail for fragment admin */
+#textblock_set-group td.field-thumbnail img {
+    cursor: pointer;
+}
+#textblock_set-group td.field-thumbnail img.selected {
+    border: 5px solid var(--accent);
+}

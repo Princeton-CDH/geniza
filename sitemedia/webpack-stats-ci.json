@@ -5,6 +5,7 @@
   "chunks": {
     "main": [],
     "iiif": [],
-    "annotation": []
+    "annotation": [],
+    "admin": []
   }
 }

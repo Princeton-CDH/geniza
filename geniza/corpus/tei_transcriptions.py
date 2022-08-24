@@ -37,14 +37,25 @@ class GenizaTei(teimap.Tei):
     def no_content(self):
         return str(self.text).strip() == ""
 
-    new_page_indicators = ["recto", "verso", "side ii", "page b", "page 2"]
+    # text that generally indicates a new page/image, anywhere in the label
+    new_page_indicators = [
+        "recto",
+        "verso",
+        "side ii",
+        "page b",
+        "page 2",
+        "ע“ב",  # Hebrew label for page 2
+    ]
+    # text that indicates a new page/image at the start of the label
+    new_page_start_indicators = ["t-s ", "ts ", "ena ", "moss. "]
 
     def label_indicates_new_page(self, label):
         label = label.lower()
-        return (
-            any([side_label in label for side_label in self.new_page_indicators])
-            or label.startswith("t-s ")
-            or label.startswith("ts ")
+        return any(
+            [side_label in label for side_label in self.new_page_indicators]
+        ) or any(
+            label.startswith(start_label)
+            for start_label in self.new_page_start_indicators
         )
 
     def labels_only(self):
@@ -95,6 +106,10 @@ class GenizaTei(teimap.Tei):
         if block_format:
             return blocks
 
+        # otherwise, return chunked HTML
+        return self.chunk_html(blocks)
+
+    def chunk_html(self, blocks):
         # combine blocks of text into html, chunked into pages to match sides of images
         html = []
         page = []

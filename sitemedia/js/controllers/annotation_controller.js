@@ -8,8 +8,12 @@ import IIIFControler from "./iiif_controller";
 
 export default class extends IIIFControler {
     static targets = [
-        "imageContainer",
         "image",
+        "imageContainer",
+        "imageHeader",
+        "osd",
+        "rotation",
+        "rotationLabel",
         "zoomSlider",
         "zoomSliderLabel",
         "zoomToggle",
@@ -66,6 +70,9 @@ export default class extends IIIFControler {
             manifest: config.manifest_base_url + manifestId,
             csrf_token: config.csrf_token,
         };
+        if (config.source_uri) {
+            annotationServerConfig["sourceUri"] = config.source_uri;
+        }
         const storagePlugin = new AnnotationServerStorage(
             anno,
             annotationServerConfig

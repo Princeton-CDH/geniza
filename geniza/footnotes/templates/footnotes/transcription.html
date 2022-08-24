@@ -2,7 +2,7 @@
 
 <div class="transcription" dir="rtl">
     {# provisional html format #}
-    {% for chunk in transcription.html %}
+    {% for chunk in transcription.html.values %}
         {{ chunk|h1_to_h3|safe }}
     {% endfor %}
     {# old format #}
