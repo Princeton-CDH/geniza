@@ -81,7 +81,7 @@ class TokenAuthenticationMiddleware(TokenAuthentication):
             and request.user.is_anonymous
         ):
             # NOTE: could raise exceptions in some cases...
-            user, _ = super().authenticate(request)
+            auth = super().authenticate(request)
             # if a user was successfully authenticated, set the user on the request
-            if user:
-                request.user = user
+            if auth and auth[0]:
+                request.user = auth[0]
