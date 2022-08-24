@@ -247,6 +247,25 @@ class Fragment(TrackChangesModel):
 
         return images, labels, canvases
 
+    @staticmethod
+    def html_thumbnails(images, labels, canvases=[], selected=[]):
+        """Convenience method for generating IIIF thumbnails HTML from lists of images and labels;
+        separated for reuse in Document"""
+        return mark_safe(
+            " ".join(
+                # include label as title for now; include canvas as data attribute for reordering
+                # on Document
+                '<img src="%s" loading="lazy" height="200" title="%s" %s%s>'
+                % (
+                    img,
+                    labels[i],
+                    f'data-canvas="{canvases[i]}" ' if canvases else "",
+                    'class="selected" /' if i in selected else "/",
+                )
+                for i, img in enumerate(images)
+            )
+        )
+
     def iiif_thumbnails(self, selected=[]):
         """html for thumbnails of iiif image, for display in admin"""
         iiif_images = self.iiif_images()
@@ -255,31 +274,12 @@ class Fragment(TrackChangesModel):
             # images for recto/verso side selection
             recto_img = static("img/ui/all/all/recto-placeholder.svg")
             verso_img = static("img/ui/all/all/verso-placeholder.svg")
-            return mark_safe(
-                " ".join(
-                    '<img src="%s" loading="lazy" height="200" title="%s" %s>'
-                    % (
-                        [recto_img, verso_img][i],
-                        ["recto", "verso"][i],
-                        'class="selected" /' if i in selected else "/",
-                    )
-                    for i in range(2)
-                )
-            )
-
-        images, labels, _ = iiif_images
-        return mark_safe(
-            " ".join(
-                # include label as title for now
-                '<img src="%s" loading="lazy" height="200" title="%s" %s>'
-                % (
-                    img.size(height=200),
-                    labels[i],
-                    'class="selected" /' if i in selected else "/",
-                )
-                for i, img in enumerate(images)
-            )
-        )
+            image_urls = [recto_img, verso_img]
+            labels = ["recto", "verso"]
+        else:
+            images, labels, _ = iiif_images
+            image_urls = [img.size(height=200) for img in images]
+        return Fragment.html_thumbnails(image_urls, labels, selected=selected)
 
     # CUDL manifests attribution include a metadata statement, but it
     # is not relevant for us since we aren't displaying their metadata
@@ -456,6 +456,9 @@ class Document(ModelIndexable, DocumentDateMixin):
     id = models.AutoField("PGPID", primary_key=True)
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
+    )
+    image_order_override = ArrayField(
+        models.URLField(), null=True, verbose_name="Image Order"
     )
     shelfmark_override = models.CharField(
         "Shelfmark Override",
@@ -666,7 +669,37 @@ class Document(ModelIndexable, DocumentDateMixin):
                     or i in b.selected_images
                 ]
 
+        # order returned images according to image_order_override, if present
+        if self.image_order_override:
+            unordered_images = iiif_images
+            iiif_images = []
+            for canvas in self.image_order_override:
+                matches = [
+                    idx
+                    for idx, img in enumerate(unordered_images)
+                    if img["canvas"] == canvas
+                ]
+                if matches:
+                    iiif_images.append(unordered_images.pop(matches[0]))
+            # ensure images not present in the order override are still added at the end, e.g. if
+            # fragments are added to this document after order override was set
+            for remaining_images in unordered_images:
+                iiif_images.append(remaining_images)
+
         return iiif_images
+
+    def iiif_thumbnails(self):
+        """generate html for thumbnails of all iiif images, for image reordering UI in admin"""
+        iiif_images = self.iiif_images()
+        if not iiif_images:
+            return ""
+        return Fragment.html_thumbnails(
+            images=[img["image"].size(height=200) for img in iiif_images],
+            labels=[img["label"] for img in iiif_images],
+            canvases=[img["canvas"] for img in iiif_images],
+        )
+
+    iiif_thumbnails.short_description = "Image order override"
 
     def fragment_urls(self):
         """List of external URLs to view the Document's Fragments."""

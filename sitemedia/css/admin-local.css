@@ -222,10 +222,13 @@ a#needsreview:target {
     white-space: nowrap;
 }
 
-/* selected side thumbnail for fragment admin */
-#textblock_set-group td.field-thumbnail img {
+/* IIIF thumbnails in document and fragment admin */
+#textblock_set-group td.field-thumbnail img,
+div.field-iiif_thumbnails img {
     cursor: pointer;
 }
-#textblock_set-group td.field-thumbnail img.selected {
+/* selected side thumbnail for fragment admin, drop target for document admin */
+#textblock_set-group td.field-thumbnail img.selected,
+div.field-iiif_thumbnails img.selected {
     border: 5px solid var(--accent);
 }

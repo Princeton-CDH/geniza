@@ -151,6 +151,7 @@ class DocumentForm(forms.ModelForm):
             "language_note": Textarea(attrs={"rows": 1}),
             "needs_review": Textarea(attrs={"rows": 3}),
             "notes": Textarea(attrs={"rows": 3}),
+            "image_order_override": HiddenInput(),
         }
 
     def clean(self):
@@ -208,6 +209,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         "id",
         "view_old_pgpids",
         "standard_date",
+        "iiif_thumbnails",
     )
     search_fields = (
         "fragments__shelfmark",
@@ -263,6 +265,8 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         "tags",
         "status",
         ("needs_review", "notes"),
+        "image_order_override",
+        "iiif_thumbnails",
         # edition, translation
     )
     autocomplete_fields = ["languages", "secondary_languages"]

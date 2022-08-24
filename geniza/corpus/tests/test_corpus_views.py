@@ -1,6 +1,6 @@
 from datetime import datetime
 from time import sleep
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import ANY, MagicMock, Mock, patch
 
 import pytest
 from django.conf import settings
@@ -991,6 +991,36 @@ class TestDocumentManifestView:
             result["attribution"]
             == '<div class="attribution"><p>Compilation by Princeton Geniza Project.</p><p>Additional restrictions may apply.</p></div>'
         )
+
+    @pytest.mark.django_db
+    def test_image_order_override(
+        self, mock_view_iiifpres, mock_model_iiifpres, client, fragment
+    ):
+        # original manifest with canvases in order c1, c2, c3
+        mock_manifest = (
+            mock_view_iiifpres.from_url.return_value
+        ) = mock_model_iiifpres.from_url.return_value
+        mock_canvases = []
+        for i in range(3):
+            mock_canvas = MagicMock()
+            mock_canvas.id = "urn:m1/c%s" % (i + 1)
+            # replicate dict behavior to allow dict(canvas) cast, ensure @id present in result
+            mock_dict = {"@id": "urn:m1/c%s" % (i + 1)}
+            mock_canvas.keys.return_value = ["@id"]
+            mock_canvas.__getitem__.side_effect = mock_dict.__getitem__
+            mock_canvases.append(mock_canvas)
+        mock_manifest.sequences = [Mock(canvases=mock_canvases)]
+        # add image order override to a document
+        document = Document.objects.create(
+            image_order_override=["urn:m1/c2", "urn:m1/c3", "urn:m1/c1"]
+        )
+        TextBlock.objects.create(document=document, fragment=fragment)
+        response = client.get(reverse(self.view_name, args=[document.pk]))
+        result = dict(response.json())
+        # should be ordered according to override
+        assert result["sequences"][0]["canvases"][0]["@id"] == "urn:m1/c2"
+        assert result["sequences"][0]["canvases"][1]["@id"] == "urn:m1/c3"
+        assert result["sequences"][0]["canvases"][2]["@id"] == "urn:m1/c1"
 
     def test_no_images_transcription(
         self,
