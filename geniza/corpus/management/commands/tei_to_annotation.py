@@ -9,6 +9,7 @@ import os.path
 from collections import defaultdict
 
 import requests
+from addict import Dict
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
@@ -18,7 +19,6 @@ from django.db import models
 from django.urls import reverse
 from eulxml import xmlmap
 from git import Repo
-from iiif_prezi import factory
 from rest_framework.authtoken.models import Token
 
 from geniza.common.utils import absolutize_url
@@ -60,11 +60,6 @@ class Command(sync_transcriptions.Command):
 
         xmlfiles = options["files"] or glob.iglob(os.path.join(gitrepo_path, "*.xml"))
 
-        # create factory object for constructing annotations
-        manifest_factory = factory.ManifestFactory()
-        # we may want this for other warnings? but warns every time about missing @id
-        manifest_factory.debug_level = "info"  # suppress warning about missing id
-
         annotation_client = AnnotationStore(auth_token=token.key)
 
         # iterate through tei files to be migrated
@@ -87,6 +82,11 @@ class Command(sync_transcriptions.Command):
 
             # found the document
             print(doc)
+
+            # get the footnote for this file & doc
+            footnote = self.get_edition_footnote(doc, tei, xmlfile)
+            print(footnote)
+
             # if there is a single primary language, use the iso code if it is set
             lang_code = None
             if doc.languages.count() == 1:
@@ -144,50 +144,36 @@ class Command(sync_transcriptions.Command):
                         % (len(existing_annos), annotation_target)
                     )
                     for anno in existing_annos:
-                        annotation_client.delete(anno["@id"])
+                        annotation_client.delete(anno["id"])
 
-                # create a new annotation; working with v2 because that's what SAS supports
-                # don't set an id; allow SAS to generate ids on save
-                anno = manifest_factory.annotation()
-                # supplement rather than painting over the image
-                # multiple motivations are allowed; add transcription as secondary motivation
-                anno.motivation = ["sc:supplementing", "ext:transcription"]
-                # document the annotation target ("on");
+                anno = new_transcription_annotation()
+                # link to digital edition footnote via source URI
+                anno["dc:source"] = footnote.source.uri
+
+                anno.target.source.id = annotation_target
+                anno.target.source.partOf.type = "Manifest"
+                anno.target.source.partOf.id = (
+                    settings.ANNOTATION_MANIFEST_BASE_URL
+                    + reverse("corpus:document-manifest", args=[doc.pk])
+                )  # "https://geniza.princeton.edu/en/documents/2806/iiif/manifest/",
+
                 # apply to the full canvas using % notation
                 # (using nearly full canvas to make it easier to edit zones)
-                anno.add_canvas(
-                    "%s#percent:1,1,98,98"
-                    % (annotation_target,)
-                    # previously "%s#xywh=0,0,%s,%s" using canvas width & height
-                )
-                anno.within = {
-                    "@type": "sc:Manifest",
-                    "@id": settings.ANNOTATION_MANIFEST_BASE_URL
-                    + reverse(
-                        "corpus:document-manifest", args=[doc.pk]
-                    ),  # "https://geniza.princeton.edu/en/documents/2806/iiif/manifest/",
-                }
+                anno.target.selector.value = "xywh=percent:1,1,98,98"
+                # anno.selector.value = "%s#xywh=pixel:0,0,%s,%s" % (annotation_target, canvas.width, canvas.height)
 
                 # create text body; specify language if known
+                # TODO: refactor and use formatting code in tei_transcriptions
                 html = " <ul>%s</ul>" % "".join(
                     "\n <li%s>%s</li>"
                     % (f" value='{line_number}'" if line_number else "", line)
                     for line_number, line in block["lines"]
                     if line.strip()
                 )
-                anno.text(html, format="text/html", language=lang_code)
-                # can we save arbitrary metadata?
-                anno.resource.motivation = "transcription"
-                anno.resource.label = block["label"]
-                # explicitly indicate text direction; all of our transcriptions are rtl
-                # but NOTE: SAS doesn't seem to be preserving text direction (maybe not a v2 feature)
-                anno.resource.textDirection = "rtl"
-                # we can set arbitrary metadata that SAS will preserve as long as we namespace our properties
-                # setattr(anno, "oa:annotatedBy", "username")
-                setattr(anno, "ext:order", i + 1)
-                # setattr(anno, "ext:scholarshiprecord", "footnote/source uri")
-
-                # print(anno.toJSON())
+                if block["label"]:
+                    anno.body[0].label = block["label"]
+                anno.body[0].value = html
+                anno["schema:position"] = i + 1
 
                 created = annotation_client.create(anno)
                 if created:
@@ -197,6 +183,29 @@ class Command(sync_transcriptions.Command):
             "Processed %(xml)d TEI file(s). \nCreated %(created)d annotation(s)."
             % self.stats
         )
+
+
+def new_transcription_annotation():
+    # initialize a new annotation dict object with all the defaults set
+
+    anno = Dict()
+    setattr(anno, "@context", "http://www.w3.org/ns/anno.jsonld")
+    anno.type = "Annotation"
+    anno.body = [Dict()]
+    anno.body[0].type = "TextualBody"
+    anno.body[0].purpose = "transcribing"
+    anno.body[0].format = "text/html"
+    # explicitly indicate text direction; all transcriptions are RTL
+    anno.body[0].TextInput = "rtl"
+    # supplement rather than painting over the image
+    # multiple motivations are allowed; add transcription as secondary motivation
+    anno.motivation = ["sc:supplementing", "ext:transcription"]
+
+    anno.target.source.type = "Canvas"
+    anno.target.selector.type = "FragmentSelector"
+    anno.target.selector.conformsTo = "http://www.w3.org/TR/media-frags/"
+
+    return anno
 
 
 class AnnotationStore:
@@ -219,7 +228,7 @@ class AnnotationStore:
         self.session.headers.update({"X-CSRFToken": response.cookies["csrftoken"]})
 
     def create(self, anno):
-        response = self.session.post(self.base_url, json=anno.toJSON())
+        response = self.session.post(self.base_url, json=anno)
         if response.status_code == requests.codes.created:
             return True
         else:
