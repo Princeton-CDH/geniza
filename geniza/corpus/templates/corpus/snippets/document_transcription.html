@@ -1,7 +1,7 @@
 {% load i18n static corpus_extras %}
 {% if edit_mode %}
     {{ annotation_config|json_script:"annotation-config" }}
-{% elif perms.corpus.change_document and document.iiif_images %}
+{% elif perms.corpus.change_document %}
     {# NOTE: document.iiif_images check is temporary, remove once we can use generated canvas ids #}
     {% for ed in document.digital_editions.all %}
         <a class="editor-navigation" href="{% url 'corpus:document-transcribe' document.id ed.source.pk %}" data-turbo="false">
@@ -129,9 +129,9 @@ Also doesn't currently account for fragments without images.
                             <div class="editions">
                                 {# display transcription in chunks by index #}
                                 {% for edition in document.digital_editions.all %}
-                                    {% comment %} <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                        {{ edition.content.html|dict_item:image_info.canvas|default:""|h1_to_h3|safe }}
-                                    </div> {% endcomment %}
+                                    <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
+                                        {{ edition.content_html|dict_item:image_info.canvas|default:""|h1_to_h3|safe }}
+                                    </div>
                                 {% endfor %}
                             </div>
                         {% endif %}
@@ -139,8 +139,9 @@ Also doesn't currently account for fragments without images.
                 </div>
             {% endfor %}
         {% else %}
-            {# if there are no images, loop based on the transcription chunks instead #}
-            {% comment %} {% for chunk in document.digital_editions.0.content.html %}
+            {# if there are no images, loop based on the transcription content instead #}
+            {% for canvas_id, html in document.digital_editions.0.content_html.items %}
+                {# TODO: use canvas ids here for transcription edit mode  #}
                 <div class="img"></div> {# empty image div needed for grid layout #}
                 <div class="transcription-panel">
                     {% if forloop.first %}
@@ -150,19 +151,14 @@ Also doesn't currently account for fragments without images.
                         </span>
                     {% endif %}
                     <div class="editions">
-                        {# display transcription in chunks based on loop index #}
+                        {# display transcriptions by canvas id from first edition #}
                         {% for edition in document.digital_editions.all %}
-                            {% for edition_chunk in edition.content.html.values %}
-                                {% if forloop.counter0 == forloop.parentloop.parentloop.counter0 %}
-                                    <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                        {{ edition_chunk|h1_to_h3|safe }}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
+                            <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
+                                {{ edition.content_html|dict_item:canvas_id|h1_to_h3|safe }}
                         {% endfor %}
                     </div>
                 </div>
-            {% endfor %} {% endcomment %}
+            {% endfor %}
         {% endif %}
         {% if document.has_image %}
             {% include "corpus/snippets/document_image_rights.html" %}
