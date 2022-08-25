@@ -204,11 +204,10 @@ class GenizaTei(teimap.Tei):
             if in_list:
                 list_num += 1
 
-        # close the last list, if any
+        # close the last list, if active
         if in_list:
             html_lines.append("</ol>")
 
-        print("\n".join(html_lines))
         return "\n".join(html_lines)
 
     rtl_mark = "\u200F"

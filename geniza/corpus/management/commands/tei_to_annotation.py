@@ -95,22 +95,49 @@ class Command(sync_transcriptions.Command):
             # get html blocks from the tei
             html_blocks = tei.text_to_html(block_format=True)
 
-            # get canvas objects for the images
-            iiif_canvases = []
-            for b in doc.textblock_set.all():
-                # TODO: add placeholder canvas ids for documents without iiif
-                if b.fragment.manifest:
-                    # TODO: only include canvases this document is on, per side information (recto/verso)
-                    iiif_canvases.extend(b.fragment.manifest.canvases.all())
-                else:
-                    print("no manifest for %s" % b.fragment)
-
+            # get canvas objects for the images in order; skip any non-document images
+            iiif_canvases = [img["canvas"] for img in doc.iiif_images(filter_side=True)]
+            # determine the number of canvases needed based on labels
+            # that indicate new pages
+            # check and count any after the first; always need at least 1 canvas
+            print([b["label"] for b in html_blocks])
             print(
-                "%s html blocks and %s canvases"
-                % (len(html_blocks), len(iiif_canvases))
+                [
+                    b["label"]
+                    for b in html_blocks[1:]
+                    if tei.label_indicates_new_page(b["label"])
+                ]
             )
+            num_canvases = 1 + len(
+                [
+                    b["label"]
+                    for b in html_blocks[1:]
+                    if tei.label_indicates_new_page(b["label"])
+                ]
+            )
+            print(
+                "%d iiif canvases; need %d canvases for %d blocks"
+                % (len(iiif_canvases), num_canvases, len(html_blocks))
+            )
+            # if we need more canvases than we have available,
+            # generate local canvas ids
+            if num_canvases > len(iiif_canvases):
+                # document manifest url is /documents/pgpid/iiif/manifest/
+                # create canvas uris parallel to that
+                canvas_base_uri = doc.manifest_uri.replace("manifest", "canvas")
+                for i in range(num_canvases - len(iiif_canvases)):
+                    canvas_uri = "%s%d/" % (canvas_base_uri, i + 1)
+                    print(canvas_uri)
+                    iiif_canvases.append(canvas_uri)
+
+            if num_canvases > len(iiif_canvases):
+                # iterate through any remaining pages and assign to local canvas uris
+                for i, html_chunk in enumerate(html_pages):
+                    canvas_uri = "%s%d/" % (canvas_base_uri, i)
+                    html[canvas_uri] = html_chunk
 
             # NOTE: pgpid 1390 folio example; each chunk should be half of the canvas
+            # (probably should be handled manually)
             # if len(html_chunks) > len(iiif_canvases):
             #     self.stdout.write(
             #         "%s has more html chunks than canvases; skipping" % xmlfile
@@ -123,7 +150,7 @@ class Command(sync_transcriptions.Command):
             # remove all existing annotations associated with this
             # document and source so we can reimport as needed
             existing_annos = annotation_client.search(
-                source=footnote.source.uri, manifest=document.manifest_uri
+                source=footnote.source.uri, manifest=doc.manifest_uri
             )
             # FIXME: this is probably problematic for transcriptions currently
             # split across two TEi files...
@@ -132,7 +159,7 @@ class Command(sync_transcriptions.Command):
             if existing_annos:
                 print(
                     "Removing %s existing annotation(s) for %s on %s "
-                    % (len(existing_annos), footnote.source, document.manifest_uri)
+                    % (len(existing_annos), footnote.source, doc.manifest_uri)
                 )
                 for anno in existing_annos:
                     annotation_client.delete(anno["id"])
@@ -144,10 +171,8 @@ class Command(sync_transcriptions.Command):
                     print("label %s indicates new page" % block["label"])
                     canvas_index += 1
 
-                # get the canvas for this section of text
-                # canvas includes canvas id, image id, width, height
-                canvas = iiif_canvases[canvas_index]
-                annotation_target = canvas.uri
+                # get the canvas uri for this section of text
+                annotation_target = iiif_canvases[canvas_index]
 
                 anno = new_transcription_annotation()
                 # link to digital edition footnote via source URI
@@ -155,7 +180,7 @@ class Command(sync_transcriptions.Command):
 
                 anno.target.source.id = annotation_target
                 anno.target.source.partOf.type = "Manifest"
-                anno.target.source.partOf.id = document.manifest_uri
+                anno.target.source.partOf.id = doc.manifest_uri
 
                 # apply to the full canvas using % notation
                 # (using nearly full canvas to make it easier to edit zones)

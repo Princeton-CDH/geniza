@@ -46,6 +46,9 @@ class Command(BaseCommand):
     # TEI files resolving incorrectly to the same edition
     footnotes_updated = defaultdict(list)
 
+    # keep track of document ids with multiple digitized editions (likely merged records/joins)
+    multiedition_docs = set()
+
     def handle(self, *args, **options):
         # get settings for remote git repository url and local path
         gitrepo_url = settings.TEI_TRANSCRIPTIONS_GITREPO
@@ -69,8 +72,6 @@ class Command(BaseCommand):
         self.stats["duplicate_footnote"] = 0
         # updates should not happen after initial sync when there are no TEI changes
         self.stats["footnote_updated"] = 0
-        # keep track of document ids with multiple digitized editions (likely merged records/joins)
-        self.multiedition_docs = set()
 
         # iterate through all tei files in the repository OR specified files
         xmlfiles = options["files"] or glob.iglob(os.path.join(gitrepo_path, "*.xml"))
