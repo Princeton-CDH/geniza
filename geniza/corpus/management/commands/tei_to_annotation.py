@@ -7,6 +7,7 @@ to IIIF annotations in the configured annotation server.
 import glob
 import os.path
 from collections import defaultdict
+from datetime import datetime
 
 import requests
 from addict import Dict
@@ -17,8 +18,10 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 from eulxml import xmlmap
 from git import Repo
+from parasolr.django.signals import IndexableSignalHandler
 from rest_framework.authtoken.models import Token
 
 from geniza.common.utils import absolutize_url
@@ -32,6 +35,8 @@ class Command(sync_transcriptions.Command):
     """Synchronize TEI transcriptions to edition footnote content"""
 
     v_normal = 1  # default verbosity
+
+    missing_footnotes = []
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -54,7 +59,10 @@ class Command(sync_transcriptions.Command):
         self.footnote_contenttype = ContentType.objects.get_for_model(Footnote)
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
-        # NOTE: some overlap with sync transcriptions manage command
+        # disconnect solr indexing signals
+        IndexableSignalHandler.disconnect()
+        # NOTE: can't disconnect annotation signal handler because it
+        # is server side and we're accessing via API
 
         # make sure we have latest tei content from git repository
         # (inherited from sync transcriptions command)
@@ -65,6 +73,8 @@ class Command(sync_transcriptions.Command):
         xmlfiles = options["files"] or glob.iglob(os.path.join(gitrepo_path, "*.xml"))
 
         annotation_client = AnnotationStore(auth_token=token.key)
+
+        script_run_start = timezone.now()
 
         # iterate through tei files to be migrated
         for xmlfile in xmlfiles:
@@ -95,7 +105,7 @@ class Command(sync_transcriptions.Command):
                 continue
             # found the document
             if self.verbosity >= self.v_normal:
-                self.stdout.write(doc)
+                self.stdout.write(str(doc))
 
             # get the footnote for this file & doc
             footnote = self.get_edition_footnote(doc, tei, xmlfile)
@@ -107,6 +117,7 @@ class Command(sync_transcriptions.Command):
                         "footnote not found for %s / %s; skipping" % (xmlfile, doc.pk)
                     )
                 )
+                self.missing_footnotes.append(xmlfile)
                 continue
             footnote = self.migrate_footnote(footnote, doc)
 
@@ -166,6 +177,21 @@ class Command(sync_transcriptions.Command):
             # split across two TEi files...
             # maybe filter by date created also, so we only remove
             # annotations created before the current script run?
+
+            num_before = len(existing_annos)
+            # filter to annotations created before current script run
+            existing_annos = [
+                a
+                for a in existing_annos
+                if datetime.fromisoformat(a["created"]) < script_run_start
+            ]
+            # for debugging, report if this differs
+            if len(existing_annos) != num_before:
+                print(
+                    "%d existing annotations before current script run (%d total)"
+                    % (len(existing_annos), num_before)
+                )
+
             if existing_annos:
                 print(
                     "Removing %s existing annotation(s) for %s on %s "
@@ -215,6 +241,15 @@ class Command(sync_transcriptions.Command):
             % self.stats
         )
 
+        # report on missing footnotes
+        if self.missing_footnotes:
+            print(
+                "Could not find footnotes for %s documents:"
+                % len(self.missing_footnotes)
+            )
+            for xmlfile in self.missing_footnotes:
+                print("\t%s" % xmlfile)
+
     def get_footnote_editions(self, doc):
         # extend to return digital edition or edition
         # (digital edition if from previous run of this script)
@@ -222,6 +257,8 @@ class Command(sync_transcriptions.Command):
             models.Q(doc_relation__contains=Footnote.EDITION)
             | models.Q(doc_relation__contains=Footnote.DIGITAL_EDITION)
         )
+
+    # def get_edition_footnote(self, doc, tei, filename):
 
     def migrate_footnote(self, footnote, document):
         # convert existing edition footnote to digital edition
@@ -246,6 +283,18 @@ class Command(sync_transcriptions.Command):
             footnote.content = None
             footnote.save()
 
+            # if a digital edition footnote for this source already exists,
+            # use that instead of creating a duplicate
+
+            diged_footnote = Footnote.objects.filter(
+                doc_relation=Footnote.DIGITAL_EDITION, source=footnote.source
+            ).first()
+
+            # if digital edition for this doc+source exists, return it
+            if diged_footnote:
+                return diged_footnote
+
+            # otherwise, make a new one
             new_footnote = Footnote(
                 doc_relation=Footnote.DIGITAL_EDITION, source=footnote.source
             )
