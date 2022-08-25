@@ -1,3 +1,4 @@
+from functools import cached_property
 from os import path
 from urllib.parse import urljoin
 
@@ -489,19 +490,19 @@ class Footnote(TrackChangesModel):
     has_url.boolean = True
     has_url.admin_order_field = "url"
 
-    @property
+    @cached_property
     def content_html(self):
         "content as html, if available"
         if self.DIGITAL_EDITION in self.doc_relation:
             doc = self.content_object
             # filter annotations by document manifest and source
             annos = Annotation.objects.filter(
-                content__target__source__partOf__id=reverse(
-                    "corpus:document-manifest", args=[doc.pk]
-                ),
+                content__target__source__partOf__id=doc.manifest_uri,
                 content__contains={"dc:source": self.source.uri},
-            )  # TODO: Order to match document/canvas order, then order within canvas
-            return "\n".join([anno.content["body"][0]["value"] for anno in annos])
+            )
+            # return a dictionary of annotation html content
+            # keyed on canvas uri
+            return {a.target_source_id: a.body_content for a in annos}
 
     @property
     def content_text(self):
