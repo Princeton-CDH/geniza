@@ -73,11 +73,19 @@ class Command(sync_transcriptions.Command):
             # check if the tei is ok to proceed; (e.g., empty or only translation content)
             # if empty, report and skip
             if not self.check_tei(tei, xmlfile):
+                self.stdout.write(
+                    self.style.WARNING(
+                        "No transcription content in %s; skipping" % xmlfile
+                    )
+                )
                 continue
             # get the document for the file based on id / old id
             doc = self.get_pgp_document(xmlfile_basename)
             # if document was not found, skip
             if not doc:
+                self.stdout.write(
+                    self.style.WARNING("Document not found for %s; skipping" % xmlfile)
+                )
                 continue
 
             # found the document
@@ -85,6 +93,17 @@ class Command(sync_transcriptions.Command):
 
             # get the footnote for this file & doc
             footnote = self.get_edition_footnote(doc, tei, xmlfile)
+            footnote = self.migrate_footnote(footnote)
+            # if no footnote, skip for now
+            # TODO: generate footnote when needed! (should we need to?)
+            if not footnote:
+                self.stdout.write(
+                    self.style.ERROR(
+                        "footnote not found for %s / %s; skipping" % (xmlfile, doc.pk)
+                    )
+                )
+                continue
+
             print(footnote)
 
             # if there is a single primary language, use the iso code if it is set
@@ -100,14 +119,6 @@ class Command(sync_transcriptions.Command):
             # determine the number of canvases needed based on labels
             # that indicate new pages
             # check and count any after the first; always need at least 1 canvas
-            print([b["label"] for b in html_blocks])
-            print(
-                [
-                    b["label"]
-                    for b in html_blocks[1:]
-                    if tei.label_indicates_new_page(b["label"])
-                ]
-            )
             num_canvases = 1 + len(
                 [
                     b["label"]
@@ -115,7 +126,7 @@ class Command(sync_transcriptions.Command):
                     if tei.label_indicates_new_page(b["label"])
                 ]
             )
-            print(
+            self.stdout.write(
                 "%d iiif canvases; need %d canvases for %d blocks"
                 % (len(iiif_canvases), num_canvases, len(html_blocks))
             )
@@ -127,7 +138,6 @@ class Command(sync_transcriptions.Command):
                 canvas_base_uri = doc.manifest_uri.replace("manifest", "canvas")
                 for i in range(num_canvases - len(iiif_canvases)):
                     canvas_uri = "%s%d/" % (canvas_base_uri, i + 1)
-                    print(canvas_uri)
                     iiif_canvases.append(canvas_uri)
 
             if num_canvases > len(iiif_canvases):
@@ -205,6 +215,13 @@ class Command(sync_transcriptions.Command):
             "Processed %(xml)d TEI file(s). \nCreated %(created)d annotation(s)."
             % self.stats
         )
+
+    def migrate_footnote(self, footnote):
+        # convert existing edition footnote to digital edition
+        # OR make a new one if the existing footnote has other information
+
+        # placeholder function
+        return footnote
 
 
 def new_transcription_annotation():

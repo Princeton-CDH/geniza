@@ -158,7 +158,13 @@ class GenizaTei(teimap.Tei):
         for line_number, line in lines:
             # convertline number to integer for comparison
             if line_number:
-                line_number = int(line_number)
+                try:
+                    line_number = int(line_number)
+                except ValueError:
+                    # in at least one instance, line number is a range "16-17"
+                    # ignore the problem (??)
+                    if "-" in line_number:
+                        line_number = int(line_number.split("-")[0])
 
             # if line is empty, skip it
             if not line.strip():
@@ -194,11 +200,16 @@ class GenizaTei(teimap.Tei):
                 if in_list:
                     html_lines.append("</ol>")
 
-                # start a new list with the specified number
-                list_num = line_number
-                in_list = True
-                html_lines.append('<ol start="%s">' % line_number)
-                html_lines.append("<li>%s</li>" % line)
+                # start a new list with the specified number IF numeric
+                if isinstance(line_number, int):
+                    list_num = line_number
+                    in_list = True
+                    html_lines.append('<ol start="%s">' % line_number)
+                else:
+                    # if not numeric, we can't use as line number or start
+                    html_lines.append("<ol>")
+                    # add to text to preserve the content
+                    html_lines.append("<li><b>%s<b> %s</li>" % (line_number, line))
 
             # increment expected list number if we're inside a list
             if in_list:
