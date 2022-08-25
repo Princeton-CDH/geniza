@@ -10,7 +10,8 @@ class TestAnnotationAdmin:
         anno = Annotation(content={"foo": "bar"})
         admin_form = AnnotationAdmin(model=Annotation, admin_site=admin.site)
         display_content = admin_form.display_content(anno)
-        assert display_content == "<pre>{'foo': 'bar'}</pre>"
+        # should escape HTML characters within content
+        assert display_content == "<pre>{&#x27;foo&#x27;: &#x27;bar&#x27;}</pre>"
 
     def test_pgpid(self):
         anno = Annotation(content={"foo": "bar"})
