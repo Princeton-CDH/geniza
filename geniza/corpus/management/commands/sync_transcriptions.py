@@ -247,10 +247,14 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
                 self.stdout.write("Document %s not found in database" % pgpid)
             return
 
+    def get_footnote_editions(self, doc):
+        # allow extension for tei to annotation
+        return doc.footnotes.editions()
+
     def get_edition_footnote(self, doc, tei, filename):
         """identify the edition footnote to be updated"""
-        # NOTE: still needs to handle multiple editions, no editions
-        editions = doc.footnotes.editions()
+        # get editions for this document
+        editions = self.get_footnote_editions(doc)
 
         if editions.count() > 1:
             self.stats["multiple_editions"] += 1

@@ -25,6 +25,7 @@ from geniza.common.utils import absolutize_url
 from geniza.corpus.management.commands import sync_transcriptions
 from geniza.corpus.models import Document
 from geniza.corpus.tei_transcriptions import GenizaTei
+from geniza.footnotes.models import Footnote
 
 
 class Command(sync_transcriptions.Command):
@@ -49,6 +50,9 @@ class Command(sync_transcriptions.Command):
         gitrepo_path = settings.TEI_TRANSCRIPTIONS_LOCAL_PATH
 
         self.verbosity = options["verbosity"]
+        # get content type and script nuser for log entries
+        self.footnote_contenttype = ContentType.objects.get_for_model(Footnote)
+        self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
         # NOTE: some overlap with sync transcriptions manage command
 
@@ -65,7 +69,9 @@ class Command(sync_transcriptions.Command):
         # iterate through tei files to be migrated
         for xmlfile in xmlfiles:
             self.stats["xml"] += 1
-            print(xmlfile)
+            if self.verbosity >= self.v_normal:
+                self.stdout.write(xmlfile)
+
             xmlfile_basename = os.path.basename(xmlfile)
 
             tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
@@ -87,15 +93,14 @@ class Command(sync_transcriptions.Command):
                     self.style.WARNING("Document not found for %s; skipping" % xmlfile)
                 )
                 continue
-
             # found the document
-            print(doc)
+            if self.verbosity >= self.v_normal:
+                self.stdout.write(doc)
 
             # get the footnote for this file & doc
             footnote = self.get_edition_footnote(doc, tei, xmlfile)
-            footnote = self.migrate_footnote(footnote)
             # if no footnote, skip for now
-            # TODO: generate footnote when needed! (should we need to?)
+            # TODO: generate footnote when needed! (but should we need to?)
             if not footnote:
                 self.stdout.write(
                     self.style.ERROR(
@@ -103,8 +108,7 @@ class Command(sync_transcriptions.Command):
                     )
                 )
                 continue
-
-            print(footnote)
+            footnote = self.migrate_footnote(footnote, doc)
 
             # if there is a single primary language, use the iso code if it is set
             lang_code = None
@@ -126,10 +130,12 @@ class Command(sync_transcriptions.Command):
                     if tei.label_indicates_new_page(b["label"])
                 ]
             )
-            self.stdout.write(
-                "%d iiif canvases; need %d canvases for %d blocks"
-                % (len(iiif_canvases), num_canvases, len(html_blocks))
-            )
+            # in verbose mode report on available/needed canvases
+            if self.verbosity > self.v_normal:
+                self.stdout.write(
+                    "%d iiif canvases; need %d canvases for %d blocks"
+                    % (len(iiif_canvases), num_canvases, len(html_blocks))
+                )
             # if we need more canvases than we have available,
             # generate local canvas ids
             if num_canvases > len(iiif_canvases):
@@ -139,12 +145,6 @@ class Command(sync_transcriptions.Command):
                 for i in range(num_canvases - len(iiif_canvases)):
                     canvas_uri = "%s%d/" % (canvas_base_uri, i + 1)
                     iiif_canvases.append(canvas_uri)
-
-            if num_canvases > len(iiif_canvases):
-                # iterate through any remaining pages and assign to local canvas uris
-                for i, html_chunk in enumerate(html_pages):
-                    canvas_uri = "%s%d/" % (canvas_base_uri, i)
-                    html[canvas_uri] = html_chunk
 
             # NOTE: pgpid 1390 folio example; each chunk should be half of the canvas
             # (probably should be handled manually)
@@ -178,7 +178,6 @@ class Command(sync_transcriptions.Command):
                 # if this is not the first block and the label suggests new image,
                 # increment canvas index
                 if i != 0 and tei.label_indicates_new_page(block["label"]):
-                    print("label %s indicates new page" % block["label"])
                     canvas_index += 1
 
                 # get the canvas uri for this section of text
@@ -205,7 +204,7 @@ class Command(sync_transcriptions.Command):
 
                 anno["schema:position"] = i + 1
 
-                print(anno)
+                # print(anno) # can print for debugging
 
                 created = annotation_client.create(anno)
                 if created:
@@ -216,11 +215,67 @@ class Command(sync_transcriptions.Command):
             % self.stats
         )
 
-    def migrate_footnote(self, footnote):
+    def get_footnote_editions(self, doc):
+        # extend to return digital edition or edition
+        # (digital edition if from previous run of this script)
+        return doc.footnotes.filter(
+            models.Q(doc_relation__contains=Footnote.EDITION)
+            | models.Q(doc_relation__contains=Footnote.DIGITAL_EDITION)
+        )
+
+    def migrate_footnote(self, footnote, document):
         # convert existing edition footnote to digital edition
         # OR make a new one if the existing footnote has other information
 
-        # placeholder function
+        # convert existing edition footnote to digital edition
+        # OR make a new one if the existing footnote has other information
+
+        # if footnote is already a digital edition, nothing to be done
+        # (already migrated in a previous run)
+        if footnote.doc_relation == Footnote.DIGITAL_EDITION:
+            return footnote
+
+        # if footnote has other types or a url, we should preserve it
+        if (
+            set(footnote.doc_relation).intersection(
+                {Footnote.TRANSLATION, Footnote.DISCUSSION}
+            )
+            or footnote.url
+        ):
+            # remove interim transcription content
+            footnote.content = None
+            footnote.save()
+
+            new_footnote = Footnote(
+                doc_relation=Footnote.DIGITAL_EDITION, source=footnote.source
+            )
+            # trying to set from related object footnote.document errors
+            new_footnote.content_object = document
+            new_footnote.save()
+            log_action = ADDITION
+            log_message = "Created new footnote for migrated digital edition"
+
+            # assign to footnote for logging and return
+            footnote = new_footnote
+
+        else:
+            # otherwise, convert edition to digital edition
+            footnote.doc_relation = Footnote.DIGITAL_EDITION
+            footnote.content = ""
+            footnote.save()
+
+            log_action = CHANGE
+            log_message = "Migrated footnote to digital edition"
+
+        # log entry to document footnote the change
+        LogEntry.objects.log_action(
+            user_id=self.script_user.id,
+            content_type_id=self.footnote_contenttype.pk,
+            object_id=footnote.pk,
+            object_repr=str(footnote),
+            change_message=log_message,
+            action_flag=log_action,
+        )
         return footnote
 
 
