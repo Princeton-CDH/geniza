@@ -428,7 +428,7 @@ class DocumentTranscriptionText(DocumentDetailView):
             filename = "PGP%d_%s_%s.txt" % (document.id, shelfmark, "_".join(authors))
 
             return HttpResponse(
-                edition.content["text"],
+                edition.content_text,
                 headers={
                     "Content-Type": "text/plain; charset=UTF-8",
                     # prompt download with filename including pgpid, shelfmark, & authors
@@ -541,9 +541,6 @@ class DocumentAnnotationListView(DocumentDetailView):
         """handle GET request: construct and return JSON annotation list"""
         document = self.get_object()
         digital_editions = document.digital_editions()
-        # while sync transcription is in transition, we need to check for
-        # html transcription content
-        digital_editions = [de for de in digital_editions if "html" in de.content]
         # if there is no transcription content, 404
         if not digital_editions:
             raise Http404

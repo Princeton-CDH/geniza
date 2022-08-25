@@ -6,6 +6,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
+from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
@@ -13,6 +14,7 @@ from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager
 from multiselectfield import MultiSelectField
 
+from geniza.annotations.models import Annotation
 from geniza.common.fields import NaturalSortField
 from geniza.common.models import TrackChangesModel
 
@@ -372,20 +374,22 @@ class Source(models.Model):
         manifest_base_url = getattr(settings, "ANNOTATION_MANIFEST_BASE_URL", "")
         return urljoin(manifest_base_url, path.join("sources", str(self.pk))) + "/"
 
+    @classmethod
+    def from_uri(cls, uri):
+        """Given a URI for a Source (as used in transcription annotations), return the Source
+        object matching the pk"""
+        # TODO: Use resolve() when the json source view exists
+        return cls.objects.get(pk=int(uri.split("/")[-2]))
+
 
 class FootnoteQuerySet(models.QuerySet):
-    def includes_footnote(self, other, include_content=True):
+    def includes_footnote(self, other):
         """Check if the current queryset includes a match for the
         specified footnotes. Matches are made by comparing content source,
-        location, document relation type, notes, and content (ignores
-        associated content object). To ignore content when comparing
-        footnotes, specify `include_content=False`.
+        location, document relation type, and notes.
         Returns the matching object if there was one, or False if not."""
 
         compare_fields = ["source", "location", "notes"]
-        # optionally include content when comparing; include by default
-        if include_content:
-            compare_fields.append("content")
 
         for fn in self.all():
             if (
@@ -464,14 +468,6 @@ class Footnote(TrackChangesModel):
         rel = " and ".join([str(choices[c]) for c in self.doc_relation]) or "Footnote"
         return f"{rel} of {self.content_object}"
 
-    def has_transcription(self):
-        """Admin display field indicating presence of digitized transcription."""
-        return bool(self.content)
-
-    has_transcription.short_description = "Digitized Transcription"
-    has_transcription.boolean = True
-    has_transcription.admin_order_field = "content"
-
     def display(self):
         """format footnote for display; used on document detail page
         and metdata export for old pgp site"""
@@ -493,10 +489,24 @@ class Footnote(TrackChangesModel):
     has_url.boolean = True
     has_url.admin_order_field = "url"
 
+    @property
+    def content_html(self):
+        "content as html, if available"
+        if self.DIGITAL_EDITION in self.doc_relation:
+            doc = self.content_object
+            # filter annotations by document manifest and source
+            annos = Annotation.objects.filter(
+                content__target__source__partOf__id=reverse(
+                    "corpus:document-manifest", args=[doc.pk]
+                ),
+                content__contains={"dc:source": self.source.uri},
+            )  # TODO: Order to match document/canvas order, then order within canvas
+            return "\n".join([anno.content["body"][0]["value"] for anno in annos])
+
+    @property
     def content_text(self):
         "content as plain text, if available"
-        if self.content:
-            return self.content.get("text")
+        return strip_tags(self.content_html)
 
     def iiif_annotation_content(self):
         """Return transcription content from this footnote (if any)
@@ -504,13 +514,13 @@ class Footnote(TrackChangesModel):
         """
         # For now, since we have no block/canvas information, return the
         # whole thing as a single resource
-        html_content = self.content.get("html")
-        if html_content:
+        html = self.content_html
+        if html:
             # this is the content that should be set as the "resource"
             # of an annotation
             return {
                 "@type": "cnt:ContentAsText",
                 "format": "text/html",
                 # language todo
-                "chars": "<div dir='rtl' class='transcription'>%s</div>" % html_content,
+                "chars": "<div dir='rtl' class='transcription'>%s</div>" % html,
             }

@@ -3,6 +3,8 @@ from unittest.mock import patch
 import pytest
 from django.contrib.humanize.templatetags.humanize import ordinal
 
+from geniza.annotations.models import Annotation
+from geniza.corpus.models import Document
 from geniza.footnotes.models import (
     Creator,
     Footnote,
@@ -214,6 +216,18 @@ class TestSource:
             mock_getattr.return_value = "http://example.com/"
             assert source.uri == f"http://example.com/sources/{source.pk}/"
 
+    def test_from_uri(self, source):
+        # should get a source from its generated URI
+        assert Source.from_uri(source.uri).pk == source.pk
+
+        # should raise error on improperly formatted URI
+        with pytest.raises(ValueError):
+            Source.from_uri("http://example.com/")
+        with pytest.raises(ValueError):
+            Source.from_uri("http://example.com/1")
+        with pytest.raises(Source.DoesNotExist):
+            Source.from_uri("http://example.com/-1/")
+
 
 class TestFootnote:
     @pytest.mark.django_db
@@ -227,15 +241,6 @@ class TestFootnote:
             assert str(footnote) == "Edition of foo"
             footnote.doc_relation = [Footnote.EDITION, Footnote.TRANSLATION]
             assert str(footnote) == "Edition and Translation of foo"
-
-    @pytest.mark.django_db
-    def test_has_transcription(self, source):
-        footnote = Footnote(source=source)
-        # if there's content, that indicates a digitized transcription
-        with patch.object(Footnote, "content_object", new="foo"):
-            assert not footnote.has_transcription()
-            footnote.content = "The digitized transcription"
-            assert footnote.has_transcription()
 
     def test_display(self, source):
         footnote = Footnote(source=source)
@@ -255,6 +260,34 @@ class TestFootnote:
         assert not footnote.has_url()
         footnote.url = "http://example.com/"
         assert footnote.has_url()
+
+    def test_content_html(self, annotation, twoauthor_source):
+        # should get each associated annotation's body text, separated by newline
+        manifest_uri = annotation.content["target"]["source"]["partOf"]["id"]
+        source_uri = annotation.content["dc:source"]
+        source = Source.from_uri(source_uri)
+        document = Document.from_manifest_uri(manifest_uri)
+        Annotation.objects.create(
+            content={**annotation.content, "body": [{"value": "Second annotation!"}]}
+        )
+        digital_edition = document.footnotes.create(
+            source=source, doc_relation=[Footnote.DIGITAL_EDITION]
+        )
+        assert digital_edition.content_html.split("\n") == [
+            "Test annotation",
+            "Second annotation!",
+        ]
+
+        # should return None if not a digital edition
+        edition = Footnote.objects.create(
+            source=source, content_object=document, doc_relation=[Footnote.EDITION]
+        )
+        assert edition.content_html is None
+
+        # should return empty string if no annotations with content
+        digital_edition.source = twoauthor_source
+        digital_edition.save()
+        assert digital_edition.content_html == ""
 
 
 class TestFootnoteQuerySet:
@@ -303,36 +336,6 @@ class TestFootnoteQuerySet:
         footnote2.notes = "some extra info"
         footnote2.save()
         assert not Footnote.objects.filter(pk=footnote1.pk).includes_footnote(footnote2)
-
-        # different content
-        footnote2.notes = ""
-        footnote2.content = "{}"
-        footnote2.save()
-        assert not Footnote.objects.filter(pk=footnote1.pk).includes_footnote(footnote2)
-
-    @pytest.mark.django_db
-    def test_includes_footnote_ignore_content(self, source, twoauthor_source, document):
-        # same source, content object, location; one with content
-        footnote1 = Footnote.objects.create(
-            source=source,
-            content_object=document,
-            location="p.1",
-            doc_relation=Footnote.EDITION,
-        )
-        footnote2 = Footnote.objects.create(
-            source=source,
-            content_object=document,
-            location="p.1",
-            doc_relation=Footnote.EDITION,
-            content={"text": "{'foo': 'bar'}"},
-        )
-        assert not Footnote.objects.filter(pk=footnote1.pk).includes_footnote(footnote2)
-        assert (
-            Footnote.objects.filter(pk=footnote1.pk).includes_footnote(
-                footnote2, include_content=False
-            )
-            == footnote1
-        )
 
     def test_editions(self, source, twoauthor_source, document):
         # same source, content object, location

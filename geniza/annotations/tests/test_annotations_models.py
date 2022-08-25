@@ -1,4 +1,5 @@
 import pytest
+from django.urls import reverse
 
 from geniza.annotations.models import Annotation
 from geniza.common.utils import absolutize_url
@@ -61,24 +62,24 @@ class TestAnnotation:
             anno.set_content(bad_content)
 
     @pytest.mark.django_db
-    def test_compile(self):
+    def test_compile(self, annotation):
         # create so we get id, created, modified
-        anno = Annotation.objects.create(
-            content={
+        annotation.content.update(
+            {
                 "foo": "bar",
                 "id": "bogus",
                 "created": "yesterday",
                 "modified": "today",
             }
         )
-        compiled = anno.compile()
+        compiled = annotation.compile()
 
         # fields from model should take precedence if there's any collison with content
-        assert compiled["id"] == anno.uri()
+        assert compiled["id"] == annotation.uri()
         assert compiled["@context"] == "http://www.w3.org/ns/anno.jsonld"
         assert compiled["type"] == "Annotation"
-        assert compiled["created"] == anno.created.isoformat()
-        assert compiled["modified"] == anno.modified.isoformat()
+        assert compiled["created"] == annotation.created.isoformat()
+        assert compiled["modified"] == annotation.modified.isoformat()
         # content should be set
         assert compiled["foo"] == "bar"
         # canonical and via should not be set
@@ -86,8 +87,8 @@ class TestAnnotation:
         assert "via" not in compiled
 
         # set via and canonical
-        anno.via = "http://example.com/annotations/123"
-        anno.canonical = "urn:uuid:123"
-        compiled = anno.compile()
-        assert compiled["canonical"] == anno.canonical
-        assert compiled["via"] == anno.via
+        annotation.via = "http://example.com/annotations/123"
+        annotation.canonical = "urn:uuid:123"
+        compiled = annotation.compile()
+        assert compiled["canonical"] == annotation.canonical
+        assert compiled["via"] == annotation.via

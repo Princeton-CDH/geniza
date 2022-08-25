@@ -197,20 +197,23 @@ class TestFootnoteAdmin:
         book = SourceType.objects.get(type="Book")
         source = Source.objects.create(title_en="Reader", source_type=book)
 
-        footnote = Footnote(source=source, doc_relation=["E", "D"])
+        footnote = Footnote(
+            source=source, doc_relation=[Footnote.EDITION, Footnote.DISCUSSION]
+        )
         assert fnoteadmin.doc_relation_list(footnote) == str(footnote.doc_relation)
 
     @pytest.mark.django_db
     def test_tabulate_queryset(self, source, document):
         fnoteadmin = FootnoteAdmin(Footnote, admin.site)
         Footnote.objects.create(
-            source=source, content_object=document, doc_relation=["E", "D"]
+            source=source,
+            content_object=document,
+            doc_relation=[Footnote.EDITION, Footnote.DISCUSSION],
         )
         Footnote.objects.create(
             source=source,
             content_object=document,
-            doc_relation=["E"],
-            content={"text": "some text\na little more text"},
+            doc_relation=[Footnote.DIGITAL_EDITION],
         )
 
         qs = fnoteadmin.get_queryset("rqst")
@@ -225,8 +228,8 @@ class TestFootnoteAdmin:
             assert footnote.notes in footnote_data
             assert footnote.url in footnote_data
 
-            if footnote.content:
-                assert footnote.content["text"] in footnote_data
+            if Footnote.DIGITAL_EDITION in footnote.doc_relation:
+                assert footnote.content_text in footnote_data
 
             assert (
                 f"https://example.com/admin/footnotes/footnote/{footnote.id}/change/"
@@ -238,13 +241,14 @@ class TestFootnoteAdmin:
     def test_export_to_csv(self, mock_export_to_csv_response, source, document):
         fnoteadmin = FootnoteAdmin(Footnote, admin.site)
         Footnote.objects.create(
-            source=source, doc_relation=["E", "D"], content_object=document
+            source=source,
+            doc_relation=[Footnote.EDITION, Footnote.DISCUSSION],
+            content_object=document,
         )
         Footnote.objects.create(
             source=source,
             content_object=document,
-            doc_relation=["E"],
-            content={"text": "some text\na little more text"},
+            doc_relation=[Footnote.DIGITAL_EDITION],
         )
 
         with patch.object(fnoteadmin, "tabulate_queryset") as tabulate_queryset:

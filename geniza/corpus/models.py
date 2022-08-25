@@ -2,6 +2,7 @@ import logging
 from collections import defaultdict
 from functools import cached_property
 from itertools import chain
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib import admin, messages
@@ -17,7 +18,7 @@ from django.db.models.functions.text import Lower
 from django.db.models.query import Prefetch
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-from django.urls import reverse
+from django.urls import resolve, reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
@@ -542,6 +543,13 @@ class Document(ModelIndexable, DocumentDateMixin):
             models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
         ).first()
 
+    @classmethod
+    def from_manifest_uri(cls, uri):
+        """Given a manifest URI (as used in transcription annotations), find a Document matching
+        its pgpid"""
+        # will raise Resolver404 if url does not resolve
+        return cls.objects.get(pk=resolve(urlparse(uri).path).kwargs["pk"])
+
     @property
     def shelfmark(self):
         """shelfmarks for associated fragments"""
@@ -688,11 +696,16 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     def has_transcription(self):
         """Admin display field indicating if document has a transcription."""
-        return any(note.has_transcription() for note in self.footnotes.all())
+        # avoids an additional DB call for admin list view
+        return any(
+            [
+                Footnote.DIGITAL_EDITION in note.doc_relation
+                for note in self.footnotes.all()
+            ]
+        )
 
     has_transcription.short_description = "Transcription"
     has_transcription.boolean = True
-    has_transcription.admin_order_field = "footnotes__content"
 
     def has_image(self):
         """Admin display field indicating if document has a IIIF image."""
@@ -709,25 +722,22 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     def editions(self):
         """All footnotes for this document where the document relation includes
-        edition; footnotes with content will be sorted first."""
+        edition."""
         return self.footnotes.filter(doc_relation__contains=Footnote.EDITION).order_by(
-            "content", "source"
+            "source"
         )
 
     def digital_editions(self):
         """All footnotes for this document where the document relation includes
-        edition AND the footnote has content."""
-        return (
-            self.footnotes.filter(doc_relation__contains=Footnote.EDITION)
-            .filter(content__isnull=False)
-            .order_by("content", "source")
-        )
+        digital edition."""
+        return self.footnotes.filter(
+            doc_relation__contains=Footnote.DIGITAL_EDITION
+        ).order_by("source")
 
     def editors(self):
         """All unique authors of digital editions for this document."""
         return Creator.objects.filter(
-            source__footnote__doc_relation__contains=Footnote.EDITION,
-            source__footnote__content__isnull=False,
+            source__footnote__doc_relation__contains=Footnote.DIGITAL_EDITION,
             source__footnote__document=self,
         ).distinct()
 
@@ -859,8 +869,8 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         for fn in footnotes:
             # if this is an edition/transcription, try to get plain text for indexing
-            if Footnote.EDITION in fn.doc_relation and fn.content:
-                plaintext = fn.content_text()
+            if Footnote.DIGITAL_EDITION in fn.doc_relation:
+                plaintext = fn.content_text
                 if plaintext:
                     transcription_texts.append(plaintext)
             # add any doc relations to this footnote's source's set in source_relations
@@ -1050,27 +1060,10 @@ class Document(ModelIndexable, DocumentDateMixin):
     def _merge_footnotes(self, doc):
         # combine footnotes; footnote logic for merge_with
         for footnote in doc.footnotes.all():
-            # first, check for an exact match
+            # check for match; add new footnote if not a match
             equiv_fn = self.footnotes.includes_footnote(footnote)
-            # if there is no exact match, check again ignoring content
             if not equiv_fn:
-                equiv_fn = self.footnotes.includes_footnote(
-                    footnote, include_content=False
-                )
-                # if there's a partial match (everything but content)
-                if equiv_fn:
-                    # if the new footnote has content, add it
-                    if footnote.content:
-                        self.footnotes.add(footnote)
-                    # if the partial match has no content, remove it
-                    # (if it has any content, then it is different from the new one
-                    # and should be preserved)
-                    if not equiv_fn.content:
-                        self.footnotes.remove(equiv_fn)
-
-                # if neither an exact or partial match, add the new footnote
-                else:
-                    self.footnotes.add(footnote)
+                self.footnotes.add(footnote)
 
     def _merge_logentries(self, doc):
         # reassociate log entries; logic for merge_with

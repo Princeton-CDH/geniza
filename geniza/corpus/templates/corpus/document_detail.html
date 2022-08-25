@@ -135,6 +135,8 @@
         </section>
 
         {# link to download transcription if available; admin only for now since plain-text bidi is not great #}
+        {# TODO: Remove or update with new transcription format #}
+        {% comment %}
         {% if document.has_transcription and user.is_authenticated %}
             <section class="transcription-link">
                 {% for ed in document.digital_editions %}
@@ -144,6 +146,7 @@
                 {% endfor %}
             </section>
         {% endif %}
+        {% endcomment %}
 
 
     </div>
