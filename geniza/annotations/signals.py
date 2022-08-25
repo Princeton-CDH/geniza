@@ -1,11 +1,16 @@
+import logging
+
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, DELETION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.db.models.signals import post_delete, post_save
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.models import Document
 from geniza.footnotes.models import Footnote, Source
+
+logger = logging.getLogger(__name__)
 
 
 def create_or_delete_footnote(instance, **kwargs):
@@ -13,8 +18,17 @@ def create_or_delete_footnote(instance, **kwargs):
     On Annotation delete, if it's the only Annotation for the corresponding Footnote,
     delete the Footnote."""
     # get manifest uri from annotation content and match it to a Document
-    manifest_uri = instance.content["target"]["source"]["partOf"]["id"]
-    source_uri = instance.content["dc:source"]
+
+    try:
+        manifest_uri = instance.target_source_manifest_id
+        source_uri = instance.content["dc:source"]
+    except KeyError:
+        # annotations created from tahqiq should have these;
+        # if not present, bail out
+        # (likely only happening in unit tests)
+        return
+
+    # TODO: can we get ids without loading source/doc from db?
     source = Source.from_uri(source_uri)
     document = Document.from_manifest_uri(manifest_uri)
     # if deleted, created is None; if updated but not deleted, created is False
@@ -34,6 +48,9 @@ def create_or_delete_footnote(instance, **kwargs):
         ):
             footnote.delete()
             log_footnote_action(footnote, DELETION)
+
+            logger.debug("Deleting digital edition footnote (last annotation deleted)")
+
     except Footnote.DoesNotExist:
         if not deleted:
             # create the DIGITAL_EDITION footnote
@@ -42,6 +59,8 @@ def create_or_delete_footnote(instance, **kwargs):
                 doc_relation=[Footnote.DIGITAL_EDITION],
             )
             log_footnote_action(footnote, ADDITION)
+
+            logger.debug("Creating new digital edition footnote (new annotation)")
 
 
 def log_footnote_action(footnote, action_flag):
@@ -54,3 +73,13 @@ def log_footnote_action(footnote, action_flag):
         action_flag=action_flag,
         change_message=f"Footnote automatically {created_or_deleted} via {created_or_deleted} annotation.",
     )
+
+
+def connect_signal_handlers():
+    post_save.connect(create_or_delete_footnote, sender=Annotation)
+    post_delete.connect(create_or_delete_footnote, sender=Annotation)
+
+
+def disconnect_signal_handlers():
+    post_save.disconnect(create_or_delete_footnote, sender=Annotation)
+    post_delete.disconnect(create_or_delete_footnote, sender=Annotation)

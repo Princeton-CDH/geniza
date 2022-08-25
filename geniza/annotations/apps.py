@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 
 
@@ -7,8 +8,10 @@ class AnnotationsConfig(AppConfig):
     name = "geniza.annotations"
 
     def ready(self):
-        from geniza.annotations.signals import create_or_delete_footnote
+        # only bind when configured
+        if "annotation-signals" in settings.FEATURE_FLAGS:
+            from geniza.annotations.signals import connect_signal_handlers
 
-        post_save.connect(create_or_delete_footnote, sender="annotations.Annotation")
-        post_delete.connect(create_or_delete_footnote, sender="annotations.Annotation")
+            connect_signal_handlers()
+
         return super().ready()

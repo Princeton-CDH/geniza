@@ -16,7 +16,7 @@ DEBUG = True
 SECRET_KEY = ""
 
 # configure & override database setting as needed
-DATABASES['default']['PASSWORD'] = ""
+DATABASES["default"]["PASSWORD"] = ""
 
 # override default solr configuration as needed
 # SOLR_CONNECTIONS['default']['URL'] = ''      # default http://localhost:8983/solr/
@@ -33,25 +33,29 @@ WEBPACK_LOADER["DEFAULT"]["CACHE"] = False
 # )
 
 # CAS login configuration
-CAS_SERVER_URL = ''
+CAS_SERVER_URL = ""
 
-PUCAS_LDAP.update({
-    'SERVERS': [
-
-    ],
-    'SEARCH_BASE': '',
-    'SEARCH_FILTER': "",
-})
+PUCAS_LDAP.update(
+    {
+        "SERVERS": [],
+        "SEARCH_BASE": "",
+        "SEARCH_FILTER": "",
+    }
+)
 
 # base url for manifest uris used with annotation server; override if needed
 # ANNOTATION_MANIFEST_BASE_URL = "https://geniza.princeton.edu"
 
+# enable some behaviors based on feature flags
+# supported: annotation-signals
+FEATURE_FLAGS = []
+
 # urls to google sheets data published as csv for import
 DATA_IMPORT_URLS = {
-    'libraries': '',
-    'languages': '',
-    'metadata': '',
-    'demerged': '',
+    "libraries": "",
+    "languages": "",
+    "metadata": "",
+    "demerged": "",
 }
 
 # LOGGING = {
