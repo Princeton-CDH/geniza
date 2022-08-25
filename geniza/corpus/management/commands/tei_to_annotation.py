@@ -155,10 +155,7 @@ class Command(sync_transcriptions.Command):
 
                 anno.target.source.id = annotation_target
                 anno.target.source.partOf.type = "Manifest"
-                anno.target.source.partOf.id = manifest_uri
-                # settings.ANNOTATION_MANIFEST_BASE_URL
-                # + reverse("corpus:document-manifest", args=[doc.pk])
-                # )  # "https://geniza.princeton.edu/en/documents/2806/iiif/manifest/",
+                anno.target.source.partOf.id = document.manifest_uri
 
                 # apply to the full canvas using % notation
                 # (using nearly full canvas to make it easier to edit zones)

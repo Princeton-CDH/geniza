@@ -133,13 +133,7 @@ class GenizaTei(teimap.Tei):
             if block["label"]:
                 output.append(f" <h1>{block['label']}</h1>")
 
-            text_lines = " <ul>%s</ul>" % "".join(
-                "\n <li%s>%s</li>"
-                % (f" value='{line_number}'" if line_number else "", line)
-                for line_number, line in block["lines"]
-                if line.strip()
-            )
-            output.append(text_lines)
+            output.append(self.lines_to_html(block["lines"]))
             output.append("</section>")
             page.append("\n".join(output))
 
@@ -147,6 +141,75 @@ class GenizaTei(teimap.Tei):
         html.append("\n".join(page))
 
         return html
+
+    def lines_to_html(self, lines):
+        """Convert lines and line numbers from TEI to HTML, accounting
+        for unnumbered lines and lines starting with numbers other than 1.
+        Converts to ordered lists and paragraphs; ordered lists have
+        start attribute when needed.
+
+        :params lines: list of tuples of line number, line text
+        :returns: string of html content
+        """
+
+        html_lines = []
+        list_num = 1
+        in_list = False
+        for line_number, line in lines:
+            # convertline number to integer for comparison
+            if line_number:
+                line_number = int(line_number)
+
+            # if line is empty, skip it
+            if not line.strip():
+                continue
+
+            # if line is unnumberred, output as a paragraph
+            if not line_number:
+                # if we were in a list, close it
+                if in_list:
+                    html_lines.append("</ol>")
+                    in_list = False
+                    list_num = 1
+                html_lines.append("<p>%s</p>" % line)
+
+            # if line number is 1, start a new list
+            elif line_number == 1:
+                # close any preceeding list
+                if in_list:
+                    html_lines.append("</ol>")
+
+                in_list = True
+                list_num = 1
+                html_lines.append("<ol>")
+                html_lines.append("<li>%s</li>" % line)
+            # if the line number matches expected next value, output as line
+            elif line_number == list_num:
+                html_lines.append("<li>%s</li>" % line)
+
+            # if line number does not match expected list number,
+            # start a new list with start attribute specified
+            else:
+                # close existing list if any
+                if in_list:
+                    html_lines.append("</ol>")
+
+                # start a new list with the specified number
+                list_num = line_number
+                in_list = True
+                html_lines.append('<ol start="%s">' % line_number)
+                html_lines.append("<li>%s</li>" % line)
+
+            # increment expected list number if we're inside a list
+            if in_list:
+                list_num += 1
+
+        # close the last list, if any
+        if in_list:
+            html_lines.append("</ol>")
+
+        print("\n".join(html_lines))
+        return "\n".join(html_lines)
 
     rtl_mark = "\u200F"
     ltr_mark = "\u200E"
