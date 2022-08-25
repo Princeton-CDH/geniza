@@ -937,6 +937,14 @@ class Document(ModelIndexable, DocumentDateMixin):
         },
     }
 
+    @cached_property
+    def manifest_uri(self):
+        # manifest uri for the current document
+        return "%s%s" % (
+            settings.ANNOTATION_MANIFEST_BASE_URL,
+            reverse("corpus:document-manifest", args=[self.pk]),
+        )
+
     def merge_with(self, merge_docs, rationale, user=None):
         """Merge the specified documents into this one. Combines all
         metadata into this document, adds the merged documents into

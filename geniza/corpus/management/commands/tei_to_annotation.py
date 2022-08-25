@@ -120,6 +120,23 @@ class Command(sync_transcriptions.Command):
             # start attaching to first canvas; increment based on chunk label
             canvas_index = 0
 
+            # remove all existing annotations associated with this
+            # document and source so we can reimport as needed
+            existing_annos = annotation_client.search(
+                source=footnote.source.uri, manifest=document.manifest_uri
+            )
+            # FIXME: this is probably problematic for transcriptions currently
+            # split across two TEi files...
+            # maybe filter by date created also, so we only remove
+            # annotations created before the current script run?
+            if existing_annos:
+                print(
+                    "Removing %s existing annotation(s) for %s on %s "
+                    % (len(existing_annos), footnote.source, document.manifest_uri)
+                )
+                for anno in existing_annos:
+                    annotation_client.delete(anno["id"])
+
             for i, block in enumerate(html_blocks):
                 # if this is not the first block and the label suggests new image,
                 # increment canvas index
@@ -130,21 +147,7 @@ class Command(sync_transcriptions.Command):
                 # get the canvas for this section of text
                 # canvas includes canvas id, image id, width, height
                 canvas = iiif_canvases[canvas_index]
-
                 annotation_target = canvas.uri
-                # previously image url
-                # annotation_target = str(canvas.image.info())
-
-                # for now, remove existing annotations for this canvas so we can reimport as needed
-                # TODO: clear all canvases once before adding? how to avoid clearing out alt. transcriptions?
-                existing_annos = annotation_client.search(annotation_target)
-                if existing_annos:
-                    print(
-                        "Removing %s existing annotation(s) for %s"
-                        % (len(existing_annos), annotation_target)
-                    )
-                    for anno in existing_annos:
-                        annotation_client.delete(anno["id"])
 
                 anno = new_transcription_annotation()
                 # link to digital edition footnote via source URI
@@ -152,28 +155,25 @@ class Command(sync_transcriptions.Command):
 
                 anno.target.source.id = annotation_target
                 anno.target.source.partOf.type = "Manifest"
-                anno.target.source.partOf.id = (
-                    settings.ANNOTATION_MANIFEST_BASE_URL
-                    + reverse("corpus:document-manifest", args=[doc.pk])
-                )  # "https://geniza.princeton.edu/en/documents/2806/iiif/manifest/",
+                anno.target.source.partOf.id = manifest_uri
+                # settings.ANNOTATION_MANIFEST_BASE_URL
+                # + reverse("corpus:document-manifest", args=[doc.pk])
+                # )  # "https://geniza.princeton.edu/en/documents/2806/iiif/manifest/",
 
                 # apply to the full canvas using % notation
                 # (using nearly full canvas to make it easier to edit zones)
                 anno.target.selector.value = "xywh=percent:1,1,98,98"
                 # anno.selector.value = "%s#xywh=pixel:0,0,%s,%s" % (annotation_target, canvas.width, canvas.height)
 
-                # create text body; specify language if known
-                # TODO: refactor and use formatting code in tei_transcriptions
-                html = " <ul>%s</ul>" % "".join(
-                    "\n <li%s>%s</li>"
-                    % (f" value='{line_number}'" if line_number else "", line)
-                    for line_number, line in block["lines"]
-                    if line.strip()
-                )
+                # add html and optional label to annotation text body
+                # TODO: specify language in html if known
+                anno.body[0].value = tei.lines_to_html(block["lines"])
                 if block["label"]:
                     anno.body[0].label = block["label"]
-                anno.body[0].value = html
+
                 anno["schema:position"] = i + 1
+
+                print(anno)
 
                 created = annotation_client.create(anno)
                 if created:
@@ -239,8 +239,15 @@ class AnnotationStore:
         # raise if there's an error, otherwise assume it worked
         response.raise_for_status()
 
-    def search(self, uri):
-        response = self.session.get(self.search_url, params={"uri": uri})
+    def search(self, uri=None, source=None, manifest=None):
+        search_opts = {}
+        if uri:
+            search_opts["uri"] = uri
+        if source:
+            search_opts["source"] = source
+        if manifest:
+            search_opts["manifest"] = manifest
+        response = self.session.get(self.search_url, params=search_opts)
         # returns an annotation list with a list of resources
         if response.status_code == requests.codes.ok:
             return response.json()["resources"]
