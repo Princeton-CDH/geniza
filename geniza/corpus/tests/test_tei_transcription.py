@@ -70,21 +70,25 @@ def test_html():
     # first page should have two labels and text content
     assert html[0].count("<section>") == 2
     assert "<h1>Right Margin</h1>" in html[0]
-    assert "<li value='1'>מא</li>" in html[0]
-    # two different lines in section 1 that are # 1
-    assert html[0].count("<li value='1'>") == 2
+    assert "<li>מא</li>" in html[0]
+    # two different ordered lists starting with 1 (implicit start value)
+    assert html[0].count("<ol>") == 2
+    # both lists should be closed
+    assert html[0].count("</ol>") == 2
 
     # second page should have one label and text content
     assert html[1].count("<section>") == 1
     assert "<h1>Recto" in html[1]
-    assert "<li value='1'>موﻻى الشيخ ابو العﻻ</li>" in html[1]
+    # should have a custom starting value for list on page 2
+    assert html[1].count('<ol start="11">') == 1
+    assert "<li>موﻻى الشيخ ابو العﻻ</li>" in html[1]
 
     # check that the last line / last block is included
-    assert "<li value='6'>الحسن بن ابرهيم</li>" in html[1]
+    assert "<li>الحسن بن ابرهيم</li>" in html[1]
 
-    # assert that missing line number does not result in a line number of "None"
-    assert "<li value='None'>" not in html[0]
-    assert "<li value=''>" not in html[0]
+    # assert that we don't get any invalid start values
+    assert "start='None'" not in html[0]
+    assert "start''" not in html[0]
 
 
 def test_text_to_plaintext():

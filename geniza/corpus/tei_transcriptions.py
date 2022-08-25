@@ -205,6 +205,7 @@ class GenizaTei(teimap.Tei):
                     list_num = line_number
                     in_list = True
                     html_lines.append('<ol start="%s">' % line_number)
+                    html_lines.append("<li>%s</li>" % line)
                 else:
                     # if not numeric, we can't use as line number or start
                     html_lines.append("<ol>")
