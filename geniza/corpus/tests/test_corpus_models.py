@@ -4,12 +4,14 @@ from unittest.mock import Mock, patch
 
 import pytest
 from attrdict import AttrDict
+from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django.utils.safestring import SafeString
@@ -1002,6 +1004,12 @@ class TestDocument:
         mock_messages.warning.assert_called_with(
             document.request,
             "Error standardizing date: 'first quarter of' is not in list",
+        )
+
+    def test_manifest_uri(self, document):
+        assert document.manifest_uri.startswith(settings.ANNOTATION_MANIFEST_BASE_URL)
+        assert document.manifest_uri.endswith(
+            reverse("corpus:document-manifest", args=[document.pk])
         )
 
 

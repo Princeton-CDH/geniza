@@ -248,7 +248,8 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
             return
 
     def get_footnote_editions(self, doc):
-        # allow extension for tei to annotation
+        """Get all edition footnotes of a document; used by :meth:`get_edition_footnote`,
+        extend to include digital editions in tei to annotation script."""
         return doc.footnotes.editions()
 
     def get_edition_footnote(self, doc, tei, filename):

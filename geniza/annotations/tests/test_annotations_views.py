@@ -186,3 +186,24 @@ class TestAnnotationSearch:
         assertContains(response, anno1.uri())
         assertNotContains(response, anno2.uri())
         assertNotContains(response, anno3.uri())
+
+    def test_search_manifest(self, client):
+        # content__target__source__partOf__id=manifest_uri
+        source_uri = "http://example.com/source/1"
+        manifest_uri = "http://example.com/manifest/1"
+        # within manifest
+        anno1 = Annotation.objects.create(
+            content={"target": {"source": {"partOf": {"id": manifest_uri}}}}
+        )
+        # no manifest
+        anno2 = Annotation.objects.create(
+            content={"dc:source": "http://example.com/source/2"}
+        )
+        response = client.get(self.anno_search_url, {"manifest": manifest_uri})
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "application/json"
+        # response should indicate annotation list
+        assertContains(response, "sc:AnnotationList")
+        # should bring back only anno1
+        assertContains(response, anno1.uri())
+        assertNotContains(response, anno2.uri())

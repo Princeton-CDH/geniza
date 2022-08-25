@@ -91,6 +91,18 @@ def test_html():
     assert "start''" not in html[0]
 
 
+def test_lines_to_html():
+    tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
+    # non number in n attribute
+    html = tei.lines_to_html([("16-17", "a line")])
+    assert '<ol start="16">' in html
+    html = tei.lines_to_html([("A1", "another line")])
+    assert "<ol>" in html
+    assert "<li><b>A1</b> another line</li>" in html
+    # skip empty line
+    assert tei.lines_to_html([("", "  ")]) == ""
+
+
 def test_text_to_plaintext():
     tei = xmlmap.load_xmlobject_from_file(xmlfile, GenizaTei)
     plaintext = tei.text_to_plaintext()

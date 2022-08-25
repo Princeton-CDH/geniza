@@ -209,8 +209,8 @@ class GenizaTei(teimap.Tei):
                 else:
                     # if not numeric, we can't use as line number or start
                     html_lines.append("<ol>")
-                    # add to text to preserve the content
-                    html_lines.append("<li><b>%s<b> %s</li>" % (line_number, line))
+                    # add the n to text to preserve the content
+                    html_lines.append("<li><b>%s</b> %s</li>" % (line_number, line))
 
             # increment expected list number if we're inside a list
             if in_list:

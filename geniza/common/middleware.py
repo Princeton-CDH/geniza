@@ -74,8 +74,9 @@ class TokenAuthenticationMiddleware(TokenAuthentication):
         return self.get_response(request)
 
     def process_request(self, request):
-        # if this is a url where we support token auth and the user is not authenticated,
-        # then try to authenticate with the token
+        """If this is a url where token auth is enabled and the user is
+        not authenticated, attempt token authenticate and store resulting
+        user on the request."""
         if (
             request.path.startswith(self.token_auth_base_url)
             and request.user.is_anonymous
