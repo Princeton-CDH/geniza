@@ -126,6 +126,14 @@ class AnnotationSearch(View, MultipleObjectMixin):
             annotations = annotations.filter(
                 content__contains={"dc:source": source_uri}
             )
+
+        manifest_uri = self.request.GET.get("manifest")
+        # if a manifest uri is specified, filter on target source within
+        if manifest_uri:
+            annotations = annotations.filter(
+                content__target__source__partOf__id=manifest_uri
+            )
+
         # NOTE: if any params are ignored, they should be removed from id for search uri
         # and documented in the response as ignored
 

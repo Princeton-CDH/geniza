@@ -1,4 +1,5 @@
 import uuid
+from functools import cached_property
 
 from django.contrib import admin
 from django.db import models
@@ -41,6 +42,26 @@ class Annotation(models.Model):
     def uri(self):
         """URI for this annotation (absolute url)"""
         return absolutize_url(self.get_absolute_url())
+
+    @cached_property
+    def target_source_id(self):
+        """convenience method to access target source id"""
+        return self.content.get("target", {}).get("source", {}).get("id")
+
+    @cached_property
+    def target_source_manifest_id(self):
+        """convenience method to access manifest id for target source"""
+        return (
+            self.content.get("target", {}).get("source", {}).get("partOf", {}).get("id")
+        )
+
+    @cached_property
+    def body_content(self):
+        """convenience method to get annotation body content"""
+        try:
+            return self.content.get("body", [])[0].get("value", "")
+        except IndexError:
+            pass
 
     def set_content(self, data):
         """Set or update annotation content and model fields.

@@ -1,8 +1,11 @@
 from django.conf import settings
+from django.contrib.auth.backends import BaseBackend
 from django.http import HttpRequest
 from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.utils import translation
 from django.views.i18n import set_language
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.models import Token
 
 
 class PublicLocaleMiddleware:

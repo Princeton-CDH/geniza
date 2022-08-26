@@ -29,6 +29,7 @@ from geniza.corpus.models import (
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
 from geniza.footnotes.admin import DocumentFootnoteInline
+from geniza.footnotes.models import Footnote
 
 
 class FragmentTextBlockInline(admin.TabularInline):
@@ -178,9 +179,13 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == "yes":
-            return queryset.filter(footnotes__content__has_key="html")
+            return queryset.filter(
+                footnotes__doc_relation__contains=Footnote.DIGITAL_EDITION
+            )
         if self.value() == "no":
-            return queryset.exclude(footnotes__content__has_key="html")
+            return queryset.exclude(
+                footnotes__doc_relation__contains=Footnote.DIGITAL_EDITION
+            )
 
 
 @admin.register(Document)
@@ -321,7 +326,6 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
                         "fragment", "fragment__collection"
                     ),
                 ),
-                "footnotes__content__isnull",
             )
             .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
             .order_by("shelfmk_all")

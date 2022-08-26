@@ -460,15 +460,14 @@ class TestHasTranscriptionListFilter:
         with patch.object(filter, "value", return_value="yes"):
             assert filter.queryset(Mock(), all_docs).count() == 0
 
-        # add a transcription
-        footnote = Footnote.objects.create(
-            doc_relation=["E"],
+        # add a digital edition
+        Footnote.objects.create(
+            doc_relation=[Footnote.DIGITAL_EDITION],
             source=unpublished_editions,
             content_type_id=ContentType.objects.get(
                 app_label="corpus", model="document"
             ).id,
             object_id=document.id,
-            content={"html": "some text"},
         )
         # no transcription: one document should be returned
         with patch.object(filter, "value", return_value="no"):
