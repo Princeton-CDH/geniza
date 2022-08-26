@@ -8,10 +8,7 @@ class AnnotationsConfig(AppConfig):
     name = "geniza.annotations"
 
     def ready(self):
-        # only bind when configured
-        if "annotation-signals" in settings.FEATURE_FLAGS:
-            from geniza.annotations.signals import connect_signal_handlers
+        from geniza.annotations.signals import connect_signal_handlers
 
-            connect_signal_handlers()
-
+        connect_signal_handlers()
         return super().ready()

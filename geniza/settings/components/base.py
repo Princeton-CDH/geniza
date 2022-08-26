@@ -243,10 +243,6 @@ PGP_DOCTYPE_GUIDE = "https://docs.google.com/document/d/1FHr1iS_JD5h-y5O1rv5JNNw
 
 ANNOTATION_MANIFEST_BASE_URL = "https://geniza.princeton.edu"
 
-# enable some behaviors based on feature flags
-# supported: annotation-signals
-FEATURE_FLAGS = []
-
 # django-csp configuration for content security policy definition and
 # violation reporting - https://github.com/mozilla/django-csp
 #
