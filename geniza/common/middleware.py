@@ -53,36 +53,3 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
             return response
 
         return super().process_response(request, response)
-
-
-class TokenAuthenticationMiddleware(TokenAuthentication):
-    """Extend :class:`rest_framework.authentication.TokenAuthentication` to
-    create a token-auth middleware that can be used with stock Django views."""
-
-    #: use rest_framework default Token model
-    model = Token
-    #: only apply to token auth annotation urls
-    token_auth_base_url = "/annotations/"
-
-    def __init__(self, get_response):
-        self.get_response = get_response
-        # One-time middleware configuration and initialization.
-
-    def __call__(self, request):
-        # check for token-auth user before processing the view
-        self.process_request(request)
-        return self.get_response(request)
-
-    def process_request(self, request):
-        """If this is a url where token auth is enabled and the user is
-        not authenticated, attempt token authenticate and store resulting
-        user on the request."""
-        if (
-            request.path.startswith(self.token_auth_base_url)
-            and request.user.is_anonymous
-        ):
-            # NOTE: could raise exceptions in some cases...
-            auth = super().authenticate(request)
-            # if a user was successfully authenticated, set the user on the request
-            if auth and auth[0]:
-                request.user = auth[0]

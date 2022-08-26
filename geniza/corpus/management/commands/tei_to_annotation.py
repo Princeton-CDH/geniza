@@ -22,9 +22,9 @@ from django.utils import timezone
 from eulxml import xmlmap
 from git import Repo
 from parasolr.django.signals import IndexableSignalHandler
-from rest_framework.authtoken.models import Token
 
 from geniza.annotations.models import Annotation
+from geniza.annotations.signals import disconnect_signal_handlers
 from geniza.common.utils import absolutize_url
 from geniza.corpus.management.commands import sync_transcriptions
 from geniza.corpus.models import Document
@@ -45,12 +45,6 @@ class Command(sync_transcriptions.Command):
         )
 
     def handle(self, *args, **options):
-
-        # generate or retrieve a token for script user to use for token-auth
-        token = Token.objects.get_or_create(
-            user=User.objects.get(username=settings.SCRIPT_USERNAME)
-        )[0]
-
         # get settings for remote git repository url and local path
         gitrepo_url = settings.TEI_TRANSCRIPTIONS_GITREPO
         gitrepo_path = settings.TEI_TRANSCRIPTIONS_LOCAL_PATH
@@ -58,12 +52,13 @@ class Command(sync_transcriptions.Command):
         self.verbosity = options["verbosity"]
         # get content type and script nuser for log entries
         self.footnote_contenttype = ContentType.objects.get_for_model(Footnote)
+        self.annotation_contenttype = ContentType.objects.get_for_model(Annotation)
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
         # disconnect solr indexing signals
         IndexableSignalHandler.disconnect()
-        # NOTE: can't disconnect annotation signal handler because it
-        # is server side and we're accessing via API
+        # disconnect annotation signal handlers
+        disconnect_signal_handlers()
 
         # make sure we have latest tei content from git repository
         # (inherited from sync transcriptions command)
@@ -72,9 +67,6 @@ class Command(sync_transcriptions.Command):
         self.stats = defaultdict(int)
 
         xmlfiles = options["files"] or glob.iglob(os.path.join(gitrepo_path, "*.xml"))
-
-        annotation_client = AnnotationStore(auth_token=token.key)
-
         script_run_start = timezone.now()
 
         # when running on all files (i.e., specific files not specified),
@@ -246,10 +238,22 @@ class Command(sync_transcriptions.Command):
                 anno["schema:position"] = i + 1
 
                 # print(anno) # can print for debugging
-
-                created = annotation_client.create(anno)
-                if created:
-                    self.stats["created"] += 1
+                # create database annotation
+                db_anno = Annotation()
+                db_anno.set_content(dict(anno))
+                db_anno.save()
+                # log entry to document footnote the change
+                LogEntry.objects.log_action(
+                    user_id=self.script_user.id,
+                    content_type_id=self.annotation_contenttype.pk,
+                    object_id=db_anno.pk,
+                    object_repr=str(db_anno),
+                    change_message="Migrated from TEI transcription",
+                    action_flag=ADDITION,
+                )
+                # created = annotation_client.create(anno)
+                # if created:
+                self.stats["created"] += 1
 
         print(
             "Processed %(xml)d TEI file(s). \nCreated %(created)d annotation(s)."
@@ -366,48 +370,3 @@ def new_transcription_annotation():
     anno.target.selector.conformsTo = "http://www.w3.org/TR/media-frags/"
 
     return anno
-
-
-class AnnotationStore:
-    # TODO: migration for script user perms (figure out minimum permissions)
-    # script account needs active, staff, and content editor permissions ?
-    # (maybe...)
-
-    def __init__(self, auth_token):
-        self.base_url = absolutize_url(reverse("annotations:list"))
-        self.search_url = absolutize_url(reverse("annotations:search"))
-        self.session = requests.session()
-        # add authentication token to session headers
-        self.session.headers.update({"Authorization": "Token %s" % auth_token})
-
-        # Request site homepage to get a CSRF token,
-        # since annotation urls are currently csrf-protected.
-        response = self.session.get(absolutize_url("/"))
-        assert response.status_code == 200
-        # set csrf token header
-        self.session.headers.update({"X-CSRFToken": response.cookies["csrftoken"]})
-
-    def create(self, anno):
-        response = self.session.post(self.base_url, json=anno)
-        if response.status_code == requests.codes.created:
-            return True
-        else:
-            response.raise_for_status()
-
-    def delete(self, anno_uri):
-        response = self.session.delete(anno_uri)
-        # raise if there's an error, otherwise assume it worked
-        response.raise_for_status()
-
-    def search(self, uri=None, source=None, manifest=None):
-        search_opts = {}
-        if uri:
-            search_opts["uri"] = uri
-        if source:
-            search_opts["source"] = source
-        if manifest:
-            search_opts["manifest"] = manifest
-        response = self.session.get(self.search_url, params=search_opts)
-        # returns an annotation list with a list of resources
-        if response.status_code == requests.codes.ok:
-            return response.json()["resources"]

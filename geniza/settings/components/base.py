@@ -66,7 +66,6 @@ INSTALLED_APPS = [
     "wagtail_localize.locales",
     "modelcluster",
     "django_admin_inline_paginator",
-    "rest_framework.authtoken",
     "geniza.common",
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",
@@ -86,7 +85,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # "csp.middleware.CSPMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
-    "geniza.common.middleware.TokenAuthenticationMiddleware",
 ]
 
 ROOT_URLCONF = "geniza.urls"
