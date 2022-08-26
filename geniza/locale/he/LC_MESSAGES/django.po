@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-23 11:50-0400\n"
-"PO-Revision-Date: 2022-08-24 15:00\n"
+"POT-Creation-Date: 2022-08-24 10:22-0400\n"
+"PO-Revision-Date: 2022-08-26 18:09\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -120,30 +120,31 @@ msgstr "קיים דיון"
 msgid "Relevance sort is not available without a keyword search term."
 msgstr "מיון על פי רלוונטיות אינו זמין ללא מילת מפתח לחיפוש."
 
-#: corpus/models.py:757 templates/base.html:21
+#: corpus/models.py:771 templates/base.html:21
 msgid "Princeton Geniza Project"
 msgstr "Princeton Geniza Project"
 
 #. Translators: attribution for local IIIF manifests
-#: corpus/models.py:759
+#: corpus/models.py:773
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr "קובץ על-ידי %(pgp)s."
 
 #. Translators: attribution for local IIIF manifests that include transcription
-#: corpus/models.py:762
+#: corpus/models.py:776
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr "קובץ ותועתק על-ידי %(pgp)s."
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: corpus/models.py:764
+#: corpus/models.py:778
 msgid "Additional restrictions may apply."
 msgstr "ייתכנו מגבלות נוספות."
 
 #. Translators: Default label when document does not have a type
-#: corpus/models.py:816
+#: corpus/models.py:830
 #: corpus/templates/corpus/snippets/document_header.html:17
+#: corpus/templates/corpus/snippets/document_transcription.html:77
 msgid "Unknown type"
 msgstr "סוג לא ידוע"
 
@@ -395,9 +396,9 @@ msgstr ""
 msgid "Zoom and Rotate"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_transcription.html:78
+#: corpus/templates/corpus/snippets/document_transcription.html:80
 #, python-format
-msgid "View %(type)s:&nbsp;%(shelfmark)s</span>"
+msgid "View %(related_doc)s"
 msgstr ""
 
 #. Translators: label for a link to a resource with no named location
