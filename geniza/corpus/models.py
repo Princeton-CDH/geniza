@@ -497,7 +497,6 @@ class Document(ModelIndexable, DocumentDateMixin):
     )
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
-
     log_entries = GenericRelation(LogEntry, related_query_name="document")
 
     # NOTE: default ordering disabled for now because it results in duplicates
@@ -895,9 +894,9 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "scholarship_t": [fn.display() for fn in self.footnotes.all()],
                 # text content of any transcriptions
                 "transcription_t": transcription_texts,
-                "has_digital_edition_b": len(transcription_texts) > 0,
-                "has_translation_b": counts[Footnote.TRANSLATION] > 0,
-                "has_discussion_b": counts[Footnote.DISCUSSION] > 0,
+                "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),
+                "has_translation_b": bool(counts[Footnote.TRANSLATION]),
+                "has_discussion_b": bool(counts[Footnote.DISCUSSION]),
             }
         )
 

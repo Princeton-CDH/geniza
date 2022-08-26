@@ -18,11 +18,8 @@ def annotation(db):
             "body": [{"value": "Test annotation"}],
             "target": {
                 "source": {
-                    "partOf": {
-                        "id": reverse(
-                            "corpus:document-manifest", kwargs={"pk": document.pk}
-                        )
-                    }
+                    "id": "http://ex.co/iiif/canvas/1",
+                    "partOf": {"id": document.manifest_uri},
                 }
             },
             "dc:source": source.uri,

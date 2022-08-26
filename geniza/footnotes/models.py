@@ -1,3 +1,4 @@
+from collections import defaultdict
 from functools import cached_property
 from os import path
 from urllib.parse import urljoin
@@ -7,6 +8,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
+from django.db.models.functions import NullIf
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.translation import gettext
@@ -461,7 +463,12 @@ class Footnote(TrackChangesModel):
     objects = FootnoteQuerySet.as_manager()
 
     class Meta:
-        ordering = ["source", "location_sort"]
+        ordering = [
+            "source",
+            # sort footnote with empty locations after footnote with location
+            # (sort digital editions after other footnotes for same source)
+            NullIf("location_sort", models.Value("")).asc(nulls_last=True),
+        ]
 
     def __str__(self):
         choices = dict(self.DOCUMENT_RELATION_TYPES)
@@ -492,7 +499,8 @@ class Footnote(TrackChangesModel):
 
     @cached_property
     def content_html(self):
-        "content as html, if available"
+        """content as html, if available; returns a dictionary of lists.
+        keys are canvas ids, list is html content."""
         if self.DIGITAL_EDITION in self.doc_relation:
             doc = self.content_object
             # filter annotations by document manifest and source
@@ -500,14 +508,28 @@ class Footnote(TrackChangesModel):
                 content__target__source__partOf__id=doc.manifest_uri,
                 content__contains={"dc:source": self.source.uri},
             )
-            # return a dictionary of annotation html content
+            # return a dictionary of lists of annotation html content
             # keyed on canvas uri
-            return {a.target_source_id: a.body_content for a in annos}
+            # handle multiple annotations on the same canvas
+            html_content = defaultdict(list)
+            for a in annos:
+                html_content[a.target_source_id].append(a.body_content)
+            # cast to a regular dict to avoid weirdness in django templates
+            return dict(html_content)
 
     @property
     def content_text(self):
         "content as plain text, if available"
-        return strip_tags(self.content_html)
+        # content html is a dict; values are lists of html content
+        return strip_tags(
+            "\n".join(
+                [
+                    section
+                    for canvas_annos in self.content_html.values()
+                    for section in canvas_annos
+                ]
+            )
+        )
 
     def iiif_annotation_content(self):
         """Return transcription content from this footnote (if any)

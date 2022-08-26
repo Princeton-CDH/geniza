@@ -263,6 +263,7 @@ class TestFootnote:
 
     def test_content_html(self, annotation, twoauthor_source):
         # should get each associated annotation's body text, separated by newline
+        canvas_uri = annotation.content["target"]["source"]["id"]
         manifest_uri = annotation.content["target"]["source"]["partOf"]["id"]
         source_uri = annotation.content["dc:source"]
         source = Source.from_uri(source_uri)
@@ -273,7 +274,10 @@ class TestFootnote:
         digital_edition = document.footnotes.create(
             source=source, doc_relation=[Footnote.DIGITAL_EDITION]
         )
-        assert digital_edition.content_html.split("\n") == [
+        assert isinstance(digital_edition.content_html, dict)
+        assert canvas_uri in digital_edition.content_html
+        # annotations are on the same canvas
+        assert digital_edition.content_html[canvas_uri] == [
             "Test annotation",
             "Second annotation!",
         ]
@@ -287,7 +291,9 @@ class TestFootnote:
         # should return empty string if no annotations with content
         digital_edition.source = twoauthor_source
         digital_edition.save()
-        assert digital_edition.content_html == ""
+        # delete the cached value from cached property
+        del digital_edition.content_html
+        assert digital_edition.content_html == {}
 
 
 class TestFootnoteQuerySet:

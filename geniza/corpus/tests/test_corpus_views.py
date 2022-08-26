@@ -1079,11 +1079,8 @@ class TestDocumentAnnotationListView:
                 "body": [{"value": "here is my transcription text"}],
                 "target": {
                     "source": {
-                        "partOf": {
-                            "id": reverse(
-                                "corpus:document-manifest", kwargs={"pk": document.pk}
-                            )
-                        }
+                        "id": source.uri,
+                        "partOf": {"id": document.manifest_uri},
                     }
                 },
                 "dc:source": source.uri,
@@ -1122,11 +1119,8 @@ class TestDocumentAnnotationListView:
                 "body": [{"value": "here is my transcription text"}],
                 "target": {
                     "source": {
-                        "partOf": {
-                            "id": reverse(
-                                "corpus:document-manifest", kwargs={"pk": document.pk}
-                            )
-                        }
+                        "id": source.uri,
+                        "partOf": {"id": document.manifest_uri},
                     }
                 },
                 "dc:source": source.uri,
@@ -1143,11 +1137,8 @@ class TestDocumentAnnotationListView:
                 "body": [{"value": "here is completely different transcription text"}],
                 "target": {
                     "source": {
-                        "partOf": {
-                            "id": reverse(
-                                "corpus:document-manifest", kwargs={"pk": join.pk}
-                            )
-                        }
+                        "id": source.uri,
+                        "partOf": {"id": join.manifest_uri},
                     }
                 },
                 "dc:source": source.uri,
@@ -1232,11 +1223,8 @@ class TestDocumentTranscriptionText:
                 "body": [{"value": "some transcription text"}],
                 "target": {
                     "source": {
-                        "partOf": {
-                            "id": reverse(
-                                "corpus:document-manifest", kwargs={"pk": document.pk}
-                            )
-                        }
+                        "id": source.uri,
+                        "partOf": {"id": document.manifest_uri},
                     }
                 },
                 "dc:source": source.uri,

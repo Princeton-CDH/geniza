@@ -29,6 +29,11 @@ def create_or_delete_footnote(instance, **kwargs):
         return
 
     # TODO: can we get ids without loading source/doc from db?
+
+    # if we don't have identifiers for both source and document, bail out
+    if not source_uri or not manifest_uri:
+        return
+
     source = Source.from_uri(source_uri)
     document = Document.from_manifest_uri(manifest_uri)
     # if deleted, created is None; if updated but not deleted, created is False

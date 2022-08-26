@@ -817,15 +817,7 @@ class TestDocument:
         Annotation.objects.create(
             content={
                 "body": [{"value": "transcription lines"}],
-                "target": {
-                    "source": {
-                        "partOf": {
-                            "id": reverse(
-                                "corpus:document-manifest", kwargs={"pk": document.pk}
-                            )
-                        }
-                    }
-                },
+                "target": {"source": {"partOf": {"id": document.manifest_uri}}},
                 "dc:source": source.uri,
             }
         )

@@ -130,7 +130,9 @@ Also doesn't currently account for fragments without images.
                                 {# display transcription in chunks by index #}
                                 {% for edition in document.digital_editions.all %}
                                     <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                        {{ edition.content_html|dict_item:image_info.canvas|default:""|h1_to_h3|safe }}
+                                        {% for html_section in edition.content_html|dict_item:image_info.canvas %}
+                                            {{ html_section|h1_to_h3|safe }}
+                                        {% endfor %}
                                     </div>
                                 {% endfor %}
                             </div>
@@ -139,8 +141,9 @@ Also doesn't currently account for fragments without images.
                 </div>
             {% endfor %}
         {% else %}
+            {# no images #}
             {# if there are no images, loop based on the transcription content instead #}
-            {% for canvas_id, html in document.digital_editions.0.content_html.items %}
+            {% for canvas_id in document.digital_editions.0.content_html.keys %}
                 {# TODO: use canvas ids here for transcription edit mode  #}
                 <div class="img"></div> {# empty image div needed for grid layout #}
                 <div class="transcription-panel">
@@ -154,7 +157,9 @@ Also doesn't currently account for fragments without images.
                         {# display transcriptions by canvas id from first edition #}
                         {% for edition in document.digital_editions.all %}
                             <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                {{ edition.content_html|dict_item:canvas_id|h1_to_h3|safe }}
+                                {% for html_section in edition.content_html|dict_item:canvas_id %}
+                                    {{ html_section|h1_to_h3|safe }}
+                                {% endfor %}
                         {% endfor %}
                     </div>
                 </div>
