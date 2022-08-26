@@ -276,6 +276,14 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     class Media:
         css = {"all": ("css/admin-local.css",)}
 
+    def get_form(self, request, obj=None, **kwargs):
+        # Override to inject help text into display field
+        help_texts = {
+            "admin_thumbnails": "Drag image thumbnails to customize order when necessary (i.e. image sequence does not follow fragment/shelfmark sequence)"
+        }
+        kwargs.update({"help_texts": help_texts})
+        return super().get_form(request, obj, **kwargs)
+
     def get_deleted_objects(self, objs, request):
         # override to remove log entries from list and permission check
         (
