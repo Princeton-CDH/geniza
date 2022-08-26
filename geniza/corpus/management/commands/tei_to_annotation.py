@@ -50,9 +50,7 @@ class Command(sync_transcriptions.Command):
         gitrepo_path = settings.TEI_TRANSCRIPTIONS_LOCAL_PATH
 
         self.verbosity = options["verbosity"]
-        # get content type and script nuser for log entries
-        self.footnote_contenttype = ContentType.objects.get_for_model(Footnote)
-        self.annotation_contenttype = ContentType.objects.get_for_model(Annotation)
+        # get content type and script user for log entries
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
         # disconnect solr indexing signals
@@ -114,7 +112,7 @@ class Command(sync_transcriptions.Command):
             # get the footnote for this file & doc
             footnote = self.get_edition_footnote(doc, tei, xmlfile)
             # if no footnote, skip for now
-            # TODO: generate footnote when needed! (but should we need to?)
+            # (some are missing, but will handle with data work)
             if not footnote:
                 self.stdout.write(
                     self.style.ERROR(
@@ -230,29 +228,20 @@ class Command(sync_transcriptions.Command):
                 # anno.selector.value = "%s#xywh=pixel:0,0,%s,%s" % (annotation_target, canvas.width, canvas.height)
 
                 # add html and optional label to annotation text body
-                # TODO: specify language in html if known
+                # TODO: specify language in html if single primary language known
                 anno.body[0].value = tei.lines_to_html(block["lines"])
                 if block["label"]:
                     anno.body[0].label = block["label"]
 
                 anno["schema:position"] = i + 1
-
                 # print(anno) # can print for debugging
+
                 # create database annotation
                 db_anno = Annotation()
                 db_anno.set_content(dict(anno))
                 db_anno.save()
-                # log entry to document footnote the change
-                LogEntry.objects.log_action(
-                    user_id=self.script_user.id,
-                    content_type_id=self.annotation_contenttype.pk,
-                    object_id=db_anno.pk,
-                    object_repr=str(db_anno),
-                    change_message="Migrated from TEI transcription",
-                    action_flag=ADDITION,
-                )
-                # created = annotation_client.create(anno)
-                # if created:
+                # log entry to document annotation creation
+                self.log_addition(db_anno, "Migrated from TEI transcription")
                 self.stats["created"] += 1
 
         print(
@@ -322,11 +311,12 @@ class Command(sync_transcriptions.Command):
             # trying to set from related object footnote.document errors
             new_footnote.content_object = document
             new_footnote.save()
-            log_action = ADDITION
-            log_message = "Created new footnote for migrated digital edition"
-
-            # assign to footnote for logging and return
-            footnote = new_footnote
+            # log footnote creation and return
+            self.log_addition(
+                new_footnote,
+                "Created new footnote for migrated digital edition",
+            )
+            return new_footnote
 
         else:
             # otherwise, convert edition to digital edition
@@ -334,19 +324,41 @@ class Command(sync_transcriptions.Command):
             footnote.content = ""
             footnote.save()
 
-            log_action = CHANGE
-            log_message = "Migrated footnote to digital edition"
+            # log footnote change and return
+            self.log_change(footnote, "Migrated footnote to digital edition")
+            return footnote
 
-        # log entry to document footnote the change
-        LogEntry.objects.log_action(
+    def log_addition(self, obj, log_message):
+        "create a log entry documenting object creation"
+        return self.log_entry(obj, log_message, ADDITION)
+
+    def log_change(self, obj, log_message):
+        "create a log entry documenting object change"
+        return self.log_entry(obj, log_message, CHANGE)
+
+    _content_types = {}
+
+    def get_content_type(self, obj):
+        # lookup and cache content type for model
+        model_class = obj.__class__
+        if model_class not in self._content_types:
+            self._content_types[model_class] = ContentType.objects.get_for_model(
+                model_class
+            )
+        return self._content_types[model_class]
+
+    def log_entry(self, obj, log_message, log_action):
+        "create a log entry documenting object creation/change/deletion"
+        # for this migration, we can assume user is always script user
+        content_type = self.get_content_type(obj)
+        return LogEntry.objects.log_action(
             user_id=self.script_user.id,
-            content_type_id=self.footnote_contenttype.pk,
-            object_id=footnote.pk,
-            object_repr=str(footnote),
+            content_type_id=content_type.pk,
+            object_id=obj.pk,
+            object_repr=str(obj),
             change_message=log_message,
             action_flag=log_action,
         )
-        return footnote
 
 
 def new_transcription_annotation():
