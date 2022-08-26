@@ -24,6 +24,7 @@ from git import Repo
 from parasolr.django.signals import IndexableSignalHandler
 from rest_framework.authtoken.models import Token
 
+from geniza.annotations.models import Annotation
 from geniza.common.utils import absolutize_url
 from geniza.corpus.management.commands import sync_transcriptions
 from geniza.corpus.models import Document
@@ -75,6 +76,17 @@ class Command(sync_transcriptions.Command):
         annotation_client = AnnotationStore(auth_token=token.key)
 
         script_run_start = timezone.now()
+
+        # when running on all files (i.e., specific files not specified),
+        # clear all annotations from the database before running the migration
+        # NOTE: could make this optional behavior, but it probably only
+        # impacts development and not the real migration?
+        if not options["files"]:
+            # cheating a little here, but much faster to clear all at once
+            # instead of searching and deleting one at a time
+            all_annos = Annotation.objects.all()
+            self.stdout.write("Clearing %d annotations" % all_annos.count())
+            all_annos.delete()
 
         # iterate through tei files to be migrated
         for xmlfile in xmlfiles:
@@ -168,37 +180,40 @@ class Command(sync_transcriptions.Command):
             # start attaching to first canvas; increment based on chunk label
             canvas_index = 0
 
-            # remove all existing annotations associated with this
-            # document and source so we can reimport as needed
-            existing_annos = annotation_client.search(
-                source=footnote.source.uri, manifest=doc.manifest_uri
-            )
-            # FIXME: this is probably problematic for transcriptions currently
-            # split across two TEi files...
-            # maybe filter by date created also, so we only remove
-            # annotations created before the current script run?
-
-            num_before = len(existing_annos)
-            # filter to annotations created before current script run
-            existing_annos = [
-                a
-                for a in existing_annos
-                if datetime.fromisoformat(a["created"]) < script_run_start
-            ]
-            # for debugging, report if this differs
-            if len(existing_annos) != num_before:
-                print(
-                    "%d existing annotations before current script run (%d total)"
-                    % (len(existing_annos), num_before)
+            # if specific files were specified, remove annotations
+            # just for those documents & sources
+            if options["files"]:
+                # remove all existing annotations associated with this
+                # document and source so we can reimport as needed
+                existing_annos = annotation_client.search(
+                    source=footnote.source.uri, manifest=doc.manifest_uri
                 )
+                # FIXME: this is probably problematic for transcriptions currently
+                # split across two TEi files...
+                # maybe filter by date created also, so we only remove
+                # annotations created before the current script run?
 
-            if existing_annos:
-                print(
-                    "Removing %s existing annotation(s) for %s on %s "
-                    % (len(existing_annos), footnote.source, doc.manifest_uri)
-                )
-                for anno in existing_annos:
-                    annotation_client.delete(anno["id"])
+                num_before = len(existing_annos)
+                # filter to annotations created before current script run
+                existing_annos = [
+                    a
+                    for a in existing_annos
+                    if datetime.fromisoformat(a["created"]) < script_run_start
+                ]
+                # for debugging, report if this differs
+                if len(existing_annos) != num_before:
+                    print(
+                        "%d existing annotations before current script run (%d total)"
+                        % (len(existing_annos), num_before)
+                    )
+
+                if existing_annos:
+                    print(
+                        "Removing %s existing annotation(s) for %s on %s "
+                        % (len(existing_annos), footnote.source, doc.manifest_uri)
+                    )
+                    for anno in existing_annos:
+                        annotation_client.delete(anno["id"])
 
             for i, block in enumerate(html_blocks):
                 # if this is not the first block and the label suggests new image,
@@ -258,7 +273,10 @@ class Command(sync_transcriptions.Command):
             | models.Q(doc_relation__contains=Footnote.DIGITAL_EDITION)
         )
 
-    # def get_edition_footnote(self, doc, tei, filename):
+    # we shouldn't be creating new footnotes at this point...
+    # override method from sync transcriptions to ensure we don't
+    def is_it_goitein(self, tei, doc):
+        return None
 
     def migrate_footnote(self, footnote, document):
         # convert existing edition footnote to digital edition
@@ -278,19 +296,18 @@ class Command(sync_transcriptions.Command):
                 {Footnote.TRANSLATION, Footnote.DISCUSSION}
             )
             or footnote.url
+            or footnote.location
         ):
             # remove interim transcription content
-            footnote.content = None
-            footnote.save()
+            if footnote.content:
+                footnote.content = None
+                footnote.save()
 
-            # if a digital edition footnote for this source already exists,
+            # if a digital edition footnote for this document+source exists,
             # use that instead of creating a duplicate
-
-            diged_footnote = Footnote.objects.filter(
+            diged_footnote = document.footnotes.filter(
                 doc_relation=Footnote.DIGITAL_EDITION, source=footnote.source
             ).first()
-
-            # if digital edition for this doc+source exists, return it
             if diged_footnote:
                 return diged_footnote
 
