@@ -40,7 +40,7 @@ class AnnotationList(
     model = Annotation
     http_method_names = ["get", "post"]
 
-    paginate_by = None  # disable pagination for now
+    paginate_by = 100
 
     def get_permission_required(self):
         """return permission required based on request method"""
@@ -52,21 +52,32 @@ class AnnotationList(
 
     def get(self, request, *args, **kwargs):
         "generate annotation collection response on GET request"
-        # populate queryset
-        annotations = self.get_queryset()
+        # populate paginated queryset
+        paginator = self.get_paginator(self.get_queryset(), self.paginate_by)
+
+        page_number = request.GET.get("page", 1)
+        page_obj = paginator.get_page(page_number)
+
+        annotations = page_obj.object_list
 
         # get current uri without any params
         request_uri = request.build_absolute_uri().split("?")[0]
         current_page_params = request.GET.copy()
-        current_page_params["page"] = 1  # only one page until we implement pagination
+        current_page_params["page"] = page_number
+        next_page_params = None
+        if page_obj.has_next():
+            next_page_params = request.GET.copy()
+            next_page_params["page"] = page_obj.next_page_number()
+        last_page_params = request.GET.copy()
+        last_page_params["page"] = page_obj.end_index()
 
         # simple annotation collection reponse without pagination
         response_data = {
             "@context": "http://www.w3.org/ns/anno.jsonld",
             "type": "AnnotationCollection",
             "id": request_uri,
-            "total": annotations.count(),
-            "modified": annotations.last().modified.isoformat(),
+            "total": paginator.count,
+            "modified": paginator.object_list.last().modified.isoformat(),
             "label": "Princeton Geniza Project Web Annotations",
             "first": {
                 "id": "%s?%s" % (request_uri, current_page_params.urlencode()),
@@ -76,8 +87,14 @@ class AnnotationList(
                 # only support full record view for now
                 "items": [a.compile(include_context=False) for a in annotations],
             },
-            # "last": "http://example.org/annotations/?iris=1&page=42"
+            "last": "%s?%s" % (request_uri, last_page_params.urlencode()),
         }
+        # add next page link if there is one
+        if next_page_params:
+            response_data["first"]["next"] = "%s?%s" % (
+                request_uri,
+                next_page_params.urlencode(),
+            )
 
         return AnnotationResponse(response_data)
 
