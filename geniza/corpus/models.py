@@ -248,7 +248,7 @@ class Fragment(TrackChangesModel):
         return images, labels, canvases
 
     @staticmethod
-    def html_thumbnails(images, labels, canvases=[], selected=[]):
+    def admin_thumbnails(images, labels, canvases=[], selected=[]):
         """Convenience method for generating IIIF thumbnails HTML from lists of images and labels;
         separated for reuse in Document"""
         return mark_safe(
@@ -279,7 +279,7 @@ class Fragment(TrackChangesModel):
         else:
             images, labels, _ = iiif_images
             image_urls = [img.size(height=200) for img in images]
-        return Fragment.html_thumbnails(image_urls, labels, selected=selected)
+        return Fragment.admin_thumbnails(image_urls, labels, selected=selected)
 
     # CUDL manifests attribution include a metadata statement, but it
     # is not relevant for us since we aren't displaying their metadata
@@ -688,18 +688,18 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         return iiif_images
 
-    def iiif_thumbnails(self):
+    def admin_thumbnails(self):
         """generate html for thumbnails of all iiif images, for image reordering UI in admin"""
         iiif_images = self.iiif_images()
         if not iiif_images:
             return ""
-        return Fragment.html_thumbnails(
+        return Fragment.admin_thumbnails(
             images=[img["image"].size(height=200) for img in iiif_images],
             labels=[img["label"] for img in iiif_images],
             canvases=[img["canvas"] for img in iiif_images],
         )
 
-    iiif_thumbnails.short_description = "Image order override"
+    admin_thumbnails.short_description = "Image order override"
 
     def fragment_urls(self):
         """List of external URLs to view the Document's Fragments."""

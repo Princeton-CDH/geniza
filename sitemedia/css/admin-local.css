@@ -224,11 +224,11 @@ a#needsreview:target {
 
 /* IIIF thumbnails in document and fragment admin */
 #textblock_set-group td.field-thumbnail img,
-div.field-iiif_thumbnails img {
+div.field-admin_thumbnails img {
     cursor: pointer;
 }
 /* selected side thumbnail for fragment admin, drop target for document admin */
 #textblock_set-group td.field-thumbnail img.selected,
-div.field-iiif_thumbnails img.selected {
+div.field-admin_thumbnails img.selected {
     border: 5px solid var(--accent);
 }

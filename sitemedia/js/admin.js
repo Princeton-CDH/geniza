@@ -35,7 +35,7 @@ function attachReorderEventListeners(fromDragEvent) {
         "input[name='image_order_override']"
     );
     const orderImagesDiv = document.querySelector(
-        "div.field-iiif_thumbnails div.readonly"
+        "div.field-admin_thumbnails div.readonly"
     );
     const orderImages = orderImagesDiv.querySelectorAll("img");
     orderImages.forEach((img) => {

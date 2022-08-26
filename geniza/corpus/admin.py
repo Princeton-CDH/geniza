@@ -209,7 +209,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         "id",
         "view_old_pgpids",
         "standard_date",
-        "iiif_thumbnails",
+        "admin_thumbnails",
     )
     search_fields = (
         "fragments__shelfmark",
@@ -266,7 +266,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         "status",
         ("needs_review", "notes"),
         "image_order_override",
-        "iiif_thumbnails",
+        "admin_thumbnails",
         # edition, translation
     )
     autocomplete_fields = ["languages", "secondary_languages"]

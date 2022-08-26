@@ -681,7 +681,7 @@ class TestDocument:
             assert images[0]["image"] == img2
             assert images[1]["image"] == img1
 
-    def test_iiif_thumbnails(self):
+    def test_admin_thumbnails(self):
         # Create a document and fragment and a TextBlock to associate them
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
@@ -697,8 +697,8 @@ class TestDocument:
             "iiif_images",
             return_value=([img1, img2], ["1r", "1v"], ["canvas1", "canvas2"]),
         ):
-            thumbs = doc.iiif_thumbnails()
-            # should call Fragment.html_thumbnails to produce HTML img tags for the two images
+            thumbs = doc.admin_thumbnails()
+            # should call Fragment.admin_thumbnails to produce HTML img tags for the two images
             assert '<img src="/img1.jpg"' in thumbs
             assert '<img src="/img2.jpg"' in thumbs
             # should save canvas IDs to data-canvas attribute
