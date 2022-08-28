@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-24 10:22-0400\n"
-"PO-Revision-Date: 2022-08-26 18:09\n"
+"PO-Revision-Date: 2022-08-28 02:55\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -283,7 +283,7 @@ msgstr[5] "مجموع النتائج %(count_humanized)s"
 #. Translators: accessibility label for a footnote source citation in scholarship records view
 #: corpus/templates/corpus/document_scholarship.html:21
 msgid "Bibliographic citation"
-msgstr "الاقتباس الببليوغرافي"
+msgstr "الاقتباس المرجعي"
 
 #. Translators: label for included document relations for a single footnote
 #: corpus/templates/corpus/document_scholarship.html:28
@@ -333,11 +333,11 @@ msgstr ""
 #, python-format
 msgid "1 Transcription"
 msgid_plural "%(counter)s Transcriptions"
-msgstr[0] "%(counter)s النصوص"
+msgstr[0] "%(counter)s نسخ"
 msgstr[1] "%(counter)s نسخ"
-msgstr[2] "%(counter)s النصوص"
-msgstr[3] "%(counter)s النصوص"
-msgstr[4] "%(counter)s النصوص"
+msgstr[2] "%(counter)s نسخ"
+msgstr[3] "%(counter)s نسخ"
+msgstr[4] "%(counter)s نسخ"
 msgstr[5] "%(counter)s النصوص"
 
 #. Translators: number of translations for this document
@@ -345,11 +345,11 @@ msgstr[5] "%(counter)s النصوص"
 #, python-format
 msgid "1 Translation"
 msgid_plural "%(counter)s Translations"
-msgstr[0] "ترجمات %(counter)s"
+msgstr[0] "%(counter)s ترجمة"
 msgstr[1] "%(counter)s ترجمة"
-msgstr[2] "ترجمات %(counter)s"
+msgstr[2] "%(counter)s ترجمة"
 msgstr[3] "ترجمات %(counter)s"
-msgstr[4] "ترجمات %(counter)s"
+msgstr[4] "%(counter)s ترجمات"
 msgstr[5] "ترجمات %(counter)s"
 
 #. Translators: number of sources that discuss this document
