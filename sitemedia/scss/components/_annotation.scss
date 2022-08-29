@@ -34,6 +34,15 @@ main.addsource {
     }
 }
 
+main.annotating {
+    span#formatted-title {
+        margin-bottom: 1rem;
+        & + h3 {
+            margin-bottom: 2rem;
+        }
+    }
+}
+
 span.select2-container li[class^="select2"],
 span.select2-container span[class^="select2"],
 main.addsource .select2-container--default .select2-selection--single,
