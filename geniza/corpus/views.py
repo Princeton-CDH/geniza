@@ -746,9 +746,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     "csrf_token": csrf_token(self.request),
                 },
                 "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
-                "source_detail": mark_safe(
-                    f"{source.formatted_display()} {source.notes}."
-                )
+                "source_detail": mark_safe(source.formatted_display())
                 if source
                 else "",
                 "source_label": source.all_authors() if source else "",
