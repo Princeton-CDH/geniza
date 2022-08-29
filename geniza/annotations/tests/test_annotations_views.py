@@ -1,9 +1,11 @@
 import json
 import uuid
+from unittest.mock import patch
 
 import pytest
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
 from django.urls import reverse
+from parasolr.django.indexing import ModelIndexable
 from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.annotations.models import Annotation
@@ -98,7 +100,10 @@ class TestAnnotationDetail:
         )
         assert response.status_code == 403
 
-    def test_post_annotation_detail_admin(self, admin_client, annotation):
+    @patch.object(ModelIndexable, "index_items")
+    def test_post_annotation_detail_admin(
+        self, mock_indexitems, admin_client, annotation
+    ):
         # update annotation with POST request as admin
         response = admin_client.post(
             annotation.get_absolute_url(),
