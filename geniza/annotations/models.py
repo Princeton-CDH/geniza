@@ -56,6 +56,14 @@ class Annotation(models.Model):
         )
 
     @cached_property
+    def label(self):
+        """convenience method to get annotation label"""
+        try:
+            return self.content.get("body", [])[0].get("label", "")
+        except IndexError:
+            pass
+
+    @cached_property
     def body_content(self):
         """convenience method to get annotation body content"""
         try:
