@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-24 10:22-0400\n"
-"PO-Revision-Date: 2022-08-28 04:21\n"
+"PO-Revision-Date: 2022-08-29 13:31\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -275,9 +275,9 @@ msgid "1 result"
 msgid_plural "%(count_humanized)s total results"
 msgstr[0] "نتائج %(count_humanized)s"
 msgstr[1] "%(count_humanized)s نتيجة"
-msgstr[2] "نتيجتين %(count_humanized)s"
-msgstr[3] "النتائج %(count_humanized)s"
-msgstr[4] "النتائج %(count_humanized)s"
+msgstr[2] "%(count_humanized)s نتيجتين"
+msgstr[3] "%(count_humanized)s نتائج"
+msgstr[4] "%(count_humanized)s نتائج"
 msgstr[5] "%(count_humanized)s مجموع النتائج"
 
 #. Translators: accessibility label for a footnote source citation in scholarship records view
@@ -410,7 +410,7 @@ msgstr "عرض الترجمة"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:56
 msgid "Zoom and Rotate"
-msgstr "تكبير وتدوير"
+msgstr "تكبير و تدوير"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:80
 #, python-format
