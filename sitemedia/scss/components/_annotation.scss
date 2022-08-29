@@ -37,7 +37,7 @@ main.addsource {
 main.annotating {
     span#formatted-title {
         margin-bottom: 1rem;
-        & + h3 {
+        & + span {
             margin-bottom: 2rem;
         }
     }

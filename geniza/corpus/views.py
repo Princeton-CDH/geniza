@@ -746,7 +746,11 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     "csrf_token": csrf_token(self.request),
                 },
                 "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
-                "source_detail": f"{source} {source.notes}." if source else "",
+                "source_detail": mark_safe(
+                    f"{source.formatted_display()} {source.notes}."
+                )
+                if source
+                else "",
                 "source_label": source.all_authors() if source else "",
                 "page_type": "document annotating",
             }
