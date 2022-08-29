@@ -5,6 +5,7 @@ from django.contrib.admin.models import ADDITION, DELETION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_delete, post_save
+from parasolr.django.indexing import ModelIndexable
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.models import Document
@@ -38,6 +39,7 @@ def create_or_delete_footnote(instance, **kwargs):
     document = Document.from_manifest_uri(manifest_uri)
     # if deleted, created is None; if updated but not deleted, created is False
     deleted = kwargs.get("created") is None
+    updated = kwargs.get("created") is False
 
     try:
         # try to get a DIGITAL_EDITION footnote for this source and document
@@ -55,6 +57,12 @@ def create_or_delete_footnote(instance, **kwargs):
             log_footnote_action(footnote, DELETION)
 
             logger.debug("Deleting digital edition footnote (last annotation deleted)")
+        # if this annotation was just updated, reindex document
+        elif updated:
+            ModelIndexable.index_items([document])
+            logger.debug(
+                "Reindexing document %s (existing annotation updated)" % document.pk
+            )
 
     except Footnote.DoesNotExist:
         if not deleted:
