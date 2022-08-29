@@ -918,22 +918,19 @@ a.editor-navigation {
 
     li {
         white-space: pre-line;
-        margin-right: 2em; /* shift to make space for line numbers */
+        margin-right: 1em;
+        padding-right: 1em; /* shift to make space for line numbers */
         direction: rtl;
     }
 
-    /* some transcription styles adapted from local admin site css */
-    li::before {
-        /* use pseudo marker to avoid periods for line numbers */
-        content: attr(value);
-        margin-right: -2em; /* shift outside text margin */
-        text-align: right;
-        float: right;
-        font-weight: bold;
+    ol {
+        list-style: decimal;
     }
 
     li::marker {
-        direction: rtl;
+        text-align: right;
+        float: right;
+        font-weight: bold;
     }
 }
 
