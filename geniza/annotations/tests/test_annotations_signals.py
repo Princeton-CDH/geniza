@@ -1,5 +1,8 @@
+from unittest.mock import patch
+
 from django.contrib.admin.models import ADDITION, DELETION, LogEntry
 from django.urls import reverse
+from parasolr.django.indexing import ModelIndexable
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.models import Document
@@ -59,3 +62,12 @@ class TestCreateOrDeleteFootnote:
         annotation2.delete()
         document = Document.from_manifest_uri(manifest_uri)
         assert document.digital_editions().filter(source=source).exists()
+
+    @patch.object(ModelIndexable, "index_items")
+    def test_update_annotation(self, mock_indexitems, annotation):
+        # should call index_items on document when annotation updated
+        manifest_uri = annotation.content["target"]["source"]["partOf"]["id"]
+        document = Document.from_manifest_uri(manifest_uri)
+        annotation.content = {**annotation.content, "body": [{"value": "new value"}]}
+        annotation.save()
+        mock_indexitems.assert_called_with([document])

@@ -1,9 +1,11 @@
 import json
 import uuid
+from unittest.mock import patch
 
 import pytest
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
 from django.urls import reverse
+from parasolr.django.indexing import ModelIndexable
 from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.annotations.models import Annotation
@@ -98,11 +100,14 @@ class TestAnnotationDetail:
         )
         assert response.status_code == 403
 
-    def test_post_annotation_detail_admin(self, admin_client, annotation):
+    @patch.object(ModelIndexable, "index_items")
+    def test_post_annotation_detail_admin(
+        self, mock_indexitems, admin_client, annotation
+    ):
         # update annotation with POST request as admin
         response = admin_client.post(
             annotation.get_absolute_url(),
-            json.dumps({**annotation.content, "body": "new text"}),
+            json.dumps({**annotation.content, "body": [{"value": "new text"}]}),
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -111,7 +116,7 @@ class TestAnnotationDetail:
         # get a fresh copy of the annotation from the database
         updated_anno = Annotation.objects.get(pk=annotation.pk)
         # should match new content
-        assert updated_anno.content["body"] == "new text"
+        assert updated_anno.content["body"] == [{"value": "new text"}]
         # updated content should be returned in the response
         assert response.json() == updated_anno.compile()
 

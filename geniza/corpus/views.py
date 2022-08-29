@@ -746,7 +746,12 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     "csrf_token": csrf_token(self.request),
                 },
                 "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
+                # TODO: Add Footnote notes to the following display, if present
+                "source_detail": mark_safe(source.formatted_display())
+                if source
+                else "",
                 "source_label": source.all_authors() if source else "",
+                "page_type": "document annotating",
             }
         )
         return context_data

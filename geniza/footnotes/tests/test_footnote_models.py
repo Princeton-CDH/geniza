@@ -269,7 +269,10 @@ class TestFootnote:
         source = Source.from_uri(source_uri)
         document = Document.from_manifest_uri(manifest_uri)
         Annotation.objects.create(
-            content={**annotation.content, "body": [{"value": "Second annotation!"}]}
+            content={
+                **annotation.content,
+                "body": [{"label": "A label", "value": "Second annotation!"}],
+            }
         )
         digital_edition = document.footnotes.create(
             source=source, doc_relation=[Footnote.DIGITAL_EDITION]
@@ -279,6 +282,7 @@ class TestFootnote:
         # annotations are on the same canvas
         assert digital_edition.content_html[canvas_uri] == [
             "Test annotation",
+            "<h1>A label</h1>",
             "Second annotation!",
         ]
 
