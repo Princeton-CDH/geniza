@@ -69,15 +69,15 @@ Also doesn't currently account for fragments without images.
             {# if we have images, loop based on them #}
             {% for image_info in document.iiif_images %}
                 {# only images that are part of the current document are zoomable #}
-                <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="{% if edit_mode %}annotation{% else %}iiif{% endif %}" data-iiif-url="{{ image_info.image.info }}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
+                <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation{% endif %}" data-iiif-url="{{ image_info.image.info }}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
                     <div class="img-header" data-iiif-target="imageHeader" data-annotation-target="imageHeader">
                         <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
                         {% if not image_info.excluded %}
-                            <input data-iiif-target="zoomSlider" data-annotation-target="zoomSlider" data-action="iiif#handleDeepZoom annotation#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
-                            <label data-iiif-target="zoomSliderLabel" data-annotation-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
-                            <input data-iiif-target="zoomToggle" data-annotation-target="zoomToggle" data-action="iiif#handleDeepZoom annotation#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
+                            <input data-iiif-target="zoomSlider" data-action="iiif#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
+                            <label data-iiif-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
+                            <input data-iiif-target="zoomToggle" data-action="iiif#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
                             <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
-                            <div id="rotation-{{ forloop.counter0 }}" class="rotation" data-iiif-target="rotation" data-annotation-target="rotation" data-action="input->iiif#handleDeepZoom change->iiif#handleDeepZoom"></div>
+                            <div id="rotation-{{ forloop.counter0 }}" class="rotation" data-iiif-target="rotation" data-action="input->iiif#handleDeepZoom change->iiif#handleDeepZoom"></div>
                             <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel" data-annotation-target="rotationLabel">0&deg;</label>
                         {% endif %}
                     </div>

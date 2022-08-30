@@ -1,23 +1,14 @@
+import { Controller } from "@hotwired/stimulus";
 import * as Annotorious from "@recogito/annotorious-openseadragon";
 import {
     TranscriptionEditor,
     AnnotationServerStorage,
 } from "annotorious-tahqiq";
 
-import IIIFControler from "./iiif_controller";
+import IIIFController from "./iiif_controller";
 
-export default class extends IIIFControler {
-    static targets = [
-        "image",
-        "imageContainer",
-        "imageHeader",
-        "osd",
-        "rotation",
-        "rotationLabel",
-        "zoomSlider",
-        "zoomSliderLabel",
-        "zoomToggle",
-    ];
+export default class extends Controller {
+    static targets = ["image", "imageContainer", "osd"];
 
     connect() {
         // enable deep zoom, annotorious-tahqiq on load
@@ -50,15 +41,21 @@ export default class extends IIIFControler {
 
         // wait for each image to load fully before enabling OSD so we know its full height
         if (this.imageTarget.complete) {
-            this.activateDeepZoom(settings);
+            this.element.iiif.activateDeepZoom(settings);
+            this.initAnnotorious(settings);
         } else {
             this.imageTarget.addEventListener("load", () => {
-                this.activateDeepZoom(settings);
+                this.element.iiif.activateDeepZoom(settings);
+                this.initAnnotorious(settings);
             });
         }
     }
-    addOpenSeaDragon(settings) {
-        const viewer = super.addOpenSeaDragon(settings);
+    initAnnotorious(settings) {
+        // initialize annotorious, binding to the osd viewer object
+        // on the iiif controlleer
+
+        const viewer = this.element.iiif.viewer;
+        // const viewer = super.addOpenSeaDragon(settings);
         // enable annotorious-tahqiq
         const { config, canvasURL, manifestId, annotationContainer } = settings;
         const anno = Annotorious(viewer);
@@ -82,6 +79,8 @@ export default class extends IIIFControler {
         return viewer;
     }
     handleZoomSliderInput(viewer, minZoom) {
+        // FIXME: what needs to change here?
+
         return (evt) => {
             // Handle changes in the zoom slider
             let zoom = parseFloat(evt.currentTarget.value);

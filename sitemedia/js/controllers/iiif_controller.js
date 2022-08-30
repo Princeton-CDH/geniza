@@ -16,6 +16,11 @@ export default class extends Controller {
         "zoomToggle",
     ];
 
+    connect() {
+        // make iiif controller available at element.iiif
+        this.element[this.identifier] = this;
+    }
+
     rotationTargetConnected() {
         // initialize angle rotation input
         AngleInput(this.rotationTarget, {
@@ -180,6 +185,9 @@ export default class extends Controller {
             this.zoomSliderTarget.value = parseFloat(zoom);
             this.updateZoomUI(zoom, false);
         });
+
+        // keep reference to OSD viewer object on the controller object
+        this.viewer = viewer;
         return viewer;
     }
     handleRotationInput(viewer) {
