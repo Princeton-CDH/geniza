@@ -433,7 +433,7 @@
                 flex-flow: row;
                 margin-bottom: 12px;
             }
-            h3 {
+            h2 {
                 @include typography.body-bold;
                 text-align: left;
                 margin: 8px;
@@ -725,11 +725,11 @@
                 padding-top: 0.1px; /* show panel background slightly as a top border */
             }
         }
-        & > h3 {
+        & > h2 {
             margin: 30px 0 12px;
         }
         // transcription citation
-        h3 + span.current-transcription {
+        h2 + span.current-transcription {
             display: block;
             @include typography.meta;
             color: var(--input-date-text);
@@ -739,16 +739,18 @@
         }
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 0 0;
-            h3 {
-                margin-top: 12px;
-                margin-bottom: 12px;
-            }
-            & > h3 {
+            // "Transcription" header
+            & > h2 {
                 @include typography.body-bold;
                 margin: 27px 0 0;
             }
-            h3 + span.current-transcription.multiple {
+            h2 + span.current-transcription.multiple {
                 min-height: calc(1.125rem * 1.5 * 2);
+            }
+            // Label headers within transcription
+            h3 {
+                margin-top: 12px;
+                margin-bottom: 12px;
             }
         }
 

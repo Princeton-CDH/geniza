@@ -106,7 +106,7 @@
         {% if document.tags.exists %}
             <section>
                 {# Translators: label for tags on a document #}
-                <h3 class="sr-only">{% translate 'Tags' %}</h3>
+                <h2 class="sr-only">{% translate 'Tags' %}</h2>
                 <ul class="tags">
                     {% spaceless %}
                         {% for tag in document.alphabetized_tags %}
@@ -119,7 +119,7 @@
 
         <section class="input-date">
             {# Translators: Label for date document was first added to the PGP #}
-            <h3 class="sr-only">{% translate 'Input date' %}</h3>
+            <h2 class="sr-only">{% translate 'Input date' %}</h2>
             {# Translators: Date document was first added to the PGP #}
             {% blocktranslate with date=document.log_entries.last.action_time.year %}
                 In PGP since {{ date }}
@@ -127,10 +127,10 @@
         </section>
 
         <section class="description">
-            <h3>
+            <h2>
                 {# Translators: label for document description #}
                 {% translate 'Description' %}
-            </h3>
+            </h2>
             <p>{{ document.description|pgp_urlize }}</p>
         </section>
 
