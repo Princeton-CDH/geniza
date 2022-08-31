@@ -740,7 +740,8 @@
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 0 0;
             h3 {
-                margin: 12px 0;
+                margin-top: 12px;
+                margin-bottom: 12px;
             }
             & > h3 {
                 @include typography.body-bold;
@@ -920,6 +921,12 @@ a.editor-navigation {
         margin-right: 1.5em;
         padding-right: 1em; /* shift to make space for line numbers */
         direction: rtl;
+    }
+
+    // match margin for unnumbered lines and headers to li margin
+    ol ~ p,
+    ol ~ h3 {
+        margin-right: 2.5em;
     }
 
     ol,
