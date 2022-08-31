@@ -7,6 +7,12 @@ from piffle.image import IIIFImageClient
 from geniza.corpus.ja import arabic_or_ja
 
 
+def clean_html(html_snippet):
+    """utility method to clean up html, since solr snippets of html content
+    may result in non-valid content"""
+    return BeautifulSoup(html_snippet, "html.parser").prettify(formatter="minimal")
+
+
 class DocumentSolrQuerySet(AliasedSolrQuerySet):
     """':class:`~parasolr.django.AliasedSolrQuerySet` for
     :class:`~geniza.corpus.models.Document`"""
@@ -124,10 +130,6 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         doc["iiif_images"] = list(zip(doc["iiif_images"], labels))
         return doc
 
-    def _clean_html(self, html_snippet):
-        """highlights within html may result in non-valid content; clean it up"""
-        return BeautifulSoup(html_snippet).prettify()
-
     def get_highlighting(self):
         """highlight snippets within transcription html may result in invalid tags
         that will render strangely; clean up the html before returning"""
@@ -135,6 +137,6 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         for doc in highlights.keys():
             if "transcription" in highlights[doc]:
                 highlights[doc]["transcription"] = [
-                    self._clean_html(s) for s in highlights[doc]["transcription"]
+                    clean_html(s) for s in highlights[doc]["transcription"]
                 ]
         return highlights

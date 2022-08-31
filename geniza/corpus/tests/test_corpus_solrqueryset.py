@@ -4,7 +4,7 @@ from parasolr.django import AliasedSolrQuerySet, SolrClient
 from piffle.image import IIIFImageClient
 
 from geniza.corpus.models import Document, DocumentType, TextBlock
-from geniza.corpus.solr_queryset import DocumentSolrQuerySet
+from geniza.corpus.solr_queryset import DocumentSolrQuerySet, clean_html
 
 
 class TestDocumentSolrQuerySet:
@@ -94,3 +94,29 @@ class TestDocumentSolrQuerySet:
 
         # should include related
         assert related_docs.filter(pgpid=join.id).count() == 1
+
+    def test_clean_html(self):
+        # minimal prettifier; introduces whitespace changes
+        assert clean_html("<li>foo").replace("\n", "") == "<li> foo</li>"
+
+    @patch("geniza.corpus.solr_queryset.super")
+    def test_get_highlighting(self, mock_super):
+        mock_get_highlighting = mock_super.return_value.get_highlighting
+
+        dqs = DocumentSolrQuerySet()
+        # no highlighting
+        mock_get_highlighting.return_value = {}
+        assert dqs.get_highlighting() == {}
+
+        # highlighting but no transcription
+        test_highlight = {"doc.1": {"description": ["foo bar baz"]}}
+        mock_get_highlighting.return_value = test_highlight
+        # returned unchanged
+        assert dqs.get_highlighting() == test_highlight
+
+        # transcription highlight
+        test_highlight = {"doc.1": {"transcription": ["<li>foo"]}}
+        mock_get_highlighting.return_value = test_highlight
+        # transcription html should be cleaned
+        cleaned_highlight = dqs.get_highlighting()
+        assert cleaned_highlight["doc.1"]["transcription"] == [clean_html("<li>foo")]
