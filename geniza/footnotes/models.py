@@ -519,19 +519,23 @@ class Footnote(TrackChangesModel):
             # cast to a regular dict to avoid weirdness in django templates
             return dict(html_content)
 
+    @cached_property
+    def content_html_str(self):
+        "content as a single string of html, if available"
+        # content html is a dict; values are lists of html content
+        return "\n".join(
+            [
+                section
+                for canvas_annos in self.content_html.values()
+                for section in canvas_annos
+            ]
+        )
+
     @property
     def content_text(self):
         "content as plain text, if available"
         # content html is a dict; values are lists of html content
-        return strip_tags(
-            "\n".join(
-                [
-                    section
-                    for canvas_annos in self.content_html.values()
-                    for section in canvas_annos
-                ]
-            )
-        )
+        return strip_tags(self.content_html_str)
 
     def iiif_annotation_content(self):
         """Return transcription content from this footnote (if any)

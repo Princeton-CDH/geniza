@@ -59,7 +59,7 @@
                     {% elif document.transcription %}
                         {# otherwise, display truncated transcription #}
                         {# NOTE: might be nice to display N lines instead of using truncatechars #}
-                        <div class="transcription" lang="{{ lang }}">{{ document.transcription.0|linebreaks|truncatechars_html:150 }}</div>
+                        <div class="transcription" lang="{{ lang }}">{{ document.transcription.0|safe|linebreaks|truncatechars_html:150 }}</div>
                     {% endif %}
                 {% endwith %}
 

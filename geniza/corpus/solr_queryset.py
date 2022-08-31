@@ -34,7 +34,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "num_discussions": "num_discussions_i",
         "scholarship_count": "scholarship_count_i",
         "scholarship": "scholarship_t",
-        "transcription": "transcription_t",
+        "transcription": "transcription_ht",
         "language_code": "language_code_ss",
         "iiif_images": "iiif_images_ss",
         "iiif_labels": "iiif_labels_ss",

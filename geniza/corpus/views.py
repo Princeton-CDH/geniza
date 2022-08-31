@@ -236,6 +236,8 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
 
         paged_result = context_data["page_obj"].object_list
         highlights = paged_result.get_highlighting() if paged_result.count() else {}
+        print("### highlights")
+        print(highlights)
         facet_dict = self.queryset.get_facets()
         # populate choices for facet filter fields on the form
         context_data["form"].set_choices_from_facets(facet_dict.facet_fields)
