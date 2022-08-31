@@ -725,6 +725,7 @@
                 padding-top: 0.1px; /* show panel background slightly as a top border */
             }
         }
+        // "Transcription" header
         & > h2 {
             margin: 30px 0 12px;
         }
@@ -736,6 +737,11 @@
             &.multiple {
                 min-height: calc(1rem * 1.5 * 2);
             }
+        }
+        // list number decimal cover
+        ol li::before {
+            right: 29px;
+            background-color: var(--background-light);
         }
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 0 0;
@@ -751,6 +757,10 @@
             h3 {
                 margin-top: 12px;
                 margin-bottom: 12px;
+            }
+            // list number decimal cover
+            ol li::before {
+                right: 108px;
             }
         }
 
@@ -935,7 +945,6 @@ a.editor-navigation {
     li::before {
         content: " ";
         position: absolute;
-        // TODO: adjust position and color for image+transcription viewer
         right: 1em;
         height: 1.2em;
         width: 1em;
