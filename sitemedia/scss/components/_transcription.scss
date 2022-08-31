@@ -762,6 +762,10 @@
             ol li::before {
                 right: 108px;
             }
+            // alignment is different in annotation editor
+            .tahqiq-block-display ol li::before {
+                right: 122px;
+            }
         }
 
         // edition indicator/switcher
@@ -915,10 +919,15 @@ a.editor-navigation {
     // direction: rtl; /* search results ae mixed rtl/ltr and include unicode order mark characters */
 
     .search-result & p {
-        white-space: pre-line;
         text-align: right;
         // disable site default max character width for reading
         max-width: none;
+    }
+
+    p {
+        // match alignment of list items
+        margin-right: 1em;
+        padding-right: 1.5em;
     }
 
     sup {
