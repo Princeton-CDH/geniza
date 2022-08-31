@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-24 10:22-0400\n"
-"PO-Revision-Date: 2022-08-29 18:48\n"
+"PO-Revision-Date: 2022-08-31 06:24\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -40,17 +40,17 @@ msgstr "عشوائي"
 #. Translators: label for sort by document date (most recent first)
 #: corpus/forms.py:167
 msgid "Document Date (Latest–Earliest)"
-msgstr "تاريخ المستند (Latest-Earliest)"
+msgstr "تاريخ المستند (الأحدث - الأقدم)"
 
 #. Translators: label for sort by document date (oldest first)
 #: corpus/forms.py:169
 msgid "Document Date (Earliest–Latest)"
-msgstr "تاريخ المستند (آخر)"
+msgstr "تاريخ المستند (الأقدم - الأحدث)"
 
 #. Translators: label for alphabetical sort by shelfmark
 #: corpus/forms.py:171
 msgid "Shelfmark (A–Z)"
-msgstr "الشرف (A-Z)"
+msgstr "علامة (أ-ي)"
 
 #. Translators: label for descending sort by number of scholarship records
 #: corpus/forms.py:173
@@ -65,12 +65,12 @@ msgstr "سجل المنح الدراسية (أقل - أكثر)"
 #. Translators: label for sort by when document was added to PGP (most recent first)
 #: corpus/forms.py:177
 msgid "PGP Input Date (Latest–Earliest)"
-msgstr "تاريخ الإدخال (Latest-Earliest)"
+msgstr "تاريخ الإدخال (الأحدث - الأقدم)"
 
 #. Translators: label for sort by when document was added to PGP (oldest first)
 #: corpus/forms.py:179
 msgid "PGP Input Date (Earliest–Latest)"
-msgstr "تاريخ الإدخال (Earliest-Latest)"
+msgstr "تاريخ إدخال PGP (الأقدم - الأحدث)"
 
 #. Translators: label for start year when filtering by date range
 #: corpus/forms.py:182 corpus/templates/corpus/widgets/yearrangewidget.html:5
@@ -89,7 +89,7 @@ msgstr "الترتيب حسب"
 
 #: corpus/forms.py:202
 msgid "Document Dates (CE)"
-msgstr "واريخ المستند (CE)"
+msgstr "تواريخ المستند (التقويم الميلادي)"
 
 #. Translators: label for document type search form filter
 #: corpus/forms.py:211
