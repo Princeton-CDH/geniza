@@ -917,14 +917,26 @@ a.editor-navigation {
     }
 
     li {
-        white-space: pre-line;
         margin-right: 1.5em;
         padding-right: 1em; /* shift to make space for line numbers */
         direction: rtl;
     }
 
-    ol {
+    ol,
+    section#document-list & ol {
         list-style: decimal;
+        margin-top: 0;
+    }
+
+    /* cover the decimal in the list number to help with ltr/rtl readability */
+    li::before {
+        content: " ";
+        position: absolute;
+        // TODO: adjust position and color for image+transcription viewer
+        right: 1em;
+        height: 1.2em;
+        width: 1em;
+        background-color: var(--background);
     }
 
     li::marker {
