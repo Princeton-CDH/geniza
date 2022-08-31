@@ -898,8 +898,6 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "has_discussion_b": bool(counts[Footnote.DISCUSSION]),
             }
         )
-        print(index_data)
-
         last_log_entry = self.log_entries.last()
         if last_log_entry:
             index_data["input_year_i"] = last_log_entry.action_time.year

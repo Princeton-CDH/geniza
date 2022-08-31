@@ -1,5 +1,6 @@
 import re
 
+from bs4 import BeautifulSoup
 from parasolr.django import AliasedSolrQuerySet
 from piffle.image import IIIFImageClient
 
@@ -122,3 +123,18 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         labels = doc.get("iiif_labels", [])
         doc["iiif_images"] = list(zip(doc["iiif_images"], labels))
         return doc
+
+    def _clean_html(self, html_snippet):
+        """highlights within html may result in non-valid content; clean it up"""
+        return BeautifulSoup(html_snippet).prettify()
+
+    def get_highlighting(self):
+        """highlight snippets within transcription html may result in invalid tags
+        that will render strangely; clean up the html before returning"""
+        highlights = super().get_highlighting()
+        for doc in highlights.keys():
+            if "transcription" in highlights[doc]:
+                highlights[doc]["transcription"] = [
+                    self._clean_html(s) for s in highlights[doc]["transcription"]
+                ]
+        return highlights
