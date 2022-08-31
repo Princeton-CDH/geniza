@@ -925,12 +925,6 @@ a.editor-navigation {
         direction: rtl;
     }
 
-    // match margin for unnumbered lines and headers to li margin
-    ol ~ p,
-    ol ~ h3 {
-        margin-right: 2.5em;
-    }
-
     ol,
     section#document-list & ol {
         list-style: decimal;
