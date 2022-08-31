@@ -54,7 +54,7 @@ def test_dict_item():
 
 def test_index():
     # no error on invalid index
-    assert corpus_extras.index([], 12) is ""
+    assert corpus_extras.index([], 12) == ""
     # valid index
     assert corpus_extras.index([1, 2, 3], 1) == 2
     # valid index, different type

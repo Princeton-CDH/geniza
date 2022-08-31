@@ -837,7 +837,7 @@ class TestDocument:
         assert index_data["has_digital_edition_b"] == True
         assert index_data["num_translations_i"] == 2
         assert index_data["scholarship_count_i"] == 3  # unique sources
-        assert index_data["transcription_t"] == ["transcription lines"]
+        assert index_data["transcription_ht"] == ["transcription lines"]
 
         for note in [edition, edition2, translation]:
             assert note.display() in index_data["scholarship_t"]

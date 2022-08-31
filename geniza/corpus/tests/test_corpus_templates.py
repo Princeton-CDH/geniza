@@ -556,7 +556,7 @@ class TestDocumentResult:
         # template currently has truncate chars 150; just check that the beginning
         # of the transcription is there
         rendered = self.template.render(context)
-        assert linebreaks(transcription_txt)[:150] in rendered
+        assert transcription_txt[:150] in rendered
         # language not specified
         assert 'lang=""' in rendered
 
