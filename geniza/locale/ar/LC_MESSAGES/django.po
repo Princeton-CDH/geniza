@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-24 10:22-0400\n"
-"PO-Revision-Date: 2022-08-31 06:24\n"
+"PO-Revision-Date: 2022-08-31 11:01\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -50,7 +50,7 @@ msgstr "تاريخ المستند (الأقدم - الأحدث)"
 #. Translators: label for alphabetical sort by shelfmark
 #: corpus/forms.py:171
 msgid "Shelfmark (A–Z)"
-msgstr "علامة (أ-ي)"
+msgstr "علامة الرف (أ-ي)"
 
 #. Translators: label for descending sort by number of scholarship records
 #: corpus/forms.py:173
@@ -183,7 +183,7 @@ msgstr "بيانات التعريف"
 
 #: corpus/templates/corpus/document_detail.html:45
 msgid "Shelfmark"
-msgstr "علامة"
+msgstr "علامة الرف"
 
 #. Translators: label for date of this document, if known
 #: corpus/templates/corpus/document_detail.html:69
