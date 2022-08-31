@@ -123,16 +123,6 @@ def format_attribution(attribution):
 
 
 @register.filter
-def h1_to_h3(html):
-    """Convert h1 headers to h3 to match other transcription formats,
-    used to avoid modeltranslation inserting elements into h1 headers"""
-    try:
-        return html.replace("h1", "h3")
-    except AttributeError:
-        return html
-
-
-@register.filter
 def pgp_urlize(text):
     """Find all instances of \"PGPID #\" in the passed text, and convert
     each to a link to the referenced document."""

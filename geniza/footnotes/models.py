@@ -514,7 +514,7 @@ class Footnote(TrackChangesModel):
             html_content = defaultdict(list)
             for a in annos:
                 if a.label:
-                    html_content[a.target_source_id].append(f"<h1>{a.label}</h1>")
+                    html_content[a.target_source_id].append(f"<h3>{a.label}</h3>")
                 html_content[a.target_source_id].append(a.body_content)
             # cast to a regular dict to avoid weirdness in django templates
             return dict(html_content)

@@ -117,15 +117,6 @@ def test_iiif_info_json():
     assert "http://image.server/path/myimgid2/info.json" in json_ids
 
 
-def test_h1_to_h3():
-    # should convert H1 to H3
-    html = "<div><h1>hi</h1><h3>hello</h3></div>"
-    assert corpus_extras.h1_to_h3(html) == "<div><h3>hi</h3><h3>hello</h3></div>"
-
-    # should fail silently / do nothing to input on type mismatch
-    assert corpus_extras.h1_to_h3(["test"]) == ["test"]
-
-
 def test_pgp_urlize(document, join):
     doc_link = '<a href="{url}">PGPID {id}</a>'.format(
         url=absolutize_url(document.get_absolute_url()), id=document.id

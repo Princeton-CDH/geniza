@@ -131,7 +131,7 @@ Also doesn't currently account for fragments without images.
                                 {% for edition in document.digital_editions.all %}
                                     <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
                                         {% for html_section in edition.content_html|dict_item:image_info.canvas %}
-                                            {{ html_section|h1_to_h3|safe }}
+                                            {{ html_section|safe }}
                                         {% endfor %}
                                     </div>
                                 {% endfor %}
@@ -158,7 +158,7 @@ Also doesn't currently account for fragments without images.
                         {% for edition in document.digital_editions.all %}
                             <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
                                 {% for html_section in edition.content_html|dict_item:canvas_id %}
-                                    {{ html_section|h1_to_h3|safe }}
+                                    {{ html_section|safe }}
                                 {% endfor %}
                         {% endfor %}
                     </div>
