@@ -876,6 +876,12 @@ class Document(ModelIndexable, DocumentDateMixin):
                 fn.doc_relation
             )
 
+        # make sure digital editions are also counted as editions,
+        # whether or not there is a separate edition footnote
+        for source, doc_relations in source_relations.items():
+            if Footnote.DIGITAL_EDITION in doc_relations:
+                source_relations[source].add(Footnote.EDITION)
+
         # flatten sets of relations by source into a list of relations
         for relation in list(chain(*source_relations.values())):
             # add one for each relation in the flattened list
