@@ -869,9 +869,8 @@ class Document(ModelIndexable, DocumentDateMixin):
         for fn in footnotes:
             # if this is an edition/transcription, try to get plain text for indexing
             if Footnote.DIGITAL_EDITION in fn.doc_relation:
-                plaintext = fn.content_text
-                if plaintext:
-                    transcription_texts.append(plaintext)
+                if fn.content_html_str:
+                    transcription_texts.append(fn.content_html_str)
             # add any doc relations to this footnote's source's set in source_relations
             source_relations[fn.source] = source_relations[fn.source].union(
                 fn.doc_relation
@@ -892,14 +891,13 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # preliminary scholarship record indexing
                 # (may need splitting out and weighting based on type of scholarship)
                 "scholarship_t": [fn.display() for fn in self.footnotes.all()],
-                # text content of any transcriptions
-                "transcription_t": transcription_texts,
+                # transcription content as html
+                "transcription_ht": transcription_texts,
                 "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),
                 "has_translation_b": bool(counts[Footnote.TRANSLATION]),
                 "has_discussion_b": bool(counts[Footnote.DISCUSSION]),
             }
         )
-
         last_log_entry = self.log_entries.last()
         if last_log_entry:
             index_data["input_year_i"] = last_log_entry.action_time.year

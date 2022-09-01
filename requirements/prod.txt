@@ -33,3 +33,4 @@ django-admin-inline-paginator
 convertdate
 unidecode
 addict
+beautifulsoup4

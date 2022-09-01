@@ -747,7 +747,7 @@
         tags_ss_lower
         scholarship_t
         old_pgpids_is
-        transcription_t
+        transcription_ht
       </str>
       <str name="keyword_pf">
         description_t^50
@@ -756,7 +756,7 @@
         shelfmark_textnum^140
         tags_t
         scholarship_t^80
-        transcription_t^80
+        transcription_ht^80
       </str>
 
        <!-- admin search field for Document model (no boosting because no relevance sort) -->
@@ -775,7 +775,7 @@
         pgpid_i
         old_pgpids_is
         scholarship_t
-        transcription_t
+        transcription_ht
       </str>
       <str name="admin_doc_pf">
         type_s
@@ -787,7 +787,7 @@
         notes_t
         needs_review_t
         scholarship_t
-        transcription_t
+        transcription_ht
       </str>
 
     </lst>
