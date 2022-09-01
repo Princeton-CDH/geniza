@@ -6,6 +6,7 @@ to IIIF annotations in the configured annotation server.
 
 import glob
 import os.path
+import unicodedata
 from collections import defaultdict
 from datetime import datetime
 
@@ -17,6 +18,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
 from django.db import models
+from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.utils import timezone
 from eulxml import xmlmap
@@ -38,6 +40,8 @@ class Command(sync_transcriptions.Command):
     v_normal = 1  # default verbosity
 
     missing_footnotes = []
+
+    normalized_unicode = set()
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -175,35 +179,27 @@ class Command(sync_transcriptions.Command):
             if options["files"]:
                 # remove all existing annotations associated with this
                 # document and source so we can reimport as needed
-                existing_annos = annotation_client.search(
-                    source=footnote.source.uri, manifest=doc.manifest_uri
+                existing_annos = Annotation.objects.filter(
+                    content__contains={"dc:source": footnote.source.uri},
+                    content__target__source__partOf__id=doc.manifest_uri,
+                    created__lt=script_run_start,
                 )
-                # FIXME: this is probably problematic for transcriptions currently
-                # split across two TEi files...
-                # maybe filter by date created also, so we only remove
-                # annotations created before the current script run?
-
-                num_before = len(existing_annos)
-                # filter to annotations created before current script run
-                existing_annos = [
-                    a
-                    for a in existing_annos
-                    if datetime.fromisoformat(a["created"]) < script_run_start
-                ]
-                # for debugging, report if this differs
-                if len(existing_annos) != num_before:
-                    print(
-                        "%d existing annotations before current script run (%d total)"
-                        % (len(existing_annos), num_before)
-                    )
-
+                # NOTE: this is problematic for transcriptions currently
+                # split across two TEI files... take care when running
+                # on individual or groups of files
                 if existing_annos:
                     print(
-                        "Removing %s existing annotation(s) for %s on %s "
-                        % (len(existing_annos), footnote.source, doc.manifest_uri)
+                        "Removing %s pre-existing annotation%s for %s on %s "
+                        % (
+                            len(existing_annos),
+                            pluralize(existing_annos),
+                            footnote.source,
+                            doc.manifest_uri,
+                        )
                     )
-                    for anno in existing_annos:
-                        annotation_client.delete(anno["id"])
+                    # not creating log entries for deletion, but
+                    # this should probably only come up in dev runs
+                    existing_annos.delete()
 
             for i, block in enumerate(html_blocks):
                 # if this is not the first block and the label suggests new image,
@@ -228,9 +224,20 @@ class Command(sync_transcriptions.Command):
                 # anno.selector.value = "%s#xywh=pixel:0,0,%s,%s" % (annotation_target, canvas.width, canvas.height)
 
                 # add html and optional label to annotation text body
-                # TODO: specify language in html if single primary language known
-                anno.body[0].value = tei.lines_to_html(block["lines"])
+                # NOTE: not specifying language in html here because we
+                # handle it in wrapping template code based on db language
+
+                html = tei.lines_to_html(block["lines"])
+                if not unicodedata.is_normalized("NFC", html):
+                    self.normalized_unicode.add(xmlfile)
+                    html = unicodedata.normalize("NFC", html)
+                anno.body[0].value = html
+
                 if block["label"]:
+                    # check if label text requires normalization
+                    if not unicodedata.is_normalized("NFC", block["label"]):
+                        self.normalized_unicode.add(xmlfile)
+                        block["label"] = unicodedata.normalize("NFC", block["label"])
                     anno.body[0].label = block["label"]
 
                 anno["schema:position"] = i + 1
@@ -252,10 +259,19 @@ class Command(sync_transcriptions.Command):
         # report on missing footnotes
         if self.missing_footnotes:
             print(
-                "Could not find footnotes for %s documents:"
-                % len(self.missing_footnotes)
+                "Could not find footnotes for %s document%s:"
+                % (len(self.missing_footnotes), pluralize(self.missing_footnotes))
             )
             for xmlfile in self.missing_footnotes:
+                print("\t%s" % xmlfile)
+
+        # report on unicode normalization
+        if self.normalized_unicode:
+            print(
+                "Normalized unicode for %s document%s:"
+                % (len(self.normalized_unicode), pluralize(self.normalized_unicode))
+            )
+            for xmlfile in self.normalized_unicode:
                 print("\t%s" % xmlfile)
 
     def get_footnote_editions(self, doc):
