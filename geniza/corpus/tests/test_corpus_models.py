@@ -833,7 +833,7 @@ class TestDocument:
             doc_relation=Footnote.TRANSLATION,
         )
         index_data = document.index_data()
-        assert index_data["num_editions_i"] == 1
+        assert index_data["num_editions_i"] == 2  # edition + digital edition
         assert index_data["has_digital_edition_b"] == True
         assert index_data["num_translations_i"] == 2
         assert index_data["scholarship_count_i"] == 3  # unique sources
