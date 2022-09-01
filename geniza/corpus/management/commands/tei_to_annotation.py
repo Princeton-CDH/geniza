@@ -274,6 +274,9 @@ class Command(sync_transcriptions.Command):
             for xmlfile in self.normalized_unicode:
                 print("\t%s" % xmlfile)
 
+        # report on edition footnotes that still have content
+        self.check_unmigrated_footnotes()
+
     def get_footnote_editions(self, doc):
         # extend to return digital edition or edition
         # (digital edition if from previous run of this script)
@@ -337,7 +340,7 @@ class Command(sync_transcriptions.Command):
         else:
             # otherwise, convert edition to digital edition
             footnote.doc_relation = Footnote.DIGITAL_EDITION
-            footnote.content = ""
+            footnote.content = None
             footnote.save()
 
             # log footnote change and return
@@ -351,6 +354,22 @@ class Command(sync_transcriptions.Command):
     def log_change(self, obj, log_message):
         "create a log entry documenting object change"
         return self.log_entry(obj, log_message, CHANGE)
+
+    def check_unmigrated_footnotes(self):
+        unmigrated_footnotes = Footnote.objects.filter(
+            doc_relation__contains=Footnote.EDITION, content__isnull=False
+        )
+        if unmigrated_footnotes.exists():
+            self.stdout.write(
+                "\n%d unmigrated footnote%s"
+                % (unmigrated_footnotes.count(), pluralize(unmigrated_footnotes))
+            )
+            for fn in unmigrated_footnotes:
+                # provide admin link to make it easier to investigate
+                admin_url = absolutize_url(
+                    reverse("admin:footnotes_footnote_change", args=(fn.id,))
+                )
+                print("\t%s\t%s" % (fn, admin_url))
 
     _content_types = {}
 
