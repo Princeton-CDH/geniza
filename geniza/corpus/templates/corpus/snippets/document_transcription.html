@@ -97,10 +97,13 @@ Also doesn't currently account for fragments without images.
                                 {% for related in related_documents %}
                                     {% if image_info.image|stringformat:"s" in related.images %}
                                         <li><a class="view-link" href="{% url 'corpus:document' related.document.pgpid %}">
-                                            {# translators: link to view a related document #}
-                                            {% blocktranslate with type=related.document.type shelfmark=related.document.shelfmark|shelfmark_wrap trimmed %}
-                                                <span>View {{ type }}:&nbsp;{{ shelfmark }}</span>
-                                            {% endblocktranslate %}
+                                            {% translate 'Unknown type' as unknown_type %}
+                                            {% with doctype=related.document.type|default:unknown_type shelfmark=related.document.shelfmark|shelfmark_wrap %}
+                                                {# translators: link to view a related document #}
+                                                {% blocktranslate with related_doc="<span>"|add:doctype|add:": "|add:shelfmark|add:"</span>"|safe trimmed %}
+                                                    View {{ related_doc }}
+                                                {% endblocktranslate %}
+                                            {% endwith %}
                                         </a></li>
                                     {% endif %}
                                 {% endfor %}

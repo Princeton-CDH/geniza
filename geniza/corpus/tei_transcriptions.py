@@ -1,6 +1,8 @@
 from eulxml import xmlmap
 from eulxml.xmlmap import teimap
 
+from geniza.common.utils import simplify_quotes
+
 
 class GenizaTeiLine(teimap.TeiLine):
     name = xmlmap.StringField("local-name(.)")
@@ -45,13 +47,13 @@ class GenizaTei(teimap.Tei):
         "page b",
         "page 2",
         "page two",
-        "ע“ב",  # Hebrew label for page 2
+        'ע"ב',  # Hebrew label for page 2
     ]
     # text that indicates a new page/image at the start of the label
     new_page_start_indicators = ["t-s ", "ts ", "ena ", "moss. "]
 
     def label_indicates_new_page(self, label):
-        label = label.lower()
+        label = simplify_quotes(label.lower())
         return any(
             [side_label in label for side_label in self.new_page_indicators]
         ) or any(

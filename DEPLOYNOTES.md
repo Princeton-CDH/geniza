@@ -1,8 +1,13 @@
 # Deploy Notes
 
+## 4.8
+
+-   Solr indexing has changed; reindex all content: `python manage.py index`
+
 ## 4.7.0
 
 -   A tags migration in this release requires updating the Solr index. Run `python manage.py index` to reindex all content.
+-   Run `python manage.py sync_transcriptions` to update transcription content to the latest format (linked to canvas URIs, skips non-document images).
 
 ## 4.6.0
 

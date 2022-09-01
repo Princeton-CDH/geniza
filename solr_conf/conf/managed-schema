@@ -157,6 +157,22 @@
       <tokenizer class="solr.PatternTokenizerFactory" pattern="[A-Za-z0-9]*" group="0"/>
     </analyzer>
   </fieldType>
+
+  <fieldType name="text_bigram" class="solr.TextField" positionIncrementGap="100">
+      <!-- apply ngram on index only, not on query;
+           apply unicode normalization and case folding for both -->
+      <analyzer type="index">
+         <tokenizer class="solr.StandardTokenizerFactory"/>
+         <filter class="solr.ICUFoldingFilterFactory"/>
+        <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="8"/>
+      </analyzer>
+      <analyzer type="query">
+         <tokenizer class="solr.StandardTokenizerFactory"/>
+         <filter class="solr.ICUFoldingFilterFactory"/>
+      </analyzer>
+  </fieldType>
+
+
   <fieldType name="tfloat" class="solr.TrieFloatField" positionIncrementGap="0" docValues="true" precisionStep="8"/>
   <fieldType name="tfloats" class="solr.TrieFloatField" positionIncrementGap="0" docValues="true" multiValued="true" precisionStep="8"/>
   <fieldType name="tint" class="solr.TrieIntField" positionIncrementGap="0" docValues="true" precisionStep="8"/>
@@ -170,7 +186,7 @@
   <!-- local fields -->
   <field name="last_modified" type="pdate" multiValued="false" indexed="true" required="true" stored="true" default="NOW"/>
 
-  <copyField source="shelfmark_s" dest="shelfmark_t" maxChars="30000" />
+  <copyField source="shelfmark_s" dest="shelfmark_bigram" maxChars="30000" />
   <copyField source="shelfmark_s" dest="shelfmark_textnum" maxChars="30000" />
   <copyField source="fragment_shelfmark_ss" dest="shelfmark_t" maxChars="30000" />
   <copyField source="fragment_shelfmark_ss" dest="shelfmark_textnum" maxChars="30000" />
@@ -220,6 +236,8 @@
   <dynamicField name="*_td" type="tdouble" indexed="true" stored="true"/>
   <dynamicField name="*_ws" type="text_ws" indexed="true" stored="true"/>
   <dynamicField name="*_textnum" type="text_lettersnumbers" indexed="true" stored="true" multiValued="true"/>
+  <dynamicField name="*_bigram" type="text_bigram" indexed="true" stored="true" multiValued="true"/>
+
   <dynamicField name="*_i" type="int" indexed="true" stored="true"/>
   <dynamicField name="*_s" type="string" indexed="true" stored="true"/>
   <dynamicField name="*_l" type="long" indexed="true" stored="true"/>

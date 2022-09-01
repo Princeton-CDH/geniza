@@ -152,6 +152,7 @@ class DocumentForm(forms.ModelForm):
             "language_note": Textarea(attrs={"rows": 1}),
             "needs_review": Textarea(attrs={"rows": 3}),
             "notes": Textarea(attrs={"rows": 3}),
+            "image_order_override": HiddenInput(),
         }
 
     def clean(self):
@@ -213,6 +214,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         "id",
         "view_old_pgpids",
         "standard_date",
+        "admin_thumbnails",
     )
     search_fields = (
         "fragments__shelfmark",
@@ -268,6 +270,8 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         "tags",
         "status",
         ("needs_review", "notes"),
+        "image_order_override",
+        "admin_thumbnails",
         # edition, translation
     )
     autocomplete_fields = ["languages", "secondary_languages"]
@@ -276,6 +280,14 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
+
+    def get_form(self, request, obj=None, **kwargs):
+        # Override to inject help text into display field
+        help_texts = {
+            "admin_thumbnails": "Drag image thumbnails to customize order when necessary (i.e. image sequence does not follow fragment/shelfmark sequence)"
+        }
+        kwargs.update({"help_texts": help_texts})
+        return super().get_form(request, obj, **kwargs)
 
     def get_deleted_objects(self, objs, request):
         # override to remove log entries from list and permission check

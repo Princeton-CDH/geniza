@@ -1,6 +1,24 @@
 Change Log
 ==========
 
+4.7
+---
+
+Includes new document "excluded images" display, as well as tagging improvements for content editors.
+
+- public site
+    - As a user viewing document details I want to see which images are not part of the document so that I understand which parts of the fragment are used for the current document.
+    - As a user looking at images for a single document, I want easy access to documents on images from the same fragment that are not part of the current document.
+
+- content/data admin
+    - As a content editor I want to select images in the related fragment view in order to determine which images belong with the document.
+    - As a content editor, when I search for tags to add to a document I want the search to ignore case so that I don't create variations of the same tag.
+    - As a content editor, I want to be able to search for tags with or without diacritics and get the same results.
+    - refined logic for identifying transcription chunks that indicate new image for ``sync_transcriptions`` script
+
+- visual design
+    - Implement the light/dark mode toggle so that users can use the site in the UI mode they prefer.
+
 4.6
 ---
 
