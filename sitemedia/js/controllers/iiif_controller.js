@@ -61,7 +61,7 @@ export default class extends Controller {
         );
         this.imageContainerTarget.style.height = `${height}px`;
         this.imageTarget.classList.remove("visible");
-        this.imageTarget.classList.add("hidden");
+        this.imageTarget.classList.add("hidden-img");
         if (!OSD) {
             this.addOpenSeaDragon(settings);
             OSD = this.imageContainerTarget.querySelector(
@@ -95,6 +95,12 @@ export default class extends Controller {
         this.osdTarget.classList.add("hidden-img");
         this.rotationTarget.classList.remove("active");
         this.updateRotationUI(0);
+        const OSD = this.imageContainerTarget.querySelector(
+            ".openseadragon-container"
+        );
+        OSD.style.transition = "opacity 300ms ease, visibility 0s ease 300ms";
+        OSD.style.visibility = "hidden";
+        OSD.style.opacity = "0";
     }
 
     addOpenSeaDragon(settings) {
