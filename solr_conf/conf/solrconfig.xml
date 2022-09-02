@@ -35,7 +35,8 @@
        that you fully re-index after changing this setting as it can
        affect both how text is indexed and queried.
   -->
-  <luceneMatchVersion>6.6.6</luceneMatchVersion>
+  <!-- TODO: test this change.... -->
+  <luceneMatchVersion>7.0.0</luceneMatchVersion>
 
   <!-- <lib/> directives can be used to instruct Solr to load any Jars
        identified and use them to resolve any "plugins" specified in
@@ -739,7 +740,7 @@
         type_s
         type_t
         collection_ss
-        shelfmark_t^80
+        shelfmark_bigram^80
         shelfmark_s^100
         fragment_shelfmark_ss^50
         shelfmark_textnum^140
@@ -747,22 +748,22 @@
         tags_ss_lower
         scholarship_t
         old_pgpids_is
-        transcription_t
+        transcription_ht
       </str>
       <str name="keyword_pf">
         description_t^50
         description_txt_ens^20
-        shelfmark_t^100
+        shelfmark_bigram^100
         shelfmark_textnum^140
         tags_t
         scholarship_t^80
-        transcription_t^80
+        transcription_ht^80
       </str>
 
        <!-- admin search field for Document model (no boosting because no relevance sort) -->
       <str name="admin_doc_qf">
         type_s
-        shelfmark_t
+        shelfmark_bigram
         shelfmark_s
         fragment_shelfmark_ss^50
         shelfmark_textnum
@@ -775,11 +776,11 @@
         pgpid_i
         old_pgpids_is
         scholarship_t
-        transcription_t
+        transcription_ht
       </str>
       <str name="admin_doc_pf">
         type_s
-        shelfmark_t
+        shelfmark_bigram
         shelfmark_textnum
         tags_t
         description_t
@@ -787,7 +788,7 @@
         notes_t
         needs_review_t
         scholarship_t
-        transcription_t
+        transcription_ht
       </str>
 
     </lst>

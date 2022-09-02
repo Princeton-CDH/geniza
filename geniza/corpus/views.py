@@ -478,7 +478,22 @@ class DocumentManifestView(DocumentDetailView):
             except AttributeError:
                 # attribution is optional, so ignore if not present
                 pass
-            for canvas in remote_manifest.sequences[0].canvases:
+
+            # respect image order override if present
+            ordered_canvases = []
+            if document.image_order_override:
+                for canvas_id in document.image_order_override:
+                    matches = [
+                        c
+                        for c in remote_manifest.sequences[0].canvases
+                        if c.id == canvas_id
+                    ]
+                    if matches:
+                        ordered_canvases.append(matches[0])
+            else:
+                ordered_canvases = remote_manifest.sequences[0].canvases
+
+            for canvas in ordered_canvases:
                 # do we want local canvas id, or rely on remote id?
                 local_canvas = dict(canvas)
                 if first_canvas is None:

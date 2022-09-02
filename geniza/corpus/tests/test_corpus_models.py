@@ -139,9 +139,21 @@ class TestFragment(TestCase):
 
     @patch("geniza.corpus.models.IIIFPresentation")
     def test_iiif_thumbnails(self, mockiifpres):
-        # no iiif
+        # no iiif, should use placeholders
         frag = Fragment(shelfmark="TS 1")
-        assert frag.iiif_thumbnails() == ""
+        placeholder_thumbnails = frag.iiif_thumbnails()
+        assert all(
+            img in placeholder_thumbnails
+            for img in ["recto-placeholder.svg", "verso-placeholder.svg"]
+        )
+        assert all(
+            label in placeholder_thumbnails
+            for label in ['title="recto"', 'title="verso"']
+        )
+        # test with recto side selected: should add class to recto img, but not verso img
+        thumbnails_recto_selected = frag.iiif_thumbnails(selected=[0])
+        assert 'title="recto" class="selected"' in thumbnails_recto_selected
+        assert 'title="verso" class="selected"' not in thumbnails_recto_selected
 
         frag.iiif_url = "http://example.co/iiif/ts-1"
         # return simplified part of the manifest we need for this
@@ -631,7 +643,7 @@ class TestDocument:
         doc = Document.objects.create()
         frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
         TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0])
-        # Mock two IIIF images, mock their size functions
+        # Mock two IIIF images
         img1 = Mock()
         img2 = Mock()
         # Mock Fragment.iiif_images() to return those two images and two fake labels
@@ -664,6 +676,39 @@ class TestDocument:
             assert images[0]["image"] == img1
             assert images[0]["label"] == "1r"
             assert images[0]["shelfmark"] == frag.shelfmark
+
+            # call with image_order_override present, reversed order
+            doc.image_order_override = ["canvas2", "canvas1"]
+            images = doc.iiif_images()
+            # img2 should come first now
+            assert images[0]["image"] == img2
+            assert images[1]["image"] == img1
+
+    def test_admin_thumbnails(self):
+        # Create a document and fragment and a TextBlock to associate them
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0])
+        # Mock two IIIF images, mock their size functions
+        img1 = Mock()
+        img1.size.return_value = "/img1.jpg"
+        img2 = Mock()
+        img2.size.return_value = "/img2.jpg"
+        # Mock Fragment.iiif_images() to return those two images and two fake labels
+        with patch.object(
+            Fragment,
+            "iiif_images",
+            return_value=([img1, img2], ["1r", "1v"], ["canvas1", "canvas2"]),
+        ):
+            thumbs = doc.admin_thumbnails()
+            # should call Fragment.admin_thumbnails to produce HTML img tags for the two images
+            assert '<img src="/img1.jpg"' in thumbs
+            assert '<img src="/img2.jpg"' in thumbs
+            # should save canvas IDs to data-canvas attribute
+            assert 'data-canvas="canvas1"' in thumbs
+            assert 'data-canvas="canvas2"' in thumbs
+            # should never have any selected
+            assert 'class="selected"' not in thumbs
 
     def test_fragment_urls(self):
         # create example doc with two fragments with URLs
@@ -833,11 +878,11 @@ class TestDocument:
             doc_relation=Footnote.TRANSLATION,
         )
         index_data = document.index_data()
-        assert index_data["num_editions_i"] == 1
+        assert index_data["num_editions_i"] == 2  # edition + digital edition
         assert index_data["has_digital_edition_b"] == True
         assert index_data["num_translations_i"] == 2
         assert index_data["scholarship_count_i"] == 3  # unique sources
-        assert index_data["transcription_t"] == ["transcription lines"]
+        assert index_data["transcription_ht"] == ["transcription lines"]
 
         for note in [edition, edition2, translation]:
             assert note.display() in index_data["scholarship_t"]

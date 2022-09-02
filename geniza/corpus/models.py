@@ -18,6 +18,7 @@ from django.db.models.functions.text import Lower
 from django.db.models.query import Prefetch
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.templatetags.static import static
 from django.urls import resolve, reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
@@ -247,26 +248,39 @@ class Fragment(TrackChangesModel):
 
         return images, labels, canvases
 
-    def iiif_thumbnails(self, selected=[]):
-        """html for thumbnails of iiif image, for display in admin"""
-        # if there are no iiif images for this fragment, bail out
-        iiif_images = self.iiif_images()
-        if iiif_images is None:
-            return ""
-
-        images, labels, _ = iiif_images
+    @staticmethod
+    def admin_thumbnails(images, labels, canvases=[], selected=[]):
+        """Convenience method for generating IIIF thumbnails HTML from lists of images and labels;
+        separated for reuse in Document"""
         return mark_safe(
             " ".join(
-                # include label as title for now
-                '<img src="%s" loading="lazy" height="200" title="%s" %s>'
+                # include label as title for now; include canvas as data attribute for reordering
+                # on Document
+                '<img src="%s" loading="lazy" height="200" title="%s" %s%s>'
                 % (
-                    img.size(height=200),
+                    img,
                     labels[i],
+                    f'data-canvas="{canvases[i]}" ' if canvases else "",
                     'class="selected" /' if i in selected else "/",
                 )
                 for i, img in enumerate(images)
             )
         )
+
+    def iiif_thumbnails(self, selected=[]):
+        """html for thumbnails of iiif image, for display in admin"""
+        iiif_images = self.iiif_images()
+        if iiif_images is None:
+            # if there are no iiif images for this fragment, use placeholder
+            # images for recto/verso side selection
+            recto_img = static("img/ui/all/all/recto-placeholder.svg")
+            verso_img = static("img/ui/all/all/verso-placeholder.svg")
+            image_urls = [recto_img, verso_img]
+            labels = ["recto", "verso"]
+        else:
+            images, labels, _ = iiif_images
+            image_urls = [img.size(height=200) for img in images]
+        return Fragment.admin_thumbnails(image_urls, labels, selected=selected)
 
     # CUDL manifests attribution include a metadata statement, but it
     # is not relevant for us since we aren't displaying their metadata
@@ -443,6 +457,9 @@ class Document(ModelIndexable, DocumentDateMixin):
     id = models.AutoField("PGPID", primary_key=True)
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
+    )
+    image_order_override = ArrayField(
+        models.URLField(), null=True, verbose_name="Image Order"
     )
     shelfmark_override = models.CharField(
         "Shelfmark Override",
@@ -638,28 +655,53 @@ class Document(ModelIndexable, DocumentDateMixin):
     def iiif_images(self, filter_side=False):
         """List of IIIF images and labels for images of the Document's Fragments.
         :param filter_side: if TextBlocks have side info, filter images by side (default: False)"""
-        iiif_images = []
+        iiif_images = {}
 
         for b in self.textblock_set.all():
             frag_images = b.fragment.iiif_images()
             if frag_images is not None:
                 images, labels, canvases = frag_images
-                iiif_images += [
-                    {
-                        "image": img,
-                        "label": labels[i],
-                        "canvas": canvases[i],
-                        "shelfmark": b.fragment.shelfmark,
-                        "excluded": b.side and i not in b.selected_images,
-                    }
-                    for i, img in enumerate(images)
+                for i, img in enumerate(images):
                     # include if filter inactive, no images selected, or this image is selected
-                    if not filter_side
-                    or not len(b.selected_images)
-                    or i in b.selected_images
-                ]
+                    if (
+                        not filter_side
+                        or not len(b.selected_images)
+                        or i in b.selected_images
+                    ):
+                        iiif_images[canvases[i]] = {
+                            "image": img,
+                            "label": labels[i],
+                            "canvas": canvases[i],
+                            "shelfmark": b.fragment.shelfmark,
+                            "excluded": b.side and i not in b.selected_images,
+                        }
 
-        return iiif_images
+        # if image_order_override not present, return list, in original order
+        if not self.image_order_override:
+            return list(iiif_images.values())
+
+        # otherwise, order returned images according to override
+        ordered_images = []
+        for canvas in self.image_order_override:
+            if canvas in iiif_images:
+                ordered_images.append(iiif_images.pop(canvas))
+        # ensure images not present in the order override are still added at the end, e.g. if
+        # fragments are added to this document after order override was set
+        ordered_images += list(iiif_images.values())
+        return ordered_images
+
+    def admin_thumbnails(self):
+        """generate html for thumbnails of all iiif images, for image reordering UI in admin"""
+        iiif_images = self.iiif_images()
+        if not iiif_images:
+            return ""
+        return Fragment.admin_thumbnails(
+            images=[img["image"].size(height=200) for img in iiif_images],
+            labels=[img["label"] for img in iiif_images],
+            canvases=[img["canvas"] for img in iiif_images],
+        )
+
+    admin_thumbnails.short_description = "Image order override"
 
     def fragment_urls(self):
         """List of external URLs to view the Document's Fragments."""
@@ -869,13 +911,18 @@ class Document(ModelIndexable, DocumentDateMixin):
         for fn in footnotes:
             # if this is an edition/transcription, try to get plain text for indexing
             if Footnote.DIGITAL_EDITION in fn.doc_relation:
-                plaintext = fn.content_text
-                if plaintext:
-                    transcription_texts.append(plaintext)
+                if fn.content_html_str:
+                    transcription_texts.append(fn.content_html_str)
             # add any doc relations to this footnote's source's set in source_relations
             source_relations[fn.source] = source_relations[fn.source].union(
                 fn.doc_relation
             )
+
+        # make sure digital editions are also counted as editions,
+        # whether or not there is a separate edition footnote
+        for source, doc_relations in source_relations.items():
+            if Footnote.DIGITAL_EDITION in doc_relations:
+                source_relations[source].add(Footnote.EDITION)
 
         # flatten sets of relations by source into a list of relations
         for relation in list(chain(*source_relations.values())):
@@ -892,14 +939,13 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # preliminary scholarship record indexing
                 # (may need splitting out and weighting based on type of scholarship)
                 "scholarship_t": [fn.display() for fn in self.footnotes.all()],
-                # text content of any transcriptions
-                "transcription_t": transcription_texts,
+                # transcription content as html
+                "transcription_ht": transcription_texts,
                 "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),
                 "has_translation_b": bool(counts[Footnote.TRANSLATION]),
                 "has_discussion_b": bool(counts[Footnote.DISCUSSION]),
             }
         )
-
         last_log_entry = self.log_entries.last()
         if last_log_entry:
             index_data["input_year_i"] = last_log_entry.action_time.year

@@ -433,7 +433,7 @@
                 flex-flow: row;
                 margin-bottom: 12px;
             }
-            h3 {
+            h2 {
                 @include typography.body-bold;
                 text-align: left;
                 margin: 8px;
@@ -669,22 +669,30 @@
                 display: none;
             }
             a.view-link {
+                align-items: center;
                 margin-top: 0;
+                color: var(--link-primary);
+                border-bottom: 3px solid var(--background-light);
+                @include typography.body;
+                // span inside span = related document title
                 & > span {
+                    @include typography.body-bold;
                     color: var(--link-primary);
-                    border-bottom: 3px solid var(--background-light);
-                    // span inside span = shelfmark
+                    border-bottom: none;
+                    /* space between text and document label */
+                    margin-left: 0.25em;
+                    /* space before shelfmark after type */
                     & > span {
-                        @include typography.body-bold;
+                        margin-left: 0.25em;
                     }
                 }
-                &:hover > span {
+                &:hover {
                     border-bottom-color: var(--icon-button);
                     @include breakpoints.for-tablet-landscape-up {
                         border-bottom-color: var(--icon-button-hover);
                     }
                 }
-                &:active > span {
+                &:active {
                     border-bottom-color: var(--icon-button);
                 }
             }
@@ -725,11 +733,12 @@
                 padding-top: 0.1px; /* show panel background slightly as a top border */
             }
         }
-        & > h3 {
+        // "Transcription" header
+        & > h2 {
             margin: 30px 0 12px;
         }
         // transcription citation
-        h3 + span.current-transcription {
+        h2 + span.current-transcription {
             display: block;
             @include typography.meta;
             color: var(--input-date-text);
@@ -737,17 +746,33 @@
                 min-height: calc(1rem * 1.5 * 2);
             }
         }
+        // list number decimal cover
+        ol li::before {
+            right: 29px;
+            background-color: var(--background-light);
+        }
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 0 0;
-            h3 {
-                margin: 12px 0;
-            }
-            & > h3 {
+            // "Transcription" header
+            & > h2 {
                 @include typography.body-bold;
                 margin: 27px 0 0;
             }
-            h3 + span.current-transcription.multiple {
+            h2 + span.current-transcription.multiple {
                 min-height: calc(1.125rem * 1.5 * 2);
+            }
+            // Label headers within transcription
+            h3 {
+                margin-top: 12px;
+                margin-bottom: 12px;
+            }
+            // list number decimal cover
+            ol li::before {
+                right: 108px;
+            }
+            // alignment is different in annotation editor
+            .tahqiq-block-display ol li::before {
+                right: 122px;
             }
         }
 
@@ -902,10 +927,15 @@ a.editor-navigation {
     // direction: rtl; /* search results ae mixed rtl/ltr and include unicode order mark characters */
 
     .search-result & p {
-        white-space: pre-line;
         text-align: right;
         // disable site default max character width for reading
         max-width: none;
+    }
+
+    p {
+        // match alignment of list items
+        margin-right: 1em;
+        padding-right: 1.5em;
     }
 
     sup {
@@ -917,14 +947,25 @@ a.editor-navigation {
     }
 
     li {
-        white-space: pre-line;
         margin-right: 1.5em;
         padding-right: 1em; /* shift to make space for line numbers */
         direction: rtl;
     }
 
-    ol {
+    ol,
+    section#document-list & ol {
         list-style: decimal;
+        margin-top: 0;
+    }
+
+    /* cover the decimal in the list number to help with ltr/rtl readability */
+    li::before {
+        content: " ";
+        position: absolute;
+        right: 1em;
+        height: 1.2em;
+        width: 1em;
+        background-color: var(--background);
     }
 
     li::marker {

@@ -72,6 +72,15 @@ class Command(BaseCommand):
         self.stats["duplicate_footnote"] = 0
         # updates should not happen after initial sync when there are no TEI changes
         self.stats["footnote_updated"] = 0
+        # empty tei may not happen when running on a subset
+        self.stats["empty_tei"] = 0
+        self.stats["document_not_found"] = 0
+        self.stats["joins"] = 0
+        self.stats["no_edition"] = 0
+        self.stats["one_edition"] = 0
+        self.stats["multiple_editions_with_content"] = 0
+        # keep track of document ids with multiple digitized editions (likely merged records/joins)
+        self.multiedition_docs = set()
 
         # iterate through all tei files in the repository OR specified files
         xmlfiles = options["files"] or glob.iglob(os.path.join(gitrepo_path, "*.xml"))

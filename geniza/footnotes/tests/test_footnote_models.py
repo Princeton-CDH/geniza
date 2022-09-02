@@ -282,7 +282,7 @@ class TestFootnote:
         # annotations are on the same canvas
         assert digital_edition.content_html[canvas_uri] == [
             "Test annotation",
-            "<h1>A label</h1>",
+            "<h3>A label</h3>",
             "Second annotation!",
         ]
 

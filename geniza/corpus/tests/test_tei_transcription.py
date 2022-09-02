@@ -138,3 +138,13 @@ def test_text_to_plaintext_longlines():
     # line is slightly more than 100 because of ltr/rtl marks & line number
     # but should NOT be padded to match the superlongline
     assert len(plaintext_lines[1]) < 110
+
+
+def test_label_indicates_new_page():
+    tei = GenizaTei()
+    assert tei.label_indicates_new_page("recto a") is True
+    assert tei.label_indicates_new_page("on verso") is True
+    assert tei.label_indicates_new_page("T-S ...") is True
+    assert tei.label_indicates_new_page("ENA # ...") is True
+    assert tei.label_indicates_new_page('ע"ב') is True
+    assert tei.label_indicates_new_page("ע“ב") is True

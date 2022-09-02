@@ -108,7 +108,7 @@ main.document {
         // "Description" header and content
         section.description {
             margin: 64px 0 spacing.$spacing-md;
-            h3 {
+            h2 {
                 @include typography.body-bold;
             }
 

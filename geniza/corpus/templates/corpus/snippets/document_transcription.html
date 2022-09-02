@@ -71,7 +71,7 @@ Also doesn't currently account for fragments without images.
                 {# only images that are part of the current document are zoomable #}
                 <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-deactivate-on-zoom-value="false{% endif %}" data-iiif-url="{{ image_info.image.info }}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
                     <div class="img-header" data-iiif-target="imageHeader">
-                        <h3>{{ image_info.shelfmark }} {{ image_info.label }}</h3>
+                        <h2>{{ image_info.shelfmark }} {{ image_info.label }}</h2>
                         {% if not image_info.excluded %}
                             <input data-iiif-target="zoomSlider" data-action="iiif#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
                             <label data-iiif-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
@@ -97,10 +97,13 @@ Also doesn't currently account for fragments without images.
                                 {% for related in related_documents %}
                                     {% if image_info.image|stringformat:"s" in related.images %}
                                         <li><a class="view-link" href="{% url 'corpus:document' related.document.pgpid %}">
-                                            {# translators: link to view a related document #}
-                                            {% blocktranslate with type=related.document.type shelfmark=related.document.shelfmark|shelfmark_wrap trimmed %}
-                                                <span>View {{ type }}:&nbsp;{{ shelfmark }}</span>
-                                            {% endblocktranslate %}
+                                            {% translate 'Unknown type' as unknown_type %}
+                                            {% with doctype=related.document.type|default:unknown_type shelfmark=related.document.shelfmark|shelfmark_wrap %}
+                                                {# translators: link to view a related document #}
+                                                {% blocktranslate with related_doc="<span>"|add:doctype|add:": "|add:shelfmark|add:"</span>"|safe trimmed %}
+                                                    View {{ related_doc }}
+                                                {% endblocktranslate %}
+                                            {% endwith %}
                                         </a></li>
                                     {% endif %}
                                 {% endfor %}
@@ -112,7 +115,7 @@ Also doesn't currently account for fragments without images.
                     {% if edit_mode %}
                         <div class="annotate transcription" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
                             {% if forloop.first %}
-                                <h3>{% translate 'Transcribe' %}</h3>
+                                <h2>{% translate 'Transcribe' %}</h2>
                                 <p class="instructions">
                                     {% translate 'Hold shift and then click on the image and drag to select a rectangular region for the block text you want to transcribe.' %}
                                 </p>
@@ -120,7 +123,7 @@ Also doesn't currently account for fragments without images.
                         </div>
                     {% else %}
                         {% if forloop.first %}
-                            <h3>Transcription</h3>
+                            <h2>{% translate 'Transcription' %}</h2>
                             <span data-transcription-target="editionFullLabel" class="current-transcription{% if document.digital_editions.count > 1 %} multiple{% endif %}">
                                 {{ document.digital_editions.0.source.formatted_display|safe }}
                             </span>
@@ -131,7 +134,7 @@ Also doesn't currently account for fragments without images.
                                 {% for edition in document.digital_editions.all %}
                                     <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
                                         {% for html_section in edition.content_html|dict_item:image_info.canvas %}
-                                            {{ html_section|h1_to_h3|safe }}
+                                            {{ html_section|safe }}
                                         {% endfor %}
                                     </div>
                                 {% endfor %}
@@ -148,7 +151,7 @@ Also doesn't currently account for fragments without images.
                 <div class="img"></div> {# empty image div needed for grid layout #}
                 <div class="transcription-panel">
                     {% if forloop.first %}
-                        <h3>Transcription</h3>
+                        <h2>{% translate 'Transcription' %}</h2>
                         <span data-transcription-target="editionFullLabel" class="current-transcription{% if document.digital_editions.count > 1 %} multiple{% endif %}">
                             {{ document.digital_editions.0.source.formatted_display|safe }}
                         </span>
@@ -158,7 +161,7 @@ Also doesn't currently account for fragments without images.
                         {% for edition in document.digital_editions.all %}
                             <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
                                 {% for html_section in edition.content_html|dict_item:canvas_id %}
-                                    {{ html_section|h1_to_h3|safe }}
+                                    {{ html_section|safe }}
                                 {% endfor %}
                         {% endfor %}
                     </div>
