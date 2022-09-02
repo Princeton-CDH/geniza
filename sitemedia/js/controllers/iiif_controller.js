@@ -15,6 +15,7 @@ export default class extends Controller {
         "zoomSliderLabel",
         "zoomToggle",
     ];
+    static values = { deactivateOnZoom: { type: Boolean, default: true } };
 
     connect() {
         // make iiif controller available at element.iiif
@@ -211,9 +212,12 @@ export default class extends Controller {
                 // When zoomed back out to 100%, deactivate OSD
                 zoom = minZoom;
                 viewer.viewport.zoomTo(1.0);
-                this.resetBounds(viewer);
-                this.deactivateDeepZoom();
-                deactivating = true;
+                if (this.deactivateOnZoomValue) {
+                    console.log(this.deactivateOnZoomValue);
+                    this.resetBounds(viewer);
+                    this.deactivateDeepZoom();
+                    deactivating = true;
+                }
                 evt.currentTarget.value = minZoom;
             } else {
                 // Zoom to the chosen percentage
