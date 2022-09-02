@@ -5,8 +5,6 @@ import {
     AnnotationServerStorage,
 } from "annotorious-tahqiq";
 
-import IIIFController from "./iiif_controller";
-
 export default class extends Controller {
     static targets = ["image", "imageContainer", "osd"];
 
@@ -55,7 +53,7 @@ export default class extends Controller {
         // on the iiif controlleer
 
         const viewer = this.element.iiif.viewer;
-        // const viewer = super.addOpenSeaDragon(settings);
+
         // enable annotorious-tahqiq
         const { config, canvasURL, manifestId, annotationContainer } = settings;
         const anno = Annotorious(viewer);
@@ -77,23 +75,5 @@ export default class extends Controller {
         // Initialize the TranscriptionEditor plugin
         new TranscriptionEditor(anno, storagePlugin, annotationContainer);
         return viewer;
-    }
-    handleZoomSliderInput(viewer, minZoom) {
-        // FIXME: what needs to change here?
-
-        return (evt) => {
-            // Handle changes in the zoom slider
-            let zoom = parseFloat(evt.currentTarget.value);
-            if (zoom <= minZoom) {
-                // prevent zoom from going below minZoom
-                zoom = minZoom;
-                viewer.viewport.zoomTo(1.0);
-                evt.currentTarget.value = minZoom;
-            } else {
-                // Zoom to the chosen percentage
-                viewer.viewport.zoomTo(zoom);
-            }
-            this.updateZoomUI(zoom, false);
-        };
     }
 }
