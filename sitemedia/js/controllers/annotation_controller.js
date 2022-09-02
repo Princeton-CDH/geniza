@@ -6,7 +6,7 @@ import {
 } from "annotorious-tahqiq";
 
 export default class extends Controller {
-    static targets = ["image", "imageContainer", "osd"];
+    static targets = ["image", "imageContainer"];
 
     connect() {
         // enable deep zoom, annotorious-tahqiq on load

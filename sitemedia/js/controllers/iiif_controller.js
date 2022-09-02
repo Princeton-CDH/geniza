@@ -38,9 +38,7 @@ export default class extends Controller {
     handleDeepZoom(evt) {
         // Enable OSD if not enabled
         // OSD needs to use DOM queries since it can't be assigned a target
-        const OSD = this.imageContainerTarget.querySelector(
-            ".openseadragon-container"
-        );
+        const OSD = this.osdTarget.querySelector(".openseadragon-container");
         if (!OSD || this.osdTarget.classList.contains("hidden-img")) {
             const isMobile = evt.currentTarget.id.startsWith("zoom-toggle");
             this.activateDeepZoom({ isMobile });
@@ -54,19 +52,12 @@ export default class extends Controller {
         // scroll to top of controls
         this.imageHeaderTarget.scrollIntoView();
         // hide image and add OpenSeaDragon to container
-        const height =
-            this.imageContainerTarget.getBoundingClientRect()["height"];
-        let OSD = this.imageContainerTarget.querySelector(
-            ".openseadragon-container"
-        );
-        this.imageContainerTarget.style.height = `${height}px`;
+        let OSD = this.osdTarget.querySelector(".openseadragon-container");
         this.imageTarget.classList.remove("visible");
         this.imageTarget.classList.add("hidden-img");
         if (!OSD) {
             this.addOpenSeaDragon(settings);
-            OSD = this.imageContainerTarget.querySelector(
-                ".openseadragon-container"
-            );
+            OSD = this.osdTarget.querySelector(".openseadragon-container");
         }
         // OSD styles have to be set directly on the element instead of adding a class, due to
         // its use of inline styles
@@ -74,12 +65,6 @@ export default class extends Controller {
         OSD.style.transition = "opacity 300ms ease, visibility 0s ease 0ms";
         OSD.style.visibility = "visible";
         OSD.style.opacity = "1";
-        // OSD needs top offset due to margin, padding, and header elements
-        if (settings.isMobile) {
-            OSD.style.top = "122px";
-        } else {
-            OSD.style.top = "72px";
-        }
 
         this.imageTarget.classList.remove("visible");
         this.imageTarget.classList.add("hidden-img");
@@ -95,9 +80,7 @@ export default class extends Controller {
         this.osdTarget.classList.add("hidden-img");
         this.rotationTarget.classList.remove("active");
         this.updateRotationUI(0);
-        const OSD = this.imageContainerTarget.querySelector(
-            ".openseadragon-container"
-        );
+        const OSD = this.osdTarget.querySelector(".openseadragon-container");
         OSD.style.transition = "opacity 300ms ease, visibility 0s ease 300ms";
         OSD.style.visibility = "hidden";
         OSD.style.opacity = "0";
@@ -112,10 +95,10 @@ export default class extends Controller {
 
         // inject OSD into the image container
         let viewer = OpenSeadragon({
-            element: this.imageContainerTarget,
+            element: this.osdTarget,
             prefixUrl:
                 "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/",
-            tileSources: [this.imageContainerTarget.dataset.iiifUrl],
+            tileSources: [this.osdTarget.dataset.iiifUrl],
             sequenceMode: false,
             autoHideControls: true,
             showHomeControl: false,
