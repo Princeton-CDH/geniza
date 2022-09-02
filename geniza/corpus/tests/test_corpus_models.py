@@ -740,7 +740,7 @@ class TestDocument:
     def test_fragments_other_docs_multiple(self, document, join):
         doc2 = Document.objects.create()
         doc2.fragments.add(join.fragments.first())
-        assert join.fragments_other_docs() == [doc2, document]
+        assert all(doc in join.fragments_other_docs() for doc in [doc2, document])
 
     def test_fragments_other_docs_suppressed(self, document, join):
         join.status = Document.SUPPRESSED
