@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-24 10:22-0400\n"
-"PO-Revision-Date: 2022-08-26 18:09\n"
+"PO-Revision-Date: 2022-09-06 12:27\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -307,11 +307,11 @@ msgstr "לא מצוין ייחוס או רישיון."
 
 #: corpus/templates/corpus/snippets/document_image_rights.html:38
 msgid "Jewish Theological Seminary homepage"
-msgstr ""
+msgstr "עמוד הבית  Jewish Theological Seminary"
 
 #: corpus/templates/corpus/snippets/document_image_rights.html:40
 msgid "Jewish Theological Seminary logo"
-msgstr ""
+msgstr "סמל Jewish Theological Seminary"
 
 #. Translators: Date document was first added to the PGP
 #: corpus/templates/corpus/snippets/document_result.html:31
@@ -382,15 +382,15 @@ msgstr "מסמכים קשורים (%(n_reldocs)s)"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:6
 msgid "show images"
-msgstr ""
+msgstr "הצג תמונות"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:10
 msgid "show transcription"
-msgstr ""
+msgstr "הצג תעתוק"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:14
 msgid "show translation"
-msgstr ""
+msgstr "הצג תרגום"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:56
 msgid "Zoom and Rotate"
