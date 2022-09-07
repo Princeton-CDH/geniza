@@ -52,13 +52,6 @@ export default class extends Controller {
         // scroll to top of controls
         this.imageHeaderTarget.scrollIntoView();
         // hide image and add OpenSeaDragon to container
-        const headerStyle = window.getComputedStyle(this.imageHeaderTarget);
-        const height =
-            this.imageContainerTarget.getBoundingClientRect()["height"] -
-            this.imageHeaderTarget.getBoundingClientRect()["height"] -
-            parseInt(headerStyle.getPropertyValue("margin-bottom"));
-
-        this.osdTarget.style.height = `${height}px`;
         let OSD = this.osdTarget.querySelector(".openseadragon-container");
         this.imageTarget.classList.remove("visible");
         this.imageTarget.classList.add("hidden-img");
