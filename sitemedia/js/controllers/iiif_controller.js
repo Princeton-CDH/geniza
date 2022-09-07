@@ -209,7 +209,6 @@ export default class extends Controller {
                 zoom = minZoom;
                 viewer.viewport.zoomTo(1.0);
                 if (this.deactivateOnZoomValue) {
-                    console.log(this.deactivateOnZoomValue);
                     this.resetBounds(viewer);
                     this.deactivateDeepZoom();
                     deactivating = true;
