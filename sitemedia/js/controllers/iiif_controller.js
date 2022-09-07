@@ -15,7 +15,7 @@ export default class extends Controller {
         "zoomSliderLabel",
         "zoomToggle",
     ];
-    static values = { deactivateOnZoom: { type: Boolean, default: true } };
+    static values = { editMode: { type: Boolean, default: false } };
 
     connect() {
         // make iiif controller available at element.iiif
@@ -49,8 +49,10 @@ export default class extends Controller {
         }
     }
     activateDeepZoom(settings) {
-        // scroll to top of controls
-        this.imageHeaderTarget.scrollIntoView();
+        // scroll to top of controls (if not in editor)
+        if (!this.editModeValue) {
+            this.imageHeaderTarget.scrollIntoView();
+        }
         // hide image and add OpenSeaDragon to container
         let OSD = this.osdTarget.querySelector(".openseadragon-container");
         this.imageTarget.classList.remove("visible");
@@ -198,10 +200,10 @@ export default class extends Controller {
             let zoom = parseFloat(evt.currentTarget.value);
             let deactivating = false;
             if (zoom <= minZoom) {
-                // When zoomed back out to 100%, deactivate OSD
+                // When zoomed back out to 100%, deactivate OSD (if not in editor)
                 zoom = minZoom;
                 viewer.viewport.zoomTo(1.0);
-                if (this.deactivateOnZoomValue) {
+                if (!this.editModeValue) {
                     this.resetBounds(viewer);
                     this.deactivateDeepZoom();
                     deactivating = true;

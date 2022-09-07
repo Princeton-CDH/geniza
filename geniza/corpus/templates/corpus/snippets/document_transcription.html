@@ -69,7 +69,7 @@ Also doesn't currently account for fragments without images.
             {# if we have images, loop based on them #}
             {% for image_info in document.iiif_images %}
                 {# only images that are part of the current document are zoomable #}
-                <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-deactivate-on-zoom-value="false{% endif %}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
+                <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-edit-mode-value="true{% endif %}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
                     <div class="img-header" data-iiif-target="imageHeader">
                         <h2>{{ image_info.shelfmark }} {{ image_info.label }}</h2>
                         {% if not image_info.excluded %}
