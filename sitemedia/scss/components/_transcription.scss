@@ -584,7 +584,7 @@
                 height: calc(100vh - 99px);
                 @include breakpoints.for-tablet-landscape-up {
                     // controls are vertically slimmer on desktop
-                    height: calc(100vh - 58px);
+                    height: calc(100vh - 68px);
                 }
                 position: absolute !important;
                 top: 0;

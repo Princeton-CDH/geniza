@@ -15,6 +15,12 @@ export default class extends Controller {
         "zoomSliderLabel",
         "zoomToggle",
     ];
+    static values = { editMode: { type: Boolean, default: false } };
+
+    connect() {
+        // make iiif controller available at element.iiif
+        this.element[this.identifier] = this;
+    }
 
     rotationTargetConnected() {
         // initialize angle rotation input
@@ -32,9 +38,7 @@ export default class extends Controller {
     handleDeepZoom(evt) {
         // Enable OSD if not enabled
         // OSD needs to use DOM queries since it can't be assigned a target
-        const OSD = this.imageContainerTarget.querySelector(
-            ".openseadragon-container"
-        );
+        const OSD = this.osdTarget.querySelector(".openseadragon-container");
         if (!OSD || this.osdTarget.classList.contains("hidden-img")) {
             const isMobile = evt.currentTarget.id.startsWith("zoom-toggle");
             this.activateDeepZoom({ isMobile });
@@ -45,22 +49,17 @@ export default class extends Controller {
         }
     }
     activateDeepZoom(settings) {
-        // scroll to top of controls
-        this.imageHeaderTarget.scrollIntoView();
+        // scroll to top of controls (if not in editor)
+        if (!this.editModeValue) {
+            this.imageHeaderTarget.scrollIntoView();
+        }
         // hide image and add OpenSeaDragon to container
-        const height =
-            this.imageContainerTarget.getBoundingClientRect()["height"];
-        let OSD = this.imageContainerTarget.querySelector(
-            ".openseadragon-container"
-        );
-        this.imageContainerTarget.style.height = `${height}px`;
+        let OSD = this.osdTarget.querySelector(".openseadragon-container");
         this.imageTarget.classList.remove("visible");
-        this.imageTarget.classList.add("hidden");
+        this.imageTarget.classList.add("hidden-img");
         if (!OSD) {
             this.addOpenSeaDragon(settings);
-            OSD = this.imageContainerTarget.querySelector(
-                ".openseadragon-container"
-            );
+            OSD = this.osdTarget.querySelector(".openseadragon-container");
         }
         // OSD styles have to be set directly on the element instead of adding a class, due to
         // its use of inline styles
@@ -68,12 +67,6 @@ export default class extends Controller {
         OSD.style.transition = "opacity 300ms ease, visibility 0s ease 0ms";
         OSD.style.visibility = "visible";
         OSD.style.opacity = "1";
-        // OSD needs top offset due to margin, padding, and header elements
-        if (settings.isMobile) {
-            OSD.style.top = "122px";
-        } else {
-            OSD.style.top = "72px";
-        }
 
         this.imageTarget.classList.remove("visible");
         this.imageTarget.classList.add("hidden-img");
@@ -89,6 +82,10 @@ export default class extends Controller {
         this.osdTarget.classList.add("hidden-img");
         this.rotationTarget.classList.remove("active");
         this.updateRotationUI(0);
+        const OSD = this.osdTarget.querySelector(".openseadragon-container");
+        OSD.style.transition = "opacity 300ms ease, visibility 0s ease 300ms";
+        OSD.style.visibility = "hidden";
+        OSD.style.opacity = "0";
     }
 
     addOpenSeaDragon(settings) {
@@ -100,10 +97,10 @@ export default class extends Controller {
 
         // inject OSD into the image container
         let viewer = OpenSeadragon({
-            element: this.imageContainerTarget,
+            element: this.osdTarget,
             prefixUrl:
                 "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/",
-            tileSources: [this.imageContainerTarget.dataset.iiifUrl],
+            tileSources: [this.osdTarget.dataset.iiifUrl],
             sequenceMode: false,
             autoHideControls: true,
             showHomeControl: false,
@@ -180,6 +177,9 @@ export default class extends Controller {
             this.zoomSliderTarget.value = parseFloat(zoom);
             this.updateZoomUI(zoom, false);
         });
+
+        // keep reference to OSD viewer object on the controller object
+        this.viewer = viewer;
         return viewer;
     }
     handleRotationInput(viewer) {
@@ -200,12 +200,14 @@ export default class extends Controller {
             let zoom = parseFloat(evt.currentTarget.value);
             let deactivating = false;
             if (zoom <= minZoom) {
-                // When zoomed back out to 100%, deactivate OSD
+                // When zoomed back out to 100%, deactivate OSD (if not in editor)
                 zoom = minZoom;
                 viewer.viewport.zoomTo(1.0);
-                this.resetBounds(viewer);
-                this.deactivateDeepZoom();
-                deactivating = true;
+                if (!this.editModeValue) {
+                    this.resetBounds(viewer);
+                    this.deactivateDeepZoom();
+                    deactivating = true;
+                }
                 evt.currentTarget.value = minZoom;
             } else {
                 // Zoom to the chosen percentage

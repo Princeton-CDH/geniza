@@ -1,64 +1,68 @@
+import { Controller } from "@hotwired/stimulus";
+import { useIntersection } from "stimulus-use";
 import * as Annotorious from "@recogito/annotorious-openseadragon";
 import {
     TranscriptionEditor,
     AnnotationServerStorage,
 } from "annotorious-tahqiq";
 
-import IIIFControler from "./iiif_controller";
-
-export default class extends IIIFControler {
-    static targets = [
-        "image",
-        "imageContainer",
-        "imageHeader",
-        "osd",
-        "rotation",
-        "rotationLabel",
-        "zoomSlider",
-        "zoomSliderLabel",
-        "zoomToggle",
-    ];
+export default class extends Controller {
+    static targets = ["image", "imageContainer"];
 
     connect() {
-        // enable deep zoom, annotorious-tahqiq on load
-
-        // load configuration variables from django settings; must use DOM query due to json_script
-        const config = JSON.parse(
-            document.getElementById("annotation-config").textContent
-        );
-
-        // TODO: Better way of determining if we're on mobile?
-        const isMobile = window.innerWidth <= 900;
-
-        // initialize transcription editor
-        // get sibling outside of controller scope
-        const annotationContainer =
-            this.imageContainerTarget.nextElementSibling.querySelector(
-                ".annotate"
+        // enable intersection behaviors (appear, disappear)
+        useIntersection(this);
+    }
+    appear() {
+        // enable deep zoom, annotorious-tahqiq on first appearance
+        // (appear may fire subsequently, but nothing should happen then)
+        if (
+            !this.imageContainerTarget.querySelector(".openseadragon-container")
+        ) {
+            // load configuration variables from django settings; must use DOM query due to json_script
+            const config = JSON.parse(
+                document.getElementById("annotation-config").textContent
             );
 
-        // grab iiif URL and manifest for tahqiq
-        const canvasURL = this.imageContainerTarget.dataset.canvasUrl;
-        const manifestId = annotationContainer.dataset.manifest;
-        const settings = {
-            isMobile,
-            config,
-            canvasURL,
-            manifestId,
-            annotationContainer,
-        };
+            // TODO: Better way of determining if we're on mobile?
+            const isMobile = window.innerWidth <= 900;
 
-        // wait for each image to load fully before enabling OSD so we know its full height
-        if (this.imageTarget.complete) {
-            this.activateDeepZoom(settings);
-        } else {
-            this.imageTarget.addEventListener("load", () => {
-                this.activateDeepZoom(settings);
-            });
+            // initialize transcription editor
+            // get sibling outside of controller scope
+            const annotationContainer =
+                this.imageContainerTarget.nextElementSibling.querySelector(
+                    ".annotate"
+                );
+
+            // grab iiif URL and manifest for tahqiq
+            const canvasURL = this.imageContainerTarget.dataset.canvasUrl;
+            const manifestId = annotationContainer.dataset.manifest;
+            const settings = {
+                isMobile,
+                config,
+                canvasURL,
+                manifestId,
+                annotationContainer,
+            };
+
+            // wait for each image to load fully before enabling OSD so we know its full height
+            if (this.imageTarget.complete) {
+                this.element.iiif.activateDeepZoom(settings);
+                this.initAnnotorious(settings);
+            } else {
+                this.imageTarget.addEventListener("load", () => {
+                    this.element.iiif.activateDeepZoom(settings);
+                    this.initAnnotorious(settings);
+                });
+            }
         }
     }
-    addOpenSeaDragon(settings) {
-        const viewer = super.addOpenSeaDragon(settings);
+    initAnnotorious(settings) {
+        // initialize annotorious, binding to the osd viewer object
+        // on the iiif controlleer
+
+        const viewer = this.element.iiif.viewer;
+
         // enable annotorious-tahqiq
         const { config, canvasURL, manifestId, annotationContainer } = settings;
         const anno = Annotorious(viewer);
@@ -80,21 +84,5 @@ export default class extends IIIFControler {
         // Initialize the TranscriptionEditor plugin
         new TranscriptionEditor(anno, storagePlugin, annotationContainer);
         return viewer;
-    }
-    handleZoomSliderInput(viewer, minZoom) {
-        return (evt) => {
-            // Handle changes in the zoom slider
-            let zoom = parseFloat(evt.currentTarget.value);
-            if (zoom <= minZoom) {
-                // prevent zoom from going below minZoom
-                zoom = minZoom;
-                viewer.viewport.zoomTo(1.0);
-                evt.currentTarget.value = minZoom;
-            } else {
-                // Zoom to the chosen percentage
-                viewer.viewport.zoomTo(zoom);
-            }
-            this.updateZoomUI(zoom, false);
-        };
     }
 }
