@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-24 10:22-0400\n"
-"PO-Revision-Date: 2022-08-26 18:09\n"
+"PO-Revision-Date: 2022-09-06 14:04\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -307,11 +307,11 @@ msgstr "לא מצוין ייחוס או רישיון."
 
 #: corpus/templates/corpus/snippets/document_image_rights.html:38
 msgid "Jewish Theological Seminary homepage"
-msgstr ""
+msgstr "עמוד הבית  Jewish Theological Seminary"
 
 #: corpus/templates/corpus/snippets/document_image_rights.html:40
 msgid "Jewish Theological Seminary logo"
-msgstr ""
+msgstr "סמל Jewish Theological Seminary"
 
 #. Translators: Date document was first added to the PGP
 #: corpus/templates/corpus/snippets/document_result.html:31
@@ -382,24 +382,24 @@ msgstr "מסמכים קשורים (%(n_reldocs)s)"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:6
 msgid "show images"
-msgstr ""
+msgstr "הצג תמונות"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:10
 msgid "show transcription"
-msgstr ""
+msgstr "הצג תעתוק"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:14
 msgid "show translation"
-msgstr ""
+msgstr "הצג תרגום"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:56
 msgid "Zoom and Rotate"
-msgstr ""
+msgstr "הגדל וסובב"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:80
 #, python-format
 msgid "View %(related_doc)s"
-msgstr ""
+msgstr "ראה %(related_doc)s"
 
 #. Translators: label for a link to a resource with no named location
 #: corpus/templates/corpus/snippets/footnote_location.html:9
@@ -442,10 +442,10 @@ msgstr "רשומה קשורה ל-%(doc)s"
 #, python-format
 msgid "%(count)d scholarship record"
 msgid_plural "%(count)d scholarship records"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%(count)d רשומה קשורה"
+msgstr[1] "%(count)d רשומות קשורות"
+msgstr[2] "%(count)d רשומות קשורות"
+msgstr[3] "%(count)d רשומות קשורות"
 
 #. Translators: title of related documents page
 #: corpus/views.py:387
@@ -457,10 +457,10 @@ msgstr "מסמכים קשורים %(doc)s"
 #, python-format
 msgid "%(count)d related document"
 msgid_plural "%(count)d related documents"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%(count)d מסמך קשור"
+msgstr[1] "%(count)d מסמכים קשורים"
+msgstr[2] "%(count)d מסמכים קשורים"
+msgstr[3] "%(count)d מסמכים קשורים"
 
 #. Translators: Placeholder for when a work has no title available
 #: footnotes/models.py:201
