@@ -223,7 +223,8 @@ export default class extends Controller {
         this.zoomSliderLabelTarget.textContent = `${(zoom * 100).toFixed(0)}%`;
         // update progress indication in slider track
         const percent =
-            (zoom / this.zoomSliderTarget.getAttribute("max")) * 100;
+            ((zoom - 1) / (this.zoomSliderTarget.getAttribute("max") - 1)) *
+            100;
         let secondColor = "var(--filter-active)";
         if (deactivating) {
             secondColor = "#9E9E9E";
