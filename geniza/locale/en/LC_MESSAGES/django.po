@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-24 10:22-0400\n"
+"POT-Creation-Date: 2022-09-08 11:23-0400\n"
 "PO-Revision-Date: 2022-08-01 14:25\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -120,29 +120,29 @@ msgstr ""
 msgid "Relevance sort is not available without a keyword search term."
 msgstr ""
 
-#: corpus/models.py:771 templates/base.html:21
+#: corpus/models.py:799 templates/base.html:21
 msgid "Princeton Geniza Project"
 msgstr ""
 
 #. Translators: attribution for local IIIF manifests
-#: corpus/models.py:773
+#: corpus/models.py:801
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr ""
 
 #. Translators: attribution for local IIIF manifests that include transcription
-#: corpus/models.py:776
+#: corpus/models.py:804
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr ""
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: corpus/models.py:778
+#: corpus/models.py:806
 msgid "Additional restrictions may apply."
 msgstr ""
 
 #. Translators: Default label when document does not have a type
-#: corpus/models.py:830
+#: corpus/models.py:858
 #: corpus/templates/corpus/snippets/document_header.html:17
 #: corpus/templates/corpus/snippets/document_transcription.html:77
 msgid "Unknown type"
@@ -504,48 +504,48 @@ msgstr ""
 msgid "footer navigation"
 msgstr ""
 
-#. Translators: label for Twitter links in footer
-#: templates/footer.html:19
-msgid "Twitter"
-msgstr ""
-
-#. Translators: label for Instagram links in footer
-#: templates/footer.html:21
-msgid "Instagram"
-msgstr ""
-
 #. Translators: accessibility label for Princeton Geniza Lab homepage, for footer
-#: templates/footer.html:26
+#: templates/footer.html:21
 msgid "Princeton Geniza Lab homepage"
 msgstr ""
 
+#: templates/footer.html:28 templates/footer.html:42
+#, python-format
+msgid "Follow %(username)s on Twitter."
+msgstr ""
+
 #. Translators: accessibility label for Princeton CDH homepage, for footer
-#: templates/footer.html:39
+#: templates/footer.html:35
 msgid "Princeton Center for Digital Humanities homepage"
 msgstr ""
 
+#: templates/footer.html:46
+#, python-format
+msgid "Follow %(username)s on Instagram."
+msgstr ""
+
 #. Translators: link label for Princeton accessibility assistance page, for footer
-#: templates/footer.html:58
+#: templates/footer.html:56
 msgid "Accessibility"
 msgstr ""
 
 #. Translators: official name of Princeton University's board of trustees, for footer
-#: templates/footer.html:63
+#: templates/footer.html:61
 msgid "The Trustees of Princeton University"
 msgstr ""
 
 #. Translators: Creative Commons license text, for footer
-#: templates/footer.html:67
+#: templates/footer.html:65
 msgid "Creative Commons CC-BY license"
 msgstr ""
 
 #. Translators: software version, for footer
-#: templates/footer.html:74
+#: templates/footer.html:72
 msgid "software version"
 msgstr ""
 
 #. Translators: official name of Princeton University, for footer
-#: templates/footer.html:81
+#: templates/footer.html:79
 msgid "Princeton University homepage"
 msgstr ""
 
