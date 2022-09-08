@@ -102,11 +102,8 @@ def parse_bodleian_tei(xmlfile, base_dir):
 
     # TODO: revise these for planned repo setup
     base_path = os.path.join(base_dir, "bodleian")
-    print("base_path %s" % base_path)
     manifest_dir = os.path.join(base_path, "manifests")
-    print("manifest dir %s" % manifest_dir)
     image_dir = os.path.join(base_path, "images_orig")
-    print("original image dir %s" % image_dir)
 
     # determine path based on the collection filename and part id
     basename = os.path.splitext(os.path.basename(xmlfile))[0]
@@ -225,8 +222,7 @@ def parse_bodleian_tei(xmlfile, base_dir):
 
 
 if __name__ == "__main__":
-    # first arg is current script; expect rest to be filenames
-    tei_files = sys.argv[1:]
+    # needs xml filenames and destination dir as input
     parser = argparse.ArgumentParser(
         description="Generate static IIIF from Bodleian Genizah TEI + images."
     )
