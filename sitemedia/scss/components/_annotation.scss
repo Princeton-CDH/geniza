@@ -4,11 +4,19 @@
 @use "../base/typography";
 
 div.annotate {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
     .instructions {
         font-style: italic;
         font-size: typography.$text-size-md;
+        // override transcription paragraph spacing for instruction
+        margin-right: 0;
+        padding-right: 0;
     }
-
+    .tahqiq-drop-zone {
+        flex: 1 1 100%;
+    }
     div[contenteditable="true"],
     h3[contenteditable="true"] {
         background-color: white;
