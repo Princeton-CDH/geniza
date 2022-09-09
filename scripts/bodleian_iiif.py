@@ -3,6 +3,9 @@
 # Stand-alone python script to generate IIIF manifests
 # for Bodleian Genizah content.
 #
+# Bodleian Genizah TEI files are available in the collections folder
+# of this GitHub repository: https://github.com/bodleian/genizah-mss
+#
 # Install python dependencies with pip:
 #
 #   pip install eulxml python-slugify requests iiif iiif-prezi
