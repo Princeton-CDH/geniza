@@ -274,6 +274,7 @@ CSP_IMG_SRC = (
     "figgy.princeton.edu",
     "iiif-cloud.princeton.edu",
     "*.lib.cam.ac.uk",
+    "princetongenizalab.github.io",
     "data:",
 )
 

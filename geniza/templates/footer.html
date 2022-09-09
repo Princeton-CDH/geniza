@@ -15,11 +15,6 @@
     </ul>
 </nav>
 
-{# Translators: label for Twitter links in footer #}
-{% translate 'Twitter' as twitter_text %}
-{# Translators: label for Instagram links in footer #}
-{% translate 'Instagram' as instagram_text %}
-
 <ul id="footer-links">
     <li>
         {# Translators: accessibility label for Princeton Geniza Lab homepage, for footer #}
@@ -30,7 +25,8 @@
         </a>
         <ul class="social">
             <li>
-                <a class="twitter" href="https://twitter.com/GenizaLab">{{ twitter_text }}</a>
+                {% blocktranslate asvar follow_genizalab_twitter with username="GenizaLab" %}Follow {{ username }} on Twitter.{% endblocktranslate %}
+                <a class="twitter" href="https://twitter.com/GenizaLab" aria-label="{{ follow_genizalab_twitter }}">GenizaLab</a>
             </li>
         </ul>
     </li>
@@ -43,10 +39,12 @@
         </a>
         <ul class="social">
             <li>
-                <a class="twitter" href="https://twitter.com/PrincetonDH">{{ twitter_text }}</a>
+                {% blocktranslate asvar follow_cdh_twitter with username="PrincetonDH" %}Follow {{ username }} on Twitter.{% endblocktranslate %}
+                <a class="twitter" href="https://twitter.com/PrincetonDH" aria-label="{{ follow_cdh_twitter }}">PrincetonDH</a>
             </li>
             <li>
-                <a class="instagram" href="https://www.instagram.com/princetoncdh/">{{ instagram_text }}</a>
+                {% blocktranslate asvar follow_cdh_insta with username="princetoncdh" %}Follow {{ username }} on Instagram.{% endblocktranslate %}
+                <a class="instagram" href="https://www.instagram.com/princetoncdh/" aria-label="{{ follow_cdh_insta }}">princetoncdh</a>
             </li>
         </ul>
     </li>
@@ -73,7 +71,7 @@
         {# Translators: software version, for footer #}
         {% translate 'software version' as version_text %}
         <a href="https://github.com/Princeton-CDH/geniza/" aria-label="{{ version_text }}">
-            {{ SW_VERSION }}
+            v. {{ SW_VERSION }}
         </a>
     </li>
     <li>
