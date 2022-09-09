@@ -19,6 +19,7 @@ import csv
 import glob
 import json
 import os.path
+import re
 
 
 def parse_manifests(source_dir, outfile):
@@ -42,12 +43,16 @@ def parse_manifests(source_dir, outfile):
                 )
 
 
+bodl_shelfmark_re = re.compile(r"^MS\. Heb\. ([a-g])\.")
+
+
 def pgpize_shelfmark(shelfmark):
     # convert bodleian shelfmark to PGP format
     if shelfmark.startswith("MS. Heb."):
-        # in PGP Bodleian shelfmarks have a Bodl. prefix
-        # and MS heb portion is slightly different
-        return "Bodl. %s" % shelfmark.replace("MS. Heb.", "MS heb.")
+        # in PGP Bodleian shelfmarks have a Bodl. prefix,
+        # MS heb portion is slightly different, and we don't use dots
+        # after volume/series letter
+        return "Bodl. %s" % bodl_shelfmark_re.sub(r"MS heb. \1", shelfmark)
 
 
 if __name__ == "__main__":
