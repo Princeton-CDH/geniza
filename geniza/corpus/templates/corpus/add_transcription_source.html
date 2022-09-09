@@ -15,7 +15,7 @@
     <h2>Select scholarship record</h2>
 
     {{ form.media }}
-    <form method="post" id="add-transcription-source">
+    <form method="post" id="add-transcription-source" data-turbo="false">
         {% csrf_token %}
         <fieldset>
             {{ form }}
