@@ -1,5 +1,11 @@
 # Deploy Notes
 
+### transcription migration & editor (version TBD)
+
+-   Migrate transcription content from TEI xml to the new IIIF annotation
+    format: `python manage.py tei_to_annotation -v 0`
+-   Reindex after the migration: `python manage.py index`
+
 ## 4.8
 
 -   Solr indexing has changed; reindex all content: `python manage.py index`
