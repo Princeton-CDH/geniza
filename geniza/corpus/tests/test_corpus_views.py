@@ -118,6 +118,22 @@ class TestDocumentDetailView:
         )
         assert init_last_modified == other_doc_response["Last-Modified"]
 
+    def test_placeholder_images(self, client, document):
+        # mock digital_editions() to return mocked footnote with mocked content_html
+        with patch.object(Document, "digital_editions") as mock_de:
+            mock_footnote = Mock()
+            mock_de.return_value.all = Mock()
+            mock_de.return_value.all.return_value = [mock_footnote]
+            mock_footnote.content_html.keys = Mock()
+            mock_footnote.content_html.keys.return_value = ["canvas_1", "canvas_2"]
+            with patch("geniza.corpus.views.static") as mock_static:
+                response = client.get(reverse("corpus:document", args=(document.pk,)))
+                placeholders = response.context["images"]
+                # should create a list of two dicts with the canvases and result of calling static
+                assert len(placeholders) == 2
+                assert placeholders[0]["canvas"] == "canvas_1"
+                assert placeholders[0]["image"]["info"] == mock_static.return_value
+
 
 @pytest.mark.django_db
 def test_old_pgp_tabulate_data():

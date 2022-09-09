@@ -2,7 +2,6 @@
 {% if edit_mode %}
     {{ annotation_config|json_script:"annotation-config" }}
 {% elif perms.corpus.change_document %}
-    {# NOTE: document.iiif_images check is temporary, remove once we can use generated canvas ids #}
     {% for ed in document.digital_editions.all %}
         <a class="editor-navigation" href="{% url 'corpus:document-transcribe' document.id ed.source.pk %}" data-turbo="false">
             <i class="ph-pencil"></i>
@@ -18,7 +17,7 @@
     {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
     {# images displayed by default; disable if no images are available #}
     {# translators: label for checkbox toggle to show the images panel for a document #}
-    <input type="checkbox" class="toggle" id="images-on" aria-label="{% translate 'show images' %}" {% if document.has_image %}checked="true" {% else %} disabled="true"{% endif %}/>
+    <input type="checkbox" class="toggle" id="images-on" aria-label="{% translate 'show images' %}" {% if document.has_image or edit_mode %}checked="true" {% else %} disabled="true"{% endif %}/>
     <label for="images-on"></label>
     {# transcription displayed by default; disable if no content is available #}
     {# translators: label for checkbox toggle to show the transcription panel for a document #}
@@ -59,115 +58,83 @@
             {% endif %}
         </div>
 
-        {% comment %}
-NOTE: if we have more transcription pages than images,
-they won't show in current implementation.
-May want to gather them in the model... (but transcription content format will change)
-Also doesn't currently account for fragments without images.
-        {% endcomment %}
-        {% if document.iiif_urls %}
-            {# if we have images, loop based on them #}
-            {% for image_info in document.iiif_images %}
-                {# only images that are part of the current document are zoomable #}
-                <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-edit-mode-value="true{% endif %}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
-                    <div class="img-header" data-iiif-target="imageHeader">
-                        <h2>{{ image_info.shelfmark }} {{ image_info.label }}</h2>
-                        {% if not image_info.excluded %}
-                            <input data-iiif-target="zoomSlider" data-action="iiif#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
-                            <label data-iiif-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
-                            <input data-iiif-target="zoomToggle" data-action="iiif#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
-                            <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
-                            <div id="rotation-{{ forloop.counter0 }}" class="rotation" data-iiif-target="rotation" data-action="input->iiif#handleDeepZoom change->iiif#handleDeepZoom"></div>
-                            <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">0&deg;</label>
-                        {% endif %}
-                    </div>
-                    <div class="deep-zoom-container">
-                        <img class="iiif-image" data-iiif-target="image" data-annotation-target="image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
-                            sizes="(max-width: 650px) 50vw, 94vw"
-                            srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
-                            {{ image_info.image|iiif_image:"size:width=500" }} 500w,
-                            {{ image_info.image|iiif_image:"size:width=640" }} 640w,
-                            {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
-                        <div class="osd" data-iiif-target="osd" data-iiif-url="{{ image_info.image.info }}"></div>
-                    </div>
-                    {% if image_info.excluded %}
-                        {# if this image isn't actually in this document, link to related documents #}
-                        {% spaceless %}
-                            <ul class="excluded-related">
-                                {% for related in related_documents %}
-                                    {% if image_info.image|stringformat:"s" in related.images %}
-                                        <li><a class="view-link" href="{% url 'corpus:document' related.document.pgpid %}">
-                                            {% translate 'Unknown type' as unknown_type %}
-                                            {% with doctype=related.document.type|default:unknown_type shelfmark=related.document.shelfmark|shelfmark_wrap %}
-                                                {# translators: link to view a related document #}
-                                                {% blocktranslate with related_doc="<span>"|add:doctype|add:": "|add:shelfmark|add:"</span>"|safe trimmed %}
-                                                    View {{ related_doc }}
-                                                {% endblocktranslate %}
-                                            {% endwith %}
-                                        </a></li>
-                                    {% endif %}
-                                {% endfor %}
-                            </ul>
-                        {% endspaceless %}
+        {# loop based on canvases (for canvas with no image, image_info is a placeholder) #}
+        {% for image_info in images %}
+            {# only images that are part of the current document are zoomable #}
+            <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-edit-mode-value="true{% endif %}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
+                <div class="img-header" data-iiif-target="imageHeader">
+                    <h2>{{ image_info.shelfmark }} {{ image_info.label }}</h2>
+                    {% if not image_info.excluded %}
+                        <input data-iiif-target="zoomSlider" data-action="iiif#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
+                        <label data-iiif-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
+                        <input data-iiif-target="zoomToggle" data-action="iiif#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
+                        <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
+                        <div id="rotation-{{ forloop.counter0 }}" class="rotation" data-iiif-target="rotation" data-action="input->iiif#handleDeepZoom change->iiif#handleDeepZoom"></div>
+                        <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">0&deg;</label>
                     {% endif %}
                 </div>
-                <div class="transcription-panel">
-                    {% if edit_mode %}
-                        <div class="annotate transcription" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
-                            {% if forloop.first %}
-                                <h2>{% translate 'Transcribe' %}</h2>
-                                <p class="instructions">
-                                    {% translate 'Hold shift and then click on the image and drag to select a rectangular region for the block text you want to transcribe.' %}
-                                </p>
-                            {% endif %}
-                        </div>
-                    {% else %}
+                <div class="deep-zoom-container">
+                    <img class="iiif-image" data-iiif-target="image" data-annotation-target="image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
+                        sizes="(max-width: 650px) 50vw, 94vw"
+                        srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
+                        {{ image_info.image|iiif_image:"size:width=500" }} 500w,
+                        {{ image_info.image|iiif_image:"size:width=640" }} 640w,
+                        {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
+                    <div class="osd" data-iiif-target="osd" data-iiif-url="{{ image_info.image.info }}"></div>
+                </div>
+                {% if image_info.excluded %}
+                    {# if this image isn't actually in this document, link to related documents #}
+                    {% spaceless %}
+                        <ul class="excluded-related">
+                            {% for related in related_documents %}
+                                {% if image_info.image|stringformat:"s" in related.images %}
+                                    <li><a class="view-link" href="{% url 'corpus:document' related.document.pgpid %}">
+                                        {% translate 'Unknown type' as unknown_type %}
+                                        {% with doctype=related.document.type|default:unknown_type shelfmark=related.document.shelfmark|shelfmark_wrap %}
+                                            {# translators: link to view a related document #}
+                                            {% blocktranslate with related_doc="<span>"|add:doctype|add:": "|add:shelfmark|add:"</span>"|safe trimmed %}
+                                                View {{ related_doc }}
+                                            {% endblocktranslate %}
+                                        {% endwith %}
+                                    </a></li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    {% endspaceless %}
+                {% endif %}
+            </div>
+            <div class="transcription-panel">
+                {% if edit_mode %}
+                    <div class="annotate transcription" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
                         {% if forloop.first %}
-                            <h2>{% translate 'Transcription' %}</h2>
-                            <span data-transcription-target="editionFullLabel" class="current-transcription{% if document.digital_editions.count > 1 %} multiple{% endif %}">
-                                {{ document.digital_editions.0.source.formatted_display|safe }}
-                            </span>
+                            <h2>{% translate 'Transcribe' %}</h2>
+                            <p class="instructions">
+                                {% translate 'Hold shift and then click on the image and drag to select a rectangular region for the block text you want to transcribe.' %}
+                            </p>
                         {% endif %}
-                        {% if not image_info.excluded %}
-                            <div class="editions">
-                                {# display transcription in chunks by index #}
-                                {% for edition in document.digital_editions.all %}
-                                    <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                        {% for html_section in edition.content_html|dict_item:image_info.canvas %}
-                                            {{ html_section|safe }}
-                                        {% endfor %}
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    {% endif %}
-                </div>
-            {% endfor %}
-        {% else %}
-            {# no images #}
-            {# if there are no images, loop based on the transcription content instead #}
-            {% for canvas_id in document.digital_editions.0.content_html.keys %}
-                {# TODO: use canvas ids here for transcription edit mode  #}
-                <div class="img"></div> {# empty image div needed for grid layout #}
-                <div class="transcription-panel">
+                    </div>
+                {% else %}
                     {% if forloop.first %}
                         <h2>{% translate 'Transcription' %}</h2>
                         <span data-transcription-target="editionFullLabel" class="current-transcription{% if document.digital_editions.count > 1 %} multiple{% endif %}">
                             {{ document.digital_editions.0.source.formatted_display|safe }}
                         </span>
                     {% endif %}
-                    <div class="editions">
-                        {# display transcriptions by canvas id from first edition #}
-                        {% for edition in document.digital_editions.all %}
-                            <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                {% for html_section in edition.content_html|dict_item:canvas_id %}
-                                    {{ html_section|safe }}
-                                {% endfor %}
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endfor %}
-        {% endif %}
+                    {% if not image_info.excluded %}
+                        <div class="editions">
+                            {# display transcription in chunks by index #}
+                            {% for edition in document.digital_editions.all %}
+                                <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
+                                    {% for html_section in edition.content_html|dict_item:image_info.canvas %}
+                                        {{ html_section|safe }}
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endfor %}
         {% if document.has_image %}
             {% include "corpus/snippets/document_image_rights.html" %}
         {% endif %}

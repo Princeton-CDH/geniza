@@ -11,6 +11,7 @@ from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.middleware.csrf import get_token as csrf_token
 from django.shortcuts import redirect
+from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
@@ -304,6 +305,27 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata"""
         context_data = super().get_context_data(**kwargs)
+        document = self.get_object()
+
+        # get unique set of canvases on this document from images and transcriptions
+        images = (
+            document.iiif_images()
+        )  # order override should be respected by iiif_images()
+        for ed in document.digital_editions().all():
+            for canvas_uri in ed.content_html.keys():
+                if canvas_uri not in [i["canvas"] for i in images]:
+                    # append placeholder image for each canvas not in iiif_images
+                    images.append(
+                        {
+                            "image": {
+                                "info": static("img/ui/all/all/image-unavailable.png"),
+                            },
+                            "label": "",
+                            "shelfmark": "",
+                            "canvas": canvas_uri,
+                            "excluded": False,
+                        }
+                    )
         context_data.update(
             {
                 "page_title": self.page_title(),
@@ -319,11 +341,11 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                             str(image[0]) for image in doc.get("iiif_images", [])
                         ],
                     }
-                    for doc in self.get_object().related_documents
+                    for doc in document.related_documents
                 ]
                 # skip solr query if none of the associated TextBlocks have side info
-                if any([tb.side for tb in self.get_object().textblock_set.all()])
-                else [],
+                if any([tb.side for tb in document.textblock_set.all()]) else [],
+                "images": images,
             }
         )
         return context_data

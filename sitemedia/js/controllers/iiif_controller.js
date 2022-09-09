@@ -94,13 +94,17 @@ export default class extends Controller {
         // constants for OSD
         const minZoom = 1.0; // Minimum zoom as a multiple of image size
         const maxZoom = 1.5; // Maximum zoom as a multiple of image size
+        const url = this.osdTarget.dataset.iiifUrl;
+
+        // allow placeholder image (url ending in .png instead of .json)
+        const tileSource = url.endsWith(".png") ? { type: "image", url } : url;
 
         // inject OSD into the image container
         let viewer = OpenSeadragon({
             element: this.osdTarget,
             prefixUrl:
                 "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/",
-            tileSources: [this.osdTarget.dataset.iiifUrl],
+            tileSources: [tileSource],
             sequenceMode: false,
             autoHideControls: true,
             showHomeControl: false,

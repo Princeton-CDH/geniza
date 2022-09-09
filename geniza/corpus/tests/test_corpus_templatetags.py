@@ -107,6 +107,14 @@ def test_iiif_image():
     assert corpus_extras.iiif_image(myimg, "size:bogus=1") == ""
 
 
+def test_iiif_image_placeholder():
+    # test for placeholder used when we have canvases that do not have iiif images
+    img_url = "http://image.server/path/myimg.png"
+    myimg = {"info": img_url}
+    # should always just return the URL regardless of what options we pass
+    assert str(corpus_extras.iiif_image(myimg, "size:width=250")) == img_url
+
+
 def test_iiif_info_json():
     img1 = IIIFImageClient("http://image.server/path/", "myimgid")
     img2 = IIIFImageClient("http://image.server/path/", "myimgid2")
