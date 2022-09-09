@@ -79,7 +79,7 @@ if __name__ == "__main__":
         "-u",
         "--url",
         metavar="URL",
-        help="base url where images will be served, excluding /iiif-images/ portion",
+        help="base url where images will be served, excluding /images/ portion",
         required=True,
     )
     parser.add_argument(

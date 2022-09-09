@@ -10,9 +10,13 @@
 #
 #   pip install eulxml python-slugify requests iiif iiif-prezi
 #
-# Run with the path to one or more Bodleian TEI files:
+# Run with the path to one or more Bodleian TEI files. You must also
+# specify an output directory and a base url where the iiif content
+# will be published. For example:
 #
-#   python scripts/bodleian_iiif.py ../genizah-mss/collections/MS_Heb_f_30.xml
+#   python scripts/bodleian_iiif.py -d ../iiif-bodleian \
+#       -u https://princetongenizalab.github.io/iiif-bodleian/ \
+#       ../genizah-mss/collections/MS_Heb_f_30.xml
 
 import argparse
 import os
@@ -37,15 +41,6 @@ from slugify import slugify
 # full-size images referenced in TEI can be downloaded in JPG format
 # under this base image url
 BASE_IMG_URL = "https://genizah.bodleian.ox.ac.uk/fragments/full/"
-
-# base url for the manifest ids (prelim/testing)
-PUBLIC_URL = "http://0.0.0.0:8001/bodleian/"
-
-
-# TODO: need to generate a csv of shelfmark + manifest urls (add/update)
-# for use with importing into pgp app
-# (and where do we convert shelfmarks to PGP convention?)
-# (separate script)
 
 
 # define eulxml.xmlmap objects with mapping to the portions of the
@@ -99,14 +94,16 @@ bodleian_logo = "https://iiif.bodleian.ox.ac.uk/iiif/image/f27e28db-0b08-4f16-9b
 view_url_format = "https://genizah.bodleian.ox.ac.uk/catalog/%(volume_id)s#%(item_id)s"
 
 
-def parse_bodleian_tei(xmlfile, base_dir):
+def parse_bodleian_tei(xmlfile, base_dir, base_url):
     print("Processing %s" % xmlfile)
     tei = xmlmap.load_xmlobject_from_file(xmlfile, BodleianGenizahTei)
 
-    # TODO: revise these for planned repo setup
-    base_path = os.path.join(base_dir, "bodleian")
-    manifest_dir = os.path.join(base_path, "manifests")
-    image_dir = os.path.join(base_path, "images_orig")
+    # define directories relative to base directory
+    manifest_dir = os.path.join(base_dir, "iiif/manifests")
+    image_dir = os.path.join(base_dir, "images-orig")
+
+    # strip any trailing slash from base url to avoid double or missing slash
+    base_url = base_url.rstrip("/")
 
     # determine path based on the collection filename and part id
     basename = os.path.splitext(os.path.basename(xmlfile))[0]
@@ -118,12 +115,12 @@ def parse_bodleian_tei(xmlfile, base_dir):
     # initialize manifest factory with base urls and iiif api version
     fac = ManifestFactory()
     # Where the resources live on the web
-    fac.set_base_prezi_uri(PUBLIC_URL + "manifests/")
+    fac.set_base_prezi_uri(base_url + "/manifests/")
     # Where the resources live on disk
     fac.set_base_prezi_dir(manifest_dir)
 
     # Default Image API information
-    fac.set_base_image_uri(PUBLIC_URL + "iiif-images/")
+    fac.set_base_image_uri(base_url + "/images/")
     fac.set_iiif_image_info(2.0, 0)  # Version, ComplianceLevel
 
     # keep a list of images so we can generate iiif tiles for them
@@ -138,10 +135,7 @@ def parse_bodleian_tei(xmlfile, base_dir):
         manifest.viewingHint = "individuals"
         manifest.attribution = attribution
         manifest.license = license_uri
-        # TODO: link to the bodleian's official page for the volume
-        # should we show their logo ?
         manifest.set_metadata(common_metadata)
-
         # set bodleian logo
         manifest.logo = bodleian_logo
 
@@ -153,7 +147,6 @@ def parse_bodleian_tei(xmlfile, base_dir):
             "volume_id": tei.volume_id,
             "item_id": part.xml_id,
         }
-        print(view_url)
         manifest.rendering = {
             "@id": view_url,
             "format": "text/html",
@@ -239,7 +232,15 @@ if __name__ == "__main__":
         help="base directory where manifest and images will be placed",
         required=True,
     )
+    parser.add_argument(
+        "-u",
+        "--url",
+        metavar="URL",
+        help="base url where manifests will be served, excluding /manifests/ portion",
+        required=True,
+    )
+
     args = parser.parse_args()
 
     for teifile in args.tei:
-        parse_bodleian_tei(teifile, args.dir)
+        parse_bodleian_tei(teifile, args.dir, base_url=args.url)
