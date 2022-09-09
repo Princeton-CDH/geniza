@@ -20,17 +20,6 @@ import os.path
 
 from iiif.static import IIIFStatic, IIIFStaticError
 
-# FIXME: placeholder url for dev
-PUBLIC_URL = "http://0.0.0.0:8001/bodleian/"
-
-base_path = os.path.join("bodleian")
-manifest_dir = os.path.join(base_path, "manifests")
-image_dir = os.path.join(base_path, "images_orig")
-
-dest_dir = os.path.join(base_path, "iiif-images")
-dest_url = PUBLIC_URL + "iiif-images/"
-
-
 # any non-standard sizes needed for PGP application should be listed here
 extra_iiif_sizes = [
     # doc details (multiple / responsive sizes)
@@ -44,12 +33,12 @@ extra_iiif_sizes = [
 ]
 
 
-def generate_static_iiif(source_dir=None, dest_dir=dest_dir, source_files=None):
+def generate_static_iiif(dest_dir, base_url, source_dir=None, source_files=None):
 
-    # adapted from call in iiif_static command line script
+    # adaprted from call in iiif_static command line script
     # using defaults option
     # dest_dir = os.path.join(base_path, "iiif-images")
-    dest_url = PUBLIC_URL + "iiif-images/"
+    dest_url = base_url.rstrip("/") + "/iiif-images/"
     # base destination url required for generating ids in info.json
     sg = IIIFStatic(dst=dest_dir, prefix=dest_url, extras=extra_iiif_sizes)
 
@@ -57,7 +46,7 @@ def generate_static_iiif(source_dir=None, dest_dir=dest_dir, source_files=None):
 
     # if a directory is specified, run on all jpegs
     if source_dir is not None:
-        source_files = glob.iglob(os.path.join(image_dir, "*.jpg"))
+        source_files = glob.iglob(os.path.join(source_dir, "*.jpg"))
     # otherwise, run on list of source files passed in
     for source in source_files:
         # this is slow, so only generate if needed
@@ -80,17 +69,24 @@ if __name__ == "__main__":
     Must specify a source directory or a list of files."""
     )
     parser.add_argument(
-        "-s",
-        "--src",
-        metavar="SRC_DIR",
-        help="directory of source images to be tiled",
-    )
-    parser.add_argument(
         "-d",
         "--dest",
         metavar="DEST_DIR",
         help="base directory where image tiles will be placed",
         required=True,
+    )
+    parser.add_argument(
+        "-u",
+        "--url",
+        metavar="URL",
+        help="base url where images will be served, excluding /iiif-images/ portion",
+        required=True,
+    )
+    parser.add_argument(
+        "-s",
+        "--src",
+        metavar="SRC_DIR",
+        help="directory of source images to be tiled",
     )
     # optional list of files (instead of source dir)
     parser.add_argument("files", nargs="*")
@@ -101,5 +97,8 @@ if __name__ == "__main__":
         exit(-1)
 
     generate_static_iiif(
-        source_dir=args.src, dest_dir=args.dest, source_files=args.files
+        dest_dir=args.dest,
+        base_url=args.url,
+        source_dir=args.src,
+        source_files=args.files,
     )
