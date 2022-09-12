@@ -772,7 +772,7 @@
             }
             // alignment is different in annotation editor
             .tahqiq-block-display ol li::before {
-                right: 122px;
+                right: 125px;
             }
         }
 
@@ -950,6 +950,12 @@ a.editor-navigation {
         margin-right: 1.5em;
         padding-right: 1em; /* shift to make space for line numbers */
         direction: rtl;
+    }
+
+    li > p {
+        // if inside a list item, don't pad <p>
+        margin-right: 0;
+        padding-right: 0;
     }
 
     ol,
