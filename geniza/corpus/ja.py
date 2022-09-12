@@ -55,7 +55,7 @@ he_final_letters = {
 arabic_to_ja_table = str.maketrans(arabic_ja_chars)
 
 # regex for range of arabic letters
-re_AR_letters = re.compile(r"[\u0600-\u06FF]")
+re_AR_letters = re.compile(r"[\u0600-\u06FF]+")
 
 
 def contains_arabic(text):
@@ -79,22 +79,29 @@ def arabic_to_ja(text):
     return re.sub(re_he_final_letters, lambda m: he_final_letters[m.group(0)], text)
 
 
-def arabic_or_ja(text):
+def arabic_or_ja(text, boost=True):
+    """Convert text to arabic or judaeo-arabic string; boost arabic by default"""
     # if there is no arabic text, return as is
     if not contains_arabic(text):
         return text
 
-    # if there is arabic, split into words and make a pattern
-    # NOTE: this could fail on more complicated queriesn
-    words = re.split(r"\s+", text)
-    ja_words = [arabic_to_ja(word) for word in words]
-    search_words = []
-    for word, ja_word in dict(zip(words, ja_words)).items():
+    # extract arabic words from the search query
+    arabic_words = re_AR_letters.findall(text)
+    # generate judaeo-arabic equivalents
+    ja_words = [arabic_to_ja(word) for word in arabic_words]
+    # iterate over the original and converted words together and combine
+
+    # add boosting so arabic matches will be more relevant,
+    # unless boosting is disabled
+    boost = "^2.0" if boost else ""
+
+    for i, arabic_word in enumerate(arabic_words):
+        ja_word = ja_words[i]
         # if the words differ, combine them as an OR
-        if word != ja_word:
-            search_words.append("(%s|%s)" % (word, ja_word))
-        # otherwise, just return the one word
-        else:
-            search_words.append(word)
-    # combine them back into the search string
-    return " ".join(search_words)
+        # then replace them in the original search query
+        # (preserving any existing search syntax like quotes, wildcards, etc)
+        if arabic_word != ja_word:
+            ar_or_ja_word = "(%s%s|%s)" % (arabic_word, boost, ja_word)
+            text = text.replace(arabic_word, ar_or_ja_word)
+
+    return text

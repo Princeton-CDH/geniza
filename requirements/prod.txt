@@ -23,6 +23,9 @@ eulxml
 rich
 wagtail>=2.15.3,<2.16
 wagtail-localize
+# pin rdflib until djiffy preferred label issue is resolved
+# see https://github.com/Princeton-CDH/geniza/issues/1046
+rdflib<6.2
 djiffy>=0.8
 natsort
 django-widget-tweaks

@@ -1,6 +1,25 @@
 Change Log
 ==========
 
+4.8
+---
+
+- public site
+    - As a front end user, I want results boosted that match the exact language of my search query so that I get results in the same language first.
+    - As a frontend user, I want smart quotes to be converted to normal quotation marks so I can get exact phrase search results when I use them.
+    - bugfix: improved handling for bidirectional text in the document search input
+
+- content/data admin
+    - As a content editor, I want to override the order images are displayed for a document so that I can set the images to display in logical order for joins.
+    - bugfix: not possible to edit recto/verso information for fragments without images
+
+- accessibility
+    - fixed twitter links in footer (previously same text but different urls)
+
+- other
+  - footnote superscripts were removed from TEI transcriptions
+  - scripts for generating and working with static iiif content
+
 4.7
 ---
 

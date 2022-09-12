@@ -669,22 +669,30 @@
                 display: none;
             }
             a.view-link {
+                align-items: center;
                 margin-top: 0;
+                color: var(--link-primary);
+                border-bottom: 3px solid var(--background-light);
+                @include typography.body;
+                // span inside span = related document title
                 & > span {
+                    @include typography.body-bold;
                     color: var(--link-primary);
-                    border-bottom: 3px solid var(--background-light);
-                    // span inside span = shelfmark
+                    border-bottom: none;
+                    /* space between text and document label */
+                    margin-left: 0.25em;
+                    /* space before shelfmark after type */
                     & > span {
-                        @include typography.body-bold;
+                        margin-left: 0.25em;
                     }
                 }
-                &:hover > span {
+                &:hover {
                     border-bottom-color: var(--icon-button);
                     @include breakpoints.for-tablet-landscape-up {
                         border-bottom-color: var(--icon-button-hover);
                     }
                 }
-                &:active > span {
+                &:active {
                     border-bottom-color: var(--icon-button);
                 }
             }

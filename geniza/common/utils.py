@@ -66,6 +66,7 @@ smart_quote_conversion = str.maketrans(
         "‘": "'",
         "”": '"',
         "“": '"',
+        "״": '"',
     }
 )
 
