@@ -14,10 +14,11 @@ Change Log
     - bugfix: not possible to edit recto/verso information for fragments without images
 
 - accessibility
-    - fixed twitter links in footer (previously had same text but different urls)
+    - fixed twitter links in footer (previously same text but different urls)
 
 - other
   - footnote superscripts were removed from TEI transcriptions
+  - scripts for generating and working with static iiif content
 
 4.7
 ---
