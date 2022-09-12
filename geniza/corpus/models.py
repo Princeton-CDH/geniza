@@ -458,7 +458,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         Fragment, through="TextBlock", related_name="documents"
     )
     image_order_override = ArrayField(
-        models.URLField(), null=True, verbose_name="Image Order"
+        models.URLField(), null=True, verbose_name="Image Order", blank=True
     )
     shelfmark_override = models.CharField(
         "Shelfmark Override",

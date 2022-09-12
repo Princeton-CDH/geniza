@@ -19,6 +19,7 @@ class Migration(migrations.Migration):
                 null=True,
                 size=None,
                 verbose_name="Image Order",
+                blank=True,
             ),
         ),
     ]
