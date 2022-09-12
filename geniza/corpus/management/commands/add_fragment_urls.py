@@ -27,8 +27,10 @@ class Command(BaseCommand):
         self.fragment_contenttype = ContentType.objects.get_for_model(Fragment)
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
+        # NOTE: disabling this, we want documents reindexed
+        # if fragment iiif changes; make it optional to disable?
         # disconnect solr indexing signals
-        IndexableSignalHandler.disconnect()
+        # IndexableSignalHandler.disconnect()
 
     def add_arguments(self, parser):
         parser.add_argument("csv", type=str)
