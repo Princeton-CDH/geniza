@@ -12,8 +12,6 @@ iiif image api level 0 images) for import and display in PGP.
 -   tile_images.py : generate static image tiles; includes extra image sizes needed for PGP application
 -   manifests_to_csv.py: generate a CSV file for importing IIIF urls into PGP
 
-http://0.0.0.0:8001/bodleian/
-
 ### Bulk editing
 
 If you need to make a bulk change to revise the base url for manifests or
