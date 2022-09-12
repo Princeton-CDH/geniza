@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.7.0 documentation</title>
+    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.8.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -92,6 +92,12 @@ appears on one or more fragments.</p>
 <dt class="sig sig-object py" id="geniza.corpus.models.Document.MultipleObjectsReturned">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.corpus.models.Document.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.models.Document.admin_thumbnails">
+<span class="sig-name descname"><span class="pre">admin_thumbnails</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Document.admin_thumbnails"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Document.admin_thumbnails" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate html for thumbnails of all iiif images, for image reordering UI in admin</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.corpus.models.Document.all_languages">
@@ -420,6 +426,13 @@ particular library or archive.</p>
 <dt class="sig sig-object py" id="geniza.corpus.models.Fragment.MultipleObjectsReturned">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.corpus.models.Fragment.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.models.Fragment.admin_thumbnails">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">admin_thumbnails</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canvases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Fragment.admin_thumbnails"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Fragment.admin_thumbnails" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience method for generating IIIF thumbnails HTML from lists of images and labels;
+separated for reuse in Document</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="geniza.corpus.models.Fragment.attribution">
