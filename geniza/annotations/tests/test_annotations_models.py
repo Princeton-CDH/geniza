@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from django.urls import reverse
 
@@ -61,6 +63,18 @@ class TestAnnotation:
         with pytest.raises(ValueError):
             anno.set_content(bad_content)
 
+        # should call sanitize_html on body value
+        with patch.object(Annotation, "sanitize_html") as mock_sanitize:
+            content_with_body = content.copy()
+            content_with_body["body"] = [{"value": "some html"}]
+            anno.set_content(content_with_body)
+            mock_sanitize.assert_called_once_with("some html")
+            mock_sanitize.reset_mock()
+
+            # should not call sanitize_html if no body
+            anno.set_content(content)
+            mock_sanitize.assert_not_called
+
     @pytest.mark.django_db
     def test_compile(self, annotation):
         # create so we get id, created, modified
@@ -92,3 +106,13 @@ class TestAnnotation:
         compiled = annotation.compile()
         assert compiled["canonical"] == annotation.canonical
         assert compiled["via"] == annotation.via
+
+    def test_sanitize_html(self):
+        html = '<table><div><p style="foo:bar;">test</p></div><ol><li>line</li></ol></table>'
+        # should strip out all unwanted elements and attributes (table, div, style)
+        # (\n is added because bleach replaces block-level elements with newline)
+        assert Annotation.sanitize_html(html) == "\n<p>test</p><ol><li>line</li></ol>"
+
+        # should do nothing to html with all allowed elements
+        html = '<p>test <span lang="en">en</span></p><ol><li>line 1</li><li>line 2</li></ol>'
+        assert Annotation.sanitize_html(html) == html
