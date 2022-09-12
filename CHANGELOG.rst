@@ -1,6 +1,12 @@
 Change Log
 ==========
 
+4.8.1
+-----
+
+- bugfix: documents without images can't be edited in django admin (makes image order override optional in django admin)
+
+
 4.8
 ---
 
