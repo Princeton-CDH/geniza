@@ -320,7 +320,7 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
 
         for ed in document.digital_editions().all():
             for canvas_uri in ed.content_html.keys():
-                if canvas_uri not in images:
+                if canvas_uri and canvas_uri not in images:
                     # use placeholder image for each canvas not in iiif_images
                     images[canvas_uri] = placeholder_canvas
 
