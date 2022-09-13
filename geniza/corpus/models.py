@@ -678,17 +678,14 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         # if image_order_override not present, return list, in original order
         if not self.image_order_override:
-            return list(iiif_images.values())
+            return iiif_images
 
         # otherwise, order returned images according to override
-        ordered_images = []
-        for canvas in self.image_order_override:
-            if canvas in iiif_images:
-                ordered_images.append(iiif_images.pop(canvas))
-        # ensure images not present in the order override are still added at the end, e.g. if
-        # fragments are added to this document after order override was set
-        ordered_images += list(iiif_images.values())
-        return ordered_images
+        return {
+            iiif_images.pop(canvas)
+            for canvas in self.image_order_override
+            if canvas in iiif_images
+        } + iiif_images  # add any remaining images after ordered ones
 
     def admin_thumbnails(self):
         """generate html for thumbnails of all iiif images, for image reordering UI in admin"""
