@@ -132,7 +132,11 @@ class AnnotationSearch(View, MultipleObjectMixin):
         # TODO: Convert this to list when > 2 options
         # implement minimal search by uri
         # implement something similar to SAS search by uri
-        annotations = self.get_queryset()
+
+        # sort by schema:position if available
+        annotations = self.get_queryset().order_by(
+            "content__schema:position", "created"
+        )
         # if a target uri is specified, filter annotations
         target_uri = self.request.GET.get("uri")
         if target_uri:

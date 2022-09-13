@@ -1,6 +1,7 @@
 import uuid
 from functools import cached_property
 
+import bleach
 from django.contrib import admin
 from django.db import models
 from django.urls import reverse
@@ -23,6 +24,10 @@ class Annotation(models.Model):
     canonical = models.CharField(max_length=255, blank=True)
     #: uri of annotation when imported from another copy (optional)
     via = models.URLField(blank=True)
+
+    # allowed tags and attributes for annotation body content HTML
+    ALLOWED_TAGS = ["del", "li", "ol", "p", "span", "sup"]
+    ALLOWED_ATTRIBUTES = ["lang"]
 
     class Meta:
         # by default, order by creation time
@@ -96,7 +101,24 @@ class Annotation(models.Model):
             self.via = data["via"]
             del data["via"]
 
+        # sanitize any html in body value
+        if len(data.get("body", [])) and "value" in data["body"][0]:
+            data["body"][0]["value"] = self.sanitize_html(
+                data.get("body", [])[0].get("value", "")
+            )
+
         self.content = data
+
+    @classmethod
+    def sanitize_html(cls, html):
+        """Sanitizes passed HTML according to allowed tags and attributes, stripping out any
+        that are not allowed."""
+        return bleach.clean(
+            html,
+            tags=cls.ALLOWED_TAGS,
+            attributes=cls.ALLOWED_ATTRIBUTES,
+            strip=True,
+        )
 
     def compile(self, include_context=True):
         """Combine annotation data and return as a dictionary that
