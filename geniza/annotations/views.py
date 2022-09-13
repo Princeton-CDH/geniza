@@ -134,7 +134,9 @@ class AnnotationSearch(View, MultipleObjectMixin):
         # implement something similar to SAS search by uri
 
         # sort by schema:position if available
-        annotations = self.get_queryset().order_by("content__schema:position")
+        annotations = self.get_queryset().order_by(
+            "content__schema:position", "created"
+        )
         # if a target uri is specified, filter annotations
         target_uri = self.request.GET.get("uri")
         if target_uri:

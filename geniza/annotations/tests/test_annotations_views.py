@@ -244,7 +244,7 @@ class TestAnnotationSearch:
         results = response.json()
         assert "resources" in results and len(results["resources"]) == 4
 
-        # in absence of schema:position, should order by created date (via model Meta)
+        # in absence of schema:position, should order by created
         assert results["resources"][0]["id"] == anno3.uri()
         assert results["resources"][1]["id"] == anno10.uri()
         assert results["resources"][2]["id"] == anno1.uri()
