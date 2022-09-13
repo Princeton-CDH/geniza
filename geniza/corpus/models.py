@@ -260,7 +260,7 @@ class Fragment(TrackChangesModel):
                 % (
                     img,
                     labels[i],
-                    f'data-canvas="{canvases[i]}" ' if canvases else "",
+                    f'data-canvas="{list(canvases)[i]}" ' if canvases else "",
                     'class="selected" /' if i in selected else "/",
                 )
                 for i, img in enumerate(images)
@@ -697,9 +697,9 @@ class Document(ModelIndexable, DocumentDateMixin):
         if not iiif_images:
             return ""
         return Fragment.admin_thumbnails(
-            images=[img["image"].size(height=200) for img in iiif_images],
-            labels=[img["label"] for img in iiif_images],
-            canvases=[img["canvas"] for img in iiif_images],
+            images=[img["image"].size(height=200) for img in iiif_images.values()],
+            labels=[img["label"] for img in iiif_images.values()],
+            canvases=iiif_images.keys(),
         )
 
     admin_thumbnails.short_description = "Image order override"
@@ -861,7 +861,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         # and to take advantage of prefetching
         fragments = [tb.fragment for tb in self.textblock_set.all()]
         # filter by side so that search results only show the relevant side image(s)
-        images = self.iiif_images(filter_side=True)
+        images = self.iiif_images(filter_side=True).values()
         index_data.update(
             {
                 "pgpid_i": self.id,
