@@ -82,7 +82,12 @@ export default class extends Controller {
             annotationServerConfig
         );
         // Initialize the TranscriptionEditor plugin
-        new TranscriptionEditor(anno, storagePlugin, annotationContainer);
+        new TranscriptionEditor(
+            anno,
+            storagePlugin,
+            annotationContainer,
+            config.tiny_api_key
+        );
         return viewer;
     }
 }
