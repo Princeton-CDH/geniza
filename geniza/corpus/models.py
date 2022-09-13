@@ -653,7 +653,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         )
 
     def iiif_images(self, filter_side=False):
-        """List of IIIF images and labels for images of the Document's Fragments.
+        """Dict of IIIF images and labels for images of the Document's Fragments, keyed on canvas.
         :param filter_side: if TextBlocks have side info, filter images by side (default: False)"""
         iiif_images = {}
 
@@ -681,11 +681,15 @@ class Document(ModelIndexable, DocumentDateMixin):
             return iiif_images
 
         # otherwise, order returned images according to override
-        return {
-            iiif_images.pop(canvas)
+        ordered_images = {
+            canvas: iiif_images.pop(canvas)
             for canvas in self.image_order_override
             if canvas in iiif_images
-        } + iiif_images  # add any remaining images after ordered ones
+        } or {}  # if condition is never met, instantiate empty dict (instead of set!)
+        ordered_images.update(
+            iiif_images  # add any remaining images after ordered ones
+        )
+        return ordered_images
 
     def admin_thumbnails(self):
         """generate html for thumbnails of all iiif images, for image reordering UI in admin"""
