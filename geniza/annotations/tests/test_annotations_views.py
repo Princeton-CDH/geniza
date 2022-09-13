@@ -1,3 +1,4 @@
+import ast
 import json
 import uuid
 from unittest.mock import patch
@@ -230,3 +231,41 @@ class TestAnnotationSearch:
         # should bring back only anno1
         assertContains(response, anno1.uri())
         assertNotContains(response, anno2.uri())
+
+    def test_search_sort(self, client):
+        anno3 = Annotation.objects.create(content={})
+        anno10 = Annotation.objects.create(content={})
+        anno1 = Annotation.objects.create(content={})
+        anno2 = Annotation.objects.create(content={})
+
+        # should return json AnnotationList with resources of length 4
+        response = client.get(self.anno_search_url)
+        assert response.status_code == 200
+        results = response.json()
+        assert "resources" in results and len(results["resources"]) == 4
+
+        # in absence of schema:position, should order by created date (via model Meta)
+        assert results["resources"][0]["id"] == anno3.uri()
+        assert results["resources"][1]["id"] == anno10.uri()
+        assert results["resources"][2]["id"] == anno1.uri()
+        assert results["resources"][3]["id"] == anno2.uri()
+
+        # now set schema:position to reorder
+        anno3.set_content({"schema:position": 3})
+        anno3.save()
+        anno10.set_content({"schema:position": 10})
+        anno10.save()
+        anno1.set_content({"schema:position": 1})
+        anno1.save()
+        anno2.set_content({"schema:position": 2})
+        anno2.save()
+
+        response = client.get(self.anno_search_url)
+        results = response.json()
+
+        # results should respect schema:position order: 1, 2, 3, 10
+        assert results["resources"][0]["id"] == anno1.uri()
+        assert results["resources"][1]["id"] == anno2.uri()
+        assert results["resources"][2]["id"] == anno3.uri()
+        assert results["resources"][3]["id"] == anno10.uri()
+        assert results["resources"][-1]["schema:position"] == 10
