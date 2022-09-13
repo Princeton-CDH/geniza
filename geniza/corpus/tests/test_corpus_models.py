@@ -670,16 +670,16 @@ class TestDocument:
             images = doc.iiif_images(filter_side=True)
             # Should call the mocked function again
             assert mock_frag_iiif.call_count == 2
-            # Should return a list of length one
+            # Should return a dict with one entry
             assert len(images) == 1
             # dict should be the recto side, since the TextBlock's side is R
-            assert images.keys() == ["canvas1"]
+            assert list(images.keys()) == ["canvas1"]
 
             # call with image_order_override present, reversed order
             doc.image_order_override = ["canvas2", "canvas1"]
             images = doc.iiif_images()
             # img2 should come first now
-            assert images.keys() == ["canvas2", "canvas1"]
+            assert list(images.keys()) == ["canvas2", "canvas1"]
 
     def test_admin_thumbnails(self):
         # Create a document and fragment and a TextBlock to associate them
