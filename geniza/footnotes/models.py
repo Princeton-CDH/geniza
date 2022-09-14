@@ -1,6 +1,5 @@
 from collections import defaultdict
 from functools import cached_property
-from html.parser import HTMLParser
 from os import path
 from urllib.parse import urljoin
 
