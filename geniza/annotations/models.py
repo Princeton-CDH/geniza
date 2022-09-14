@@ -8,6 +8,20 @@ from django.urls import reverse
 from geniza.common.utils import absolutize_url
 
 
+def annotations_to_list(annotations, uri):
+    """Generate an AnnotationList from a list of annotations.
+    Must specify the uri for the annotation list id.
+    Returns a dict that can be serialized as JSON."""
+    return {
+        "@context": "http://iiif.io/api/presentation/2/context.json",
+        "@id": uri,  # @id and not id per iiif spec
+        "@type": "sc:AnnotationList",
+        # exclude context on individual annotations,
+        # redundant within AnnotationList context
+        "resources": [a.compile(include_context=False) for a in annotations],
+    }
+
+
 class Annotation(models.Model):
     """Annotation model for storing annotations in the database."""
 
