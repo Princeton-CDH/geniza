@@ -299,6 +299,39 @@ class TestFootnote:
         del digital_edition.content_html
         assert digital_edition.content_html == {}
 
+    def test_content_html_str(self, document, source, twoauthor_source):
+        # should parse html to include line numbers in li "value" attribute
+        Annotation.objects.create(
+            content={
+                "dc:source": source.uri,
+                "target": {"source": {"partOf": {"id": document.manifest_uri}}},
+                "body": [{"value": "<ol><li>one</li><li>two</li></ol><p>test</p>"}],
+            }
+        )
+        digital_edition = document.footnotes.create(
+            source=source, doc_relation=[Footnote.DIGITAL_EDITION]
+        )
+        assert (
+            digital_edition.content_html_str
+            == '<ol><li value="1">one</li><li value="2">two</li></ol><p>test</p>'
+        )
+
+        # should respect ol "start" attribute in li "value" attributes
+        Annotation.objects.create(
+            content={
+                "dc:source": twoauthor_source.uri,
+                "target": {"source": {"partOf": {"id": document.manifest_uri}}},
+                "body": [{"value": '<ol start="5"><li>one</li><li>two</li></ol>'}],
+            }
+        )
+        digital_edition = document.footnotes.create(
+            source=twoauthor_source, doc_relation=[Footnote.DIGITAL_EDITION]
+        )
+        assert (
+            digital_edition.content_html_str
+            == '<ol start="5"><li value="5">one</li><li value="6">two</li></ol>'
+        )
+
 
 class TestFootnoteQuerySet:
     @pytest.mark.django_db
