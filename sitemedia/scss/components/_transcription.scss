@@ -420,6 +420,15 @@
         * {
             max-width: none;
         }
+
+        &.placeholder {
+            .img-header {
+                display: none;
+            }
+            .deep-zoom-container {
+                background-color: var(--background-gray);
+            }
+        }
         @include breakpoints.for-tablet-landscape-up {
             max-width: 640px;
             padding: 14px 0 0;
@@ -579,9 +588,6 @@
             position: relative;
             width: 100%;
             text-align: center;
-            &.placeholder {
-                background-color: var(--background-gray);
-            }
             .osd {
                 // height of screen, minus height of (controls + padding)
                 height: min(calc(100vh - 99px), 100%);

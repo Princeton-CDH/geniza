@@ -63,7 +63,7 @@
             {# loop based on canvases (for canvas with no image, image_info is a placeholder) #}
             {% for canvas_uri, image_info in images.items %}
                 {# only images that are part of the current document are zoomable #}
-                <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-edit-mode-value="true{% endif %}" data-canvas-url="{{ canvas_uri }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
+                <div class="img{% if image_info.excluded %} excluded{% endif %}{% if image_info.placeholder %} placeholder{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-edit-mode-value="true{% endif %}" data-canvas-url="{{ canvas_uri }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
                     <div class="img-header" data-iiif-target="imageHeader">
                         <h2>{{ image_info.shelfmark }} {{ image_info.label }}</h2>
                         {% if not image_info.excluded %}
@@ -75,7 +75,7 @@
                             <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">0&deg;</label>
                         {% endif %}
                     </div>
-                    <div class="deep-zoom-container{% if image_info.placeholder %} placeholder{% endif %}">
+                    <div class="deep-zoom-container">
                         <img class="iiif-image" data-iiif-target="image" data-annotation-target="image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
                             sizes="(max-width: 650px) 50vw, 94vw"
                             srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
