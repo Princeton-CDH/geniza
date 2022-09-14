@@ -420,6 +420,15 @@
         * {
             max-width: none;
         }
+
+        &.placeholder {
+            .img-header {
+                display: none;
+            }
+            .deep-zoom-container {
+                background-color: var(--background-gray);
+            }
+        }
         @include breakpoints.for-tablet-landscape-up {
             max-width: 640px;
             padding: 14px 0 0;
@@ -581,10 +590,10 @@
             text-align: center;
             .osd {
                 // height of screen, minus height of (controls + padding)
-                height: calc(100vh - 99px);
+                height: min(calc(100vh - 99px), 100%);
                 @include breakpoints.for-tablet-landscape-up {
                     // controls are vertically slimmer on desktop
-                    height: calc(100vh - 68px);
+                    height: min(calc(100vh - 68px), 100%);
                 }
                 position: absolute !important;
                 top: 0;

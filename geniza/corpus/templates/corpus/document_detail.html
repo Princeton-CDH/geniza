@@ -20,8 +20,8 @@
 
     {# preview card images for twitter and open graph #}
     <meta name="twitter:card" content="summary{% if document.has_image %}_large_image{% endif %}" />
-    {% if document.iiif_images %}
-        {% with document.iiif_images.0.image|iiif_image:"size:width=1080" as image %}
+    {% if meta_image %}
+        {% with meta_image|iiif_image:"size:width=1080" as image %}
             <meta property="og:image" content="{{ image }}" />
             <meta name="twitter:image" content="{{ image }}" />
         {% endwith %}
@@ -152,9 +152,7 @@
     </div>
 
     {# viewer #}
-    {% if document.has_transcription or document.iiif_urls %}
-        {% include "corpus/snippets/document_transcription.html" %}
-    {% endif %}
+    {% include "corpus/snippets/document_transcription.html" %}
 
     {# tertiary metadata #}
     <dl class="metadata-list tertiary">

@@ -20,7 +20,6 @@ from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import (
-    DocumentAddTranscriptionView,
     DocumentAnnotationListView,
     DocumentDetailView,
     DocumentManifestView,
@@ -32,6 +31,7 @@ from geniza.corpus.views import (
     old_pgp_edition,
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
+    placeholder_canvas,
 )
 from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
@@ -117,6 +117,21 @@ class TestDocumentDetailView:
             updated_doc_response["Last-Modified"] != other_doc_response["Last-Modified"]
         )
         assert init_last_modified == other_doc_response["Last-Modified"]
+
+    def test_placeholder_images(self, client, document):
+        # mock digital_editions() to return mocked footnote with mocked content_html
+        with patch.object(Document, "digital_editions") as mock_de:
+            mock_footnote = Mock()
+            mock_de.return_value.all = Mock()
+            mock_de.return_value.all.return_value = [mock_footnote]
+            mock_footnote.content_html.keys = Mock()
+            mock_footnote.content_html.keys.return_value = ["canvas_1", "canvas_2"]
+            response = client.get(reverse("corpus:document", args=(document.pk,)))
+            placeholders = response.context["images"]
+            # should create a dict with canvases as keys and placeholder in values
+            assert len(placeholders) == 2
+            assert list(placeholders.keys()) == ["canvas_1", "canvas_2"]
+            assert placeholders["canvas_1"] == placeholder_canvas
 
 
 @pytest.mark.django_db
@@ -1468,6 +1483,12 @@ class TestDocumentTranscribeView:
         )
         assert response.context["annotation_config"]["source_uri"] == source.uri
         assert response.context["source_label"] == source.all_authors()
+
+        # since no images/transcription present, should append two placeholders for use in editor
+        assert len(response.context["images"]) == 2
+        assert f"{document.permalink}iiif/canvas/1/" in response.context["images"]
+        assertContains(response, f"{document.permalink}iiif/canvas/2/")
+        assertContains(response, placeholder_canvas["image"]["info"])
 
         # non-existent source_pk should 404
         response = admin_client.get(

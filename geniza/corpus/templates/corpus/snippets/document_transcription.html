@@ -2,7 +2,6 @@
 {% if edit_mode %}
     {{ annotation_config|json_script:"annotation-config" }}
 {% elif perms.corpus.change_document %}
-    {# NOTE: document.iiif_images check is temporary, remove once we can use generated canvas ids #}
     {% for ed in document.digital_editions.all %}
         <a class="editor-navigation" href="{% url 'corpus:document-transcribe' document.id ed.source.pk %}" data-turbo="false">
             <i class="ph-pencil"></i>
@@ -14,62 +13,57 @@
         <span>Add a new transcription</span>
     </a>
 {% endif %}
-<section id="itt-panel" {% if not edit_mode %}data-controller="transcription" data-action="click@document->transcription#clickCloseDropdown"{% endif %}>
-    {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
-    {# images displayed by default; disable if no images are available #}
-    {# translators: label for checkbox toggle to show the images panel for a document #}
-    <input type="checkbox" class="toggle" id="images-on" aria-label="{% translate 'show images' %}" {% if document.has_image %}checked="true" {% else %} disabled="true"{% endif %}/>
-    <label for="images-on"></label>
-    {# transcription displayed by default; disable if no content is available #}
-    {# translators: label for checkbox toggle to show the transcription panel for a document #}
-    <input type="checkbox" class="toggle" id="transcription-on" aria-label="{% translate 'show transcription' %}" {% if document.digital_editions or edit_mode %}checked="true" {% else %} disabled="true"{% endif %}/>
-    <label for="transcription-on"><svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg></label>
-    {# translation disabled for now since we don't handle them in the system yet #}
-    {# translators: label for checkbox toggle to show the translation panel for a document #}
-    <input type="checkbox" class="toggle" id="translation-on" aria-label="{% translate 'show translation' %}" disabled="true"/>
-    <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
-    <div class="panel-container">
-        {# label row #}
-        <div class="label-row"></div> {# unused (no image label, needed for column alignment) #}
-        <div class="transcription-panel label-row">
-            {% if edit_mode %}
-                {# show disabled details with source label in editor mode #}
-                <details class="transcription-select" aria-expanded="false" disabled="true">
-                    <summary>
-                        <span>Edition: {{ source_label }}</span>
-                    </summary>
-                </details>
-            {% else %}
-                {# dropdown is disabled by default; enable if javascript is active #}
-                <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-edition-count="{{ document.digital_editions.count }}" disabled="true">
-                    <summary data-action="keydown->transcription#shiftTabCloseDropdown">
-                        <span data-transcription-target="editionShortLabel">Edition: {{ document.digital_editions.0.source.all_authors }}</span>
-                    </summary>
-                    <ul>
-                        {% for ed in document.digital_editions.all %}
-                            <li>
-                                <label for="edition-{{ forloop.counter }}">
-                                    <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="edition-{{ forloop.counter }}" data-edition="ed-{{ ed.pk }}" />
-                                    <span>Edition: {{ ed.source.all_authors }}</span>
-                                </label>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </details>
-            {% endif %}
-        </div>
+{# only enable ITT panel if transcription or images are present, or we are in edit mode #}
+{% if document.has_transcription or document.iiif_urls or edit_mode %}
+    <section id="itt-panel" {% if not edit_mode %}data-controller="transcription" data-action="click@document->transcription#clickCloseDropdown"{% endif %}>
+        {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
+        {# images displayed by default; disable if no images are available #}
+        {# translators: label for checkbox toggle to show the images panel for a document #}
+        <input type="checkbox" class="toggle" id="images-on" aria-label="{% translate 'show images' %}" {% if document.has_image or edit_mode %}checked="true" {% else %} disabled="true"{% endif %}/>
+        <label for="images-on"></label>
+        {# transcription displayed by default; disable if no content is available #}
+        {# translators: label for checkbox toggle to show the transcription panel for a document #}
+        <input type="checkbox" class="toggle" id="transcription-on" aria-label="{% translate 'show transcription' %}" {% if document.digital_editions or edit_mode %}checked="true" {% else %} disabled="true"{% endif %}/>
+        <label for="transcription-on"><svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg></label>
+        {# translation disabled for now since we don't handle them in the system yet #}
+        {# translators: label for checkbox toggle to show the translation panel for a document #}
+        <input type="checkbox" class="toggle" id="translation-on" aria-label="{% translate 'show translation' %}" disabled="true"/>
+        <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
+        <div class="panel-container">
+            {# label row #}
+            <div class="label-row"></div> {# unused (no image label, needed for column alignment) #}
+            <div class="transcription-panel label-row">
+                {% if edit_mode %}
+                    {# show disabled details with source label in editor mode #}
+                    <details class="transcription-select" aria-expanded="false" disabled="true">
+                        <summary>
+                            <span>Edition: {{ source_label }}</span>
+                        </summary>
+                    </details>
+                {% else %}
+                    {# dropdown is disabled by default; enable if javascript is active #}
+                    <details class="transcription-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-edition-count="{{ document.digital_editions.count }}" disabled="true">
+                        <summary data-action="keydown->transcription#shiftTabCloseDropdown">
+                            <span data-transcription-target="editionShortLabel">Edition: {{ document.digital_editions.0.source.all_authors }}</span>
+                        </summary>
+                        <ul>
+                            {% for ed in document.digital_editions.all %}
+                                <li>
+                                    <label for="edition-{{ forloop.counter }}">
+                                        <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="edition-{{ forloop.counter }}" data-edition="ed-{{ ed.pk }}" />
+                                        <span>Edition: {{ ed.source.all_authors }}</span>
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </details>
+                {% endif %}
+            </div>
 
-        {% comment %}
-NOTE: if we have more transcription pages than images,
-they won't show in current implementation.
-May want to gather them in the model... (but transcription content format will change)
-Also doesn't currently account for fragments without images.
-        {% endcomment %}
-        {% if document.iiif_urls %}
-            {# if we have images, loop based on them #}
-            {% for image_info in document.iiif_images %}
+            {# loop based on canvases (for canvas with no image, image_info is a placeholder) #}
+            {% for canvas_uri, image_info in images.items %}
                 {# only images that are part of the current document are zoomable #}
-                <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-edit-mode-value="true{% endif %}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
+                <div class="img{% if image_info.excluded %} excluded{% endif %}{% if image_info.placeholder %} placeholder{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-edit-mode-value="true{% endif %}" data-canvas-url="{{ canvas_uri }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
                     <div class="img-header" data-iiif-target="imageHeader">
                         <h2>{{ image_info.shelfmark }} {{ image_info.label }}</h2>
                         {% if not image_info.excluded %}
@@ -133,7 +127,7 @@ Also doesn't currently account for fragments without images.
                                 {# display transcription in chunks by index #}
                                 {% for edition in document.digital_editions.all %}
                                     <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                        {% for html_section in edition.content_html|dict_item:image_info.canvas %}
+                                        {% for html_section in edition.content_html|dict_item:canvas_uri %}
                                             {{ html_section|safe }}
                                         {% endfor %}
                                     </div>
@@ -143,33 +137,9 @@ Also doesn't currently account for fragments without images.
                     {% endif %}
                 </div>
             {% endfor %}
-        {% else %}
-            {# no images #}
-            {# if there are no images, loop based on the transcription content instead #}
-            {% for canvas_id in document.digital_editions.0.content_html.keys %}
-                {# TODO: use canvas ids here for transcription edit mode  #}
-                <div class="img"></div> {# empty image div needed for grid layout #}
-                <div class="transcription-panel">
-                    {% if forloop.first %}
-                        <h2>{% translate 'Transcription' %}</h2>
-                        <span data-transcription-target="editionFullLabel" class="current-transcription{% if document.digital_editions.count > 1 %} multiple{% endif %}">
-                            {{ document.digital_editions.0.source.formatted_display|safe }}
-                        </span>
-                    {% endif %}
-                    <div class="editions">
-                        {# display transcriptions by canvas id from first edition #}
-                        {% for edition in document.digital_editions.all %}
-                            <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                {% for html_section in edition.content_html|dict_item:canvas_id %}
-                                    {{ html_section|safe }}
-                                {% endfor %}
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endfor %}
-        {% endif %}
-        {% if document.has_image %}
-            {% include "corpus/snippets/document_image_rights.html" %}
-        {% endif %}
-    </div>
-</section>
+            {% if document.has_image %}
+                {% include "corpus/snippets/document_image_rights.html" %}
+            {% endif %}
+        </div>
+    </section>
+{% endif %}
