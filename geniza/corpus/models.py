@@ -912,7 +912,9 @@ class Document(ModelIndexable, DocumentDateMixin):
             # if this is an edition/transcription, try to get plain text for indexing
             if Footnote.DIGITAL_EDITION in fn.doc_relation:
                 if fn.content_html_str:
-                    transcription_texts.append(fn.content_html_str)
+                    transcription_texts.append(
+                        Footnote.explicit_line_numbers(fn.content_html_str)
+                    )
             # add any doc relations to this footnote's source's set in source_relations
             source_relations[fn.source] = source_relations[fn.source].union(
                 fn.doc_relation
