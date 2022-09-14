@@ -73,7 +73,7 @@
                         <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">0&deg;</label>
                     {% endif %}
                 </div>
-                <div class="deep-zoom-container">
+                <div class="deep-zoom-container{% if image_info.placeholder %} placeholder{% endif %}">
                     <img class="iiif-image" data-iiif-target="image" data-annotation-target="image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
                         sizes="(max-width: 650px) 50vw, 94vw"
                         srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,

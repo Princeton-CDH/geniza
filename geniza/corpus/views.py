@@ -284,7 +284,8 @@ class DocumentDetailBase(SolrLastModifiedMixin):
 placeholder_canvas = {
     "image": {
         "info": static("img/ui/all/all/image-unavailable.png"),
-    }
+    },
+    "placeholder": True,
 }
 
 
