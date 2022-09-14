@@ -20,7 +20,6 @@ from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import (
-    DocumentAddTranscriptionView,
     DocumentAnnotationListView,
     DocumentDetailView,
     DocumentManifestView,
@@ -32,6 +31,7 @@ from geniza.corpus.views import (
     old_pgp_edition,
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
+    placeholder_canvas,
 )
 from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
@@ -126,13 +126,12 @@ class TestDocumentDetailView:
             mock_de.return_value.all.return_value = [mock_footnote]
             mock_footnote.content_html.keys = Mock()
             mock_footnote.content_html.keys.return_value = ["canvas_1", "canvas_2"]
-            with patch("geniza.corpus.views.static") as mock_static:
-                response = client.get(reverse("corpus:document", args=(document.pk,)))
-                placeholders = response.context["images"]
-                # should create a list of two dicts with the canvases and result of calling static
-                assert len(placeholders) == 2
-                assert placeholders[0]["canvas"] == "canvas_1"
-                assert placeholders[0]["image"]["info"] == mock_static.return_value
+            response = client.get(reverse("corpus:document", args=(document.pk,)))
+            placeholders = response.context["images"]
+            # should create a dict with canvases as keys and placeholder in values
+            assert len(placeholders) == 2
+            assert list(placeholders.keys()) == ["canvas_1", "canvas_2"]
+            assert placeholders["canvas_1"] == placeholder_canvas
 
 
 @pytest.mark.django_db

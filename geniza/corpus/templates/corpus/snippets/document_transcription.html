@@ -59,9 +59,9 @@
         </div>
 
         {# loop based on canvases (for canvas with no image, image_info is a placeholder) #}
-        {% for image_info in images %}
+        {% for canvas_uri, image_info in images.items %}
             {# only images that are part of the current document are zoomable #}
-            <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-edit-mode-value="true{% endif %}" data-canvas-url="{{ image_info.canvas }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
+            <div class="img{% if image_info.excluded %} excluded{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-edit-mode-value="true{% endif %}" data-canvas-url="{{ canvas_uri }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
                 <div class="img-header" data-iiif-target="imageHeader">
                     <h2>{{ image_info.shelfmark }} {{ image_info.label }}</h2>
                     {% if not image_info.excluded %}
@@ -125,7 +125,7 @@
                             {# display transcription in chunks by index #}
                             {% for edition in document.digital_editions.all %}
                                 <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
-                                    {% for html_section in edition.content_html|dict_item:image_info.canvas %}
+                                    {% for html_section in edition.content_html|dict_item:canvas_uri %}
                                         {{ html_section|safe }}
                                     {% endfor %}
                                 </div>
