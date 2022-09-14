@@ -560,17 +560,18 @@ class Footnote(TrackChangesModel):
     @cached_property
     def content_html_str(self):
         "content as a single string of html, if available"
-        # content html is a dict; values are lists of html content
-        html = "\n".join(
-            [
-                section
-                for canvas_annos in self.content_html.values()
-                for section in canvas_annos
-            ]
-        )
         # parse to add line numbers
         parser = HTMLLineNumberParser()
-        parser.feed(html)
+        parser.feed(
+            "\n".join(
+                [
+                    section
+                    # content html is a dict; values are lists of html content
+                    for canvas_annos in self.content_html.values()
+                    for section in canvas_annos
+                ]
+            )
+        )
         return parser.html_str
 
     @property
