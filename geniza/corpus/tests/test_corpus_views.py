@@ -1484,6 +1484,12 @@ class TestDocumentTranscribeView:
         assert response.context["annotation_config"]["source_uri"] == source.uri
         assert response.context["source_label"] == source.all_authors()
 
+        # since no images/transcription present, should append two placeholders for use in editor
+        assert len(response.context["images"]) == 2
+        assert f"{document.permalink}iiif/canvas/1/" in response.context["images"]
+        assertContains(response, f"{document.permalink}iiif/canvas/2/")
+        assertContains(response, placeholder_canvas["image"]["info"])
+
         # non-existent source_pk should 404
         response = admin_client.get(
             reverse("corpus:document-transcribe", args=(document.id, 123456789))
