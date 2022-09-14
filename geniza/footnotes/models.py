@@ -1,5 +1,6 @@
 from collections import defaultdict
 from functools import cached_property
+from html.parser import HTMLParser
 from os import path
 from urllib.parse import urljoin
 
@@ -410,6 +411,43 @@ class FootnoteQuerySet(models.QuerySet):
         return self.filter(doc_relation__contains=Footnote.EDITION)
 
 
+class HTMLLineNumberParser(HTMLParser):
+    """HTML parser to add numbering to line elements for search indexing purposes"""
+
+    def __init__(self, *args, **kwargs):
+        """Initialize empty string and line numbering at 1"""
+        self.html_str = ""
+        self.line_number = 1
+        super().__init__(*args, **kwargs)
+
+    def handle_starttag(self, tag, attrs):
+        """Restart line numbering on <ol>, include line number with <li>, and construct
+        start tags with included attributes"""
+        if tag == "ol":
+            # restart line numbering on encountering ol
+            self.line_number = 1
+            for (attr, val) in attrs:
+                # if start present in attrs, restart to start number
+                if attr == "start":
+                    self.line_number = int(val)
+        elif tag == "li":
+            # append the line number as a data attribute
+            attrs += [("value", str(self.line_number))]
+            # increment line number
+            self.line_number += 1
+        # construct attribute definitions and final start tag string
+        attr_strings = [' %s="%s"' % (attr, val) for (attr, val) in attrs]
+        self.html_str += "<%s%s>" % (tag, "".join(attr_strings))
+
+    def handle_endtag(self, tag):
+        """Close all encountered HTML endtags"""
+        self.html_str += "</%s>" % (tag,)
+
+    def handle_data(self, data):
+        """Append any text nodes as-is"""
+        self.html_str += data
+
+
 class Footnote(TrackChangesModel):
     """a footnote that links a :class:`~geniza.corpus.models.Document` to a :class:`Source`"""
 
@@ -523,13 +561,17 @@ class Footnote(TrackChangesModel):
     def content_html_str(self):
         "content as a single string of html, if available"
         # content html is a dict; values are lists of html content
-        return "\n".join(
+        html = "\n".join(
             [
                 section
                 for canvas_annos in self.content_html.values()
                 for section in canvas_annos
             ]
         )
+        # parse to add line numbers
+        parser = HTMLLineNumberParser()
+        parser.feed(html)
+        return parser.html_str
 
     @property
     def content_text(self):
