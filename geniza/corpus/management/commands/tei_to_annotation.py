@@ -404,13 +404,17 @@ def new_transcription_annotation():
     anno.type = "Annotation"
     anno.body = [Dict()]
     anno.body[0].type = "TextualBody"
-    anno.body[0].purpose = "transcribing"
+    # purpose on body is only needed if more than one body
+    # (e.g., transcription + tags in the same annotation)
+    # anno.body[0].purpose = "transcribing"
     anno.body[0].format = "text/html"
     # explicitly indicate text direction; all transcriptions are RTL
     anno.body[0].TextInput = "rtl"
     # supplement rather than painting over the image
-    # multiple motivations are allowed; add transcription as secondary motivation
-    anno.motivation = ["sc:supplementing", "ext:transcription"]
+    # multiple motivations are allowed; add transcribing as secondary motivation
+    # (could use edm:transcribing from Europeana Data Model, but not sure
+    # how to declare edm namespace)
+    anno.motivation = ["sc:supplementing", "transcribing"]
 
     anno.target.source.type = "Canvas"
     anno.target.selector.type = "FragmentSelector"
