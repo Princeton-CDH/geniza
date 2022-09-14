@@ -346,6 +346,8 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 # skip solr query if none of the associated TextBlocks have side info
                 if any([tb.side for tb in document.textblock_set.all()]) else [],
                 "images": images,
+                # first image for twitter/opengraph meta tags
+                "meta_image": list(images.values())[0]["image"] if images else None,
             }
         )
         return context_data
