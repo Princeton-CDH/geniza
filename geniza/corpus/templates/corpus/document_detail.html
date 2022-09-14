@@ -152,9 +152,7 @@
     </div>
 
     {# viewer #}
-    {% if document.has_transcription or document.iiif_urls %}
-        {% include "corpus/snippets/document_transcription.html" %}
-    {% endif %}
+    {% include "corpus/snippets/document_transcription.html" %}
 
     {# tertiary metadata #}
     <dl class="metadata-list tertiary">
