@@ -772,6 +772,14 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
         except Source.DoesNotExist:
             raise Http404
 
+        # if we have neither IIIF images nor transcription content with placeholder canvases,
+        # pass two placeholder canvases for use in editor
+        if not context_data["images"]:
+            canvas_base_uri = "%siiif/canvas/" % self.get_object().permalink
+            for i in [1, 2]:
+                canvas_uri = "%s%d/" % (canvas_base_uri, i)
+                context_data["images"][canvas_uri] = placeholder_canvas
+
         context_data.update(
             {
                 "annotation_config": {
