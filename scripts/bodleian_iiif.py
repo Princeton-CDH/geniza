@@ -201,7 +201,8 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url):
                     continue
 
             # add image to canvas
-            canvas = seq.canvas(ident="canvas/%s" % (i + 1), label=label)
+            # prezi prefixes ident with canvas/ for us, so don't duplicate
+            canvas = seq.canvas(ident="%s" % (i + 1), label=label)
             # Create an annotation on the Canvas
             # warns if identifier is not set, so let's set one
             anno = canvas.annotation(ident="%s/anno1" % canvas.id)
