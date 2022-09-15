@@ -5,6 +5,8 @@ from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.template.loader import render_to_string
+from django.utils.text import slugify
 
 from geniza.annotations.models import Annotation, annotations_to_list
 from geniza.corpus.models import Document
@@ -28,7 +30,6 @@ class Command(BaseCommand):
         # define paths and ensure directories exist for compiled transcription
         transcription_output_dir = {}
         for output_format in ["txt", "html"]:
-            print([settings.ANNOTATION_BACKUP_PATH, "transcriptions", output_format])
             format_path = os.path.join(
                 settings.ANNOTATION_BACKUP_PATH, "transcriptions", output_format
             )
@@ -73,7 +74,6 @@ class Command(BaseCommand):
             for canvas, annotations in annos_by_canvas.items():
                 annolist_name = self.annotation_list_name(canvas)
                 annolist_out_path = os.path.join(output_dir, "%s.json" % annolist_name)
-                print(annolist_out_path)
                 with open(annolist_out_path, "w") as outfile:
                     json.dump(
                         annotations_to_list(annotations, uri="test"), outfile, indent=2
@@ -82,11 +82,10 @@ class Command(BaseCommand):
             # for convenience and more readable versioning, also generate
             # text and html transcription files
             for edition in document.digital_editions():
-                print(edition)
-                # filename should be based on pgpid and source
-                # use source id for now; slug todo
-                # should we explicitly label as transcription?
-                base_filename = "%s_source_%s" % (document.id, edition.source.id)
+                print(edition, edition.source)
+                # filename based on pgpid and source authors;
+                # explicitly label as transcription for context
+                base_filename = self.transcription_filename(document, edition.source)
                 for output_format in ["txt", "html"]:
                     # put in the appropriate transription dir by format,
                     # use format as file extension
@@ -141,3 +140,15 @@ class Command(BaseCommand):
 
         # TODO: handle local PGP placeholder canvas uris
         return "_".join([prefix, path])
+
+    def transcription_filename(self, document, source):
+        # filename based on pgpid and source authors;
+        # explicitly label as transcription for context
+        authors = [a.creator.last_name for a in source.authorship_set.all()] or [
+            "unknown author"
+        ]
+
+        return "PGPID-%s_%s_transcription" % (
+            document.id,
+            slugify(" ".join(authors)),
+        )
