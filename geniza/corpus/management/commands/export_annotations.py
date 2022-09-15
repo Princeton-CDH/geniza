@@ -102,7 +102,11 @@ class Command(BaseCommand):
 
                     with open(outfile_path, "w") as outfile:
                         if output_format == "html":
-                            outfile.write(edition.content_html_str)
+                            context = {"document": document, "edition": edition}
+                            content = render_to_string(
+                                "corpus/transcription_export.html", context
+                            )
+                            outfile.write(content)
                         else:
                             # TODO: template for this also?
                             # need to include source citation

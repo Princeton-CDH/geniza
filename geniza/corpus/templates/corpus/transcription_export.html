@@ -1,0 +1,20 @@
+{# minimal html page for transcription export #}
+<html>
+    <head>
+        <title>Transcription of {{ document.title }}</title>
+    </head>
+    <body style="max-width: 860px; margin: auto">
+        <h1>Transcription of {{ document.title }}</h1>
+
+        <p>{{ edition.source.formatted_display|safe }}</p>
+
+        {# include language code if possible #}
+        <section dir="rtl" {% if document.languages.count == 1 and document.languages.first.iso_code %}lang="{{ document.languages.first.iso_code}}"{% endif %}>
+            {% for canvas, html_section in edition.content_html.items %}
+                {# TODO: include canvas ? image ref / image thumbnail ? #}
+                {{ html|safe }}
+            {% endfor %}
+            {{ edition.content_html_str|safe}}
+        </section>
+    </body>
+</html>
