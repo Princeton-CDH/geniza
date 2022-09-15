@@ -136,7 +136,7 @@ class Command(sync_transcriptions.Command):
             html_blocks = tei.text_to_html(block_format=True)
 
             # get canvas objects for the images in order; skip any non-document images
-            iiif_canvases = [img["canvas"] for img in doc.iiif_images(filter_side=True)]
+            iiif_canvases = list(doc.iiif_images(filter_side=True).keys())
             # determine the number of canvases needed based on labels
             # that indicate new pages
             # check and count any after the first; always need at least 1 canvas

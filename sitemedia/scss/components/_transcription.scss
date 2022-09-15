@@ -420,6 +420,15 @@
         * {
             max-width: none;
         }
+
+        &.placeholder {
+            .img-header {
+                display: none;
+            }
+            .deep-zoom-container {
+                background-color: var(--background-gray);
+            }
+        }
         @include breakpoints.for-tablet-landscape-up {
             max-width: 640px;
             padding: 14px 0 0;
@@ -581,10 +590,10 @@
             text-align: center;
             .osd {
                 // height of screen, minus height of (controls + padding)
-                height: calc(100vh - 99px);
+                height: min(calc(100vh - 99px), 100%);
                 @include breakpoints.for-tablet-landscape-up {
                     // controls are vertically slimmer on desktop
-                    height: calc(100vh - 68px);
+                    height: min(calc(100vh - 68px), 100%);
                 }
                 position: absolute !important;
                 top: 0;
@@ -772,7 +781,7 @@
             }
             // alignment is different in annotation editor
             .tahqiq-block-display ol li::before {
-                right: 122px;
+                right: 125px;
             }
         }
 
@@ -950,6 +959,12 @@ a.editor-navigation {
         margin-right: 1.5em;
         padding-right: 1em; /* shift to make space for line numbers */
         direction: rtl;
+    }
+
+    li > p {
+        // if inside a list item, don't pad <p>
+        margin-right: 0;
+        padding-right: 0;
     }
 
     ol,

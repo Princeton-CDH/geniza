@@ -126,17 +126,14 @@ a#needsreview:target {
     font-size: 115%;
 }
 
-.transcription li {
-    list-style: none; /* suppress default line numbers */
-}
-
-.transcription li::before {
-    /* use pseudo marker to avoid periods for line numbers */
-    content: attr(value);
-    margin-left: 1em;
-    text-align: right;
-    float: right;
-    font-weight: bold;
+/* adjust spacing of decimal cover */
+#itt-panel
+    .panel-container
+    div.transcription-panel
+    .transcription
+    ol
+    li::before {
+    right: 163px;
 }
 
 .transcription li::marker {

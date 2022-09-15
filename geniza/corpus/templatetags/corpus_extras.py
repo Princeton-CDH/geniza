@@ -87,6 +87,9 @@ def iiif_image(img, args):
     # split into method and parameters (return if not formatted properly)
     if ":" not in args:
         return ""
+    # placeholder images will be a dict with an image url as value for key "info"
+    elif isinstance(img, dict) and "info" in img:
+        return img["info"]
     mode, opts = args.split(":")
     # split parameters into args and kwargs
     args = opts.split(",")

@@ -20,6 +20,7 @@ from multiselectfield import MultiSelectField
 from geniza.annotations.models import Annotation
 from geniza.common.fields import NaturalSortField
 from geniza.common.models import TrackChangesModel
+from geniza.footnotes.utils import HTMLLineNumberParser
 
 
 class SourceType(models.Model):
@@ -533,6 +534,13 @@ class Footnote(TrackChangesModel):
                 for section in canvas_annos
             ]
         )
+
+    @staticmethod
+    def explicit_line_numbers(html):
+        """add explicit line numbers to passed HTML (in value attributes of ol > li)"""
+        parser = HTMLLineNumberParser()
+        parser.feed(html)
+        return parser.html_str
 
     @property
     def content_text(self):

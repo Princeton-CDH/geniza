@@ -655,34 +655,31 @@ class TestDocument:
             images = doc.iiif_images()
             # Should call the mocked function
             mock_frag_iiif.assert_called_once
-            # Should return a list of two dicts
+            # Should return a dict with two objects
             assert len(images) == 2
-            assert isinstance(images[0], dict)
+            assert isinstance(images, dict)
             # dicts should contain the image objects and labels via the mocks
-            assert images[0]["image"] == img1
-            assert images[0]["label"] == "1r"
-            assert images[0]["shelfmark"] == frag.shelfmark
-            assert images[1]["image"] == img2
-            assert images[1]["label"] == "1v"
-            assert images[1]["shelfmark"] == frag.shelfmark
+            assert images["canvas1"]["image"] == img1
+            assert images["canvas1"]["label"] == "1r"
+            assert images["canvas1"]["shelfmark"] == frag.shelfmark
+            assert images["canvas2"]["image"] == img2
+            assert images["canvas2"]["label"] == "1v"
+            assert images["canvas2"]["shelfmark"] == frag.shelfmark
 
             # Call with filter_side=True
             images = doc.iiif_images(filter_side=True)
             # Should call the mocked function again
             assert mock_frag_iiif.call_count == 2
-            # Should return a list of length one
+            # Should return a dict with one entry
             assert len(images) == 1
             # dict should be the recto side, since the TextBlock's side is R
-            assert images[0]["image"] == img1
-            assert images[0]["label"] == "1r"
-            assert images[0]["shelfmark"] == frag.shelfmark
+            assert list(images.keys()) == ["canvas1"]
 
             # call with image_order_override present, reversed order
             doc.image_order_override = ["canvas2", "canvas1"]
             images = doc.iiif_images()
             # img2 should come first now
-            assert images[0]["image"] == img2
-            assert images[1]["image"] == img1
+            assert list(images.keys()) == ["canvas2", "canvas1"]
 
     def test_admin_thumbnails(self):
         # Create a document and fragment and a TextBlock to associate them
