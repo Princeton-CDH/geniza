@@ -227,6 +227,19 @@ section#document-list {
         }
     }
 
+    /* use pseudo marker to get transcription line numbers from snippets */
+    .transcription li {
+        direction: rtl;
+        list-style-type: none; /* hide automatic ol numbering */
+        &::before {
+            content: attr(value);
+            margin-right: -0.5rem; /* shift outside text margin */
+            text-align: right;
+            float: right;
+            font-weight: bold;
+        }
+    }
+
     /* raise tags & text over clickable pseudo content to allow selection */
     .description,
     .transcription,
