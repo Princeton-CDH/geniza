@@ -44,7 +44,7 @@ class Command(BaseCommand):
             "Backing up annotations for %d documents with digital editions"
             % docs.count()
         )
-        for document in docs[:3]:
+        for document in docs:
             print(document)
             # use PGPID for annotation directory name
             # path based on recommended uri pattern from the spec
@@ -82,7 +82,7 @@ class Command(BaseCommand):
             # for convenience and more readable versioning, also generate
             # text and html transcription files
             for edition in document.digital_editions():
-                print(edition, edition.source)
+                # print(edition, edition.source)
                 # filename based on pgpid and source authors;
                 # explicitly label as transcription for context
                 base_filename = self.transcription_filename(document, edition.source)
@@ -93,13 +93,6 @@ class Command(BaseCommand):
                         transcription_output_dir[output_format],
                         "%s.%s" % (base_filename, output_format),
                     )
-                    print(outfile_path)
-                    # TODO: use a minimual django template here;
-                    # should include full citation for the source + footnote.
-
-                    # FIXME: where should primary language lang code be set,
-                    # for this export and for transcription on site?
-
                     with open(outfile_path, "w") as outfile:
                         if output_format == "html":
                             context = {"document": document, "edition": edition}
@@ -108,9 +101,8 @@ class Command(BaseCommand):
                             )
                             outfile.write(content)
                         else:
-                            # TODO: template for this also?
-                            # need to include source citation
-                            # and line numbers for ol list items
+                            # text version is meant for corpus analytics,
+                            # so should be minimal and content only
                             outfile.write(edition.content_text)
 
     def annotation_list_name(self, canvas_uri):
@@ -152,7 +144,8 @@ class Command(BaseCommand):
             "unknown author"
         ]
 
-        return "PGPID-%s_%s_transcription" % (
+        return "PGPID%s_s%d_%s_transcription" % (
             document.id,
+            source.id,
             slugify(" ".join(authors)),
         )
