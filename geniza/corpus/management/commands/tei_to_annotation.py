@@ -13,7 +13,7 @@ from datetime import datetime
 import requests
 from addict import Dict
 from django.conf import settings
-from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
+from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
@@ -302,6 +302,12 @@ class Command(sync_transcriptions.Command):
         if footnote.doc_relation == Footnote.DIGITAL_EDITION:
             return footnote
 
+        # check if a digital edition footnote for this document+source exists,
+        # so we can avoid creating a duplicate
+        diged_footnote = document.footnotes.filter(
+            doc_relation=Footnote.DIGITAL_EDITION, source=footnote.source
+        ).first()
+
         # if footnote has other types or a url, we should preserve it
         if (
             set(footnote.doc_relation).intersection(
@@ -317,9 +323,6 @@ class Command(sync_transcriptions.Command):
 
             # if a digital edition footnote for this document+source exists,
             # use that instead of creating a duplicate
-            diged_footnote = document.footnotes.filter(
-                doc_relation=Footnote.DIGITAL_EDITION, source=footnote.source
-            ).first()
             if diged_footnote:
                 return diged_footnote
 
@@ -337,12 +340,19 @@ class Command(sync_transcriptions.Command):
             )
             return new_footnote
 
+        # when there is no additional information on the footnote
         else:
+            # if a digital edition already exists, remove this one
+            if diged_footnote:
+                footnote.delete()
+                # log deletion and and return existing diged
+                self.log_deletion(footnote, "Removing redundant edition footnote")
+                return diged_footnote
+
             # otherwise, convert edition to digital edition
             footnote.doc_relation = Footnote.DIGITAL_EDITION
             footnote.content = None
             footnote.save()
-
             # log footnote change and return
             self.log_change(footnote, "Migrated footnote to digital edition")
             return footnote
@@ -354,6 +364,10 @@ class Command(sync_transcriptions.Command):
     def log_change(self, obj, log_message):
         "create a log entry documenting object change"
         return self.log_entry(obj, log_message, CHANGE)
+
+    def log_deletion(self, obj, log_message):
+        "create a log entry documenting object change"
+        return self.log_entry(obj, log_message, DELETION)
 
     def check_unmigrated_footnotes(self):
         unmigrated_footnotes = Footnote.objects.filter(
