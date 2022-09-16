@@ -470,6 +470,14 @@ class Footnote(TrackChangesModel):
             # (sort digital editions after other footnotes for same source)
             NullIf("location_sort", models.Value("")).asc(nulls_last=True),
         ]
+        constraints = [
+            # only allow one digital edition per source for a document
+            models.UniqueConstraint(
+                fields=("source", "object_id", "content_type", "doc_relation"),
+                name="one_digital_edition_per_document_and_source",
+                condition=models.Q(doc_relation__contains="X"),  # DIGITAL_EDITION),
+            )
+        ]
 
     def __str__(self):
         choices = dict(self.DOCUMENT_RELATION_TYPES)
