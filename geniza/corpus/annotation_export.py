@@ -1,0 +1,215 @@
+import json
+import os
+from collections import defaultdict
+from urllib.parse import urlparse
+
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
+from django.template.defaultfilters import pluralize
+from django.template.loader import get_template
+from django.utils.text import slugify
+from git import InvalidGitRepositoryError, Repo
+
+from geniza.annotations.models import Annotation, annotations_to_list
+from geniza.corpus.models import Document
+from geniza.footnotes.models import Footnote
+
+
+class AnnotationExporter:
+    def __init__(self, pgpids=None, stdout=None, push_changes=True):
+        if not getattr(settings, "ANNOTATION_BACKUP_PATH") or not getattr(
+            settings, "ANNOTATION_BACKUP_GITREPO"
+        ):
+            raise Exception(
+                "Settings for ANNOTATION_BACKUP_PATH and ANNOTATION_BACKUP_GITREPO are required"
+            )
+
+        base_output_dir = settings.ANNOTATION_BACKUP_PATH
+        # initialize git repo interface for output path
+        if not push_changes:
+            # no sync or cloning
+            repo = Repo(base_output_dir)
+        else:
+            repo = self.setup_repo(base_output_dir, settings.ANNOTATION_BACKUP_GITREPO)
+        annotations_output_dir = os.path.join(base_output_dir, "annotations")
+
+        # define paths and ensure directories exist for compiled transcription
+        transcription_output_dir = {}
+        for output_format in ["txt", "html"]:
+            format_path = os.path.join(base_output_dir, "transcriptions", output_format)
+            transcription_output_dir[output_format] = format_path
+            os.makedirs(format_path, exist_ok=True)
+
+        # identify content to backup based on documents with digital editions
+
+        docs = Document.objects.filter(
+            footnotes__doc_relation__contains=Footnote.DIGITAL_EDITION
+        ).distinct()
+        # if ids are specified, limit to just those documents
+        if pgpids:
+            docs = docs.filter(pk__in=pgpids)
+        # use logging? and/or pass in stdout when running from command?
+        if stdout:
+            stdout.write(
+                "Backing up annotations for %d document%s with digital edition"
+                % (docs.count(), pluralize(docs))
+            )
+
+        # keep track of exported files to be committed to git
+        updated_filenames = []
+
+        # TODO: break out into smaller methods
+
+        for document in docs:
+            if stdout:
+                stdout.write(document)
+            # use PGPID for annotation directory name
+            # path based on recommended uri pattern from the spec
+            # {prefix}/{identifier}/list/{name}
+            output_dir = os.path.join(annotations_output_dir, str(document.id), "list")
+            # ensure output directory exists
+            os.makedirs(output_dir, exist_ok=True)
+
+            # find all annotations for this document
+            # sort by schema:position if available
+            annos = Annotation.objects.filter(
+                content__target__source__partOf__id=document.manifest_uri
+            ).order_by("content__schema:position", "created")
+
+            # aggregate annotations by canvas id
+            # for annotation list backup, we don't need to segment
+            # by motivation, source, etc; just group by canvas
+            annos_by_canvas = defaultdict(list)
+            for a in annos:
+                annos_by_canvas[a.target_source_id].append(a)
+
+            # create and save one AnnotationList per canvas
+            # with all associated annotations, as a backup
+            # that could be imported into any w3c annotation server
+
+            for canvas, annotations in annos_by_canvas.items():
+                annolist_name = self.annotation_list_name(canvas)
+                annolist_out_path = os.path.join(output_dir, "%s.json" % annolist_name)
+                updated_filenames.append(annolist_out_path)
+                with open(annolist_out_path, "w") as outfile:
+                    json.dump(
+                        annotations_to_list(annotations, uri="test"), outfile, indent=2
+                    )
+
+            # load django template for rendering html export
+            html_template = get_template("corpus/transcription_export.html")
+
+            # for convenience and more readable versioning, also generate
+            # text and html transcription files
+            for edition in document.digital_editions():
+                # print(edition, edition.source)
+                # filename based on pgpid and source authors;
+                # explicitly label as transcription for context
+                base_filename = self.transcription_filename(document, edition.source)
+                for output_format in ["txt", "html"]:
+                    # put in the appropriate transription dir by format,
+                    # use format as file extension
+                    outfile_path = os.path.join(
+                        transcription_output_dir[output_format],
+                        "%s.%s" % (base_filename, output_format),
+                    )
+                    updated_filenames.append(outfile_path)
+                    with open(outfile_path, "w") as outfile:
+                        if output_format == "html":
+                            content = html_template.render(
+                                {"document": document, "edition": edition}
+                            )
+                            outfile.write(content)
+                        else:
+                            # text version is meant for corpus analytics,
+                            # so should be minimal and content only
+                            outfile.write(edition.content_text)
+
+        # prep updated files for commit to git repo
+        #  - adjust paths so they are relative to git root
+        updated_filenames = [
+            f.replace(base_output_dir, "").lstrip("/") for f in updated_filenames
+        ]
+        repo.index.add(updated_filenames)
+        if repo.is_dirty():
+            # print("Committing changes")
+            repo.index.commit("Automated data export from PGP")
+            if push_changes:
+                try:
+                    origin = repo.remote(name="origin")
+                    # pull any remote changes
+                    origin.pull()
+                    # push data updates
+                    # TODO: how to tell repo object not to output hashes?
+                    result = origin.push()
+                    # output push summary in case anything bad happens
+                    for pushinfo in result:
+                        print(pushinfo.summary)
+                except ValueError:
+                    if stdout:
+                        stdout.write("No origin repository, unable to push updates")
+        # otherwise, no changes to push
+
+    def annotation_list_name(self, canvas_uri):
+        # per annotation spec, annotation list name must uniquely distinguish
+        # it from  all other lists, and is typically the same name as the canvas.
+
+        # canvas uris vary depending on source:
+        # https://cudl.lib.cam.ac.uk/iiif/MS-TS-NS-00321-00008/canvas/1
+        # https://figgy.princeton.edu/concern/scanned_resources/f9eb5730-035c-420a-bf42-13190f97c10d/manifest/canvas/cfd65bb6-7ff5-47e8-9e92-29dd0e05baf2
+        # https://princetongenizalab.github.io/iiif-bodleian-a/manifests/canvas/1.json
+        # https://digi.ub.uni-heidelberg.de/diglit/iiif/codheidorient78/canvas/0001
+
+        parsed_url = urlparse(canvas_uri)
+
+        # in most cases, we can use first portion of hostname to identify source
+        # (cudl, figgy, princetongenizalab)
+        if "heidelberg" in parsed_url.hostname:
+            prefix = "heidelberg"
+        else:
+            prefix = parsed_url.hostname.split(".")[0]
+
+        # figgy uses uuids; canvas id is last portion of path and is reliably unique
+        if "figgy" in parsed_url.hostname:
+            path = parsed_url.path.split("/")[-1]
+        else:
+            # otherwise use the portion of the path after any iiif prefix
+            # or full path if it does not include /iiif/
+            path = parsed_url.path.partition("/iiif/")[2] or parsed_url.path
+            # remove trailing any slash and replace the rest with _
+            # (using underscore because cudl manifest ids use dashes)
+            path = path.rstrip("/").replace("/", "_")
+
+        return "_".join([prefix, path])
+
+    def transcription_filename(self, document, source):
+        # filename based on pgpid and source authors;
+        # explicitly label as transcription for context
+        authors = [a.creator.last_name for a in source.authorship_set.all()] or [
+            "unknown author"
+        ]
+
+        return "PGPID%s_s%d_%s_transcription" % (
+            document.id,
+            source.id,
+            slugify(" ".join(authors)),
+        )
+
+    def setup_repo(self, local_path, remote_git_url):
+        """ensure git repository has been cloned and content is up to date"""
+
+        # if directory does not yet exist, clone repository
+        if not os.path.isdir(local_path):
+            if self.verbosity >= self.v_normal:
+                if stdout:
+                    stdout.write("Cloning annotations export repository")
+            # clone remote to configured path
+            Repo.clone_from(url=remote_git_url, to_path=local_path)
+            # then initialize the repo object
+            repo = Repo(local_path)
+        else:
+            # pull any changes since the last run
+            repo = Repo(local_path)
+            repo.remotes.origin.pull()
+
+        return repo
