@@ -274,7 +274,7 @@ class TestFootnote:
                 "body": [{"label": "A label", "value": "Second annotation!"}],
             }
         )
-        digital_edition = document.footnotes.create(
+        digital_edition = document.footnotes.get(
             source=source, doc_relation=[Footnote.DIGITAL_EDITION]
         )
         assert isinstance(digital_edition.content_html, dict)
@@ -308,7 +308,7 @@ class TestFootnote:
                 "body": [{"value": "<ol><li>one</li><li>two</li></ol><p>test</p>"}],
             }
         )
-        digital_edition = document.footnotes.create(
+        digital_edition = document.footnotes.get(
             source=source, doc_relation=[Footnote.DIGITAL_EDITION]
         )
         assert (
@@ -325,7 +325,7 @@ class TestFootnote:
                 "body": [{"value": '<ol start="5"><li>one</li><li>two</li></ol>'}],
             }
         )
-        digital_edition = doc2.footnotes.create(
+        digital_edition = doc2.footnotes.get(
             source=source, doc_relation=[Footnote.DIGITAL_EDITION]
         )
         assert (
@@ -342,7 +342,7 @@ class TestFootnote:
                 "body": [{"value": '<ul start="5"><li>one</li><li>two</li></ul>'}],
             }
         )
-        digital_edition = doc3.footnotes.create(
+        digital_edition = doc3.footnotes.get(
             source=source, doc_relation=[Footnote.DIGITAL_EDITION]
         )
         assert "li value" not in Footnote.explicit_line_numbers(
