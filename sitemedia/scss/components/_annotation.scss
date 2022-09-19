@@ -41,6 +41,10 @@ main.annotating {
             margin-bottom: 2rem;
         }
     }
+    #itt-panel .img.placeholder .deep-zoom-container {
+        background-color: var(--background-gray);
+        opacity: 1;
+    }
 }
 
 span.select2-container li[class^="select2"],

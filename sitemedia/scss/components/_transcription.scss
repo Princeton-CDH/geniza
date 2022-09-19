@@ -426,7 +426,7 @@
                 display: none;
             }
             .deep-zoom-container {
-                background-color: var(--background-gray);
+                opacity: 0;
             }
         }
         @include breakpoints.for-tablet-landscape-up {
