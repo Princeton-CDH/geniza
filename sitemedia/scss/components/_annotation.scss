@@ -3,6 +3,7 @@
 @use "../base/spacing";
 @use "../base/typography";
 
+// tahqiq annotation container
 div.annotate {
     display: flex;
     flex-flow: column;
@@ -25,6 +26,7 @@ div.annotate {
     }
 }
 
+// "add new transcription" --> scholarship record choice page
 main.addsource {
     h2 {
         margin-top: 1rem;
@@ -34,6 +36,7 @@ main.addsource {
     }
 }
 
+// annotation editor
 main.annotating {
     span#formatted-title {
         margin-bottom: 1rem;
@@ -41,12 +44,14 @@ main.annotating {
             margin-bottom: 2rem;
         }
     }
+    // style placeholder images with gray background in editor
     #itt-panel .img.placeholder .deep-zoom-container {
         background-color: var(--background-gray);
         opacity: 1;
     }
 }
 
+// dropdown for scholarship record choice
 span.select2-container li[class^="select2"],
 span.select2-container span[class^="select2"],
 main.addsource .select2-container--default .select2-selection--single,
