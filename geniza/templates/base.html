@@ -81,9 +81,9 @@
                 <div class="controls">
                     {% include "snippets/language_switcher.html" %}
                 </div>
-                {% include "nav.html" %}
+                {% include "snippets/theme_toggle.html" %}
             </header>
-            {% include "snippets/theme_toggle.html" %}
+            {% include "nav.html" %}
 
             <turbo-frame id="main" data-turbo-action="advance">
                 <main id="main-content"  class="{{ page_type }}{% block page_type %}{% endblock page_type %}">{% block main %}{% endblock main %}</main>

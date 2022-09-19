@@ -7,10 +7,7 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-header {
-    z-index: 5;
-}
-#site-nav {
+nav#site-nav {
     display: flex;
     flex-flow: row wrap;
     z-index: 6;
