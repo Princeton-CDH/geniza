@@ -439,6 +439,6 @@ html[dir="rtl"].dark-mode footer {
 }
 
 // Hebrew variant
-html[lange="he"] footer {
+html[lang="he"] footer {
     @include typography.meta-he;
 }
