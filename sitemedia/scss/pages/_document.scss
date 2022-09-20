@@ -172,3 +172,15 @@ main.document {
         }
     }
 }
+
+// Hebrew variant
+html[lang="he"] main.document {
+    .container section.description h3 {
+        @include typography.body-he;
+    }
+    .container dl.metadata-list,
+    .container section.input-date,
+    dl.metadata-list.tertiary dt#permalink {
+        @include typography.meta-he;
+    }
+}

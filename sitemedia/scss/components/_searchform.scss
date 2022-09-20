@@ -636,3 +636,15 @@ html[dir="rtl"] main.search form {
         }
     }
 }
+
+// Hebrew variant
+html[lang="he"] main.search form {
+    a#filters-button,
+    a#close-filters-button {
+        @include typography.body-he;
+    }
+    fieldset#filters > label:not(.date-range-label) span.count,
+    ul#search-errors li {
+        @include typography.meta-he;
+    }
+}

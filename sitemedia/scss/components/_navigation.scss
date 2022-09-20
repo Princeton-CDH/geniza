@@ -714,3 +714,14 @@ html[dir="rtl"].dark-mode #site-nav {
         @include dark-hover-rtl;
     }
 }
+
+// Hebrew variant
+html[lang="he"] #site-nav {
+    li.menu-item a,
+    li.menu-item a[aria-current="page"],
+    ul.sub-menu li.menu-item a,
+    ul.sub-menu li.menu-item a[aria-current="page"],
+    ul.sub-menu li.menu-label {
+        @include typography.mobile-menu-he;
+    }
+}

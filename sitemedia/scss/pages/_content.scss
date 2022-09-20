@@ -118,3 +118,12 @@ main.homepage {
         }
     }
 }
+
+// Hebrew variant
+html[lang="he"] main.content-page,
+html[lang="he"] main.homepage {
+    p b,
+    p i {
+        @include typography.body-he;
+    }
+}

@@ -13,3 +13,8 @@ dl.metadata-list {
         word-break: break-word;
     }
 }
+
+// Hebrew variant
+html[lang="he"] dl.metadata-list {
+    @include typography.meta-he;
+}

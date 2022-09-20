@@ -54,6 +54,9 @@ body {
     flex-direction: column;
     min-height: 100vh;
 }
+html[lang="he"] body {
+    @include typography.body-he;
+}
 
 // Center-align sections of main content using flexbox.
 main {
@@ -67,13 +70,22 @@ main {
 h1 {
     @include typography.headline-1;
 }
+html[lang="he"] h1 {
+    @include typography.headline-1-he;
+}
 
 h2 {
     @include typography.headline-2;
 }
+html[lang="he"] h2 {
+    @include typography.headline-2-he;
+}
 
 h3 {
     @include typography.headline-3;
+}
+html[lang="he"] h3 {
+    @include typography.headline-3-he;
 }
 
 // Any links without a class (i.e. in body text) get the default link style;

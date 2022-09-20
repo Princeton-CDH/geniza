@@ -437,3 +437,8 @@ html[dir="rtl"].light-mode footer {
 html[dir="rtl"].dark-mode footer {
     @include dark-footer-rtl;
 }
+
+// Hebrew variant
+html[lange="he"] footer {
+    @include typography.meta-he;
+}

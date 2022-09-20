@@ -54,3 +54,11 @@
         color: var(--on-background-alt);
     }
 }
+
+// Hebrew variant
+html[lang="he"] .citation {
+    @include typography.body-he;
+    dd.relation {
+        @include typography.meta-he;
+    }
+}
