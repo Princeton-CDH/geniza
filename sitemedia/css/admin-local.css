@@ -136,6 +136,57 @@ a#needsreview:target {
     right: 163px;
 }
 
+/* remove overlays for non-document images in admin */
+fieldset.transcriptions-field
+    #itt-panel
+    .panel-container
+    div.img.excluded
+    .deep-zoom-container::after {
+    display: none;
+}
+
+/* Full width non-document images in admin */
+fieldset.transcriptions-field
+    #itt-panel
+    .panel-container
+    div.img.excluded
+    .deep-zoom-container {
+    width: 100%;
+    max-width: none;
+    max-height: none;
+}
+fieldset.transcriptions-field
+    #itt-panel
+    .panel-container
+    div.img.excluded
+    .deep-zoom-container
+    img {
+    width: 640px;
+    max-width: 100%;
+    max-height: none;
+}
+
+/* Selected/included images should have yellow border in admin */
+fieldset.transcriptions-field
+    #itt-panel
+    .panel-container
+    div.img:not(.excluded)
+    .deep-zoom-container
+    img {
+    box-sizing: border-box;
+    border: 5px solid var(--accent);
+}
+
+/* unhide placeholder images in admin */
+fieldset.transcriptions-field
+    #itt-panel
+    .panel-container
+    .img.placeholder
+    .deep-zoom-container {
+    background-color: var(--background-gray);
+    opacity: 1;
+}
+
 .transcription li::marker {
     direction: rtl;
 }

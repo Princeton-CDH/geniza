@@ -27,7 +27,7 @@ from geniza.corpus.models import (
     TextBlock,
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
-from geniza.corpus.views import DocumentMerge
+from geniza.corpus.views import DocumentMerge, placeholder_canvas
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.footnotes.models import Footnote
 
@@ -388,6 +388,23 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         # if there is an error converting the date
         obj.request = request
         super().save_model(request, obj, form, change)
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        """Customize this model's change_view to add IIIF images to context for
+        transcription viewer, then execute existing change_view"""
+        document = self.get_object(request, object_id)
+        # TODO: Make this DRY
+        images = document.iiif_images()
+        for ed in document.digital_editions().all():
+            for canvas_uri in ed.content_html.keys():
+                if canvas_uri not in images:
+                    # use placeholder image for each canvas not in iiif_images
+                    images[canvas_uri] = placeholder_canvas
+        if extra_context:
+            extra_context.update({"images": images})
+        else:
+            extra_context = {"images": images}
+        return super().change_view(request, object_id, form_url, extra_context)
 
     # CSV EXPORT -------------------------------------------------------------
 
