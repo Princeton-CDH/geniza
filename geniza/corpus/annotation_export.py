@@ -16,7 +16,10 @@ from geniza.footnotes.models import Footnote
 
 
 class AnnotationExporter:
-    def __init__(self, pgpids=None, stdout=None, push_changes=True):
+    v_normal = 1
+
+    def __init__(self, pgpids=None, stdout=None, push_changes=True, verbosity=None):
+        # check that required settings are available
         if not getattr(settings, "ANNOTATION_BACKUP_PATH") or not getattr(
             settings, "ANNOTATION_BACKUP_GITREPO"
         ):
@@ -24,33 +27,43 @@ class AnnotationExporter:
                 "Settings for ANNOTATION_BACKUP_PATH and ANNOTATION_BACKUP_GITREPO are required"
             )
 
-        base_output_dir = settings.ANNOTATION_BACKUP_PATH
+        self.base_output_dir = settings.ANNOTATION_BACKUP_PATH
+        self.pgpids = pgpids
+        self.push_changes = push_changes
+        self.verbosity = verbosity or self.v_normal
+        self.stdout = stdout
+
+    def export(self):
+
         # initialize git repo interface for output path
-        if not push_changes:
+        if not self.push_changes:
             # no sync or cloning
-            repo = Repo(base_output_dir)
+            self.repo = Repo(base_output_dir)
         else:
-            repo = self.setup_repo(base_output_dir, settings.ANNOTATION_BACKUP_GITREPO)
-        annotations_output_dir = os.path.join(base_output_dir, "annotations")
+            self.repo = self.setup_repo(
+                self.base_output_dir, settings.ANNOTATION_BACKUP_GITREPO
+            )
+        annotations_output_dir = os.path.join(self.base_output_dir, "annotations")
 
         # define paths and ensure directories exist for compiled transcription
         transcription_output_dir = {}
         for output_format in ["txt", "html"]:
-            format_path = os.path.join(base_output_dir, "transcriptions", output_format)
+            format_path = os.path.join(
+                self.base_output_dir, "transcriptions", output_format
+            )
             transcription_output_dir[output_format] = format_path
             os.makedirs(format_path, exist_ok=True)
 
         # identify content to backup based on documents with digital editions
-
         docs = Document.objects.filter(
             footnotes__doc_relation__contains=Footnote.DIGITAL_EDITION
         ).distinct()
         # if ids are specified, limit to just those documents
-        if pgpids:
-            docs = docs.filter(pk__in=pgpids)
+        if self.pgpids:
+            docs = docs.filter(pk__in=self.pgpids)
         # use logging? and/or pass in stdout when running from command?
-        if stdout:
-            stdout.write(
+        if self.stdout:
+            self.stdout.write(
                 "Backing up annotations for %d document%s with digital edition"
                 % (docs.count(), pluralize(docs))
             )
@@ -61,8 +74,8 @@ class AnnotationExporter:
         # TODO: break out into smaller methods
 
         for document in docs:
-            if stdout:
-                stdout.write(document)
+            if self.stdout:
+                self.stdout.write(document)
             # use PGPID for annotation directory name
             # path based on recommended uri pattern from the spec
             # {prefix}/{identifier}/list/{name}
@@ -88,7 +101,7 @@ class AnnotationExporter:
             # that could be imported into any w3c annotation server
 
             for canvas, annotations in annos_by_canvas.items():
-                annolist_name = self.annotation_list_name(canvas)
+                annolist_name = AnnotationExporter.annotation_list_name(canvas)
                 annolist_out_path = os.path.join(output_dir, "%s.json" % annolist_name)
                 updated_filenames.append(annolist_out_path)
                 with open(annolist_out_path, "w") as outfile:
@@ -105,7 +118,9 @@ class AnnotationExporter:
                 # print(edition, edition.source)
                 # filename based on pgpid and source authors;
                 # explicitly label as transcription for context
-                base_filename = self.transcription_filename(document, edition.source)
+                base_filename = AnnotationExporter.transcription_filename(
+                    document, edition.source
+                )
                 for output_format in ["txt", "html"]:
                     # put in the appropriate transription dir by format,
                     # use format as file extension
@@ -125,16 +140,16 @@ class AnnotationExporter:
                             # so should be minimal and content only
                             outfile.write(edition.content_text)
 
+    def commit_changed_files(self, updated_filenames):
         # prep updated files for commit to git repo
         #  - adjust paths so they are relative to git root
         updated_filenames = [
-            f.replace(base_output_dir, "").lstrip("/") for f in updated_filenames
+            f.replace(self.base_output_dir, "").lstrip("/") for f in updated_filenames
         ]
-        repo.index.add(updated_filenames)
-        if repo.is_dirty():
-            # print("Committing changes")
+        self.repo.index.add(updated_filenames)
+        if self.repo.is_dirty():
             repo.index.commit("Automated data export from PGP")
-            if push_changes:
+            if self.push_changes:
                 try:
                     origin = repo.remote(name="origin")
                     # pull any remote changes
@@ -143,14 +158,16 @@ class AnnotationExporter:
                     # TODO: how to tell repo object not to output hashes?
                     result = origin.push()
                     # output push summary in case anything bad happens
-                    for pushinfo in result:
-                        print(pushinfo.summary)
+                    # maybe logger debug output?
+                    # for pushinfo in result:
+                    # print(pushinfo.summary)
                 except ValueError:
                     if stdout:
                         stdout.write("No origin repository, unable to push updates")
         # otherwise, no changes to push
 
-    def annotation_list_name(self, canvas_uri):
+    @staticmethod
+    def annotation_list_name(canvas_uri):
         # per annotation spec, annotation list name must uniquely distinguish
         # it from  all other lists, and is typically the same name as the canvas.
 
@@ -169,20 +186,24 @@ class AnnotationExporter:
         else:
             prefix = parsed_url.hostname.split(".")[0]
 
+        # remove any extension (e.g., for static manifests)
+        path = os.path.splitext(parsed_url.path)[0]
+
         # figgy uses uuids; canvas id is last portion of path and is reliably unique
         if "figgy" in parsed_url.hostname:
-            path = parsed_url.path.split("/")[-1]
+            path = path.split("/")[-1]
         else:
             # otherwise use the portion of the path after any iiif prefix
             # or full path if it does not include /iiif/
-            path = parsed_url.path.partition("/iiif/")[2] or parsed_url.path
+            path = path.partition("/iiif/")[2] or parsed_url.path
             # remove trailing any slash and replace the rest with _
             # (using underscore because cudl manifest ids use dashes)
             path = path.rstrip("/").replace("/", "_")
 
         return "_".join([prefix, path])
 
-    def transcription_filename(self, document, source):
+    @staticmethod
+    def transcription_filename(document, source):
         # filename based on pgpid and source authors;
         # explicitly label as transcription for context
         authors = [a.creator.last_name for a in source.authorship_set.all()] or [
@@ -201,8 +222,8 @@ class AnnotationExporter:
         # if directory does not yet exist, clone repository
         if not os.path.isdir(local_path):
             if self.verbosity >= self.v_normal:
-                if stdout:
-                    stdout.write("Cloning annotations export repository")
+                if self.stdout:
+                    self.stdout.write("Cloning annotations export repository")
             # clone remote to configured path
             Repo.clone_from(url=remote_git_url, to_path=local_path)
             # then initialize the repo object

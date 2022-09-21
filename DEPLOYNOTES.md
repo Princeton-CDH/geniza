@@ -2,7 +2,7 @@
 
 ### transcription migration & editor (version TBD)
 
--   Must configure **ANNOTATION_BACKUP_PATH** and **ANNOTATION_BACKUP_GITREPO** in local settings.
+-   Must configure **ANNOTATION_BACKUP_PATH** and **ANNOTATION_BACKUP_GITREPO** in local settings. For proper setup, the directory at **ANNOTATION_BACKUP_PATH** should not exist when first run, but the containing directory should.
 -   Migrate transcription content from TEI xml to the new IIIF annotation
     format: `python manage.py tei_to_annotation -v 0`
 -   Reindex after the migration: `python manage.py index`
