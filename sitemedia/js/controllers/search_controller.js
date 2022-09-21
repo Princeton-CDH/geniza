@@ -5,14 +5,7 @@ import { ApplicationController, useDebounce } from "stimulus-use";
 import * as Turbo from "@hotwired/turbo";
 
 export default class extends Controller {
-    static targets = [
-        "query",
-        "sort",
-        "sortLabel",
-        "sortDetails",
-        "filterModal",
-        "doctypeFilter",
-    ];
+    static targets = ["query", "sort", "filterModal", "doctypeFilter"];
     static debounces = ["update"];
 
     connect() {
@@ -96,59 +89,15 @@ export default class extends Controller {
         this.update();
     }
 
-    // Sort element functions
-
-    changeSort(e) {
-        /*
-         * Event listener to mimic <select> menu "header" functionality in a details/summary with radio
-         * button inputs. Without this, the radio buttons will still work, but changes to the selected
-         * option will not be visible in the collapsed <summary> until the form is submitted and the page
-         * reloads.
-         */
-        this.setSortLabel(e.currentTarget.parentElement.textContent);
-    }
-
-    setSortLabel(label) {
-        this.sortLabelTarget.children[0].innerHTML = label;
-    }
-
-    keyboardCloseSort(e) {
-        // exit the list and submit on enter/space
-        if (
-            this.sortDetailsTarget.open &&
-            (e.code === "Enter" ||
-                e.code === "Space" ||
-                (!e.shiftKey && e.code === "Tab")) // Tab out of a radio button = exiting the list
-        ) {
-            this.sortDetailsTarget.removeAttribute("open");
-        }
-    }
-
-    shiftTabCloseSort(e) {
-        // Shift-tab out of the summary = exiting the list
-        if (this.sortDetailsTarget.open && e.shiftKey && e.code === "Tab") {
-            this.sortDetailsTarget.removeAttribute("open");
-        }
-    }
-
-    clickCloseSort(e) {
-        // Event listener to close the sort <details> element when a click is registered outside
-        // of it. This needs to be on the whole document because the click could be from anywhere!
-        if (
-            this.sortDetailsTarget.open &&
-            !this.sortDetailsTarget.contains(e.target)
-        ) {
-            this.sortDetailsTarget.removeAttribute("open");
-        }
-    }
+    // Sort element functions (enable/disable relevance)
 
     sortTargetConnected() {
-        // when sort targets are first connected,
-        // check and disable relevance sort if appropriate
-        this.relevanceSortElement = this.sortTargets.find(
+        // when sort target is first connected,
+        // disable relevance sort if appropriate
+        this.relevanceSortElement = Array.from(this.sortTarget.options).find(
             (target) => target.value === "relevance"
         );
-        this.defaultSortElement = this.sortTargets.find(
+        this.defaultSortElement = Array.from(this.sortTarget.options).find(
             (target) => target.value === "random"
         );
         this.autoUpdateSort();
@@ -158,7 +107,10 @@ export default class extends Controller {
         // when query is empty, disable sort by relevance
         if (this.queryTarget.value.trim() == "") {
             this.disableRelevanceSort();
-        } else if (event && this.defaultSortElement.checked) {
+        } else if (
+            event &&
+            this.sortTarget.value == this.defaultSortElement.value
+        ) {
             // if this was triggered by an event and not in sortTargetConnected,
             // and the sort is currently the default, sort by relevance
             this.sortByRelevance();
@@ -166,25 +118,15 @@ export default class extends Controller {
     }
 
     sortByRelevance() {
-        this.relevanceSortElement.checked = true;
+        this.sortTarget.value = this.relevanceSortElement.value;
         this.relevanceSortElement.disabled = false;
         this.relevanceSortElement.ariaDisabled = false;
-        this.setSortLabel(this.relevanceSortElement.parentElement.textContent);
-        this.sortTargets
-            .filter((el) => el.value !== "relevance")
-            .forEach((radio) => {
-                radio.checked = false;
-            });
     }
 
     disableRelevanceSort() {
-        // if relevance sort was checked, set back to default
-        if (this.relevanceSortElement.checked) {
-            this.relevanceSortElement.checked = false;
-            this.defaultSortElement.checked = true;
-            this.setSortLabel(
-                this.defaultSortElement.parentElement.textContent
-            );
+        // if relevance sort was selected, set back to default
+        if (this.sortTarget.value == this.relevanceSortElement.value) {
+            this.sortTarget.value = this.defaultSortElement.value;
         }
         // disable relevance sort
         this.relevanceSortElement.disabled = true;

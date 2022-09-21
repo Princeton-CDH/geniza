@@ -1,8 +1,6 @@
-import re
 from unittest.mock import Mock
 
 import pytest
-from django import forms
 
 from geniza.corpus.forms import (
     CheckboxSelectWithCount,
@@ -10,36 +8,8 @@ from geniza.corpus.forms import (
     DocumentMergeForm,
     DocumentSearchForm,
     FacetChoiceField,
-    RadioSelectWithDisabled,
 )
 from geniza.corpus.models import Document
-
-
-class TestSelectedWithDisabled:
-    # test adapted from ppa-django/mep-django
-
-    class SampleForm(forms.Form):
-        """Build a test form use the widget"""
-
-        CHOICES = (
-            ("no", {"label": "no select", "disabled": True}),
-            ("yes", "yes can select"),
-        )
-
-        yes_no = forms.ChoiceField(choices=CHOICES, widget=RadioSelectWithDisabled)
-
-    def test_create_option(self):
-        form = self.SampleForm()
-        rendered = form.as_p()
-        # no is disabled
-        no_input = re.search(
-            r"\<[ A-Za-z0-9\=\"\_\-]+value=\"no\"[ A-Za-z0-9\=\"\_\-]+>", rendered
-        )
-        yes_input = re.search(
-            r"\<[ A-Za-z0-9\=\"\_\-]+value=\"yes\"[ A-Za-z0-9\=\"\_\-]+>", rendered
-        )
-        assert 'disabled="disabled"' in no_input.group()
-        assert 'disabled="disabled"' not in yes_input.group()
 
 
 class TestFacetChoiceField:
