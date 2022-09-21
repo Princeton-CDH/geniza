@@ -19,6 +19,7 @@ from geniza.common.admin import (
 )
 from geniza.common.fields import NaturalSortField, RangeField, RangeWidget
 from geniza.common.middleware import PublicLocaleMiddleware
+from geniza.common.models import UserProfile
 from geniza.common.utils import absolutize_url, custom_tag_string
 from geniza.corpus.models import Document
 
@@ -160,6 +161,12 @@ class TestNaturalSortField:
         testmodel.name = "Test12.3"
         field_instance = SortModelTester._meta.get_field("name_sort")
         assert field_instance.pre_save(testmodel, None) == "test000012.000003"
+
+
+@pytest.mark.django_db
+def test_userprofile_str(admin_user):
+    profile = UserProfile.objects.create(user=admin_user)
+    assert str(profile) == "User profile for %s" % admin_user
 
 
 # migration test case adapted from

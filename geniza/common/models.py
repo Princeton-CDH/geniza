@@ -1,4 +1,6 @@
+from django.contrib.auth.models import User
 from django.db import models
+from django.utils.safestring import mark_safe
 
 
 # Create your models here.
@@ -31,3 +33,30 @@ class TrackChangesModel(models.Model):
     def initial_value(self, field):
         """return the initial value for a field"""
         return self.__initial[field]
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, related_name="profile", on_delete=models.CASCADE)
+    github_coauthor = models.CharField(
+        "GitHub Co-Author Email",
+        help_text=mark_safe(
+            """Co-author information to credit your contributions
+        in GitHub Backups.
+        See <a href='https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors'>GitHub documentation</a>
+        for instructions on finding or setting yours."""
+        ),
+        blank=True,
+        max_length=255,
+    )
+    # ref by string to avoid circular import with track changes model
+    creator = models.OneToOneField(
+        "footnotes.Creator",
+        null=True,
+        blank=True,
+        help_text="Author record for scholarship records, for users who are also authors",
+        on_delete=models.SET_NULL,
+    )
+
+    def __str__(self):
+        # needed for display label in admin
+        return "User profile for %s" % (self.user)
