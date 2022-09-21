@@ -122,6 +122,7 @@ class TestAnnotationExporter(TestCase):
             mock_output_msg.assert_called_with("info", logging.INFO)
 
 
+@override_settings(ANNOTATION_BACKUP_PATH="/tmp/anno-export")
 def test_output_message_logger(caplog):
     # use caplog fixture to inspect logger
     anno_ex = AnnotationExporter()

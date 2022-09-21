@@ -80,7 +80,7 @@ def create_or_delete_footnote(instance, **kwargs):
             logger.debug("Creating new digital edition footnote (new annotation)")
 
     # update annotation backup if configured (don't run for tests!)
-    if hasattr(settings, "ANNOTATION_BACKUP_PATH"):
+    if getattr(settings, "ANNOTATION_BACKUP_PATH", None):
         start = time.time()
         AnnotationExporter(pgpids=[document.pk], push_changes=False).export()
         logger.debug(

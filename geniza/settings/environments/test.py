@@ -30,3 +30,6 @@ ALLOWED_HOSTS = ["*"]
 
 # enable django-dbml for generating dbdocs
 INSTALLED_APPS.append("django_dbml")
+
+# unset to disable export signal handler in tests
+ANNOTATION_BACKUP_PATH = None
