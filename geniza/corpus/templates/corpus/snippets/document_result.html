@@ -29,9 +29,11 @@
                 {% endif %}
                 {# Translators: Date document was first added to the PGP #}
                 <dt>{% translate "In PGP since" %}
-                    <dd>{{ document.input_year|default:'unknown' }}</dd>
+                    {# Translators: label for unknown date for date added to PGP #}
+                    {% translate "unknown" as unknown %}
+                    <dd>{{ document.input_year|default:unknown }}</dd>
                     {# NOTE: Intentionally left untranslated #}
-                    <dt>PGP ID</dt>
+                    <dt lang="en">PGP ID</dt>
                     <dd>{{ document.pgpid }}</dd>
                 </dl>
 
@@ -154,7 +156,10 @@
                 </ul>
             {% endif %}
             {# view link #}
-            <a class="view-link" href="{% url 'corpus:document' document.pgpid %}" data-turbo-frame="main">
+
+            {# Translators: screen-reader label for "view document details" link #}
+            {% blocktranslate asvar aria_view_details with document_label=document.type|add:": "|add:document.shelfmark %}View details for {{ document_label }}{% endblocktranslate %}
+            <a class="view-link" href="{% url 'corpus:document' document.pgpid %}" data-turbo-frame="main" aria-label="{{ aria_view_details }}">
                 <span>{% translate 'View document details' %}</span>
             </a>
         </li>

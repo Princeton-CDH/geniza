@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
-"Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-10-14 12:15-0400\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-09-21 18:53-0400\n"
 "PO-Revision-Date: 2022-08-01 14:25\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -199,7 +199,7 @@ msgstr[1] ""
 
 #. Translators: label for tags on a document
 #: corpus/templates/corpus/document_detail.html:109
-#: corpus/templates/corpus/snippets/document_result.html:112
+#: corpus/templates/corpus/snippets/document_result.html:109
 msgid "Tags"
 msgstr ""
 
@@ -223,7 +223,7 @@ msgid "Description"
 msgstr ""
 
 #. Translators: label for permanent link to a document
-#: corpus/templates/corpus/document_detail.html:146
+#: corpus/templates/corpus/document_detail.html:159
 msgid "Permalink"
 msgstr ""
 
@@ -302,8 +302,13 @@ msgstr ""
 msgid "In PGP since"
 msgstr ""
 
+#. Translators: label for unknown date for date added to PGP
+#: corpus/templates/corpus/snippets/document_result.html:33
+msgid "unknown"
+msgstr ""
+
 #. Translators: number of editions for this document
-#: corpus/templates/corpus/snippets/document_result.html:77
+#: corpus/templates/corpus/snippets/document_result.html:74
 #, python-format
 msgid "1 Transcription"
 msgid_plural "%(counter)s Transcriptions"
@@ -311,7 +316,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: number of translations for this document
-#: corpus/templates/corpus/snippets/document_result.html:87
+#: corpus/templates/corpus/snippets/document_result.html:84
 #, python-format
 msgid "1 Translation"
 msgid_plural "%(counter)s Translations"
@@ -319,19 +324,25 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: number of sources that discuss this document
-#: corpus/templates/corpus/snippets/document_result.html:97
+#: corpus/templates/corpus/snippets/document_result.html:94
 #, python-format
 msgid "1 Discussion"
 msgid_plural "%(counter)s Discussions"
 msgstr[0] ""
 msgstr[1] ""
 
-#: corpus/templates/corpus/snippets/document_result.html:105
+#: corpus/templates/corpus/snippets/document_result.html:102
 msgid "No Scholarship Records"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_result.html:119
+#: corpus/templates/corpus/snippets/document_result.html:116
 msgid "more"
+msgstr ""
+
+#. Translators: screen-reader label for "view document details" link
+#: corpus/templates/corpus/snippets/document_result.html:136
+#, python-format
+msgid "View details for %(document_label)s"
 msgstr ""
 
 #: corpus/templates/corpus/snippets/document_result.html:138
