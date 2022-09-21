@@ -31,7 +31,6 @@ from geniza.corpus.views import (
     old_pgp_edition,
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
-    placeholder_canvas,
 )
 from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
@@ -131,7 +130,7 @@ class TestDocumentDetailView:
             # should create a dict with canvases as keys and placeholder in values
             assert len(placeholders) == 2
             assert list(placeholders.keys()) == ["canvas_1", "canvas_2"]
-            assert placeholders["canvas_1"] == placeholder_canvas
+            assert placeholders["canvas_1"] == Document.PLACEHOLDER_CANVAS
 
 
 @pytest.mark.django_db
@@ -1488,7 +1487,7 @@ class TestDocumentTranscribeView:
         assert len(response.context["images"]) == 2
         assert f"{document.permalink}iiif/canvas/1/" in response.context["images"]
         assertContains(response, f"{document.permalink}iiif/canvas/2/")
-        assertContains(response, placeholder_canvas["image"]["info"])
+        assertContains(response, Document.PLACEHOLDER_CANVAS["image"]["info"])
 
         # non-existent source_pk should 404
         response = admin_client.get(

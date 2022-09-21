@@ -389,6 +389,17 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         obj.request = request
         super().save_model(request, obj, form, change)
 
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        """Customize this model's change_view to add IIIF images to context for
+        transcription viewer, then execute existing change_view"""
+        document = self.get_object(request, object_id)
+        images = document.iiif_images(with_placeholders=True)
+        extra_ctx = extra_context or {}
+        extra_ctx.update({"images": images})
+        return super().change_view(
+            request, object_id, form_url, extra_context=extra_ctx
+        )
+
     # CSV EXPORT -------------------------------------------------------------
 
     def csv_filename(self):
