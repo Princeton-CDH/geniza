@@ -3,15 +3,14 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-09-08 11:23-0400\n"
-"PO-Revision-Date: 2022-09-06 14:04\n"
+"PO-Revision-Date: 2022-09-08 16:11\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
-"%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
 "X-Crowdin-Project: princeton-geniza-project\n"
 "X-Crowdin-Project-ID: 520356\n"
 "X-Crowdin-Language: he\n"
@@ -220,12 +219,10 @@ msgstr "תאריך קלט"
 #. Translators: Date document was first added to the PGP
 #: corpus/templates/corpus/document_detail.html:124
 #, python-format
-msgid ""
-"\n"
+msgid "\n"
 "                In PGP since %(date)s\n"
 "            "
-msgstr ""
-"\n"
+msgstr "\n"
 "נמצא בPGP מאז %(date)s\n"
 "            "
 
@@ -483,21 +480,13 @@ msgid "Discussion"
 msgstr "דיון"
 
 #: pages/models.py:13
-msgid ""
-"Alternative text for visually impaired users to\n"
+msgid "Alternative text for visually impaired users to\n"
 "briefly communicate the intended message of the image in this context."
-msgstr ""
-"טקסט אלטרנטיבי למשתמשים כבדי ראייה שמטרתו להעביר בתמצית את המסר של התצלום "
-"בהקשר זה."
+msgstr "טקסט אלטרנטיבי למשתמשים כבדי ראייה שמטרתו להעביר בתמצית את המסר של התצלום בהקשר זה."
 
 #: pages/models.py:44
-msgid ""
-"This text will only be read to     non-sighted users and should describe the "
-"major insights or     takeaways from the graphic. Multiple paragraphs are "
-"allowed."
-msgstr ""
-"טקסט זה יוקרא למשתמשים עיוורים בלבד ותכליתו לתאר את התובנות והמסרים המרכזיים "
-"שעולים מהתוכן הגרפי. ניתן לכלול מספר פסקאות."
+msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
+msgstr "טקסט זה יוקרא למשתמשים עיוורים בלבד ותכליתו לתאר את התובנות והמסרים המרכזיים שעולים מהתוכן הגרפי. ניתן לכלול מספר פסקאות."
 
 #. Translators: title for Not Found (404) error page
 #: templates/404.html:5 templates/404.html:13
@@ -629,8 +618,3 @@ msgstr "חזרה לתפריט הראשי"
 msgid "Enable dark mode"
 msgstr "הפעלת מצב כהה"
 
-#~ msgid "Twitter"
-#~ msgstr "טוויטר"
-
-#~ msgid "Instagram"
-#~ msgstr "אינסטגרם"
