@@ -17,4 +17,8 @@ dl.metadata-list {
 // Hebrew variant
 html[lang="he"] dl.metadata-list {
     @include typography.meta-he;
+    *[lang="en"] {
+        // handle any dt/dd in English
+        @include typography.meta;
+    }
 }

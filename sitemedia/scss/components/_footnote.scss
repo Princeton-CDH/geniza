@@ -58,7 +58,10 @@
 // Hebrew variant
 html[lang="he"] .citation {
     @include typography.body-he;
-    dd.relation {
+    *[lang="en"] {
+        @include typography.body;
+    }
+    dd.relation:not([lang="en"]) {
         @include typography.meta-he;
     }
 }

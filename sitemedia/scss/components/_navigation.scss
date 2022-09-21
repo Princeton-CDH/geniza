@@ -724,4 +724,8 @@ html[lang="he"] #site-nav {
     ul.sub-menu li.menu-label {
         @include typography.mobile-menu-he;
     }
+    *[lang="en"] {
+        // handle any nav links/menu items in English
+        @include typography.mobile-menu;
+    }
 }

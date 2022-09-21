@@ -441,4 +441,8 @@ html[dir="rtl"].dark-mode footer {
 // Hebrew variant
 html[lang="he"] footer {
     @include typography.meta-he;
+    *[lang="en"] {
+        // handle any nav links in English
+        @include typography.meta;
+    }
 }
