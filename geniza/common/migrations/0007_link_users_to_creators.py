@@ -21,10 +21,10 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("common", "0006_userprofile"),
-        # auth migration, for user model
-        ("auth", "0012_alter_user_first_name_max_length"),
-        # footnotes migration, for creator model
-        ("footnotes", "0020_alter_footnote_content"),
+        # initial auth migration: user model must exist
+        ("auth", "0001_initial"),
+        # initial footnotes migration: creator model must exist
+        ("footnotes", "0001_initial"),
     ]
 
     operations = [
