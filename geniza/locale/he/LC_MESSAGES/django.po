@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-21 18:53-0400\n"
+"POT-Creation-Date: 2022-09-21 18:59-0400\n"
 "PO-Revision-Date: 2022-09-08 16:11\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
@@ -268,6 +268,14 @@ msgstr[1] "%(count_humanized)s תוצאות"
 msgstr[2] "%(count_humanized)s תוצאות"
 msgstr[3] "%(count_humanized)s תוצאות"
 
+#. Translators: screen reader label for pagination navigation displayed after search results
+#: corpus/templates/corpus/document_list.html:115
+#, fuzzy
+#| msgid "Secondary Language"
+#| msgid_plural "Secondary Languages"
+msgid "secondary pagination"
+msgstr "שפה משנית"
+
 #. Translators: accessibility label for a footnote source citation in scholarship records view
 #: corpus/templates/corpus/document_scholarship.html:21
 msgid "Bibliographic citation"
@@ -421,19 +429,26 @@ msgstr "תיעתוק"
 msgid "online resource"
 msgstr "מקור אינטרנטי"
 
+#. Translators: screen reader label for pagination navigation
+#: corpus/templates/corpus/snippets/pagination.html:4
+#, fuzzy
+#| msgid "Translation"
+msgid "pagination"
+msgstr "תרגום"
+
 #. Translators: Label for "previous page" button in search results
-#: corpus/templates/corpus/snippets/pagination.html:5
+#: corpus/templates/corpus/snippets/pagination.html:8
 msgid "Previous"
 msgstr "הקודם"
 
 #. Translators: Title for link to page number in search results
-#: corpus/templates/corpus/snippets/pagination.html:19
+#: corpus/templates/corpus/snippets/pagination.html:22
 #, python-format
 msgid "page %(number)s"
 msgstr "%(number)s עמודים"
 
 #. Translators: Label for "next page" button in search results
-#: corpus/templates/corpus/snippets/pagination.html:60
+#: corpus/templates/corpus/snippets/pagination.html:63
 msgid "Next"
 msgstr "הבא"
 
