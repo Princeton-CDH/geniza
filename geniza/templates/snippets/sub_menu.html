@@ -1,6 +1,6 @@
 {% load i18n wagtailcore_tags %}
 
-<ul class="sub-menu" id="{{ top_level_page.slug }}-menu" role="menu" aria-label="{{ top_level_page.localized.slug }}">
+<ul class="sub-menu" id="{% if in_header != "true" %}footer-{% endif %}{{ top_level_page.slug }}-menu" role="menu" aria-label="{{ top_level_page.localized.slug }}">
     {% if in_header == "true" %}
         <li class="menu-button" role="none">
             <a id="back-to-main-menu" href="#menu" role="button" data-turbo="false">

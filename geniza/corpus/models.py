@@ -459,7 +459,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         Fragment, through="TextBlock", related_name="documents"
     )
     image_order_override = ArrayField(
-        models.URLField(), null=True, verbose_name="Image Order"
+        models.URLField(), null=True, verbose_name="Image Order", blank=True
     )
     shelfmark_override = models.CharField(
         "Shelfmark Override",
@@ -515,6 +515,14 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
     log_entries = GenericRelation(LogEntry, related_query_name="document")
+
+    # Placeholder canvas to use when not all IIIF images are available
+    PLACEHOLDER_CANVAS = {
+        "image": {
+            "info": static("img/ui/all/all/image-unavailable.png"),
+        },
+        "placeholder": True,
+    }
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution
@@ -660,9 +668,11 @@ class Document(ModelIndexable, DocumentDateMixin):
             )
         )
 
-    def iiif_images(self, filter_side=False):
+    def iiif_images(self, filter_side=False, with_placeholders=False):
         """Dict of IIIF images and labels for images of the Document's Fragments, keyed on canvas.
-        :param filter_side: if TextBlocks have side info, filter images by side (default: False)"""
+        :param filter_side: if TextBlocks have side info, filter images by side (default: False)
+        :param with_placeholders: if there are digital editions with canvases missing images,
+            include placeholder images for each additional canvas (default: False)"""
         iiif_images = {}
 
         for b in self.textblock_set.all():
@@ -683,6 +693,14 @@ class Document(ModelIndexable, DocumentDateMixin):
                             "shelfmark": b.fragment.shelfmark,
                             "excluded": b.side and i not in b.selected_images,
                         }
+
+        # when requested, include any placeholder canvas URIs referenced by any associated transcriptions
+        if with_placeholders:
+            for ed in self.digital_editions().all():
+                for canvas_uri in ed.content_html.keys():
+                    if canvas_uri not in iiif_images:
+                        # use placeholder image for each canvas not in iiif_images
+                        iiif_images[canvas_uri] = Document.PLACEHOLDER_CANVAS
 
         # if image_order_override not present, return list, in original order
         if not self.image_order_override:

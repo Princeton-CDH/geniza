@@ -192,16 +192,17 @@ class AnnotationDetail(
 
     def post(self, request, *args, **kwargs):
         """update the annotation on POST"""
-        # should use etag / if-match
+        # NOTE: should use etag / if-match
         anno = self.get_object()
         json_data = json.loads(request.body)
         anno.set_content(json_data)
-        # TODO: only save and create log entryif changed
-        anno.save()
+        # only save and create log entry if changed
+        if any(anno.has_changed(f) for f in ["content", "canonical", "via"]):
+            anno.save()
+            # create log entry to document change
+            anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
+            anno_admin.log_change(request, anno, "Updated via API")
 
-        # create log entry to document change
-        anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
-        anno_admin.log_change(request, anno, "Updated via API")
         return AnnotationResponse(anno.compile())
 
     def delete(self, request, *args, **kwargs):

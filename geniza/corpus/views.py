@@ -11,7 +11,6 @@ from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.middleware.csrf import get_token as csrf_token
 from django.shortcuts import redirect
-from django.templatetags.static import static
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
@@ -281,14 +280,6 @@ class DocumentDetailBase(SolrLastModifiedMixin):
         return {"pgpid_i": self.kwargs["pk"], "item_type_s": "document"}
 
 
-placeholder_canvas = {
-    "image": {
-        "info": static("img/ui/all/all/image-unavailable.png"),
-    },
-    "placeholder": True,
-}
-
-
 class DocumentDetailView(DocumentDetailBase, DetailView):
     """public display of a single :class:`~geniza.corpus.models.Document`"""
 
@@ -313,18 +304,7 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata"""
         context_data = super().get_context_data(**kwargs)
-        document = self.get_object()
-
-        # get unique set of canvases on this document from images and transcriptions
-        # order override should be respected by iiif_images()
-        images = document.iiif_images()
-
-        for ed in document.digital_editions().all():
-            for canvas_uri in ed.content_html.keys():
-                if canvas_uri not in images:
-                    # use placeholder image for each canvas not in iiif_images
-                    images[canvas_uri] = placeholder_canvas
-
+        images = self.object.iiif_images(with_placeholders=True)
         context_data.update(
             {
                 "page_title": self.page_title(),
@@ -342,10 +322,10 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                             for image in doc.get("iiif_images", [])
                         ],
                     }
-                    for doc in document.related_documents
+                    for doc in self.object.related_documents
                 ]
                 # skip solr query if none of the associated TextBlocks have side info
-                if any([tb.side for tb in document.textblock_set.all()]) else [],
+                if any([tb.side for tb in self.object.textblock_set.all()]) else [],
                 "images": images,
                 # first image for twitter/opengraph meta tags
                 "meta_image": list(images.values())[0]["image"] if images else None,
@@ -778,7 +758,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
             canvas_base_uri = "%siiif/canvas/" % self.get_object().permalink
             for i in [1, 2]:
                 canvas_uri = "%s%d/" % (canvas_base_uri, i)
-                context_data["images"][canvas_uri] = placeholder_canvas
+                context_data["images"][canvas_uri] = Document.PLACEHOLDER_CANVAS
 
         context_data.update(
             {
