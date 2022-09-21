@@ -686,6 +686,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                             "excluded": b.side and i not in b.selected_images,
                         }
 
+        # when requested, include any placeholder canvas URIs referenced by any associated transcriptions
         if with_placeholders:
             for ed in self.digital_editions().all():
                 for canvas_uri in ed.content_html.keys():
