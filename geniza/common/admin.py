@@ -5,6 +5,18 @@ from django.db.models import Count
 from taggit.admin import TagAdmin
 from taggit.models import Tag
 
+from geniza.common.models import UserProfile
+
+
+class UserProfileInline(admin.StackedInline):
+    """admin inline for editing custom user profile information"""
+
+    # NOTE: using stacked inline so that github help text is displayed
+    # with the link to github docs clickable
+    model = UserProfile
+    autocomplete_fields = ["creator"]
+    fields = ("github_coauthor", "creator")
+
 
 class LocalUserAdmin(UserAdmin):
     """Extends :class:`django.contrib.auth.admin.UserAdmin`
@@ -16,6 +28,8 @@ class LocalUserAdmin(UserAdmin):
         "last_login",
         "group_names",
     )
+
+    inlines = [UserProfileInline]
 
     def group_names(self, obj):
         """Custom property to display group membership."""
@@ -61,7 +75,7 @@ class CustomTagAdmin(TagAdmin):
                 # taggit_taggeditem_items is the reference to the taggeditem object
                 item_count=Count("taggit_taggeditem_items", distinct=True),
             )
-         )
+        )
 
     def item_count(self, obj):
         return obj.item_count
