@@ -7,6 +7,7 @@ import pytest
 from django.test import TestCase, override_settings
 
 from geniza.corpus.annotation_export import AnnotationExporter
+from geniza.corpus.models import Document
 
 
 def test_transcription_filename(document, footnote):
@@ -134,3 +135,37 @@ def test_output_message_logger(caplog):
     with caplog.at_level(logging.WARNING):
         anno_ex.output_message("info message", logging.INFO)
     assert "info message" not in caplog.text
+
+
+@pytest.mark.django_db
+@patch("geniza.corpus.annotation_export.Repo")
+def test_annotation_export(mock_repo, annotation, tmp_path):
+    # test actual export logic
+    with override_settings(ANNOTATION_BACKUP_PATH=tmp_path):
+        doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+        anno_ex = AnnotationExporter(pgpids=[doc_id])
+        anno_ex.export()
+
+        # should create document output dir
+        doc_annolist_dir = tmp_path.joinpath("annotations", str(doc_id), "list")
+        assert doc_annolist_dir.is_dir()
+        # should create one annotation list json file
+        anno_files = list(doc_annolist_dir.glob("*.json"))
+        assert len(anno_files) == 1
+        # inspect contents?
+
+        # html and text directories should exist and should each have one file
+        txt_transcription_dir = tmp_path.joinpath("transcriptions", "txt")
+        assert txt_transcription_dir.is_dir()
+        txt_files = list(txt_transcription_dir.glob("*.txt"))
+        assert len(txt_files) == 1
+        # should only have the content from the annotation
+        assert txt_files[0].read_text() == "Test annotation"
+
+        html_transcription_dir = tmp_path.joinpath("transcriptions", "html")
+        assert html_transcription_dir.is_dir()
+        html_files = list(html_transcription_dir.glob("*.html"))
+        assert len(html_files) == 1
+        html_content = html_files[0].read_text()
+        assert "Test annotation" in html_content
+        assert '<section dir="rtl"' in html_content

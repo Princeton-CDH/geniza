@@ -196,6 +196,7 @@ class AnnotationDetail(
         anno = self.get_object()
         json_data = json.loads(request.body)
         anno.set_content(json_data)
+        # TODO: only save and create log entryif changed
         anno.save()
 
         # create log entry to document change

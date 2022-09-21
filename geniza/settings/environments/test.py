@@ -33,3 +33,4 @@ INSTALLED_APPS.append("django_dbml")
 
 # unset to disable export signal handler in tests
 ANNOTATION_BACKUP_PATH = None
+ANNOTATION_BACKUP_GITREPO = None

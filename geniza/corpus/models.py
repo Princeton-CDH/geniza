@@ -559,12 +559,20 @@ class Document(ModelIndexable, DocumentDateMixin):
             models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
         ).first()
 
+    @staticmethod
+    def id_from_manifest_uri(uri):
+        """Given a manifest URI (as used in transcription annotations), return
+        the document id"""
+        # will raise Resolver404 if url does not resolve
+        # TODO: use resolver to make sure it's actually a manifest uri
+        return resolve(urlparse(uri).path).kwargs["pk"]
+
     @classmethod
     def from_manifest_uri(cls, uri):
         """Given a manifest URI (as used in transcription annotations), find a Document matching
         its pgpid"""
         # will raise Resolver404 if url does not resolve
-        return cls.objects.get(pk=resolve(urlparse(uri).path).kwargs["pk"])
+        return cls.objects.get(pk=Document.id_from_manifest_uri(uri))
 
     @property
     def shelfmark(self):

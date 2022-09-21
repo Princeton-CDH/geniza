@@ -72,16 +72,19 @@ class AnnotationExporter:
         # keep track of exported files to be committed to git
         updated_filenames = []
 
-        # TODO: break out into smaller methods
+        # load django template for rendering html export
+        html_template = get_template("corpus/transcription_export.html")
 
         for document in docs:
             self.output_info(str(document))
             # use PGPID for annotation directory name
             # path based on recommended uri pattern from the spec
             # {prefix}/{identifier}/list/{name}
-            output_dir = os.path.join(annotations_output_dir, str(document.id), "list")
+            doc_output_dir = os.path.join(
+                annotations_output_dir, str(document.id), "list"
+            )
             # ensure output directory exists
-            os.makedirs(output_dir, exist_ok=True)
+            os.makedirs(doc_output_dir, exist_ok=True)
 
             # find all annotations for this document
             # sort by schema:position if available
@@ -98,19 +101,23 @@ class AnnotationExporter:
             # that could be imported into any w3c annotation server
             for canvas, annotations in annos_by_canvas.items():
                 annolist_name = AnnotationExporter.annotation_list_name(canvas)
-                annolist_out_path = os.path.join(output_dir, "%s.json" % annolist_name)
+                annolist_out_path = os.path.join(
+                    doc_output_dir, "%s.json" % annolist_name
+                )
                 updated_filenames.append(annolist_out_path)
                 with open(annolist_out_path, "w") as outfile:
                     json.dump(
-                        annotations_to_list(annotations, uri="test"), outfile, indent=2
+                        # FIXME: correct this test uri
+                        annotations_to_list(annotations, uri="test"),
+                        outfile,
+                        indent=2,
                     )
-
-            # load django template for rendering html export
-            html_template = get_template("corpus/transcription_export.html")
 
             # for convenience and more readable versioning, also generate
             # text and html transcription files
             for edition in document.digital_editions():
+                print("*** edition")
+                print(edition)
                 # print(edition, edition.source)
                 # filename based on pgpid and source authors;
                 # explicitly label as transcription for context
