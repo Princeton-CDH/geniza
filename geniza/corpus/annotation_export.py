@@ -2,16 +2,18 @@ import json
 import logging
 import os
 from collections import defaultdict
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template.defaultfilters import pluralize
 from django.template.loader import get_template
+from django.urls import reverse
 from django.utils.text import slugify
 from git import InvalidGitRepositoryError, Repo
 
 from geniza.annotations.models import Annotation, annotations_to_list
+from geniza.common.utils import absolutize_url
 from geniza.corpus.models import Document
 from geniza.footnotes.models import Footnote
 
@@ -74,6 +76,8 @@ class AnnotationExporter:
 
         # load django template for rendering html export
         html_template = get_template("corpus/transcription_export.html")
+        # search uri will be the basis for our annotation list uris
+        anno_search_uri = absolutize_url(reverse("annotations:search"))
 
         for document in docs:
             self.output_info(str(document))
@@ -105,10 +109,15 @@ class AnnotationExporter:
                     doc_output_dir, "%s.json" % annolist_name
                 )
                 updated_filenames.append(annolist_out_path)
+
+                # construct the url to search for this set of annotations
+                # and use it as the uri for the saved annotation list
+                search_args = {"uri": canvas, "manifest": document.manifest_uri}
+                annolist_uri = "%s?%s" % (anno_search_uri, urlencode(search_args))
                 with open(annolist_out_path, "w") as outfile:
                     json.dump(
                         # FIXME: correct this test uri
-                        annotations_to_list(annotations, uri="test"),
+                        annotations_to_list(annotations, uri=annolist_uri),
                         outfile,
                         indent=2,
                     )
@@ -116,9 +125,7 @@ class AnnotationExporter:
             # for convenience and more readable versioning, also generate
             # text and html transcription files
             for edition in document.digital_editions():
-                print("*** edition")
-                print(edition)
-                # print(edition, edition.source)
+                self.debug("%s %s" % (edition, edition.source))
                 # filename based on pgpid and source authors;
                 # explicitly label as transcription for context
                 base_filename = AnnotationExporter.transcription_filename(
