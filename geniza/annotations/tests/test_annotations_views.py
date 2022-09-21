@@ -126,6 +126,22 @@ class TestAnnotationDetail:
         assert log_entry.action_flag == CHANGE
         assert log_entry.change_message == "Updated via API"
 
+    def test_post_annotation_detail_unchanged(self, admin_client, annotation):
+        # update annotation unchanged with POST request as admin
+        response = admin_client.post(
+            annotation.get_absolute_url(),
+            json.dumps({**annotation.content}),
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        # should match previous content, including last modified
+        assert response.json() == annotation.compile()
+        # get a fresh copy of the annotation from the database
+        updated_anno = Annotation.objects.get(pk=annotation.pk)
+
+        # should NOT have log entry for update
+        assert not LogEntry.objects.filter(object_id=annotation.id).exists()
+
     def test_delete_annotation_detail_guest(self, client, annotation):
         # delete annotation with DELETE request — should fail if guest
         response = client.delete(annotation.get_absolute_url())
