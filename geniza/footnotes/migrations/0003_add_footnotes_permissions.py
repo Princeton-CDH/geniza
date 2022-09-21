@@ -68,7 +68,10 @@ def create_content_editor_groups(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    dependencies = [("footnotes", "0002_initial_source_types_langs")]
+    dependencies = [
+        ("footnotes", "0002_initial_source_types_langs"),
+        ("common", "0001_content_editor_group"),
+    ]
 
     operations = [
         migrations.RunPython(
