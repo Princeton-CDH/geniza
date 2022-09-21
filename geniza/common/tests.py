@@ -163,6 +163,7 @@ class TestNaturalSortField:
         assert field_instance.pre_save(testmodel, None) == "test000012.000003"
 
 
+@pytest.mark.django_db
 def test_userprofile_str(admin_user):
     profile = UserProfile.objects.create(user=admin_user)
     assert str(profile) == "User profile for %s" % admin_user
