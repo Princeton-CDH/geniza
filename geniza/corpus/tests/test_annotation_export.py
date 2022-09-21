@@ -1,5 +1,7 @@
+import logging
 import os
-from unittest.mock import patch
+from io import StringIO
+from unittest.mock import Mock, patch
 
 import pytest
 from django.test import TestCase, override_settings
@@ -100,3 +102,34 @@ class TestAnnotationExporter(TestCase):
         # called without base dir prefix path
         mock_repo.index.add.assert_called_with(["anno/pgp23/1.json"])
         assert mock_repo.index.commit.call_count == 0
+
+    def test_output_message_stdout(self):
+        stdout = Mock()
+        anno_ex = AnnotationExporter(stdout=stdout)
+
+        anno_ex.verbosity = 0
+        anno_ex.output_message("test", logging.DEBUG)
+        stdout.write.assert_not_called()
+        anno_ex.output_message("test", logging.INFO)
+        stdout.write.assert_not_called()
+        anno_ex.output_message("test", logging.WARN)
+        stdout.write.assert_called()
+
+    def test_output_message_shortcuts(self):
+        anno_ex = AnnotationExporter()
+        with patch.object(anno_ex, "output_message") as mock_output_msg:
+            anno_ex.output_info("info")
+            mock_output_msg.assert_called_with("info", logging.INFO)
+
+
+def test_output_message_logger(caplog):
+    # use caplog fixture to inspect logger
+    anno_ex = AnnotationExporter()
+
+    with caplog.at_level(logging.DEBUG):
+        anno_ex.output_message("debug message", logging.DEBUG)
+    assert "debug message" in caplog.text
+
+    with caplog.at_level(logging.WARNING):
+        anno_ex.output_message("info message", logging.INFO)
+    assert "info message" not in caplog.text

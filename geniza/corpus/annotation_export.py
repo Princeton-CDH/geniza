@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from collections import defaultdict
 from urllib.parse import urlparse
@@ -13,6 +14,8 @@ from git import InvalidGitRepositoryError, Repo
 from geniza.annotations.models import Annotation, annotations_to_list
 from geniza.corpus.models import Document
 from geniza.footnotes.models import Footnote
+
+logger = logging.getLogger(__name__)
 
 
 class AnnotationExporter:
@@ -30,15 +33,15 @@ class AnnotationExporter:
         self.base_output_dir = settings.ANNOTATION_BACKUP_PATH
         self.pgpids = pgpids
         self.push_changes = push_changes
-        self.verbosity = verbosity or self.v_normal
+        self.verbosity = verbosity if verbosity is not None else self.v_normal
         self.stdout = stdout
 
     def export(self):
 
         # initialize git repo interface for output path
         if not self.push_changes:
-            # no sync or cloning
-            self.repo = Repo(base_output_dir)
+            # no sync or cloning needed if not pushing changes
+            self.repo = Repo(self.base_output_dir)
         else:
             self.repo = self.setup_repo(
                 self.base_output_dir, settings.ANNOTATION_BACKUP_GITREPO
@@ -61,12 +64,10 @@ class AnnotationExporter:
         # if ids are specified, limit to just those documents
         if self.pgpids:
             docs = docs.filter(pk__in=self.pgpids)
-        # use logging? and/or pass in stdout when running from command?
-        if self.stdout:
-            self.stdout.write(
-                "Backing up annotations for %d document%s with digital edition"
-                % (docs.count(), pluralize(docs))
-            )
+        self.output_info(
+            "Backing up annotations for %d document%s with digital edition"
+            % (docs.count(), pluralize(docs)),
+        )
 
         # keep track of exported files to be committed to git
         updated_filenames = []
@@ -74,8 +75,7 @@ class AnnotationExporter:
         # TODO: break out into smaller methods
 
         for document in docs:
-            if self.stdout:
-                self.stdout.write(document)
+            self.output_info(str(document))
             # use PGPID for annotation directory name
             # path based on recommended uri pattern from the spec
             # {prefix}/{identifier}/list/{name}
@@ -85,21 +85,17 @@ class AnnotationExporter:
 
             # find all annotations for this document
             # sort by schema:position if available
-            annos = Annotation.objects.filter(
-                content__target__source__partOf__id=document.manifest_uri
-            ).order_by("content__schema:position", "created")
-
-            # aggregate annotations by canvas id
             # for annotation list backup, we don't need to segment
             # by motivation, source, etc; just group by canvas
-            annos_by_canvas = defaultdict(list)
-            for a in annos:
-                annos_by_canvas[a.target_source_id].append(a)
+            annos_by_canvas = (
+                Annotation.objects.by_target_context(document.manifest_uri)
+                .order_by("content__schema:position", "created")
+                .group_by_canvas()
+            )
 
             # create and save one AnnotationList per canvas
             # with all associated annotations, as a backup
             # that could be imported into any w3c annotation server
-
             for canvas, annotations in annos_by_canvas.items():
                 annolist_name = AnnotationExporter.annotation_list_name(canvas)
                 annolist_out_path = os.path.join(output_dir, "%s.json" % annolist_name)
@@ -155,15 +151,13 @@ class AnnotationExporter:
                     # pull any remote changes
                     origin.pull()
                     # push data updates
-                    # TODO: how to tell repo object not to output hashes?
                     result = origin.push()
                     # output push summary in case anything bad happens
                     # maybe logger debug output?
                     # for pushinfo in result:
                     # print(pushinfo.summary)
                 except ValueError:
-                    if stdout:
-                        stdout.write("No origin repository, unable to push updates")
+                    self.warn("No origin repository, unable to push updates")
         # otherwise, no changes to push
 
     @staticmethod
@@ -216,14 +210,43 @@ class AnnotationExporter:
             slugify(" ".join(authors)),
         )
 
+    # map log level to django manage command verbosity
+    log_level_to_verbosity = {
+        logging.DEBUG: 2,
+        logging.INFO: 1,  # = normal
+        # considering anything else zero (important to see in quiet mode)
+    }
+
+    # handle either logging or manage command output
+    def output_message(self, message, log_level):
+        """output a message to logger or manage command stdout at the
+        specified log level; honors verbosity setting for stdout."""
+        if self.stdout:
+            v_level = self.log_level_to_verbosity.get(log_level, 0)
+            if self.verbosity >= v_level:
+                self.stdout.write(message)
+        else:
+            logger.log(log_level, message)
+
+    def output_info(self, message):
+        "Output an info level message"
+        self.output_message(message, logging.INFO)
+
+    def warn(self, message):
+        "Output a warning"
+        self.output_message(message, logging.WARNING)
+
+    def debug(self, message):
+        "Output a debug level message"
+        self.output_message(message, logging.DEBUG)
+
     def setup_repo(self, local_path, remote_git_url):
         """ensure git repository has been cloned and content is up to date"""
 
         # if directory does not yet exist, clone repository
         if not os.path.isdir(local_path):
-            if self.verbosity >= self.v_normal:
-                if self.stdout:
-                    self.stdout.write("Cloning annotations export repository")
+            self.output_info("Cloning annotations export repository")
+
             # clone remote to configured path
             Repo.clone_from(url=remote_git_url, to_path=local_path)
             # then initialize the repo object

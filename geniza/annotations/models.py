@@ -1,4 +1,5 @@
 import uuid
+from collections import defaultdict
 from functools import cached_property
 
 import bleach
@@ -23,6 +24,24 @@ def annotations_to_list(annotations, uri):
     }
 
 
+class AnnotationQuerySet(models.QuerySet):
+    def by_target_context(self, uri):
+        """filter queryset by the context of the target (i.e, the manifest
+        the canvas belongs to)"""
+        return self.filter(content__target__source__partOf__id=uri)
+
+    def group_by_canvas(self):
+        """Aggregate annotations by canvas id; returns a dictionary of lists,
+        keys are canvas ids, items are lists of annotations."""
+        # aggregate annotations by canvas id
+        annos_by_canvas = defaultdict(list)
+        for anno in self.all():
+            # ignore if target source is unset
+            if anno.target_source_id:
+                annos_by_canvas[anno.target_source_id].append(anno)
+        return annos_by_canvas
+
+
 class Annotation(models.Model):
     """Annotation model for storing annotations in the database."""
 
@@ -38,6 +57,9 @@ class Annotation(models.Model):
     canonical = models.CharField(max_length=255, blank=True)
     #: uri of annotation when imported from another copy (optional)
     via = models.URLField(blank=True)
+
+    # use custom manager & queryset
+    objects = AnnotationQuerySet.as_manager()
 
     # allowed tags and attributes for annotation body content HTML
     ALLOWED_TAGS = ["del", "li", "ol", "p", "span", "sup"]

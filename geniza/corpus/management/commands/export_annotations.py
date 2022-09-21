@@ -19,18 +19,17 @@ from geniza.footnotes.models import Footnote
 class Command(BaseCommand):
     """Backup annotation data and synchronize to GitHub"""
 
-    v_normal = 1  # default verbosity
-
     def add_arguments(self, parser):
         parser.add_argument(
             "pgpids", nargs="*", help="Export the specified documents only"
         )
 
     def handle(self, *args, **options):
-        self.verbosity = options["verbosity"]
         if not getattr(settings, "ANNOTATION_BACKUP_PATH"):
             raise CommandError(
                 "Please configure ANNOTATION_BACKUP_PATH in django settings"
             )
 
-        anno_exporter = AnnotationExporter(pgpids=options["pgpids"], stdout=self.stdout)
+        anno_exporter = AnnotationExporter(
+            pgpids=options["pgpids"], stdout=self.stdout, verbosity=options["verbosity"]
+        ).export()
