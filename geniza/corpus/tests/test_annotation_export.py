@@ -123,25 +123,29 @@ class TestAnnotationExporter(TestCase):
             mock_output_msg.assert_called_with("info", logging.INFO)
 
 
-@override_settings(ANNOTATION_BACKUP_PATH="/tmp/anno-export")
-def test_output_message_logger(caplog):
-    # use caplog fixture to inspect logger
-    anno_ex = AnnotationExporter()
+def test_output_message_logger(caplog, tmp_path):
+    with override_settings(
+        ANNOTATION_BACKUP_PATH=tmp_path, ANNOTATION_BACKUP_GITREPO="git:foo"
+    ):
+        # use caplog fixture to inspect logger
+        anno_ex = AnnotationExporter()
 
-    with caplog.at_level(logging.DEBUG):
-        anno_ex.output_message("debug message", logging.DEBUG)
-    assert "debug message" in caplog.text
+        with caplog.at_level(logging.DEBUG):
+            anno_ex.output_message("debug message", logging.DEBUG)
+        assert "debug message" in caplog.text
 
-    with caplog.at_level(logging.WARNING):
-        anno_ex.output_message("info message", logging.INFO)
-    assert "info message" not in caplog.text
+        with caplog.at_level(logging.WARNING):
+            anno_ex.output_message("info message", logging.INFO)
+        assert "info message" not in caplog.text
 
 
 @pytest.mark.django_db
 @patch("geniza.corpus.annotation_export.Repo")
 def test_annotation_export(mock_repo, annotation, tmp_path):
     # test actual export logic
-    with override_settings(ANNOTATION_BACKUP_PATH=tmp_path):
+    with override_settings(
+        ANNOTATION_BACKUP_PATH=tmp_path, ANNOTATION_BACKUP_GITREPO="git:foo"
+    ):
         doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
         anno_ex = AnnotationExporter(pgpids=[doc_id])
         anno_ex.export()
