@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-09-08 11:23-0400\n"
-"PO-Revision-Date: 2022-09-08 16:11\n"
+"PO-Revision-Date: 2022-09-22 19:18\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
@@ -55,12 +55,12 @@ msgstr "علامة الرف (أ-ي)"
 #. Translators: label for descending sort by number of scholarship records
 #: corpus/forms.py:173
 msgid "Scholarship Records (Most–Least)"
-msgstr "سجلات المنح الدراسية (أكثر - أقل)"
+msgstr "ثبت المراجع والمصادر (أكثر - أقل)"
 
 #. Translators: label for ascending sort by number of scholarship records
 #: corpus/forms.py:175
 msgid "Scholarship Records (Least–Most)"
-msgstr "سجل المنح الدراسية (أقل - أكثر)"
+msgstr "ثبت المراجع والمصادر (أقل - أكثر)"
 
 #. Translators: label for sort by when document was added to PGP (most recent first)
 #: corpus/forms.py:177
@@ -366,7 +366,7 @@ msgstr[5] "%(counter)s مناقشات"
 
 #: corpus/templates/corpus/snippets/document_result.html:100
 msgid "No Scholarship Records"
-msgstr "لا توجد سجلات للمنح الدراسية"
+msgstr "لا توجد ثبت المراجع والمصادر"
 
 #: corpus/templates/corpus/snippets/document_result.html:114
 msgid "more"
@@ -389,7 +389,7 @@ msgstr "تفاصيل المستند"
 #: corpus/templates/corpus/snippets/document_tabs.html:10
 #, python-format
 msgid "Scholarship Records (%(n_records)s)"
-msgstr "سجلات المنح الدراسية (%(n_records)s)"
+msgstr "ثبت المراجع والمصادر (%(n_records)s)"
 
 #: corpus/templates/corpus/snippets/document_tabs.html:17
 #, python-format
