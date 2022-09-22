@@ -6,7 +6,7 @@
 
 {% block main %}
     <h1 class="sr-only">{{ page_title }}</h1>
-    <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-action="click@document->search#clickCloseSort">
+    <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance">
         <fieldset id="query">
             {% render_field form.q data-search-target="query" data-action="input->search#autoUpdateSort change->search#update" %}
 
@@ -65,21 +65,9 @@
             <label for="{{ form.sort.html_name }}">
                 {{ form.sort.label }}
             </label>
-            <details class="sort-select" aria-expanded="false" data-search-target="sortDetails">
-                <summary class="sort-select-trigger" data-search-target="sortLabel" data-action="keydown->search#shiftTabCloseSort">
-                    {% for choice in form.sort.field.choices %}
-                        {% if form.sort.value == choice.0 %}
-                            {{ choice.1 }}
-                        {% endif %}
-                    {% endfor %}
-                    {# Translators: Button to open or close sort options menu #}
-                    {% translate 'Toggle sort options menu' as toggle_label %}
-                    <div role="button" tabindex="-1" aria-pressed="false" aria-expanded="false" aria-label="{{ toggle_label }}">
-                        <span class="sr-only" >{{ toggle_label }}</span>
-                    </div>
-                </summary>
-                {% render_field form.sort data-search-target="sort" data-action="input->search#changeSort input->search#update keydown->search#keyboardCloseSort" %}
-            </details>
+            {% render_field form.sort data-search-target="sort" data-action="input->search#update" %}
+            {# caret icon for <select>; since we also have the select element, role=presentation #}
+            <i class="ph-caret-down" role="presentation"></i>
         </fieldset>
 
         {% if form.errors %}
