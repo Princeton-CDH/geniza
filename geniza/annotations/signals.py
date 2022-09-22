@@ -1,11 +1,14 @@
 import logging
 import time
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, DELETION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import post_delete, post_save
+from django.utils import timezone
 from parasolr.django.indexing import ModelIndexable
 
 from geniza.annotations.models import Annotation
@@ -81,12 +84,46 @@ def create_or_delete_footnote(instance, **kwargs):
 
     # update annotation backup if configured (don't run for tests!)
     if getattr(settings, "ANNOTATION_BACKUP_PATH", None):
-        start = time.time()
-        AnnotationExporter(pgpids=[document.pk], push_changes=False).export()
-        logger.debug(
-            "Updated annotation backup for document %s: %f sec"
-            % (document.pk, time.time() - start)
+        backup_annotation(document.pk, instance)
+
+
+def backup_annotation(document_id, annotation):
+    """update document transcription backup on annotation save"""
+    start = time.time()
+    now = timezone.now()
+    # get log entry to give co-author credit on the commit
+    # to the user who made the change (when possible)
+    print("now %s" % now)
+    print(
+        "last minute %s" % (now - timedelta(seconds=60)),
+    )
+    # look for log entries on this object, ordered by most recent
+    # limit to log entries in the last ten seconds to avoid
+    # picking up the wrong log entry; sort most recent first
+    last_log_entry = (
+        LogEntry.objects.filter(
+            object_id=annotation.pk,
+            content_type_id=ContentType.objects.get_for_model(annotation.__class__).pk,
+            action_time__gte=(now - timedelta(seconds=10)),
         )
+        .order_by("-action_time")
+        .first()
+    )
+
+    # if a log entry is found, pass in user to track as co-author
+    coauthors = []
+    if last_log_entry:
+        # export code handles check for profile / github coauthor email
+        coauthors = [last_log_entry.user]
+
+    # skip pushing changes, since it could delay response
+    AnnotationExporter(
+        pgpids=[document_id], push_changes=False, modifying_users=coauthors
+    ).export()
+    logger.debug(
+        "Updated annotation backup for document %s: %f sec"
+        % (document_id, time.time() - start)
+    )
 
 
 def log_footnote_action(footnote, action_flag):
