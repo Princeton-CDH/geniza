@@ -6,6 +6,7 @@ from collections import defaultdict
 from urllib.parse import urlencode, urlparse
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from django.template.defaultfilters import pluralize
 from django.template.loader import get_template
@@ -24,7 +25,14 @@ logger = logging.getLogger(__name__)
 class AnnotationExporter:
     v_normal = 1
 
-    def __init__(self, pgpids=None, stdout=None, push_changes=True, verbosity=None):
+    def __init__(
+        self,
+        pgpids=None,
+        stdout=None,
+        push_changes=True,
+        verbosity=None,
+        modifying_users=None,
+    ):
         # check that required settings are available
         if not getattr(settings, "ANNOTATION_BACKUP_PATH") or not getattr(
             settings, "ANNOTATION_BACKUP_GITREPO"
@@ -39,6 +47,7 @@ class AnnotationExporter:
         self.push_changes = push_changes
         self.verbosity = verbosity if verbosity is not None else self.v_normal
         self.stdout = stdout
+        self.modifying_users = modifying_users
 
     def export(self):
 
@@ -202,10 +211,39 @@ class AnnotationExporter:
                 os.remove(old_file)
 
         if self.repo.is_dirty():
-            self.repo.index.commit("Automated data export from PGP")
+            self.repo.index.commit(self.get_commit_message())
             if self.push_changes:
                 self.sync_github()
         # otherwise, no changes to push
+
+    #: default commit message
+    commit_msg = "Automated data export from PGP"
+
+    def get_commit_message(self):
+        # construct co-author commit (if any) and add to the commit message
+        if not self.modifying_users:
+            return self.commit_msg
+
+        # construct co-author commit and add to the commit message
+        coauthors = []
+        # first name, last name, coauthor email
+        coauth_msg = "Co-authored-by: %s <%s>"
+        for user in self.modifying_users:
+            try:
+                # if github coauthor is available, add to list of coauthors
+                if user.profile.github_coauthor:
+                    coauthors.append(
+                        coauth_msg
+                        % (
+                            user.get_full_name(),
+                            user.profile.github_coauthor,
+                        )
+                    )
+            except User.profile.RelatedObjectDoesNotExist:
+                # ignore if user has no profile
+                pass
+
+        return "%s\n\n%s" % (self.commit_msg, "\n".join(coauthors))
 
     def sync_github(self):
         """Sync local repository content with origin repository. Assumes
