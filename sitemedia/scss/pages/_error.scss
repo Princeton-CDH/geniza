@@ -64,3 +64,10 @@ main.error {
         padding: 0 spacing.$spacing-xs;
     }
 }
+
+// Hebrew variant
+html[lang="he"] {
+    main.error h1 {
+        @include typography.headline-error-he;
+    }
+}

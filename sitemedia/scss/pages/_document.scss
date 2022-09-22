@@ -172,3 +172,20 @@ main.document {
         }
     }
 }
+
+// Hebrew variant
+html[lang="he"] main.document {
+    .container section.description h3 {
+        // "Description" label is always translated
+        @include typography.body-he;
+    }
+    .container dl.metadata-list,
+    .container section.input-date,
+    dl.metadata-list.tertiary dt#permalink {
+        @include typography.meta-he;
+    }
+    dl *[lang="en"] {
+        // handle any dt/dd in English
+        @include typography.meta;
+    }
+}

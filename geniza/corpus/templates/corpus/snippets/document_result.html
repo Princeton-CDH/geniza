@@ -36,7 +36,8 @@
                 </dl>
 
                 {# description #}
-                <p class="description">
+                {# TODO: Adjust lang attribute logic for non-English descriptions #}
+                <p class="description" lang="en">
                     {# display keywords in context if any #}
                     {% with document_highlights=highlighting|dict_item:document.id %}
                         {% if document_highlights.description %}

@@ -405,3 +405,14 @@ html[dir="rtl"] .search-result {
         align-self: flex-start;
     }
 }
+
+// Hebrew variant
+html[lang="he"] {
+    .search-result .counter {
+        @include typography.headline-2-he;
+    }
+    .search-result section:first-of-type .scholarship,
+    a.view-link > span {
+        @include typography.meta-he;
+    }
+}
