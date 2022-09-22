@@ -1,3 +1,4 @@
+import glob
 import json
 import logging
 import os
@@ -10,7 +11,7 @@ from django.template.defaultfilters import pluralize
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.text import slugify
-from git import InvalidGitRepositoryError, Repo
+from git import GitCommandError, InvalidGitRepositoryError, Repo
 
 from geniza.annotations.models import Annotation, annotations_to_list
 from geniza.common.utils import absolutize_url
@@ -46,22 +47,28 @@ class AnnotationExporter:
 
         # define paths and ensure directories exist for compiled transcription
         annotations_output_dir = os.path.join(self.base_output_dir, "annotations")
-
+        transcription_base_dir = os.path.join(self.base_output_dir, "transcriptions")
+        # make a dict of output dir by format / file extension
         transcription_output_dir = {}
         for output_format in ["txt", "html"]:
-            format_path = os.path.join(
-                self.base_output_dir, "transcriptions", output_format
-            )
+            format_path = os.path.join(transcription_base_dir, output_format)
             transcription_output_dir[output_format] = format_path
             os.makedirs(format_path, exist_ok=True)
 
-        # identify content to backup based on documents with digital editions
-        docs = Document.objects.filter(
-            footnotes__doc_relation__contains=Footnote.DIGITAL_EDITION
-        ).distinct()
+        # identify content to backup
+
         # if ids are specified, limit to just those documents
         if self.pgpids:
-            docs = docs.filter(pk__in=self.pgpids)
+            # NOTE: must not filter by digital edition, since we need
+            # to support cleaning up old files on transcription delete
+            docs = Document.objects.filter(pk__in=self.pgpids)
+
+        # otherwise, get all documents with digital editions
+        else:
+            docs = Document.objects.filter(
+                footnotes__doc_relation__contains=Footnote.DIGITAL_EDITION
+            ).distinct()
+
         self.output_info(
             "Backing up annotations for %d document%s with digital edition"
             % (docs.count(), pluralize(docs)),
@@ -69,6 +76,8 @@ class AnnotationExporter:
 
         # keep track of exported files to be committed to git
         updated_filenames = []
+        # and files that should be removed
+        remove_filenames = []
 
         # load django template for rendering html export
         html_template = get_template("corpus/transcription_export.html")
@@ -85,6 +94,19 @@ class AnnotationExporter:
             )
             # ensure output directory exists
             os.makedirs(doc_output_dir, exist_ok=True)
+
+            # get a list of existing files so we can cleanup removed content
+            # - annotation lists
+            doc_existing_files = glob.glob(os.path.join(doc_output_dir, "*.json"))
+            doc_existing_files.extend(
+                glob.glob(
+                    os.path.join(transcription_base_dir, "*", "PGPID%s_*" % document.pk)
+                )
+            )
+
+            # track updated files for this document so we can check
+            # for any existing files that should be removed
+            doc_updated_files = []
 
             # find all annotations for this document
             # sort by schema:position if available
@@ -104,7 +126,7 @@ class AnnotationExporter:
                 annolist_out_path = os.path.join(
                     doc_output_dir, "%s.json" % annolist_name
                 )
-                updated_filenames.append(annolist_out_path)
+                doc_updated_files.append(annolist_out_path)
 
                 # construct the url to search for this set of annotations
                 # and use it as the uri for the saved annotation list
@@ -134,7 +156,7 @@ class AnnotationExporter:
                         transcription_output_dir[output_format],
                         "%s.%s" % (base_filename, output_format),
                     )
-                    updated_filenames.append(outfile_path)
+                    doc_updated_files.append(outfile_path)
                     with open(outfile_path, "w") as outfile:
                         if output_format == "html":
                             content = html_template.render(
@@ -146,16 +168,39 @@ class AnnotationExporter:
                             # so should be minimal and content only
                             outfile.write(edition.content_text)
 
-        # commit and push (if configured) all the exported files
-        self.commit_changed_files(updated_filenames)
+            # add all updated files for this document to the updated list
+            updated_filenames.extend(doc_updated_files)
+            # check if there are any files to be removed; add to remove list
+            extra_doc_files = set(doc_existing_files) - set(doc_updated_files)
+            remove_filenames.extend(extra_doc_files)
 
-    def commit_changed_files(self, updated_filenames):
+        # commit and push (if configured) all the exported files
+        self.commit_changed_files(updated_filenames, remove_filenames)
+
+    def commit_changed_files(self, updated_filenames, remove_filenames):
         # prep updated files for commit to git repo
         #  - adjust paths so they are relative to git root
         updated_filenames = [
             f.replace(self.base_output_dir, "").lstrip("/") for f in updated_filenames
         ]
         self.repo.index.add(updated_filenames)
+
+        git_remove_filenames = [
+            f.replace(self.base_output_dir, "").lstrip("/") for f in remove_filenames
+        ]
+        # remove obsolete files, if any
+        if remove_filenames:
+            # if file is not in git index, this will error
+            try:
+                self.repo.index.remove(git_remove_filenames)
+            except GitCommandError:
+                # ignore; file was not in git index, will be removed
+                pass
+
+            # remove from file system as well
+            for old_file in remove_filenames:
+                os.remove(old_file)
+
         if self.repo.is_dirty():
             self.repo.index.commit("Automated data export from PGP")
             if self.push_changes:

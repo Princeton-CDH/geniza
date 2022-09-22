@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from django.test import TestCase, override_settings
+from git import GitCommandError
 
 from geniza.corpus.annotation_export import AnnotationExporter
 from geniza.corpus.models import Document
@@ -130,7 +131,7 @@ class TestAnnotationExporter(TestCase):
         anno_ex.repo = mock_repo
         anno_ex.repo.is_dirty.return_value = False
 
-        anno_ex.commit_changed_files(files)
+        anno_ex.commit_changed_files(files, [])
         # called without base dir prefix path
         mock_repo.index.add.assert_called_with(["anno/pgp23/1.json"])
         assert mock_repo.index.commit.call_count == 0
@@ -143,7 +144,7 @@ class TestAnnotationExporter(TestCase):
         anno_ex.repo = mock_repo
         anno_ex.repo.is_dirty.return_value = True
 
-        anno_ex.commit_changed_files(files)
+        anno_ex.commit_changed_files(files, [])
         # called without base dir prefix path
         mock_repo.index.add.assert_called_with(["anno/pgp23/1.json"])
         mock_repo.index.commit.assert_called_with("Automated data export from PGP")
@@ -151,6 +152,27 @@ class TestAnnotationExporter(TestCase):
         mock_repo.remote.assert_called_with(name="origin")
         mock_repo.remote.return_value.pull.assert_called()
         mock_repo.remote.return_value.push.assert_called()
+
+    @patch("geniza.corpus.annotation_export.os.remove")
+    @patch("geniza.corpus.annotation_export.Repo")
+    def test_commit_changed_files_remove(self, mock_repo, mock_remove):
+        anno_ex = AnnotationExporter()
+        anno_ex.base_output_dir = "data"
+        files = ["data/anno/pgp23/1.json"]
+        anno_ex.repo = mock_repo
+        anno_ex.repo.is_dirty.return_value = True
+
+        anno_ex.commit_changed_files([], files)
+        # called without base dir prefix path
+        mock_repo.index.remove.assert_called_with(["anno/pgp23/1.json"])
+        # file removed using full path
+        mock_remove.assert_called_with(files[0])
+        # commit and sync logic is same as add
+
+        # handle (ignore) error when file is not in git index
+        mock_repo.index.remove.side_effect = GitCommandError("not in index")
+        # should not raise an exception
+        anno_ex.commit_changed_files([], files)
 
     def test_output_message_stdout(self):
         stdout = Mock()
@@ -224,6 +246,7 @@ def test_annotation_export(mock_repo, annotation, tmp_path):
         ANNOTATION_BACKUP_PATH=str(tmp_path), ANNOTATION_BACKUP_GITREPO="git:foo"
     ):
         doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+
         anno_ex = AnnotationExporter(pgpids=[doc_id])
         anno_ex.export()
 
@@ -253,3 +276,26 @@ def test_annotation_export(mock_repo, annotation, tmp_path):
 
         # should commit changes
         anno_ex.repo.index.add.assert_called()
+        # should not call remove
+        anno_ex.repo.index.remove.assert_not_called()
+
+
+@pytest.mark.django_db
+@patch("geniza.corpus.annotation_export.Repo")
+def test_annotation_export_cleanup(mock_repo, annotation, tmpdir):
+    # test logic for removing outdated files
+    with override_settings(
+        ANNOTATION_BACKUP_PATH=str(tmpdir), ANNOTATION_BACKUP_GITREPO="git:foo"
+    ):
+        doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+        txt_transcription_dir = tmpdir / "transcriptions" / "txt"
+        # create a stray file to be cleaned up (create parent dirs as needed)
+        extra_file = txt_transcription_dir / ("PGPID%s_extra_file.txt" % doc_id)
+        extra_file.write_text("test file", "utf-8", ensure=True)
+
+        anno_ex = AnnotationExporter(pgpids=[doc_id])
+        anno_ex.export()
+
+        # should remove extra file from git index and local file system
+        anno_ex.repo.index.remove.assert_called()
+        assert not extra_file.exists()
