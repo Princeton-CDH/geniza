@@ -1,4 +1,5 @@
 import uuid
+from collections import defaultdict
 from functools import cached_property
 
 import bleach
@@ -8,6 +9,38 @@ from django.urls import reverse
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
+
+
+def annotations_to_list(annotations, uri):
+    """Generate an AnnotationList from a list of annotations.
+    Must specify the uri for the annotation list id.
+    Returns a dict that can be serialized as JSON."""
+    return {
+        "@context": "http://iiif.io/api/presentation/2/context.json",
+        "@id": uri,  # @id and not id per iiif spec
+        "@type": "sc:AnnotationList",
+        # exclude context on individual annotations,
+        # redundant within AnnotationList context
+        "resources": [a.compile(include_context=False) for a in annotations],
+    }
+
+
+class AnnotationQuerySet(models.QuerySet):
+    def by_target_context(self, uri):
+        """filter queryset by the context of the target (i.e, the manifest
+        the canvas belongs to)"""
+        return self.filter(content__target__source__partOf__id=uri)
+
+    def group_by_canvas(self):
+        """Aggregate annotations by canvas id; returns a dictionary of lists,
+        keys are canvas ids, items are lists of annotations."""
+        # aggregate annotations by canvas id
+        annos_by_canvas = defaultdict(list)
+        for anno in self.all():
+            # ignore if target source is unset
+            if anno.target_source_id:
+                annos_by_canvas[anno.target_source_id].append(anno)
+        return annos_by_canvas
 
 
 class Annotation(TrackChangesModel):
@@ -25,6 +58,9 @@ class Annotation(TrackChangesModel):
     canonical = models.CharField(max_length=255, blank=True)
     #: uri of annotation when imported from another copy (optional)
     via = models.URLField(blank=True)
+
+    # use custom manager & queryset
+    objects = AnnotationQuerySet.as_manager()
 
     # allowed tags and attributes for annotation body content HTML
     ALLOWED_TAGS = ["del", "li", "ol", "p", "span", "sup"]

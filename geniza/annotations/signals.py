@@ -1,4 +1,5 @@
 import logging
+import time
 
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, DELETION, LogEntry
@@ -8,6 +9,7 @@ from django.db.models.signals import post_delete, post_save
 from parasolr.django.indexing import ModelIndexable
 
 from geniza.annotations.models import Annotation
+from geniza.corpus.annotation_export import AnnotationExporter
 from geniza.corpus.models import Document
 from geniza.footnotes.models import Footnote, Source
 
@@ -59,9 +61,11 @@ def create_or_delete_footnote(instance, **kwargs):
             logger.debug("Deleting digital edition footnote (last annotation deleted)")
         # if this annotation was just updated, reindex document
         elif updated:
+            start = time.time()
             ModelIndexable.index_items([document])
             logger.debug(
-                "Reindexing document %s (existing annotation updated)" % document.pk
+                "Reindexing document %s (existing annotation updated): %f sec"
+                % (document.pk, time.time() - start)
             )
 
     except Footnote.DoesNotExist:
@@ -74,6 +78,15 @@ def create_or_delete_footnote(instance, **kwargs):
             log_footnote_action(footnote, ADDITION)
 
             logger.debug("Creating new digital edition footnote (new annotation)")
+
+    # update annotation backup if configured (don't run for tests!)
+    if getattr(settings, "ANNOTATION_BACKUP_PATH", None):
+        start = time.time()
+        AnnotationExporter(pgpids=[document.pk], push_changes=False).export()
+        logger.debug(
+            "Updated annotation backup for document %s: %f sec"
+            % (document.pk, time.time() - start)
+        )
 
 
 def log_footnote_action(footnote, action_flag):

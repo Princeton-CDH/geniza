@@ -116,3 +116,46 @@ class TestAnnotation:
         # should do nothing to html with all allowed elements
         html = '<p>test <span lang="en">en</span></p><ol><li>line 1</li><li>line 2</li></ol>'
         assert Annotation.sanitize_html(html) == html
+
+
+@pytest.mark.django_db
+class TestAnnotationQuerySet:
+    def test_by_target_context(self, annotation, document):
+        # document fixture not in annotation; should get none back
+        annos = Annotation.objects.by_target_context(document.manifest_uri)
+        assert not annos.exists()
+
+        anno_manifest = annotation.target_source_manifest_id
+        print(anno_manifest)
+        annos = Annotation.objects.by_target_context(anno_manifest)
+        assert annos.count() == 1
+        assert annos.first() == annotation
+
+    def test_group_by_canvas(self, annotation):
+        # copy fixture annotation to make a second annotation on the same canvas
+        anno2 = Annotation.objects.create(
+            content={
+                "target": {"source": {"id": annotation.target_source_id}},
+            }
+        )
+        other_canvas = "http://ex.co/iiif/canvas/3421"
+        other_anno = Annotation.objects.create(
+            content={
+                "target": {"source": {"id": other_canvas}},
+            }
+        )
+        # should be ignored but not cause an error
+        no_target_anno = Annotation.objects.create(content={"body": "foo"})
+
+        annos_by_canvas = Annotation.objects.all().group_by_canvas()
+        # expect two canvas uris
+        assert len(annos_by_canvas.keys()) == 2
+        # two annotations for fixture anno canvas
+        assert len(annos_by_canvas[annotation.target_source_id]) == 2
+        # check annotations are present where they should be
+        assert annotation in annos_by_canvas[annotation.target_source_id]
+        assert anno2 in annos_by_canvas[annotation.target_source_id]
+
+        # one for the other canvas
+        assert len(annos_by_canvas[other_canvas]) == 1
+        assert other_anno in annos_by_canvas[other_canvas]

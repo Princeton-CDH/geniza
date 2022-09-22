@@ -517,6 +517,9 @@ class Footnote(TrackChangesModel):
                 content__target__source__partOf__id=doc.manifest_uri,
                 content__contains={"dc:source": self.source.uri},
             )
+            # NOTE: when we implement translation, filter on motivation here
+            # to distinguish transcription/translation
+
             # return a dictionary of lists of annotation html content
             # keyed on canvas uri
             # handle multiple annotations on the same canvas

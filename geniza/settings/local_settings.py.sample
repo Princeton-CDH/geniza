@@ -109,4 +109,12 @@ TRANSCRIPTIONS_JSON_FILE = BASE_DIR.parent / "data" / "transcriptions.json"
 # GTAGS_ANALYTICS_ID = ''
 
 # TinyMCE API key
-# TINY_API_KEY = '';
+# TINY_API_KEY = ''
+
+
+# URL for git repository of transcription annotation backups
+# ANNOTATION_BACKUP_GITREPO = ""
+# local path where git repo should be cloned
+# ANNOTATION_BACKUP_PATH = "data/annotations_backup"
+
+

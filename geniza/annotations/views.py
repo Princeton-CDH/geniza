@@ -8,7 +8,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
 
 from geniza.annotations.admin import AnnotationAdmin
-from geniza.annotations.models import Annotation
+from geniza.annotations.models import Annotation, annotations_to_list
 
 # NOTE: for PGP, anyone with permission to edit documents
 # should also have permission to edit or create transcriptions.
@@ -163,13 +163,7 @@ class AnnotationSearch(View, MultipleObjectMixin):
         # TODO: eventually we may want pagination
         # (probably not needed for target uri searches)
         return JsonResponse(
-            {
-                "@context": "http://iiif.io/api/presentation/2/context.json",
-                "@id": request.build_absolute_uri(),  # @id and not id per iiif search spec
-                "@type": "sc:AnnotationList",
-                # context seems to be not required within AnnotationList
-                "resources": [a.compile(include_context=False) for a in annotations],
-            },
+            annotations_to_list(annotations, uri=request.build_absolute_uri())
         )
 
 
@@ -202,7 +196,6 @@ class AnnotationDetail(
         anno = self.get_object()
         json_data = json.loads(request.body)
         anno.set_content(json_data)
-
         # only save and create log entry if changed
         if any(anno.has_changed(f) for f in ["content", "canonical", "via"]):
             anno.save()
