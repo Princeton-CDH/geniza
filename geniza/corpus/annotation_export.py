@@ -33,6 +33,7 @@ class AnnotationExporter:
             )
 
         self.base_output_dir = settings.ANNOTATION_BACKUP_PATH
+        self.git_repo = settings.ANNOTATION_BACKUP_GITREPO
         self.pgpids = pgpids
         self.push_changes = push_changes
         self.verbosity = verbosity if verbosity is not None else self.v_normal
@@ -40,13 +41,12 @@ class AnnotationExporter:
 
     def export(self):
 
-        # initialize git repo interface for output path
-        self.repo = self.setup_repo(
-            self.base_output_dir, getattr(settings, "ANNOTATION_BACKUP_GITREPO", None)
-        )
-        annotations_output_dir = os.path.join(self.base_output_dir, "annotations")
+        # initialize git repo interface for configured output path & repo
+        self.setup_repo()
 
         # define paths and ensure directories exist for compiled transcription
+        annotations_output_dir = os.path.join(self.base_output_dir, "annotations")
+
         transcription_output_dir = {}
         for output_format in ["txt", "html"]:
             format_path = os.path.join(
@@ -159,19 +159,25 @@ class AnnotationExporter:
         if self.repo.is_dirty():
             self.repo.index.commit("Automated data export from PGP")
             if self.push_changes:
-                try:
-                    origin = self.repo.remote(name="origin")
-                    # pull any remote changes
-                    origin.pull()
-                    # push data updates
-                    result = origin.push()
-                    # NOTE: could add debug logging of push summary,
-                    # in case anything bad happens; usually only commit hashes
-                    # for pushinfo in result:
-                    #     print(pushinfo.summary)
-                except ValueError:
-                    self.warn("No origin repository, unable to push updates")
+                self.sync_github()
         # otherwise, no changes to push
+
+    def sync_github(self):
+        """Sync local repository content with origin repository. Assumes
+        :meth:`setup_repo` has already been run, and any new or modified
+        files have been committed."""
+        try:
+            origin = self.repo.remote(name="origin")
+            # pull any remote changes since our last commit
+            origin.pull()
+            # push data updates
+            result = origin.push()
+            # NOTE: could add debug logging of push summary,
+            # in case anything bad happens; usually only commit hashes
+            # for pushinfo in result:
+            #     print(pushinfo.summary)
+        except ValueError:
+            self.warn("No origin repository, unable to push updates")
 
     @staticmethod
     def annotation_list_name(canvas_uri):
@@ -253,8 +259,11 @@ class AnnotationExporter:
         "Output a debug level message"
         self.output_message(message, logging.DEBUG)
 
-    def setup_repo(self, local_path, remote_git_url):
+    def setup_repo(self):
         """ensure git repository has been cloned and content is up to date"""
+
+        local_path = self.base_output_dir
+        remote_git_url = self.git_repo
 
         # if directory does not yet exist, clone repository
         if not os.path.isdir(local_path):
@@ -263,12 +272,10 @@ class AnnotationExporter:
             # clone remote to configured path
             Repo.clone_from(url=remote_git_url, to_path=local_path)
             # then initialize the repo object
-            repo = Repo(local_path)
+            self.repo = Repo(local_path)
         else:
             # pull any changes since the last run
-            repo = Repo(local_path)
+            self.repo = Repo(local_path)
             # only pull / synchronize when we are pushing changes
             if self.push_changes:
-                repo.remotes.origin.pull()
-
-        return repo
+                self.repo.remotes.origin.pull()

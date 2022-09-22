@@ -59,12 +59,15 @@ def test_annotation_list_name(test_input, expected):
 )
 @patch("geniza.corpus.annotation_export.Repo")
 def test_setup_repo_existing(mock_repo, tmp_path):
-    anno_ex = AnnotationExporter()
     # setup when directory already exists
     remote_git_url = "git:somewhere.co/repo.git"
     local_path = str(tmp_path)
-    # os.makedirs(local_path, exist_ok=True)
-    anno_ex.setup_repo(local_path, remote_git_url)
+
+    with override_settings(
+        ANNOTATION_BACKUP_PATH=local_path, ANNOTATION_BACKUP_GITREPO=remote_git_url
+    ):
+        anno_ex = AnnotationExporter()
+        anno_ex.setup_repo()
 
     # not called since it already exists
     assert mock_repo.clone_from.call_count == 0
@@ -78,10 +81,13 @@ def test_setup_repo_existing(mock_repo, tmp_path):
 )
 @patch("geniza.corpus.annotation_export.Repo")
 def test_setup_repo_existing_no_push(mock_repo, tmp_path):
-    # with push changes turned off
-    anno_ex = AnnotationExporter(push_changes=False)
+    # with push changes turned off, directory exists
     local_path = str(tmp_path)
-    anno_ex.setup_repo(local_path, None)
+
+    with override_settings(ANNOTATION_BACKUP_PATH=local_path):
+        anno_ex = AnnotationExporter(push_changes=False)
+        anno_ex.setup_repo()
+
     assert mock_repo.clone_from.call_count == 0
     mock_repo.assert_called_with(local_path)
     mock_repo.return_value.remotes.origin.pull.assert_not_called()
@@ -103,11 +109,15 @@ class TestAnnotationExporter(TestCase):
 
     @patch("geniza.corpus.annotation_export.Repo")
     def test_setup_repo_new(self, mock_repo):
-        anno_ex = AnnotationExporter()
         # setup when directory doesn't exist
         local_path = "/tmp/my/repo/path"
         remote_git_url = "git:somewhere.co/repo.git"
-        anno_ex.setup_repo(local_path, remote_git_url)
+
+        with override_settings(
+            ANNOTATION_BACKUP_PATH=local_path, ANNOTATION_BACKUP_GITREPO=remote_git_url
+        ):
+            anno_ex = AnnotationExporter()
+            anno_ex.setup_repo()
 
         mock_repo.clone_from.assert_called_with(url=remote_git_url, to_path=local_path)
         mock_repo.assert_called_with(local_path)
@@ -165,6 +175,29 @@ class TestAnnotationExporter(TestCase):
 
             anno_ex.debug("debug")
             mock_output_msg.assert_called_with("debug", logging.DEBUG)
+
+    def test_sync_github(self):
+        anno_ex = AnnotationExporter()
+        # use a Mock object for repo client
+        anno_ex.repo = Mock()
+        anno_ex.sync_github()
+
+        # should get origin, pull, then push
+        anno_ex.repo.remote.assert_called_with(name="origin")
+        anno_ex.repo.remote.return_value.pull.assert_called()
+        anno_ex.repo.remote.return_value.push.assert_called()
+
+    def test_sync_github_no_origin(self):
+        # sync if repository has no remote named origin
+        anno_ex = AnnotationExporter()
+        # patch warn method so we can inspect
+        with patch.object(anno_ex, "warn") as mock_warn:
+            # use a Mock object for repo client
+            anno_ex.repo = Mock()
+            anno_ex.repo.remote.side_effect = ValueError
+            anno_ex.sync_github()
+
+            mock_warn.assert_called_with("No origin repository, unable to push updates")
 
 
 def test_output_message_logger(caplog, tmp_path):
