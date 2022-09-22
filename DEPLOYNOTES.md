@@ -6,6 +6,8 @@
 -   Migrate transcription content from TEI xml to the new IIIF annotation
     format: `python manage.py tei_to_annotation -v 0`
 -   Reindex after the migration: `python manage.py index`
+-   Note: must manually accept GitHub host key the first time using annotation
+    export to github
 
 ## 4.8
 

@@ -146,6 +146,9 @@ class AnnotationExporter:
                             # so should be minimal and content only
                             outfile.write(edition.content_text)
 
+        # commit and push (if configured) all the exported files
+        self.commit_changed_files(updated_filenames)
+
     def commit_changed_files(self, updated_filenames):
         # prep updated files for commit to git repo
         #  - adjust paths so they are relative to git root

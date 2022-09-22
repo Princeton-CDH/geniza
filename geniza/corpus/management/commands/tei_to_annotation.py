@@ -275,7 +275,9 @@ class Command(sync_transcriptions.Command):
                 print("\t%s" % xmlfile)
 
         # report on edition footnotes that still have content
-        self.check_unmigrated_footnotes()
+        # (skip when unning on a specified files)
+        if not options["files"]:
+            self.check_unmigrated_footnotes()
 
     def get_footnote_editions(self, doc):
         # extend to return digital edition or edition
