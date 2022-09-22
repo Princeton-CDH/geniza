@@ -8,6 +8,8 @@
 -   Reindex after the migration: `python manage.py index`
 -   Note: must manually accept GitHub host key the first time using annotation
     export to github
+-   Configure `python manage.py sync_annotation_export` as a cron job to regularly
+    update remote git repository with annotation exports generated via signal handler.
 
 ## 4.8
 
