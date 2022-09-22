@@ -4,9 +4,12 @@ from io import StringIO
 from unittest.mock import Mock, patch
 
 import pytest
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from git import GitCommandError
 
+from geniza.common.models import UserProfile
 from geniza.corpus.annotation_export import AnnotationExporter
 from geniza.corpus.models import Document
 
@@ -220,6 +223,37 @@ class TestAnnotationExporter(TestCase):
             anno_ex.sync_github()
 
             mock_warn.assert_called_with("No origin repository, unable to push updates")
+
+    def test_get_git_commit_message_default(self):
+        # no modifying users
+        anno_ex = AnnotationExporter()
+        # uses default commit message
+        assert anno_ex.get_commit_message() == anno_ex.commit_msg
+
+    def test_get_git_commit_message_coauthors(self):
+        # get script user
+        script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
+        # create a test user with a profile
+        editor = User.objects.create(
+            username="editor", last_name="Editor", first_name="Ma"
+        )
+        # give test user a profile
+        github_coauthor = "tester@users.noreply.github.com"
+        profile = UserProfile.objects.create(
+            user=editor, github_coauthor=github_coauthor
+        )
+
+        anno_ex = AnnotationExporter(modifying_users=[editor, script_user])
+        # should not error on admin user with no profile
+        commit_msg = anno_ex.get_commit_message()
+
+        # starts with default message + newline
+        assert commit_msg.startswith("%s\n" % anno_ex.commit_msg)
+        # should include co-author string
+        assert (
+            f"Co-authored-by: {editor.get_full_name()} <{github_coauthor}>"
+            in commit_msg
+        )
 
 
 def test_output_message_logger(caplog, tmp_path):
