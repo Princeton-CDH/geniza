@@ -118,3 +118,13 @@ main.homepage {
         }
     }
 }
+
+// Hebrew variant
+html[lang="he"] main.content-page,
+html[lang="he"] main.homepage {
+    // TODO: Wagtail content should get lang attribute by block
+    p:not([lang="en"]) b,
+    p:not([lang="en"]) i {
+        @include typography.body-he;
+    }
+}
