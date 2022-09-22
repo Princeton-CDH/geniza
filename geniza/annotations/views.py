@@ -198,10 +198,12 @@ class AnnotationDetail(
         anno.set_content(json_data)
         # only save and create log entry if changed
         if any(anno.has_changed(f) for f in ["content", "canonical", "via"]):
-            anno.save()
             # create log entry to document change
             anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
             anno_admin.log_change(request, anno, "Updated via API")
+            # NOTE: creating log entry first to ensure it is available
+            # for backup signal handler fired on annotation save
+            anno.save()
 
         return AnnotationResponse(anno.compile())
 
