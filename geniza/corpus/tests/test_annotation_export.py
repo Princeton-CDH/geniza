@@ -188,7 +188,7 @@ def test_output_message_logger(caplog, tmp_path):
 def test_annotation_export(mock_repo, annotation, tmp_path):
     # test actual export logic
     with override_settings(
-        ANNOTATION_BACKUP_PATH=tmp_path, ANNOTATION_BACKUP_GITREPO="git:foo"
+        ANNOTATION_BACKUP_PATH=str(tmp_path), ANNOTATION_BACKUP_GITREPO="git:foo"
     ):
         doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
         anno_ex = AnnotationExporter(pgpids=[doc_id])
@@ -217,3 +217,6 @@ def test_annotation_export(mock_repo, annotation, tmp_path):
         html_content = html_files[0].read_text()
         assert "Test annotation" in html_content
         assert '<section dir="rtl"' in html_content
+
+        # should commit changes
+        anno_ex.repo.index.add.assert_called()
