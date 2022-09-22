@@ -53,9 +53,6 @@ def test_annotation_list_name(test_input, expected):
     assert AnnotationExporter.annotation_list_name(test_input) == expected
 
 
-# todo set override configs
-
-
 @override_settings(
     ANNOTATION_BACKUP_PATH="/tmp/anno-export",
     ANNOTATION_BACKUP_GITREPO="git:ghub.org/repo.git",
@@ -79,7 +76,30 @@ def test_setup_repo_existing(mock_repo, tmp_path):
     ANNOTATION_BACKUP_PATH="/tmp/anno-export",
     ANNOTATION_BACKUP_GITREPO="git:ghub.org/repo.git",
 )
+@patch("geniza.corpus.annotation_export.Repo")
+def test_setup_repo_existing_no_push(mock_repo, tmp_path):
+    # with push changes turned off
+    anno_ex = AnnotationExporter(push_changes=False)
+    anno_ex.setup_repo(local_path, None)
+    assert mock_repo.clone_from.call_count == 0
+    mock_repo.assert_called_with(local_path)
+    mock_repo.return_value.remotes.origin.pull.assert_not_called()
+
+
+@override_settings(
+    ANNOTATION_BACKUP_PATH="/tmp/anno-export",
+    ANNOTATION_BACKUP_GITREPO="git:ghub.org/repo.git",
+)
 class TestAnnotationExporter(TestCase):
+    def test_init_required_settings(self):
+        with override_settings(
+            ANNOTATION_BACKUP_PATH=None, ANNOTATION_BACKUP_GITREPO=None
+        ):
+            with pytest.raises(Exception) as excinfo:
+                AnnotationExporter()
+
+            assert "required" in str(excinfo.value)
+
     @patch("geniza.corpus.annotation_export.Repo")
     def test_setup_repo_new(self, mock_repo):
         anno_ex = AnnotationExporter()
@@ -104,6 +124,23 @@ class TestAnnotationExporter(TestCase):
         mock_repo.index.add.assert_called_with(["anno/pgp23/1.json"])
         assert mock_repo.index.commit.call_count == 0
 
+    @patch("geniza.corpus.annotation_export.Repo")
+    def test_commit_changed_files(self, mock_repo):
+        anno_ex = AnnotationExporter()
+        anno_ex.base_output_dir = "data"
+        files = ["data/anno/pgp23/1.json"]
+        anno_ex.repo = mock_repo
+        anno_ex.repo.is_dirty.return_value = True
+
+        anno_ex.commit_changed_files(files)
+        # called without base dir prefix path
+        mock_repo.index.add.assert_called_with(["anno/pgp23/1.json"])
+        mock_repo.index.commit.assert_called_with("Automated data export from PGP")
+        # with push changes true
+        mock_repo.remote.assert_called_with(name="origin")
+        mock_repo.remote.return_value.pull.assert_called()
+        mock_repo.remote.return_value.push.assert_called()
+
     def test_output_message_stdout(self):
         stdout = Mock()
         anno_ex = AnnotationExporter(stdout=stdout)
@@ -121,6 +158,12 @@ class TestAnnotationExporter(TestCase):
         with patch.object(anno_ex, "output_message") as mock_output_msg:
             anno_ex.output_info("info")
             mock_output_msg.assert_called_with("info", logging.INFO)
+
+            anno_ex.warn("warning")
+            mock_output_msg.assert_called_with("warning", logging.WARNING)
+
+            anno_ex.debug("debug")
+            mock_output_msg.assert_called_with("debug", logging.DEBUG)
 
 
 def test_output_message_logger(caplog, tmp_path):

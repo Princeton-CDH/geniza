@@ -41,13 +41,9 @@ class AnnotationExporter:
     def export(self):
 
         # initialize git repo interface for output path
-        if not self.push_changes:
-            # no sync or cloning needed if not pushing changes
-            self.repo = Repo(self.base_output_dir)
-        else:
-            self.repo = self.setup_repo(
-                self.base_output_dir, settings.ANNOTATION_BACKUP_GITREPO
-            )
+        self.repo = self.setup_repo(
+            self.base_output_dir, getattr(settings, "ANNOTATION_BACKUP_GITREPO", None)
+        )
         annotations_output_dir = os.path.join(self.base_output_dir, "annotations")
 
         # define paths and ensure directories exist for compiled transcription
@@ -158,18 +154,18 @@ class AnnotationExporter:
         ]
         self.repo.index.add(updated_filenames)
         if self.repo.is_dirty():
-            repo.index.commit("Automated data export from PGP")
+            self.repo.index.commit("Automated data export from PGP")
             if self.push_changes:
                 try:
-                    origin = repo.remote(name="origin")
+                    origin = self.repo.remote(name="origin")
                     # pull any remote changes
                     origin.pull()
                     # push data updates
                     result = origin.push()
-                    # output push summary in case anything bad happens
-                    # maybe logger debug output?
+                    # NOTE: could add debug logging of push summary,
+                    # in case anything bad happens; usually only commit hashes
                     # for pushinfo in result:
-                    # print(pushinfo.summary)
+                    #     print(pushinfo.summary)
                 except ValueError:
                     self.warn("No origin repository, unable to push updates")
         # otherwise, no changes to push
@@ -268,6 +264,8 @@ class AnnotationExporter:
         else:
             # pull any changes since the last run
             repo = Repo(local_path)
-            repo.remotes.origin.pull()
+            # don't pull / synchronize if we're not pushing changes
+            if not self.push_changes:
+                repo.remotes.origin.pull()
 
         return repo
