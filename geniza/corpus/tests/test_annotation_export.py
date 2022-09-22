@@ -80,6 +80,7 @@ def test_setup_repo_existing(mock_repo, tmp_path):
 def test_setup_repo_existing_no_push(mock_repo, tmp_path):
     # with push changes turned off
     anno_ex = AnnotationExporter(push_changes=False)
+    local_path = str(tmp_path)
     anno_ex.setup_repo(local_path, None)
     assert mock_repo.clone_from.call_count == 0
     mock_repo.assert_called_with(local_path)

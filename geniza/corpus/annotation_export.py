@@ -264,8 +264,8 @@ class AnnotationExporter:
         else:
             # pull any changes since the last run
             repo = Repo(local_path)
-            # don't pull / synchronize if we're not pushing changes
-            if not self.push_changes:
+            # only pull / synchronize when we are pushing changes
+            if self.push_changes:
                 repo.remotes.origin.pull()
 
         return repo
