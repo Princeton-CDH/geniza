@@ -49,7 +49,12 @@ class AnnotationExporter:
         self.stdout = stdout
         self.modifying_users = modifying_users
 
-    def export(self):
+    def export(self, pgpids=None, modifying_users=None):
+        # allow overriding pgpid or modifying users for this export
+        if pgpids:
+            self.pgpids = pgpids
+        if modifying_users:
+            self.modifying_users = modifying_users
 
         # initialize git repo interface for configured output path & repo
         self.setup_repo()
@@ -229,6 +234,13 @@ class AnnotationExporter:
         # first name, last name, coauthor email
         coauth_msg = "Co-authored-by: %s <%s>"
         for user in self.modifying_users:
+            # special case: there is one TEI bitbucket contributor
+            # without a github account
+
+            if isinstance(user, str):
+                coauthors.append("Co-authored-by: %s" % user)
+                continue
+
             try:
                 # if github coauthor is available, add to list of coauthors
                 if user.profile.github_coauthor:
@@ -240,8 +252,11 @@ class AnnotationExporter:
                         )
                     )
             except User.profile.RelatedObjectDoesNotExist:
-                # ignore if user has no profile
-                pass
+                # if user has no profile, list their name or username at least
+                # (GitHub won't be able to parse it, but it will be tracked)
+                coauthors.append(
+                    "Co-authored-by: %s" % user.get_full_name() or user.username
+                )
 
         return "%s\n\n%s" % (self.commit_msg, "\n".join(coauthors))
 

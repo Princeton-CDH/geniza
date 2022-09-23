@@ -9,6 +9,7 @@ import os.path
 import unicodedata
 from collections import defaultdict
 from datetime import datetime
+from functools import cached_property
 
 import requests
 from addict import Dict
@@ -28,6 +29,7 @@ from parasolr.django.signals import IndexableSignalHandler
 from geniza.annotations.models import Annotation
 from geniza.annotations.signals import disconnect_signal_handlers
 from geniza.common.utils import absolutize_url
+from geniza.corpus.annotation_export import AnnotationExporter
 from geniza.corpus.management.commands import sync_transcriptions
 from geniza.corpus.models import Document
 from geniza.corpus.tei_transcriptions import GenizaTei
@@ -65,6 +67,8 @@ class Command(sync_transcriptions.Command):
         # make sure we have latest tei content from git repository
         # (inherited from sync transcriptions command)
         self.sync_git(gitrepo_url, gitrepo_path)
+        # initialize local git repo client
+        self.tei_gitrepo = Repo(gitrepo_path)
 
         self.stats = defaultdict(int)
 
@@ -81,6 +85,12 @@ class Command(sync_transcriptions.Command):
             all_annos = Annotation.objects.all()
             self.stdout.write("Clearing %d annotations" % all_annos.count())
             all_annos.delete()
+
+        # initialize annotation exporter; don't push changes until the end
+        # FIXME: override default commit message to differentiate from auto version?
+        self.anno_exporter = AnnotationExporter(
+            stdout=self.stdout, verbosity=options["verbosity"], push_changes=False
+        )
 
         # iterate through tei files to be migrated
         for xmlfile in xmlfiles:
@@ -251,10 +261,16 @@ class Command(sync_transcriptions.Command):
                 self.log_addition(db_anno, "Migrated from TEI transcription")
                 self.stats["created"] += 1
 
+            # export migrated transcription to backup
+            self.export_transcription(doc, xmlfile_basename)
+
         print(
             "Processed %(xml)d TEI file(s). \nCreated %(created)d annotation(s)."
             % self.stats
         )
+
+        # push all changes from migration to github
+        self.anno_exporter.sync_github()
 
         # report on missing footnotes
         if self.missing_footnotes:
@@ -358,6 +374,51 @@ class Command(sync_transcriptions.Command):
             # log footnote change and return
             self.log_change(footnote, "Migrated footnote to digital edition")
             return footnote
+
+    # lookup to map tei git repo usernames to pgp db username for co-author string
+    teicontributor_to_username = {
+        "Alan Elbaum": "ae5677",
+        # multiple Bens should all map to same user
+        "Ben": "benj",
+        "Ben Johnston": "benj",
+        "benj@princeton.edu": "benj",
+        "benjohnsto": "benj",
+        # no github account that I can find; just use the name
+        "Brendan Goldman": "Brendan Goldman",
+        "Jessica Parker": "jp0630",
+        "Ksenia Ryzhova": "kryzhova",
+        "Rachel Richman": "rrichman",
+        "mrustow": "mrustow",
+        # multiple RSKs also...
+        "Rebecca Sutton Koeser": "rkoeser",
+        "rlskoeser": "rkoeser",
+    }
+
+    @cached_property
+    def tei_contrib_users(self):
+        # retrieve users from database based on known tei contributor usernames,
+        # and return as a dict for lookup by username
+        tei_users = User.objects.filter(
+            username__in=set(self.teicontributor_to_username.values())
+        )
+        return {u.username: u for u in tei_users}
+
+    def export_transcription(self, document, xmlfile):
+        # get contributors and export to git backup
+
+        # get the unique list of all contributors to this file
+        commits = list(self.tei_gitrepo.iter_commits("master", paths=xmlfile))
+        contributors = set([c.author.name for c in commits])
+        # convert bitbucket users to unique set of pgp users
+        contrib_usernames = set(
+            self.teicontributor_to_username[c] for c in contributors
+        )
+        # now get actual users for those usernames...
+        contrib_users = [self.tei_contrib_users.get(u, u) for u in contrib_usernames]
+
+        # export transcription for the specified document,
+        # documenting the users who modified the TEI file
+        self.anno_exporter.export(pgpids=[document.pk], modifying_users=contrib_users)
 
     def log_addition(self, obj, log_message):
         "create a log entry documenting object creation"
