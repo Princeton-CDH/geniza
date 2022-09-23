@@ -93,10 +93,7 @@ def backup_annotation(document_id, annotation):
     now = timezone.now()
     # get log entry to give co-author credit on the commit
     # to the user who made the change (when possible)
-    print("now %s" % now)
-    print(
-        "last minute %s" % (now - timedelta(seconds=60)),
-    )
+
     # look for log entries on this object, ordered by most recent
     # limit to log entries in the last ten seconds to avoid
     # picking up the wrong log entry; sort most recent first
