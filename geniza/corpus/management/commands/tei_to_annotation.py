@@ -421,7 +421,11 @@ class Command(sync_transcriptions.Command):
 
         # export transcription for the specified document,
         # documenting the users who modified the TEI file
-        self.anno_exporter.export(pgpids=[document.pk], modifying_users=contrib_users)
+        self.anno_exporter.export(
+            pgpids=[document.pk],
+            modifying_users=contrib_users,
+            commit_msg="Transcription migrated from TEI %s" % xmlfile,
+        )
 
     def log_addition(self, obj, log_message):
         "create a log entry documenting object creation"

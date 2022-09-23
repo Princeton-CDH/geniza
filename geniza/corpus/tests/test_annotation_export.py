@@ -335,12 +335,18 @@ def test_annotation_export_override(mock_repo, annotation, tmp_path):
         doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
 
         anno_ex = AnnotationExporter()
-        anno_ex.export(pgpids=[doc_id], modifying_users=["user1", "user2"])
+        anno_ex.export(
+            pgpids=[doc_id],
+            modifying_users=["user1", "user2"],
+            commit_msg="change this",
+        )
 
         # should only create one document output dir
         assert len(list(tmp_path.joinpath("annotations").glob("*"))) == 1
         assert anno_ex.pgpids == [doc_id]
         assert anno_ex.modifying_users == ["user1", "user2"]
+        assert anno_ex.commit_msg == "change this"
+        assert anno_ex.get_commit_message().startswith("change this")
 
 
 @pytest.mark.django_db

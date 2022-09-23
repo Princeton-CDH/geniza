@@ -55,12 +55,14 @@ class AnnotationExporter:
         # allow overriding default commit message
         self.commit_msg = commit_msg or self.default_commit_msg
 
-    def export(self, pgpids=None, modifying_users=None):
-        # allow overriding pgpid or modifying users for this export
+    def export(self, pgpids=None, modifying_users=None, commit_msg=None):
+        # allow overriding pgpid, modifying users, or commit message for this export
         if pgpids:
             self.pgpids = pgpids
         if modifying_users:
             self.modifying_users = modifying_users
+        if commit_msg:
+            self.commit_msg = commit_msg
 
         # initialize git repo interface for configured output path & repo
         self.setup_repo()
