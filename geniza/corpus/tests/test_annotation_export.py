@@ -230,6 +230,12 @@ class TestAnnotationExporter(TestCase):
         # uses default commit message
         assert anno_ex.get_commit_message() == anno_ex.commit_msg
 
+    def test_get_git_commit_message_default_override(self):
+        # no modifying users
+        anno_ex = AnnotationExporter(commit_msg="something else")
+        # uses default commit message
+        assert anno_ex.get_commit_message() == "something else"
+
     def test_get_git_commit_message_coauthors(self):
         # get script user
         script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
@@ -243,9 +249,10 @@ class TestAnnotationExporter(TestCase):
             user=editor, github_coauthor=github_coauthor
         )
 
-        anno_ex = AnnotationExporter(modifying_users=[editor, script_user])
+        anno_ex = AnnotationExporter(modifying_users=[editor, script_user, "A Person"])
         # should not error on admin user with no profile
         commit_msg = anno_ex.get_commit_message()
+        print(commit_msg)
 
         # starts with default message + newline
         assert commit_msg.startswith("%s\n" % anno_ex.commit_msg)
@@ -254,6 +261,10 @@ class TestAnnotationExporter(TestCase):
             f"Co-authored-by: {editor.get_full_name()} <{github_coauthor}>"
             in commit_msg
         )
+        # should include fall-back co-author string for user without profile
+        assert f"Co-authored-by: {script_user.username}" in commit_msg
+        # should include fall-back co-author string for name as string
+        assert f"Co-authored-by: A Person" in commit_msg
 
 
 def test_output_message_logger(caplog, tmp_path):
@@ -312,6 +323,24 @@ def test_annotation_export(mock_repo, annotation, tmp_path):
         anno_ex.repo.index.add.assert_called()
         # should not call remove
         anno_ex.repo.index.remove.assert_not_called()
+
+
+@pytest.mark.django_db
+@patch("geniza.corpus.annotation_export.Repo")
+def test_annotation_export_override(mock_repo, annotation, tmp_path):
+    # test exporting specified pgpid & contributors
+    with override_settings(
+        ANNOTATION_BACKUP_PATH=str(tmp_path), ANNOTATION_BACKUP_GITREPO="git:foo"
+    ):
+        doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+
+        anno_ex = AnnotationExporter()
+        anno_ex.export(pgpids=[doc_id], modifying_users=["user1", "user2"])
+
+        # should only create one document output dir
+        assert len(list(tmp_path.joinpath("annotations").glob("*"))) == 1
+        assert anno_ex.pgpids == [doc_id]
+        assert anno_ex.modifying_users == ["user1", "user2"]
 
 
 @pytest.mark.django_db

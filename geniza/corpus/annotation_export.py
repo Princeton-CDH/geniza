@@ -25,6 +25,9 @@ logger = logging.getLogger(__name__)
 class AnnotationExporter:
     v_normal = 1
 
+    #: default commit message
+    default_commit_msg = "Automated data export from PGP"
+
     def __init__(
         self,
         pgpids=None,
@@ -32,6 +35,7 @@ class AnnotationExporter:
         push_changes=True,
         verbosity=None,
         modifying_users=None,
+        commit_msg=None,
     ):
         # check that required settings are available
         if not getattr(settings, "ANNOTATION_BACKUP_PATH") or not getattr(
@@ -48,8 +52,15 @@ class AnnotationExporter:
         self.verbosity = verbosity if verbosity is not None else self.v_normal
         self.stdout = stdout
         self.modifying_users = modifying_users
+        # allow overriding default commit message
+        self.commit_msg = commit_msg or self.default_commit_msg
 
-    def export(self):
+    def export(self, pgpids=None, modifying_users=None):
+        # allow overriding pgpid or modifying users for this export
+        if pgpids:
+            self.pgpids = pgpids
+        if modifying_users:
+            self.modifying_users = modifying_users
 
         # initialize git repo interface for configured output path & repo
         self.setup_repo()
@@ -216,9 +227,6 @@ class AnnotationExporter:
                 self.sync_github()
         # otherwise, no changes to push
 
-    #: default commit message
-    commit_msg = "Automated data export from PGP"
-
     def get_commit_message(self):
         # construct co-author commit (if any) and add to the commit message
         if not self.modifying_users:
@@ -229,19 +237,31 @@ class AnnotationExporter:
         # first name, last name, coauthor email
         coauth_msg = "Co-authored-by: %s <%s>"
         for user in self.modifying_users:
+            # special case: there is one TEI bitbucket contributor
+            # without a github account; handle user as bare string
+            if isinstance(user, str):
+                display_name = user
+            else:
+                # username as fallback in case last/first names not set
+                display_name = user.get_full_name().strip() or user.username
+
+            coauthor_email = None
             try:
                 # if github coauthor is available, add to list of coauthors
-                if user.profile.github_coauthor:
-                    coauthors.append(
-                        coauth_msg
-                        % (
-                            user.get_full_name(),
-                            user.profile.github_coauthor,
-                        )
-                    )
-            except User.profile.RelatedObjectDoesNotExist:
-                # ignore if user has no profile
+                coauthor_email = user.profile.github_coauthor
+            except (User.profile.RelatedObjectDoesNotExist, AttributeError):
+                # ignore error if user has no profile,
+                # or if given a string instead of a User
                 pass
+
+            # always list name or username as co-author, even if no email
+            # GitHub won't be able to parse it, but it will be tracked)
+            if coauthor_email:
+                # co-author with email
+                coauthors.append(coauth_msg % (display_name, coauthor_email))
+            else:
+                # co-author with name only
+                coauthors.append("Co-authored-by: %s" % display_name)
 
         return "%s\n\n%s" % (self.commit_msg, "\n".join(coauthors))
 
