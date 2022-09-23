@@ -25,6 +25,9 @@ logger = logging.getLogger(__name__)
 class AnnotationExporter:
     v_normal = 1
 
+    #: default commit message
+    default_commit_msg = "Automated data export from PGP"
+
     def __init__(
         self,
         pgpids=None,
@@ -32,6 +35,7 @@ class AnnotationExporter:
         push_changes=True,
         verbosity=None,
         modifying_users=None,
+        commit_msg=None,
     ):
         # check that required settings are available
         if not getattr(settings, "ANNOTATION_BACKUP_PATH") or not getattr(
@@ -48,6 +52,8 @@ class AnnotationExporter:
         self.verbosity = verbosity if verbosity is not None else self.v_normal
         self.stdout = stdout
         self.modifying_users = modifying_users
+        # allow overriding default commit message
+        self.commit_msg = commit_msg or self.default_commit_msg
 
     def export(self, pgpids=None, modifying_users=None):
         # allow overriding pgpid or modifying users for this export
@@ -220,9 +226,6 @@ class AnnotationExporter:
             if self.push_changes:
                 self.sync_github()
         # otherwise, no changes to push
-
-    #: default commit message
-    commit_msg = "Automated data export from PGP"
 
     def get_commit_message(self):
         # construct co-author commit (if any) and add to the commit message

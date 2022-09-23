@@ -230,6 +230,12 @@ class TestAnnotationExporter(TestCase):
         # uses default commit message
         assert anno_ex.get_commit_message() == anno_ex.commit_msg
 
+    def test_get_git_commit_message_default_override(self):
+        # no modifying users
+        anno_ex = AnnotationExporter(commit_msg="something else")
+        # uses default commit message
+        assert anno_ex.get_commit_message() == "something else"
+
     def test_get_git_commit_message_coauthors(self):
         # get script user
         script_user = User.objects.get(username=settings.SCRIPT_USERNAME)

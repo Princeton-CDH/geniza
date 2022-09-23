@@ -89,7 +89,10 @@ class Command(sync_transcriptions.Command):
         # initialize annotation exporter; don't push changes until the end
         # FIXME: override default commit message to differentiate from auto version?
         self.anno_exporter = AnnotationExporter(
-            stdout=self.stdout, verbosity=options["verbosity"], push_changes=False
+            stdout=self.stdout,
+            verbosity=options["verbosity"],
+            push_changes=False,
+            commit_msg="PGP transcription export from TEI migration",
         )
 
         # iterate through tei files to be migrated
