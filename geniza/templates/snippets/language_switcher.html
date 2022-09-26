@@ -13,13 +13,7 @@
                     {% endblocktranslate %}
                 {% endlanguage %}
                 <li>
-                    <a
-                        href="{% translate_url language.code %}"
-                        title="{{ lang_link_label }}"
-                        lang="{{ language.code }}"
-                        data-turbo="false"{% if language.code == LANGUAGE_CODE %}
-                            class="selected"{% endif %}
-                    >
+                    <a href="{% translate_url language.code %}" title="{{ lang_link_label }}" lang="{{ language.code }}" data-turbo="false"{% if language.code == LANGUAGE_CODE %} class="selected"{% endif %}>
                         <span class="sr-only">{{ lang_link_label }}</span>
                     </a>
                 </li>
