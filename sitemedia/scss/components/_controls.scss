@@ -5,41 +5,97 @@
 @use "../base/a11y";
 @use "../base/breakpoints";
 @use "../base/spacing";
+@use "../base/typography";
 
-div.controls {
-    // Controls layout: top right corner
+// Langauge switcher
+ul#language-switcher {
     display: flex;
-    position: absolute;
-    width: auto;
-    flex-direction: row;
-    align-items: flex-start;
-    right: 4rem;
-    top: 1.25rem;
+    visibility: hidden;
+    background-color: var(--background-gray);
+    border-radius: 20px;
     z-index: 8;
+    position: fixed;
+    top: 16px;
+    right: 107px;
     @include breakpoints.for-tablet-landscape-up {
-        right: spacing.$spacing-sm;
-        top: spacing.$spacing-xs;
+        visibility: visible;
+        position: relative;
+        top: auto;
+        right: 72px;
+        border-radius: calc(53px / 2);
+        // margin to make room for tablet theme toggle
+        margin-right: 30px;
     }
-
-    // Language switcher form
-    form#language {
-        option[value="he"],
-        option[value="ar"] {
-            direction: rtl;
-        }
-        // hide on mobile
-        display: none;
-        // show on desktop
+    @include breakpoints.for-desktop-up {
+        margin-right: auto;
+    }
+    li a {
+        background-color: var(--background-gray);
+        border: 3px solid var(--background-gray);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 20px;
+        text-decoration: none;
         @include breakpoints.for-tablet-landscape-up {
-            display: block;
+            width: 53px;
+            height: 53px;
+            border-width: 4px;
+            border-radius: calc(53px / 2);
+        }
+        &.selected {
+            background-color: var(--selected-language);
+            border-color: var(--filter-active);
+        }
+        &:hover {
+            border-color: var(--tabs-bottom-hover);
+            transition: border-color 150ms ease-in-out;
+        }
+        &::before {
+            display: flex;
+            color: var(--on-background);
+        }
+        &[lang="en"]::before {
+            content: "E";
+            @include typography.headline-error;
+        }
+        &[lang="he"]::before {
+            content: "ע";
+            @include typography.hebrew;
+            font-size: typography.$text-size-xl;
+            @include breakpoints.for-tablet-landscape-up {
+                font-size: calc(26rem / 16);
+            }
+        }
+        &[lang="ar"]::before {
+            // TODO: Change to @include typography.headline-3 in new Arabic font
+            content: "ع";
+            font-size: typography.$text-size-2xl;
+            margin-top: -5px;
+            @include breakpoints.for-tablet-landscape-up {
+                font-size: typography.$text-size-3xl;
+                margin-top: -5px;
+            }
         }
     }
+    li:not(:last-child) {
+        margin-right: 8px;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-right: 4px;
+        }
+    }
+}
+
+ul:target + ul#language-switcher {
+    visibility: visible;
 }
 
 // light/dark mode toggle
 label#theme-toggle {
     position: absolute;
-    z-index: 7;
+    z-index: 8;
     display: block;
     cursor: pointer;
     top: spacing.$spacing-md;
@@ -47,9 +103,9 @@ label#theme-toggle {
     width: 40px;
     height: 40px;
     @include breakpoints.for-tablet-landscape-up {
-        top: 45px;
+        top: 30px;
         right: auto;
-        left: calc(95vw - 70px);
+        left: calc(96.5vw - 70px);
         width: 70px;
         height: 70px;
     }
@@ -81,10 +137,20 @@ label#theme-toggle {
 }
 
 // tweaks for RTL layout for hebrew, arabic
-html[dir="rtl"] div.controls {
-    left: 4rem;
-    right: auto;
-    @include breakpoints.for-tablet-landscape-up {
-        left: spacing.$spacing-sm;
+html[dir="rtl"] {
+    ul#language-switcher {
+        left: 55px;
+        right: auto;
+        @include breakpoints.for-tablet-landscape-up {
+            left: 72px;
+        }
+        li:not(:last-child) {
+            margin-right: auto;
+            margin-left: 8px;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-right: auto;
+                margin-left: 4px;
+            }
+        }
     }
 }

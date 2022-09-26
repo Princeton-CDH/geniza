@@ -560,6 +560,14 @@ html[dir="rtl"] main.search form {
             }
         }
     }
+
+    // sort field and label
+    fieldset#sort {
+        i.ph-caret-down {
+            margin-left: auto;
+            margin-right: -35px;
+        }
+    }
 }
 
 // Hebrew variant
