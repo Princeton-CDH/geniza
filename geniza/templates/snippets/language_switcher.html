@@ -1,27 +1,29 @@
-{% load i18n %}
+{% load i18n corpus_extras %}
 
 {% if LANGUAGES|length > 1 and user.is_authenticated or PUBLIC_SITE_LANGUAGES|length > 1  %}
-    <form id="language" action="{% url 'set_language' %}" method="post" data-turbo="false">{% csrf_token %}
-        <fieldset>
-            <input name="next" type="hidden" value="{{ redirect_to }}">
-            <select name="language">
-                {% get_language_info_list for LANGUAGES as languages %}
-                {% for language in languages %}
-                    {# For anonymous users, only display languages in PUBLIC_SITE_LANGUAGES #}
-                    {% if user.is_authenticated or language.code in PUBLIC_SITE_LANGUAGES %}
-                        <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected{% endif %}>
-                            {% language language.code %} {# display label for language in that language! #}
-                                {# Translators: label for language choices in navigation #}
-                                {% blocktranslate with language_name=language.name_local language_code=language.code trimmed %}
-                                    read this page in {{ language_name }} ({{ language_code }})
-                                {% endblocktranslate %}
-                            {% endlanguage %}
-                        </option>
-                    {% endif %}
-                {% endfor %}
-            </select>
-            {# Translators: button on language chooser in navigation #}
-            <input type="submit" value="{% translate 'go' context 'choose this option' %}">
-        </fieldset>
-    </form>
+    <ul id="language-switcher">
+        {% get_language_info_list for LANGUAGES as languages %}
+        {% for language in languages %}
+            {# For anonymous users, only display languages in PUBLIC_SITE_LANGUAGES #}
+            {% if user.is_authenticated or language.code in PUBLIC_SITE_LANGUAGES %}
+                {% language language.code %} {# display label for language in that language! #}
+                    {# Translators: label for language choices in navigation #}
+                    {% blocktranslate with language_name=language.name_local language_code=language.code trimmed asvar lang_link_label %}
+                        read this page in {{ language_name }} ({{ language_code }})
+                    {% endblocktranslate %}
+                {% endlanguage %}
+                <li>
+                    <a
+                        href="{% translate_url language.code %}"
+                        title="{{ lang_link_label }}"
+                        lang="{{ language.code }}"
+                        data-turbo="false"{% if language.code == LANGUAGE_CODE %}
+                            class="selected"{% endif %}
+                    >
+                        <span class="sr-only">{{ lang_link_label }}</span>
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
 {% endif %}
