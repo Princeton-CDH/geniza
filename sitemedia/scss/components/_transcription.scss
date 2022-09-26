@@ -756,11 +756,7 @@
                 min-height: calc(1rem * 1.5 * 2);
             }
         }
-        // list number decimal cover
-        ol li::before {
-            right: 29px;
-            background-color: var(--background-light);
-        }
+
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 0 0;
             // "Transcription" header
@@ -775,14 +771,6 @@
             h3 {
                 margin-top: 12px;
                 margin-bottom: 12px;
-            }
-            // list number decimal cover
-            ol li::before {
-                right: 108px;
-            }
-            // alignment is different in annotation editor
-            .tahqiq-block-display ol li::before {
-                right: 125px;
             }
         }
 
@@ -975,13 +963,33 @@ a.editor-navigation {
     }
 
     /* cover the decimal in the list number to help with ltr/rtl readability */
-    li::before {
-        content: " ";
+    ol li:not([value]) {
+        position: relative;
+    }
+
+    /* don't apply to li with value attribute in search results */
+    ol li:not([value])::before {
+        /* content is a copy of ONLY the period we want to hide
+           to avoid obscuring anything else should position be off */
+        content: ".";
+        font-weight: bold;
+        text-align: left;
         position: absolute;
-        right: 1em;
-        height: 1.2em;
-        width: 1em;
-        background-color: var(--background);
+        width: 32px;
+        right: -37px;
+        /* text color should match background, rendering period invisible */
+        color: var(--background-light);
+        /* uncomment to debug positioning
+        color: yellow;  */
+
+        /* make font larger than list number font to cover completely;
+           shrink line height to adjust placement */
+        font-size: 32px;
+        line-height: 23px;
+
+        @include breakpoints.for-tablet-landscape-up {
+            line-height: 28px; /* smaller line height to adjust */
+        }
     }
 
     li::marker {
