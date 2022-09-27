@@ -372,7 +372,10 @@ def test_annotation_export_cleanup(mock_repo, annotation, tmpdir):
 
 @patch("geniza.corpus.annotation_export.Repo")
 def test_document_path(mock_repo, tmpdir):
-    anno_ex = AnnotationExporter()
-    assert anno_ex.document_path(444) == "00000/444"
-    assert anno_ex.document_path(1234) == "01000/1234"
-    assert anno_ex.document_path(13539) == "13000/13539"
+    with override_settings(
+        ANNOTATION_BACKUP_PATH=str(tmpdir), ANNOTATION_BACKUP_GITREPO="git:foo"
+    ):
+        anno_ex = AnnotationExporter()
+        assert anno_ex.document_path(444) == "00000/444"
+        assert anno_ex.document_path(1234) == "01000/1234"
+        assert anno_ex.document_path(13539) == "13000/13539"
