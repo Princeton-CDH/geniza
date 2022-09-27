@@ -357,3 +357,28 @@ $text-size-5xl: 2rem; //     = 32px
     font-family: fonts.$primary-bold;
     font-weight: bold;
 }
+
+// Language switcher
+@mixin language-switch-en {
+    font-family: fonts.$primary-semibold;
+    font-weight: 600;
+    font-size: $text-size-lg;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-xl;
+    }
+}
+@mixin language-switch-he {
+    @include hebrew;
+    font-size: $text-size-xl;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: calc(26rem / 16);
+    }
+}
+@mixin language-switch-ar {
+    // TODO: Change to 20px on desktop and 16px on mobile, with bold weight
+    // Hassan, when Hassan available
+    font-size: $text-size-2xl;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-3xl;
+    }
+}

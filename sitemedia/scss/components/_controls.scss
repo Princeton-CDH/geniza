@@ -59,25 +59,16 @@ ul#language-switcher {
         }
         &[lang="en"]::before {
             content: "E";
-            @include typography.headline-error;
+            @include typography.language-switch-en;
         }
         &[lang="he"]::before {
             content: "ע";
-            @include typography.hebrew;
-            font-size: typography.$text-size-xl;
-            @include breakpoints.for-tablet-landscape-up {
-                font-size: calc(26rem / 16);
-            }
+            @include typography.language-switch-he;
         }
         &[lang="ar"]::before {
-            // TODO: Change to @include typography.headline-3 in new Arabic font
             content: "ع";
-            font-size: typography.$text-size-2xl;
+            @include typography.language-switch-ar;
             margin-top: -5px;
-            @include breakpoints.for-tablet-landscape-up {
-                font-size: typography.$text-size-3xl;
-                margin-top: -5px;
-            }
         }
     }
     li:not(:last-child) {

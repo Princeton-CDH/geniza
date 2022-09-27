@@ -59,6 +59,16 @@
         font-display: swap;
     }
 
+    // Greta Sans Semibold for Latin
+    @font-face {
+        font-family: "Greta Sans Regular Semibold";
+        font-style: normal;
+        font-weight: 600;
+        src: url("#{$base_url}/WF-037420-012177-002520.woff2") format("woff2"),
+            url("#{$base_url}/WF-037420-012177-002520.woff") format("woff");
+        font-display: swap;
+    }
+
     // Fallback Greta Sans Bold for Hebrew
     @font-face {
         font-family: "Greta Sans Hebrew Bold";
@@ -134,6 +144,12 @@ $primary: (
 );
 $primary-bold: (
     "Greta Sans Regular Bold",
+    "Greta Sans Hebrew Bold",
+    "arial-bold",
+    sans-serif
+);
+$primary-semibold: (
+    "Greta Sans Regular Semibold",
     "Greta Sans Hebrew Bold",
     "arial-bold",
     sans-serif
