@@ -1,6 +1,7 @@
 import glob
 import json
 import logging
+import math
 import os
 from collections import defaultdict
 from urllib.parse import urlencode, urlparse
@@ -69,15 +70,7 @@ class AnnotationExporter:
 
         # define paths and ensure directories exist for compiled transcription
         annotations_output_dir = os.path.join(self.base_output_dir, "annotations")
-        transcription_base_dir = os.path.join(self.base_output_dir, "transcriptions")
-        # make a dict of output dir by format / file extension
-        transcription_output_dir = {}
-        for output_format in ["txt", "html"]:
-            format_path = os.path.join(transcription_base_dir, output_format)
-            transcription_output_dir[output_format] = format_path
-            os.makedirs(format_path, exist_ok=True)
-
-        # identify content to backup
+        # identify content to export
 
         # if ids are specified, limit to just those documents
         if self.pgpids:
@@ -111,18 +104,21 @@ class AnnotationExporter:
             # use PGPID for annotation directory name
             # path based on recommended uri pattern from the spec
             # {prefix}/{identifier}/list/{name}
-            doc_output_dir = os.path.join(
-                annotations_output_dir, str(document.id), "list"
+            doc_output_dir = self.document_path(document.pk)
+            doc_annotations_dir = os.path.join(
+                annotations_output_dir, doc_output_dir, "list"
             )
-            # ensure output directory exists
-            os.makedirs(doc_output_dir, exist_ok=True)
+            doc_transcription_dir = os.path.join(self.base_output_dir, doc_output_dir)
+            # ensure output directories exist
+            os.makedirs(doc_annotations_dir, exist_ok=True)
+            os.makedirs(doc_transcription_dir, exist_ok=True)
 
             # get a list of existing files so we can cleanup removed content
             # - annotation lists
-            doc_existing_files = glob.glob(os.path.join(doc_output_dir, "*.json"))
+            doc_existing_files = glob.glob(os.path.join(doc_annotations_dir, "*.json"))
             doc_existing_files.extend(
                 glob.glob(
-                    os.path.join(transcription_base_dir, "*", "PGPID%s_*" % document.pk)
+                    os.path.join(doc_transcription_dir, "PGPID%s_*" % document.pk)
                 )
             )
 
@@ -146,7 +142,7 @@ class AnnotationExporter:
             for canvas, annotations in annos_by_canvas.items():
                 annolist_name = AnnotationExporter.annotation_list_name(canvas)
                 annolist_out_path = os.path.join(
-                    doc_output_dir, "%s.json" % annolist_name
+                    doc_annotations_dir, "%s.json" % annolist_name
                 )
                 doc_updated_files.append(annolist_out_path)
 
@@ -172,10 +168,10 @@ class AnnotationExporter:
                     document, edition.source
                 )
                 for output_format in ["txt", "html"]:
-                    # put in the appropriate transription dir by format,
+                    # put in the directory for this document;
                     # use format as file extension
                     outfile_path = os.path.join(
-                        transcription_output_dir[output_format],
+                        doc_transcription_dir,
                         "%s.%s" % (base_filename, output_format),
                     )
                     doc_updated_files.append(outfile_path)
@@ -198,6 +194,15 @@ class AnnotationExporter:
 
         # commit and push (if configured) all the exported files
         self.commit_changed_files(updated_filenames, remove_filenames)
+
+    def document_path(self, pgpid):
+        """Generate path based on pgpid so records are chunked by 1000s,
+        then nested by pgpid to avoid too many files in a single directory."""
+
+        # round pgpid to nearest 1000; pad with leading zeros for < 1000
+        # import match
+        k_chunk = math.floor(int(pgpid) / 1000) * 1000
+        return os.path.join(f"{k_chunk:05d}", str(pgpid))
 
     def commit_changed_files(self, updated_filenames, remove_filenames):
         # prep updated files for commit to git repo
