@@ -77,6 +77,10 @@ export default class extends Controller {
         if (config.source_uri) {
             annotationServerConfig["sourceUri"] = config.source_uri;
         }
+        if (config.secondary_motivation) {
+            annotationServerConfig["secondaryMotivation"] =
+                config.secondary_motivation;
+        }
         const storagePlugin = new AnnotationServerStorage(
             anno,
             annotationServerConfig

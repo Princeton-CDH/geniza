@@ -773,6 +773,8 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     ),
                     "csrf_token": csrf_token(self.request),
                     "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
+                    # secondary motivation is transcribing here; change for translations
+                    "secondary_motivation": "transcribing",
                 },
                 # TODO: Add Footnote notes to the following display, if present
                 "source_detail": mark_safe(source.formatted_display())
