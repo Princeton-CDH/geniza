@@ -27,28 +27,41 @@ export default class extends Controller {
         // On checkbox connected, apply system/user preference
         if (this.systemDarkMode()) {
             this.setMode("dark");
-            this.toggleCheckboxTarget.checked = true;
+            this.toggleCheckboxTargets.forEach(
+                (target) => (target.checked = true)
+            );
         } else {
             this.setMode("light");
-            this.toggleCheckboxTarget.checked = false;
+            this.toggleCheckboxTargets.forEach(
+                (target) => (target.checked = false)
+            );
         }
     }
 
-    toggleTheme() {
+    toggleTheme(e) {
         // On clicking the checkbox input, toggle the theme
-        if (this.toggleCheckboxTarget.checked) {
+        if (e.currentTarget.checked) {
             this.setMode("dark");
             localStorage.setItem("darkMode", "true");
+            // keep mobile and desktop checkboxes in sync
+            this.toggleCheckboxTargets
+                .filter((target) => target.id !== e.currentTarget.id)
+                .forEach((target) => (target.checked = true));
         } else {
             this.setMode("light");
             localStorage.setItem("darkMode", "false");
+            // keep mobile and desktop checkboxes in sync
+            this.toggleCheckboxTargets
+                .filter((target) => target.id !== e.currentTarget.id)
+                .forEach((target) => (target.checked = false));
         }
     }
 
     toggleThemeKeyboard(e) {
         // Allow keyboard control of theme toggle
         if (e.key === "Enter") {
-            this.toggleCheckboxTarget.click();
+            // use e.currentTarget to ensure correct target (mobile or desktop) is clicked
+            e.currentTarget.click();
         }
     }
 }

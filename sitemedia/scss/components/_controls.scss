@@ -16,7 +16,7 @@ ul#language-switcher {
     z-index: 8;
     position: fixed;
     top: 16px;
-    right: 107px;
+    right: 67px;
     @include breakpoints.for-tablet-landscape-up {
         visibility: visible;
         position: relative;
@@ -93,27 +93,10 @@ ul:target + ul#language-switcher {
 }
 
 // light/dark mode toggle
-label#theme-toggle {
+label#theme-toggle-desktop,
+label#theme-toggle-mobile {
     position: absolute;
-    z-index: 8;
-    display: block;
     cursor: pointer;
-    top: spacing.$spacing-md;
-    right: 56px;
-    width: 40px;
-    height: 40px;
-    @include breakpoints.for-tablet-landscape-up {
-        top: 30px;
-        right: auto;
-        left: calc(96.5vw - 70px);
-        width: 70px;
-        height: 70px;
-    }
-    @include breakpoints.for-desktop-up {
-        position: fixed;
-        z-index: 2;
-        top: 247px;
-    }
     input + span::before {
         content: "";
         background-image: url("/static/img/ui/all/all/light-dark-toggle.svg");
@@ -136,6 +119,43 @@ label#theme-toggle {
     }
 }
 
+// desktop-only toggle
+label#theme-toggle-desktop {
+    position: fixed;
+    top: 247px;
+    right: auto;
+    left: calc(96.5vw - 70px);
+    width: 70px;
+    height: 70px;
+    z-index: 2; // Hide behind ITT viewer
+
+    // only show on desktop
+    display: none;
+    @include breakpoints.for-desktop-up {
+        display: block;
+    }
+}
+// mobile and tablet toggle
+label#theme-toggle-mobile {
+    display: block;
+    top: spacing.$spacing-md;
+    right: 56px;
+    width: 40px;
+    height: 40px;
+    // tablet-only tweaks
+    @include breakpoints.for-tablet-landscape-up {
+        top: 30px;
+        width: 70px;
+        height: 70px;
+        right: auto;
+        left: calc(96.5vw - 70px);
+    }
+    // hide on desktop
+    @include breakpoints.for-desktop-up {
+        display: none;
+    }
+}
+
 // tweaks for RTL layout for hebrew, arabic
 html[dir="rtl"] {
     ul#language-switcher {
@@ -152,5 +172,9 @@ html[dir="rtl"] {
                 margin-left: 4px;
             }
         }
+    }
+    label#theme-toggle-mobile {
+        right: auto;
+        left: 56px;
     }
 }
