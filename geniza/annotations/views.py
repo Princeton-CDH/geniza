@@ -105,14 +105,17 @@ class AnnotationList(
         json_data = json.loads(request.body)
         anno = Annotation()
         anno.set_content(json_data)
+
+        # NOTE: creating log entry first to ensure it is available
+        # for backup signal handler fired on annotation save
+        anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
+        anno_admin.log_addition(request, anno, "Created via API")
+
         anno.save()
         resp = AnnotationResponse(anno.compile())
         resp.status_code = 201  # created
         # location header must include annotation's new uri
         resp.headers["Location"] = anno.uri()
-
-        anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
-        anno_admin.log_addition(request, anno, "Created via API")
 
         return resp
 
