@@ -199,8 +199,8 @@ class AnnotationExporter:
         """Generate path based on pgpid so records are chunked by 1000s,
         then nested by pgpid to avoid too many files in a single directory."""
 
-        # round pgpid to nearest 1000; pad with leading zeros for < 1000
-        # import match
+        # round pgpid to nearest 1000; pad with leading zeros for
+        # so all directories have 5 digits; use actual PGPID for subdirectory
         k_chunk = math.floor(int(pgpid) / 1000) * 1000
         return os.path.join(f"{k_chunk:05d}", str(pgpid))
 
