@@ -45,6 +45,8 @@ class Command(sync_transcriptions.Command):
 
     normalized_unicode = set()
 
+    document_not_found = []
+
     def add_arguments(self, parser):
         parser.add_argument(
             "files", nargs="*", help="Only convert the specified files."
@@ -122,6 +124,7 @@ class Command(sync_transcriptions.Command):
                 self.stdout.write(
                     self.style.WARNING("Document not found for %s; skipping" % xmlfile)
                 )
+                self.document_not_found.append(xmlfile)
                 continue
             # found the document
             if self.verbosity >= self.v_normal:
@@ -290,6 +293,14 @@ class Command(sync_transcriptions.Command):
             print(
                 "Normalized unicode for %s document%s:"
                 % (len(self.normalized_unicode), pluralize(self.normalized_unicode))
+            )
+            for xmlfile in self.normalized_unicode:
+                print("\t%s" % xmlfile)
+
+        if self.document_not_found:
+            print(
+                "Document not found for %s TEI file%s:"
+                % (len(self.document_not_found), pluralize(self.document_not_found))
             )
             for xmlfile in self.normalized_unicode:
                 print("\t%s" % xmlfile)
