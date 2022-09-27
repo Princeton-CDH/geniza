@@ -296,24 +296,24 @@ def test_annotation_export(mock_repo, annotation, tmp_path):
         anno_ex.export()
 
         # should create document output dir
-        doc_annolist_dir = tmp_path.joinpath("annotations", str(doc_id), "list")
+        doc_annolist_dir = tmp_path.joinpath(
+            "annotations", anno_ex.document_path(doc_id), "list"
+        )
         assert doc_annolist_dir.is_dir()
         # should create one annotation list json file
         anno_files = list(doc_annolist_dir.glob("*.json"))
         assert len(anno_files) == 1
         # inspect contents?
 
-        # html and text directories should exist and should each have one file
-        txt_transcription_dir = tmp_path.joinpath("transcriptions", "txt")
-        assert txt_transcription_dir.is_dir()
-        txt_files = list(txt_transcription_dir.glob("*.txt"))
+        # transcription directories should be created based on pgpid
+        doc_transcription_dir = tmp_path.joinpath(anno_ex.document_path(doc_id))
+        assert doc_transcription_dir.is_dir()
+        txt_files = list(doc_transcription_dir.glob("*.txt"))
         assert len(txt_files) == 1
         # should only have the content from the annotation
         assert txt_files[0].read_text() == "Test annotation"
 
-        html_transcription_dir = tmp_path.joinpath("transcriptions", "html")
-        assert html_transcription_dir.is_dir()
-        html_files = list(html_transcription_dir.glob("*.html"))
+        html_files = list(doc_transcription_dir.glob("*.html"))
         assert len(html_files) == 1
         html_content = html_files[0].read_text()
         assert "Test annotation" in html_content
@@ -357,14 +357,25 @@ def test_annotation_export_cleanup(mock_repo, annotation, tmpdir):
         ANNOTATION_BACKUP_PATH=str(tmpdir), ANNOTATION_BACKUP_GITREPO="git:foo"
     ):
         doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
-        txt_transcription_dir = tmpdir / "transcriptions" / "txt"
-        # create a stray file to be cleaned up (create parent dirs as needed)
-        extra_file = txt_transcription_dir / ("PGPID%s_extra_file.txt" % doc_id)
-        extra_file.write_text("test file", "utf-8", ensure=True)
-
         anno_ex = AnnotationExporter(pgpids=[doc_id])
+        output_dir = anno_ex.document_path(doc_id)
+        doc_transcription_dir = tmpdir / output_dir
+        # create a stray file to be cleaned up (create parent dirs as needed)
+        extra_file = doc_transcription_dir / ("PGPID%s_extra_file.txt" % doc_id)
+        extra_file.write_text("test file", "utf-8", ensure=True)
         anno_ex.export()
 
         # should remove extra file from git index and local file system
         anno_ex.repo.index.remove.assert_called()
         assert not extra_file.exists()
+
+
+@patch("geniza.corpus.annotation_export.Repo")
+def test_document_path(mock_repo, tmpdir):
+    with override_settings(
+        ANNOTATION_BACKUP_PATH=str(tmpdir), ANNOTATION_BACKUP_GITREPO="git:foo"
+    ):
+        anno_ex = AnnotationExporter()
+        assert anno_ex.document_path(444) == "00000/444"
+        assert anno_ex.document_path(1234) == "01000/1234"
+        assert anno_ex.document_path(13539) == "13000/13539"

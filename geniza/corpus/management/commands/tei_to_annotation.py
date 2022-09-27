@@ -86,14 +86,15 @@ class Command(sync_transcriptions.Command):
             self.stdout.write("Clearing %d annotations" % all_annos.count())
             all_annos.delete()
 
-        # initialize annotation exporter; don't push changes until the end
-        # FIXME: override default commit message to differentiate from auto version?
+        # initialize annotation exporter; don't push changes until the end;
+        # commit message will be overridden per export to docment TEI file
         self.anno_exporter = AnnotationExporter(
             stdout=self.stdout,
             verbosity=options["verbosity"],
             push_changes=False,
             commit_msg="PGP transcription export from TEI migration",
         )
+        self.anno_exporter.setup_repo()
 
         # iterate through tei files to be migrated
         for xmlfile in xmlfiles:
