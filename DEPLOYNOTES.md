@@ -11,6 +11,10 @@
 -   Configure `python manage.py sync_annotation_export` as a cron job to regularly
     update remote git repository with annotation exports generated via signal handler.
 
+## 4.9.0
+
+-   Copy the new fonts `WF-037420-012177-002520.woff` and `WF-037420-012177-002520.woff2` from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`
+
 ## 4.8
 
 -   Solr indexing has changed; reindex all content: `python manage.py index`

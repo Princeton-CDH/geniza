@@ -2,10 +2,9 @@ import json
 import re
 
 from django import template
-from django.templatetags.static import static
 from django.urls import reverse
+from django.urls import translate_url as django_translate_url
 from django.utils.safestring import mark_safe
-from natsort import natsorted
 from piffle.iiif import IIIFImageClientException
 
 from geniza.common.utils import absolutize_url
@@ -151,3 +150,11 @@ def shelfmark_wrap(shelfmark):
     return mark_safe(
         " + ".join(["<span>%s</span>" % m for m in shelfmark.split(" + ")])
     )
+
+
+@register.simple_tag(takes_context=True)
+def translate_url(context, lang_code):
+    """Translate current full path into requested language by code."""
+    # thanks to https://stackoverflow.com/a/51974042
+    path = context.get("request").get_full_path()
+    return django_translate_url(path, lang_code)

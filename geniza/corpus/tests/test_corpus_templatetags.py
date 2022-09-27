@@ -1,7 +1,7 @@
 from unittest.mock import Mock
 
 import pytest
-from django.http.request import QueryDict
+from django.http.request import HttpRequest, QueryDict
 from piffle.iiif import IIIFImageClient
 
 from geniza.common.utils import absolutize_url
@@ -160,3 +160,14 @@ def test_shelfmark_wrap():
         corpus_extras.shelfmark_wrap("foo + bar + baz")
         == "<span>foo</span> + <span>bar</span> + <span>baz</span>"
     )
+
+
+def test_translate_url(document):
+    # should translate requested URL into Hebrew
+    ctx = {"request": HttpRequest()}
+    ctx["request"].path = document.get_absolute_url()
+    assert corpus_extras.translate_url(ctx, "he").startswith("/he/")
+
+    # if a Hebrew version cannot be determined, should return the original URL
+    ctx["request"].path = "https://example.com"
+    assert corpus_extras.translate_url(ctx, "he") == "https://example.com"

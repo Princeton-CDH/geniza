@@ -1,7 +1,10 @@
-from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from percy import percy_snapshot
 from selenium import webdriver
+from selenium.common.exceptions import (
+    ElementNotInteractableException,
+    ElementNotVisibleException,
+)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
@@ -26,11 +29,19 @@ class Command(BaseCommand):
 
         dark_mode_str = ""  # empty string in light mode
 
-        # dark mode switch
         browser.get("http://localhost:8000/")
+
+        # turn on dark mode, save in local storage
         if dark_mode:
-            # turn on dark mode, save in local storage
-            browser.find_element(By.CSS_SELECTOR, "#theme-toggle").send_keys(Keys.ENTER)
+            # handle separate theme toggles for mobile and desktop
+            try:
+                browser.find_element(
+                    By.CSS_SELECTOR, "#theme-toggle-desktop"
+                ).send_keys(Keys.ENTER)
+            except (ElementNotVisibleException, ElementNotInteractableException):
+                browser.find_element(By.CSS_SELECTOR, "#theme-toggle-mobile").send_keys(
+                    Keys.ENTER
+                )
             dark_mode_str = " (dark mode)"
 
         # homepage
