@@ -188,6 +188,16 @@ html[lang="he"] main.document {
         margin-right: 0;
         margin-left: 12px;
     }
+    dl.metadata-list.tertiary dt#permalink {
+        svg {
+            margin-right: 0;
+            margin-left: 12px;
+        }
+        & + dd {
+            margin-left: 0;
+            margin-right: 34px;
+        }
+    }
     dl *[lang="en"] {
         // handle any dt/dd in English
         @include typography.meta;
