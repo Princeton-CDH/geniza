@@ -109,9 +109,16 @@
                     {% if edit_mode %}
                         <div class="annotate transcription" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
                             {% if forloop.first %}
-                                <h2>{% translate 'Transcribe' %}</h2>
+                                {# Note: editor label/instructions are content admin-only and thus not translated. #}
+                                <h2>Transcribe</h2>
                                 <p class="instructions">
-                                    {% translate 'Hold shift and then click on the image and drag to select a rectangular region for the block text you want to transcribe.' %}
+                                    Hold shift and then click on the image and drag to select a rectangular region for the block text you want to transcribe.
+                                </p>
+                                <p class="instructions">
+                                    Once you have drawn a rectangle, click and drag outside of the rectangle to zoom or pan around the image. If you click without dragging, it will cancel the annotation.
+                                </p>
+                                <p class="instructions">
+                                    Drag blocks of text to reorder or move to a different image.
                                 </p>
                             {% endif %}
                         </div>

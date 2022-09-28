@@ -8,9 +8,15 @@ div.annotate {
     display: flex;
     flex-flow: column;
     height: 100%;
+    & > h2 {
+        padding: 14px 0 0;
+        text-align: left;
+    }
     .instructions {
+        text-align: left;
         font-style: italic;
         font-size: typography.$text-size-md;
+        opacity: 0.75;
         // override transcription paragraph spacing for instruction
         margin-right: 0;
         padding-right: 0;
