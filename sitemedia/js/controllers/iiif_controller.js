@@ -114,8 +114,8 @@ export default class extends Controller {
             },
             showZoomControl: false,
             showNavigationControl: false,
-            // show navigator in top left when in edit mode
-            showNavigator: this.editModeValue,
+            // show navigator in top left
+            showNavigator: true,
             navigatorPosition: "TOP_LEFT",
             navigatorOpacity: 0.5,
             showFullPageControl: false,
