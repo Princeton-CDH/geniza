@@ -79,6 +79,72 @@ def arabic_to_ja(text):
     return re.sub(re_he_final_letters, lambda m: he_final_letters[m.group(0)], text)
 
 
+# def locate_quoted_phrases(text):
+#     import re
+#     return [m.span() for m in re.finditer(r'"[^"]*"', text)]
+
+# def extract_quoted_phrases(text):
+#     return [text[m[0]:m[1]] for m in locate_quoted_phrases(text)]
+
+# def extract_arabic_phrases(text):
+#     return [
+#         phrase for phrase in extract_quoted_phrases(text) if contains_arabic(phrase)
+#     ]
+
+
+# def extract_arabic_words_outside_phrases(text):
+#     arabic_phrases = extract_arabic_phrases(text)
+
+#     # remove those arabic phrases from original string
+#     for phrase in arabic_phrases:
+#         text = text.replace(phrase, "")
+
+#     # get remaining arabic words
+#     arabic_words = extract_arabic_words(text)
+
+#     # return words
+#     return arabic_words
+
+
+# def extract_arabic_words(text):
+#     return re_AR_letters.findall(text)
+
+
+def tokenize_words_and_phrases(text):
+    import re
+
+    return [x for x in re.findall(r'"[^"]*"|[\w]+', text) if x]
+
+
+def term_is_phrase(text):
+    text = text.strip()
+    return text and " " in text and text[0] == '"' and text[-1] == '"'
+
+
+def arabic_or_ja_allowing_phrases(text, boost=True):
+    # replace arabic phrases
+    new_terms = []
+
+    for word_or_phrase in tokenize_words_and_phrases(text):
+        judeo_arabic_equivalent = arabic_to_ja(word_or_phrase)
+        if contains_arabic(word_or_phrase):
+            if term_is_phrase(word_or_phrase):
+                new_term = f"({judeo_arabic_equivalent} OR {word_or_phrase})"
+            else:
+                new_term = f"({judeo_arabic_equivalent}|{word_or_phrase})"
+        else:
+            new_term = word_or_phrase
+
+        new_terms.append(new_term)
+
+    text = " ".join(new_terms)
+
+    # fix query
+    text = text.replace("((", "(")
+    text = text.replace("))", ")")
+    return text
+
+
 def arabic_or_ja(text, boost=True):
     """Convert text to arabic or judaeo-arabic string; boost arabic by default"""
     # if there is no arabic text, return as is
@@ -86,10 +152,15 @@ def arabic_or_ja(text, boost=True):
         return text
 
     # extract arabic words from the search query
+
     arabic_words = re_AR_letters.findall(text)
     # generate judaeo-arabic equivalents
     ja_words = [arabic_to_ja(word) for word in arabic_words]
     # iterate over the original and converted words together and combine
+
+    # prob something like this?
+    # ja_phrase = arabic_to_ja(text)
+    ##
 
     # add boosting so arabic matches will be more relevant,
     # unless boosting is disabled
