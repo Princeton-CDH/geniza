@@ -948,3 +948,40 @@ html.dark-mode #itt-panel {
         }
     }
 }
+
+// tweaks for RTL ITT panel for hebrew, arabic
+html[dir="rtl"] #itt-panel {
+    input[type="checkbox"].toggle + label:first-of-type {
+        margin-right: auto;
+        margin-left: 9px;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-left: 4px;
+        }
+    }
+    input[type="checkbox"].toggle + label:last-of-type {
+        margin-left: auto;
+        margin-right: 9px;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-right: 4px;
+        }
+    }
+    .panel-container div.img .img-header {
+        h3 {
+            text-align: right;
+        }
+        label {
+            text-align: left;
+        }
+        div.rotation {
+            margin: 0 1rem 0 0;
+        }
+        input[type="checkbox"][id^="zoom-toggle"] + label[for^="zoom-toggle"] {
+            padding-right: 0;
+            padding-left: 8px;
+            &::after {
+                margin-right: 8px;
+                margin-left: 0;
+            }
+        }
+    }
+}
