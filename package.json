@@ -34,11 +34,11 @@
     "@hotwired/stimulus": "^3.0.1",
     "@hotwired/stimulus-webpack-helpers": "^1.0.1",
     "@hotwired/turbo": "^7.1.0",
-    "@recogito/annotorious": "^2.7.2",
-    "@recogito/annotorious-openseadragon": "^2.7.2",
+    "@recogito/annotorious": "^2.7.8",
+    "@recogito/annotorious-openseadragon": "^2.7.8",
     "@recogito/annotorious-toolbar": "^1.1.0",
     "angle-input": "^0.0.1",
-    "annotorious-tahqiq": "github:Princeton-CDH/annotorious-tahqiq#e1bcfe93b9e098c01bed6f627bceed046fbb57ac",
+    "annotorious-tahqiq": "github:Princeton-CDH/annotorious-tahqiq#668a5f511f434d1e6848a29b45282f73a54bc7c3",
     "openseadragon": "^3.0.0",
     "stimulus-use": "^0.50.0-2"
   }
