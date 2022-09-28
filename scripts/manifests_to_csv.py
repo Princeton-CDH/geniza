@@ -27,7 +27,9 @@ def parse_manifests(source_dir, outfile):
         csvwriter = csv.writer(f)
         csvwriter.writerow(["shelfmark", "iiif_url", "url", "orig_shelfmark"])
 
-        for manifest_file in glob.iglob(os.path.join(source_dir, "*.json")):
+        for manifest_file in glob.iglob(
+            os.path.join(source_dir, "**/*.json"), recursive=True
+        ):
             with open(manifest_file) as mfile:
                 manifest = json.load(mfile)
                 iiif_url = manifest["@id"]
@@ -53,6 +55,8 @@ def pgpize_shelfmark(shelfmark):
         # MS heb portion is slightly different, and we don't use dots
         # after volume/series letter
         return "Bodl. %s" % bodl_shelfmark_re.sub(r"MS heb. \1", shelfmark)
+
+    return shelfmark
 
 
 if __name__ == "__main__":
