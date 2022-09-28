@@ -114,6 +114,10 @@ export default class extends Controller {
             },
             showZoomControl: false,
             showNavigationControl: false,
+            // show navigator in top left when in edit mode
+            showNavigator: this.editModeValue,
+            navigatorPosition: "TOP_LEFT",
+            navigatorOpacity: 0.5,
             showFullPageControl: false,
             showSequenceControl: false,
             crossOriginPolicy: "Anonymous",
