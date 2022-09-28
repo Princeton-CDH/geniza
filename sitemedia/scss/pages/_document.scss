@@ -184,6 +184,10 @@ html[lang="he"] main.document {
     dl.metadata-list.tertiary dt#permalink {
         @include typography.meta-he;
     }
+    .container dl.metadata-list dt::before {
+        margin-right: 0;
+        margin-left: 12px;
+    }
     dl *[lang="en"] {
         // handle any dt/dd in English
         @include typography.meta;
