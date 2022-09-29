@@ -879,7 +879,23 @@
             li img {
                 width: auto;
                 height: 4rem;
+
+                /* manchester logo is white & black, and doesn't display properly
+                in dark mode; simpler solution? chould we just set a background ? */
+                &[src="https://princetongenizalab.github.io/iiif/jrl/umanchester_logo.png"]
+                {
+                    @media (prefers-color-scheme: dark) {
+                        filter: invert(1);
+                    }
+                    .dark-mode & {
+                        filter: invert(1);
+                    }
+                    .light-mode & {
+                        filter: invert(0);
+                    }
+                }
             }
+
             li + li {
                 margin-left: spacing.$spacing-xs;
             }
