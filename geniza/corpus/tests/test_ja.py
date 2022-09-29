@@ -46,20 +46,22 @@ def test_arabic_or_ja_exact_phrase():
     # make sure basic or is working
     assert (
         arabic_or_ja_allowing_phrases('"تعطل شغله"', boost=False)
-        == '("תעטל שגלה" OR "تعطل شغله")'
+        == '("תעטל שגלה"|"تعطل شغله")'
     )
 
     # make sure broken quotes still work
-    assert (
-        arabic_or_ja_allowing_phrases('"تعطل شغله', boost=False)
-        == '"(شغله|שגלה) (تعطل|תעטל)'
-    )
+    assert arabic_or_ja_allowing_phrases('"تعطل شغله', boost=False) in {
+        "(شغله|שגלה) (تعطل|תעטל)",
+        "(تعطل|תעטל) (شغله|שגלה)",
+        "(שגלה|شغله) (תעטל|تعطل)",
+        "(תעטל|تعطل) (שגלה|شغله)",
+    }
 
     # need to test what would happen if we had 1+ arabic phrases (within quotation marks) and 1+ arabic words (not inside quotes)
-    assert (
-        arabic_or_ja_allowing_phrases('"تعطل شغله" etc etc شغله', boost=False)
-        == '("תעטל שגלה" OR "تعطل شغله") etc etc (شغله|שגלה)'
-    )
+    assert arabic_or_ja_allowing_phrases('"تعطل شغله" etc etc شغله', boost=False) in {
+        '("תעטל שגלה"|"تعطل شغله") etc etc (شغله|שגלה)',
+        '("תעטל שגלה"|"تعطل شغله") etc etc (שגלה|شغله)',
+    }
 
     # proximity
     # @TODO assert arabic_or_ja('"تعطل شغله"~10', boost=False) == '"(تعطل|תעטל) (شغله|שגלה)"~10'
@@ -69,33 +71,8 @@ def test_arabic_or_ja_exact_phrase():
     # make sure query string is working
     assert (
         arabic_or_ja_allowing_phrases('transcription:("تعطل شغله"')
-        == """transcription:("תעטל שגלה" OR "تعطل شغله")"""
+        == """transcription:("תעטל שגלה"|"تعطل شغله")"""
     )
-
-
-# def test_extract_quoted_phrases():
-#     assert extract_quoted_phrases('He said "hello world"') == ['"hello world"']
-#     assert extract_quoted_phrases('He said "hello world" and then "goodbye world"') == [
-#         '"hello world"',
-#         '"goodbye world"',
-#     ]
-
-
-# def test_locate_quoted_phrases():
-#     assert locate_quoted_phrases('He said "hello world"') == [(8,21)]
-#     assert locate_quoted_phrases('He said "hello world" and then "goodbye world"') == [(8,21), (31,46)]
-
-
-# def test_extract_arabic_phrases():
-#     assert extract_arabic_phrases('مصحف etc etc "شرح جميع"') == ['"شرح جميع"']
-
-
-# def test_extract_arabic_words():
-#     assert extract_arabic_words('مصحف etc etc "شرح جميع"') == ["مصحف", "شرح", "جميع"]
-
-
-# def test_extract_arabic_words_outside_phrases():
-#     assert extract_arabic_words_outside_phrases('مصحف etc etc "شرح جميع"') == ["مصحف"]
 
 
 def test_tokenize_words_and_phrases():
