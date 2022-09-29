@@ -17,7 +17,7 @@ from geniza.corpus.models import Document
 class TestSelectedWithDisabled:
     # test adapted from ppa-django/mep-django
 
-    class TestForm(forms.Form):
+    class MyTestForm(forms.Form):
         """Build a test form use the widget"""
 
         CHOICES = (
@@ -28,7 +28,7 @@ class TestSelectedWithDisabled:
         yes_no = forms.ChoiceField(choices=CHOICES, widget=SelectWithDisabled)
 
     def test_create_option(self):
-        form = self.TestForm()
+        form = self.MyTestForm()
         rendered = form.as_p()
         print(rendered)
         # no is disabled
