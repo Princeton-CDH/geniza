@@ -10,9 +10,12 @@ import argparse
 import csv
 from urllib.parse import urlencode
 
+import pandas as pd
 from iiif_prezi.factory import ManifestFactory
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
+from ratelimit import limits
+from rich.progress import Progress
 from slugify import slugify
 
 base_manifest_url = "https://princetongenizalab.github.io/iiif/jrl/"
@@ -33,15 +36,41 @@ attribution = (
     "Image rights: The University of Manchester Library. Access rights: CC BY-NC-SA 4.0"
 )
 
-# TODO: rewrite to take csv with reference number;
-# use pandas to ensure CSV is grouped and sorted as needed:
-#   drop duplicates, report total
-#   split reference number into shelfmark and sequence number,
-#   group by shelfmark, sort by sequnce number
-# then process groups
+# use ratelimit to limit calls to 5 per second, based on
+# observed ratelimit limit/reset headers in the iiif response
+
+
+@limits(calls=5, period=1)
+def get_manifest(url):
+    return IIIFPresentation.from_url(url)
 
 
 def combine_manifests(csvfilepath, output_dir):
+    # use pandas to clean up the csv created by crawling
+    # the jrl iiif geniza collection
+    jrl_df = pd.read_csv(csvfilepath)
+    initial_count = len(jrl_df)
+    # because crawling was interrupted and restarted, we expect some dupes
+    jrl_df.drop_duplicates(inplace=True)
+    dedupe_count = len(jrl_df)
+    # rename shelfmark to reference number
+    jrl_df["reference_number"] = jrl_df.shelfmark
+    # split reference number out into shelfmark and sequence within shelfmark
+    # at least one case has - without surrounding spaces
+    jrl_df[["shelfmark", "sequence"]] = jrl_df.reference_number.str.split(
+        "-", n=1, expand=True
+    )
+    # remove any whitespace after splitting
+    jrl_df.shelfmark = jrl_df.shelfmark.str.strip()
+    jrl_df.sequence = jrl_df.sequence.str.strip()
+
+    shelfmark_count = len(jrl_df.shelfmark.unique())
+    print(
+        "CSV has %d manifests (%d before deduplication) with %d unique shelfmarks"
+        % (dedupe_count, initial_count, shelfmark_count)
+    )
+    # seems to be already in the order we want, but make sure
+    jrl_df.sort_values(by=["shelfmark", "sequence"], inplace=True)
 
     # initialize manifest factory with base urls and iiif api version
     fac = ManifestFactory()
@@ -58,27 +87,27 @@ def combine_manifests(csvfilepath, output_dir):
 
     manifest_count = 0
 
-    with open(csvfilepath) as csvfile:
-        csvreader = csv.DictReader(csvfile)
+    current_shelfmark = new_manifest = None
 
-        current_shelfmark = new_manifest = None
-        for row in csvreader:
-            manifest_url = row["manifest_url"]
+    with Progress(expand=True) as progress:
+        task = progress.add_task("Combining manifests...", total=shelfmark_count)
+
+        for row in jrl_df.itertuples():
+
+            # TODO: skip if already generated
+            # path based on ident="%s/%s" % (slugify(series), slugify(shelfmark)) + .json
+
+            manifest_url = row.iiif_url
             # print(manifest_url)
-            manifest = IIIFPresentation.from_url(manifest_url)
+            manifest = get_manifest(manifest_url)
             # metadata is on the first canvas; shelfmark is labeled as "Reference number"
             # and includes a - # for the sequence
             canvas_metadata = {
                 v.label: v.value for v in manifest.sequences[0].canvases[0].metadata
             }
 
-            reference_number = canvas_metadata.get("Reference number")
-            if not reference_number:
-                print("error getting reference number from %s" % manifest_url)
-
-            shelfmark, sequence = [
-                part.strip() for part in reference_number.rsplit("-")
-            ]
+            reference_number = row.reference_number
+            shelfmark = row.shelfmark
             if current_shelfmark == shelfmark:
                 # add canvas + image from current manifest to the new one
                 add_canvas_to_manifest(
@@ -94,12 +123,13 @@ def combine_manifests(csvfilepath, output_dir):
                     )
                     # save the manifest; keep it human-readable
                     new_manifest.toFile(compact=False)
+                    progress.update(task, advance=1)
 
-                    manifest_count += 1
-
-                    # bail out for testing
-                    if manifest_count > 5:
-                        return
+                    # dev/debug, only process first N
+                    # manifest_count += 1
+                    # # bail out for testing
+                    # if manifest_count > 5:
+                    #     return
 
                 current_shelfmark = shelfmark
                 # start new manifest
@@ -135,9 +165,20 @@ def combine_manifests(csvfilepath, output_dir):
                 # add canvas + image from current manifest to the new one;
                 # use folio information from metadata,
                 # since it provides additional information
+
+                # TODO: not everything has a folio; need a fallback value (ref number?)
                 add_canvas_to_manifest(
                     manifest, seq, canvas_metadata["Folio"], reference_number
                 )
+
+        # save the last manifest when the loop ends
+        if new_manifest:
+            print(
+                "Saving manifest for %s (%d images)"
+                % (current_shelfmark, len(new_manifest.sequences[0].canvases))
+            )
+            # save the manifest; keep it human-readable
+            new_manifest.toFile(compact=False)
 
 
 def get_view_url(shelfmark):
@@ -156,7 +197,7 @@ def add_canvas_to_manifest(
 ):
     jrl_canvas = remote_manifest.sequences[0].canvases[0]
     jrl_image = jrl_canvas.images[0]
-    # TODO: should we use folio metadata for label instead? (includes recto/verso)
+
     cvs = new_manifest_sequence.canvas(ident=jrl_canvas.id, label=canvas_label)
     cvs.set_hw(jrl_image.resource.height, jrl_image.resource.width)
 
