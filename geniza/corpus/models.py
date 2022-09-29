@@ -36,7 +36,7 @@ from urllib3.exceptions import HTTPError, NewConnectionError
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
 from geniza.corpus.dates import DocumentDateMixin
-from geniza.corpus.iiif_utils import get_iiif_string
+from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote, Source
 
@@ -335,7 +335,7 @@ class Fragment(TrackChangesModel):
                 try:
                     # importer should return the relevant manifest
                     # (either newly imported or already in the database)
-                    imported = ManifestImporter().import_paths([self.iiif_url])
+                    imported = GenizaManifestImporter().import_paths([self.iiif_url])
                     self.manifest = imported[0] if imported else None
                 except (IIIFException, NewConnectionError):
                     # clear out the manifest if there was an error
