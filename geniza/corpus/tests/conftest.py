@@ -16,7 +16,7 @@ MockImporter = Mock()
 MockImporter.return_value.import_paths.return_value = []
 
 
-@patch("geniza.corpus.models.ManifestImporter", MockImporter)
+@patch("geniza.corpus.models.GenizaManifestImporter", MockImporter)
 def make_fragment(manifest=True):
     """A real fragment from CUL, with URLs for testing."""
     return Fragment.objects.create(
@@ -31,7 +31,7 @@ def make_fragment(manifest=True):
     )
 
 
-@patch("geniza.corpus.models.ManifestImporter", MockImporter)
+@patch("geniza.corpus.models.GenizaManifestImporter", MockImporter)
 def make_multifragment(manifest=True):
     """A real multifragment object, with fake URLs for testing."""
     return Fragment.objects.create(

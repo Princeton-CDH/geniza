@@ -3,6 +3,7 @@
 from attrdict import AttrMap
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import get_language
+from djiffy.importer import ManifestImporter
 from piffle.presentation import IIIFPresentation
 
 from geniza.common.utils import absolutize_url
@@ -97,3 +98,23 @@ def get_iiif_string(obj):
     # if it's a list of strings, return the first value
     elif isinstance(obj, list) and obj and isinstance(obj[0], str):
         return obj[0]
+
+
+class GenizaManifestImporter(ManifestImporter):
+    """Extend :class:`djiffy.importer.ManifestImporter` to customize
+    canvas id logic for remixed PGP manifests."""
+
+    def canvas_short_id(self, canvas):
+        """Revise default canvas short id logic. Bcause we are remixing
+        Manchester canvases, the default behavior which uses the last
+        portion of the canvas id, does not result in unique id
+        within the manifest (repeated c1 ids). Revise for those
+        URLs only to use more of the URI, including the item/manifest id
+        to guarantee uniqueness."""
+
+        # use uri portion starting with manchester manifest id
+        if "Manchester" in canvas.id:
+            return canvas.id.rsplit("servlet/iiif/m/", 1)[1].replace("/", "-")
+
+        # otherwise, use default behavior
+        return super().canvas_short_id(canvas)

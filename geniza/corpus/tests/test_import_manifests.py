@@ -9,7 +9,7 @@ from geniza.corpus.management.commands import add_fragment_urls, import_manifest
 
 
 @pytest.mark.django_db
-@patch("geniza.corpus.management.commands.import_manifests.ManifestImporter")
+@patch("geniza.corpus.management.commands.import_manifests.GenizaManifestImporter")
 def test_handle(mock_importer, fragment_no_manifest, multifragment_no_manifest):
     # both fragment fixtures have iiif urls
     stdout = StringIO()
@@ -44,7 +44,7 @@ def test_handle(mock_importer, fragment_no_manifest, multifragment_no_manifest):
 
 
 @pytest.mark.django_db
-@patch("geniza.corpus.management.commands.import_manifests.ManifestImporter")
+@patch("geniza.corpus.management.commands.import_manifests.GenizaManifestImporter")
 def test_call_command(mock_importer):
     # test calling from command line; specified url should take precedence
     uri = "http://my.iiif.uri"

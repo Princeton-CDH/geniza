@@ -206,7 +206,7 @@ class TestFragment(TestCase):
         assert 'title="1r" class="selected"' not in thumbnails_verso_selected
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_iiif_images_locally_cached_manifest(self, mock_manifestimporter):
         # fragment with a locally cached manifest
         frag = Fragment(shelfmark="TS 1")
@@ -231,7 +231,7 @@ class TestFragment(TestCase):
         assert labels[0] == "fake image"
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_iiif_images_iiifexception(self, mock_manifestimporter):
         # patch IIIFPresentation.from_url to always raise IIIFException
         with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
@@ -248,7 +248,7 @@ class TestFragment(TestCase):
                     frag.iiif_images()
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_attribution(self, mock_manifestimporter):
         # fragment with no manifest
         frag = Fragment(shelfmark="TS 1")
@@ -274,7 +274,7 @@ class TestFragment(TestCase):
         assert frag.attribution == "Created by a person."
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_provenance(self, mock_manifestimporter):
         # fragment with no manifest
         frag = Fragment(shelfmark="TS 1")
@@ -292,7 +292,7 @@ class TestFragment(TestCase):
         assert frag.provenance == "From a place"
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_save(self, mock_manifestimporter):
         frag = Fragment(shelfmark="TS 1")
         frag.save()
@@ -322,7 +322,7 @@ class TestFragment(TestCase):
         )
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_save_import_manifest(self, mock_manifestimporter):
         frag = Fragment(shelfmark="TS 1")
         frag.save()
@@ -366,7 +366,7 @@ class TestFragment(TestCase):
         assert not frag.manifest
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     @patch("geniza.corpus.models.messages")
     def test_save_import_manifest_error(self, mock_messages, mock_manifestimporter):
         frag = Fragment(shelfmark="TS 1")
@@ -436,7 +436,7 @@ MockImporter.return_value.import_paths.return_value = []
 
 
 @pytest.mark.django_db
-@patch("geniza.corpus.models.ManifestImporter", MockImporter)
+@patch("geniza.corpus.models.GenizaManifestImporter", MockImporter)
 class TestDocument:
     def test_shelfmark(self):
         # T-S 8J22.21 + T-S NS J193

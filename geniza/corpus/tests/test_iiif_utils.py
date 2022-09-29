@@ -1,6 +1,8 @@
+from unittest.mock import Mock
+
 from django.utils.translation import activate
 
-from geniza.corpus.iiif_utils import get_iiif_string
+from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 
 
 def test_get_iiif_string():
@@ -25,3 +27,18 @@ def test_get_iiif_string():
 
     # list of strings, should return first string
     assert get_iiif_string(["text", "test"]) == "text"
+
+
+def test_manifestimporter_canvas_id():
+    jrl_canvas = Mock(
+        id="https://example.co/servlet/iiif/m/ManchesterDev~95~2~25450~111734/canvas/c1"
+    )
+
+    gmi = GenizaManifestImporter()
+    # new behavior
+    assert (
+        gmi.canvas_short_id(jrl_canvas) == "ManchesterDev~95~2~25450~111734-canvas-c1"
+    )
+
+    canvas = Mock(id="https://example.co/iiif/c12345")
+    assert gmi.canvas_short_id(canvas) == "c12345"

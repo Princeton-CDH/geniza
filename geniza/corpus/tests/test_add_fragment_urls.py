@@ -16,7 +16,7 @@ MockImporter.return_value.import_paths.return_value = []
 
 
 @pytest.mark.django_db
-@patch("geniza.corpus.models.ManifestImporter", MockImporter)
+@patch("geniza.corpus.models.GenizaManifestImporter", MockImporter)
 def test_handle():
     fragment = Fragment.objects.create(shelfmark="T-S NS 305.65")
 
@@ -118,7 +118,7 @@ def test_view_to_iiif_url():
 
 @pytest.mark.django_db
 @patch("geniza.corpus.management.commands.add_fragment_urls.Command.log_change")
-@patch("geniza.corpus.models.ManifestImporter", MockImporter)
+@patch("geniza.corpus.models.GenizaManifestImporter", MockImporter)
 def test_add_fragment_urls(mock_log_change):
     # Ensure shelfmark not existing is properly handled.
     command = add_fragment_urls.Command()
