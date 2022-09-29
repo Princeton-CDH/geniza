@@ -2,10 +2,8 @@ from operator import contains
 
 from geniza.corpus.ja import (  # extract_arabic_phrases,; extract_arabic_words,; extract_arabic_words_outside_phrases,; extract_quoted_phrases,; locate_quoted_phrases,
     arabic_or_ja,
-    arabic_or_ja_allowing_phrases,
     arabic_to_ja,
     contains_arabic,
-    tokenize_words_and_phrases,
 )
 
 
@@ -44,38 +42,41 @@ def test_arabic_or_ja__arabic():
 
 def test_arabic_or_ja_exact_phrase():
     # make sure basic or is working
-    assert (
-        arabic_or_ja_allowing_phrases('"تعطل شغله"', boost=False)
-        == '("תעטל שגלה"|"تعطل شغله")'
-    )
+    assert arabic_or_ja('"تعطل شغله"', boost=False) in {
+        '("תעטל שגלה"|"تعطل شغله")',
+        '("تعطل شغله"|"תעטל שגלה")',
+    }
 
     # make sure broken quotes still work
-    assert arabic_or_ja_allowing_phrases('"تعطل شغله', boost=False) in {
-        "(شغله|שגלה) (تعطل|תעטל)",
-        "(تعطل|תעטל) (شغله|שגלה)",
-        "(שגלה|شغله) (תעטל|تعطل)",
-        "(תעטל|تعطل) (שגלה|شغله)",
+    assert arabic_or_ja('"تعطل شغله', boost=False) in {
+        '"(شغله|שגלה) (تعطل|תעטל)',
+        '"(تعطل|תעטל) (شغله|שגלה)',
+        '"(שגלה|شغله) (תעטל|تعطل)',
+        '"(תעטל|تعطل) (שגלה|شغله)',
     }
 
     # need to test what would happen if we had 1+ arabic phrases (within quotation marks) and 1+ arabic words (not inside quotes)
-    assert arabic_or_ja_allowing_phrases('"تعطل شغله" etc etc شغله', boost=False) in {
+    assert arabic_or_ja('"تعطل شغله" etc etc شغله', boost=False) in {
         '("תעטל שגלה"|"تعطل شغله") etc etc (شغله|שגלה)',
+        '("تعطل شغله"|"תעטל שגלה") etc etc (شغله|שגלה)',
         '("תעטל שגלה"|"تعطل شغله") etc etc (שגלה|شغله)',
+        '("تعطل شغله"|"תעטל שגלה") etc etc (שגלה|شغله)',
     }
 
     # proximity
     # @TODO assert arabic_or_ja('"تعطل شغله"~10', boost=False) == '"(تعطل|תעטל) (شغله|שגלה)"~10'
+
     # with boosting
-    # @TODO assert arabic_or_ja('"تعطل شغله"') == '"(تعطل^2.0|תעטל) (شغله^2.0|שגלה)"'
+    assert arabic_or_ja("تعطل شغله", boost=True) in {"(تعطل^2.0|תעטל) (شغله^2.0|שגלה)"}
+    assert arabic_or_ja('"تعطل شغله"', boost=True) in {
+        '("תעטל שגלה"^2.0|"تعطل شغله")',
+        '("تعطل شغله"^2.0|"תעטל שגלה")',
+    }
 
     # make sure query string is working
-    assert (
-        arabic_or_ja_allowing_phrases('transcription:("تعطل شغله"')
-        == """transcription:("תעטל שגלה"|"تعطل شغله")"""
-    )
-
-
-def test_tokenize_words_and_phrases():
-    assert tokenize_words_and_phrases(
-        'He said "hello world" and "goodbye world" and "goodbye'
-    ) == ["He", "said", '"hello world"', "and", '"goodbye world"', "and", "goodbye"]
+    assert arabic_or_ja('transcription:("تعطل شغله") etc etc شغله', boost=False) in {
+        'transcription:(("תעטל שגלה"|"تعطل شغله")) etc etc (شغله|שגלה)',
+        'transcription:(("تعطل شغله"|"תעטל שגלה")) etc etc (شغله|שגלה)',
+        'transcription:(("תעטל שגלה"|"تعطل شغله")) etc etc (שגלה|شغله)',
+        'transcription:(("تعطل شغله"|"תעטל שגלה")) etc etc (שגלה|شغله)',
+    }
