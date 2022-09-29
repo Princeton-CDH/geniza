@@ -173,17 +173,8 @@ main.document {
     }
 }
 
-// Hebrew variant
-html[lang="he"] main.document {
-    .container section.description h3 {
-        // "Description" label is always translated
-        @include typography.body-he;
-    }
-    .container dl.metadata-list,
-    .container section.input-date,
-    dl.metadata-list.tertiary dt#permalink {
-        @include typography.meta-he;
-    }
+// RTL variant
+html[dir="rtl"] main.document {
     .container dl.metadata-list dt::before {
         margin-right: 0;
         margin-left: 12px;
@@ -197,6 +188,19 @@ html[lang="he"] main.document {
             margin-left: 0;
             margin-right: 34px;
         }
+    }
+}
+
+// Hebrew variant
+html[lang="he"] main.document {
+    .container section.description h3 {
+        // "Description" label is always translated
+        @include typography.body-he;
+    }
+    .container dl.metadata-list,
+    .container section.input-date,
+    dl.metadata-list.tertiary dt#permalink {
+        @include typography.meta-he;
     }
     dl *[lang="en"] {
         // handle any dt/dd in English
