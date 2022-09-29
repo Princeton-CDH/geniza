@@ -23,7 +23,6 @@ from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 from django.utils.translation import gettext as _
-from djiffy.importer import ManifestImporter
 from djiffy.models import Manifest
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient

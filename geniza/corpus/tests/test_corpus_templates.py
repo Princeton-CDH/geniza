@@ -14,7 +14,7 @@ from geniza.corpus.templatetags.corpus_extras import shelfmark_wrap
 from geniza.footnotes.models import Footnote
 
 
-@patch("geniza.corpus.models.ManifestImporter", Mock())
+@patch("geniza.corpus.models.GenizaManifestImporter", Mock())
 class TestDocumentDetailTemplate:
     def test_shelfmark(self, client, document):
         """Document detail template should include shelfmark"""
