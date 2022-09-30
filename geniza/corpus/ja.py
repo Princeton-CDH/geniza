@@ -1,3 +1,4 @@
+import itertools
 import re
 
 # character mapping from a table in Marina Rustow's
@@ -79,29 +80,32 @@ def arabic_to_ja(text):
     return re.sub(re_he_final_letters, lambda m: he_final_letters[m.group(0)], text)
 
 
+# regex to find arabic word or exact phrase with only arabic + whitepace
+re_AR_WORD_OR_PHRASE = re.compile(r'"[\s\u0600-\u06FF]+"|[\u0600-\u06FF]+')
+
+
 def arabic_or_ja(text, boost=True):
-    """Convert text to arabic or judaeo-arabic string; boost arabic by default"""
-    # if there is no arabic text, return as is
-    if not contains_arabic(text):
-        return text
+    # find arabic tokens
+    arabic_wordphrases = re_AR_WORD_OR_PHRASE.findall(text)
 
-    # extract arabic words from the search query
-    arabic_words = re_AR_letters.findall(text)
-    # generate judaeo-arabic equivalents
-    ja_words = [arabic_to_ja(word) for word in arabic_words]
-    # iterate over the original and converted words together and combine
+    # get everything surrounding the matches
+    nonarabic_wordphrases = re_AR_WORD_OR_PHRASE.split(text)
 
-    # add boosting so arabic matches will be more relevant,
-    # unless boosting is disabled
-    boost = "^2.0" if boost else ""
+    # rewrite arabic phrasesmatches
+    arabic_or_ja_wordphrases = [
+        f"({arabic_wordphrase}{'^2.0' if boost else ''}|{arabic_to_ja(arabic_wordphrase)})"
+        for arabic_wordphrase in arabic_wordphrases
+    ]
 
-    for i, arabic_word in enumerate(arabic_words):
-        ja_word = ja_words[i]
-        # if the words differ, combine them as an OR
-        # then replace them in the original search query
-        # (preserving any existing search syntax like quotes, wildcards, etc)
-        if arabic_word != ja_word:
-            ar_or_ja_word = "(%s%s|%s)" % (arabic_word, boost, ja_word)
-            text = text.replace(arabic_word, ar_or_ja_word)
-
-    return text
+    # stitch the search query back together:
+    # pair tokens surrounding arabic terms with the arabic terms they were split on
+    # fill any missing values with empty strings and merge it all into a single string
+    return "".join(
+        itertools.chain.from_iterable(
+            (
+                itertools.zip_longest(
+                    nonarabic_wordphrases, arabic_or_ja_wordphrases, fillvalue=""
+                )
+            )
+        )
+    )
