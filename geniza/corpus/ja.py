@@ -1,8 +1,5 @@
+import itertools
 import re
-from itertools import zip_longest
-
-COMPILED_ARABIC_WORDS_OR_PHRASES = re.compile(r'"[ \u0600-\u06FF]+"|[\u0600-\u06FF]+')
-
 
 # character mapping from a table in Marina Rustow's
 # How to read Judaeo-Arabic manuscripts
@@ -83,27 +80,32 @@ def arabic_to_ja(text):
     return re.sub(re_he_final_letters, lambda m: he_final_letters[m.group(0)], text)
 
 
+# regex to find arabic word or exact phrase with only arabic + whitepace
+re_AR_WORD_OR_PHRASE = re.compile(r'"[\s\u0600-\u06FF]+"|[\u0600-\u06FF]+')
+
+
 def arabic_or_ja(text, boost=True):
-    # get compiled object
-    sr = COMPILED_ARABIC_WORDS_OR_PHRASES
+    # find arabic tokens
+    arabic_wordphrases = re_AR_WORD_OR_PHRASE.findall(text)
 
-    # find matches
-    arabic_wordphrases = sr.findall(text)
+    # get everything surrounding the matches
+    nonarabic_wordphrases = re_AR_WORD_OR_PHRASE.split(text)
 
-    # find what surrounds matches
-    nonarabic_wordphrases = sr.split(text)
-
-    # rewrite matches
+    # rewrite arabic phrasesmatches
     arabic_or_ja_wordphrases = [
         f"({arabic_wordphrase}{'^2.0' if boost else ''}|{arabic_to_ja(arabic_wordphrase)})"
         for arabic_wordphrase in arabic_wordphrases
     ]
 
-    # stitch back together
-    tokens = [
-        tok
-        for toks in zip_longest(nonarabic_wordphrases, arabic_or_ja_wordphrases)
-        for tok in toks
-        if tok
-    ]
-    return "".join(tokens)
+    # stitch the search query back together:
+    # pair tokens surrounding arabic terms with the arabic terms they were split on
+    # fill any missing values with empty strings and merge it all into a single string
+    return "".join(
+        itertools.chain.from_iterable(
+            (
+                itertools.zip_longest(
+                    nonarabic_wordphrases, arabic_or_ja_wordphrases, fillvalue=""
+                )
+            )
+        )
+    )

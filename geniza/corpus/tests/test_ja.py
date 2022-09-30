@@ -37,45 +37,31 @@ def test_arabic_or_ja__arabic():
 
 
 def test_arabic_or_ja_exact_phrase():
-    # make sure basic or is working
-    assert arabic_or_ja('"تعطل شغله"', boost=False) in {
-        '("תעטל שגלה"|"تعطل شغله")',
-        '("تعطل شغله"|"תעטל שגלה")',
-    }
+    # make sure basic exact quote is working
+    assert arabic_or_ja('"تعطل شغله"', boost=False) == '("تعطل شغله"|"תעטל שגלה")'
 
-    # make sure broken quotes still work
-    assert arabic_or_ja('"تعطل شغله', boost=False) in {
-        '"(شغله|שגלה) (تعطل|תעטל)',
-        '"(تعطل|תעטל) (شغله|שגלה)',
-        '"(שגלה|شغله) (תעטל|تعطل)',
-        '"(תעטל|تعطل) (שגלה|شغله)',
-    }
+    # make sure broken quotes are ignored and arabic words are converted
+    assert arabic_or_ja('"تعطل شغله', boost=False) == '"(تعطل|תעטל) (شغله|שגלה)'
 
-    # need to test what would happen if we had 1+ arabic phrases (within quotation marks) and 1+ arabic words (not inside quotes)
-    assert arabic_or_ja('"تعطل شغله" etc etc شغله', boost=False) in {
-        '("תעטל שגלה"|"تعطل شغله") etc etc (شغله|שגלה)',
-        '("تعطل شغله"|"תעטל שגלה") etc etc (شغله|שגלה)',
-        '("תעטל שגלה"|"تعطل شغله") etc etc (שגלה|شغله)',
-        '("تعطل شغله"|"תעטל שגלה") etc etc (שגלה|شغله)',
-    }
+    # to test what would happen if we had 1+ arabic phrases
+    # (within quotation marks) and 1+ arabic words (not inside quotes)
+    assert (
+        arabic_or_ja('"تعطل شغله" etc etc شغله', boost=False)
+        == '("تعطل شغله"|"תעטל שגלה") etc etc (شغله|שגלה)'
+    )
 
     # proximity
-    assert arabic_or_ja('"تعطل شغله"~10', boost=False) in {
-        '("תעטל שגלה"|"تعطل شغله")~10',
-        '("تعطل شغله"|"תעטל שגלה")~10',
-    }
+    assert arabic_or_ja('"تعطل شغله"~10', boost=False) == '("تعطل شغله"|"תעטל שגלה")~10'
 
     # with boosting
-    assert arabic_or_ja("تعطل شغله", boost=True) in {"(تعطل^2.0|תעטל) (شغله^2.0|שגלה)"}
-    assert arabic_or_ja('"تعطل شغله"', boost=True) in {
-        '("תעטל שגלה"^2.0|"تعطل شغله")',
-        '("تعطل شغله"^2.0|"תעטל שגלה")',
-    }
+    assert arabic_or_ja("تعطل شغله", boost=True) == "(تعطل^2.0|תעטל) (شغله^2.0|שגלה)"
+    assert arabic_or_ja('"تعطل شغله"', boost=True) == '("تعطل شغله"^2.0|"תעטל שגלה")'
 
     # make sure query string is working
-    assert arabic_or_ja('transcription:("تعطل شغله") etc etc شغله', boost=False) in {
-        'transcription:(("תעטל שגלה"|"تعطل شغله")) etc etc (شغله|שגלה)',
-        'transcription:(("تعطل شغله"|"תעטל שגלה")) etc etc (شغله|שגלה)',
-        'transcription:(("תעטל שגלה"|"تعطل شغله")) etc etc (שגלה|شغله)',
-        'transcription:(("تعطل شغله"|"תעטל שגלה")) etc etc (שגלה|شغله)',
-    }
+    assert (
+        arabic_or_ja('transcription:("تعطل شغله") etc etc شغله', boost=False)
+        == 'transcription:(("تعطل شغله"|"תעטל שגלה")) etc etc (شغله|שגלה)'
+    )
+
+    # make sure non-arabic field query is left unchanged
+    assert arabic_or_ja('shelfmark:"jrl series a"') == 'shelfmark:"jrl series a"'
