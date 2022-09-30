@@ -863,6 +863,12 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "shelfmark_s": self.shelfmark_display,
                 # index individual shelfmarks for search (includes uncertain fragments)
                 "fragment_shelfmark_ss": [f.shelfmark for f in fragments],
+                # index any old/historic shelfmarks as a list
+                # split multiple shelfmarks on any one fragment into a list;
+                # flatten the lists into a single list
+                "fragment_old_shelfmark_ss": list(
+                    chain(*[f.old_shelfmarks.split("; ") for f in fragments])
+                ),
                 # combined original/standard document date for display
                 "document_date_s": strip_tags(self.document_date) or None,
                 # date range for filtering

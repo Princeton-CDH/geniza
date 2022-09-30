@@ -896,6 +896,21 @@ class TestDocument:
         index_data = Document(id=1234).index_data()
         assert index_data["document_date_s"] is None
 
+    def test_index_data_old_shelfmarks(self, join):
+        fragment = join.fragments.first()
+        old_shelfmarks = ["p. Heid. Arab. 917", "p. Heid. 917"]
+        fragment.old_shelfmarks = "; ".join(old_shelfmarks)
+        fragment.save()
+        fragment2 = join.fragments.all()[1]
+        fragment2.old_shelfmarks = "Yevr.-Arab. II 991"
+        fragment2.save()
+
+        index_data = join.index_data()
+        print(index_data["fragment_old_shelfmark_ss"])
+        all_old_shelfmarks = old_shelfmarks
+        all_old_shelfmarks.append(fragment2.old_shelfmarks)
+        assert index_data["fragment_old_shelfmark_ss"] == all_old_shelfmarks
+
     def test_editions(self, document, source):
         # create multiple footnotes to test filtering and sorting
 
