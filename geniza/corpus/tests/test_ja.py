@@ -1,10 +1,6 @@
 from operator import contains
 
-from geniza.corpus.ja import (  # extract_arabic_phrases,; extract_arabic_words,; extract_arabic_words_outside_phrases,; extract_quoted_phrases,; locate_quoted_phrases,
-    arabic_or_ja,
-    arabic_to_ja,
-    contains_arabic,
-)
+from geniza.corpus.ja import arabic_or_ja, arabic_to_ja, contains_arabic
 
 
 def test_contains_arabic():
@@ -64,7 +60,10 @@ def test_arabic_or_ja_exact_phrase():
     }
 
     # proximity
-    # @TODO assert arabic_or_ja('"تعطل شغله"~10', boost=False) == '"(تعطل|תעטל) (شغله|שגלה)"~10'
+    assert arabic_or_ja('"تعطل شغله"~10', boost=False) in {
+        '("תעטל שגלה"|"تعطل شغله")~10',
+        '("تعطل شغله"|"תעטל שגלה")~10',
+    }
 
     # with boosting
     assert arabic_or_ja("تعطل شغله", boost=True) in {"(تعطل^2.0|תעטל) (شغله^2.0|שגלה)"}

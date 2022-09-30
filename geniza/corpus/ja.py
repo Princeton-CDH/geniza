@@ -1,5 +1,8 @@
 import re
 
+COMPILED_ARABIC_WORDS_OR_PHRASES = re.compile(r'"[ \u0600-\u06FF]+"|[\u0600-\u06FF]+')
+
+
 # character mapping from a table in Marina Rustow's
 # How to read Judaeo-Arabic manuscripts
 arabic_ja_chars = {
@@ -80,31 +83,28 @@ def arabic_to_ja(text):
 
 
 def arabic_or_ja(text, boost=True):
-    # any arabic phrase or word
-    sr = re.compile(r'"[ \u0600-\u06FF]+"|[\u0600-\u06FF]+')
+    # get compiled object
+    sr = COMPILED_ARABIC_WORDS_OR_PHRASES
 
     # find matches
-    arabic = sr.findall(text)
+    arabic_wordphrases = sr.findall(text)
 
     # find what surrounds matches
-    nonarabic = sr.split(text)
+    nonarabic_wordphrases = sr.split(text)
 
-    # assert the logical
-    assert len(nonarabic) == len(arabic) + 1  # given split/findall
+    # rewrite matches
+    arabic_or_ja_wordphrases = [
+        f"({arabic_wordphrase}{'^2.0' if boost else ''}|{arabic_to_ja(arabic_wordphrase)})"
+        for arabic_wordphrase in arabic_wordphrases
+    ]
 
     # stitch back together
-    boost = "^2.0" if boost else ""
-    tokens = []
-    for i in range(len(nonarabic)):
-        nonarabic_word = nonarabic[i]
-        tokens.append(nonarabic_word)
+    from itertools import zip_longest
 
-        # arabic word?
-        if len(arabic) > i:
-            arabic_word = arabic[i]
-            ja_word = arabic_to_ja(arabic_word)
-            ar_or_ja = f"({arabic_word}{'^2.0' if boost else ''}|{ja_word})"
-            tokens.append(ar_or_ja)
-
-    # return as list of tokens
+    tokens = [
+        tok
+        for toks in zip_longest(nonarabic_wordphrases, arabic_or_ja_wordphrases)
+        for tok in toks
+        if tok
+    ]
     return "".join(tokens)
