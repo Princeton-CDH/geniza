@@ -744,6 +744,10 @@
         shelfmark_s^100
         fragment_shelfmark_ss^50
         shelfmark_textnum^140
+        fragment_old_shelfmark_ss
+        old_shelfmark_t
+        old_shelfmark_textnum
+        old_shelfmark_bigram
         tags_t
         tags_ss_lower
         scholarship_t
@@ -754,7 +758,10 @@
         description_t^50
         description_txt_ens^20
         shelfmark_bigram^100
-        shelfmark_textnum^140
+        shelfmark_textnum^140   
+        old_shelfmark_t
+        old_shelfmark_textnum
+        old_shelfmark_bigram
         tags_t
         scholarship_t^80
         transcription_t^80
@@ -777,6 +784,10 @@
         old_pgpids_is
         scholarship_t
         transcription_t
+        fragment_old_shelfmark_ss
+        old_shelfmark_t
+        old_shelfmark_textnum
+        old_shelfmark_bigram
       </str>
       <str name="admin_doc_pf">
         type_s
@@ -789,6 +800,9 @@
         needs_review_t
         scholarship_t
         transcription_t
+        old_shelfmark_t
+        old_shelfmark_textnum
+        old_shelfmark_bigram
       </str>
 
       <!-- search across all variant shelfmark fields -->
