@@ -753,6 +753,7 @@
         scholarship_t
         old_pgpids_is
         transcription_t
+        original_date_t
       </str>
       <str name="keyword_pf">
         description_t^50
@@ -765,6 +766,7 @@
         tags_t
         scholarship_t^80
         transcription_t^80
+        original_date_t
       </str>
 
        <!-- admin search field for Document model (no boosting because no relevance sort) -->
@@ -788,6 +790,7 @@
         old_shelfmark_t
         old_shelfmark_textnum
         old_shelfmark_bigram
+        original_date_t
       </str>
       <str name="admin_doc_pf">
         type_s
@@ -803,6 +806,7 @@
         old_shelfmark_t
         old_shelfmark_textnum
         old_shelfmark_bigram
+        original_date_t
       </str>
 
       <!-- search across all variant shelfmark fields -->

@@ -873,6 +873,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "document_date_s": strip_tags(self.document_date) or None,
                 # date range for filtering
                 "document_date_dr": self.solr_date_range(),
+                # historic date, for searching
+                "original_date_t": self.original_date or None,
                 # start/end of document date or date range
                 "start_date_i": self.start_date.numeric_format()
                 if self.start_date
