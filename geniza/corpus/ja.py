@@ -1,4 +1,5 @@
 import re
+from itertools import zip_longest
 
 COMPILED_ARABIC_WORDS_OR_PHRASES = re.compile(r'"[ \u0600-\u06FF]+"|[\u0600-\u06FF]+')
 
@@ -99,8 +100,6 @@ def arabic_or_ja(text, boost=True):
     ]
 
     # stitch back together
-    from itertools import zip_longest
-
     tokens = [
         tok
         for toks in zip_longest(nonarabic_wordphrases, arabic_or_ja_wordphrases)
