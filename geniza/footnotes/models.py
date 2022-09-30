@@ -378,12 +378,19 @@ class Source(models.Model):
         manifest_base_url = getattr(settings, "ANNOTATION_MANIFEST_BASE_URL", "")
         return urljoin(manifest_base_url, path.join("sources", str(self.pk))) + "/"
 
+    @staticmethod
+    def id_from_uri(uri):
+        """Given a URi for a source (as used in transcription annotations), return
+        the source id"""
+        # TODO: Use resolve() when the json source view exists
+        # (see logic in equivalent Document method)
+        return int(uri.split("/")[-2])
+
     @classmethod
     def from_uri(cls, uri):
         """Given a URI for a Source (as used in transcription annotations), return the Source
         object matching the pk"""
-        # TODO: Use resolve() when the json source view exists
-        return cls.objects.get(pk=int(uri.split("/")[-2]))
+        return cls.objects.get(pk=Source.id_from_uri(uri))
 
 
 class FootnoteQuerySet(models.QuerySet):

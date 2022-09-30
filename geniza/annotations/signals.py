@@ -34,21 +34,27 @@ def create_or_delete_footnote(instance, **kwargs):
         # (likely only happening in unit tests)
         return
 
-    # TODO: can we get ids without loading source/doc from db?
-
     # if we don't have identifiers for both source and document, bail out
     if not source_uri or not manifest_uri:
         return
 
-    source = Source.from_uri(source_uri)
-    document = Document.from_manifest_uri(manifest_uri)
+    # get ids for referenced Source and Document
+    source_id = Source.id_from_uri(source_uri)
+    document_id = Document.id_from_manifest_uri(manifest_uri)
+
+    document_contenttype = ContentType.objects.get_for_model(Document)
     # if deleted, created is None; if updated but not deleted, created is False
     deleted = kwargs.get("created") is None
     updated = kwargs.get("created") is False
 
     try:
         # try to get a DIGITAL_EDITION footnote for this source and document
-        footnote = document.digital_editions().get(source=source)
+        footnote = Footnote.objects.get(
+            doc_relation=[Footnote.DIGITAL_EDITION],
+            source__pk=source_id,
+            content_type=document_contenttype,
+            object_id=document_id,
+        )
         # if this Annotation was deleted and no others exist on this source and document,
         # delete the footnote too
         if (
@@ -65,26 +71,29 @@ def create_or_delete_footnote(instance, **kwargs):
         # if this annotation was just updated, reindex document
         elif updated:
             start = time.time()
-            ModelIndexable.index_items([document])
+            ModelIndexable.index_items([Document.objects.get(pk=document_id)])
             logger.debug(
                 "Reindexing document %s (existing annotation updated): %f sec"
-                % (document.pk, time.time() - start)
+                % (document_id, time.time() - start)
             )
 
     except Footnote.DoesNotExist:
         if not deleted:
             # create the DIGITAL_EDITION footnote
-            footnote = document.footnotes.create(
+            source = Source.objects.get(pk=source_id)
+            footnote = Footnote.objects.create(
                 source=source,
                 doc_relation=[Footnote.DIGITAL_EDITION],
+                object_id=document_id,
+                content_type=document_contenttype,
             )
             log_footnote_action(footnote, ADDITION)
-
             logger.debug("Creating new digital edition footnote (new annotation)")
 
-    # update annotation backup if configured (don't run for tests!)
-    if getattr(settings, "ANNOTATION_BACKUP_PATH", None):
-        backup_annotation(document.pk, instance)
+    # disable github backup on signal, not thread safe
+    # # update annotation backup if configured (don't run for tests!)
+    # if getattr(settings, "ANNOTATION_BACKUP_PATH", None):
+    #     backup_annotation(document.pk, instance)
 
 
 def backup_annotation(document_id, annotation):

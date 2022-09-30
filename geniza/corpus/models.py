@@ -19,7 +19,7 @@ from django.db.models.query import Prefetch
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.templatetags.static import static
-from django.urls import resolve, reverse
+from django.urls import Resolver404, resolve, reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
@@ -571,8 +571,12 @@ class Document(ModelIndexable, DocumentDateMixin):
         """Given a manifest URI (as used in transcription annotations), return
         the document id"""
         # will raise Resolver404 if url does not resolve
-        # TODO: use resolver to make sure it's actually a manifest uri
-        return resolve(urlparse(uri).path).kwargs["pk"]
+        resolve_match = resolve(urlparse(uri).path)
+        # it could be a valid django url resolve but not be a manifest uri;
+        if resolve_match.view_name != "corpus:document-manifest":
+            # is there a more appropriate exception to raise?
+            raise Resolver404("Not a document manifest URL")
+        return resolve_match.kwargs["pk"]
 
     @classmethod
     def from_manifest_uri(cls, uri):
