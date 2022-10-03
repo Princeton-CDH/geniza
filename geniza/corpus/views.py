@@ -1,11 +1,16 @@
 from ast import literal_eval
 from random import randint
 
+from dal import autocomplete
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.db.models import Q
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
 from django.http.response import HttpResponsePermanentRedirect, HttpResponseRedirect
+from django.middleware.csrf import get_token as csrf_token
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
@@ -24,7 +29,8 @@ from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.templatetags import corpus_extras
-from geniza.footnotes.models import Footnote
+from geniza.footnotes.forms import SourceChoiceForm
+from geniza.footnotes.models import Footnote, Source
 
 
 class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
@@ -298,6 +304,7 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata"""
         context_data = super().get_context_data(**kwargs)
+        images = self.object.iiif_images(with_placeholders=True)
         context_data.update(
             {
                 "page_title": self.page_title(),
@@ -310,14 +317,18 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                     {
                         "document": doc,
                         "images": [
-                            str(image[0]) for image in doc.get("iiif_images", [])
+                            # TODO: can we use canvas uris here instead?
+                            str(image[0])
+                            for image in doc.get("iiif_images", [])
                         ],
                     }
-                    for doc in self.get_object().related_documents
+                    for doc in self.object.related_documents
                 ]
                 # skip solr query if none of the associated TextBlocks have side info
-                if any([tb.side for tb in self.get_object().textblock_set.all()])
-                else [],
+                if any([tb.side for tb in self.object.textblock_set.all()]) else [],
+                "images": images,
+                # first image for twitter/opengraph meta tags
+                "meta_image": list(images.values())[0]["image"] if images else None,
             }
         )
         return context_data
@@ -422,7 +433,7 @@ class DocumentTranscriptionText(DocumentDetailView):
             filename = "PGP%d_%s_%s.txt" % (document.id, shelfmark, "_".join(authors))
 
             return HttpResponse(
-                edition.content["text"],
+                edition.content_text,
                 headers={
                     "Content-Type": "text/plain; charset=UTF-8",
                     # prompt download with filename including pgpid, shelfmark, & authors
@@ -550,9 +561,6 @@ class DocumentAnnotationListView(DocumentDetailView):
         """handle GET request: construct and return JSON annotation list"""
         document = self.get_object()
         digital_editions = document.digital_editions()
-        # while sync transcription is in transition, we need to check for
-        # html transcription content
-        digital_editions = [de for de in digital_editions if "html" in de.content]
         # if there is no transcription content, 404
         if not digital_editions:
             raise Http404
@@ -670,6 +678,114 @@ class DocumentMerge(PermissionRequiredMixin, FormView):
         )
 
         return super(DocumentMerge, self).form_valid(form)
+
+
+class SourceAutocompleteView(PermissionRequiredMixin, autocomplete.Select2QuerySetView):
+    permission_required = ("corpus.change_document",)
+
+    def get_queryset(self):
+        """sources filtered by entered query, or all sources, ordered by author last name"""
+        q = self.request.GET.get("q", None)
+        qs = Source.objects.all().order_by("authors__last_name")
+        if q:
+            qs = qs.filter(
+                Q(title__icontains=q)
+                | Q(authors__first_name__istartswith=q)
+                | Q(authors__last_name__istartswith=q)
+            ).distinct()
+        return qs
+
+
+class DocumentAddTranscriptionView(PermissionRequiredMixin, DetailView):
+    permission_required = ("corpus.change_document",)
+    template_name = "corpus/add_transcription_source.html"
+    viewname = "corpus:document-add-transcription"
+    model = Document
+
+    def page_title(self):
+        """Title of add transcription page"""
+        return "Add a new transcription for %(doc)s" % {"doc": self.get_object().title}
+
+    def post(self, request, *args, **kwargs):
+        """Create footnote linking source to document, then redirect to edit transcription view"""
+        return redirect(
+            reverse(
+                "corpus:document-transcribe",
+                args=(self.get_object().id, int(request.POST["source"])),
+            )
+        )
+
+    def get_context_data(self, **kwargs):
+        """Pass form with autocomplete to context"""
+        context_data = super().get_context_data(**kwargs)
+        context_data.update(
+            {
+                "form": SourceChoiceForm,
+                "page_title": self.page_title(),
+                "page_type": "addsource",
+            }
+        )
+        return context_data
+
+
+class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
+    """View for the Transcription Editor page that uses annotorious-tahqiq"""
+
+    permission_required = "corpus.change_document"
+
+    template_name = "corpus/document_transcribe.html"
+    viewname = "corpus:document-transcribe"
+
+    def page_title(self):
+        """Title of transcription editor page"""
+        return "Edit transcription for %(doc)s" % {"doc": self.get_object().title}
+
+    def get_context_data(self, **kwargs):
+        """Pass annotation configuration and TinyMCE API key to page context"""
+        context_data = super().get_context_data(**kwargs)
+
+        source = None
+        # source_pk will always be an integer here; otherwise, a different (or no) route
+        # would have matched
+        try:
+            source = Source.objects.get(pk=self.kwargs["source_pk"])
+        except Source.DoesNotExist:
+            raise Http404
+
+        # if we have neither IIIF images nor transcription content with placeholder canvases,
+        # pass two placeholder canvases for use in editor
+        if not context_data["images"]:
+            canvas_base_uri = "%siiif/canvas/" % self.get_object().permalink
+            for i in [1, 2]:
+                canvas_uri = "%s%d/" % (canvas_base_uri, i)
+                context_data["images"][canvas_uri] = Document.PLACEHOLDER_CANVAS
+
+        context_data.update(
+            {
+                "annotation_config": {
+                    # use local annotation server embedded in pgp application
+                    "server_url": absolutize_url(reverse("annotations:list")),
+                    # source uri for filtering, if we are editing an existing transcription
+                    "source_uri": source.uri if source else "",
+                    # use getattr to simplify test config; warn if not set?
+                    "manifest_base_url": getattr(
+                        settings, "ANNOTATION_MANIFEST_BASE_URL", ""
+                    ),
+                    "csrf_token": csrf_token(self.request),
+                    "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
+                    # TODO: when translations implemented, make this a data property or something
+                    # on the template; the editor will have both transcribing and translating
+                    "secondary_motivation": "transcribing",
+                },
+                # TODO: Add Footnote notes to the following display, if present
+                "source_detail": mark_safe(source.formatted_display())
+                if source
+                else "",
+                "source_label": source.all_authors() if source else "",
+                "page_type": "document annotating",
+            }
+        )
+        return context_data
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #

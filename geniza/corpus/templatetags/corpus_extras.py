@@ -86,6 +86,9 @@ def iiif_image(img, args):
     # split into method and parameters (return if not formatted properly)
     if ":" not in args:
         return ""
+    # placeholder images will be a dict with an image url as value for key "info"
+    elif isinstance(img, dict) and "info" in img:
+        return img["info"]
     mode, opts = args.split(":")
     # split parameters into args and kwargs
     args = opts.split(",")
@@ -119,16 +122,6 @@ def format_attribution(attribution):
         additional_restrictions,
         extra_attrs,
     )
-
-
-@register.filter
-def h1_to_h3(html):
-    """Convert h1 headers to h3 to match other transcription formats,
-    used to avoid modeltranslation inserting elements into h1 headers"""
-    try:
-        return html.replace("h1", "h3")
-    except AttributeError:
-        return html
 
 
 @register.filter

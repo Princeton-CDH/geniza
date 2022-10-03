@@ -56,11 +56,11 @@
                     {# use first language code, if any; otherwise empty lang attribute to indicate unknown language #}
                     {# NOTE: this is problematic for documents with multiple primary languages #}
                     {% if document_highlights.transcription %}
-                        <div class="transcription" lang="{{ lang }}">{% for snippet in document_highlights.transcription %}{{ snippet.strip|safe|linebreaks }}{% endfor %}</div>
+                        <div class="transcription" lang="{{ lang }}">{% for snippet in document_highlights.transcription %}{{ snippet.strip|safe }}{% endfor %}</div>
                     {% elif document.transcription %}
                         {# otherwise, display truncated transcription #}
                         {# NOTE: might be nice to display N lines instead of using truncatechars #}
-                        <div class="transcription" lang="{{ lang }}">{{ document.transcription.0|linebreaks|truncatechars_html:150 }}</div>
+                        <div class="transcription" lang="{{ lang }}">{{ document.transcription.0|safe|truncatechars_html:150 }}</div>
                     {% endif %}
                 {% endwith %}
 

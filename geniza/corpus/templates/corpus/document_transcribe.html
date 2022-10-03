@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static i18n render_bundle_csp corpus_extras fullurl %}
+
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+{% block extrameta %}
+    {% spaceless %}
+        {% for lang_code in PUBLIC_SITE_LANGUAGES %}
+            {% language lang_code %}
+                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "corpus:document" document.pk %}" />
+            {% endlanguage %}
+        {% endfor %}
+    {% endspaceless %}
+{% endblock extrameta %}
+{% block extrastyle %}
+    {% render_bundle_csp "annotation" "css" %}
+    <!-- annotorious CSS stylesheet -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@recogito/annotorious-openseadragon@2.7.2/dist/annotorious.min.css">
+{% endblock extrastyle %}
+{% block extrascript %}
+    {% render_bundle_csp "annotation" "js" attrs='defer' %}
+{% endblock extrascript %}
+
+{% block main %}
+    <!-- document details -->
+    <h1 class="sr-only">{{ page_title }}</h1>
+    {% include "corpus/snippets/document_header.html" %}
+    <span>{{ source_detail }}</span>
+    <a class="editor-navigation" href="{% url "corpus:document" document.pk %}">
+        <span>
+            Return to document detail page
+        </span>
+    </a>
+
+    {# viewer #}
+    {% include "corpus/snippets/document_transcription.html" with edit_mode=True %}
+{% endblock main %}

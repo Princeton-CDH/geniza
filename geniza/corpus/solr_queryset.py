@@ -1,9 +1,16 @@
 import re
 
+from bs4 import BeautifulSoup
 from parasolr.django import AliasedSolrQuerySet
 from piffle.image import IIIFImageClient
 
 from geniza.corpus.ja import arabic_or_ja
+
+
+def clean_html(html_snippet):
+    """utility method to clean up html, since solr snippets of html content
+    may result in non-valid content"""
+    return BeautifulSoup(html_snippet, "html.parser").prettify(formatter="minimal")
 
 
 class DocumentSolrQuerySet(AliasedSolrQuerySet):
@@ -35,7 +42,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "num_discussions": "num_discussions_i",
         "scholarship_count": "scholarship_count_i",
         "scholarship": "scholarship_t",
-        "transcription": "transcription_t",
+        "transcription": "transcription_ht",
         "language_code": "language_code_ss",
         "iiif_images": "iiif_images_ss",
         "iiif_labels": "iiif_labels_ss",
@@ -132,3 +139,14 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         labels = doc.get("iiif_labels", [])
         doc["iiif_images"] = list(zip(doc["iiif_images"], labels))
         return doc
+
+    def get_highlighting(self):
+        """highlight snippets within transcription html may result in invalid tags
+        that will render strangely; clean up the html before returning"""
+        highlights = super().get_highlighting()
+        for doc in highlights.keys():
+            if "transcription" in highlights[doc]:
+                highlights[doc]["transcription"] = [
+                    clean_html(s) for s in highlights[doc]["transcription"]
+                ]
+        return highlights

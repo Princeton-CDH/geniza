@@ -7,7 +7,7 @@ const application = Application.start();
 const context = require.context(
     "./controllers",
     true,
-    /^.*\/(?!iiif_controller).*\.js$/
+    /^.*\/(?!iiif_controller)(?!annotation_controller).*\.js$/
 );
 application.load(definitionsFromContext(context));
 

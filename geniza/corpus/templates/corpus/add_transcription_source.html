@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% load admin_urls static render_bundle_csp %}
+
+{% block meta_title %}{{ page_title }}{% endblock meta_title %}
+
+{% block extrascript %}
+    {# jQuery required for autocomplete widget #}
+    <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.min.js' %}"></script>
+    {% render_bundle_csp "annotation" "js" %}
+{% endblock %}
+
+{% block main %}
+    <h1>{{ page_title }}</h1>
+    <h2>Select scholarship record</h2>
+
+    {{ form.media }}
+    <form method="post" id="add-transcription-source" data-turbo="false">
+        {% csrf_token %}
+        <fieldset>
+            {{ form }}
+        </fieldset>
+        {# TODO: add convenience link to an unpublished source where the currently logged in user is the sole author #}
+        <button class="primary" type="submit">Create transcription</button>
+    </form>
+
+    <h2>Scholarship record not yet in the database?</h2>
+    <p>
+        <a href="{% url "admin:footnotes_source_changelist" %}" data-turbo="false" target="_blank">Add a new source record</a>, then return to this page.
+    </p>
+{% endblock %}

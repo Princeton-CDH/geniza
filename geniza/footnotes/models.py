@@ -1,7 +1,15 @@
+from collections import defaultdict
+from functools import cached_property
+from os import path
+from urllib.parse import urljoin
+
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
+from django.db.models.functions import NullIf
+from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
@@ -9,8 +17,10 @@ from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager
 from multiselectfield import MultiSelectField
 
+from geniza.annotations.models import Annotation
 from geniza.common.fields import NaturalSortField
 from geniza.common.models import TrackChangesModel
+from geniza.footnotes.utils import HTMLLineNumberParser
 
 
 class SourceType(models.Model):
@@ -360,20 +370,37 @@ class Source(models.Model):
             volume = shelfmark.split(" ")[0]
         return volume
 
+    @property
+    def uri(self):
+        """Generate a URI for this source to be used in transcription annotations,
+        in order to filter them by associated source"""
+        # TODO: add a minimal view with json representation of the source so that this uri resolves
+        manifest_base_url = getattr(settings, "ANNOTATION_MANIFEST_BASE_URL", "")
+        return urljoin(manifest_base_url, path.join("sources", str(self.pk))) + "/"
+
+    @staticmethod
+    def id_from_uri(uri):
+        """Given a URi for a source (as used in transcription annotations), return
+        the source id"""
+        # TODO: Use resolve() when the json source view exists
+        # (see logic in equivalent Document method)
+        return int(uri.split("/")[-2])
+
+    @classmethod
+    def from_uri(cls, uri):
+        """Given a URI for a Source (as used in transcription annotations), return the Source
+        object matching the pk"""
+        return cls.objects.get(pk=Source.id_from_uri(uri))
+
 
 class FootnoteQuerySet(models.QuerySet):
-    def includes_footnote(self, other, include_content=True):
+    def includes_footnote(self, other):
         """Check if the current queryset includes a match for the
         specified footnotes. Matches are made by comparing content source,
-        location, document relation type, notes, and content (ignores
-        associated content object). To ignore content when comparing
-        footnotes, specify `include_content=False`.
+        location, document relation type, and notes.
         Returns the matching object if there was one, or False if not."""
 
         compare_fields = ["source", "location", "notes"]
-        # optionally include content when comparing; include by default
-        if include_content:
-            compare_fields.append("content")
 
         for fn in self.all():
             if (
@@ -406,10 +433,12 @@ class Footnote(TrackChangesModel):
     EDITION = "E"
     TRANSLATION = "T"
     DISCUSSION = "D"
+    DIGITAL_EDITION = "X"
     DOCUMENT_RELATION_TYPES = (
         (EDITION, _("Edition")),
         (TRANSLATION, _("Translation")),
         (DISCUSSION, _("Discussion")),
+        (DIGITAL_EDITION, _("Digital Edition")),
     )
 
     doc_relation = MultiSelectField(
@@ -442,21 +471,26 @@ class Footnote(TrackChangesModel):
     objects = FootnoteQuerySet.as_manager()
 
     class Meta:
-        ordering = ["source", "location_sort"]
+        ordering = [
+            "source",
+            # sort footnote with empty locations after footnote with location
+            # (sort digital editions after other footnotes for same source)
+            NullIf("location_sort", models.Value("")).asc(nulls_last=True),
+        ]
+        constraints = [
+            # only allow one digital edition per source for a document
+            models.UniqueConstraint(
+                fields=("source", "object_id", "content_type", "doc_relation"),
+                name="one_digital_edition_per_document_and_source",
+                condition=models.Q(doc_relation__contains="X"),  # DIGITAL_EDITION),
+            )
+        ]
 
     def __str__(self):
         choices = dict(self.DOCUMENT_RELATION_TYPES)
 
         rel = " and ".join([str(choices[c]) for c in self.doc_relation]) or "Footnote"
         return f"{rel} of {self.content_object}"
-
-    def has_transcription(self):
-        """Admin display field indicating presence of digitized transcription."""
-        return bool(self.content)
-
-    has_transcription.short_description = "Digitized Transcription"
-    has_transcription.boolean = True
-    has_transcription.admin_order_field = "content"
 
     def display(self):
         """format footnote for display; used on document detail page
@@ -479,10 +513,55 @@ class Footnote(TrackChangesModel):
     has_url.boolean = True
     has_url.admin_order_field = "url"
 
+    @cached_property
+    def content_html(self):
+        """content as html, if available; returns a dictionary of lists.
+        keys are canvas ids, list is html content."""
+        if self.DIGITAL_EDITION in self.doc_relation:
+            doc = self.content_object
+            # filter annotations by document manifest and source
+            annos = Annotation.objects.filter(
+                content__target__source__partOf__id=doc.manifest_uri,
+                content__contains={"dc:source": self.source.uri},
+            )
+            # NOTE: when we implement translation, filter on motivation here
+            # to distinguish transcription/translation
+
+            # return a dictionary of lists of annotation html content
+            # keyed on canvas uri
+            # handle multiple annotations on the same canvas
+            html_content = defaultdict(list)
+            for a in annos:
+                if a.label:
+                    html_content[a.target_source_id].append(f"<h3>{a.label}</h3>")
+                html_content[a.target_source_id].append(a.body_content)
+            # cast to a regular dict to avoid weirdness in django templates
+            return dict(html_content)
+
+    @cached_property
+    def content_html_str(self):
+        "content as a single string of html, if available"
+        # content html is a dict; values are lists of html content
+        return "\n".join(
+            [
+                section
+                for canvas_annos in self.content_html.values()
+                for section in canvas_annos
+            ]
+        )
+
+    @staticmethod
+    def explicit_line_numbers(html):
+        """add explicit line numbers to passed HTML (in value attributes of ol > li)"""
+        parser = HTMLLineNumberParser()
+        parser.feed(html)
+        return parser.html_str
+
+    @property
     def content_text(self):
         "content as plain text, if available"
-        if self.content:
-            return self.content.get("text")
+        # content html is a dict; values are lists of html content
+        return strip_tags(self.content_html_str)
 
     def iiif_annotation_content(self):
         """Return transcription content from this footnote (if any)
@@ -490,13 +569,13 @@ class Footnote(TrackChangesModel):
         """
         # For now, since we have no block/canvas information, return the
         # whole thing as a single resource
-        html_content = self.content.get("html")
-        if html_content:
+        html = self.content_html
+        if html:
             # this is the content that should be set as the "resource"
             # of an annotation
             return {
                 "@type": "cnt:ContentAsText",
                 "format": "text/html",
                 # language todo
-                "chars": "<div dir='rtl' class='transcription'>%s</div>" % html_content,
+                "chars": "<div dir='rtl' class='transcription'>%s</div>" % html,
             }

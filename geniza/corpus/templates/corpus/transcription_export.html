@@ -1,0 +1,24 @@
+{# minimal html page for transcription export #}
+<html>
+    <head>
+        <title>Transcription of {{ document.title }}</title>
+    </head>
+    <body style="max-width: 860px; margin: auto">
+        <h1>Transcription of {{ document.title }}</h1>
+
+        <p>{{ edition.source.formatted_display|safe }}</p>
+
+        {# include language code when possible #}
+        <section dir="rtl" {% if document.languages.count == 1 and document.languages.first.iso_code %}lang="{{ document.languages.first.iso_code}}"{% endif %}>
+            {% for canvas, html_section in edition.content_html.items %}
+                <div data-canvas="{{ canvas }}">
+                    {# FIXME: why is this lines instead of a block ? #}
+                    {# html_section|safe #}
+                    {% for line in html_section %}
+                        {{ line|safe }}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </section>
+    </body>
+</html>

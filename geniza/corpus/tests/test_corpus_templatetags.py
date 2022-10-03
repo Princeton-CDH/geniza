@@ -54,7 +54,7 @@ def test_dict_item():
 
 def test_index():
     # no error on invalid index
-    assert corpus_extras.index([], 12) is ""
+    assert corpus_extras.index([], 12) == ""
     # valid index
     assert corpus_extras.index([1, 2, 3], 1) == 2
     # valid index, different type
@@ -107,6 +107,14 @@ def test_iiif_image():
     assert corpus_extras.iiif_image(myimg, "size:bogus=1") == ""
 
 
+def test_iiif_image_placeholder():
+    # test for placeholder used when we have canvases that do not have iiif images
+    img_url = "http://image.server/path/myimg.png"
+    myimg = {"info": img_url}
+    # should always just return the URL regardless of what options we pass
+    assert str(corpus_extras.iiif_image(myimg, "size:width=250")) == img_url
+
+
 def test_iiif_info_json():
     img1 = IIIFImageClient("http://image.server/path/", "myimgid")
     img2 = IIIFImageClient("http://image.server/path/", "myimgid2")
@@ -115,15 +123,6 @@ def test_iiif_info_json():
     # should contain the same ids but with /info.json appended
     assert "http://image.server/path/myimgid/info.json" in json_ids
     assert "http://image.server/path/myimgid2/info.json" in json_ids
-
-
-def test_h1_to_h3():
-    # should convert H1 to H3
-    html = "<div><h1>hi</h1><h3>hello</h3></div>"
-    assert corpus_extras.h1_to_h3(html) == "<div><h3>hi</h3><h3>hello</h3></div>"
-
-    # should fail silently / do nothing to input on type mismatch
-    assert corpus_extras.h1_to_h3(["test"]) == ["test"]
 
 
 def test_pgp_urlize(document, join):

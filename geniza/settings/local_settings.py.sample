@@ -16,7 +16,7 @@ DEBUG = True
 SECRET_KEY = ""
 
 # configure & override database setting as needed
-DATABASES['default']['PASSWORD'] = ""
+DATABASES["default"]["PASSWORD"] = ""
 
 # override default solr configuration as needed
 # SOLR_CONNECTIONS['default']['URL'] = ''      # default http://localhost:8983/solr/
@@ -33,23 +33,25 @@ WEBPACK_LOADER["DEFAULT"]["CACHE"] = False
 # )
 
 # CAS login configuration
-CAS_SERVER_URL = ''
+CAS_SERVER_URL = ""
 
-PUCAS_LDAP.update({
-    'SERVERS': [
+PUCAS_LDAP.update(
+    {
+        "SERVERS": [],
+        "SEARCH_BASE": "",
+        "SEARCH_FILTER": "",
+    }
+)
 
-    ],
-    'SEARCH_BASE': '',
-    'SEARCH_FILTER': "",
-})
-
+# base url for manifest uris used with annotation server; override if needed
+# ANNOTATION_MANIFEST_BASE_URL = "https://geniza.princeton.edu"
 
 # urls to google sheets data published as csv for import
 DATA_IMPORT_URLS = {
-    'libraries': '',
-    'languages': '',
-    'metadata': '',
-    'demerged': '',
+    "libraries": "",
+    "languages": "",
+    "metadata": "",
+    "demerged": "",
 }
 
 # LOGGING = {
@@ -102,3 +104,17 @@ TRANSCRIPTIONS_JSON_FILE = BASE_DIR.parent / "data" / "transcriptions.json"
 #    "he",
 #    "ar",
 # ]
+
+# Google Analytics tracking ID
+# GTAGS_ANALYTICS_ID = ''
+
+# TinyMCE API key
+# TINY_API_KEY = ''
+
+
+# URL for git repository of transcription annotation backups
+# ANNOTATION_BACKUP_GITREPO = ""
+# local path where git repo should be cloned
+# ANNOTATION_BACKUP_PATH = "data/annotations_backup"
+
+

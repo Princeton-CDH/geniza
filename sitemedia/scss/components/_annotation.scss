@@ -1,0 +1,70 @@
+/* styles for transcription and annotation */
+
+@use "../base/spacing";
+@use "../base/typography";
+
+// tahqiq annotation container
+div.annotate {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+    & > h2 {
+        padding: 14px 0 0;
+        text-align: left;
+    }
+    .instructions {
+        text-align: left;
+        font-style: italic;
+        font-size: typography.$text-size-md;
+        opacity: 0.75;
+        // override transcription paragraph spacing for instruction
+        margin-right: 0;
+        padding-right: 0;
+    }
+    .tahqiq-drop-zone {
+        flex: 1 1 100%;
+    }
+    div[contenteditable="true"],
+    h3[contenteditable="true"] {
+        background-color: white;
+        color: black;
+        min-height: 3em;
+    }
+}
+
+// "add new transcription" --> scholarship record choice page
+main.addsource {
+    h2 {
+        margin-top: 1rem;
+    }
+    button {
+        margin: 0.5rem auto 0;
+    }
+}
+
+// annotation editor
+main.annotating {
+    span#formatted-title {
+        margin-bottom: 1rem;
+        & + span {
+            margin-bottom: 2rem;
+        }
+    }
+    // style placeholder images with gray background in editor
+    #itt-panel .img.placeholder .deep-zoom-container {
+        background-color: var(--background-gray);
+        opacity: 1;
+    }
+}
+
+// dropdown for scholarship record choice
+span.select2-container li[class^="select2"],
+span.select2-container span[class^="select2"],
+main.addsource .select2-container--default .select2-selection--single,
+main.addsource
+    .select2-container--default
+    .select2-selection--single
+    .select2-selection__rendered {
+    background-color: var(--background);
+    color: var(--on-background);
+}

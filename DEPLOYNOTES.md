@@ -1,5 +1,22 @@
 # Deploy Notes
 
+### transcription migration & editor (version TBD)
+
+-   Must configure **ANNOTATION_BACKUP_PATH** and **ANNOTATION_BACKUP_GITREPO** in local settings. For proper setup, the directory at **ANNOTATION_BACKUP_PATH** should not exist when first run, but the containing directory should.
+-   Migrate transcription content from TEI xml to the new IIIF annotation
+    format: `python manage.py tei_to_annotation -v 0`
+
+.. Note:
+
+The `sync_annotation_export` cron job should be _disabled_ while the migration is running,
+to avoid the annotation backup git repository getting into a bad state.
+
+-   Reindex after the migration: `python manage.py index`
+-   Note: must manually accept GitHub host key the first time using annotation
+    export to github
+-   Configure `python manage.py sync_annotation_export` as a cron job to regularly
+    update remote git repository with annotation exports generated via signal handler.
+
 ## 4.9.0
 
 -   Copy the new fonts `WF-037420-012177-002520.woff` and `WF-037420-012177-002520.woff2` from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`

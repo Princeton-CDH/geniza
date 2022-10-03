@@ -1,4 +1,4 @@
-__version_info__ = (4, 9, 0, "dev")
+__version_info__ = (4, 9, 0, "transcription")
 
 
 # Dot-connect all but the last. Last is dash-connected if not None.

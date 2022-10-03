@@ -20,6 +20,10 @@ module.exports = (env, options) => ({
             "./sitemedia/scss/components/_iiif.scss",
             "./sitemedia/js/iiif.js",
         ],
+        annotation: [
+            "./sitemedia/scss/annotation.scss",
+            "./sitemedia/js/annotation.js",
+        ],
         admin: ["./sitemedia/js/admin.js"],
     },
     output: {

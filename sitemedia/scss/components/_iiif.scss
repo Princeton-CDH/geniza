@@ -68,7 +68,14 @@
             }
         }
     }
-    // Transcription text
+
+    // Transcription container
+
+    // hide if no content
+    .transcription.no-transcription {
+        display: none;
+    }
+
     .transcription {
         max-width: 60ch;
         margin: 0 auto;

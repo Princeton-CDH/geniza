@@ -1,7 +1,13 @@
 {% extends "admin/change_form.html" %}
 {% block after_field_sets %}
-    {% if original.content %}
+    {% if "X" in original.doc_relation %}
         <h2>Transcription</h2>
-        {% include "footnotes/transcription.html" with transcription=original.content %}
+        <div class="transcription">
+            {% for html_sections in original.content_html.values %}
+                {% for html in html_sections %}
+                    {{ html|safe }}
+                {% endfor %}
+            {% endfor %}
+        </div>
     {% endif %}
 {% endblock after_field_sets %}

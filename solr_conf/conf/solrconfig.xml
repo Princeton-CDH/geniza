@@ -752,7 +752,7 @@
         tags_ss_lower
         scholarship_t
         old_pgpids_is
-        transcription_t
+        transcription_ht
         document_date_t
       </str>
       <str name="keyword_pf">
@@ -765,7 +765,7 @@
         old_shelfmark_bigram
         tags_t
         scholarship_t^80
-        transcription_t^80
+        transcription_ht^80
         document_date_t
       </str>
 
@@ -785,7 +785,7 @@
         pgpid_i
         old_pgpids_is
         scholarship_t
-        transcription_t
+        transcription_ht
         fragment_old_shelfmark_ss
         old_shelfmark_t
         old_shelfmark_textnum
@@ -802,7 +802,7 @@
         notes_t
         needs_review_t
         scholarship_t
-        transcription_t
+        transcription_ht
         old_shelfmark_t
         old_shelfmark_textnum
         old_shelfmark_bigram

@@ -21,9 +21,12 @@ def absolutize_url(local_url, request=None):
     # add http:// if necessary, since most sites docs
     # suggest using just the domain name
     if not root.startswith("http"):
+        # if DJANGO_ENV is set to development, assume not https
+        if settings.ENV == "development":
+            root = "http://%s" % root
         # if in debug mode and request is passed in, use
         # the current scheme (i.e. http for localhost/runserver)
-        if settings.DEBUG and request:
+        elif settings.DEBUG and request:
             root = "%s://%s" % (request.scheme, root)
         # assume https for production sites
         else:

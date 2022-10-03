@@ -1,6 +1,7 @@
 import html
 from unittest.mock import Mock, patch
 
+import pytest
 from django.core.paginator import Paginator
 from django.http.request import HttpRequest, QueryDict
 from django.template.defaultfilters import linebreaks
@@ -71,8 +72,7 @@ class TestDocumentDetailTemplate:
         Footnote.objects.create(
             content_object=document,
             source=unpublished_editions,
-            doc_relation={Footnote.EDITION},
-            content={"text": "A piece of text"},
+            doc_relation={Footnote.DIGITAL_EDITION},
         )
         response = client.get(document.get_absolute_url())
         assertContains(
@@ -111,8 +111,7 @@ class TestDocumentDetailTemplate:
         Footnote.objects.create(
             content_object=document,
             source=source,
-            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content={"text": "A piece of text"},
+            doc_relation={Footnote.DIGITAL_EDITION},
         )
 
         # Digital edition with one author, should have one editor but not multiple
@@ -124,8 +123,7 @@ class TestDocumentDetailTemplate:
         Footnote.objects.create(
             content_object=document,
             source=twoauthor_source,
-            doc_relation=Footnote.EDITION,
-            content={"text": "B other text"},
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         # Should now be "editors"
         response = client.get(document.get_absolute_url())
@@ -144,17 +142,14 @@ class TestDocumentDetailTemplate:
         assertContains(response, "<dt>Shelfmark</dt>", html=True)
         assertContains(response, shelfmark_wrap(join.shelfmark), html=True)
 
+    @pytest.mark.skip(reason="temporarily disabled feature")
     def test_download_transcription_link_anonymous(
         self, client, document, unpublished_editions
     ):
         edition = Footnote.objects.create(
             content_object=document,
             source=unpublished_editions,
-            doc_relation=Footnote.EDITION,
-            content={
-                "html": "some transcription text",
-                "text": "some transcription text",
-            },
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         response = client.get(document.get_absolute_url())
         # unpublished editions fixture authored by Goitein
@@ -162,17 +157,14 @@ class TestDocumentDetailTemplate:
         assertNotContains(response, "Download Goitein's edition")
 
     # NOTE: text download is limited to authenticated users for now
+    @pytest.mark.skip(reason="temporarily disabled feature")
     def test_download_transcription_link(
         self, admin_client, document, unpublished_editions
     ):
         edition = Footnote.objects.create(
             content_object=document,
             source=unpublished_editions,
-            doc_relation=Footnote.EDITION,
-            content={
-                "html": "some transcription text",
-                "text": "some transcription text",
-            },
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         response = admin_client.get(document.get_absolute_url())
         # unpublished editions fixture authored by Goitein
@@ -185,32 +177,26 @@ class TestDocumentDetailTemplate:
             ),
         )
 
+    @pytest.mark.skip(reason="temporarily disabled feature")
     def test_download_transcription_link_two_authors(
         self, admin_client, document, twoauthor_source
     ):
         edition = Footnote.objects.create(
             content_object=document,
             source=twoauthor_source,
-            doc_relation=Footnote.EDITION,
-            content={
-                "html": "some transcription text",
-                "text": "some transcription text",
-            },
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         response = admin_client.get(document.get_absolute_url())
         assertContains(response, "Download Kernighan and Ritchie's edition")
 
+    @pytest.mark.skip(reason="temporarily disabled feature")
     def test_download_transcription_link_many_authors(
         self, admin_client, document, multiauthor_untitledsource
     ):
         edition = Footnote.objects.create(
             content_object=document,
             source=multiauthor_untitledsource,
-            doc_relation=Footnote.EDITION,
-            content={
-                "html": "some transcription text",
-                "text": "some transcription text",
-            },
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         response = admin_client.get(document.get_absolute_url())
         assertContains(
@@ -570,7 +556,7 @@ class TestDocumentResult:
         # template currently has truncate chars 150; just check that the beginning
         # of the transcription is there
         rendered = self.template.render(context)
-        assert linebreaks(transcription_txt)[:150] in rendered
+        assert transcription_txt[:150] in rendered
         # language not specified
         assert 'lang=""' in rendered
 
