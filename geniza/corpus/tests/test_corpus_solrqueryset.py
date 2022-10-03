@@ -38,9 +38,17 @@ class TestDocumentSolrQuerySet:
     def test_keyword_search_field_aliases(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
-            dqs.keyword_search("pgpid:950 shelfmark:ena tag:state")
+            dqs.keyword_search("pgpid:950 old_pgpid:931 tag:state")
             mocksearch.return_value.raw_query_parameters.assert_called_with(
-                keyword_query="pgpid_i:950 shelfmark_t:ena tags_ss_lower:state"
+                keyword_query="pgpid_i:950 old_pgpids_is:931 tags_ss_lower:state"
+            )
+
+    def test_keyword_search_field_alias_shelfmark(self):
+        dqs = DocumentSolrQuerySet()
+        with patch.object(dqs, "search") as mocksearch:
+            dqs.keyword_search("shelfmark:ena")
+            mocksearch.return_value.raw_query_parameters.assert_called_with(
+                keyword_query="%sena" % dqs.shelfmark_qf
             )
 
     def test_get_result_document(self):

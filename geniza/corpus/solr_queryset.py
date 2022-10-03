@@ -19,7 +19,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "type": "type_s",
         "status": "status_s",
         "shelfmark": "shelfmark_s",  # string version for display
-        "document_date": "document_date_s",  # string version for display
+        "document_date": "document_date_t",  # text version for search & display
+        "original_date_t": "original_date",
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
         "description": "description_txt_ens",  # use stemmed version for field search & highlight
@@ -50,12 +51,16 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # - start with a copy of default aliases
     # - define/override additional search aliases for site users
     search_aliases = field_aliases.copy()
+
+    shelfmark_qf = "{!type=edismax qf=$shelfmark_qf}"
+
     search_aliases.update(
         {
             # when searching, singular makes more sense for tags & old pgpids
             "old_pgpid": field_aliases["old_pgpids"],
             "tag": field_aliases["tags"],
-            "shelfmark": "shelfmark_t",  # search on text version with display override and individual shelfmarks
+            # for shelfmark, use search field to search multiple formats
+            "shelfmark": shelfmark_qf,
         }
     )
 
@@ -76,6 +81,11 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             # if any of the field aliases occur with a colon, replace with actual solr field
             search_term = self.re_solr_fields.sub(
                 lambda x: "%s:" % self.search_aliases[x.group(1)], search_term
+            )
+            # special case: shelfmark edismax query should NOT have colon
+            # like other fields
+            search_term = search_term.replace(
+                "%s:" % self.shelfmark_qf, self.shelfmark_qf
             )
 
         return arabic_or_ja(search_term)

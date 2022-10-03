@@ -885,16 +885,31 @@ class TestDocument:
         )
         index_data = document.index_data()
         # should display form of the date without tags
-        assert index_data["document_date_s"] == strip_tags(document.document_date)
+        assert index_data["document_date_t"] == strip_tags(document.document_date)
 
         # unparsable standard date shouldn't error, displays as-is
         document.doc_date_standard = "1145-46"
         index_data = document.index_data()
-        assert index_data["document_date_s"] == strip_tags(document.document_date)
+        assert index_data["document_date_t"] == strip_tags(document.document_date)
 
         # unset date should index as None/empty
         index_data = Document(id=1234).index_data()
-        assert index_data["document_date_s"] is None
+        assert index_data["document_date_t"] is None
+
+    def test_index_data_old_shelfmarks(self, join):
+        fragment = join.fragments.first()
+        old_shelfmarks = ["p. Heid. Arab. 917", "p. Heid. 917"]
+        fragment.old_shelfmarks = "; ".join(old_shelfmarks)
+        fragment.save()
+        fragment2 = join.fragments.all()[1]
+        fragment2.old_shelfmarks = "Yevr.-Arab. II 991"
+        fragment2.save()
+
+        index_data = join.index_data()
+        print(index_data["fragment_old_shelfmark_ss"])
+        all_old_shelfmarks = old_shelfmarks
+        all_old_shelfmarks.append(fragment2.old_shelfmarks)
+        assert index_data["fragment_old_shelfmark_ss"] == all_old_shelfmarks
 
     def test_editions(self, document, source):
         # create multiple footnotes to test filtering and sorting
