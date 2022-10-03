@@ -23,7 +23,7 @@
                     </dt>
                     <dd>
                         <time>
-                            {{ document.document_date }}
+                            {{ document.document_date.0 }} {# indexed as _t which is a multival field #}
                         </time>
                     </dd>
                 {% endif %}

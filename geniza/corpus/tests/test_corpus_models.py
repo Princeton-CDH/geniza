@@ -885,18 +885,16 @@ class TestDocument:
         )
         index_data = document.index_data()
         # should display form of the date without tags
-        assert index_data["document_date_s"] == strip_tags(document.document_date)
-        assert index_data["original_date_t"] == document.original_date
+        assert index_data["document_date_t"] == strip_tags(document.document_date)
 
         # unparsable standard date shouldn't error, displays as-is
         document.doc_date_standard = "1145-46"
         index_data = document.index_data()
-        assert index_data["document_date_s"] == strip_tags(document.document_date)
+        assert index_data["document_date_t"] == strip_tags(document.document_date)
 
         # unset date should index as None/empty
         index_data = Document(id=1234).index_data()
-        assert index_data["document_date_s"] is None
-        assert index_data["original_date_t"] is None
+        assert index_data["document_date_t"] is None
 
     def test_index_data_old_shelfmarks(self, join):
         fragment = join.fragments.first()

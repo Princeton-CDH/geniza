@@ -19,7 +19,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "type": "type_s",
         "status": "status_s",
         "shelfmark": "shelfmark_s",  # string version for display
-        "document_date": "document_date_s",  # string version for display
+        "document_date": "document_date_t",  # text version for search & display
+        "original_date_t": "original_date",
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
         "description": "description_txt_ens",  # use stemmed version for field search & highlight
