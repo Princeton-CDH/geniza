@@ -744,20 +744,29 @@
         shelfmark_s^100
         fragment_shelfmark_ss^50
         shelfmark_textnum^140
+        fragment_old_shelfmark_ss
+        old_shelfmark_t
+        old_shelfmark_textnum
+        old_shelfmark_bigram
         tags_t
         tags_ss_lower
         scholarship_t
         old_pgpids_is
         transcription_ht
+        document_date_t
       </str>
       <str name="keyword_pf">
         description_t^50
         description_txt_ens^20
         shelfmark_bigram^100
-        shelfmark_textnum^140
+        shelfmark_textnum^140   
+        old_shelfmark_t
+        old_shelfmark_textnum
+        old_shelfmark_bigram
         tags_t
         scholarship_t^80
         transcription_ht^80
+        document_date_t
       </str>
 
        <!-- admin search field for Document model (no boosting because no relevance sort) -->
@@ -777,6 +786,11 @@
         old_pgpids_is
         scholarship_t
         transcription_ht
+        fragment_old_shelfmark_ss
+        old_shelfmark_t
+        old_shelfmark_textnum
+        old_shelfmark_bigram
+        document_date_t
       </str>
       <str name="admin_doc_pf">
         type_s
@@ -789,10 +803,20 @@
         needs_review_t
         scholarship_t
         transcription_ht
+        old_shelfmark_t
+        old_shelfmark_textnum
+        old_shelfmark_bigram
+        document_date_t
       </str>
 
+      <!-- search across all variant shelfmark fields -->
+      <str name="shelfmark_qf">
+        shelfmark_s
+        shelfmark_t
+        shelfmark_bigram
+        shelfmark_textnum
+      </str>
     </lst>
-
 
     <!-- In addition to defaults, "appends" params can be specified
          to identify values which should be appended to the list of
