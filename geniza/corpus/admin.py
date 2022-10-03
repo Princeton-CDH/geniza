@@ -612,3 +612,13 @@ class FragmentAdmin(admin.ModelAdmin):
         # if there is an error loading the IIIF manifest
         obj.request = request
         super().save_model(request, obj, form, change)
+
+
+### New exporter code
+
+from import_export.resources import ModelResource
+
+
+class DocumentResource(ModelResource):
+    class Meta:
+        model = Document
