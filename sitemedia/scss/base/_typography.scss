@@ -38,6 +38,13 @@ $text-size-5xl: 2rem; //     = 32px
         line-height: calc(40 / 28);
     }
 }
+// H1 — page titles (Arabic variant)
+@mixin headline-1-ar {
+    line-height: calc(42 / 24);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(46 / 28);
+    }
+}
 
 // H2 — section and search result titles
 @mixin headline-2 {
@@ -54,6 +61,13 @@ $text-size-5xl: 2rem; //     = 32px
     line-height: calc(27 / 20);
     @include breakpoints.for-tablet-landscape-up {
         line-height: calc(34 / 24);
+    }
+}
+// H2 — section and search result titles (Arabic variant)
+@mixin headline-2-ar {
+    line-height: calc(36 / 20);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(40 / 24);
     }
 }
 
@@ -74,6 +88,13 @@ $text-size-5xl: 2rem; //     = 32px
         line-height: calc(27 / 20);
     }
 }
+// H3 — sub-sections only on generic content pages (Arabic variant)
+@mixin headline-3-ar {
+    line-height: calc(30 / 16);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(36 / 20);
+    }
+}
 
 // H1 - error pages
 @mixin headline-error {
@@ -90,6 +111,13 @@ $text-size-5xl: 2rem; //     = 32px
     line-height: calc(25 / 18);
     @include breakpoints.for-tablet-landscape-up {
         line-height: calc(27 / 20);
+    }
+}
+// H1 - error pages (Arabic variant)
+@mixin headline-error-ar {
+    line-height: calc(27 / 18);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(28 / 20);
     }
 }
 
@@ -109,6 +137,13 @@ $text-size-5xl: 2rem; //     = 32px
     line-height: calc(25 / 18);
     @include breakpoints.for-tablet-landscape-up {
         line-height: calc(27 / 20);
+    }
+}
+// body text (Arabic variant)
+@mixin body-ar {
+    line-height: calc(32 / 18);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(30 / 20);
     }
 }
 @mixin body-bold {
@@ -183,6 +218,13 @@ $text-size-5xl: 2rem; //     = 32px
     line-height: calc(22 / 16);
     @include breakpoints.for-tablet-landscape-up {
         line-height: calc(25 / 18);
+    }
+}
+// metadata (Arabic variant)
+@mixin meta-ar {
+    line-height: calc(30 / 16);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(30 / 18);
     }
 }
 @mixin meta-bold {
@@ -316,6 +358,13 @@ $text-size-5xl: 2rem; //     = 32px
         line-height: calc(27 / 20);
     }
 }
+// Mobile nav menu (Arabic variant)
+@mixin mobile-menu-ar {
+    line-height: calc(36 / 22);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(30 / 18);
+    }
+}
 
 // Icon buttons
 @mixin icon-button {
@@ -375,10 +424,10 @@ $text-size-5xl: 2rem; //     = 32px
     }
 }
 @mixin language-switch-ar {
-    // TODO: Change to 20px on desktop and 16px on mobile, with bold weight
-    // Hassan, when Hassan available
-    font-size: $text-size-2xl;
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+    font-size: 0.8rem;
     @include breakpoints.for-tablet-landscape-up {
-        font-size: $text-size-3xl;
+        font-size: $text-size-md;
     }
 }

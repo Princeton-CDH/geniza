@@ -199,8 +199,29 @@ html[lang="he"] main.document {
     }
     .container dl.metadata-list,
     .container section.input-date,
+    .container dl.metadata-list dt,
+    .container dl.metadata-list dd,
     dl.metadata-list.tertiary dt#permalink {
         @include typography.meta-he;
+    }
+    dl *[lang="en"] {
+        // handle any dt/dd in English
+        @include typography.meta;
+    }
+}
+
+// Arabic variant
+html[lang="ar"] main.document {
+    .container section.description h3 {
+        // "Description" label is always translated
+        @include typography.body-ar;
+    }
+    .container dl.metadata-list,
+    .container dl.metadata-list dt,
+    .container dl.metadata-list dd,
+    .container section.input-date,
+    dl.metadata-list.tertiary dt#permalink {
+        @include typography.meta-ar;
     }
     dl *[lang="en"] {
         // handle any dt/dd in English

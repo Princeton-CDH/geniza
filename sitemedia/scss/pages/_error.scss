@@ -71,3 +71,10 @@ html[lang="he"] {
         @include typography.headline-error-he;
     }
 }
+
+// Arabic variant
+html[lang="ar"] {
+    main.error h1 {
+        @include typography.headline-error-ar;
+    }
+}

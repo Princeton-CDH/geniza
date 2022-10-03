@@ -403,3 +403,14 @@ html[lang="he"] {
         @include typography.meta-he;
     }
 }
+
+// Arabic variant
+html[lang="ar"] {
+    .search-result .counter {
+        @include typography.headline-2-ar;
+    }
+    .search-result section:first-of-type .scholarship,
+    a.view-link > span {
+        @include typography.meta-ar;
+    }
+}

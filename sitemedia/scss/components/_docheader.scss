@@ -28,6 +28,10 @@ span#formatted-title {
 html[lang="he"] span#formatted-title {
     @include typography.headline-1-he;
 }
+// Arabic variant
+html[lang="ar"] span#formatted-title {
+    @include typography.headline-1-ar;
+}
 
 // Edit link for admins
 .edit-link-container {

@@ -504,7 +504,7 @@ html[dir="rtl"] main.search form {
         input[type="search"] {
             margin-right: 0;
             margin-left: spacing.$spacing-sm;
-            padding: 0 spacing.$spacing-sm 0 0;
+            text-align: right;
         }
         button[type="submit"] {
             margin-right: 0; // Needed to prevent wrapping on mobile
@@ -579,5 +579,17 @@ html[lang="he"] main.search form {
     fieldset#filters > label:not(.date-range-label) span.count,
     ul#search-errors li {
         @include typography.meta-he;
+    }
+}
+
+// Arabic variant
+html[lang="ar"] main.search form {
+    a#filters-button:not([lang="en"]),
+    a#close-filters-button:not([lang="en"]) {
+        @include typography.body-ar;
+    }
+    fieldset#filters > label:not(.date-range-label) span.count,
+    ul#search-errors li {
+        @include typography.meta-ar;
     }
 }

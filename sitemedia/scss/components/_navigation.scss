@@ -728,3 +728,18 @@ html[lang="he"] #site-nav {
         @include typography.mobile-menu;
     }
 }
+
+// Arabic variant
+html[lang="ar"] #site-nav {
+    li.menu-item a,
+    li.menu-item a[aria-current="page"],
+    ul.sub-menu li.menu-item a,
+    ul.sub-menu li.menu-item a[aria-current="page"],
+    ul.sub-menu li.menu-label {
+        @include typography.mobile-menu-ar;
+    }
+    *[lang="en"] {
+        // handle any nav links/menu items in English
+        @include typography.mobile-menu;
+    }
+}

@@ -101,6 +101,7 @@
     @font-face {
         font-family: "HassanLTLight";
         font-style: normal;
+        size-adjust: 125%; // Arabic text will be 125% of Latin text size
         font-weight: normal;
         src: url("#{$base_url}/HassanLTLight.woff2") format("woff2"),
             url("#{$base_url}/HassanLTLight.woff") format("woff");
@@ -111,6 +112,7 @@
     @font-face {
         font-family: "HassanLTBold";
         font-style: normal;
+        size-adjust: 125%; // Arabic text will be 125% of Latin text size
         font-weight: bold;
         src: url("#{$base_url}/HassanLTBold.woff2") format("woff2"),
             url("#{$base_url}/HassanLTBold.woff") format("woff");
