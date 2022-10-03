@@ -622,3 +622,9 @@ from import_export.resources import ModelResource
 class DocumentResource(ModelResource):
     class Meta:
         model = Document
+        fields = ("id",)
+
+
+class FragmentResource(ModelResource):
+    class Meta:
+        model = Fragment
