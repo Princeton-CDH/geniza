@@ -19,7 +19,7 @@ to avoid the annotation backup git repository getting into a bad state.
 
 ## 4.9.0
 
--   Copy the new fonts `WF-037420-012177-002520.woff` and `WF-037420-012177-002520.woff2` from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`
+-   Copy the new fonts `WF-037420-012177-002520.woff`, `WF-037420-012177-002520.woff2`, and all `Amiri-*` and `Hassan*` from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`
 
 ## 4.8
 

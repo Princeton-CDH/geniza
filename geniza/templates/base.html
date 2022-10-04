@@ -44,19 +44,28 @@
         {% endif %}
         <!-- resource preloading -->
         <link rel="preconnect" href="https://unpkg.com" crossorigin />
-        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}GretaSansH-Bold.woff2" crossorigin />
-        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}GretaSansH-Regular.woff2" crossorigin />
-        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001035.woff2" crossorigin />
-        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001036.woff2" crossorigin />
-        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001041.woff2" crossorigin />
-        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-012177-002520.woff2" crossorigin />
         <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001035.woff" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001035.woff2" crossorigin />
         <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001036.woff" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001036.woff2" crossorigin />
         <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001041.woff" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-011914-001041.woff2" crossorigin />
         <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}WF-037420-012177-002520.woff" crossorigin />
+        <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}WF-037420-012177-002520.woff2" crossorigin />
+        {% if LANGUAGE_CODE == "ar" %} {# only preload multilingual fonts when needed #}
+            <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}HassanLTLight.woff2" crossorigin />
+            <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}HassanLTBold.woff2" crossorigin />
+            <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}HassanLTLight.woff" crossorigin />
+            <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}HassanLTBold.woff" crossorigin />
+        {% elif LANGUAGE_CODE == "he" %}
+            <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}GretaSansH-Bold.woff2" crossorigin />
+            <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}GretaSansH-Regular.woff2" crossorigin />
+        {% endif %}
         {% if page_includes_transcriptions %} {# only preload transcription font when needed #}
             <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}FrankRuhl1924MFMediumMedium.woff2" crossorigin />
             <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}FrankRuhl1924MFMediumMedium.woff" crossorigin />
+            <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}Amiri-Regular.woff2" crossorigin />
+            <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}Amiri-Regular.woff" crossorigin />
         {% endif %}
         {# include current phosphor icons as css; check https://unpkg.com/phosphor-icons for latest version #}
         <link rel="stylesheet" type="text/css" href="https://unpkg.com/phosphor-icons@1.3.2/src/css/phosphor.css" nonce="{{ reqest.csp_nonce }}"/>

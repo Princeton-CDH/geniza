@@ -65,3 +65,14 @@ html[lang="he"] .citation {
         @include typography.meta-he;
     }
 }
+
+// Arabic variant
+html[lang="ar"] .citation {
+    @include typography.body-ar;
+    *[lang="en"] {
+        @include typography.body;
+    }
+    dd.relation:not([lang="en"]) {
+        @include typography.meta-ar;
+    }
+}

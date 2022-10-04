@@ -87,13 +87,44 @@
         font-display: swap;
     }
 
-    // Frank Ruhl1924 MF Medium for Hebrew text
+    // Frank Ruhl1924 MF Medium for Hebrew text (transcriptions)
     @font-face {
         font-family: "FrankRuhl 1924 MF Medium";
         font-style: normal;
         src: url("#{$base_url}/FrankRuhl1924MFMediumMedium.woff2")
                 format("woff2"),
             url("#{$base_url}/FrankRuhl1924MFMediumMedium.woff") format("woff");
+        font-display: swap;
+    }
+
+    // HassanLTLight for Arabic text
+    @font-face {
+        font-family: "HassanLTLight";
+        font-style: normal;
+        size-adjust: 125%; // Arabic text will be 125% of Latin text size
+        font-weight: normal;
+        src: url("#{$base_url}/HassanLTLight.woff2") format("woff2"),
+            url("#{$base_url}/HassanLTLight.woff") format("woff");
+        font-display: swap;
+    }
+
+    // HassanLTBold for Arabic text
+    @font-face {
+        font-family: "HassanLTBold";
+        font-style: normal;
+        size-adjust: 125%; // Arabic text will be 125% of Latin text size
+        font-weight: bold;
+        src: url("#{$base_url}/HassanLTBold.woff2") format("woff2"),
+            url("#{$base_url}/HassanLTBold.woff") format("woff");
+        font-display: swap;
+    }
+
+    // Amiri for Arabic text (transcriptions)
+    @font-face {
+        font-family: "Amiri";
+        font-style: normal;
+        src: url("#{$base_url}/Amiri-Regular.woff2") format("woff2"),
+            url("#{$base_url}/Amiri-Regular.woff") format("woff");
         font-display: swap;
     }
 }
@@ -139,22 +170,28 @@
 $primary: (
     "Greta Sans Regular",
     "Greta Sans Hebrew Regular",
+    "HassanLTLight",
     "arial-regular",
     sans-serif
 );
 $primary-bold: (
     "Greta Sans Regular Bold",
     "Greta Sans Hebrew Bold",
+    "HassanLTBold",
     "arial-bold",
     sans-serif
 );
 $primary-semibold: (
     "Greta Sans Regular Semibold",
     "Greta Sans Hebrew Bold",
+    "HassanLTBold",
     "arial-bold",
     sans-serif
 );
 $primary-italic: ("Greta Sans Regular Italic", "arial-italic", sans-serif);
 
-// Secondary font family: Hebrew transcriptions
-$hebrew: ("FrankRuhl 1924 MF Medium", Georgia, serif);
+// Hebrew transcriptions
+$hebrew: ("FrankRuhl 1924 MF Medium", serif);
+
+// Arabic transcriptions
+$arabic: ("Amiri", serif);

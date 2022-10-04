@@ -240,7 +240,10 @@ export default class extends Controller {
         } else if (!this.zoomSliderTarget.classList.contains("active-thumb")) {
             this.zoomSliderTarget.classList.add("active-thumb");
         }
-        this.zoomSliderTarget.style.background = `linear-gradient(to right, var(--link-primary) 0%, var(--link-primary) ${percent}%, ${secondColor} ${percent}%, ${secondColor} 100%)`;
+        // switch gradient direction for RTL layout
+        const dir = document.documentElement.dir == "rtl" ? "left" : "right";
+        // use gradient for two-tone slider track background
+        this.zoomSliderTarget.style.background = `linear-gradient(to ${dir}, var(--link-primary) 0%, var(--link-primary) ${percent}%, ${secondColor} ${percent}%, ${secondColor} 100%)`;
     }
     updateRotationUI(angle, autoUpdate) {
         // update rotation label

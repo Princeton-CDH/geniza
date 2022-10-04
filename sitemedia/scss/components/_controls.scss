@@ -32,9 +32,7 @@ ul#language-switcher {
     li a {
         background-color: var(--background-gray);
         border: 3px solid var(--background-gray);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: block;
         width: 40px;
         height: 40px;
         border-radius: 20px;
@@ -60,15 +58,26 @@ ul#language-switcher {
         &[lang="en"]::before {
             content: "E";
             @include typography.language-switch-en;
+            margin: 4px 0 0 12px;
+            @include breakpoints.for-tablet-landscape-up {
+                margin: 7px 0 0 17px;
+            }
         }
         &[lang="he"]::before {
             content: "ע";
             @include typography.language-switch-he;
+            margin: 3px 0 0 13px;
+            @include breakpoints.for-tablet-landscape-up {
+                margin: 3px 0 0 17px;
+            }
         }
         &[lang="ar"]::before {
             content: "ع";
             @include typography.language-switch-ar;
-            margin-top: -5px;
+            margin: 4.5px 0 0 13px;
+            @include breakpoints.for-tablet-landscape-up {
+                margin: 8px 0 0 16px;
+            }
         }
     }
     li:not(:last-child) {
@@ -161,6 +170,26 @@ html[dir="rtl"] {
             @include breakpoints.for-tablet-landscape-up {
                 margin-right: auto;
                 margin-left: 4px;
+            }
+        }
+        li a {
+            &[lang="en"]::before {
+                margin: 4px 12px 0 0;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 7px 17px 0 0;
+                }
+            }
+            &[lang="he"]::before {
+                margin: 3px 13px 0 0;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 3px 17px 0 0;
+                }
+            }
+            &[lang="ar"]::before {
+                margin: 4.5px 13px 0 0;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 8px 16px 0 0;
+                }
             }
         }
     }

@@ -446,3 +446,12 @@ html[lang="he"] footer {
         @include typography.meta;
     }
 }
+
+// Arabic variant
+html[lang="ar"] footer {
+    @include typography.meta-ar;
+    *[lang="en"] {
+        // handle any nav links in English
+        @include typography.meta;
+    }
+}
