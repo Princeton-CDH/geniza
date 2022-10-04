@@ -189,11 +189,6 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
 class DocumentResource(resources.ModelResource):
     class Meta:
         model = Document
-        # fields = ("id","doc_date_standard","description")
-
-
-# class DocumentAdmin(ExportActionMixin, ExportMixin, admin.ModelAdmin):
-# resource_class = DocumentResource  # resource for export
 
 
 class FragmentResource(resources.ModelResource):
