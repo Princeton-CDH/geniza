@@ -172,6 +172,26 @@ html[dir="rtl"] {
                 margin-left: 4px;
             }
         }
+        li a {
+            &[lang="en"]::before {
+                margin: 4px 12px 0 0;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 7px 17px 0 0;
+                }
+            }
+            &[lang="he"]::before {
+                margin: 3px 13px 0 0;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 3px 17px 0 0;
+                }
+            }
+            &[lang="ar"]::before {
+                margin: 4.5px 13px 0 0;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 8px 16px 0 0;
+                }
+            }
+        }
     }
     label#theme-toggle-mobile {
         right: auto;
