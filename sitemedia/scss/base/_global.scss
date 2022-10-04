@@ -85,7 +85,7 @@ h1 {
 html[lang="he"] h1:not([lang="en"]) {
     @include typography.headline-1-he;
 }
-html[lang="ar"] h1:not([lang="ar"]) {
+html[lang="ar"] h1:not([lang="en"]) {
     @include typography.headline-1-ar;
 }
 
@@ -95,7 +95,7 @@ h2 {
 html[lang="he"] h2:not([lang="en"]) {
     @include typography.headline-2-he;
 }
-html[lang="ar"] h2:not([lang="ar"]) {
+html[lang="ar"] h2:not([lang="en"]) {
     @include typography.headline-2-ar;
 }
 
@@ -105,7 +105,7 @@ h3 {
 html[lang="he"] h3:not([lang="en"]) {
     @include typography.headline-3-he;
 }
-html[lang="ar"] h3:not([lang="ar"]) {
+html[lang="ar"] h3:not([lang="en"]) {
     @include typography.headline-3-ar;
 }
 
