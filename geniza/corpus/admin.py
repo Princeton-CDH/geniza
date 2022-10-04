@@ -14,7 +14,6 @@ from django.http import HttpResponseRedirect
 from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
-from import_export import fields, resources, widgets
 from import_export.admin import ExportActionMixin, ExportMixin
 from modeltranslation.admin import TabbedTranslationAdmin
 from tabular_export.admin import export_to_csv_response
@@ -28,6 +27,7 @@ from geniza.corpus.models import (
     LanguageScript,
     TextBlock,
 )
+from geniza.corpus.resource import DocumentResource
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
 from geniza.footnotes.admin import DocumentFootnoteInline
@@ -184,16 +184,6 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
             return queryset.filter(footnotes__content__has_key="html")
         if self.value() == "no":
             return queryset.exclude(footnotes__content__has_key="html")
-
-
-class DocumentResource(resources.ModelResource):
-    class Meta:
-        model = Document
-
-
-class FragmentResource(resources.ModelResource):
-    class Meta:
-        model = Fragment
 
 
 @admin.register(Document)
