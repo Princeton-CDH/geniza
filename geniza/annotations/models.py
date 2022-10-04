@@ -42,6 +42,17 @@ class AnnotationQuerySet(models.QuerySet):
                 annos_by_canvas[anno.target_source_id].append(anno)
         return annos_by_canvas
 
+    def group_by_manifest(self):
+        """Aggregate annotations by manifest uri; returns a dictionary of lists,
+        keys are manifest uri, items are lists of annotations."""
+        # aggregate annotations by canvas id
+        annos_by_manifest = defaultdict(list)
+        for anno in self.all():
+            # ignore if target source is unset
+            if anno.target_source_id:
+                annos_by_manifest[anno.target_source_manifest_id].append(anno)
+        return annos_by_manifest
+
 
 class Annotation(TrackChangesModel):
     """Annotation model for storing annotations in the database."""
