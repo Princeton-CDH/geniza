@@ -27,6 +27,8 @@ class TestSyncAnnationExport:
         cmd = sync_annotation_export.Command()
         cmd.lastrun_filename = tmpdir / "test_lastrun"
         current_run = datetime.now()
+        # does not yet exist
+        assert not cmd.lastrun_filename.exists()
         cmd.update_lastrun_info(current_run)
 
         # last run file should exist now
@@ -36,6 +38,17 @@ class TestSyncAnnationExport:
             lastrun_info = json.load(lastrun)
 
         assert lastrun_info[cmd.script_id] == current_run.isoformat()
+
+        # confirm updating preserves other content
+        with open(cmd.lastrun_filename, "w") as lastrun:
+            return json.dump({"foo": "bar"}, lastrun)
+        cmd.update_lastrun_info(current_run)
+
+        # confirm that existing content was not destroyed
+        with open(cmd.lastrun_filename) as lastrun:
+            lastrun_info = json.load(lastrun)
+
+        assert lastrun_filename["foo"] == "bar"
 
     def test_script_lastrun(self, tmpdir):
         cmd = sync_annotation_export.Command()
