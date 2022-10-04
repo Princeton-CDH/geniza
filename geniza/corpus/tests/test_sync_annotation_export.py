@@ -1,10 +1,18 @@
 import json
 from datetime import datetime
-from unittest.mock import Mock
+from io import StringIO
+from unittest.mock import Mock, patch
 
+import pytest
+from django.conf import settings
+from django.contrib.admin.models import CHANGE, LogEntry
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
+from geniza.annotations.models import Annotation
 from geniza.corpus.management.commands import sync_annotation_export
+from geniza.corpus.models import Document
 
 
 class TestSyncAnnationExport:
@@ -74,3 +82,102 @@ class TestSyncAnnationExport:
         assert cmd.script_lastrun() == now
         # and should not query git log
         assert cmd.anno_exporter.repo.head.reference.log.call_count == 0
+
+    @pytest.mark.django_db
+    @patch(
+        "geniza.corpus.management.commands.sync_annotation_export.AnnotationExporter"
+    )
+    def test_handle_nochange(self, mock_annoexporter, tmpdir):
+        stdout = StringIO()
+        cmd = sync_annotation_export.Command(stdout=stdout)
+        cmd.lastrun_filename = tmpdir / "test_lastrun"
+        # set lastrun so it won't query git repo
+        now = timezone.now()
+        cmd.update_lastrun_info(now)
+        cmd.handle(verbosity=1)
+        # should report 0 entries found
+        output = stdout.getvalue()
+        assert "0 annotation log entries" in output
+        # should init exporter, but not export anything
+        assert mock_annoexporter.call_count == 1
+        mock_exporter = mock_annoexporter.return_value
+        mock_exporter.setup_repo.assert_called()
+        assert mock_exporter.export.call_count == 0
+        assert mock_exporter.sync_github.call_count == 0
+
+    @pytest.mark.django_db
+    @patch(
+        "geniza.corpus.management.commands.sync_annotation_export.AnnotationExporter"
+    )
+    def test_handle_change(self, mock_annoexporter, tmpdir, annotation):
+        stdout = StringIO()
+        cmd = sync_annotation_export.Command(stdout=stdout)
+        cmd.lastrun_filename = tmpdir / "test_lastrun"
+        # set lastrun before we create a test log entry
+        now = timezone.now()
+        cmd.update_lastrun_info(now)
+
+        # create a log entry for our fixture annotation
+        script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
+        annotation_ctype = ContentType.objects.get_for_model(Annotation)
+
+        LogEntry.objects.log_action(
+            user_id=script_user.id,
+            content_type_id=annotation_ctype.pk,
+            object_id=annotation.pk,
+            object_repr=repr(annotation),
+            action_flag=CHANGE,
+        )
+
+        # run the handle method
+        cmd.handle(verbosity=1)
+
+        # should report 1 entry found
+        output = stdout.getvalue()
+        print("*** output")
+        assert "1 annotation log entry" in output
+        # should init exporter and export one document
+        assert mock_annoexporter.call_count == 1
+        mock_exporter = mock_annoexporter.return_value
+        mock_exporter.setup_repo.assert_called()
+        pgpid = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+        mock_exporter.export.assert_called_with(
+            pgpids=[pgpid], modifying_users=set([script_user])
+        )
+        assert mock_exporter.sync_github.call_count == 1
+
+    @pytest.mark.django_db
+    @patch(
+        "geniza.corpus.management.commands.sync_annotation_export.AnnotationExporter"
+    )
+    def test_handle_delete(
+        self, mock_annoexporter, tmpdir, annotation, admin_client, admin_user
+    ):
+        stdout = StringIO()
+        cmd = sync_annotation_export.Command(stdout=stdout)
+        cmd.lastrun_filename = tmpdir / "test_lastrun"
+        # set lastrun
+        now = timezone.now()
+
+        pgpid = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+
+        # delete fixeture annotation with DELETE request as admin;
+        # this will create a log entry with expected change message
+        response = admin_client.delete(annotation.get_absolute_url())
+
+        # run the handle method
+        cmd.handle(verbosity=1)
+
+        # should report 1 entry found
+        output = stdout.getvalue()
+        print("*** output")
+        assert "1 annotation log entry" in output
+        # should init exporter and export one document
+        assert mock_annoexporter.call_count == 1
+        mock_exporter = mock_annoexporter.return_value
+        mock_exporter.setup_repo.assert_called()
+        doc = Document.from_manifest_uri(annotation.target_source_manifest_id)
+        mock_exporter.export.assert_called_with(
+            pgpids=[pgpid], modifying_users=set([admin_user])
+        )
+        assert mock_exporter.sync_github.call_count == 1

@@ -52,7 +52,7 @@ class Command(BaseCommand):
 
         if options["verbosity"] >= self.v_normal:
             log_entry_count = log_entries.count()
-            print(
+            self.stdout.write(
                 "%d annotation log entr%s since %s"
                 % (
                     log_entry_count,
