@@ -14,6 +14,8 @@ from django.http import HttpResponseRedirect
 from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
+from import_export import fields, resources, widgets
+from import_export.admin import ExportActionMixin, ExportMixin
 from modeltranslation.admin import TabbedTranslationAdmin
 from tabular_export.admin import export_to_csv_response
 
@@ -184,8 +186,30 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
             return queryset.exclude(footnotes__content__has_key="html")
 
 
+class DocumentResource(resources.ModelResource):
+    class Meta:
+        model = Document
+        # fields = ("id","doc_date_standard","description")
+
+
+# class DocumentAdmin(ExportActionMixin, ExportMixin, admin.ModelAdmin):
+# resource_class = DocumentResource  # resource for export
+
+
+class FragmentResource(resources.ModelResource):
+    class Meta:
+        model = Fragment
+
+
 @admin.register(Document)
-class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
+class DocumentAdmin(
+    ExportActionMixin,
+    ExportMixin,
+    TabbedTranslationAdmin,
+    SortableAdminBase,
+    admin.ModelAdmin,
+):
+    resource_class = DocumentResource  # resource for export
     form = DocumentForm
     # NOTE: columns display for default and needs review display
     # are controlled via admin css; update the css if you change the order here
@@ -615,16 +639,3 @@ class FragmentAdmin(admin.ModelAdmin):
 
 
 ### New exporter code
-
-from import_export.resources import ModelResource
-
-
-class DocumentResource(ModelResource):
-    class Meta:
-        model = Document
-        fields = ("id",)
-
-
-class FragmentResource(ModelResource):
-    class Meta:
-        model = Fragment
