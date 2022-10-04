@@ -8,6 +8,7 @@
 
 import argparse
 import csv
+import os.path
 from urllib.parse import urlencode
 
 import pandas as pd
@@ -94,8 +95,17 @@ def combine_manifests(csvfilepath, output_dir):
 
         for row in jrl_df.itertuples():
 
-            # TODO: skip if already generated
-            # path based on ident="%s/%s" % (slugify(series), slugify(shelfmark)) + .json
+            # skip if already generated in a previous run
+            shelfmark = row.shelfmark
+            series = shelfmark.split()[0]
+            # path is based on manifest identifier, in output dir, with json extension
+            expected_path = os.path.join(
+                output_dir, "%s/%s.json" % (slugify(series), slugify(shelfmark))
+            )
+            if os.path.exists(expected_path):
+                # update the count, to track progress/estimate
+                progress.update(task, advance=1)
+                continue
 
             manifest_url = row.iiif_url
             # print(manifest_url)
@@ -105,13 +115,14 @@ def combine_manifests(csvfilepath, output_dir):
             canvas_metadata = {
                 v.label: v.value for v in manifest.sequences[0].canvases[0].metadata
             }
-
             reference_number = row.reference_number
-            shelfmark = row.shelfmark
             if current_shelfmark == shelfmark:
                 # add canvas + image from current manifest to the new one
                 add_canvas_to_manifest(
-                    manifest, seq, canvas_metadata["Folio"], reference_number
+                    manifest,
+                    seq,
+                    canvas_metadata.get("Folio", reference_number),
+                    reference_number,
                 )
 
             else:
@@ -133,7 +144,6 @@ def combine_manifests(csvfilepath, output_dir):
 
                 current_shelfmark = shelfmark
                 # start new manifest
-                series = shelfmark.split()[0]
                 new_manifest = fac.manifest(
                     ident="%s/%s" % (slugify(series), slugify(shelfmark)),
                     label="JRL SERIES %s" % shelfmark,
@@ -163,12 +173,16 @@ def combine_manifests(csvfilepath, output_dir):
                 seq = new_manifest.sequence()  # unlabeled, anonymous sequence
 
                 # add canvas + image from current manifest to the new one;
-                # use folio information from metadata,
+                # use folio information from metadata (when available),
                 # since it provides additional information
 
-                # TODO: not everything has a folio; need a fallback value (ref number?)
+                # NOTE: not every record has a folio;
+                # use reference number as fallback
                 add_canvas_to_manifest(
-                    manifest, seq, canvas_metadata["Folio"], reference_number
+                    manifest,
+                    seq,
+                    canvas_metadata.get("Folio", reference_number),
+                    reference_number,
                 )
 
         # save the last manifest when the loop ends
