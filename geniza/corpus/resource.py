@@ -106,7 +106,7 @@ class DocumentResource(ModelResource):
         return ";".join([s for s in regions if s])
 
     def dehydrate_type(self, doc):
-        return doc.doctype.name
+        return doc.doctype.name if doc.doctype else ""
 
     def dehydrate_tags(self, doc):
         return doc.all_tags()
