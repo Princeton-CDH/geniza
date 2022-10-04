@@ -45,10 +45,10 @@ class AnnotationQuerySet(models.QuerySet):
     def group_by_manifest(self):
         """Aggregate annotations by manifest uri; returns a dictionary of lists,
         keys are manifest uri, items are lists of annotations."""
-        # aggregate annotations by canvas id
+        # aggregate annotations by target manifest
         annos_by_manifest = defaultdict(list)
         for anno in self.all():
-            # ignore if target source is unset
+            # ignore if target source manifest is unset
             if anno.target_source_id:
                 annos_by_manifest[anno.target_source_manifest_id].append(anno)
         return annos_by_manifest

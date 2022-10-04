@@ -159,3 +159,44 @@ class TestAnnotationQuerySet:
         # one for the other canvas
         assert len(annos_by_canvas[other_canvas]) == 1
         assert other_anno in annos_by_canvas[other_canvas]
+
+    def test_group_by_manifest(self, annotation, document):
+        # copy fixture annotation to make a second annotation on the same manifest
+        anno2 = Annotation.objects.create(
+            content={
+                "body": "foo bar",
+                "target": {
+                    "source": {
+                        "id": annotation.target_source_id,
+                        "partOf": {"id": annotation.target_source_manifest_id},
+                    }
+                },
+            }
+        )
+        # and another annotation on a different manifest
+        other_anno = Annotation.objects.create(
+            content={
+                "body": "foo bar baz",
+                "target": {
+                    "source": {
+                        "id": annotation.target_source_id,
+                        "partOf": {"id": document.manifest_uri},
+                    }
+                },
+            }
+        )
+        # should be ignored but not cause an error
+        no_target_anno = Annotation.objects.create(content={"body": "foo"})
+
+        annos_by_manifest = Annotation.objects.all().group_by_manifest()
+        # expect two manifest uris
+        assert len(annos_by_manifest.keys()) == 2
+        # two annotations for fixture anno manifest
+        assert len(annos_by_manifest[annotation.target_source_manifest_id]) == 2
+        # check annotations are present where they should be
+        assert annotation in annos_by_manifest[annotation.target_source_manifest_id]
+        assert anno2 in annos_by_manifest[annotation.target_source_manifest_id]
+
+        # one for the other canvas
+        assert len(annos_by_manifest[document.manifest_uri]) == 1
+        assert other_anno in annos_by_manifest[document.manifest_uri]
