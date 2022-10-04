@@ -223,6 +223,10 @@ nav#site-nav {
                 justify-content: flex-end;
                 border: none;
                 padding: 0;
+                span {
+                    min-width: 117px;
+                    text-align: right;
+                }
             }
             // "Open sub-menu" link on desktop
             &.has-submenu {
@@ -316,6 +320,9 @@ nav#site-nav {
                 a[role="menuitem"] {
                     padding: 0 spacing.$spacing-md;
                     justify-content: flex-start;
+                }
+                a span {
+                    text-align: left;
                 }
             }
         }
@@ -425,6 +432,12 @@ html[dir="rtl"] #site-nav {
         li.menu-item,
         ul.sub-menu li.menu-item {
             margin: spacing.$spacing-sm 0 0 spacing.$spacing-xs;
+        }
+        li.menu-item a span {
+            text-align: left;
+        }
+        ul.sub-menu li.menu-item a span {
+            text-align: right;
         }
     }
 }
