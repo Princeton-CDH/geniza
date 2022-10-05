@@ -133,22 +133,6 @@
             </h2>
             <p>{{ document.description|pgp_urlize }}</p>
         </section>
-
-        {# link to download transcription if available; admin only for now since plain-text bidi is not great #}
-        {# TODO: Remove or update with new transcription format #}
-        {% comment %}
-        {% if document.has_transcription and user.is_authenticated %}
-            <section class="transcription-link">
-                {% for ed in document.digital_editions %}
-                    {% if ed.content.text %}
-                        <p><a href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">Download {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% empty %}[unknown]{% endfor %}'s edition.</a></p>
-                    {% endif %}
-                {% endfor %}
-            </section>
-        {% endif %}
-        {% endcomment %}
-
-
     </div>
 
     {# viewer #}
