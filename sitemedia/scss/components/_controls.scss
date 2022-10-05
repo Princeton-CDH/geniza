@@ -66,9 +66,9 @@ ul#language-switcher {
         &[lang="he"]::before {
             content: "ע";
             @include typography.language-switch-he;
-            margin: 3px 0 0 13px;
+            margin: 2px 0 0 13px;
             @include breakpoints.for-tablet-landscape-up {
-                margin: 3px 0 0 17px;
+                margin: 2px 0 0 17px;
             }
         }
         &[lang="ar"]::before {
