@@ -20,16 +20,16 @@
 .ribbon-box.fade button {
     display: none;
 }
+.ribbon-box .heading {
+    font-size: 1rem;
+    font-family: "Greta Sans Regular", Arial, sans-serif;
+}
 .ribbon-box strong {
     font-weight: bold;
     font-family: "Greta Sans Regular Bold", Arial, sans-serif;
 }
 .ribbon-box p {
     padding: 5px 80px;
-}
-.ribbon-box .heading {
-    font-size: 1rem;
-    font-family: "Greta Sans Regular", Arial, sans-serif;
 }
 .ribbon-box button {
     border: #f8f8f8;
