@@ -39,7 +39,7 @@
 
         {% block extrameta %}{% endblock extrameta %}
         <!-- styles -->
-        {% if SHOW_TEST_WARNING %}
+        {% if "SHOW_TEST_WARNING" in FEATURE_FLAGS %}
             <link rel="stylesheet" type="text/css" href="{% static 'css/test-banner.css' %}"/>
         {% endif %}
         <!-- resource preloading -->
@@ -83,7 +83,7 @@
     </head>
     <body>
         {% wagtailuserbar 'bottom-right' %}
-        {% if SHOW_TEST_WARNING %}
+        {% if "SHOW_TEST_WARNING" in FEATURE_FLAGS %}
             {% include 'snippets/test_banner.html' %}
         {% endif %}
         {% block body %}
