@@ -1,6 +1,6 @@
 # Deploy Notes
 
-### transcription migration & editor (version TBD)
+## 4.9.0
 
 -   Must configure **ANNOTATION_BACKUP_PATH** and **ANNOTATION_BACKUP_GITREPO** in local settings. For proper setup, the directory at **ANNOTATION_BACKUP_PATH** should not exist when first run, but the containing directory should.
 -   Migrate transcription content from TEI xml to the new IIIF annotation
@@ -16,10 +16,8 @@ to avoid the annotation backup git repository getting into a bad state.
     export to github
 -   Configure `python manage.py sync_annotation_export` as a cron job to regularly
     update remote git repository with annotation exports generated via signal handler.
-
-## 4.9.0
-
 -   Copy the new fonts `WF-037420-012177-002520.woff`, `WF-037420-012177-002520.woff2`, and all `Amiri-*` and `Hassan*` from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`
+-   Copy the new versions of FrankRuhl, `FrankRuhl1924MF-Medium-Medium.woff` and `FrankRuhl1924MF-Medium-Medium.woff2` (note the dashes!) from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`. There was an error with the original font's vertical metrics.
 
 ## 4.8
 
