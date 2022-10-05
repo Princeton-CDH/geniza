@@ -160,6 +160,10 @@ class TestAnnotationDetail:
         # should have log entry for removal
         log_entry = LogEntry.objects.get(object_id=anno_id)
         assert log_entry.action_flag == DELETION
+        # log entry change message should have details for export
+        change_info = json.loads(log_entry.change_message)
+        assert change_info["manifest_uri"] == annotation.target_source_manifest_id
+        assert change_info["target_source_uri"] == annotation.target_source_id
 
 
 @pytest.mark.django_db

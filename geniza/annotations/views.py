@@ -1,7 +1,9 @@
 import json
 
 from django.contrib import admin
+from django.contrib.admin.models import DELETION, LogEntry
 from django.contrib.auth.mixins import AccessMixin, PermissionRequiredMixin
+from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponse, JsonResponse
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin
@@ -216,8 +218,23 @@ class AnnotationDetail(
         # deleted uuid should not be reused (relying on low likelihood of uuid collision)
         anno = self.get_object()
         # create log entry to document deletion *BEFORE* deleting
-        anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
-        anno_admin.log_deletion(request, anno, repr(anno))
+        annotation_ctype = ContentType.objects.get_for_model(Annotation)
+        LogEntry.objects.log_action(
+            user_id=request.user.id,
+            content_type_id=annotation_ctype.pk,
+            object_id=anno.pk,
+            object_repr=repr(anno),
+            # store manifest and target in change message, so we can
+            # update transcription exports after the annotation is gone
+            change_message=json.dumps(
+                {
+                    "manifest_uri": anno.target_source_manifest_id,
+                    "target_source_uri": anno.target_source_id,
+                }
+            ),
+            action_flag=DELETION,
+        )
+
         # then delete
         anno.delete()
         return HttpResponse(status=204)
