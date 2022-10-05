@@ -17,6 +17,19 @@
 #   python scripts/bodleian_iiif.py -d ../iiif/bodleian \
 #       -u https://princetongenizalab.github.io/iiif/bodleian/ \
 #       ../genizah-mss/collections/MS_Heb_f_30.xml
+#
+# Recommended order:
+#
+#  1. Run the script in `--download-only` mode to get all the JPGs for
+#    a TEI collection or set of them
+#  2. Convert JPGs to pyramidal tiffs using `gen_ptiffs.py` script
+#  3. Run the script in `--check-images` mode to check that you have
+#     everything. Document any missing images in the static iiif
+#     README for the Bodleian content.
+#  4. Upload pyramidal tiffs to the IIIF image server.
+#  5. Run this script to generate manifests; canvases will be added based
+#     on the IIIF image response from the IIIF image server.
+
 
 import argparse
 import os
@@ -105,7 +118,7 @@ def image_label(image_filename):
     return os.path.splitext(image_filename)[0].split("_")[-1]
 
 
-def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir):
+def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=False):
     print("Processing %s" % xmlfile)
     tei = xmlmap.load_xmlobject_from_file(xmlfile, BodleianGenizahTei)
 
@@ -124,6 +137,7 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir):
 
     # initialize manifest factory with base urls and iiif api version
     fac = ManifestFactory()
+    fac.set_debug("error")  # suppress warnings
     # Where the resources live on the web
     fac.set_base_prezi_uri(base_url)
     # Where the resources live on disk
@@ -143,8 +157,6 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir):
         # use the first portion of the id (e.g., MS. Heb a.),
         # slugify, and then remove ms-heb- since all (almost all?) of them have that
         group = slugify("-".join(part.shelfmark.split(" ")[:3])).replace("ms-heb-", "")
-        print(group)
-
         manifest = fac.manifest(
             ident="%s/%s" % (group, slugify(part.shelfmark)),
             label=str(part.shelfmark),
@@ -223,22 +235,24 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir):
                     print("%s error on %s; skipping" % (resp.status_code, img_url))
                     continue
 
-            # add image to canvas
-            # prezi prefixes ident with canvas/ for us, so don't duplicate
-            canvas = seq.canvas(ident="%s" % (i + 1), label=label)
-            # Create an annotation on the Canvas
-            # warns if identifier is not set, so let's set one
-            anno = canvas.annotation(ident="%s/anno1" % canvas.id)
-            # iiif image id is filename without extension
-            img_id = os.path.splitext(img_url)[0]
-            img = anno.image(img_id, iiif=True)
-            img.set_hw_from_iiif()
-            # set canvas dimensions to match image
-            canvas.height = img.height
-            canvas.width = img.width
+            if not download_only:
+                # add image to canvas
+                # prezi prefixes ident with canvas/ for us, so don't duplicate
+                canvas = seq.canvas(ident="%s" % (i + 1), label=label)
+                # Create an annotation on the Canvas
+                # warns if identifier is not set, so let's set one
+                anno = canvas.annotation(ident="%s/anno1" % canvas.id)
+                # iiif image id is filename without extension
+                img_id = os.path.splitext(img_url)[0]
+                img = anno.image(img_id, iiif=True)
+                img.set_hw_from_iiif()
+                # set canvas dimensions to match image
+                canvas.height = img.height
+                canvas.width = img.width
 
-        # save the manifest; keep it human-readable
-        manifest.toFile(compact=False)
+        if not download_only:
+            # save the manifest; keep it human-readable
+            manifest.toFile(compact=False)
 
 
 def check_images(teifiles, image_dir, tiff_dir):
@@ -268,7 +282,9 @@ def check_images(teifiles, image_dir, tiff_dir):
     missing_tiff = []
     for image in source_images:
         # check if the expected tiff is present
-        if not os.path.exists(os.path.join(tiff_dir, image)):
+        if image not in missing_original and not os.path.exists(
+            os.path.join(tiff_dir, image)
+        ):
             missing_tiff.append(image)
 
     if missing_tiff:
@@ -313,6 +329,11 @@ if __name__ == "__main__":
         help="Where to download original images",
     )
     parser.add_argument(
+        "--download-only",
+        help="Only download original images, don't generate manifests",
+        action="store_true",
+    )
+    parser.add_argument(
         "-t",
         "--tiff-dir",
         help="Location for pyramidal tiffs (only used with check-images)",
@@ -338,5 +359,9 @@ if __name__ == "__main__":
 
         for teifile in args.tei:
             parse_bodleian_tei(
-                teifile, args.dir, base_url=args.url, image_dir=args.image_dir
+                teifile,
+                args.dir,
+                base_url=args.url,
+                image_dir=args.image_dir,
+                download_only=args.download_only,
             )
