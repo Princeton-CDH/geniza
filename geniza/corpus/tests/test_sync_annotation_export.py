@@ -17,6 +17,16 @@ from geniza.corpus.models import Document
 
 
 class TestSyncAnnationExport:
+    def test_init_required_settings(self):
+        with override_settings(
+            ANNOTATION_BACKUP_PATH=None, ANNOTATION_BACKUP_GITREPO=None
+        ):
+            with pytest.raises(Exception) as excinfo:
+                cmd = sync_annotation_export.Command()
+                cmd.handle()
+
+            assert "Please configure" in str(excinfo.value)
+
     def test_get_lastrun_info(self, tmpdir):
         cmd = sync_annotation_export.Command()
         cmd.lastrun_filename = tmpdir / "test_lastrun"
@@ -28,7 +38,7 @@ class TestSyncAnnationExport:
         # put something there and check we get it back
         test_lastrun_info = {"test": "run"}
         with open(cmd.lastrun_filename, "w") as lastrun:
-            return json.dump(test_lastrun_info, lastrun)
+            json.dump(test_lastrun_info, lastrun)
 
         assert cmd.get_lastrun_info() == test_lastrun_info
 
@@ -50,14 +60,14 @@ class TestSyncAnnationExport:
 
         # confirm updating preserves other content
         with open(cmd.lastrun_filename, "w") as lastrun:
-            return json.dump({"foo": "bar"}, lastrun)
+            json.dump({"foo": "bar"}, lastrun)
         cmd.update_lastrun_info(current_run)
 
         # confirm that existing content was not destroyed
         with open(cmd.lastrun_filename) as lastrun:
             lastrun_info = json.load(lastrun)
 
-        assert lastrun_filename["foo"] == "bar"
+        assert lastrun_info["foo"] == "bar"
 
     def test_script_lastrun(self, tmpdir):
         cmd = sync_annotation_export.Command()
