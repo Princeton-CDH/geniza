@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block extrastyle %}
-    {% if "SHOW_TEST_WARNING" in FEATURE_FLAGS %}
+    {% if "SHOW_WARNING_BANNER" in FEATURE_FLAGS %}
         <link rel="stylesheet" type="text/css" href="{% static "css/test-banner.css" %}" />
     {% endif %}
 {% endblock %}
