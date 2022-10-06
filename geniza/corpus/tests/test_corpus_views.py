@@ -1081,9 +1081,8 @@ class TestDocumentManifestView:
         view = DocumentManifestView()
         view.object = document
         view.kwargs = {"pk": document.pk}
-        assert view.get_absolute_url() == absolutize_url(
-            f"{document.get_absolute_url()}iiif/manifest/"
-        )
+        # manifest permalink should not include language code, so build from doc permalink
+        assert view.get_absolute_url() == f"{document.permalink}iiif/manifest/"
 
 
 @patch("geniza.corpus.views.IIIFPresentation")
