@@ -27,20 +27,25 @@ class Command(BaseCommand):
         self.fragment_contenttype = ContentType.objects.get_for_model(Fragment)
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
-        # NOTE: disabling this, we want documents reindexed
-        # if fragment iiif changes; make it optional to disable?
-        # disconnect solr indexing signals
-        # IndexableSignalHandler.disconnect()
-
     def add_arguments(self, parser):
         parser.add_argument("csv", type=str)
         parser.add_argument("-o", "--overwrite", action="store_true")
         parser.add_argument("-d", "--dryrun", action="store_true")
+        parser.add_argument(
+            "--skip-indexing",
+            action="store_true",
+            help="Turn off Solr indexing as changes are made (on by default)",
+            default=False,
+        )
 
     def handle(self, *args, **options):
         self.csv_path = options.get("csv")
         self.overwrite = options.get("overwrite")
         self.dryrun = options.get("dryrun")
+
+        if options.get("skip_indexing"):
+            # disconnect solr indexing signal handler if requested
+            IndexableSignalHandler.disconnect()
 
         try:
             with open(self.csv_path) as f:
@@ -83,6 +88,15 @@ class Command(BaseCommand):
         try:
             fragment = Fragment.objects.get(shelfmark__iexact=row["shelfmark"])
         except Fragment.DoesNotExist:
+            self.stats["not_found"] += 1
+            return
+        except Fragment.MultipleObjectsReturned:
+            self.stdout.write(
+                self.style.ERROR(
+                    "Found more than one fragment with shelfmark %s" % row["shelfmark"]
+                )
+            )
+            # consider this "not found" for now
             self.stats["not_found"] += 1
             return
 
