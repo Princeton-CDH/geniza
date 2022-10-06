@@ -460,16 +460,16 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
                 # to make the download as efficient as possible, don't use
                 # absolutize_url, reverse, or get_absolute_url methods
                 f"{url_scheme}{site_domain}/documents/{doc.id}/",  # public site url
-                ";".join(iiif_urls) if any(iiif_urls) else "",
-                ";".join(view_urls) if any(view_urls) else "",
+                "; ".join(x for x in iiif_urls if x),
+                "; ".join(x for x in view_urls if x),
                 doc.shelfmark,  # shelfmark
-                ";".join([s for s in multifrag if s]),
-                ";".join([s for s in side if s]),  # side (recto/verso)
-                ";".join([r for r in region if r]),  # text block region
+                "; ".join(s for s in multifrag if s),
+                "; ".join(s for s in side if s),  # side (recto/verso)
+                "; ".join(r for r in region if r),  # text block region
                 doc.doctype,
                 doc.all_tags(),
                 doc.description,
-                ";".join([os for os in old_shelfmarks if os]),
+                "; ".join(os for os in old_shelfmarks if os),
                 doc.all_languages(),
                 doc.all_secondary_languages(),
                 doc.language_note,
@@ -482,12 +482,12 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
                 # default sort is most recent first, so initial input is last
                 all_log_entries.last().action_time if all_log_entries else "",
                 doc.last_modified,
-                ";".join(
+                "; ".join(
                     set([user.get_full_name() or user.username for user in input_users])
                 ),  # input by
                 doc.get_status_display(),
-                ";".join(libraries) if any(libraries) else "",
-                ";".join(collections) if any(collections) else "",
+                "; ".join(libraries) if any(libraries) else "",
+                "; ".join(collections) if any(collections) else "",
             ]
 
     csv_fields = [
