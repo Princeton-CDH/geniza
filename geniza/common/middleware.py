@@ -46,10 +46,12 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
     def process_response(self, request, response):
         """exempt untranslated paths from locale redirects"""
 
-        # special case for iiif URIs, which are structured differently but must also be exempt
-        is_iiif_uri = request.path_info.split("/")[3] == "iiif"
+        path_parts = request.path_info.split("/")
 
-        base_request_path = request.path_info.split("/")[1]
+        # special case for iiif URIs, which are structured differently but must also be exempt
+        is_iiif_uri = (path_parts[3] == "iiif") if len(path_parts) > 3 else False
+
+        base_request_path = path_parts[1]
         if base_request_path in self.redirect_exempt_paths or is_iiif_uri:
             # Prevent exempt URLs from redirecting to language-prefixed URLs
             # so that we get the expected 404 instead of a 302 redirect.
