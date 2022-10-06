@@ -947,10 +947,7 @@ class TestDocumentManifestView:
         fragment.save()
         # no iiif or transcription; should 404
         response = client.get(reverse(self.view_name, args=[document.pk]))
-        # will try redirecting to i18n url first, then 404
-        assert response.status_code == 302
-        redirect_response = client.get(response.url)
-        assert redirect_response.status_code == 404
+        assert response.status_code == 404
 
     def test_images_no_transcription(
         self,
@@ -1095,10 +1092,7 @@ class TestDocumentAnnotationListView:
     def test_no_transcription(self, mockiifpres, client, document):
         # no iiif or transcription; should 404
         response = client.get(reverse(self.view_name, args=[document.pk]))
-        # will try redirecting to i18n url first, then 404
-        assert response.status_code == 302
-        redirect_response = client.get(response.url)
-        assert redirect_response.status_code == 404
+        assert response.status_code == 404
 
     def test_images_transcription(
         self, mockiifpres, client, document, source, fragment
