@@ -1,34 +1,38 @@
 #! /usr/bin/env python
 
-# Stand-alone python script to generate IIIF manifests
-# for Bodleian Genizah content.
-#
-# Bodleian Genizah TEI files are available in the collections folder
-# of this GitHub repository: https://github.com/bodleian/genizah-mss
-#
-# Install python dependencies with pip:
-#
-#   pip install eulxml python-slugify requests iiif iiif-prezi
-#
-# Run with the path to one or more Bodleian TEI files. You must also
-# specify an output directory and a base url where the iiif content
-# will be published. For example:
-#
-#   python scripts/bodleian_iiif.py -d ../iiif/bodleian \
-#       -u https://princetongenizalab.github.io/iiif/bodleian/ \
-#       ../genizah-mss/collections/MS_Heb_f_30.xml
-#
-# Recommended order:
-#
-#  1. Run the script in `--download-only` mode to get all the JPGs for
-#    a TEI collection or set of them
-#  2. Convert JPGs to pyramidal tiffs using `gen_ptiffs.py` script
-#  3. Run the script in `--check-images` mode to check that you have
-#     everything. Document any missing images in the static iiif
-#     README for the Bodleian content.
-#  4. Upload pyramidal tiffs to the IIIF image server.
-#  5. Run this script to generate manifests; canvases will be added based
-#     on the IIIF image response from the IIIF image server.
+"""
+Stand-alone python script to generate IIIF manifests
+for Bodleian Genizah content.
+
+Bodleian Genizah TEI files are available in the collections folder
+of this GitHub repository: https://github.com/bodleian/genizah-mss
+
+Install python dependencies with pip:
+
+   pip install eulxml python-slugify requests iiif iiif-prezi
+
+Run with the path to one or more Bodleian TEI files. You must also
+specify an output directory and a base url where the iiif content
+will be published. For example:
+
+    python scripts/bodleian_iiif.py -d ../iiif/bodleian \
+       -u https://princetongenizalab.github.io/iiif/bodleian/ \
+       ../genizah-mss/collections/MS_Heb_f_30.xml
+
+Steps to get Bodleian images and generate manifests:
+
+1. Run the script in `--download-only` mode to get all the JPGs for
+   a TEI collection or set of them
+2. Convert JPGs to pyramidal tiffs using `gen_ptiffs.py` script
+3. Run the script in `--check-images` mode to check that you have
+   everything. Document any missing images in the static iiif
+   README for the Bodleian content.
+4. Upload pyramidal tiffs to the IIIF image server.
+5. Run this script to generate manifests; canvases will be added based
+   on the IIIF image response from the IIIF image server.
+6. Use `manifests_to_csv.py` to generate a CSV of manifests and shelfmarks
+   for import into PGP application.
+"""
 
 
 import argparse
@@ -157,6 +161,16 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
         # use the first portion of the id (e.g., MS. Heb a.),
         # slugify, and then remove ms-heb- since all (almost all?) of them have that
         group = slugify("-".join(part.shelfmark.split(" ")[:3])).replace("ms-heb-", "")
+
+        # skip if already generated in a previous run
+        # path is based on manifest identifier, in output dir, with json extension
+        expected_path = os.path.join(
+            manifest_dir, "%s/%s.json" % (slugify(group), slugify(part.shelfmark))
+        )
+        if os.path.exists(expected_path):
+            # update the count, to track progress/estimate
+            continue
+
         manifest = fac.manifest(
             ident="%s/%s" % (group, slugify(part.shelfmark)),
             label=str(part.shelfmark),
@@ -213,6 +227,9 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
             # simple case: a or be only; becomes recto/verso
             if len(label) == 1:
                 label = image_labels[label]
+            elif label.endswith("spread"):
+                # special case in d_73
+                label = "spread"
             else:
                 # some filenames have additional information, but
                 # still end with a or b; split out and convert a/b to r/v
