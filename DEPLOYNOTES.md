@@ -18,6 +18,7 @@ to avoid the annotation backup git repository getting into a bad state.
     update remote git repository with annotation exports generated via signal handler.
 -   Copy the new fonts `WF-037420-012177-002520.woff`, `WF-037420-012177-002520.woff2`, and all `Amiri-*` and `Hassan*` from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`
 -   Copy the new versions of FrankRuhl, `FrankRuhl1924MF-Medium-Medium.woff` and `FrankRuhl1924MF-Medium-Medium.woff2` (note the dashes!) from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`. There was an error with the original font's vertical metrics.
+-   To enable the new warning banner, add the `FEATURE_FLAGS` list to local settings and populate it with the string `"SHOW_WARNING_BANNER"`. To change its contents, configure `WARNING_BANNER_HEADING` and `WARNING_BANNER_MESSAGE` in local settings.
 
 ## 4.8
 

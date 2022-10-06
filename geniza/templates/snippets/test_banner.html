@@ -1,9 +1,9 @@
-{% if SHOW_TEST_WARNING %}
+{% if "SHOW_WARNING_BANNER" in FEATURE_FLAGS %}
     <div class="ribbon-box fade">
         <div class="ribbon-wrapper">
             <div class="ribbon">
-                <p class="heading">This is a <b>TEST</b> site</p>
-                <p>Content may change or be removed without warning</p>
+                <p class="heading">{{ WARNING_BANNER_HEADING|default_if_none:"This is a <strong>TEST</strong> site" }}</p>
+                <p>{{ WARNING_BANNER_MESSAGE|default_if_none:"Content may change or be removed without warning" }}</p>
                 <button>OK</button>
             </div>
         </div>

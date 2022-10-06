@@ -9,7 +9,9 @@ def template_globals(request):
     site = Site.find_for_request(request)
     admin_language_codes = [lang[0] for lang in settings.LANGUAGES]
     context_extras = {
-        "SHOW_TEST_WARNING": getattr(settings, "SHOW_TEST_WARNING", False),
+        "FEATURE_FLAGS": getattr(settings, "FEATURE_FLAGS", []),
+        "WARNING_BANNER_HEADING": getattr(settings, "WARNING_BANNER_HEADING", None),
+        "WARNING_BANNER_MESSAGE": getattr(settings, "WARNING_BANNER_MESSAGE", None),
         "FONT_URL_PREFIX": getattr(settings, "FONT_URL_PREFIX", ""),
         "PUBLIC_SITE_LANGUAGES": getattr(
             settings, "PUBLIC_SITE_LANGUAGES", admin_language_codes

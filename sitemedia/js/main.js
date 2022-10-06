@@ -34,3 +34,16 @@ function restoreScrollPosition(event) {
 
 window.addEventListener("turbo:before-cache", saveScrollPosition);
 window.addEventListener("turbo:visit", restoreScrollPosition);
+
+// Test banner/ribbon dismiss functionality
+const ribbon = document.querySelector(".ribbon");
+if (ribbon) {
+    const faded = sessionStorage.getItem("fade-test-banner", true);
+    if (!faded) {
+        document.querySelector(".ribbon-box").classList.remove("fade");
+    }
+    ribbon.addEventListener("click", function () {
+        document.querySelector(".ribbon-box").classList.add("fade");
+        sessionStorage.setItem("fade-test-banner", true);
+    });
+}
