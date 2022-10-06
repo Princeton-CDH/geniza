@@ -227,6 +227,19 @@ section#document-list {
         }
     }
 
+    /* use pseudo marker to get transcription line numbers from snippets */
+    .transcription li {
+        direction: rtl;
+        list-style-type: none; /* hide automatic ol numbering */
+        &::before {
+            content: attr(value);
+            margin-right: -2rem; /* shift outside text margin */
+            text-align: right;
+            float: right;
+            font-weight: bold;
+        }
+    }
+
     /* raise tags & text over clickable pseudo content to allow selection */
     .description,
     .transcription,
@@ -390,5 +403,27 @@ html[dir="rtl"] .search-result {
     }
     .transcription {
         align-self: flex-start;
+    }
+}
+
+// Hebrew variant
+html[lang="he"] {
+    .search-result .counter {
+        @include typography.headline-2-he;
+    }
+    .search-result section:first-of-type .scholarship,
+    a.view-link > span {
+        @include typography.meta-he;
+    }
+}
+
+// Arabic variant
+html[lang="ar"] {
+    .search-result .counter {
+        @include typography.headline-2-ar;
+    }
+    .search-result section:first-of-type .scholarship,
+    a.view-link > span {
+        @include typography.meta-ar;
     }
 }

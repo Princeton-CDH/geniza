@@ -4,12 +4,14 @@ from unittest.mock import Mock, patch
 
 import pytest
 from attrdict import AttrDict
+from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.urls import Resolver404, reverse
 from django.utils import timezone
 from django.utils.html import strip_tags
 from django.utils.safestring import SafeString
@@ -18,6 +20,7 @@ from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
 from modeltranslation.manager import MultilingualQuerySet
 from piffle.presentation import IIIFException as piffle_IIIFException
 
+from geniza.annotations.models import Annotation
 from geniza.corpus.dates import Calendar
 from geniza.corpus.models import (
     Collection,
@@ -206,7 +209,7 @@ class TestFragment(TestCase):
         assert 'title="1r" class="selected"' not in thumbnails_verso_selected
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_iiif_images_locally_cached_manifest(self, mock_manifestimporter):
         # fragment with a locally cached manifest
         frag = Fragment(shelfmark="TS 1")
@@ -231,7 +234,7 @@ class TestFragment(TestCase):
         assert labels[0] == "fake image"
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_iiif_images_iiifexception(self, mock_manifestimporter):
         # patch IIIFPresentation.from_url to always raise IIIFException
         with patch("geniza.corpus.models.IIIFPresentation") as mock_iiifpresentation:
@@ -248,7 +251,7 @@ class TestFragment(TestCase):
                     frag.iiif_images()
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_attribution(self, mock_manifestimporter):
         # fragment with no manifest
         frag = Fragment(shelfmark="TS 1")
@@ -274,7 +277,7 @@ class TestFragment(TestCase):
         assert frag.attribution == "Created by a person."
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_provenance(self, mock_manifestimporter):
         # fragment with no manifest
         frag = Fragment(shelfmark="TS 1")
@@ -292,7 +295,7 @@ class TestFragment(TestCase):
         assert frag.provenance == "From a place"
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_save(self, mock_manifestimporter):
         frag = Fragment(shelfmark="TS 1")
         frag.save()
@@ -322,7 +325,7 @@ class TestFragment(TestCase):
         )
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     def test_save_import_manifest(self, mock_manifestimporter):
         frag = Fragment(shelfmark="TS 1")
         frag.save()
@@ -366,7 +369,7 @@ class TestFragment(TestCase):
         assert not frag.manifest
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.models.ManifestImporter")
+    @patch("geniza.corpus.models.GenizaManifestImporter")
     @patch("geniza.corpus.models.messages")
     def test_save_import_manifest_error(self, mock_messages, mock_manifestimporter):
         frag = Fragment(shelfmark="TS 1")
@@ -436,7 +439,7 @@ MockImporter.return_value.import_paths.return_value = []
 
 
 @pytest.mark.django_db
-@patch("geniza.corpus.models.ManifestImporter", MockImporter)
+@patch("geniza.corpus.models.GenizaManifestImporter", MockImporter)
 class TestDocument:
     def test_shelfmark(self):
         # T-S 8J22.21 + T-S NS J193
@@ -652,34 +655,31 @@ class TestDocument:
             images = doc.iiif_images()
             # Should call the mocked function
             mock_frag_iiif.assert_called_once
-            # Should return a list of two dicts
+            # Should return a dict with two objects
             assert len(images) == 2
-            assert isinstance(images[0], dict)
+            assert isinstance(images, dict)
             # dicts should contain the image objects and labels via the mocks
-            assert images[0]["image"] == img1
-            assert images[0]["label"] == "1r"
-            assert images[0]["shelfmark"] == frag.shelfmark
-            assert images[1]["image"] == img2
-            assert images[1]["label"] == "1v"
-            assert images[1]["shelfmark"] == frag.shelfmark
+            assert images["canvas1"]["image"] == img1
+            assert images["canvas1"]["label"] == "1r"
+            assert images["canvas1"]["shelfmark"] == frag.shelfmark
+            assert images["canvas2"]["image"] == img2
+            assert images["canvas2"]["label"] == "1v"
+            assert images["canvas2"]["shelfmark"] == frag.shelfmark
 
             # Call with filter_side=True
             images = doc.iiif_images(filter_side=True)
             # Should call the mocked function again
             assert mock_frag_iiif.call_count == 2
-            # Should return a list of length one
+            # Should return a dict with one entry
             assert len(images) == 1
             # dict should be the recto side, since the TextBlock's side is R
-            assert images[0]["image"] == img1
-            assert images[0]["label"] == "1r"
-            assert images[0]["shelfmark"] == frag.shelfmark
+            assert list(images.keys()) == ["canvas1"]
 
             # call with image_order_override present, reversed order
             doc.image_order_override = ["canvas2", "canvas1"]
             images = doc.iiif_images()
             # img2 should come first now
-            assert images[0]["image"] == img2
-            assert images[1]["image"] == img1
+            assert list(images.keys()) == ["canvas2", "canvas1"]
 
     def test_admin_thumbnails(self):
         # Create a document and fragment and a TextBlock to associate them
@@ -737,7 +737,7 @@ class TestDocument:
     def test_fragments_other_docs_multiple(self, document, join):
         doc2 = Document.objects.create()
         doc2.fragments.add(join.fragments.first())
-        assert join.fragments_other_docs() == [doc2, document]
+        assert all(doc in join.fragments_other_docs() for doc in [doc2, document])
 
     def test_fragments_other_docs_suppressed(self, document, join):
         join.status = Document.SUPPRESSED
@@ -763,10 +763,10 @@ class TestDocument:
         fn = Footnote.objects.create(content_object=document, source=source)
         assert not document.has_transcription()
 
-        # doc with footnote with content does have a transcription
-        fn.content = "The transcription"
+        # doc with digital edition footnote does have a transcription
+        fn.doc_relation = [Footnote.DIGITAL_EDITION]
         fn.save()
-        assert document.has_transcription
+        assert document.has_transcription()
 
     def test_has_image(self, document, fragment):
         # doc with fragment with IIIF url has image
@@ -850,13 +850,20 @@ class TestDocument:
     def test_index_data_footnotes(
         self, document, source, twoauthor_source, multiauthor_untitledsource
     ):
-        # footnote with no content
+        # digital edition footnote
         edition = Footnote.objects.create(
             content_object=document,
             source=source,
-            doc_relation=Footnote.EDITION,
-            content={"text": "transcription lines"},
+            doc_relation=[Footnote.DIGITAL_EDITION],
         )
+        Annotation.objects.create(
+            content={
+                "body": [{"value": "transcription lines"}],
+                "target": {"source": {"partOf": {"id": document.manifest_uri}}},
+                "dc:source": source.uri,
+            }
+        )
+        # other footnotes
         edition2 = Footnote.objects.create(
             content_object=document,
             source=twoauthor_source,
@@ -868,10 +875,11 @@ class TestDocument:
             doc_relation=Footnote.TRANSLATION,
         )
         index_data = document.index_data()
-        assert index_data["num_editions_i"] == 2
+        assert index_data["num_editions_i"] == 2  # edition + digital edition
+        assert index_data["has_digital_edition_b"] == True
         assert index_data["num_translations_i"] == 2
         assert index_data["scholarship_count_i"] == 3  # unique sources
-        assert index_data["transcription_t"] == ["transcription lines"]
+        assert index_data["transcription_ht"] == ["transcription lines"]
 
         for note in [edition, edition2, translation]:
             assert note.display() in index_data["scholarship_t"]
@@ -885,29 +893,42 @@ class TestDocument:
         )
         index_data = document.index_data()
         # should display form of the date without tags
-        assert index_data["document_date_s"] == strip_tags(document.document_date)
+        assert index_data["document_date_t"] == strip_tags(document.document_date)
 
         # unparsable standard date shouldn't error, displays as-is
         document.doc_date_standard = "1145-46"
         index_data = document.index_data()
-        assert index_data["document_date_s"] == strip_tags(document.document_date)
+        assert index_data["document_date_t"] == strip_tags(document.document_date)
 
         # unset date should index as None/empty
         index_data = Document(id=1234).index_data()
-        assert index_data["document_date_s"] is None
+        assert index_data["document_date_t"] is None
+
+    def test_index_data_old_shelfmarks(self, join):
+        fragment = join.fragments.first()
+        old_shelfmarks = ["p. Heid. Arab. 917", "p. Heid. 917"]
+        fragment.old_shelfmarks = "; ".join(old_shelfmarks)
+        fragment.save()
+        fragment2 = join.fragments.all()[1]
+        fragment2.old_shelfmarks = "Yevr.-Arab. II 991"
+        fragment2.save()
+
+        index_data = join.index_data()
+        print(index_data["fragment_old_shelfmark_ss"])
+        all_old_shelfmarks = old_shelfmarks
+        all_old_shelfmarks.append(fragment2.old_shelfmarks)
+        assert index_data["fragment_old_shelfmark_ss"] == all_old_shelfmarks
 
     def test_editions(self, document, source):
         # create multiple footnotes to test filtering and sorting
 
-        # footnote with no content
         edition = Footnote.objects.create(
             content_object=document, source=source, doc_relation=Footnote.EDITION
         )
-        edition2 = Footnote.objects.create(
+        digital_edition = Footnote.objects.create(
             content_object=document,
             source=source,
-            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content={"text": "some text"},
+            doc_relation=[Footnote.DIGITAL_EDITION],
         )
         translation = Footnote.objects.create(
             content_object=document,
@@ -919,10 +940,8 @@ class TestDocument:
         # check that only footnotes with doc relation including edition are included
         # NOTE: comparing by PK rather than using footnote equality check
         assert edition.pk in doc_edition_pks
-        assert edition2.pk in doc_edition_pks
+        assert digital_edition.pk not in doc_edition_pks
         assert translation.pk not in doc_edition_pks
-        # check that edition with content is sorted first
-        assert edition2.pk == doc_edition_pks[0]
 
     def test_digital_editions(self, document, source, twoauthor_source):
         # test filter by content
@@ -931,56 +950,52 @@ class TestDocument:
         edition = Footnote.objects.create(
             content_object=document, source=source, doc_relation=Footnote.EDITION
         )
-        # footnote with content
+        # digital edition
         edition2 = Footnote.objects.create(
             content_object=document,
             source=source,
-            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content={"text": "A piece of text"},
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         # footnote with different source
         edition3 = Footnote.objects.create(
             content_object=document,
             source=twoauthor_source,
-            doc_relation=Footnote.EDITION,
-            content={"text": "B other text"},
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         digital_edition_pks = [ed.pk for ed in document.digital_editions()]
 
-        # No content, should not appear in digital editions
+        # EDITION, should not appear in digital editions
         assert edition.pk not in digital_edition_pks
-        # Has content, should appear in digital editions
+        # DIGITAL_EDITION, should appear in digital editions
         assert edition2.pk in digital_edition_pks
         assert edition3.pk in digital_edition_pks
-        # Edition 2 should be alphabetically first based on its content
+        # Edition 2 should be alphabetically first based on its source
         assert edition2.pk == digital_edition_pks[0]
 
     def test_editors(self, document, source, twoauthor_source):
-        # footnote with no content
+        # footnote with no digital edition
         Footnote.objects.create(
             content_object=document, source=source, doc_relation=Footnote.EDITION
         )
         # No digital editions, so editors count should be 0
         assert document.editors().count() == 0
 
-        # footnote with one author, content
+        # Digital edition with one author
         Footnote.objects.create(
             content_object=document,
             source=source,
-            doc_relation={Footnote.EDITION, Footnote.TRANSLATION},
-            content={"text": "A piece of text"},
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
 
         # Digital edition with one author, editor should be author of source
         assert document.editors().count() == 1
         assert document.editors().first() == source.authors.first()
 
-        # footnote with two authors, content
+        # Digital edition with two authors
         Footnote.objects.create(
             content_object=document,
             source=twoauthor_source,
-            doc_relation=Footnote.EDITION,
-            content={"text": "B other text"},
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         # Should now be three editors, since this edition's source had two authors
         assert document.editors().count() == 3
@@ -1048,6 +1063,40 @@ class TestDocument:
             document.request,
             "Error standardizing date: 'first quarter of' is not in list",
         )
+
+    def test_manifest_uri(self, document):
+        assert document.manifest_uri.startswith(settings.ANNOTATION_MANIFEST_BASE_URL)
+        assert document.manifest_uri.endswith(
+            reverse("corpus-uris:document-manifest", args=[document.pk])
+        )
+
+    def test_id_from_manifest_uri(self, document):
+        # should resolve correct manifest URI to Document id
+        resolved_doc_id = Document.id_from_manifest_uri(
+            reverse("corpus-uris:document-manifest", kwargs={"pk": document.pk})
+        )
+        assert isinstance(resolved_doc_id, int)
+        assert resolved_doc_id == document.pk
+
+        # should fail on resolvable non-manifest URI
+        with pytest.raises(Resolver404):
+            Document.id_from_manifest_uri(f"http://bad.com/documents/3/")
+
+    def test_from_manifest_uri(self, document):
+        # should resolve correct manifest URI to Document object
+        resolved_doc = Document.from_manifest_uri(
+            reverse("corpus-uris:document-manifest", kwargs={"pk": document.pk})
+        )
+        assert isinstance(resolved_doc, Document)
+        assert resolved_doc.pk == document.pk
+
+        # should fail on bad URI
+        with pytest.raises(Resolver404):
+            Document.from_manifest_uri(f"http://bad.com/example")
+        with pytest.raises(Resolver404):
+            Document.from_manifest_uri(
+                f"http://bad.com/example/not/{document.pk}/a/manifest/"
+            )
 
 
 def test_document_merge_with(document, join):
@@ -1144,26 +1193,6 @@ def test_document_merge_with_footnotes(document, join, source):
     document.merge_with([join], "combine footnotes")
     # should only have two footnotes after the merge, because two of them are equal
     assert document.footnotes.count() == 2
-
-
-def test_document_merge_with_footnotes_transcription(document, join, source):
-    # create some footnotes
-    Footnote.objects.create(content_object=document, source=source, location="p. 3")
-    # page 3 footnote is a near duplicate but adds content
-    Footnote.objects.create(
-        content_object=join,
-        source=source,
-        location="p. 3",
-        content={"text": "{'foo': 'bar'}"},
-    )
-
-    assert document.footnotes.count() == 1
-    assert join.footnotes.count() == 1
-    document.merge_with([join], "combine footnotes")
-    # should only have one footnotes after the merge
-    assert document.footnotes.count() == 1
-    # should preserve the footnote with content and remove the one without
-    assert document.footnotes.first().content
 
 
 def test_document_merge_with_log_entries(document, join):

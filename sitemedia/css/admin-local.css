@@ -126,17 +126,65 @@ a#needsreview:target {
     font-size: 115%;
 }
 
-.transcription li {
-    list-style: none; /* suppress default line numbers */
+/* adjust spacing of decimal cover */
+#itt-panel
+    .panel-container
+    div.transcription-panel
+    .transcription
+    ol
+    li::before {
+    right: 163px;
 }
 
-.transcription li::before {
-    /* use pseudo marker to avoid periods for line numbers */
-    content: attr(value);
-    margin-left: 1em;
-    text-align: right;
-    float: right;
-    font-weight: bold;
+/* remove overlays for non-document images in admin */
+fieldset.transcriptions-field
+    #itt-panel
+    .panel-container
+    div.img.excluded
+    .deep-zoom-container::after {
+    display: none;
+}
+
+/* Full width non-document images in admin */
+fieldset.transcriptions-field
+    #itt-panel
+    .panel-container
+    div.img.excluded
+    .deep-zoom-container {
+    width: 100%;
+    max-width: none;
+    max-height: none;
+}
+fieldset.transcriptions-field
+    #itt-panel
+    .panel-container
+    div.img.excluded
+    .deep-zoom-container
+    img {
+    width: 640px;
+    max-width: 100%;
+    max-height: none;
+}
+
+/* Selected/included images should have yellow border in admin */
+fieldset.transcriptions-field
+    #itt-panel
+    .panel-container
+    div.img:not(.excluded)
+    .deep-zoom-container
+    img {
+    box-sizing: border-box;
+    border: 5px solid var(--accent);
+}
+
+/* unhide placeholder images in admin */
+fieldset.transcriptions-field
+    #itt-panel
+    .panel-container
+    .img.placeholder
+    .deep-zoom-container {
+    background-color: var(--background-gray);
+    opacity: 1;
 }
 
 .transcription li::marker {

@@ -1,22 +1,39 @@
 #! /usr/bin/env python
 
-# Stand-alone python script to generate IIIF manifests
-# for Bodleian Genizah content.
-#
-# Bodleian Genizah TEI files are available in the collections folder
-# of this GitHub repository: https://github.com/bodleian/genizah-mss
-#
-# Install python dependencies with pip:
-#
-#   pip install eulxml python-slugify requests iiif iiif-prezi
-#
-# Run with the path to one or more Bodleian TEI files. You must also
-# specify an output directory and a base url where the iiif content
-# will be published. For example:
-#
-#   python scripts/bodleian_iiif.py -d ../iiif-bodleian \
-#       -u https://princetongenizalab.github.io/iiif-bodleian/ \
-#       ../genizah-mss/collections/MS_Heb_f_30.xml
+"""
+Stand-alone python script to generate IIIF manifests
+for Bodleian Genizah content.
+
+Bodleian Genizah TEI files are available in the collections folder
+of this GitHub repository: https://github.com/bodleian/genizah-mss
+
+Install python dependencies with pip:
+
+   pip install eulxml python-slugify requests iiif iiif-prezi
+
+Run with the path to one or more Bodleian TEI files. You must also
+specify an output directory and a base url where the iiif content
+will be published. For example:
+
+    python scripts/bodleian_iiif.py -d ../iiif/bodleian \
+       -u https://princetongenizalab.github.io/iiif/bodleian/ \
+       ../genizah-mss/collections/MS_Heb_f_30.xml
+
+Steps to get Bodleian images and generate manifests:
+
+1. Run the script in `--download-only` mode to get all the JPGs for
+   a TEI collection or set of them
+2. Convert JPGs to pyramidal tiffs using `gen_ptiffs.py` script
+3. Run the script in `--check-images` mode to check that you have
+   everything. Document any missing images in the static iiif
+   README for the Bodleian content.
+4. Upload pyramidal tiffs to the IIIF image server.
+5. Run this script to generate manifests; canvases will be added based
+   on the IIIF image response from the IIIF image server.
+6. Use `manifests_to_csv.py` to generate a CSV of manifests and shelfmarks
+   for import into PGP application.
+"""
+
 
 import argparse
 import os
@@ -42,6 +59,8 @@ from slugify import slugify
 # under this base image url
 BASE_IMG_URL = "https://genizah.bodleian.ox.ac.uk/fragments/full/"
 
+# bodleian IIIF images hosted by PUL
+BASE_IIIF_IMG_URI = "https://puliiif.princeton.edu/iiif/2/"
 
 # define eulxml.xmlmap objects with mapping to the portions of the
 # Bodleian XML we care about for generating manifests
@@ -52,12 +71,10 @@ class Shelfmark(teimap.Tei):
     shelfmark = xmlmap.StringField("tei:msIdentifier/tei:altIdentifier/tei:idno")
     title = xmlmap.StringField("tei:msContents/tei:msItem/tei:title")
 
-    @property
-    def base_image_id(self):
-        # generate expected image urls from shelfmark/xml id
-        # - uses -N instead of -partN for sequence
-        # - MS Heb is capitalized
-        return self.xml_id.replace("-part", "_").replace("Heb", "HEB")
+    # image range is indicated by locus from/to
+    # <locus from="10a" to="20b"/>
+    image_start = xmlmap.StringField("tei:msContents/tei:msItem/tei:locus/@from")
+    image_end = xmlmap.StringField("tei:msContents/tei:msItem/tei:locus/@to")
 
 
 class BodleianGenizahTei(teimap.Tei):
@@ -94,13 +111,23 @@ bodleian_logo = "https://iiif.bodleian.ox.ac.uk/iiif/image/f27e28db-0b08-4f16-9b
 view_url_format = "https://genizah.bodleian.ox.ac.uk/catalog/%(volume_id)s#%(item_id)s"
 
 
-def parse_bodleian_tei(xmlfile, base_dir, base_url):
+def image_output_path(image_dir, image_filename):
+    # generate the path where we will save the full size version
+    # - xml references tiffs but version online is jpg
+    return os.path.join(image_dir, image_filename.replace(".tif", ".jpg"))
+
+
+def image_label(image_filename):
+    # given an image url like MS_HEB_b_1_1a.tif we want just the 1a portion
+    return os.path.splitext(image_filename)[0].split("_")[-1]
+
+
+def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=False):
     print("Processing %s" % xmlfile)
     tei = xmlmap.load_xmlobject_from_file(xmlfile, BodleianGenizahTei)
 
-    # define directories relative to base directory
-    manifest_dir = os.path.join(base_dir, "iiif/manifests")
-    image_dir = os.path.join(base_dir, "images-orig")
+    # put manifests in the directory specified
+    manifest_dir = base_dir
 
     # strip any trailing slash from base url to avoid double or missing slash
     base_url = base_url.rstrip("/")
@@ -114,23 +141,43 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url):
 
     # initialize manifest factory with base urls and iiif api version
     fac = ManifestFactory()
+    fac.set_debug("error")  # suppress warnings
     # Where the resources live on the web
-    fac.set_base_prezi_uri(base_url + "/manifests/")
+    fac.set_base_prezi_uri(base_url)
     # Where the resources live on disk
     fac.set_base_prezi_dir(manifest_dir)
 
     # Default Image API information
-    fac.set_base_image_uri(base_url + "/images/")
-    fac.set_iiif_image_info(2.0, 0)  # Version, ComplianceLevel
-
-    # keep a list of images so we can generate iiif tiles for them
-    orig_images = []
+    fac.set_base_image_uri(BASE_IIIF_IMG_URI)
+    fac.set_iiif_image_info(2.0, 2)  # Version, ComplianceLevel
 
     for part in tei.parts:
         # create a new manifest; save to filename based on shelfmark
         # instead of manifest.json
+
+        # ident="%s/%s" % (slugify(series), slugify(shelfmark)),
+
+        # group manifests, so that the directories will be more manageable.
+        # use the first portion of the id (e.g., MS. Heb a.),
+        # slugify, and then remove ms-heb- since all (almost all?) of them have that
+        group = slugify("-".join(part.shelfmark.split(" ")[:3])).replace("ms-heb-", "")
+
+        # skip if already generated in a previous run
+        # path is based on manifest identifier, in output dir, with json extension
+        manifest_id = slugify(part.shelfmark)
+        expected_path = os.path.join(manifest_dir, "%s/%s.json" % (group, manifest_id))
+        if os.path.exists(expected_path):
+            # update the count, to track progress/estimate
+            continue
+
+        # update factory for the current set of records
+        fac.set_base_prezi_uri("%s/%s/" % (base_url, group))
+        # Where the resources live on disk
+        fac.set_base_prezi_dir(os.path.join(manifest_dir, group))
+
         manifest = fac.manifest(
-            ident=slugify(part.shelfmark), label=str(part.shelfmark)
+            ident=manifest_id,
+            label=str(part.shelfmark),
         )
         manifest.viewingHint = "individuals"
         manifest.attribution = attribution
@@ -154,26 +201,39 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url):
 
         # create a sequence and add canvases
         seq = manifest.sequence()  # unlabeled, anonymous sequence
-        # use regex to find corresponding images
-        # (matches image id with following non-digit; i.e., don't match 1 to 10 etc)
-        images = [
-            i for i in tei.image_urls if re.match("%s[^\d]" % part.base_image_id, i)
-        ]
-        # in some cases, expected images are not found; should investigate
+        # get images based on start/end locus for this shelfmark
+        images = []
+        started = False
+        for img in tei.image_urls:
+            # given an image url like MS_HEB_b_1_1a.tif we want just the 1a
+            img_label = image_label(img)
+            if img_label == part.image_start:
+                started = True
+            # if we have found the start image, add images to our list
+            if started:
+                images.append(img)
+            # when we get to the end image, stop processing
+            if img_label == part.image_end:
+                break
+
+        # it seems unlikely that this will happen any more...
         if not images:
             print(
-                "No images found for %s (%s); skipping"
-                % (part.shelfmark, part.base_image_id)
+                "No images found for %s (%s to %s); skipping"
+                % (part.shelfmark, part.image_start, part.image_end)
             )
             continue
 
         # download images if necessary; generate labels and add to manifest
         for i, img_url in enumerate(images):
             # generate label from filename
-            label = os.path.splitext(img_url.replace(part.base_image_id, ""))[0]
+            label = os.path.splitext(img_url)[0].split("_")[-1]
             # simple case: a or be only; becomes recto/verso
             if len(label) == 1:
                 label = image_labels[label]
+            elif label.endswith("spread"):
+                # special case in d_73
+                label = "spread"
             else:
                 # some filenames have additional information, but
                 # still end with a or b; split out and convert a/b to r/v
@@ -182,13 +242,9 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url):
                 side = image_labels[last_digit]
                 label = " ".join([v for v in [prefix, side] if v])
 
-            # generate the url where we can download the full size version
-            # - xml references tiffs but version online is jpg
-            img_url = img_url.replace(".tif", ".jpg")
+            # generate the url where we will download the full size version
             # images should be downloaded to original images folder
-            output_path = os.path.join(image_dir, img_url)
-            # add to list of images to generate tiles
-            orig_images.append(output_path)
+            output_path = image_output_path(image_dir, img_url)
             if not os.path.exists(output_path):
                 remote_url = "%s%s" % (BASE_IMG_URL, img_url.replace(".tif", ".jpg"))
                 print(remote_url)
@@ -200,27 +256,77 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url):
                     print("%s error on %s; skipping" % (resp.status_code, img_url))
                     continue
 
-            # add image to canvas
-            canvas = seq.canvas(ident="canvas/%s" % (i + 1), label=label)
-            # Create an annotation on the Canvas
-            # warns if identifier is not set, so let's set one
-            anno = canvas.annotation(ident="%s/anno1" % canvas.id)
-            # image id for iiif will be based on filename
-            img_id = os.path.splitext(img_url)[0]
-            img = anno.image(img_id, iiif=True)
-            img.set_hw_from_file(output_path)
-            # set canvas dimensions to match image
-            canvas.height = img.height
-            canvas.width = img.width
+            if not download_only:
+                # add image to canvas
+                # prezi prefixes ident with canvas/ for us, so don't duplicate
+                # BUT: must include manifest id to ensure unique
+                canvas = seq.canvas(ident="%s/%s" % (manifest_id, (i + 1)), label=label)
+                # Create an annotation on the Canvas
+                # warns if identifier is not set, so let's set one
+                anno = canvas.annotation(ident="%s/anno1" % canvas.id)
+                # iiif image id is filename without extension
+                img_id = os.path.splitext(img_url)[0]
+                img = anno.image(img_id, iiif=True)
+                img.set_hw_from_iiif()
+                # set canvas dimensions to match image
+                canvas.height = img.height
+                canvas.width = img.width
 
-        # save the manifest; keep it human-readable
-        manifest.toFile(compact=False)
+        if not download_only:
+            # save the manifest; keep it human-readable
+            manifest.toFile(compact=False)
+
+
+def check_images(teifiles, image_dir, tiff_dir):
+
+    source_images = []
+
+    for xmlfile in teifiles:
+        tei = xmlmap.load_xmlobject_from_file(xmlfile, BodleianGenizahTei)
+        source_images.extend(tei.image_urls)
+    print("%d source images" % len(source_images))
+
+    missing_original = []
+
+    for image in source_images:
+        # check if the original is present
+        output_path = image_output_path(image_dir, image)
+        if not os.path.exists(output_path):
+            missing_original.append(image)
+
+    if missing_original:
+        print("Missing %d original images" % len(missing_original))
+        for img in missing_original:
+            print("  %s" % img)
+    else:
+        print("No original images missing")
+
+    missing_tiff = []
+    for image in source_images:
+        # check if the expected tiff is present
+        if image not in missing_original and not os.path.exists(
+            os.path.join(tiff_dir, image)
+        ):
+            missing_tiff.append(image)
+
+    if missing_tiff:
+        print("Missing %d tiffs" % len(missing_tiff))
+        for img in missing_tiff:
+            print("  %s" % img)
+    else:
+        print("No tiffs missing")
+
+    # summarize
+    print(
+        "%d source images; %d original images missing; %d tiffs missing"
+        % (len(source_images), len(missing_original), len(missing_tiff))
+    )
 
 
 if __name__ == "__main__":
     # needs xml filenames and destination dir as input
     parser = argparse.ArgumentParser(
-        description="Generate static IIIF from Bodleian Genizah TEI + images."
+        description="Generate IIIF manfiests from Bodleian Genizah TEI + images."
     )
     parser.add_argument(
         "tei", metavar="TEIXML", nargs="+", help="TEI files to be processed"
@@ -236,11 +342,48 @@ if __name__ == "__main__":
         "-u",
         "--url",
         metavar="URL",
-        help="base url where manifests will be served, excluding /manifests/ portion",
-        required=True,
+        help="base url where manifests will be served",
+        default="https://princetongenizalab.github.io/iiif/bodleian/",
+    )
+    parser.add_argument(
+        "-i",
+        "--image-dir",
+        help="Where to download original images",
+    )
+    parser.add_argument(
+        "--download-only",
+        help="Only download original images, don't generate manifests",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-t",
+        "--tiff-dir",
+        help="Location for pyramidal tiffs (only used with check-images)",
+    )
+    parser.add_argument(
+        "--check-images",
+        action="store_true",
+        help="Check that all expected images are present",
     )
 
     args = parser.parse_args()
 
-    for teifile in args.tei:
-        parse_bodleian_tei(teifile, args.dir, base_url=args.url)
+    if args.check_images:
+        print("checking images")
+        check_images(args.tei, args.image_dir, args.tiff_dir)
+
+    else:
+        # url is required if not checking images
+        if not args.url:
+            print("Base url is required")
+            parser.print_help()
+            exit(-1)
+
+        for teifile in args.tei:
+            parse_bodleian_tei(
+                teifile,
+                args.dir,
+                base_url=args.url,
+                image_dir=args.image_dir,
+                download_only=args.download_only,
+            )

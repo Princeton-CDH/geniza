@@ -13,3 +13,21 @@ dl.metadata-list {
         word-break: break-word;
     }
 }
+
+// Hebrew variant
+html[lang="he"] dl.metadata-list {
+    @include typography.meta-he;
+    *[lang="en"] {
+        // handle any dt/dd in English
+        @include typography.meta;
+    }
+}
+
+// Arabic variant
+html[lang="ar"] dl.metadata-list {
+    @include typography.meta-ar;
+    *[lang="en"] {
+        // handle any dt/dd in English
+        @include typography.meta;
+    }
+}

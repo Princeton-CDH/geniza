@@ -45,10 +45,9 @@ class SourceFootnoteInline(TabularInlinePaginated):
         "object_id",
         "doc_relation",
         "location",
-        "has_transcription",
         "url",
     )
-    readonly_fields = ("object_link", "has_transcription")
+    readonly_fields = ("object_link",)
     formfield_overrides = {
         CharField: {"widget": TextInput(attrs={"size": "10"})},
         TextField: {"widget": Textarea(attrs={"rows": 4})},
@@ -89,10 +88,8 @@ class DocumentFootnoteInline(GenericTabularInline):
         "doc_relation",
         "location",
         "notes",
-        "has_transcription",
         "url",
     )
-    readonly_fields = ("has_transcription",)
     extra = 1
     formfield_overrides = {
         CharField: {"widget": TextInput(attrs={"size": "10"})},
@@ -303,7 +300,6 @@ class FootnoteAdmin(admin.ModelAdmin):
         "source",
         "location",
         "notes",
-        "has_transcription",
         "has_url",
     )
     autocomplete_fields = ["source"]
@@ -413,7 +409,9 @@ class FootnoteAdmin(admin.ModelAdmin):
                 footnote.doc_relation,
                 footnote.notes,
                 footnote.url,
-                footnote.content.get("text", "") if footnote.content else "",
+                footnote.content_text
+                if Footnote.DIGITAL_EDITION in footnote.doc_relation
+                else "",
                 f"{url_scheme}{site_domain}/admin/footnotes/footnote/{footnote.id}/change/",
             ]
 

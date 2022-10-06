@@ -437,3 +437,21 @@ html[dir="rtl"].light-mode footer {
 html[dir="rtl"].dark-mode footer {
     @include dark-footer-rtl;
 }
+
+// Hebrew variant
+html[lang="he"] footer {
+    @include typography.meta-he;
+    *[lang="en"] {
+        // handle any nav links in English
+        @include typography.meta;
+    }
+}
+
+// Arabic variant
+html[lang="ar"] footer {
+    @include typography.meta-ar;
+    *[lang="en"] {
+        // handle any nav links in English
+        @include typography.meta;
+    }
+}

@@ -14,7 +14,6 @@ class SelectDisabledMixin:
     classes to set an option as disabled. To disable, the widget's choice
     label option should be passed in as a dictionary with `disabled` set
     to True::
-
         {'label': 'option', 'disabled': True}.
     """
 
@@ -36,9 +35,9 @@ class SelectDisabledMixin:
         return option_dict
 
 
-class RadioSelectWithDisabled(SelectDisabledMixin, forms.RadioSelect):
+class SelectWithDisabled(SelectDisabledMixin, forms.Select):
     """
-    Subclass of :class:`django.forms.RadioSelect` with option to mark
+    Subclass of :class:`django.forms.Select` with option to mark
     a choice as disabled.
     """
 
@@ -190,12 +189,9 @@ class DocumentSearchForm(RangeForm):
     sort = forms.ChoiceField(
         # Translators: label for form sort field
         label=_("Sort by"),
-        choices=[
-            (choice[0], mark_safe(f"<span>{choice[1]}</span>"))
-            for choice in SORT_CHOICES
-        ],
+        choices=SORT_CHOICES,
         required=False,
-        widget=RadioSelectWithDisabled,
+        widget=SelectWithDisabled,
     )
     # Translators: label for filter documents by date range
     docdate = RangeField(
@@ -234,6 +230,19 @@ class DocumentSearchForm(RangeForm):
         "has_translation": "has_translation",
         "has_discussion": "has_discussion",
     }
+
+    def __init__(self, data=None, *args, **kwargs):
+        """
+        Override to set choices dynamically based on form kwargs.
+        """
+        super().__init__(data=data, *args, **kwargs)
+
+        # if a keyword search term is not present, relevance sort is disabled
+        if not data or not data.get("q", None):
+            self.fields["sort"].widget.choices[0] = (
+                self.SORT_CHOICES[0][0],
+                {"label": self.SORT_CHOICES[0][1], "disabled": True},
+            )
 
     def filters_active(self):
         """Check if any filters are active; returns true if form fields other than sort or q are set"""

@@ -54,6 +54,20 @@ body {
     flex-direction: column;
     min-height: 100vh;
 }
+html[lang="he"] body {
+    @include typography.body-he;
+    *[lang="en"] {
+        // override for English-language content
+        @include typography.body;
+    }
+}
+html[lang="ar"] body {
+    @include typography.body-ar;
+    *[lang="en"] {
+        // override for English-language content
+        @include typography.body;
+    }
+}
 
 // Center-align sections of main content using flexbox.
 main {
@@ -63,17 +77,36 @@ main {
     flex: 1 0 auto;
 }
 
-// Apply basic typographic styles defined in the typography module
+// Apply basic typographic styles defined in the typography module,
+// including Hebrew variants (with exceptions for English content in Hebrew site)
 h1 {
     @include typography.headline-1;
+}
+html[lang="he"] h1:not([lang="en"]) {
+    @include typography.headline-1-he;
+}
+html[lang="ar"] h1:not([lang="en"]) {
+    @include typography.headline-1-ar;
 }
 
 h2 {
     @include typography.headline-2;
 }
+html[lang="he"] h2:not([lang="en"]) {
+    @include typography.headline-2-he;
+}
+html[lang="ar"] h2:not([lang="en"]) {
+    @include typography.headline-2-ar;
+}
 
 h3 {
     @include typography.headline-3;
+}
+html[lang="he"] h3:not([lang="en"]) {
+    @include typography.headline-3-he;
+}
+html[lang="ar"] h3:not([lang="en"]) {
+    @include typography.headline-3-ar;
 }
 
 // Any links without a class (i.e. in body text) get the default link style;

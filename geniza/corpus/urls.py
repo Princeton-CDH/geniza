@@ -24,19 +24,24 @@ urlpatterns = [
         name="related-documents",
     ),
     path(
+        "documents/<int:pk>/transcribe/",
+        corpus_views.DocumentAddTranscriptionView.as_view(),
+        name="document-add-transcription",
+    ),
+    path(
+        "source-autocomplete/",
+        corpus_views.SourceAutocompleteView.as_view(),
+        name="source-autocomplete",
+    ),
+    path(
+        "documents/<int:pk>/transcribe/<int:source_pk>/",
+        corpus_views.DocumentTranscribeView.as_view(),
+        name="document-transcribe",
+    ),
+    path(
         "documents/<int:pk>/transcription/<int:transcription_pk>/",
         corpus_views.DocumentTranscriptionText.as_view(),
         name="document-transcription-text",
-    ),
-    path(
-        "documents/<int:pk>/iiif/manifest/",
-        corpus_views.DocumentManifestView.as_view(),
-        name="document-manifest",
-    ),
-    path(
-        "documents/<int:pk>/iiif/annotations/",
-        corpus_views.DocumentAnnotationListView.as_view(),
-        name="document-annotations",
     ),
     path("export/pgp-metadata-old/", corpus_views.pgp_metadata_for_old_site),
 ]

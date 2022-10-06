@@ -1,9 +1,16 @@
 import re
 
+from bs4 import BeautifulSoup
 from parasolr.django import AliasedSolrQuerySet
 from piffle.image import IIIFImageClient
 
 from geniza.corpus.ja import arabic_or_ja
+
+
+def clean_html(html_snippet):
+    """utility method to clean up html, since solr snippets of html content
+    may result in non-valid content"""
+    return BeautifulSoup(html_snippet, "html.parser").prettify(formatter="minimal")
 
 
 class DocumentSolrQuerySet(AliasedSolrQuerySet):
@@ -19,7 +26,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "type": "type_s",
         "status": "status_s",
         "shelfmark": "shelfmark_s",  # string version for display
-        "document_date": "document_date_s",  # string version for display
+        "document_date": "document_date_t",  # text version for search & display
+        "original_date_t": "original_date",
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
         "description": "description_txt_ens",  # use stemmed version for field search & highlight
@@ -34,7 +42,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "num_discussions": "num_discussions_i",
         "scholarship_count": "scholarship_count_i",
         "scholarship": "scholarship_t",
-        "transcription": "transcription_t",
+        "transcription": "transcription_ht",
         "language_code": "language_code_ss",
         "iiif_images": "iiif_images_ss",
         "iiif_labels": "iiif_labels_ss",
@@ -50,12 +58,16 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # - start with a copy of default aliases
     # - define/override additional search aliases for site users
     search_aliases = field_aliases.copy()
+
+    shelfmark_qf = "{!type=edismax qf=$shelfmark_qf}"
+
     search_aliases.update(
         {
             # when searching, singular makes more sense for tags & old pgpids
             "old_pgpid": field_aliases["old_pgpids"],
             "tag": field_aliases["tags"],
-            "shelfmark": "shelfmark_t",  # search on text version with display override and individual shelfmarks
+            # for shelfmark, use search field to search multiple formats
+            "shelfmark": shelfmark_qf,
         }
     )
 
@@ -76,6 +88,11 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             # if any of the field aliases occur with a colon, replace with actual solr field
             search_term = self.re_solr_fields.sub(
                 lambda x: "%s:" % self.search_aliases[x.group(1)], search_term
+            )
+            # special case: shelfmark edismax query should NOT have colon
+            # like other fields
+            search_term = search_term.replace(
+                "%s:" % self.shelfmark_qf, self.shelfmark_qf
             )
 
         return arabic_or_ja(search_term)
@@ -122,3 +139,14 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         labels = doc.get("iiif_labels", [])
         doc["iiif_images"] = list(zip(doc["iiif_images"], labels))
         return doc
+
+    def get_highlighting(self):
+        """highlight snippets within transcription html may result in invalid tags
+        that will render strangely; clean up the html before returning"""
+        highlights = super().get_highlighting()
+        for doc in highlights.keys():
+            if "transcription" in highlights[doc]:
+                highlights[doc]["transcription"] = [
+                    clean_html(s) for s in highlights[doc]["transcription"]
+                ]
+        return highlights

@@ -46,6 +46,9 @@ class Command(BaseCommand):
     # TEI files resolving incorrectly to the same edition
     footnotes_updated = defaultdict(list)
 
+    # keep track of document ids with multiple digitized editions (likely merged records/joins)
+    multiedition_docs = set()
+
     def handle(self, *args, **options):
         # get settings for remote git repository url and local path
         gitrepo_url = settings.TEI_TRANSCRIPTIONS_GITREPO
@@ -253,10 +256,15 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
                 self.stdout.write("Document %s not found in database" % pgpid)
             return
 
+    def get_footnote_editions(self, doc):
+        """Get all edition footnotes of a document; used by :meth:`get_edition_footnote`,
+        extend to include digital editions in tei to annotation script."""
+        return doc.footnotes.editions()
+
     def get_edition_footnote(self, doc, tei, filename):
         """identify the edition footnote to be updated"""
-        # NOTE: still needs to handle multiple editions, no editions
-        editions = doc.footnotes.editions()
+        # get editions for this document
+        editions = self.get_footnote_editions(doc)
 
         if editions.count() > 1:
             self.stats["multiple_editions"] += 1

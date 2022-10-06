@@ -35,10 +35,10 @@ extra_iiif_sizes = [
 
 def generate_static_iiif(dest_dir, base_url, source_dir=None, source_files=None):
 
-    # adaprted from call in iiif_static command line script
+    # adapted from call in iiif_static command line script
     # using defaults option
     # dest_dir = os.path.join(base_path, "iiif-images")
-    dest_url = base_url.rstrip("/") + "/iiif-images/"
+    dest_url = base_url.rstrip("/") + "/images/"  # CHECK
     # base destination url required for generating ids in info.json
     sg = IIIFStatic(dst=dest_dir, prefix=dest_url, extras=extra_iiif_sizes)
 

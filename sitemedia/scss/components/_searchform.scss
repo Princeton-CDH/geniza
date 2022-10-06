@@ -125,8 +125,25 @@ main.search form {
     // sort field and label
     fieldset#sort {
         order: 4;
-        // sort options select (uses details/summary)
-        details.sort-select {
+        display: flex;
+        select {
+            // A reset of styles, including removing the default dropdown arrow
+            // @link https://moderncss.dev/custom-select-styles-with-pure-css/
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border: none;
+            font-family: inherit;
+            font-size: inherit;
+            border-radius: 0;
+            // Remove dropdown arrow in IE10 & IE11
+            // @link https://www.filamentgroup.com/lab/select-css.html
+            &::-ms-expand {
+                display: none;
+            }
+
+            @include typography.form-option-sm;
+            @include form-drop-shadow;
             position: relative;
             flex: 1 1 auto;
             min-height: 2.5rem;
@@ -135,116 +152,24 @@ main.search form {
                 min-width: auto;
                 max-width: 23rem;
             }
-            summary {
-                display: flex;
-                min-height: 2.5rem;
-                cursor: pointer;
-                margin-top: spacing.$spacing-sm;
-                // Suppress default details marker
-                &::-webkit-details-marker {
-                    display: none;
-                }
-                span,
-                button {
-                    cursor: pointer;
-                    background-color: var(--background-light);
-                    color: var(--on-background-light);
-                }
-                span {
-                    flex: 1 1 auto;
-                    display: flex;
-                    max-width: 100%;
-                    align-items: center;
-                    padding: spacing.$spacing-2xs 0.7rem;
-                    margin-right: spacing.$spacing-sm;
-                    @include typography.form-option-sm;
-                    @include form-drop-shadow;
-                }
-                div[role="button"] {
-                    @include form-button-colors;
-                    flex: 1 1 2.0625rem;
-                    width: auto;
-                    max-width: 2.0625rem;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    &::after {
-                        content: "\f0c2"; // phosphor caret-down icon
-                        @include typography.icon-button-md;
-                    }
-                }
-                &:focus {
-                    outline: none;
-                }
-                // Focus styles using box-shadow
-                &:focus span,
-                &:focus div[role="button"],
-                &:focus-within span,
-                &:focus-within div[role="button"],
-                &:focus + ul,
-                &:focus-within + ul {
-                    @include box-shadow(var(--secondary-80));
-                }
-                &:focus-within + ul:active {
-                    @include box-shadow(var(--primary-80));
-                }
-            }
-            // List of sort options
-            ul {
-                position: absolute;
-                z-index: 20;
-                width: calc(100% - 2.0625rem - #{spacing.$spacing-sm});
-                max-width: calc(100% - 2.0625rem - #{spacing.$spacing-sm});
-                padding: spacing.$spacing-sm 0;
-                @include form-drop-shadow;
-                background-color: var(--background-light);
-                li {
-                    display: flex;
-                    label {
-                        width: 100%;
-                        flex: 0 1 100%;
-                        display: flex;
-                        cursor: pointer;
-                        span {
-                            display: flex;
-                            align-items: center;
-                            width: 100%;
-                            flex: 0 1 100%;
-                            padding: spacing.$spacing-sm;
-                            transition: background-color 0.15s ease,
-                                color 0.15s ease;
-                        }
-                        &:hover,
-                        &:focus-within {
-                            background-color: var(--background-gray);
-                            color: var(--on-background-gray);
-                        }
-                        &:hover input[name="sort"]:focus + span {
-                            background-color: var(--tertiary);
-                            color: var(--on-tertiary);
-                        }
-                        // Checkboxes only visible to screen readers
-                        input[name="sort"] {
-                            @include a11y.sr-only;
-                            // Selected option
-                            &:checked + span {
-                                @include typography.form-option-sm-bold;
-                            }
-                            &:active + span {
-                                background-color: var(--secondary);
-                                color: var(--on-secondary);
-                            }
-                            &:disabled + span {
-                                color: var(--disabled);
-                                cursor: default;
-                                background-color: var(--background-light);
-                            }
-                        }
-                        // Non-selected options
-                        @include typography.form-option-sm;
-                    }
-                }
-            }
+            margin-top: spacing.$spacing-sm;
+            cursor: pointer;
+            background-color: var(--background-light);
+            color: var(--on-background-light);
+            padding: 0.55rem 0.75rem;
+            margin-right: spacing.$spacing-3xs;
+        }
+        i.ph-caret-down {
+            @include typography.icon-button-md;
+            margin-left: -37px;
+            margin-top: 8px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        // Focus styles using box-shadow
+        &:focus select,
+        &:focus-within select {
+            @include box-shadow(var(--secondary-80));
         }
         label[for="sort"] {
             max-width: 100%;
@@ -286,7 +211,7 @@ main.search form {
     fieldset#filters {
         background-color: var(--background);
         max-width: none;
-        z-index: 5;
+        z-index: 8;
         position: fixed;
         width: 100vw;
         height: 100vh;
@@ -579,7 +504,7 @@ html[dir="rtl"] main.search form {
         input[type="search"] {
             margin-right: 0;
             margin-left: spacing.$spacing-sm;
-            padding: 0 spacing.$spacing-sm 0 0;
+            text-align: right;
         }
         button[type="submit"] {
             margin-right: 0; // Needed to prevent wrapping on mobile
@@ -634,5 +559,37 @@ html[dir="rtl"] main.search form {
                 }
             }
         }
+    }
+
+    // sort field and label
+    fieldset#sort {
+        i.ph-caret-down {
+            margin-left: auto;
+            margin-right: -35px;
+        }
+    }
+}
+
+// Hebrew variant
+html[lang="he"] main.search form {
+    a#filters-button:not([lang="en"]),
+    a#close-filters-button:not([lang="en"]) {
+        @include typography.body-he;
+    }
+    fieldset#filters > label:not(.date-range-label) span.count,
+    ul#search-errors li {
+        @include typography.meta-he;
+    }
+}
+
+// Arabic variant
+html[lang="ar"] main.search form {
+    a#filters-button:not([lang="en"]),
+    a#close-filters-button:not([lang="en"]) {
+        @include typography.body-ar;
+    }
+    fieldset#filters > label:not(.date-range-label) span.count,
+    ul#search-errors li {
+        @include typography.meta-ar;
     }
 }

@@ -1,7 +1,11 @@
 from django.conf import settings
+from django.contrib.auth.backends import BaseBackend
 from django.http import HttpRequest
+from django.middleware.locale import LocaleMiddleware as DjangoLocaleMiddleware
 from django.utils import translation
 from django.views.i18n import set_language
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.models import Token
 
 
 class PublicLocaleMiddleware:
@@ -29,3 +33,29 @@ class PublicLocaleMiddleware:
         # otherwise, continue on with middleware chain
         response = self.get_response(request)
         return response
+
+
+class LocaleMiddleware(DjangoLocaleMiddleware):
+    """ "Customize django's default locale middleware to exempt some urls from redirects"""
+
+    # adapted from https://code.djangoproject.com/ticket/17734
+
+    #: base paths for urls to exempt from locale redirects
+    redirect_exempt_paths = ["admin", "annotations", "accounts"]
+
+    def process_response(self, request, response):
+        """exempt untranslated paths from locale redirects"""
+
+        path_parts = request.path_info.split("/")
+
+        # special case for iiif URIs, which are structured differently but must also be exempt
+        # example URI request.path_info: /documents/1234/iiif/manifest/
+        is_iiif_uri = (path_parts[3] == "iiif") if len(path_parts) > 3 else False
+
+        base_request_path = path_parts[1]
+        if base_request_path in self.redirect_exempt_paths or is_iiif_uri:
+            # Prevent exempt URLs from redirecting to language-prefixed URLs
+            # so that we get the expected 404 instead of a 302 redirect.
+            return response
+
+        return super().process_response(request, response)

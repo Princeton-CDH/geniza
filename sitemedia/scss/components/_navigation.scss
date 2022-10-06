@@ -7,13 +7,10 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-header {
-    z-index: 5;
-}
-#site-nav {
+nav#site-nav {
     display: flex;
     flex-flow: row wrap;
-    z-index: 6;
+    z-index: 5;
     @include breakpoints.for-tablet-landscape-up {
         flex-flow: row nowrap;
         align-items: center;
@@ -24,7 +21,9 @@ header {
     // Logotype, links to homepage
     a.home-link {
         position: absolute;
-        z-index: 8;
+        @include breakpoints.for-tablet-landscape-up {
+            z-index: 7;
+        }
     }
     // Mobile-only menu buttons
     li.menu-button {
@@ -79,7 +78,7 @@ header {
         align-items: center;
         justify-content: flex-end;
         max-width: 100%;
-        z-index: 8;
+        z-index: 6;
         // Direct descendent menu buttons (mobile)
         & > li.menu-button {
             display: flex;
@@ -96,6 +95,7 @@ header {
             margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
+            padding-top: 8px;
         }
         // First item after menu button should get extra space, and no border-top
         li.menu-button + li.menu-item a {
@@ -132,7 +132,6 @@ header {
             & > li.menu-item + li.menu-item {
                 margin-left: spacing.$spacing-sm;
             }
-            z-index: 7;
         }
         outline-color: var(--primary);
     }
@@ -224,6 +223,10 @@ header {
                 justify-content: flex-end;
                 border: none;
                 padding: 0;
+                span {
+                    min-width: 117px;
+                    text-align: right;
+                }
             }
             // "Open sub-menu" link on desktop
             &.has-submenu {
@@ -318,6 +321,9 @@ header {
                     padding: 0 spacing.$spacing-md;
                     justify-content: flex-start;
                 }
+                a span {
+                    text-align: left;
+                }
             }
         }
     }
@@ -355,7 +361,7 @@ header {
         }
     }
     // Hover indicator for nav links
-    a:not(.home-link)::after {
+    ul[id$="menu"] a:not(.home-link)::after {
         display: none;
         @include breakpoints.for-tablet-landscape-up {
             content: "\00000a"; // Newline
@@ -426,6 +432,12 @@ html[dir="rtl"] #site-nav {
         li.menu-item,
         ul.sub-menu li.menu-item {
             margin: spacing.$spacing-sm 0 0 spacing.$spacing-xs;
+        }
+        li.menu-item a span {
+            text-align: left;
+        }
+        ul.sub-menu li.menu-item a span {
+            text-align: right;
         }
     }
 }
@@ -712,5 +724,35 @@ html[dir="rtl"].dark-mode #site-nav {
     @include breakpoints.for-tablet-landscape-up {
         @include header-background-desktop-dark-rtl;
         @include dark-hover-rtl;
+    }
+}
+
+// Hebrew variant
+html[lang="he"] #site-nav {
+    li.menu-item a,
+    li.menu-item a[aria-current="page"],
+    ul.sub-menu li.menu-item a,
+    ul.sub-menu li.menu-item a[aria-current="page"],
+    ul.sub-menu li.menu-label {
+        @include typography.mobile-menu-he;
+    }
+    *[lang="en"] {
+        // handle any nav links/menu items in English
+        @include typography.mobile-menu;
+    }
+}
+
+// Arabic variant
+html[lang="ar"] #site-nav {
+    li.menu-item a,
+    li.menu-item a[aria-current="page"],
+    ul.sub-menu li.menu-item a,
+    ul.sub-menu li.menu-item a[aria-current="page"],
+    ul.sub-menu li.menu-label {
+        @include typography.mobile-menu-ar;
+    }
+    *[lang="en"] {
+        // handle any nav links/menu items in English
+        @include typography.mobile-menu;
     }
 }

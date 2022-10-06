@@ -45,6 +45,8 @@ module.exports = {
                 "unused-javascript": "off",
                 // allow 1 offscreen image per page (OpenSeaDragon first image)
                 "offscreen-images": ["error", { maxLength: 1 }],
+                // allow larger byte weight for multilingual and transcription fonts
+                "total-byte-weight": ["error", { minScore: 0.7 }],
             },
         },
     },

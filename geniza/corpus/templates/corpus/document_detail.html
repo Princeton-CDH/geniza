@@ -20,8 +20,8 @@
 
     {# preview card images for twitter and open graph #}
     <meta name="twitter:card" content="summary{% if document.has_image %}_large_image{% endif %}" />
-    {% if document.iiif_images %}
-        {% with document.iiif_images.0.image|iiif_image:"size:width=1080" as image %}
+    {% if meta_image %}
+        {% with meta_image|iiif_image:"size:width=1080" as image %}
             <meta property="og:image" content="{{ image }}" />
             <meta name="twitter:image" content="{{ image }}" />
         {% endwith %}
@@ -106,7 +106,7 @@
         {% if document.tags.exists %}
             <section>
                 {# Translators: label for tags on a document #}
-                <h3 class="sr-only">{% translate 'Tags' %}</h3>
+                <h2 class="sr-only">{% translate 'Tags' %}</h2>
                 <ul class="tags">
                     {% spaceless %}
                         {% for tag in document.alphabetized_tags %}
@@ -119,7 +119,7 @@
 
         <section class="input-date">
             {# Translators: Label for date document was first added to the PGP #}
-            <h3 class="sr-only">{% translate 'Input date' %}</h3>
+            <h2 class="sr-only">{% translate 'Input date' %}</h2>
             {# Translators: Date document was first added to the PGP #}
             {% blocktranslate with date=document.log_entries.last.action_time.year %}
                 In PGP since {{ date }}
@@ -127,31 +127,16 @@
         </section>
 
         <section class="description">
-            <h3>
+            <h2>
                 {# Translators: label for document description #}
                 {% translate 'Description' %}
-            </h3>
+            </h2>
             <p>{{ document.description|pgp_urlize }}</p>
         </section>
-
-        {# link to download transcription if available; admin only for now since plain-text bidi is not great #}
-        {% if document.has_transcription and user.is_authenticated %}
-            <section class="transcription-link">
-                {% for ed in document.digital_editions %}
-                    {% if ed.content.text %}
-                        <p><a href="{% url "corpus:document-transcription-text" document.pk ed.pk %}">Download {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% empty %}[unknown]{% endfor %}'s edition.</a></p>
-                    {% endif %}
-                {% endfor %}
-            </section>
-        {% endif %}
-
-
     </div>
 
     {# viewer #}
-    {% if document.has_transcription or document.iiif_urls %}
-        {% include "corpus/snippets/document_transcription.html" %}
-    {% endif %}
+    {% include "corpus/snippets/document_transcription.html" %}
 
     {# tertiary metadata #}
     <dl class="metadata-list tertiary">

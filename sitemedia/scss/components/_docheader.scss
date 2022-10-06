@@ -24,6 +24,14 @@ span#formatted-title {
         margin: spacing.$spacing-3xl spacing.$spacing-md spacing.$spacing-2xl;
     }
 }
+// Hebrew variant
+html[lang="he"] span#formatted-title {
+    @include typography.headline-1-he;
+}
+// Arabic variant
+html[lang="ar"] span#formatted-title {
+    @include typography.headline-1-ar;
+}
 
 // Edit link for admins
 .edit-link-container {

@@ -108,7 +108,7 @@ main.document {
         // "Description" header and content
         section.description {
             margin: 64px 0 spacing.$spacing-md;
-            h3 {
+            h2 {
                 @include typography.body-bold;
             }
 
@@ -170,5 +170,61 @@ main.document {
         p {
             white-space: pre-line;
         }
+    }
+}
+
+// RTL variant
+html[dir="rtl"] main.document {
+    .container dl.metadata-list dt::before {
+        margin-right: 0;
+        margin-left: 12px;
+    }
+    dl.metadata-list.tertiary dt#permalink {
+        svg {
+            margin-right: 0;
+            margin-left: 12px;
+        }
+        & + dd {
+            margin-left: 0;
+            margin-right: 34px;
+        }
+    }
+}
+
+// Hebrew variant
+html[lang="he"] main.document {
+    .container section.description h3 {
+        // "Description" label is always translated
+        @include typography.body-he;
+    }
+    .container dl.metadata-list,
+    .container section.input-date,
+    .container dl.metadata-list dt,
+    .container dl.metadata-list dd,
+    dl.metadata-list.tertiary dt#permalink {
+        @include typography.meta-he;
+    }
+    dl *[lang="en"] {
+        // handle any dt/dd in English
+        @include typography.meta;
+    }
+}
+
+// Arabic variant
+html[lang="ar"] main.document {
+    .container section.description h3 {
+        // "Description" label is always translated
+        @include typography.body-ar;
+    }
+    .container dl.metadata-list,
+    .container dl.metadata-list dt,
+    .container dl.metadata-list dd,
+    .container section.input-date,
+    dl.metadata-list.tertiary dt#permalink {
+        @include typography.meta-ar;
+    }
+    dl *[lang="en"] {
+        // handle any dt/dd in English
+        @include typography.meta;
     }
 }

@@ -1,11 +1,11 @@
 // controllers/iiif_controller.js
-
 import { Controller } from "@hotwired/stimulus";
 import OpenSeadragon from "openseadragon";
 import AngleInput from "angle-input";
 
 export default class extends Controller {
     static targets = [
+        "imageContainer",
         "imageHeader",
         "osd",
         "rotation",
@@ -15,6 +15,12 @@ export default class extends Controller {
         "zoomSliderLabel",
         "zoomToggle",
     ];
+    static values = { editMode: { type: Boolean, default: false } };
+
+    connect() {
+        // make iiif controller available at element.iiif
+        this.element[this.identifier] = this;
+    }
 
     rotationTargetConnected() {
         // initialize angle rotation input
@@ -43,19 +49,32 @@ export default class extends Controller {
         }
     }
     activateDeepZoom(settings) {
-        // scroll to top of controls
-        this.imageHeaderTarget.scrollIntoView();
+        // scroll to top of controls (if not in editor)
+        if (!this.editModeValue) {
+            this.imageHeaderTarget.scrollIntoView();
+        }
         // hide image and add OpenSeaDragon to container
         let OSD = this.osdTarget.querySelector(".openseadragon-container");
+        this.imageTarget.classList.remove("visible");
+        this.imageTarget.classList.add("hidden-img");
         if (!OSD) {
             this.addOpenSeaDragon(settings);
+            OSD = this.osdTarget.querySelector(".openseadragon-container");
         }
+        // OSD styles have to be set directly on the element instead of adding a class, due to
+        // its use of inline styles
+        OSD.style.position = "absolute";
+        OSD.style.transition = "opacity 300ms ease, visibility 0s ease 0ms";
+        OSD.style.visibility = "visible";
+        OSD.style.opacity = "1";
+
         this.imageTarget.classList.remove("visible");
         this.imageTarget.classList.add("hidden-img");
         this.osdTarget.classList.remove("hidden-img");
         this.osdTarget.classList.add("visible");
         this.rotationTarget.classList.add("active");
     }
+
     deactivateDeepZoom() {
         this.imageTarget.classList.add("visible");
         this.imageTarget.classList.remove("hidden-img");
@@ -63,25 +82,42 @@ export default class extends Controller {
         this.osdTarget.classList.add("hidden-img");
         this.rotationTarget.classList.remove("active");
         this.updateRotationUI(0);
+        const OSD = this.osdTarget.querySelector(".openseadragon-container");
+        OSD.style.transition = "opacity 300ms ease, visibility 0s ease 300ms";
+        OSD.style.visibility = "hidden";
+        OSD.style.opacity = "0";
     }
+
     addOpenSeaDragon(settings) {
         const { isMobile } = settings;
 
         // constants for OSD
         const minZoom = 1.0; // Minimum zoom as a multiple of image size
         const maxZoom = 1.5; // Maximum zoom as a multiple of image size
+        const url = this.osdTarget.dataset.iiifUrl;
+
+        // allow placeholder image (url ending in .png instead of .json)
+        const tileSource = url.endsWith(".png") ? { type: "image", url } : url;
 
         // inject OSD into the image container
         let viewer = OpenSeadragon({
             element: this.osdTarget,
             prefixUrl:
                 "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.0.0/images/",
-            tileSources: [this.osdTarget.dataset.iiifUrl],
+            tileSources: [tileSource],
             sequenceMode: false,
             autoHideControls: true,
             showHomeControl: false,
+            // Enable touch rotation on tactile devices
+            gestureSettingsTouch: {
+                pinchRotate: true,
+            },
             showZoomControl: false,
             showNavigationControl: false,
+            // show navigator in top left
+            showNavigator: true,
+            navigatorPosition: "TOP_LEFT",
+            navigatorOpacity: 0.5,
             showFullPageControl: false,
             showSequenceControl: false,
             crossOriginPolicy: "Anonymous",
@@ -149,6 +185,10 @@ export default class extends Controller {
             this.zoomSliderTarget.value = parseFloat(zoom);
             this.updateZoomUI(zoom, false);
         });
+
+        // keep reference to OSD viewer object on the controller object
+        this.viewer = viewer;
+        return viewer;
     }
     handleRotationInput(viewer) {
         return (evt) => {
@@ -168,12 +208,14 @@ export default class extends Controller {
             let zoom = parseFloat(evt.currentTarget.value);
             let deactivating = false;
             if (zoom <= minZoom) {
-                // When zoomed back out to 100%, deactivate OSD
+                // When zoomed back out to 100%, deactivate OSD (if not in editor)
                 zoom = minZoom;
                 viewer.viewport.zoomTo(1.0);
-                this.resetBounds(viewer);
-                this.deactivateDeepZoom();
-                deactivating = true;
+                if (!this.editModeValue) {
+                    this.resetBounds(viewer);
+                    this.deactivateDeepZoom();
+                    deactivating = true;
+                }
                 evt.currentTarget.value = minZoom;
             } else {
                 // Zoom to the chosen percentage
@@ -189,7 +231,8 @@ export default class extends Controller {
         this.zoomSliderLabelTarget.textContent = `${(zoom * 100).toFixed(0)}%`;
         // update progress indication in slider track
         const percent =
-            (zoom / this.zoomSliderTarget.getAttribute("max")) * 100;
+            ((zoom - 1) / (this.zoomSliderTarget.getAttribute("max") - 1)) *
+            100;
         let secondColor = "var(--filter-active)";
         if (deactivating) {
             secondColor = "#9E9E9E";
@@ -197,7 +240,10 @@ export default class extends Controller {
         } else if (!this.zoomSliderTarget.classList.contains("active-thumb")) {
             this.zoomSliderTarget.classList.add("active-thumb");
         }
-        this.zoomSliderTarget.style.background = `linear-gradient(to right, var(--link-primary) 0%, var(--link-primary) ${percent}%, ${secondColor} ${percent}%, ${secondColor} 100%)`;
+        // switch gradient direction for RTL layout
+        const dir = document.documentElement.dir == "rtl" ? "left" : "right";
+        // use gradient for two-tone slider track background
+        this.zoomSliderTarget.style.background = `linear-gradient(to ${dir}, var(--link-primary) 0%, var(--link-primary) ${percent}%, ${secondColor} ${percent}%, ${secondColor} 100%)`;
     }
     updateRotationUI(angle, autoUpdate) {
         // update rotation label

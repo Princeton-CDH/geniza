@@ -29,6 +29,8 @@ INSTALLED_APPS = [
     "modeltranslation",  # this has to come before admin config
     "wagtail.documents",  # this also has to come first to unregister
     "wagtail.images",  #    this also has to come first to unregister
+    "dal",  # Django autocomplete light
+    "dal_select2",
     "geniza.apps.GenizaAdminConfig",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -68,12 +70,13 @@ INSTALLED_APPS = [
     "geniza.corpus.apps.CorpusAppConfig",
     "geniza.footnotes.apps.FootnotesConfig",
     "geniza.pages.apps.PagesConfig",
+    "geniza.annotations",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
+    "geniza.common.middleware.LocaleMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "geniza.common.middleware.PublicLocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -238,6 +241,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 # documentation links
 PGP_DOCTYPE_GUIDE = "https://docs.google.com/document/d/1FHr1iS_JD5h-y5O1rv5JNNw1OqEVQFb-vSTGr3hoiF4/edit"
 
+ANNOTATION_MANIFEST_BASE_URL = "https://geniza.princeton.edu"
+
 # django-csp configuration for content security policy definition and
 # violation reporting - https://github.com/mozilla/django-csp
 #
@@ -256,6 +261,7 @@ CSP_CONNECT_SRC = [
     "*.lib.cam.ac.uk",
     "*.example.com",
     "iiif-cloud.princeton.edu",
+    "annotations-staging.princeton.edu",
 ]
 
 # allow loading css locally & via inline styles

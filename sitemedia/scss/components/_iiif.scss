@@ -68,7 +68,14 @@
             }
         }
     }
-    // Transcription text
+
+    // Transcription container
+
+    // hide if no content
+    .transcription.no-transcription {
+        display: none;
+    }
+
     .transcription {
         max-width: 60ch;
         margin: 0 auto;
@@ -91,6 +98,10 @@
         h2 {
             @include typography.headline-3;
             direction: ltr;
+        }
+        h1[lang="he"],
+        h2[lang="he"] {
+            @include typography.headline-3-he;
         }
         h1,
         h3 {

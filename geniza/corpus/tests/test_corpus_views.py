@@ -14,6 +14,7 @@ from django.utils.timezone import get_current_timezone, make_aware
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
 
+from geniza.annotations.models import Annotation
 from geniza.common.utils import absolutize_url
 from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
@@ -26,10 +27,12 @@ from geniza.corpus.views import (
     DocumentScholarshipView,
     DocumentSearchView,
     DocumentTranscriptionText,
+    SourceAutocompleteView,
     old_pgp_edition,
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
 )
+from geniza.footnotes.forms import SourceChoiceForm
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 
@@ -113,6 +116,21 @@ class TestDocumentDetailView:
             updated_doc_response["Last-Modified"] != other_doc_response["Last-Modified"]
         )
         assert init_last_modified == other_doc_response["Last-Modified"]
+
+    def test_placeholder_images(self, client, document):
+        # mock digital_editions() to return mocked footnote with mocked content_html
+        with patch.object(Document, "digital_editions") as mock_de:
+            mock_footnote = Mock()
+            mock_de.return_value.all = Mock()
+            mock_de.return_value.all.return_value = [mock_footnote]
+            mock_footnote.content_html.keys = Mock()
+            mock_footnote.content_html.keys.return_value = ["canvas_1", "canvas_2"]
+            response = client.get(reverse("corpus:document", args=(document.pk,)))
+            placeholders = response.context["images"]
+            # should create a dict with canvases as keys and placeholder in values
+            assert len(placeholders) == 2
+            assert list(placeholders.keys()) == ["canvas_1", "canvas_2"]
+            assert placeholders["canvas_1"] == Document.PLACEHOLDER_CANVAS
 
 
 @pytest.mark.django_db
@@ -913,7 +931,7 @@ class TestDocumentScholarshipView:
 @patch("geniza.corpus.views.IIIFPresentation")
 @patch("geniza.corpus.models.IIIFPresentation")
 class TestDocumentManifestView:
-    view_name = "corpus:document-manifest"
+    view_name = "corpus-uris:document-manifest"
 
     def test_no_images_no_transcription(
         self,
@@ -1038,8 +1056,7 @@ class TestDocumentManifestView:
         Footnote.objects.create(
             content_object=document,
             source=source,
-            content={"html": "text"},
-            doc_relation=Footnote.EDITION,
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         response = client.get(reverse(self.view_name, args=[document.pk]))
         assert response.status_code == 200
@@ -1053,7 +1070,7 @@ class TestDocumentManifestView:
         assertContains(response, "sc:AnnotationList")
         # includes url for annotation list
         assertContains(
-            response, reverse("corpus:document-annotations", args=[document.pk])
+            response, reverse("corpus-uris:document-annotations", args=[document.pk])
         )
 
     def test_get_absolute_url(
@@ -1064,9 +1081,8 @@ class TestDocumentManifestView:
         view = DocumentManifestView()
         view.object = document
         view.kwargs = {"pk": document.pk}
-        assert view.get_absolute_url() == absolutize_url(
-            f"{document.get_absolute_url()}iiif/manifest/"
-        )
+        # manifest permalink should not include language code, so build from doc permalink
+        assert view.get_absolute_url() == f"{document.permalink}iiif/manifest/"
 
 
 @patch("geniza.corpus.views.IIIFPresentation")
@@ -1085,8 +1101,7 @@ class TestDocumentAnnotationListView:
         transcription = Footnote.objects.create(
             content_object=document,
             source=source,
-            content={"html": "text"},
-            doc_relation=Footnote.EDITION,
+            doc_relation=Footnote.DIGITAL_EDITION,
         )
         mock_manifest = mockiifpres.from_url.return_value
         test_canvas = new_iiif_canvas()
@@ -1117,8 +1132,19 @@ class TestDocumentAnnotationListView:
         Footnote.objects.create(
             content_object=document,
             source=source,
-            content={"html": "here is my transcription text"},
-            doc_relation=Footnote.EDITION,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            content={
+                "body": [{"value": "here is my transcription text"}],
+                "target": {
+                    "source": {
+                        "id": source.uri,
+                        "partOf": {"id": document.manifest_uri},
+                    }
+                },
+                "dc:source": source.uri,
+            }
         )
         response = client.get(reverse(self.view_name, args=[document.pk]))
         assert response.status_code == 200
@@ -1146,15 +1172,37 @@ class TestDocumentAnnotationListView:
         Footnote.objects.create(
             content_object=document,
             source=source,
-            content={"html": "here is my transcription text"},
-            doc_relation=Footnote.EDITION,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            content={
+                "body": [{"value": "here is my transcription text"}],
+                "target": {
+                    "source": {
+                        "id": source.uri,
+                        "partOf": {"id": document.manifest_uri},
+                    }
+                },
+                "dc:source": source.uri,
+            }
         )
         # and another to the join document
         Footnote.objects.create(
             content_object=join,
             source=source,
-            content={"html": "here is completely different transcription text"},
-            doc_relation=Footnote.EDITION,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            content={
+                "body": [{"value": "here is completely different transcription text"}],
+                "target": {
+                    "source": {
+                        "id": source.uri,
+                        "partOf": {"id": join.manifest_uri},
+                    }
+                },
+                "dc:source": source.uri,
+            }
         )
         # request once for document
         client.get(reverse(self.view_name, args=[document.pk]))
@@ -1228,11 +1276,19 @@ class TestDocumentTranscriptionText:
         edition = Footnote.objects.create(
             content_object=document,
             source=source,
-            doc_relation=Footnote.EDITION,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
             content={
-                "html": "some transcription text",
-                "text": "some transcription text",
-            },
+                "body": [{"value": "some transcription text"}],
+                "target": {
+                    "source": {
+                        "id": source.uri,
+                        "partOf": {"id": document.manifest_uri},
+                    }
+                },
+                "dc:source": source.uri,
+            }
         )
         response = client.get(
             reverse(
@@ -1398,3 +1454,102 @@ class TestRelatdDocumentview:
             related_response.context["page_includes_transcriptions"]
             == doc_response.context["page_includes_transcriptions"]
         )
+
+
+class TestDocumentTranscribeView:
+    def test_page_title(self, document, source, admin_client):
+        """should use doc title in transcription editor meta title"""
+        response = admin_client.get(
+            reverse("corpus:document-transcribe", args=(document.id, source.pk))
+        )
+        assert (
+            response.context["page_title"] == f"Edit transcription for {document.title}"
+        )
+
+    def test_permissions(self, document, source, client):
+        """should redirect to login if user does not have change document permissions"""
+        response = client.get(
+            reverse("corpus:document-transcribe", args=(document.id, source.pk))
+        )
+        assert response.status_code == 302
+        assert response.url.startswith("/accounts/login/")
+
+    def test_get_context_data(self, document, source, admin_client):
+        # should pass source URI and source label to page context
+        response = admin_client.get(
+            reverse("corpus:document-transcribe", args=(document.id, source.pk))
+        )
+        assert response.context["annotation_config"]["source_uri"] == source.uri
+        assert response.context["source_label"] == source.all_authors()
+
+        # since no images/transcription present, should append two placeholders for use in editor
+        assert len(response.context["images"]) == 2
+        assert f"{document.permalink}iiif/canvas/1/" in response.context["images"]
+        assertContains(response, f"{document.permalink}iiif/canvas/2/")
+        assertContains(response, Document.PLACEHOLDER_CANVAS["image"]["info"])
+
+        # non-existent source_pk should 404
+        response = admin_client.get(
+            reverse("corpus:document-transcribe", args=(document.id, 123456789))
+        )
+        assert response.status_code == 404
+
+
+class TestSourceAutocompleteView:
+    def test_get_queryset(self, source, twoauthor_source):
+        source_autocomplete_view = SourceAutocompleteView()
+        # mock request with empty search
+        source_autocomplete_view.request = Mock()
+        source_autocomplete_view.request.GET = {"q": ""}
+        qs = source_autocomplete_view.get_queryset()
+        # should get two results (all sources)
+        assert qs.count() == 2
+        # should order twoauthor_source first
+        result_pks = [src.pk for src in qs]
+        assert source.pk in result_pks and twoauthor_source.pk in result_pks
+        assert result_pks.index(twoauthor_source.pk) < result_pks.index(source.pk)
+
+        # should filter on author, case insensitive
+        source_autocomplete_view.request.GET = {"q": "orwell"}
+        qs = source_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == source.pk
+
+        # should filter on title, case insensitive
+        source_autocomplete_view.request.GET = {"q": "programming"}
+        qs = source_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == twoauthor_source.pk
+
+
+class TestDocumentAddTranscriptionView:
+    def test_page_title(self, document, admin_client):
+        # should use title of document in page title
+        response = admin_client.get(
+            reverse("corpus:document-add-transcription", args=(document.id,))
+        )
+        assert (
+            response.context["page_title"]
+            == f"Add a new transcription for {document.title}"
+        )
+
+    def test_post(self, document, source, admin_client):
+        # should redirect to transcription edit view
+        response = admin_client.post(
+            reverse("corpus:document-add-transcription", args=(document.id,)),
+            {"source": source.pk},
+        )
+        assert response.status_code == 302
+        assert response.url == reverse(
+            "corpus:document-transcribe", args=(document.id, source.pk)
+        )
+
+    def test_get_context_data(self, document, admin_client):
+        # should include SourceChoiceForm
+        response = admin_client.get(
+            reverse("corpus:document-add-transcription", args=(document.id,))
+        )
+        assert response.context["form"] == SourceChoiceForm
+
+        # should have page_type "addsource"
+        assert response.context["page_type"] == "addsource"

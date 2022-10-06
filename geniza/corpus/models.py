@@ -2,6 +2,7 @@ import logging
 from collections import defaultdict
 from functools import cached_property
 from itertools import chain
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib import admin, messages
@@ -18,12 +19,11 @@ from django.db.models.query import Prefetch
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.templatetags.static import static
-from django.urls import reverse
+from django.urls import Resolver404, resolve, reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 from django.utils.translation import gettext as _
-from djiffy.importer import ManifestImporter
 from djiffy.models import Manifest
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
@@ -36,7 +36,7 @@ from urllib3.exceptions import HTTPError, NewConnectionError
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
 from geniza.corpus.dates import DocumentDateMixin
-from geniza.corpus.iiif_utils import get_iiif_string
+from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote, Source
 
@@ -259,7 +259,7 @@ class Fragment(TrackChangesModel):
                 % (
                     img,
                     labels[i],
-                    f'data-canvas="{canvases[i]}" ' if canvases else "",
+                    f'data-canvas="{list(canvases)[i]}" ' if canvases else "",
                     'class="selected" /' if i in selected else "/",
                 )
                 for i, img in enumerate(images)
@@ -335,7 +335,7 @@ class Fragment(TrackChangesModel):
                 try:
                     # importer should return the relevant manifest
                     # (either newly imported or already in the database)
-                    imported = ManifestImporter().import_paths([self.iiif_url])
+                    imported = GenizaManifestImporter().import_paths([self.iiif_url])
                     self.manifest = imported[0] if imported else None
                 except (IIIFException, NewConnectionError):
                     # clear out the manifest if there was an error
@@ -513,8 +513,15 @@ class Document(ModelIndexable, DocumentDateMixin):
     )
 
     footnotes = GenericRelation(Footnote, related_query_name="document")
-
     log_entries = GenericRelation(LogEntry, related_query_name="document")
+
+    # Placeholder canvas to use when not all IIIF images are available
+    PLACEHOLDER_CANVAS = {
+        "image": {
+            "info": static("img/ui/all/all/image-unavailable.png"),
+        },
+        "placeholder": True,
+    }
 
     # NOTE: default ordering disabled for now because it results in duplicates
     # in django admin; see admin for ArrayAgg sorting solution
@@ -558,6 +565,25 @@ class Document(ModelIndexable, DocumentDateMixin):
         return Document.objects.filter(
             models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
         ).first()
+
+    @staticmethod
+    def id_from_manifest_uri(uri):
+        """Given a manifest URI (as used in transcription annotations), return
+        the document id"""
+        # will raise Resolver404 if url does not resolve
+        resolve_match = resolve(urlparse(uri).path)
+        # it could be a valid django url resolve but not be a manifest uri;
+        if resolve_match.view_name != "corpus-uris:document-manifest":
+            # is there a more appropriate exception to raise?
+            raise Resolver404("Not a document manifest URL")
+        return resolve_match.kwargs["pk"]
+
+    @classmethod
+    def from_manifest_uri(cls, uri):
+        """Given a manifest URI (as used in transcription annotations), find a Document matching
+        its pgpid"""
+        # will raise Resolver404 if url does not resolve
+        return cls.objects.get(pk=Document.id_from_manifest_uri(uri))
 
     @property
     def shelfmark(self):
@@ -645,9 +671,11 @@ class Document(ModelIndexable, DocumentDateMixin):
             )
         )
 
-    def iiif_images(self, filter_side=False):
-        """List of IIIF images and labels for images of the Document's Fragments.
-        :param filter_side: if TextBlocks have side info, filter images by side (default: False)"""
+    def iiif_images(self, filter_side=False, with_placeholders=False):
+        """Dict of IIIF images and labels for images of the Document's Fragments, keyed on canvas.
+        :param filter_side: if TextBlocks have side info, filter images by side (default: False)
+        :param with_placeholders: if there are digital editions with canvases missing images,
+            include placeholder images for each additional canvas (default: False)"""
         iiif_images = {}
 
         for b in self.textblock_set.all():
@@ -669,18 +697,27 @@ class Document(ModelIndexable, DocumentDateMixin):
                             "excluded": b.side and i not in b.selected_images,
                         }
 
+        # when requested, include any placeholder canvas URIs referenced by any associated transcriptions
+        if with_placeholders:
+            for ed in self.digital_editions().all():
+                for canvas_uri in ed.content_html.keys():
+                    if canvas_uri not in iiif_images:
+                        # use placeholder image for each canvas not in iiif_images
+                        iiif_images[canvas_uri] = Document.PLACEHOLDER_CANVAS
+
         # if image_order_override not present, return list, in original order
         if not self.image_order_override:
-            return list(iiif_images.values())
+            return iiif_images
 
         # otherwise, order returned images according to override
-        ordered_images = []
-        for canvas in self.image_order_override:
-            if canvas in iiif_images:
-                ordered_images.append(iiif_images.pop(canvas))
-        # ensure images not present in the order override are still added at the end, e.g. if
-        # fragments are added to this document after order override was set
-        ordered_images += list(iiif_images.values())
+        ordered_images = {
+            canvas: iiif_images.pop(canvas)
+            for canvas in self.image_order_override
+            if canvas in iiif_images
+        } or {}  # if condition is never met, instantiate empty dict (instead of set!)
+        ordered_images.update(
+            iiif_images  # add any remaining images after ordered ones
+        )
         return ordered_images
 
     def admin_thumbnails(self):
@@ -689,9 +726,9 @@ class Document(ModelIndexable, DocumentDateMixin):
         if not iiif_images:
             return ""
         return Fragment.admin_thumbnails(
-            images=[img["image"].size(height=200) for img in iiif_images],
-            labels=[img["label"] for img in iiif_images],
-            canvases=[img["canvas"] for img in iiif_images],
+            images=[img["image"].size(height=200) for img in iiif_images.values()],
+            labels=[img["label"] for img in iiif_images.values()],
+            canvases=iiif_images.keys(),
         )
 
     admin_thumbnails.short_description = "Image order override"
@@ -730,11 +767,16 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     def has_transcription(self):
         """Admin display field indicating if document has a transcription."""
-        return any(note.has_transcription() for note in self.footnotes.all())
+        # avoids an additional DB call for admin list view
+        return any(
+            [
+                Footnote.DIGITAL_EDITION in note.doc_relation
+                for note in self.footnotes.all()
+            ]
+        )
 
     has_transcription.short_description = "Transcription"
     has_transcription.boolean = True
-    has_transcription.admin_order_field = "footnotes__content"
 
     def has_image(self):
         """Admin display field indicating if document has a IIIF image."""
@@ -751,25 +793,22 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     def editions(self):
         """All footnotes for this document where the document relation includes
-        edition; footnotes with content will be sorted first."""
+        edition."""
         return self.footnotes.filter(doc_relation__contains=Footnote.EDITION).order_by(
-            "content", "source"
+            "source"
         )
 
     def digital_editions(self):
         """All footnotes for this document where the document relation includes
-        edition AND the footnote has content."""
-        return (
-            self.footnotes.filter(doc_relation__contains=Footnote.EDITION)
-            .filter(content__isnull=False)
-            .order_by("content", "source")
-        )
+        digital edition."""
+        return self.footnotes.filter(
+            doc_relation__contains=Footnote.DIGITAL_EDITION
+        ).order_by("source")
 
     def editors(self):
         """All unique authors of digital editions for this document."""
         return Creator.objects.filter(
-            source__footnote__doc_relation__contains=Footnote.EDITION,
-            source__footnote__content__isnull=False,
+            source__footnote__doc_relation__contains=Footnote.DIGITAL_EDITION,
             source__footnote__document=self,
         ).distinct()
 
@@ -851,7 +890,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         # and to take advantage of prefetching
         fragments = [tb.fragment for tb in self.textblock_set.all()]
         # filter by side so that search results only show the relevant side image(s)
-        images = self.iiif_images(filter_side=True)
+        images = self.iiif_images(filter_side=True).values()
         index_data.update(
             {
                 "pgpid_i": self.id,
@@ -864,10 +903,17 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "shelfmark_s": self.shelfmark_display,
                 # index individual shelfmarks for search (includes uncertain fragments)
                 "fragment_shelfmark_ss": [f.shelfmark for f in fragments],
+                # index any old/historic shelfmarks as a list
+                # split multiple shelfmarks on any one fragment into a list;
+                # flatten the lists into a single list
+                "fragment_old_shelfmark_ss": list(
+                    chain(*[f.old_shelfmarks.split("; ") for f in fragments])
+                ),
                 # combined original/standard document date for display
-                "document_date_s": strip_tags(self.document_date) or None,
+                "document_date_t": strip_tags(self.document_date) or None,
                 # date range for filtering
                 "document_date_dr": self.solr_date_range(),
+                # historic date, for searching
                 # start/end of document date or date range
                 "start_date_i": self.start_date.numeric_format()
                 if self.start_date
@@ -901,14 +947,21 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         for fn in footnotes:
             # if this is an edition/transcription, try to get plain text for indexing
-            if Footnote.EDITION in fn.doc_relation and fn.content:
-                plaintext = fn.content_text()
-                if plaintext:
-                    transcription_texts.append(plaintext)
+            if Footnote.DIGITAL_EDITION in fn.doc_relation:
+                if fn.content_html_str:
+                    transcription_texts.append(
+                        Footnote.explicit_line_numbers(fn.content_html_str)
+                    )
             # add any doc relations to this footnote's source's set in source_relations
             source_relations[fn.source] = source_relations[fn.source].union(
                 fn.doc_relation
             )
+
+        # make sure digital editions are also counted as editions,
+        # whether or not there is a separate edition footnote
+        for source, doc_relations in source_relations.items():
+            if Footnote.DIGITAL_EDITION in doc_relations:
+                source_relations[source].add(Footnote.EDITION)
 
         # flatten sets of relations by source into a list of relations
         for relation in list(chain(*source_relations.values())):
@@ -925,14 +978,13 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # preliminary scholarship record indexing
                 # (may need splitting out and weighting based on type of scholarship)
                 "scholarship_t": [fn.display() for fn in self.footnotes.all()],
-                # text content of any transcriptions
-                "transcription_t": transcription_texts,
-                "has_digital_edition_b": len(transcription_texts) > 0,
-                "has_translation_b": counts[Footnote.TRANSLATION] > 0,
-                "has_discussion_b": counts[Footnote.DISCUSSION] > 0,
+                # transcription content as html
+                "transcription_ht": transcription_texts,
+                "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),
+                "has_translation_b": bool(counts[Footnote.TRANSLATION]),
+                "has_discussion_b": bool(counts[Footnote.DISCUSSION]),
             }
         )
-
         last_log_entry = self.log_entries.last()
         if last_log_entry:
             index_data["input_year_i"] = last_log_entry.action_time.year
@@ -978,6 +1030,14 @@ class Document(ModelIndexable, DocumentDateMixin):
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
     }
+
+    @cached_property
+    def manifest_uri(self):
+        # manifest uri for the current document
+        return "%s%s" % (
+            settings.ANNOTATION_MANIFEST_BASE_URL,
+            reverse("corpus-uris:document-manifest", args=[self.pk]),
+        )
 
     def merge_with(self, merge_docs, rationale, user=None):
         """Merge the specified documents into this one. Combines all
@@ -1084,27 +1144,10 @@ class Document(ModelIndexable, DocumentDateMixin):
     def _merge_footnotes(self, doc):
         # combine footnotes; footnote logic for merge_with
         for footnote in doc.footnotes.all():
-            # first, check for an exact match
+            # check for match; add new footnote if not a match
             equiv_fn = self.footnotes.includes_footnote(footnote)
-            # if there is no exact match, check again ignoring content
             if not equiv_fn:
-                equiv_fn = self.footnotes.includes_footnote(
-                    footnote, include_content=False
-                )
-                # if there's a partial match (everything but content)
-                if equiv_fn:
-                    # if the new footnote has content, add it
-                    if footnote.content:
-                        self.footnotes.add(footnote)
-                    # if the partial match has no content, remove it
-                    # (if it has any content, then it is different from the new one
-                    # and should be preserved)
-                    if not equiv_fn.content:
-                        self.footnotes.remove(equiv_fn)
-
-                # if neither an exact or partial match, add the new footnote
-                else:
-                    self.footnotes.add(footnote)
+                self.footnotes.add(footnote)
 
     def _merge_logentries(self, doc):
         # reassociate log entries; logic for merge_with

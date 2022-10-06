@@ -4,7 +4,7 @@ from parasolr.django import AliasedSolrQuerySet, SolrClient
 from piffle.image import IIIFImageClient
 
 from geniza.corpus.models import Document, DocumentType, TextBlock
-from geniza.corpus.solr_queryset import DocumentSolrQuerySet
+from geniza.corpus.solr_queryset import DocumentSolrQuerySet, clean_html
 
 
 class TestDocumentSolrQuerySet:
@@ -38,9 +38,17 @@ class TestDocumentSolrQuerySet:
     def test_keyword_search_field_aliases(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
-            dqs.keyword_search("pgpid:950 shelfmark:ena tag:state")
+            dqs.keyword_search("pgpid:950 old_pgpid:931 tag:state")
             mocksearch.return_value.raw_query_parameters.assert_called_with(
-                keyword_query="pgpid_i:950 shelfmark_t:ena tags_ss_lower:state"
+                keyword_query="pgpid_i:950 old_pgpids_is:931 tags_ss_lower:state"
+            )
+
+    def test_keyword_search_field_alias_shelfmark(self):
+        dqs = DocumentSolrQuerySet()
+        with patch.object(dqs, "search") as mocksearch:
+            dqs.keyword_search("shelfmark:ena")
+            mocksearch.return_value.raw_query_parameters.assert_called_with(
+                keyword_query="%sena" % dqs.shelfmark_qf
             )
 
     def test_get_result_document(self):
@@ -94,3 +102,29 @@ class TestDocumentSolrQuerySet:
 
         # should include related
         assert related_docs.filter(pgpid=join.id).count() == 1
+
+    def test_clean_html(self):
+        # minimal prettifier; introduces whitespace changes
+        assert clean_html("<li>foo").replace("\n", "") == "<li> foo</li>"
+
+    @patch("geniza.corpus.solr_queryset.super")
+    def test_get_highlighting(self, mock_super):
+        mock_get_highlighting = mock_super.return_value.get_highlighting
+
+        dqs = DocumentSolrQuerySet()
+        # no highlighting
+        mock_get_highlighting.return_value = {}
+        assert dqs.get_highlighting() == {}
+
+        # highlighting but no transcription
+        test_highlight = {"doc.1": {"description": ["foo bar baz"]}}
+        mock_get_highlighting.return_value = test_highlight
+        # returned unchanged
+        assert dqs.get_highlighting() == test_highlight
+
+        # transcription highlight
+        test_highlight = {"doc.1": {"transcription": ["<li>foo"]}}
+        mock_get_highlighting.return_value = test_highlight
+        # transcription html should be cleaned
+        cleaned_highlight = dqs.get_highlighting()
+        assert cleaned_highlight["doc.1"]["transcription"] == [clean_html("<li>foo")]

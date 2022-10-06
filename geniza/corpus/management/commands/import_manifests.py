@@ -5,9 +5,11 @@ Importing IIIF manifests to be cached in the database.
 import urllib
 
 from django.core.management.base import BaseCommand
+from django.utils.text import slugify
 from djiffy.importer import ManifestImporter
 from djiffy.models import Manifest
 
+from geniza.corpus.iiif_utils import GenizaManifestImporter
 from geniza.corpus.models import Fragment
 
 
@@ -65,7 +67,7 @@ class Command(BaseCommand):
                 "%d IIIF urls associated with fragments to import" % len(iiif_urls)
             )
 
-        ManifestImporter(
+        GenizaManifestImporter(
             stdout=self.stdout,
             stderr=self.stderr,
             style=self.style,

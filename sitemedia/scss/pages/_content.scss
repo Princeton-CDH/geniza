@@ -118,3 +118,58 @@ main.homepage {
         }
     }
 }
+
+// RTL tweaks
+html[dir="rtl"] main.content-page {
+    ul li {
+        position: relative;
+        &::before {
+            left: auto;
+            right: -#{spacing.$spacing-lg};
+        }
+    }
+    ol {
+        counter-reset: listitem;
+        li::before {
+            content: counter(listitem);
+            counter-increment: listitem;
+            float: right;
+            padding-left: 0;
+            margin-left: 0;
+            padding-right: spacing.$spacing-2xs;
+            margin-right: -#{spacing.$spacing-lg};
+        }
+    }
+}
+
+// TODO: Wagtail content should get lang attribute by block
+
+// Hebrew variant
+html[lang="he"] main.content-page,
+html[lang="he"] main.homepage {
+    p:not([lang="en"]) b,
+    p:not([lang="en"]) i {
+        @include typography.body-he;
+    }
+}
+
+// Arabic variant
+html[lang="ar"] main.content-page,
+html[lang="ar"] main.homepage {
+    p:not([lang="en"]) b,
+    p:not([lang="en"]) i {
+        @include typography.body-ar;
+    }
+}
+html[lang="ar"] main.homepage {
+    p:not([lang="en"]) {
+        letter-spacing: -1px;
+        margin-bottom: 1rem;
+    }
+}
+
+html[lang="ar"] main.content-page {
+    p:not([lang="en"]) {
+        margin-bottom: 1.125rem;
+    }
+}

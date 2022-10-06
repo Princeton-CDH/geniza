@@ -5,59 +5,98 @@
 @use "../base/a11y";
 @use "../base/breakpoints";
 @use "../base/spacing";
+@use "../base/typography";
 
-div.controls {
-    // Controls layout: top right corner
+// Langauge switcher
+ul#language-switcher {
     display: flex;
-    position: absolute;
-    width: auto;
-    flex-direction: row;
-    align-items: flex-start;
-    right: 4rem;
-    top: 1.25rem;
+    visibility: hidden;
+    background-color: var(--background-gray);
+    border-radius: 20px;
     z-index: 8;
+    position: fixed;
+    top: 16px;
+    right: 67px;
     @include breakpoints.for-tablet-landscape-up {
-        right: spacing.$spacing-sm;
-        top: spacing.$spacing-xs;
+        visibility: visible;
+        position: relative;
+        top: auto;
+        right: 72px;
+        border-radius: calc(53px / 2);
+        // margin to make room for tablet theme toggle
+        margin-right: 30px;
     }
-
-    // Language switcher form
-    form#language {
-        option[value="he"],
-        option[value="ar"] {
-            direction: rtl;
-        }
-        // hide on mobile
-        display: none;
-        // show on desktop
+    @include breakpoints.for-desktop-up {
+        margin-right: auto;
+    }
+    li a {
+        background-color: var(--background-gray);
+        border: 3px solid var(--background-gray);
+        display: block;
+        width: 40px;
+        height: 40px;
+        border-radius: 20px;
+        text-decoration: none;
         @include breakpoints.for-tablet-landscape-up {
-            display: block;
+            width: 53px;
+            height: 53px;
+            border-width: 4px;
+            border-radius: calc(53px / 2);
+        }
+        &.selected {
+            background-color: var(--selected-language);
+            border-color: var(--filter-active);
+        }
+        &:hover {
+            border-color: var(--tabs-bottom-hover);
+            transition: border-color 150ms ease-in-out;
+        }
+        &::before {
+            display: flex;
+            color: var(--on-background);
+        }
+        &[lang="en"]::before {
+            content: "E";
+            @include typography.language-switch-en;
+            margin: 4px 0 0 12px;
+            @include breakpoints.for-tablet-landscape-up {
+                margin: 7px 0 0 17px;
+            }
+        }
+        &[lang="he"]::before {
+            content: "ע";
+            @include typography.language-switch-he;
+            margin: 2px 0 0 13px;
+            @include breakpoints.for-tablet-landscape-up {
+                margin: 2px 0 0 17px;
+            }
+        }
+        &[lang="ar"]::before {
+            content: "ع";
+            @include typography.language-switch-ar;
+            margin: 4.5px 0 0 13px;
+            @include breakpoints.for-tablet-landscape-up {
+                margin: 8px 0 0 16px;
+            }
+        }
+    }
+    li:not(:last-child) {
+        margin-right: 8px;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-right: 4px;
         }
     }
 }
 
+ul:target + ul#language-switcher {
+    visibility: visible;
+}
+
 // light/dark mode toggle
-label#theme-toggle {
+label#theme-toggle-desktop,
+label#theme-toggle-mobile {
     position: absolute;
-    z-index: 5;
-    display: block;
     cursor: pointer;
-    top: spacing.$spacing-md;
-    right: 56px;
-    width: 40px;
-    height: 40px;
-    @include breakpoints.for-tablet-landscape-up {
-        top: 45px;
-        right: auto;
-        left: calc(95vw - 70px);
-        width: 70px;
-        height: 70px;
-    }
-    @include breakpoints.for-desktop-up {
-        position: fixed;
-        z-index: 2;
-        top: 247px;
-    }
     input + span::before {
         content: "";
         background-image: url("/static/img/ui/all/all/light-dark-toggle.svg");
@@ -80,11 +119,82 @@ label#theme-toggle {
     }
 }
 
-// tweaks for RTL layout for hebrew, arabic
-html[dir="rtl"] div.controls {
-    left: 4rem;
+// desktop-only toggle
+label#theme-toggle-desktop {
+    position: fixed;
+    top: 247px;
     right: auto;
+    left: calc(96.5vw - 70px);
+    width: 70px;
+    height: 70px;
+    z-index: 2; // Hide behind ITT viewer
+
+    // only show on desktop
+    display: none;
+    @include breakpoints.for-desktop-up {
+        display: block;
+    }
+}
+// mobile and tablet toggle
+label#theme-toggle-mobile {
+    display: block;
+    top: spacing.$spacing-md;
+    right: 56px;
+    width: 40px;
+    height: 40px;
+    // tablet-only tweaks
     @include breakpoints.for-tablet-landscape-up {
-        left: spacing.$spacing-sm;
+        top: 30px;
+        width: 70px;
+        height: 70px;
+        right: auto;
+        left: calc(96.5vw - 70px);
+    }
+    // hide on desktop
+    @include breakpoints.for-desktop-up {
+        display: none;
+    }
+}
+
+// tweaks for RTL layout for hebrew, arabic
+html[dir="rtl"] {
+    ul#language-switcher {
+        left: 55px;
+        right: auto;
+        @include breakpoints.for-tablet-landscape-up {
+            left: 72px;
+        }
+        li:not(:last-child) {
+            margin-right: auto;
+            margin-left: 8px;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-right: auto;
+                margin-left: 4px;
+            }
+        }
+        li a {
+            &[lang="en"]::before {
+                margin: 4px 12px 0 0;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 7px 17px 0 0;
+                }
+            }
+            &[lang="he"]::before {
+                margin: 3px 13px 0 0;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 3px 17px 0 0;
+                }
+            }
+            &[lang="ar"]::before {
+                margin: 4.5px 13px 0 0;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin: 8px 16px 0 0;
+                }
+            }
+        }
+    }
+    label#theme-toggle-mobile {
+        right: auto;
+        left: 56px;
     }
 }

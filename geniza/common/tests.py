@@ -19,6 +19,7 @@ from geniza.common.admin import (
 )
 from geniza.common.fields import NaturalSortField, RangeField, RangeWidget
 from geniza.common.middleware import PublicLocaleMiddleware
+from geniza.common.models import UserProfile
 from geniza.common.utils import absolutize_url, custom_tag_string
 from geniza.corpus.models import Document
 
@@ -44,6 +45,7 @@ class TestLocalUserAdmin(TestCase):
 
 class TestCommonUtils(TestCase):
     @pytest.mark.django_db
+    @override_settings(ENV="test")  # behaves differently for development environment
     def test_absolutize_url(self):
         # Borrowed from https://github.com/Princeton-CDH/mep-django/blob/main/mep/common/tests.py
         https_url = "https://example.com/some/path/"
@@ -76,6 +78,13 @@ class TestCommonUtils(TestCase):
                 absolutize_url(local_path, mockrqst)
                 == "http://example.org/sub/foo/bar/"
             )
+
+    @pytest.mark.django_db
+    @override_settings(ENV="development")
+    def test_absolutize_url_dev(self):
+        local_path = "/foo/bar/"
+        # should not be https
+        assert absolutize_url(local_path) == "http://example.com/foo/bar/"
 
     def test_custom_tag_string(self):
         assert custom_tag_string("foo") == ["foo"]
@@ -160,6 +169,12 @@ class TestNaturalSortField:
         testmodel.name = "Test12.3"
         field_instance = SortModelTester._meta.get_field("name_sort")
         assert field_instance.pre_save(testmodel, None) == "test000012.000003"
+
+
+@pytest.mark.django_db
+def test_userprofile_str(admin_user):
+    profile = UserProfile.objects.create(user=admin_user)
+    assert str(profile) == "User profile for %s" % admin_user
 
 
 # migration test case adapted from

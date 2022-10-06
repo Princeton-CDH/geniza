@@ -29,6 +29,7 @@ from geniza.corpus.models import (
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
 from geniza.footnotes.admin import DocumentFootnoteInline
+from geniza.footnotes.models import Footnote
 
 
 class FragmentTextBlockInline(admin.TabularInline):
@@ -179,9 +180,13 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == "yes":
-            return queryset.filter(footnotes__content__has_key="html")
+            return queryset.filter(
+                footnotes__doc_relation__contains=Footnote.DIGITAL_EDITION
+            )
         if self.value() == "no":
-            return queryset.exclude(footnotes__content__has_key="html")
+            return queryset.exclude(
+                footnotes__doc_relation__contains=Footnote.DIGITAL_EDITION
+            )
 
 
 @admin.register(Document)
@@ -333,7 +338,6 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
                         "fragment", "fragment__collection"
                     ),
                 ),
-                "footnotes__content__isnull",
             )
             .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
             .order_by("shelfmk_all")
@@ -385,13 +389,24 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         obj.request = request
         super().save_model(request, obj, form, change)
 
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        """Customize this model's change_view to add IIIF images to context for
+        transcription viewer, then execute existing change_view"""
+        document = self.get_object(request, object_id)
+        images = document.iiif_images(with_placeholders=True)
+        extra_ctx = extra_context or {}
+        extra_ctx.update({"images": images})
+        return super().change_view(
+            request, object_id, form_url, extra_context=extra_ctx
+        )
+
     # CSV EXPORT -------------------------------------------------------------
 
     def csv_filename(self):
         """Generate filename for CSV download"""
         return f'geniza-documents-{timezone.now().strftime("%Y%m%dT%H%M%S")}.csv'
 
-    def tabulate_queryset(self, queryset):
+    def tabulate_queryset(self, queryset, sep_within_cells="; "):
         """Generator for data in tabular form, including custom fields"""
 
         script_user = settings.SCRIPT_USERNAME
@@ -445,16 +460,17 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
                 # to make the download as efficient as possible, don't use
                 # absolutize_url, reverse, or get_absolute_url methods
                 f"{url_scheme}{site_domain}/documents/{doc.id}/",  # public site url
-                ";".join(iiif_urls) if any(iiif_urls) else "",
-                ";".join(view_urls) if any(view_urls) else "",
+                # we're not omitting empty strings in the lists so that (in theory) you can match up the ones that go together across the different cells
+                sep_within_cells.join(iiif_urls) if any(iiif_urls) else "",
+                sep_within_cells.join(view_urls) if any(view_urls) else "",
                 doc.shelfmark,  # shelfmark
-                ";".join([s for s in multifrag if s]),
-                ";".join([s for s in side if s]),  # side (recto/verso)
-                ";".join([r for r in region if r]),  # text block region
+                sep_within_cells.join(s for s in multifrag if s),
+                sep_within_cells.join(s for s in side if s),  # side (recto/verso)
+                sep_within_cells.join(r for r in region if r),  # text block region
                 doc.doctype,
                 doc.all_tags(),
                 doc.description,
-                ";".join([os for os in old_shelfmarks if os]),
+                sep_within_cells.join(os for os in old_shelfmarks if os),
                 doc.all_languages(),
                 doc.all_secondary_languages(),
                 doc.language_note,
@@ -467,12 +483,12 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
                 # default sort is most recent first, so initial input is last
                 all_log_entries.last().action_time if all_log_entries else "",
                 doc.last_modified,
-                ";".join(
+                sep_within_cells.join(
                     set([user.get_full_name() or user.username for user in input_users])
                 ),  # input by
                 doc.get_status_display(),
-                ";".join(libraries) if any(libraries) else "",
-                ";".join(collections) if any(collections) else "",
+                sep_within_cells.join(libraries) if any(libraries) else "",
+                sep_within_cells.join(collections) if any(collections) else "",
             ]
 
     csv_fields = [

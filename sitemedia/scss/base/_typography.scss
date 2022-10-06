@@ -28,7 +28,21 @@ $text-size-5xl: 2rem; //     = 32px
     line-height: 1.5;
     @include breakpoints.for-tablet-landscape-up {
         font-size: $text-size-4xl;
-        line-height: 1.4285;
+        line-height: calc(40 / 28);
+    }
+}
+// H1 — page titles (Hebrew variant)
+@mixin headline-1-he {
+    line-height: calc(34 / 24);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(40 / 28);
+    }
+}
+// H1 — page titles (Arabic variant)
+@mixin headline-1-ar {
+    line-height: calc(42 / 24);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(46 / 28);
     }
 }
 
@@ -42,6 +56,20 @@ $text-size-5xl: 2rem; //     = 32px
     }
     line-height: 1.5;
 }
+// H2 — section and search result titles (Hebrew variant)
+@mixin headline-2-he {
+    line-height: calc(27 / 20);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(34 / 24);
+    }
+}
+// H2 — section and search result titles (Arabic variant)
+@mixin headline-2-ar {
+    line-height: calc(36 / 20);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(40 / 24);
+    }
+}
 
 // H3 — sub-sections only on generic content pages
 @mixin headline-3 {
@@ -52,6 +80,20 @@ $text-size-5xl: 2rem; //     = 32px
         font-size: $text-size-xl;
     }
     line-height: 1.5;
+}
+// H3 — sub-sections only on generic content pages (Hebrew variant)
+@mixin headline-3-he {
+    line-height: calc(22 / 16);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(27 / 20);
+    }
+}
+// H3 — sub-sections only on generic content pages (Arabic variant)
+@mixin headline-3-ar {
+    line-height: calc(30 / 16);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(36 / 20);
+    }
 }
 
 // H1 - error pages
@@ -64,6 +106,20 @@ $text-size-5xl: 2rem; //     = 32px
     }
     line-height: 1.5;
 }
+// H1 - error pages (Hebrew variant)
+@mixin headline-error-he {
+    line-height: calc(25 / 18);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(27 / 20);
+    }
+}
+// H1 - error pages (Arabic variant)
+@mixin headline-error-ar {
+    line-height: calc(27 / 18);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(28 / 20);
+    }
+}
 
 // body text — descriptions on search + doc detail,
 // citation on scholarship records, all body content
@@ -75,6 +131,20 @@ $text-size-5xl: 2rem; //     = 32px
         font-size: $text-size-xl;
     }
     line-height: 1.5;
+}
+// body text (Hebrew variant)
+@mixin body-he {
+    line-height: calc(25 / 18);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(27 / 20);
+    }
+}
+// body text (Arabic variant)
+@mixin body-ar {
+    line-height: calc(32 / 18);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(30 / 20);
+    }
 }
 @mixin body-bold {
     @include body;
@@ -143,6 +213,20 @@ $text-size-5xl: 2rem; //     = 32px
     }
     line-height: 1.5;
 }
+// metadata (Hebrew variant)
+@mixin meta-he {
+    line-height: calc(22 / 16);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(25 / 18);
+    }
+}
+// metadata (Arabic variant)
+@mixin meta-ar {
+    line-height: calc(30 / 16);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(30 / 18);
+    }
+}
 @mixin meta-bold {
     @include meta;
     font-family: fonts.$primary-bold;
@@ -203,15 +287,19 @@ $text-size-5xl: 2rem; //     = 32px
 // doc detail
 @mixin transcription {
     font-family: fonts.$primary;
-    font-size: $text-size-lg;
+    font-size: $text-size-xl;
     @include breakpoints.for-tablet-landscape-up {
-        font-size: $text-size-xl;
+        font-size: $text-size-2xl;
     }
-    line-height: 1.4;
 }
 // TODO: Use classes to only use this on hebrew transcriptions
+// (currently used on all transcriptions)
 @mixin hebrew {
     font-family: fonts.$hebrew;
+    line-height: calc(27 / 20);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(32 / 22);
+    }
 }
 
 // most form elements
@@ -261,6 +349,22 @@ $text-size-5xl: 2rem; //     = 32px
         font-size: $text-size-lg;
     }
 }
+// Mobile nav menu (Hebrew variant)
+@mixin mobile-menu-he {
+    font-size: $text-size-3xl;
+    line-height: calc(32 / 24);
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-lg;
+        line-height: calc(27 / 20);
+    }
+}
+// Mobile nav menu (Arabic variant)
+@mixin mobile-menu-ar {
+    line-height: calc(36 / 22);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(30 / 18);
+    }
+}
 
 // Icon buttons
 @mixin icon-button {
@@ -294,11 +398,36 @@ $text-size-5xl: 2rem; //     = 32px
     line-height: 1.5;
     @include breakpoints.for-tablet-landscape-up {
         font-size: $text-size-lg;
-        line-height: 1.388;
+        line-height: calc(25 / 18);
     }
 }
 @mixin permissions-statement-bold {
     @include permissions-statement;
     font-family: fonts.$primary-bold;
     font-weight: bold;
+}
+
+// Language switcher
+@mixin language-switch-en {
+    font-family: fonts.$primary-semibold;
+    font-weight: 600;
+    font-size: $text-size-lg;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-xl;
+    }
+}
+@mixin language-switch-he {
+    @include hebrew;
+    font-size: $text-size-xl;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: calc(26rem / 16);
+    }
+}
+@mixin language-switch-ar {
+    font-family: fonts.$primary-bold;
+    font-weight: bold;
+    font-size: 0.8rem;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-md;
+    }
 }

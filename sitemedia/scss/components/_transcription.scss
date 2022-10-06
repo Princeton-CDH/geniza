@@ -420,6 +420,16 @@
         * {
             max-width: none;
         }
+
+        &.placeholder {
+            .img-header {
+                display: none;
+            }
+            // placeholders are completely transparent in viewer
+            .deep-zoom-container {
+                opacity: 0;
+            }
+        }
         @include breakpoints.for-tablet-landscape-up {
             max-width: 640px;
             padding: 14px 0 0;
@@ -433,7 +443,7 @@
                 flex-flow: row;
                 margin-bottom: 12px;
             }
-            h3 {
+            h2 {
                 @include typography.body-bold;
                 text-align: left;
                 margin: 8px;
@@ -581,10 +591,10 @@
             text-align: center;
             .osd {
                 // height of screen, minus height of (controls + padding)
-                height: calc(100vh - 99px);
+                height: min(calc(100vh - 99px), 100%);
                 @include breakpoints.for-tablet-landscape-up {
                     // controls are vertically slimmer on desktop
-                    height: calc(100vh - 58px);
+                    height: min(calc(100vh - 68px), 100%);
                 }
                 position: absolute !important;
                 top: 0;
@@ -725,7 +735,7 @@
             max-width: none;
         }
         padding: 20px 10px 0;
-
+        // transcription label / switcher
         &.label-row {
             padding-right: 0;
             padding-top: 0;
@@ -733,10 +743,12 @@
                 padding-top: 0.1px; /* show panel background slightly as a top border */
             }
         }
-        & > h3 {
+        // "Transcription" header
+        & > h2 {
             margin: 30px 0 12px;
         }
-        h3 + span.current-transcription {
+        // transcription citation
+        h2 + span.current-transcription {
             display: block;
             @include typography.meta;
             color: var(--input-date-text);
@@ -744,17 +756,21 @@
                 min-height: calc(1rem * 1.5 * 2);
             }
         }
+
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 0 0;
-            h3 {
-                margin: 12px 0;
-            }
-            & > h3 {
+            // "Transcription" header
+            & > h2 {
                 @include typography.body-bold;
                 margin: 27px 0 0;
             }
-            h3 + span.current-transcription.multiple {
+            h2 + span.current-transcription.multiple {
                 min-height: calc(1.125rem * 1.5 * 2);
+            }
+            // Label headers within transcription
+            h3 {
+                margin-top: 12px;
+                margin-bottom: 12px;
             }
         }
 
@@ -863,7 +879,23 @@
             li img {
                 width: auto;
                 height: 4rem;
+
+                /* manchester logo is white & black, and doesn't display properly
+                in dark mode; simpler solution? chould we just set a background ? */
+                &[src="https://princetongenizalab.github.io/iiif/jrl/umanchester_logo.png"]
+                {
+                    @media (prefers-color-scheme: dark) {
+                        filter: invert(1);
+                    }
+                    .dark-mode & {
+                        filter: invert(1);
+                    }
+                    .light-mode & {
+                        filter: invert(0);
+                    }
+                }
             }
+
             li + li {
                 margin-left: spacing.$spacing-xs;
             }
@@ -888,6 +920,15 @@
         }
     }
 }
+a.editor-navigation {
+    span {
+        @include typography.link;
+    }
+    i {
+        text-decoration: none;
+    }
+    margin: -1rem 0 2rem;
+}
 
 // general transcription styles
 // appear in ITT viewer and in search results
@@ -900,30 +941,77 @@
     // direction: rtl; /* search results ae mixed rtl/ltr and include unicode order mark characters */
 
     .search-result & p {
-        white-space: pre-line;
         text-align: right;
         // disable site default max character width for reading
         max-width: none;
     }
 
+    p {
+        // match alignment of list items
+        margin-right: 1em;
+        padding-right: 1.5em;
+    }
+
+    sup {
+        font-size: 75%;
+        line-height: 0;
+        position: relative;
+        vertical-align: baseline;
+        top: -0.5em;
+    }
+
     li {
-        white-space: pre-line;
-        margin-right: 2em; /* shift to make space for line numbers */
+        margin-right: 1.5em;
+        padding-right: 1em; /* shift to make space for line numbers */
         direction: rtl;
     }
 
-    /* some transcription styles adapted from local admin site css */
-    li::before {
-        /* use pseudo marker to avoid periods for line numbers */
-        content: attr(value);
-        margin-right: -2em; /* shift outside text margin */
-        text-align: right;
-        float: right;
+    li > p {
+        // if inside a list item, don't pad <p>
+        margin-right: 0;
+        padding-right: 0;
+    }
+
+    ol,
+    section#document-list & ol {
+        list-style: decimal;
+        margin-top: 0;
+    }
+
+    /* cover the decimal in the list number to help with ltr/rtl readability */
+    ol li:not([value]) {
+        position: relative;
+    }
+
+    /* don't apply to li with value attribute in search results */
+    ol li:not([value])::before {
+        /* content is a copy of ONLY the period we want to hide
+           to avoid obscuring anything else should position be off */
+        content: ".";
         font-weight: bold;
+        text-align: left;
+        position: absolute;
+        width: 32px;
+        right: -37px;
+        /* text color should match background, rendering period invisible */
+        color: var(--background-light);
+        /* uncomment to debug positioning
+        color: yellow;  */
+
+        /* make font larger than list number font to cover completely;
+           shrink line height to adjust placement */
+        font-size: 32px;
+        line-height: 23px;
+
+        @include breakpoints.for-tablet-landscape-up {
+            line-height: 28px; /* smaller line height to adjust */
+        }
     }
 
     li::marker {
-        direction: rtl;
+        text-align: right;
+        float: right;
+        font-weight: bold;
     }
 }
 
@@ -945,6 +1033,43 @@ html.dark-mode #itt-panel {
         input[type="checkbox"][id^="zoom-toggle"] {
         &:checked + label[for^="zoom-toggle"]:after {
             background-image: url("/static/img/ui/mobile/dark/all/deep-zoom-toggle-on.svg");
+        }
+    }
+}
+
+// tweaks for RTL ITT panel for hebrew, arabic
+html[dir="rtl"] #itt-panel {
+    input[type="checkbox"].toggle + label:first-of-type {
+        margin-right: auto;
+        margin-left: 9px;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-left: 4px;
+        }
+    }
+    input[type="checkbox"].toggle + label:last-of-type {
+        margin-left: auto;
+        margin-right: 9px;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-right: 4px;
+        }
+    }
+    .panel-container div.img .img-header {
+        h2 {
+            text-align: right;
+        }
+        label {
+            text-align: left;
+        }
+        div.rotation {
+            margin: 0 1rem 0 0;
+        }
+        input[type="checkbox"][id^="zoom-toggle"] + label[for^="zoom-toggle"] {
+            padding-right: 0;
+            padding-left: 8px;
+            &::after {
+                margin-right: 8px;
+                margin-left: 0;
+            }
         }
     }
 }

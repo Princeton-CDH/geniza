@@ -4,7 +4,7 @@
     {% url "corpus:document-search" as search_url %}
     <a href="{{ search_url }}"{% if request.path == search_url %} aria-current="page"{% endif %} role="menuitem">
         {# Translators: label for link to 'Search' page in main navigation #}
-        {% translate "Search" %}
+        <span>{% translate "Search" %}</span>
     </a>
 </li>
 
@@ -39,7 +39,7 @@
                     role="menuitem"
                     {% if request.path == top_level_page_url %}aria-current="page"{% endif %}
                 >
-                    {{ top_level_page.localized.title }}
+                    <span>{{ top_level_page.localized.title }}</span>
                 </a>
             </li>
         {% endif %}

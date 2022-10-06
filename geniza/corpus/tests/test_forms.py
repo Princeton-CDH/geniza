@@ -1,4 +1,3 @@
-import re
 from unittest.mock import Mock
 
 import pytest
@@ -10,7 +9,7 @@ from geniza.corpus.forms import (
     DocumentMergeForm,
     DocumentSearchForm,
     FacetChoiceField,
-    RadioSelectWithDisabled,
+    SelectWithDisabled,
 )
 from geniza.corpus.models import Document
 
@@ -18,7 +17,7 @@ from geniza.corpus.models import Document
 class TestSelectedWithDisabled:
     # test adapted from ppa-django/mep-django
 
-    class SampleForm(forms.Form):
+    class MyTestForm(forms.Form):
         """Build a test form use the widget"""
 
         CHOICES = (
@@ -26,20 +25,15 @@ class TestSelectedWithDisabled:
             ("yes", "yes can select"),
         )
 
-        yes_no = forms.ChoiceField(choices=CHOICES, widget=RadioSelectWithDisabled)
+        yes_no = forms.ChoiceField(choices=CHOICES, widget=SelectWithDisabled)
 
     def test_create_option(self):
-        form = self.SampleForm()
+        form = self.MyTestForm()
         rendered = form.as_p()
+        print(rendered)
         # no is disabled
-        no_input = re.search(
-            r"\<[ A-Za-z0-9\=\"\_\-]+value=\"no\"[ A-Za-z0-9\=\"\_\-]+>", rendered
-        )
-        yes_input = re.search(
-            r"\<[ A-Za-z0-9\=\"\_\-]+value=\"yes\"[ A-Za-z0-9\=\"\_\-]+>", rendered
-        )
-        assert 'disabled="disabled"' in no_input.group()
-        assert 'disabled="disabled"' not in yes_input.group()
+        assert '<option value="no" disabled="disabled"' in rendered
+        assert '<option value="yes">' in rendered
 
 
 class TestFacetChoiceField:
@@ -63,6 +57,28 @@ class TestFacetChoiceField:
 
 class TestDocumentSearchForm:
     # test adapted from ppa-django
+
+    def test_init(self):
+        data = {"q": "illness"}
+        # has query, relevance enabled
+        form = DocumentSearchForm(data)
+        assert form.fields["sort"].widget.choices[0] == form.SORT_CHOICES[0]
+
+        # empty query, relevance disabled
+        data["q"] = ""
+        form = DocumentSearchForm(data)
+        assert form.fields["sort"].widget.choices[0] == (
+            "relevance",
+            {"label": "Relevance", "disabled": True},
+        )
+
+        # no query, also relevance disabled
+        del data["q"]
+        form = DocumentSearchForm(data)
+        assert form.fields["sort"].widget.choices[0] == (
+            "relevance",
+            {"label": "Relevance", "disabled": True},
+        )
 
     def test_choices_from_facets(self):
         """A facet dict should produce correct choice labels"""

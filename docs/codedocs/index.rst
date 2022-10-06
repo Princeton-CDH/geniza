@@ -9,3 +9,4 @@ Code Documentation
    footnotes
    common
    pages
+   annotations

@@ -2,10 +2,9 @@ import json
 import re
 
 from django import template
-from django.templatetags.static import static
 from django.urls import reverse
+from django.urls import translate_url as django_translate_url
 from django.utils.safestring import mark_safe
-from natsort import natsorted
 from piffle.iiif import IIIFImageClientException
 
 from geniza.common.utils import absolutize_url
@@ -87,6 +86,9 @@ def iiif_image(img, args):
     # split into method and parameters (return if not formatted properly)
     if ":" not in args:
         return ""
+    # placeholder images will be a dict with an image url as value for key "info"
+    elif isinstance(img, dict) and "info" in img:
+        return img["info"]
     mode, opts = args.split(":")
     # split parameters into args and kwargs
     args = opts.split(",")
@@ -123,16 +125,6 @@ def format_attribution(attribution):
 
 
 @register.filter
-def h1_to_h3(html):
-    """Convert h1 headers to h3 to match other transcription formats,
-    used to avoid modeltranslation inserting elements into h1 headers"""
-    try:
-        return html.replace("h1", "h3")
-    except AttributeError:
-        return html
-
-
-@register.filter
 def pgp_urlize(text):
     """Find all instances of \"PGPID #\" in the passed text, and convert
     each to a link to the referenced document."""
@@ -158,3 +150,11 @@ def shelfmark_wrap(shelfmark):
     return mark_safe(
         " + ".join(["<span>%s</span>" % m for m in shelfmark.split(" + ")])
     )
+
+
+@register.simple_tag(takes_context=True)
+def translate_url(context, lang_code):
+    """Translate current full path into requested language by code."""
+    # thanks to https://stackoverflow.com/a/51974042
+    path = context.get("request").get_full_path()
+    return django_translate_url(path, lang_code)
