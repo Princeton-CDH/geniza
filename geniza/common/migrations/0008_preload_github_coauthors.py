@@ -13,7 +13,7 @@ gh_users = {
     "rkoeser": "rlskoeser@users.noreply.github.com",
     "rrichman": "68028846+richmanrachel@users.noreply.github.com",
     "jp0630": "90917725+jessicazparker@users.noreply.github.com",
-    # "benj":  # add when we get it
+    "benj": "benjohnsto@users.noreply.github.com",
     # preloading for convenience, not bitbucket TEI contributors
     "bs9567": "ben@performantsoftware.com",
 }
