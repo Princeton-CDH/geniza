@@ -26,7 +26,8 @@ class TestCreateOrDeleteFootnote:
                     "source": {
                         "partOf": {
                             "id": reverse(
-                                "corpus:document-manifest", kwargs={"pk": document.pk}
+                                "corpus-uris:document-manifest",
+                                kwargs={"pk": document.pk},
                             )
                         }
                     }

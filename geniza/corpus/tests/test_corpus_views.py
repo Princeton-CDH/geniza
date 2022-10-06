@@ -931,7 +931,7 @@ class TestDocumentScholarshipView:
 @patch("geniza.corpus.views.IIIFPresentation")
 @patch("geniza.corpus.models.IIIFPresentation")
 class TestDocumentManifestView:
-    view_name = "corpus:document-manifest"
+    view_name = "corpus-uris:document-manifest"
 
     def test_no_images_no_transcription(
         self,
@@ -1070,7 +1070,7 @@ class TestDocumentManifestView:
         assertContains(response, "sc:AnnotationList")
         # includes url for annotation list
         assertContains(
-            response, reverse("corpus:document-annotations", args=[document.pk])
+            response, reverse("corpus-uris:document-annotations", args=[document.pk])
         )
 
     def test_get_absolute_url(

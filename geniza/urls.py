@@ -49,6 +49,7 @@ urlpatterns = [
         name="django.contrib.sitemaps.views.sitemap",
     ),
     path("cms/", include(wagtailadmin_urls)),
+    path("", include("geniza.corpus.uris", namespace="corpus-uris")),
     path("documents/", include(wagtaildocs_urls)),
     path("_500/", lambda _: 1 / 0),
 ]

@@ -43,15 +43,5 @@ urlpatterns = [
         corpus_views.DocumentTranscriptionText.as_view(),
         name="document-transcription-text",
     ),
-    path(
-        "documents/<int:pk>/iiif/manifest/",
-        corpus_views.DocumentManifestView.as_view(),
-        name="document-manifest",
-    ),
-    path(
-        "documents/<int:pk>/iiif/annotations/",
-        corpus_views.DocumentAnnotationListView.as_view(),
-        name="document-annotations",
-    ),
     path("export/pgp-metadata-old/", corpus_views.pgp_metadata_for_old_site),
 ]

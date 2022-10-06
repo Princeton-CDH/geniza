@@ -172,7 +172,9 @@ class TestAnnotationSearch:
 
     def test_search_uri(self, client, document, annotation):
         # content__target__source__id=target_uri)
-        manifest_uri = reverse("corpus:document-manifest", kwargs={"pk": document.pk})
+        manifest_uri = reverse(
+            "corpus-uris:document-manifest", kwargs={"pk": document.pk}
+        )
         target_uri = "http://example.com/target/1"
         anno1 = Annotation.objects.create(
             content={
@@ -209,7 +211,9 @@ class TestAnnotationSearch:
         self, client, annotation, document, source, twoauthor_source
     ):
         # content__contains={"dc:source": source_uri}
-        manifest_uri = reverse("corpus:document-manifest", kwargs={"pk": document.pk})
+        manifest_uri = reverse(
+            "corpus-uris:document-manifest", kwargs={"pk": document.pk}
+        )
         source_uri = source.uri
         anno1 = Annotation.objects.create(
             content={**annotation.content, "dc:source": source_uri}
