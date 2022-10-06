@@ -1067,13 +1067,13 @@ class TestDocument:
     def test_manifest_uri(self, document):
         assert document.manifest_uri.startswith(settings.ANNOTATION_MANIFEST_BASE_URL)
         assert document.manifest_uri.endswith(
-            reverse("corpus:document-manifest", args=[document.pk])
+            reverse("corpus-uris:document-manifest", args=[document.pk])
         )
 
     def test_id_from_manifest_uri(self, document):
         # should resolve correct manifest URI to Document id
         resolved_doc_id = Document.id_from_manifest_uri(
-            reverse("corpus:document-manifest", kwargs={"pk": document.pk})
+            reverse("corpus-uris:document-manifest", kwargs={"pk": document.pk})
         )
         assert isinstance(resolved_doc_id, int)
         assert resolved_doc_id == document.pk
@@ -1085,7 +1085,7 @@ class TestDocument:
     def test_from_manifest_uri(self, document):
         # should resolve correct manifest URI to Document object
         resolved_doc = Document.from_manifest_uri(
-            reverse("corpus:document-manifest", kwargs={"pk": document.pk})
+            reverse("corpus-uris:document-manifest", kwargs={"pk": document.pk})
         )
         assert isinstance(resolved_doc, Document)
         assert resolved_doc.pk == document.pk

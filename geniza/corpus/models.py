@@ -573,7 +573,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         # will raise Resolver404 if url does not resolve
         resolve_match = resolve(urlparse(uri).path)
         # it could be a valid django url resolve but not be a manifest uri;
-        if resolve_match.view_name != "corpus:document-manifest":
+        if resolve_match.view_name != "corpus-uris:document-manifest":
             # is there a more appropriate exception to raise?
             raise Resolver404("Not a document manifest URL")
         return resolve_match.kwargs["pk"]
@@ -1036,7 +1036,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         # manifest uri for the current document
         return "%s%s" % (
             settings.ANNOTATION_MANIFEST_BASE_URL,
-            reverse("corpus:document-manifest", args=[self.pk]),
+            reverse("corpus-uris:document-manifest", args=[self.pk]),
         )
 
     def merge_with(self, merge_docs, rationale, user=None):

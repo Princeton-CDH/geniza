@@ -107,7 +107,7 @@
                 </div>
                 <div class="transcription-panel">
                     {% if edit_mode %}
-                        <div class="annotate transcription" data-manifest="{% url 'corpus:document-manifest' document.pk %}">
+                        <div class="annotate transcription" data-manifest="{% url 'corpus-uris:document-manifest' document.pk %}">
                             {% if forloop.first %}
                                 {# Note: editor label/instructions are content admin-only and thus not translated. #}
                                 <h2>Transcribe</h2>
