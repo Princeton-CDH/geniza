@@ -49,6 +49,7 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
         path_parts = request.path_info.split("/")
 
         # special case for iiif URIs, which are structured differently but must also be exempt
+        # example URI request.path_info: /documents/1234/iiif/manifest/
         is_iiif_uri = (path_parts[3] == "iiif") if len(path_parts) > 3 else False
 
         base_request_path = path_parts[1]
