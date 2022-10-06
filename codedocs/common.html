@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Common functionality &#8212; Princeton Geniza Project 4.8.1 documentation</title>
+    <title>Common functionality &#8212; Princeton Geniza Project 4.9.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -14,6 +14,7 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Wagtail pages" href="pages.html" />
@@ -63,6 +64,21 @@ only works on the current instance of an object.</p>
 <span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#TrackChangesModel.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.TrackChangesModel.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves data and reset copy of initial data.</p>
 </dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.common.models.UserProfile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.models.</span></span><span class="sig-name descname"><span class="pre">UserProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">github_coauthor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">creator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/models.html#UserProfile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.models.UserProfile" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py exception">
+<dt class="sig sig-object py" id="geniza.common.models.UserProfile.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#geniza.common.models.UserProfile.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.common.models.UserProfile.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.common.models.UserProfile.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -218,6 +234,24 @@ subwidgets.</p>
 <section id="module-geniza.common.middleware">
 <span id="middleware"></span><h2>middleware<a class="headerlink" href="#module-geniza.common.middleware" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
+<dt class="sig sig-object py" id="geniza.common.middleware.LocaleMiddleware">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.middleware.</span></span><span class="sig-name descname"><span class="pre">LocaleMiddleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">get_response</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/middleware.html#LocaleMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.middleware.LocaleMiddleware" title="Permalink to this definition">¶</a></dt>
+<dd><p>“Customize django’s default locale middleware to exempt some urls from redirects</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.common.middleware.LocaleMiddleware.process_response">
+<span class="sig-name descname"><span class="pre">process_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/middleware.html#LocaleMiddleware.process_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.middleware.LocaleMiddleware.process_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>exempt untranslated paths from locale redirects</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geniza.common.middleware.LocaleMiddleware.redirect_exempt_paths">
+<span class="sig-name descname"><span class="pre">redirect_exempt_paths</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['admin',</span> <span class="pre">'annotations',</span> <span class="pre">'accounts']</span></em><a class="headerlink" href="#geniza.common.middleware.LocaleMiddleware.redirect_exempt_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>base paths for urls to exempt from locale redirects</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="geniza.common.middleware.PublicLocaleMiddleware">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.common.middleware.</span></span><span class="sig-name descname"><span class="pre">PublicLocaleMiddleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">get_response</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/common/middleware.html#PublicLocaleMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.common.middleware.PublicLocaleMiddleware" title="Permalink to this definition">¶</a></dt>
 <dd><p>Middleware to redirect anonymous users attempting to access locales that are not in
@@ -278,9 +312,54 @@ the list of public site languages.</p>
     <h3><a href="../index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Common functionality</a><ul>
-<li><a class="reference internal" href="#module-geniza.common.models">models</a></li>
-<li><a class="reference internal" href="#module-geniza.common.fields">fields</a></li>
-<li><a class="reference internal" href="#module-geniza.common.middleware">middleware</a></li>
+<li><a class="reference internal" href="#module-geniza.common.models">models</a><ul>
+<li><a class="reference internal" href="#geniza.common.models.TrackChangesModel"><code class="docutils literal notranslate"><span class="pre">TrackChangesModel</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.common.models.TrackChangesModel.has_changed"><code class="docutils literal notranslate"><span class="pre">TrackChangesModel.has_changed()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.common.models.TrackChangesModel.initial_value"><code class="docutils literal notranslate"><span class="pre">TrackChangesModel.initial_value()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.common.models.TrackChangesModel.save"><code class="docutils literal notranslate"><span class="pre">TrackChangesModel.save()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.common.models.UserProfile"><code class="docutils literal notranslate"><span class="pre">UserProfile</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.common.models.UserProfile.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">UserProfile.DoesNotExist</span></code></a></li>
+<li><a class="reference internal" href="#geniza.common.models.UserProfile.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">UserProfile.MultipleObjectsReturned</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-geniza.common.fields">fields</a><ul>
+<li><a class="reference internal" href="#geniza.common.fields.NaturalSortField"><code class="docutils literal notranslate"><span class="pre">NaturalSortField</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.common.fields.NaturalSortField.deconstruct"><code class="docutils literal notranslate"><span class="pre">NaturalSortField.deconstruct()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.common.fields.NaturalSortField.format_val"><code class="docutils literal notranslate"><span class="pre">NaturalSortField.format_val()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.common.fields.NaturalSortField.pre_save"><code class="docutils literal notranslate"><span class="pre">NaturalSortField.pre_save()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.common.fields.RangeField"><code class="docutils literal notranslate"><span class="pre">RangeField</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.common.fields.RangeField.compress"><code class="docutils literal notranslate"><span class="pre">RangeField.compress()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.common.fields.RangeField.set_min_max"><code class="docutils literal notranslate"><span class="pre">RangeField.set_min_max()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.common.fields.RangeField.widget"><code class="docutils literal notranslate"><span class="pre">RangeField.widget</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.common.fields.RangeForm"><code class="docutils literal notranslate"><span class="pre">RangeForm</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.common.fields.RangeForm.media"><code class="docutils literal notranslate"><span class="pre">RangeForm.media</span></code></a></li>
+<li><a class="reference internal" href="#geniza.common.fields.RangeForm.set_range_minmax"><code class="docutils literal notranslate"><span class="pre">RangeForm.set_range_minmax()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.common.fields.RangeWidget"><code class="docutils literal notranslate"><span class="pre">RangeWidget</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.common.fields.RangeWidget.decompress"><code class="docutils literal notranslate"><span class="pre">RangeWidget.decompress()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.common.fields.RangeWidget.media"><code class="docutils literal notranslate"><span class="pre">RangeWidget.media</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-geniza.common.middleware">middleware</a><ul>
+<li><a class="reference internal" href="#geniza.common.middleware.LocaleMiddleware"><code class="docutils literal notranslate"><span class="pre">LocaleMiddleware</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.common.middleware.LocaleMiddleware.process_response"><code class="docutils literal notranslate"><span class="pre">LocaleMiddleware.process_response()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.common.middleware.LocaleMiddleware.redirect_exempt_paths"><code class="docutils literal notranslate"><span class="pre">LocaleMiddleware.redirect_exempt_paths</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.common.middleware.PublicLocaleMiddleware"><code class="docutils literal notranslate"><span class="pre">PublicLocaleMiddleware</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -310,7 +389,7 @@ the list of public site languages.</p>
       &copy;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.2.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

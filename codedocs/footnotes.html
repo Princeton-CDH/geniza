@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Scholarship Records &#8212; Princeton Geniza Project 4.8.1 documentation</title>
+    <title>Scholarship Records &#8212; Princeton Geniza Project 4.9.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -14,6 +14,7 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Common functionality" href="common.html" />
@@ -140,9 +141,22 @@ of the field will call this method.</p>
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.footnotes.models.Footnote.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.footnotes.models.Footnote.content_html">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">content_html</span></span><a class="headerlink" href="#geniza.footnotes.models.Footnote.content_html" title="Permalink to this definition">¶</a></dt>
+<dd><p>content as html, if available; returns a dictionary of lists.
+keys are canvas ids, list is html content.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.footnotes.models.Footnote.content_html_str">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">content_html_str</span></span><a class="headerlink" href="#geniza.footnotes.models.Footnote.content_html_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>content as a single string of html, if available</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="geniza.footnotes.models.Footnote.content_text">
-<span class="sig-name descname"><span class="pre">content_text</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#Footnote.content_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.Footnote.content_text" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">content_text</span></span><a class="headerlink" href="#geniza.footnotes.models.Footnote.content_text" title="Permalink to this definition">¶</a></dt>
 <dd><p>content as plain text, if available</p>
 </dd></dl>
 
@@ -154,9 +168,9 @@ and metdata export for old pgp site</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="geniza.footnotes.models.Footnote.has_transcription">
-<span class="sig-name descname"><span class="pre">has_transcription</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#Footnote.has_transcription"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.Footnote.has_transcription" title="Permalink to this definition">¶</a></dt>
-<dd><p>Admin display field indicating presence of digitized transcription.</p>
+<dt class="sig sig-object py" id="geniza.footnotes.models.Footnote.explicit_line_numbers">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">explicit_line_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">html</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#Footnote.explicit_line_numbers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.Footnote.explicit_line_numbers" title="Permalink to this definition">¶</a></dt>
+<dd><p>add explicit line numbers to passed HTML (in value attributes of ol &gt; li)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -185,12 +199,10 @@ as a IIIF annotation resource that can be associated with a canvas.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.footnotes.models.FootnoteQuerySet.includes_footnote">
-<span class="sig-name descname"><span class="pre">includes_footnote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_content</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#FootnoteQuerySet.includes_footnote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.FootnoteQuerySet.includes_footnote" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">includes_footnote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#FootnoteQuerySet.includes_footnote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.FootnoteQuerySet.includes_footnote" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the current queryset includes a match for the
 specified footnotes. Matches are made by comparing content source,
-location, document relation type, notes, and content (ignores
-associated content object). To ignore content when comparing
-footnotes, specify <cite>include_content=False</cite>.
+location, document relation type, and notes.
 Returns the matching object if there was one, or False if not.</p>
 </dd></dl>
 
@@ -238,6 +250,13 @@ specify <cite>extra_fields=False</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="geniza.footnotes.models.Source.from_uri">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_uri</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uri</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#Source.from_uri"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.Source.from_uri" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a URI for a Source (as used in transcription annotations), return the Source
+object matching the pk</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="geniza.footnotes.models.Source.get_deferred_fields">
 <span class="sig-name descname"><span class="pre">get_deferred_fields</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#geniza.footnotes.models.Source.get_deferred_fields" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a set containing names of deferred fields for this instance.</p>
@@ -248,6 +267,13 @@ specify <cite>extra_fields=False</cite>.</p>
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_volume_from_shelfmark</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shelfmark</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#Source.get_volume_from_shelfmark"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.Source.get_volume_from_shelfmark" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a shelfmark, get our volume label. This logic was determined in
 migration 0011_split_goitein_typedtexts.py</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.footnotes.models.Source.id_from_uri">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id_from_uri</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uri</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#Source.id_from_uri"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.Source.id_from_uri" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a URi for a source (as used in transcription annotations), return
+the source id</p>
 </dd></dl>
 
 <dl class="py method">
@@ -262,6 +288,13 @@ should be an iterable of field attnames. If fields is None, then
 all non-deferred fields are reloaded.</p>
 <p>When accessing deferred fields of an instance, the deferred loading
 of the field will call this method.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.footnotes.models.Source.uri">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uri</span></span><a class="headerlink" href="#geniza.footnotes.models.Source.uri" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a URI for this source to be used in transcription annotations,
+in order to filter them by associated source</p>
 </dd></dl>
 
 </dd></dl>
@@ -352,7 +385,70 @@ of the field will call this method.</p>
     <h3><a href="../index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Scholarship Records</a><ul>
-<li><a class="reference internal" href="#module-geniza.footnotes.models">models</a></li>
+<li><a class="reference internal" href="#module-geniza.footnotes.models">models</a><ul>
+<li><a class="reference internal" href="#geniza.footnotes.models.Authorship"><code class="docutils literal notranslate"><span class="pre">Authorship</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.footnotes.models.Authorship.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">Authorship.DoesNotExist</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Authorship.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">Authorship.MultipleObjectsReturned</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Creator"><code class="docutils literal notranslate"><span class="pre">Creator</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.footnotes.models.Creator.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">Creator.DoesNotExist</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Creator.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">Creator.MultipleObjectsReturned</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Creator.clean_fields"><code class="docutils literal notranslate"><span class="pre">Creator.clean_fields()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Creator.firstname_lastname"><code class="docutils literal notranslate"><span class="pre">Creator.firstname_lastname()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Creator.get_deferred_fields"><code class="docutils literal notranslate"><span class="pre">Creator.get_deferred_fields()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Creator.natural_key"><code class="docutils literal notranslate"><span class="pre">Creator.natural_key()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Creator.refresh_from_db"><code class="docutils literal notranslate"><span class="pre">Creator.refresh_from_db()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.footnotes.models.CreatorManager"><code class="docutils literal notranslate"><span class="pre">CreatorManager</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.footnotes.models.CreatorManager.get_by_natural_key"><code class="docutils literal notranslate"><span class="pre">CreatorManager.get_by_natural_key()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Footnote"><code class="docutils literal notranslate"><span class="pre">Footnote</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.footnotes.models.Footnote.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">Footnote.DoesNotExist</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Footnote.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">Footnote.MultipleObjectsReturned</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Footnote.content_html"><code class="docutils literal notranslate"><span class="pre">Footnote.content_html</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Footnote.content_html_str"><code class="docutils literal notranslate"><span class="pre">Footnote.content_html_str</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Footnote.content_text"><code class="docutils literal notranslate"><span class="pre">Footnote.content_text</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Footnote.display"><code class="docutils literal notranslate"><span class="pre">Footnote.display()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Footnote.explicit_line_numbers"><code class="docutils literal notranslate"><span class="pre">Footnote.explicit_line_numbers()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Footnote.has_url"><code class="docutils literal notranslate"><span class="pre">Footnote.has_url()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Footnote.iiif_annotation_content"><code class="docutils literal notranslate"><span class="pre">Footnote.iiif_annotation_content()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.footnotes.models.FootnoteQuerySet"><code class="docutils literal notranslate"><span class="pre">FootnoteQuerySet</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.footnotes.models.FootnoteQuerySet.editions"><code class="docutils literal notranslate"><span class="pre">FootnoteQuerySet.editions()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.FootnoteQuerySet.includes_footnote"><code class="docutils literal notranslate"><span class="pre">FootnoteQuerySet.includes_footnote()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source"><code class="docutils literal notranslate"><span class="pre">Source</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">Source.DoesNotExist</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">Source.MultipleObjectsReturned</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source.all_authors"><code class="docutils literal notranslate"><span class="pre">Source.all_authors()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source.clean_fields"><code class="docutils literal notranslate"><span class="pre">Source.clean_fields()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source.display"><code class="docutils literal notranslate"><span class="pre">Source.display()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source.formatted_display"><code class="docutils literal notranslate"><span class="pre">Source.formatted_display()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source.from_uri"><code class="docutils literal notranslate"><span class="pre">Source.from_uri()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source.get_deferred_fields"><code class="docutils literal notranslate"><span class="pre">Source.get_deferred_fields()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source.get_volume_from_shelfmark"><code class="docutils literal notranslate"><span class="pre">Source.get_volume_from_shelfmark()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source.id_from_uri"><code class="docutils literal notranslate"><span class="pre">Source.id_from_uri()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source.refresh_from_db"><code class="docutils literal notranslate"><span class="pre">Source.refresh_from_db()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.Source.uri"><code class="docutils literal notranslate"><span class="pre">Source.uri</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.footnotes.models.SourceLanguage"><code class="docutils literal notranslate"><span class="pre">SourceLanguage</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.footnotes.models.SourceLanguage.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">SourceLanguage.DoesNotExist</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.SourceLanguage.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">SourceLanguage.MultipleObjectsReturned</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.footnotes.models.SourceType"><code class="docutils literal notranslate"><span class="pre">SourceType</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.footnotes.models.SourceType.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">SourceType.DoesNotExist</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.SourceType.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">SourceType.MultipleObjectsReturned</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -382,7 +478,7 @@ of the field will call this method.</p>
       &copy;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.2.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
