@@ -164,15 +164,19 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
 
         # skip if already generated in a previous run
         # path is based on manifest identifier, in output dir, with json extension
-        expected_path = os.path.join(
-            manifest_dir, "%s/%s.json" % (slugify(group), slugify(part.shelfmark))
-        )
+        manifest_id = slugify(part.shelfmark)
+        expected_path = os.path.join(manifest_dir, "%s/%s.json" % (group, manifest_id))
         if os.path.exists(expected_path):
             # update the count, to track progress/estimate
             continue
 
+        # update factory for the current set of records
+        fac.set_base_prezi_uri("%s/%s/" % (base_url, group))
+        # Where the resources live on disk
+        fac.set_base_prezi_dir(os.path.join(manifest_dir, group))
+
         manifest = fac.manifest(
-            ident="%s/%s" % (group, slugify(part.shelfmark)),
+            ident=manifest_id,
             label=str(part.shelfmark),
         )
         manifest.viewingHint = "individuals"
@@ -255,7 +259,8 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
             if not download_only:
                 # add image to canvas
                 # prezi prefixes ident with canvas/ for us, so don't duplicate
-                canvas = seq.canvas(ident="%s" % (i + 1), label=label)
+                # BUT: must include manifest id to ensure unique
+                canvas = seq.canvas(ident="%s/%s" % (manifest_id, (i + 1)), label=label)
                 # Create an annotation on the Canvas
                 # warns if identifier is not set, so let's set one
                 anno = canvas.annotation(ident="%s/anno1" % canvas.id)
