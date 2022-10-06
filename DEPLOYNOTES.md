@@ -6,6 +6,10 @@
 -   Load IIIF manifests for JRL Manchester content: download the csv at
     https://princetongenizalab.github.io/iiif/jrl/pgp-jrl-manifests.csv
     and run `python manage.py add_fragment_urls pgp-jrl-manifests.csv`
+-   Load IIIF manifests for Bodleian content: download the csv at
+    https://princetongenizalab.github.io/iiif/bodleian/pgp-bodleian-manifests.csv
+    and run `python manage.py add_fragment_urls pgp-bodleian-manifests.csv --overwrite`
+
 -   Migrate transcription content from TEI xml to the new IIIF annotation
     format: `python manage.py tei_to_annotation -v 0`
 
