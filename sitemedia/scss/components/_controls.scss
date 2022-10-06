@@ -163,6 +163,11 @@ html[dir="rtl"] {
         right: auto;
         @include breakpoints.for-tablet-landscape-up {
             left: 72px;
+            margin-right: auto;
+            margin-left: 30px;
+        }
+        @include breakpoints.for-desktop-up {
+            margin-left: auto;
         }
         li:not(:last-child) {
             margin-right: auto;
@@ -196,5 +201,9 @@ html[dir="rtl"] {
     label#theme-toggle-mobile {
         right: auto;
         left: 56px;
+        @include breakpoints.for-tablet-landscape-up {
+            right: auto;
+            left: 16px;
+        }
     }
 }
