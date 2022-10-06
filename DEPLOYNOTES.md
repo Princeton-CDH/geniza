@@ -5,10 +5,10 @@
 -   Must configure **ANNOTATION_BACKUP_PATH** and **ANNOTATION_BACKUP_GITREPO** in local settings. For proper setup, the directory at **ANNOTATION_BACKUP_PATH** should not exist when first run, but the containing directory should.
 -   Load IIIF manifests for JRL Manchester content: download the csv at
     https://princetongenizalab.github.io/iiif/jrl/pgp-jrl-manifests.csv
-    and run `python manage.py add_fragment_urls pgp-jrl-manifests.csv`
+    and run `python manage.py add_fragment_urls pgp-jrl-manifests.csv --overwrite --skip-indexing`
 -   Load IIIF manifests for Bodleian content: download the csv at
     https://princetongenizalab.github.io/iiif/bodleian/pgp-bodleian-manifests.csv
-    and run `python manage.py add_fragment_urls pgp-bodleian-manifests.csv --overwrite`
+    and run `python manage.py add_fragment_urls pgp-bodleian-manifests.csv --overwrite --skip-indexing`
 
 -   Migrate transcription content from TEI xml to the new IIIF annotation
     format: `python manage.py tei_to_annotation -v 0`
