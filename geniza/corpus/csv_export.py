@@ -70,19 +70,21 @@ def get_export_data_for_doc(doc):
         ""
     }  # exclude empty string for any with no collection
 
+    joiner = "; "
+
     outd = {}
     outd["pgpid"] = doc.id
     outd["url"] = f"{url_scheme}{site_domain}/documents/{doc.id}/"  # public site url
-    outd["iiif_urls"] = ";".join(iiif_urls) if any(iiif_urls) else ""
-    outd["fragment_urls"] = ";".join(view_urls) if any(view_urls) else ""
+    outd["iiif_urls"] = joiner.join(iiif_urls) if any(iiif_urls) else ""
+    outd["fragment_urls"] = joiner.join(view_urls) if any(view_urls) else ""
     outd["shelfmark"] = doc.shelfmark
-    outd["multifragment"] = ";".join([s for s in multifrag if s])
-    outd["side"] = ";".join([s for s in side if s])  # side (recto/verso)
-    outd["region"] = ";".join([r for r in region if r])  # text block region
+    outd["multifragment"] = joiner.join([s for s in multifrag if s])
+    outd["side"] = joiner.join([s for s in side if s])  # side (recto/verso)
+    outd["region"] = joiner.join([r for r in region if r])  # text block region
     outd["type"] = doc.doctype
     outd["tags"] = doc.all_tags()
     outd["description"] = doc.description
-    outd["shelfmarks_historic"] = ";".join([os for os in old_shelfmarks if os])
+    outd["shelfmarks_historic"] = joiner.join([os for os in old_shelfmarks if os])
     outd["languages_primary"] = doc.all_languages()
     outd["languages_secondary"] = doc.all_secondary_languages()
     outd["language_note"] = doc.language_note
@@ -98,19 +100,16 @@ def get_export_data_for_doc(doc):
         all_log_entries.last().action_time if all_log_entries else ""
     )
     outd["last_modified"] = doc.last_modified
-    outd["input_by"] = ";".join(
+    outd["input_by"] = joiner.join(
         sorted(
             list(set([user.get_full_name() or user.username for user in input_users]))
         )
     )  # sorting to ensure deterministic order
     outd["status"] = doc.get_status_display()
-    outd["library"] = ";".join(libraries) if any(libraries) else ""
-    outd["collection"] = ";".join(collections) if any(collections) else ""
+    outd["library"] = joiner.join(libraries) if any(libraries) else ""
+    outd["collection"] = joiner.join(collections) if any(collections) else ""
 
     return outd
-
-
-from tqdm import tqdm
 
 
 def export_docs(
@@ -144,15 +143,19 @@ def export_docs(
         "library",
         "collection",
     ],
+    progress=True,
 ):
 
     # get docs
     docs = get_docs_to_export()
 
+    # progress bar?
+    iterr = docs if not progress else track(docs, description=f"Saving CSV file")
+
     # save
     with open(fn, "w") as of:
         writer = csv.DictWriter(of, fieldnames=csv_fields, extrasaction="ignore")
         writer.writeheader()
-        for doc in track(docs, description=f"Saving data to {fn}"):
+        for doc in iterr:
             docd = get_export_data_for_doc(doc)
             writer.writerow(docd)
