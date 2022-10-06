@@ -25,6 +25,7 @@ from django.utils import timezone
 from eulxml import xmlmap
 from git import Repo
 from parasolr.django.signals import IndexableSignalHandler
+from rich.progress import MofNCompleteColumn, Progress
 
 from geniza.annotations.models import Annotation
 from geniza.annotations.signals import disconnect_signal_handlers
@@ -74,8 +75,10 @@ class Command(sync_transcriptions.Command):
 
         self.stats = defaultdict(int)
 
-        xmlfiles = options["files"] or glob.iglob(os.path.join(gitrepo_path, "*.xml"))
+        xmlfiles = options["files"] or glob.glob(os.path.join(gitrepo_path, "*.xml"))
         script_run_start = timezone.now()
+
+        self.stdout.write("Migrating %d TEI files" % len(xmlfiles))
 
         # when running on all files (i.e., specific files not specified),
         # clear all annotations from the database before running the migration
@@ -98,9 +101,20 @@ class Command(sync_transcriptions.Command):
         )
         self.anno_exporter.setup_repo()
 
+        # use rich progressbar without context manager
+        progress = Progress(
+            MofNCompleteColumn(), *Progress.get_default_columns(), expand=True
+        )
+        progress.start()
+        task = progress.add_task("Migrating...", total=len(xmlfiles))
+
         # iterate through tei files to be migrated
         for xmlfile in xmlfiles:
             self.stats["xml"] += 1
+            # update progress at the beginning instead of end,
+            # since some records are skipped
+            progress.update(task, advance=1, update=True)
+
             if self.verbosity >= self.v_normal:
                 self.stdout.write(xmlfile)
 
@@ -270,6 +284,9 @@ class Command(sync_transcriptions.Command):
 
             # export migrated transcription to backup
             self.export_transcription(doc, xmlfile_basename)
+
+        progress.refresh()
+        progress.stop()
 
         print(
             "Processed %(xml)d TEI file(s). \nCreated %(created)d annotation(s)."
