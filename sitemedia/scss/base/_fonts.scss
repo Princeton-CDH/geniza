@@ -91,9 +91,10 @@
     @font-face {
         font-family: "FrankRuhl 1924 MF Medium";
         font-style: normal;
-        src: url("#{$base_url}/FrankRuhl1924MFMediumMedium.woff2")
+        src: url("#{$base_url}/FrankRuhl1924MF-Medium-Medium.woff2")
                 format("woff2"),
-            url("#{$base_url}/FrankRuhl1924MFMediumMedium.woff") format("woff");
+            url("#{$base_url}/FrankRuhl1924MF-Medium-Medium.woff")
+                format("woff");
         font-display: swap;
     }
 

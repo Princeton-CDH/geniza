@@ -39,7 +39,7 @@
 
         {% block extrameta %}{% endblock extrameta %}
         <!-- styles -->
-        {% if SHOW_TEST_WARNING %}
+        {% if "SHOW_WARNING_BANNER" in FEATURE_FLAGS %}
             <link rel="stylesheet" type="text/css" href="{% static 'css/test-banner.css' %}"/>
         {% endif %}
         <!-- resource preloading -->
@@ -62,8 +62,8 @@
             <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}GretaSansH-Regular.woff2" crossorigin />
         {% endif %}
         {% if page_includes_transcriptions %} {# only preload transcription font when needed #}
-            <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}FrankRuhl1924MFMediumMedium.woff2" crossorigin />
-            <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}FrankRuhl1924MFMediumMedium.woff" crossorigin />
+            <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}FrankRuhl1924MF-Medium-Medium.woff2" crossorigin />
+            <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}FrankRuhl1924MF-Medium-Medium.woff" crossorigin />
             <link rel="preload" as="font" type="font/woff2" href="{{ FONT_URL_PREFIX }}Amiri-Regular.woff2" crossorigin />
             <link rel="preload" as="font" type="font/woff" href="{{ FONT_URL_PREFIX }}Amiri-Regular.woff" crossorigin />
         {% endif %}
@@ -83,7 +83,7 @@
     </head>
     <body>
         {% wagtailuserbar 'bottom-right' %}
-        {% if SHOW_TEST_WARNING %}
+        {% if "SHOW_WARNING_BANNER" in FEATURE_FLAGS %}
             {% include 'snippets/test_banner.html' %}
         {% endif %}
         {% block body %}

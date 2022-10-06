@@ -6,9 +6,12 @@
     top: 0;
     z-index: 11;
     background: transparent;
-    font-size: 14px;
+    font-size: 0.875rem;
     opacity: 0.95;
     transition: opacity 0.2s;
+}
+.ribbon-box * {
+    max-width: none;
 }
 .ribbon-box.fade {
     opacity: 0.3;
@@ -19,7 +22,14 @@
 }
 .ribbon-box .heading {
     font-size: 1rem;
-    font-family: "Lyon Text Web", Georgia, serif;
+    font-family: "Greta Sans Regular", Arial, sans-serif;
+}
+.ribbon-box strong {
+    font-weight: bold;
+    font-family: "Greta Sans Regular Bold", Arial, sans-serif;
+}
+.ribbon-box p {
+    padding: 5px 80px;
 }
 .ribbon-box button {
     border: #f8f8f8;
