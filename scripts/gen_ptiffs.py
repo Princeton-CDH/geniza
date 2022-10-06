@@ -17,14 +17,14 @@ import glob
 import os.path
 from os import system
 
-from rich.progress import Progress
+from rich.progress import MofNCompleteColumn, Progress
 
 
 def generate_ptiffs(dest_dir, source_dir=None, source_files=None):
 
     # if a directory is specified, run on all jpegs
     if source_dir is not None:
-        source_files = glob.glob(os.path.join(source_dir, "*.jpg"))
+        source_files = glob.glob(os.path.join(source_dir, "**.jpg"), recursive=True)
 
     # make sure dest dir exists
     if not os.path.isdir(dest_dir):
@@ -32,7 +32,9 @@ def generate_ptiffs(dest_dir, source_dir=None, source_files=None):
         os.mkdir(dest_dir)
 
     # otherwise, run on list of source files passed in
-    with Progress(expand=True) as progress:
+    with Progress(
+        MofNCompleteColumn(), *Progress.get_default_columns(), expand=True
+    ) as progress:
         task = progress.add_task("Converting...", total=len(source_files))
 
         for source in source_files:
@@ -42,7 +44,7 @@ def generate_ptiffs(dest_dir, source_dir=None, source_files=None):
             dest_file = os.path.join(dest_dir, "%s.tif" % basename)
             # this is slow, so only generate if needed
             if not os.path.exists(dest_file):
-                # TODO: how to escape parens in filenames? can we use quotes?
+                # NOTE: using quotes to escape parens in some filenames
                 cmd = (
                     "env VIPS_WARNING=0 vips tiffsave '%s' '%s' --tile --pyramid --compression jpeg --tile-width 256 --tile-height 256"
                     % (source, dest_file)
