@@ -460,12 +460,9 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
                 # to make the download as efficient as possible, don't use
                 # absolutize_url, reverse, or get_absolute_url methods
                 f"{url_scheme}{site_domain}/documents/{doc.id}/",  # public site url
-                sep_within_cells.join(iiif_urls)
-                if any(iiif_urls)
-                else "",  # we're not omitting empty strings in the lists so that (in theory) you can match up the ones that go together across the different cells
-                sep_within_cells.join(view_urls)
-                if any(view_urls)
-                else "",  # same as in prev line
+                # we're not omitting empty strings in the lists so that (in theory) you can match up the ones that go together across the different cells
+                sep_within_cells.join(iiif_urls) if any(iiif_urls) else "",
+                sep_within_cells.join(view_urls) if any(view_urls) else "",
                 doc.shelfmark,  # shelfmark
                 sep_within_cells.join(s for s in multifrag if s),
                 sep_within_cells.join(s for s in side if s),  # side (recto/verso)
