@@ -1,3 +1,5 @@
+SEP_WITHIN_CELLS = "; "
+
 import csv
 
 from django.conf import settings
@@ -28,7 +30,7 @@ def get_docs_to_export():
     )
 
 
-def get_export_data_for_doc(doc):
+def get_export_data_for_doc(doc, sep_within_cells=SEP_WITHIN_CELLS):
     script_user = settings.SCRIPT_USERNAME
     site_domain = Site.objects.get_current().domain.rstrip("/")
     url_scheme = "https://"
@@ -70,21 +72,23 @@ def get_export_data_for_doc(doc):
         ""
     }  # exclude empty string for any with no collection
 
-    joiner = "; "
-
     outd = {}
     outd["pgpid"] = doc.id
     outd["url"] = f"{url_scheme}{site_domain}/documents/{doc.id}/"  # public site url
-    outd["iiif_urls"] = joiner.join(iiif_urls) if any(iiif_urls) else ""
-    outd["fragment_urls"] = joiner.join(view_urls) if any(view_urls) else ""
+    outd["iiif_urls"] = sep_within_cells.join(iiif_urls) if any(iiif_urls) else ""
+    outd["fragment_urls"] = sep_within_cells.join(view_urls) if any(view_urls) else ""
     outd["shelfmark"] = doc.shelfmark
-    outd["multifragment"] = joiner.join([s for s in multifrag if s])
-    outd["side"] = joiner.join([s for s in side if s])  # side (recto/verso)
-    outd["region"] = joiner.join([r for r in region if r])  # text block region
+    outd["multifragment"] = sep_within_cells.join([s for s in multifrag if s])
+    outd["side"] = sep_within_cells.join([s for s in side if s])  # side (recto/verso)
+    outd["region"] = sep_within_cells.join(
+        [r for r in region if r]
+    )  # text block region
     outd["type"] = doc.doctype
     outd["tags"] = doc.all_tags()
     outd["description"] = doc.description
-    outd["shelfmarks_historic"] = joiner.join([os for os in old_shelfmarks if os])
+    outd["shelfmarks_historic"] = sep_within_cells.join(
+        [os for os in old_shelfmarks if os]
+    )
     outd["languages_primary"] = doc.all_languages()
     outd["languages_secondary"] = doc.all_secondary_languages()
     outd["language_note"] = doc.language_note
@@ -100,14 +104,14 @@ def get_export_data_for_doc(doc):
         all_log_entries.last().action_time if all_log_entries else ""
     )
     outd["last_modified"] = doc.last_modified
-    outd["input_by"] = joiner.join(
+    outd["input_by"] = sep_within_cells.join(
         sorted(
             list(set([user.get_full_name() or user.username for user in input_users]))
         )
     )  # sorting to ensure deterministic order
     outd["status"] = doc.get_status_display()
-    outd["library"] = joiner.join(libraries) if any(libraries) else ""
-    outd["collection"] = joiner.join(collections) if any(collections) else ""
+    outd["library"] = sep_within_cells.join(libraries) if any(libraries) else ""
+    outd["collection"] = sep_within_cells.join(collections) if any(collections) else ""
 
     return outd
 
@@ -144,18 +148,19 @@ def export_docs(
         "collection",
     ],
     progress=True,
+    sep_within_cells=SEP_WITHIN_CELLS,
 ):
 
     # get docs
     docs = get_docs_to_export()
 
     # progress bar?
-    iterr = docs if not progress else track(docs, description=f"Saving CSV file")
+    iterr = docs if not progress else track(docs, description=f"Writing rows to file")
 
     # save
     with open(fn, "w") as of:
         writer = csv.DictWriter(of, fieldnames=csv_fields, extrasaction="ignore")
         writer.writeheader()
         for doc in iterr:
-            docd = get_export_data_for_doc(doc)
+            docd = get_export_data_for_doc(doc, sep_within_cells=sep_within_cells)
             writer.writerow(docd)

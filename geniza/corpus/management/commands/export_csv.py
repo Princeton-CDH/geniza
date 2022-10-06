@@ -18,8 +18,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         began = time.time()
-        self.print("Starting CSV export")
+        ofn = options["output_filename"]
+        self.print(f"Exporting data as CSV to: {ofn}")
 
-        export_docs(fn=options["output_filename"])
+        export_docs(fn=ofn)
 
-        self.print(f"Finished CSV export in {time.time()-began:01f} seconds")
+        self.print(f"Finished CSV export in {time.time()-began:.1f} seconds")
