@@ -435,11 +435,17 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         """Stream tabular data as a CSV file"""
 
         timeprint("Querying")
+
         queryset = queryset or self.get_queryset(request)
+
+        # @TODO: Do we need this? Doesn't seem so...
+        # .order_by("id").prefetch_related(
+        #     "secondary_languages",
+        #     "log_entries",
+        # )
+
         timeprint(f"Done querying")
 
-        # save_export_data_for_docs(
-        timeprint("Beginning to write")
         return http_stream_export_data_for_docs(
             fn=self.csv_filename(), docs=queryset, csv_fields=self.csv_fields
         )
