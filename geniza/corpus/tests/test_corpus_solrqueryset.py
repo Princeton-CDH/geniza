@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+import pytest
 from parasolr.django import AliasedSolrQuerySet, SolrClient
 from piffle.image import IIIFImageClient
 
@@ -51,6 +52,7 @@ class TestDocumentSolrQuerySet:
                 keyword_query="%sena" % dqs.shelfmark_qf
             )
 
+    @pytest.mark.django_db
     def test_get_result_document_images(self):
         dqs = DocumentSolrQuerySet()
         mock_doc = {
