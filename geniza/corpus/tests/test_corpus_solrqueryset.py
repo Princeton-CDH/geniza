@@ -51,7 +51,7 @@ class TestDocumentSolrQuerySet:
                 keyword_query="%sena" % dqs.shelfmark_qf
             )
 
-    def test_get_result_document(self):
+    def test_get_result_document_images(self):
         dqs = DocumentSolrQuerySet()
         mock_doc = {
             "iiif_images": [
@@ -73,6 +73,42 @@ class TestDocumentSolrQuerySet:
                 == "http://example.co/iiif/ts-1/00001/info.json"
             )
             assert result_imgs[0][1] == "1r"
+
+    def test_get_result_document_type(self, document):
+        dqs = DocumentSolrQuerySet()
+        mock_doc = {
+            "type": document.doctype.name_en,
+        }
+        with patch.object(
+            AliasedSolrQuerySet, "get_result_document", return_value=mock_doc
+        ):
+            # should match a DocumentType by name
+            result_doc = dqs.get_result_document(mock_doc)
+            assert isinstance(result_doc["type"], DocumentType)
+
+        # special case for Unknown type
+        mock_doc = {
+            "type": "Unknown type",
+        }
+        with patch.object(
+            AliasedSolrQuerySet, "get_result_document", return_value=mock_doc
+        ):
+            with patch("geniza.corpus.solr_queryset._") as mock_gettext:
+                # should run translate.gettext (in order to get unknown in current language)
+                dqs.get_result_document(mock_doc)
+                mock_gettext.assert_called_once_with("Unknown type")
+
+        # no match
+        mock_doc = {
+            "type": "Fake type. Should not match!",
+        }
+        with patch.object(
+            AliasedSolrQuerySet, "get_result_document", return_value=mock_doc
+        ):
+            # should return the original string
+            result_doc = dqs.get_result_document(mock_doc)
+            assert isinstance(result_doc["type"], str)
+            assert result_doc["type"] == mock_doc["type"]
 
     def test_search_term_cleanup__arabic_to_ja(self):
         dqs = DocumentSolrQuerySet()

@@ -1,6 +1,9 @@
 import re
 
 from bs4 import BeautifulSoup
+from django.apps import apps
+from django.db.models import Q
+from django.utils.translation import gettext as _
 from parasolr.django import AliasedSolrQuerySet
 from piffle.image import IIIFImageClient
 
@@ -132,12 +135,29 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     def get_result_document(self, doc):
         # default implementation converts from attrdict to dict
         doc = super().get_result_document(doc)
+
         # convert indexed iiif image paths to IIIFImageClient objects
         images = doc.get("iiif_images", [])
         doc["iiif_images"] = [IIIFImageClient(*img.rsplit("/", 1)) for img in images]
         # zip images and associated labels into (img, label) tuples in result doc
         labels = doc.get("iiif_labels", [])
         doc["iiif_images"] = list(zip(doc["iiif_images"], labels))
+
+        # for multilingual support, set doctype to matched DocumentType object
+        doctype_str = doc.get("type")
+        # apps.get_model is required to avoid circular import
+        DocumentType = apps.get_model("corpus.DocumentType")
+        # lookup on display_label_en since it should always be indexed in English
+        doctype_matches = DocumentType.objects.filter(
+            Q(display_label_en=doctype_str)
+            | Q(name_en=doctype_str)  # may index either field
+        )
+        if doctype_matches:
+            doc["type"] = doctype_matches.first()
+        # "Unknown type" is not an actual doctype obj, so need to gettext to get the translation
+        elif doctype_str == "Unknown type":
+            doc["type"] = _("Unknown type")
+
         return doc
 
     def get_highlighting(self):
