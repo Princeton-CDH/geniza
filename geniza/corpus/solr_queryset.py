@@ -23,6 +23,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # populate doctype objects dict keyed on English name;
         # must be set in __init__ for models to be loaded
         self.doctype_objects = {
+            # lookup on display_label_en/name_en since solr should always index in English
             (doctype.display_label_en or doctype.name_en): doctype
             # apps.get_model is required to avoid circular import
             for doctype in apps.get_model("corpus.DocumentType").objects.all()
@@ -154,7 +155,6 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
         # for multilingual support, set doctype to matched DocumentType object
         doctype_str = doc.get("type")
-        # lookup on display_label_en since it should always be indexed in English
         if doctype_str in self.doctype_objects:
             doc["type"] = self.doctype_objects[doctype_str]
         # "Unknown type" is not an actual doctype obj, so need to gettext to get the translation
