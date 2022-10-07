@@ -2,7 +2,6 @@ import re
 
 from bs4 import BeautifulSoup
 from django.apps import apps
-from django.db.models import Q
 from django.utils.translation import gettext as _
 from parasolr.django import AliasedSolrQuerySet
 from piffle.image import IIIFImageClient
@@ -19,6 +18,16 @@ def clean_html(html_snippet):
 class DocumentSolrQuerySet(AliasedSolrQuerySet):
     """':class:`~parasolr.django.AliasedSolrQuerySet` for
     :class:`~geniza.corpus.models.Document`"""
+
+    def __init__(self, solr=None):
+        # populate doctype objects dict keyed on English name;
+        # must be set in __init__ for models to be loaded
+        self.doctype_objects = {
+            (doctype.display_label_en or doctype.name_en): doctype
+            # apps.get_model is required to avoid circular import
+            for doctype in apps.get_model("corpus.DocumentType").objects.all()
+        }
+        super().__init__(solr)
 
     #: always filter to item records
     filter_qs = ["item_type_s:document"]
@@ -145,15 +154,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
         # for multilingual support, set doctype to matched DocumentType object
         doctype_str = doc.get("type")
-        # apps.get_model is required to avoid circular import
-        DocumentType = apps.get_model("corpus.DocumentType")
         # lookup on display_label_en since it should always be indexed in English
-        doctype_matches = DocumentType.objects.filter(
-            Q(display_label_en=doctype_str)
-            | Q(name_en=doctype_str)  # may index either field
-        )
-        if doctype_matches:
-            doc["type"] = doctype_matches.first()
+        if doctype_str in self.doctype_objects:
+            doc["type"] = self.doctype_objects[doctype_str]
         # "Unknown type" is not an actual doctype obj, so need to gettext to get the translation
         elif doctype_str == "Unknown type":
             doc["type"] = _("Unknown type")

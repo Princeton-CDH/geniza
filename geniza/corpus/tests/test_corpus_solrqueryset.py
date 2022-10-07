@@ -1,6 +1,5 @@
 from unittest.mock import patch
 
-import pytest
 from parasolr.django import AliasedSolrQuerySet, SolrClient
 from piffle.image import IIIFImageClient
 
@@ -8,8 +7,9 @@ from geniza.corpus.models import Document, DocumentType, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet, clean_html
 
 
+@patch("geniza.corpus.solr_queryset.apps")
 class TestDocumentSolrQuerySet:
-    def test_admin_search(self):
+    def test_admin_search(self, mock_apps):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             dqs.admin_search("deed of sale")
@@ -18,7 +18,7 @@ class TestDocumentSolrQuerySet:
                 doc_query="deed of sale"
             )
 
-    def test_admin_search_shelfmark(self):
+    def test_admin_search_shelfmark(self, mock_apps):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             # ignore + when searching on joins
@@ -27,7 +27,7 @@ class TestDocumentSolrQuerySet:
                 doc_query="CUL Or.1080 3.41 T-S 13J16.20 T-S 13J8.14"
             )
 
-    def test_keyword_search_shelfmark(self):
+    def test_keyword_search_shelfmark(self, mock_apps):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             # ignore + when searching on joins
@@ -36,7 +36,7 @@ class TestDocumentSolrQuerySet:
                 keyword_query="CUL Or.1080 3.41 T-S 13J16.20 T-S 13J8.14"
             )
 
-    def test_keyword_search_field_aliases(self):
+    def test_keyword_search_field_aliases(self, mock_apps):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             dqs.keyword_search("pgpid:950 old_pgpid:931 tag:state")
@@ -44,7 +44,7 @@ class TestDocumentSolrQuerySet:
                 keyword_query="pgpid_i:950 old_pgpids_is:931 tags_ss_lower:state"
             )
 
-    def test_keyword_search_field_alias_shelfmark(self):
+    def test_keyword_search_field_alias_shelfmark(self, mock_apps):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             dqs.keyword_search("shelfmark:ena")
@@ -52,8 +52,7 @@ class TestDocumentSolrQuerySet:
                 keyword_query="%sena" % dqs.shelfmark_qf
             )
 
-    @pytest.mark.django_db
-    def test_get_result_document_images(self):
+    def test_get_result_document_images(self, mock_apps):
         dqs = DocumentSolrQuerySet()
         mock_doc = {
             "iiif_images": [
@@ -76,16 +75,19 @@ class TestDocumentSolrQuerySet:
             )
             assert result_imgs[0][1] == "1r"
 
-    def test_get_result_document_type(self, document):
+    def test_get_result_document_type(self, mock_apps, document):
+        # mock: populate the DocumentSolrQuerySet.doctype_objects property with this doc's doctype
+        mock_apps.get_model.return_value.objects.all.return_value = [document.doctype]
         dqs = DocumentSolrQuerySet()
         mock_doc = {
-            "type": document.doctype.name_en,
+            "type": document.doctype.display_label_en or document.doctype.name_en,
         }
         with patch.object(
             AliasedSolrQuerySet, "get_result_document", return_value=mock_doc
         ):
             # should match a DocumentType by name
             result_doc = dqs.get_result_document(mock_doc)
+            print(result_doc["type"])
             assert isinstance(result_doc["type"], DocumentType)
 
         # special case for Unknown type
@@ -112,12 +114,12 @@ class TestDocumentSolrQuerySet:
             assert isinstance(result_doc["type"], str)
             assert result_doc["type"] == mock_doc["type"]
 
-    def test_search_term_cleanup__arabic_to_ja(self):
+    def test_search_term_cleanup__arabic_to_ja(self, mock_apps):
         dqs = DocumentSolrQuerySet()
         # confirm arabic to judaeo-arabic runs here
         dqs._search_term_cleanup("دينار") == "(دينار|דיהאר)"
 
-    def test_related_to(self, document, join, fragment, empty_solr):
+    def test_related_to(self, mock_apps, document, join, fragment, empty_solr):
         """should give filtered result: public documents with any shared shelfmarks"""
 
         # create suppressed document on the same fragment as document fixture
@@ -141,28 +143,29 @@ class TestDocumentSolrQuerySet:
         # should include related
         assert related_docs.filter(pgpid=join.id).count() == 1
 
-    def test_clean_html(self):
+    def test_clean_html(self, mock_apps):
         # minimal prettifier; introduces whitespace changes
         assert clean_html("<li>foo").replace("\n", "") == "<li> foo</li>"
 
-    @patch("geniza.corpus.solr_queryset.super")
-    def test_get_highlighting(self, mock_super):
-        mock_get_highlighting = mock_super.return_value.get_highlighting
-
+    def test_get_highlighting(self, mock_apps):
         dqs = DocumentSolrQuerySet()
         # no highlighting
-        mock_get_highlighting.return_value = {}
-        assert dqs.get_highlighting() == {}
+        with patch("geniza.corpus.solr_queryset.super") as mock_super:
+            mock_get_highlighting = mock_super.return_value.get_highlighting
+            mock_get_highlighting.return_value = {}
+            assert dqs.get_highlighting() == {}
 
-        # highlighting but no transcription
-        test_highlight = {"doc.1": {"description": ["foo bar baz"]}}
-        mock_get_highlighting.return_value = test_highlight
-        # returned unchanged
-        assert dqs.get_highlighting() == test_highlight
+            # highlighting but no transcription
+            test_highlight = {"doc.1": {"description": ["foo bar baz"]}}
+            mock_get_highlighting.return_value = test_highlight
+            # returned unchanged
+            assert dqs.get_highlighting() == test_highlight
 
-        # transcription highlight
-        test_highlight = {"doc.1": {"transcription": ["<li>foo"]}}
-        mock_get_highlighting.return_value = test_highlight
-        # transcription html should be cleaned
-        cleaned_highlight = dqs.get_highlighting()
-        assert cleaned_highlight["doc.1"]["transcription"] == [clean_html("<li>foo")]
+            # transcription highlight
+            test_highlight = {"doc.1": {"transcription": ["<li>foo"]}}
+            mock_get_highlighting.return_value = test_highlight
+            # transcription html should be cleaned
+            cleaned_highlight = dqs.get_highlighting()
+            assert cleaned_highlight["doc.1"]["transcription"] == [
+                clean_html("<li>foo")
+            ]
