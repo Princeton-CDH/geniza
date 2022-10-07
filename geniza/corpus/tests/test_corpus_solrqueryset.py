@@ -7,6 +7,7 @@ from geniza.corpus.models import Document, DocumentType, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet, clean_html
 
 
+# patch "apps" across entire test class to avoid DB access in __init__
 @patch("geniza.corpus.solr_queryset.apps")
 class TestDocumentSolrQuerySet:
     def test_admin_search(self, mock_apps):
