@@ -76,3 +76,18 @@ smart_quote_conversion = str.maketrans(
 
 def simplify_quotes(text):
     return text.translate(smart_quote_conversion)
+
+
+import time
+
+TIMENOW = time.time()
+
+
+def timeprint(*x, **y):
+    global TIMENOW
+    now = time.time()
+    print(f"[+{now-TIMENOW:.3f}s]", *x, **y)
+    TIMENOW = now
+
+
+######
