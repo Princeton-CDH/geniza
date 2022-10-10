@@ -432,6 +432,16 @@ class TestDocumentType:
         doc_type.save()
         assert DocumentType.objects.get_by_natural_key("SomeType") == doc_type
 
+    def test_objects_by_label(self):
+        """Should return dict of DocumentType objects keyed on English label"""
+        doc_type = DocumentType(name_en="SomeType")
+        doc_type.save()
+        doc_type_2 = DocumentType(display_label_en="Type2")
+        doc_type_2.save()
+        assert isinstance(DocumentType.objects_by_label.get("SomeType"), DocumentType)
+        assert DocumentType.objects_by_label.get("SomeType").pk == doc_type.pk
+        assert DocumentType.objects_by_label.get("Type2").pk == doc_type_2.pk
+
 
 MockImporter = Mock()
 # as of djiffy 0.7.2, import paths returns a list of objects
