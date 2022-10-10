@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 
 from geniza.common.fields import RangeField, RangeForm, RangeWidget
 from geniza.common.utils import simplify_quotes
-from geniza.corpus.models import Document
+from geniza.corpus.models import Document, DocumentType
 
 
 class SelectDisabledMixin:
@@ -51,10 +51,12 @@ class CheckboxSelectWithCount(forms.CheckboxSelectMultiple):
         context = super().get_context(name, value, attrs)
         for optgroup in context["widget"].get("optgroups", []):
             for option in optgroup[1]:
-                count = self.facet_counts.get(option["value"], None)
+                count_label = self.facet_counts.get(
+                    option["value"], (option["value"], None)
+                )
                 # make facet count available as data-count attribute
-                if count:
-                    option["attrs"]["data-count"] = f"{count:,}"
+                if count_label and count_label[1]:
+                    option["attrs"]["data-count"] = f"{count_label[1]:,}"
         return context
 
 
@@ -97,8 +99,11 @@ class FacetChoiceField(FacetFieldMixin, forms.ChoiceField):
         # generate the list of choice from the facets
 
         self.choices = (
-            (val, mark_safe(f'<span>{val}</span><span class="count">{count:,}</span>'))
-            for val, count in facet_dict.items()
+            (
+                val,
+                mark_safe(f'<span>{label}</span><span class="count">{count:,}</span>'),
+            )
+            for val, (label, count) in facet_dict.items()
         )
         # pass the counts to the widget so it can be set as a data attribute
         self.widget.facet_counts = facet_dict
@@ -110,10 +115,10 @@ class CheckboxInputWithCount(forms.CheckboxInput):
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
-        count = self.facet_counts.get("true", None)
+        count_label = self.facet_counts.get("true", ("true", 0))
         # make facet count available as data-count attribute
-        if count:
-            context["widget"]["attrs"]["data-count"] = f"{count:,}"
+        if count_label and count_label[1]:
+            context["widget"]["attrs"]["data-count"] = f"{count_label[1]:,}"
         return context
 
 
@@ -124,9 +129,9 @@ class BooleanFacetField(FacetFieldMixin, forms.BooleanField):
         """
         Set the label from the facets returned by solr.
         """
-        count = facet_dict.get("true", 0)
+        count_label = facet_dict.get("true", ("true", 0))
         self.label = mark_safe(
-            f'<span class="label">{self.label}</span><span class="count">{count:,}</span>'
+            f'<span class="label">{self.label}</span><span class="count">{count_label[1]:,}</span>'
         )
 
         # pass the counts to the widget so it can be set as a data attribute
@@ -231,6 +236,13 @@ class DocumentSearchForm(RangeForm):
         "has_discussion": "has_discussion",
     }
 
+    # mapping of doctype labels to objects
+    doctype_objects = {
+        # lookup on display_label_en/name_en since solr should always index in English
+        (doctype.display_label_en or doctype.name_en): doctype
+        for doctype in DocumentType.objects.all()
+    }
+
     def __init__(self, data=None, *args, **kwargs):
         """
         Override to set choices dynamically based on form kwargs.
@@ -265,6 +277,20 @@ class DocumentSearchForm(RangeForm):
             formfield = self.solr_facet_fields.get(key, key)
             # for each facet, set the corresponding choice field
             if formfield in self.fields:
+                # set values of each key to tuples of (label, count)
+                for (facet, count) in facet_dict.items():
+                    facet_dict[facet] = (
+                        # for doctype, label should be translated, so use doctype object
+                        (
+                            (_("Unknown type"), count)
+                            if facet == "Unknown type"
+                            else (self.doctype_objects.get(facet, facet), count)
+                        )
+                        if formfield == "doctype"
+                        # for other formfields, label is facet name
+                        else (facet, count)
+                    )
+
                 self.fields[formfield].populate_from_facets(facet_dict)
 
     def clean_q(self):

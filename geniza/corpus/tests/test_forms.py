@@ -110,9 +110,8 @@ class TestDocumentSearchForm:
         optgroup = context["widget"].get("optgroups", [])[0][1]
         for option in optgroup:
             if option["value"] in fake_facets["doctype"]:
-                assert int(option["attrs"]["data-count"]) == fake_facets["doctype"].get(
-                    option["value"]
-                )
+                (label, count) = fake_facets["doctype"].get(option["value"])
+                assert int(option["attrs"]["data-count"]) == count
 
     def test_boolean_checkbox_get_context(self):
         form = DocumentSearchForm()
@@ -121,9 +120,8 @@ class TestDocumentSearchForm:
         context = form.fields["has_transcription"].widget.get_context(
             "has_transcription", "all", {"id": "id_has_transcription"}
         )
-        assert int(context["widget"]["attrs"]["data-count"]) == fake_facets[
-            "has_transcription"
-        ].get("true")
+        (label, count) = fake_facets["has_transcription"].get("true")
+        assert int(context["widget"]["attrs"]["data-count"]) == count
 
     def test_clean(self):
         """Should add an error if query is empty and sort is relevance"""
