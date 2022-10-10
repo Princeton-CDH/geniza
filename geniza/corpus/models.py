@@ -10,6 +10,7 @@ from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -449,11 +450,33 @@ class TagSignalHandlers:
         instance.name = unidecode(instance.name)
 
 
+class MetadataManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("doctype")
+            .prefetch_related(
+                "tags",
+                "languages",
+                Prefetch(
+                    "textblock_set",
+                    queryset=TextBlock.objects.select_related(
+                        "fragment", "fragment__collection"
+                    ),
+                ),
+            )
+            .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
+            .order_by("shelfmk_all")
+        )
+
+
 class Document(ModelIndexable, DocumentDateMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
 
     id = models.AutoField("PGPID", primary_key=True)
+
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
     )
@@ -494,6 +517,11 @@ class Document(ModelIndexable, DocumentDateMixin):
         help_text="Enter text here if an administrator needs to review this document.",
     )
     old_pgpids = ArrayField(models.IntegerField(), null=True, verbose_name="Old PGPIDs")
+
+    objects = (
+        models.Manager()
+    )  # needs to be defined first in order for this to be 'default manager'? https://docs.djangoproject.com/en/4.1/topics/db/managers/#django.db.models.Model._default_manager
+    metadata_objects = MetadataManager()
 
     PUBLIC = "P"
     STATUS_PUBLIC = "Public"
