@@ -51,12 +51,12 @@ class CheckboxSelectWithCount(forms.CheckboxSelectMultiple):
         context = super().get_context(name, value, attrs)
         for optgroup in context["widget"].get("optgroups", []):
             for option in optgroup[1]:
-                count_label = self.facet_counts.get(
+                (facet, count) = self.facet_counts.get(
                     option["value"], (option["value"], None)
                 )
                 # make facet count available as data-count attribute
-                if count_label and count_label[1]:
-                    option["attrs"]["data-count"] = f"{count_label[1]:,}"
+                if count:
+                    option["attrs"]["data-count"] = f"{count:,}"
         return context
 
 
@@ -115,10 +115,10 @@ class CheckboxInputWithCount(forms.CheckboxInput):
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
-        count_label = self.facet_counts.get("true", ("true", 0))
+        (facet, count) = self.facet_counts.get("true", ("true", None))
         # make facet count available as data-count attribute
-        if count_label and count_label[1]:
-            context["widget"]["attrs"]["data-count"] = f"{count_label[1]:,}"
+        if count:
+            context["widget"]["attrs"]["data-count"] = f"{count:,}"
         return context
 
 
@@ -129,9 +129,9 @@ class BooleanFacetField(FacetFieldMixin, forms.BooleanField):
         """
         Set the label from the facets returned by solr.
         """
-        count_label = facet_dict.get("true", ("true", 0))
+        (facet, count) = facet_dict.get("true", ("true", 0))
         self.label = mark_safe(
-            f'<span class="label">{self.label}</span><span class="count">{count_label[1]:,}</span>'
+            f'<span class="label">{self.label}</span><span class="count">{count:,}</span>'
         )
 
         # pass the counts to the widget so it can be set as a data attribute
