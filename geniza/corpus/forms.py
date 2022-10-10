@@ -236,18 +236,18 @@ class DocumentSearchForm(RangeForm):
         "has_discussion": "has_discussion",
     }
 
-    # mapping of doctype labels to objects
-    doctype_objects = {
-        # lookup on display_label_en/name_en since solr should always index in English
-        (doctype.display_label_en or doctype.name_en): doctype
-        for doctype in DocumentType.objects.all()
-    }
-
     def __init__(self, data=None, *args, **kwargs):
         """
         Override to set choices dynamically based on form kwargs.
         """
         super().__init__(data=data, *args, **kwargs)
+
+        # mapping of doctype labels to objects
+        self.doctype_objects = {
+            # lookup on display_label_en/name_en since solr should always index in English
+            (doctype.display_label_en or doctype.name_en): doctype
+            for doctype in DocumentType.objects.all()
+        }
 
         # if a keyword search term is not present, relevance sort is disabled
         if not data or not data.get("q", None):
