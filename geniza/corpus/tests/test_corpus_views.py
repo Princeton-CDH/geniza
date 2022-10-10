@@ -919,7 +919,9 @@ class TestDocumentScholarshipView:
             f"{document.get_absolute_url()}scholarship/"
         )
 
-    def test_get_paginate_by(self):
+    # patch "apps" to avoid DB access in DocumentSolrQuerySet.__init__
+    @patch("geniza.corpus.solr_queryset.apps")
+    def test_get_paginate_by(self, mock_apps):
         """Should set pagination to 2 per page"""
         docsearch_view = DocumentSearchView(kwargs={})
         docsearch_view.request = Mock()
