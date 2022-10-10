@@ -905,7 +905,8 @@ class Document(ModelIndexable, DocumentDateMixin):
         index_data.update(
             {
                 "pgpid_i": self.id,
-                # type gets matched back to DocumentType object in get_result_document, for i18n
+                # type gets matched back to DocumentType object in get_result_document, for i18n;
+                # should always be indexed in English
                 "type_s": str(self.doctype) if self.doctype else "Unknown type",
                 # use english description for now
                 "description_t": strip_tags(self.description_en),
