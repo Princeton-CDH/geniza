@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from django import forms
@@ -55,10 +55,12 @@ class TestFacetChoiceField:
         assert fcf.valid_value("foo")
 
 
+# patch "DocumentType" across entire test class to avoid DB access in __init__
+@patch("geniza.corpus.forms.DocumentType")
 class TestDocumentSearchForm:
     # test adapted from ppa-django
 
-    def test_init(self):
+    def test_init(self, mock_doctype):
         data = {"q": "illness"}
         # has query, relevance enabled
         form = DocumentSearchForm(data)
@@ -80,7 +82,7 @@ class TestDocumentSearchForm:
             {"label": "Relevance", "disabled": True},
         )
 
-    def test_choices_from_facets(self):
+    def test_choices_from_facets(self, mock_doctype):
         """A facet dict should produce correct choice labels"""
         fake_facets = {
             "doctype": {"foo": 1, "bar": 2, "baz": 3},
@@ -100,7 +102,7 @@ class TestDocumentSearchForm:
         assert isinstance(bool_label, str)
         assert "3</span>" in bool_label
 
-    def test_radio_select_get_context(self):
+    def test_radio_select_get_context(self, mock_doctype):
         form = DocumentSearchForm()
         fake_facets = {"doctype": {"foo": 1, "bar": 2, "baz": 3}}
         form.set_choices_from_facets(fake_facets)
@@ -113,7 +115,7 @@ class TestDocumentSearchForm:
                 (label, count) = fake_facets["doctype"].get(option["value"])
                 assert int(option["attrs"]["data-count"]) == count
 
-    def test_boolean_checkbox_get_context(self):
+    def test_boolean_checkbox_get_context(self, mock_doctype):
         form = DocumentSearchForm()
         fake_facets = {"has_transcription": {"true": 10, "false": 2}}
         form.set_choices_from_facets(fake_facets)
@@ -123,7 +125,7 @@ class TestDocumentSearchForm:
         (label, count) = fake_facets["has_transcription"].get("true")
         assert int(context["widget"]["attrs"]["data-count"]) == count
 
-    def test_clean(self):
+    def test_clean(self, mock_doctype):
         """Should add an error if query is empty and sort is relevance"""
         form = DocumentSearchForm()
         form.cleaned_data = {"q": "", "sort": "relevance"}
@@ -140,7 +142,7 @@ class TestDocumentSearchForm:
         form.clean()
         assert len(form.errors) == 0
 
-    def test_clean_q(self):
+    def test_clean_q(self, mock_doctype):
         form = DocumentSearchForm()
         form.cleaned_data = {}
         # no error if keyword not set
@@ -153,7 +155,7 @@ class TestDocumentSearchForm:
         form.cleaned_data["q"] = "“awaiting description”"
         assert form.clean_q() == '"awaiting description"'
 
-    def test_filters_active(self):
+    def test_filters_active(self, mock_doctype):
         # no filters should return false
         form = DocumentSearchForm(data={"q": "test", "sort": "scholarship_desc"})
         assert not form.filters_active()

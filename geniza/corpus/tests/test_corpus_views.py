@@ -318,7 +318,9 @@ class TestDocumentSearchView:
         }
 
     @pytest.mark.usefixtures("mock_solr_queryset")
-    def test_get_queryset(self, mock_solr_queryset):
+    # patch "DocumentType" to avoid DB access in DocumentSearchForm.__init__
+    @patch("geniza.corpus.forms.DocumentType")
+    def test_get_queryset(self, mock_doctype, mock_solr_queryset):
         with patch(
             "geniza.corpus.views.DocumentSolrQuerySet",
             new=self.mock_solr_queryset(
@@ -457,8 +459,11 @@ class TestDocumentSearchView:
             assert stats == {"docdate": (843, 1042)}
 
     @pytest.mark.usefixtures("mock_solr_queryset")
+    @patch("geniza.corpus.forms.DocumentType")
     @patch("geniza.corpus.views.DocumentSearchView.get_queryset")
-    def test_get_context_data(self, mock_get_queryset, rf, mock_solr_queryset):
+    def test_get_context_data(
+        self, mock_get_queryset, mock_doctype, rf, mock_solr_queryset
+    ):
         with patch(
             "geniza.corpus.views.DocumentSolrQuerySet",
             new=mock_solr_queryset(
@@ -919,9 +924,10 @@ class TestDocumentScholarshipView:
             f"{document.get_absolute_url()}scholarship/"
         )
 
-    # patch "apps" to avoid DB access in DocumentSolrQuerySet.__init__
+    # patch "apps" and "DocumentType" to avoid DB access
     @patch("geniza.corpus.solr_queryset.apps")
-    def test_get_paginate_by(self, mock_apps):
+    @patch("geniza.corpus.forms.DocumentType")
+    def test_get_paginate_by(self, mock_doctype, mock_apps):
         """Should set pagination to 2 per page"""
         docsearch_view = DocumentSearchView(kwargs={})
         docsearch_view.request = Mock()
