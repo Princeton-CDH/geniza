@@ -280,3 +280,11 @@ div.field-admin_thumbnails img {
 div.field-admin_thumbnails img.selected {
     border: 5px solid var(--accent);
 }
+
+/* configure text inputs for Hebrew and Arabic model translate content to be RTL */
+input[name$="_he"],
+input[name$="_ar"],
+textarea[name$="_he"],
+textarea[name$="_ar"] {
+    direction: rtl;
+}
