@@ -19,17 +19,6 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     """':class:`~parasolr.django.AliasedSolrQuerySet` for
     :class:`~geniza.corpus.models.Document`"""
 
-    def __init__(self, solr=None):
-        # populate doctype objects dict keyed on English name;
-        # must be set in __init__ for models to be loaded
-        self.doctype_objects = {
-            # lookup on display_label_en/name_en since solr should always index in English
-            (doctype.display_label_en or doctype.name_en): doctype
-            # apps.get_model is required to avoid circular import
-            for doctype in apps.get_model("corpus.DocumentType").objects.all()
-        }
-        super().__init__(solr)
-
     #: always filter to item records
     filter_qs = ["item_type_s:document"]
 
@@ -155,11 +144,12 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
         # for multilingual support, set doctype to matched DocumentType object
         doctype_str = doc.get("type")
-        if doctype_str in self.doctype_objects:
-            doc["type"] = self.doctype_objects[doctype_str]
-        # "Unknown type" is not an actual doctype obj, so need to gettext to get the translation
-        elif doctype_str == "Unknown type":
-            doc["type"] = _("Unknown type")
+        # apps.get_model is required to avoid circular import
+        doc["type"] = apps.get_model("corpus.DocumentType").objects_by_label.get(
+            doctype_str,
+            # "Unknown type" is not an actual doctype obj, so need to gettext for translation
+            _("Unknown type"),
+        )
 
         return doc
 

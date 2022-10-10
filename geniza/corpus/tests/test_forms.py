@@ -11,7 +11,7 @@ from geniza.corpus.forms import (
     FacetChoiceField,
     SelectWithDisabled,
 )
-from geniza.corpus.models import Document
+from geniza.corpus.models import Document, DocumentType
 
 
 class TestSelectedWithDisabled:
@@ -55,12 +55,10 @@ class TestFacetChoiceField:
         assert fcf.valid_value("foo")
 
 
-# patch "DocumentType" across entire test class to avoid DB access in __init__
-@patch("geniza.corpus.forms.DocumentType")
 class TestDocumentSearchForm:
     # test adapted from ppa-django
 
-    def test_init(self, mock_doctype):
+    def test_init(self):
         data = {"q": "illness"}
         # has query, relevance enabled
         form = DocumentSearchForm(data)
@@ -82,7 +80,7 @@ class TestDocumentSearchForm:
             {"label": "Relevance", "disabled": True},
         )
 
-    def test_choices_from_facets(self, mock_doctype):
+    def test_choices_from_facets(self):
         """A facet dict should produce correct choice labels"""
         fake_facets = {
             "doctype": {"foo": 1, "bar": 2, "baz": 3},
@@ -102,30 +100,49 @@ class TestDocumentSearchForm:
         assert isinstance(bool_label, str)
         assert "3</span>" in bool_label
 
-    def test_radio_select_get_context(self, mock_doctype):
+    def test_radio_select_get_context(self):
         form = DocumentSearchForm()
-        fake_facets = {"doctype": {"foo": 1, "bar": 2, "baz": 3}}
-        form.set_choices_from_facets(fake_facets)
-        context = form.fields["doctype"].widget.get_context(
-            "doctype", "all", {"id": "id_doctype"}
-        )
-        optgroup = context["widget"].get("optgroups", [])[0][1]
-        for option in optgroup:
-            if option["value"] in fake_facets["doctype"]:
-                (label, count) = fake_facets["doctype"].get(option["value"])
-                assert int(option["attrs"]["data-count"]) == count
+        fake_facets = {"type": {"foo": 1, "bar": 2, "baz": 3}}
+        # mock doctype objects by label cached property
+        with patch.object(DocumentType, "objects_by_label") as mock_doctype_obj_dict:
+            # populate two of the three facets with labeled objects
+            foo = DocumentType(name_en="foo_label")
+            bar = DocumentType(name_en="bar_label")
+            mock_dict = {"foo": foo, "bar": bar}
+            mock_doctype_obj_dict.get.side_effect = mock_dict.get
+            form.set_choices_from_facets(fake_facets)
+            context = form.fields["doctype"].widget.get_context(
+                "doctype", "all", {"id": "id_doctype"}
+            )
+            # collect all 3 facets
+            optgroup = [
+                *context["widget"].get("optgroups", [])[0][1],
+                *context["widget"].get("optgroups", [])[1][1],
+                *context["widget"].get("optgroups", [])[2][1],
+            ]
+            for option in optgroup:
+                # should pass count to attrs
+                if option["value"] in fake_facets["type"]:
+                    count = fake_facets["type"].get(option["value"])
+                    assert int(option["attrs"]["data-count"]) == count
+                # should get label for foo and bar
+                if option["value"] in ["foo", "bar"]:
+                    assert "_label" in option["label"]
+                # should fallback to Unknown type label for baz
+                else:
+                    assert "Unknown type" in option["label"]
 
-    def test_boolean_checkbox_get_context(self, mock_doctype):
+    def test_boolean_checkbox_get_context(self):
         form = DocumentSearchForm()
         fake_facets = {"has_transcription": {"true": 10, "false": 2}}
         form.set_choices_from_facets(fake_facets)
         context = form.fields["has_transcription"].widget.get_context(
             "has_transcription", "all", {"id": "id_has_transcription"}
         )
-        (label, count) = fake_facets["has_transcription"].get("true")
+        count = fake_facets["has_transcription"].get("true")
         assert int(context["widget"]["attrs"]["data-count"]) == count
 
-    def test_clean(self, mock_doctype):
+    def test_clean(self):
         """Should add an error if query is empty and sort is relevance"""
         form = DocumentSearchForm()
         form.cleaned_data = {"q": "", "sort": "relevance"}
@@ -142,7 +159,7 @@ class TestDocumentSearchForm:
         form.clean()
         assert len(form.errors) == 0
 
-    def test_clean_q(self, mock_doctype):
+    def test_clean_q(self):
         form = DocumentSearchForm()
         form.cleaned_data = {}
         # no error if keyword not set
@@ -155,7 +172,7 @@ class TestDocumentSearchForm:
         form.cleaned_data["q"] = "“awaiting description”"
         assert form.clean_q() == '"awaiting description"'
 
-    def test_filters_active(self, mock_doctype):
+    def test_filters_active(self):
         # no filters should return false
         form = DocumentSearchForm(data={"q": "test", "sort": "scholarship_desc"})
         assert not form.filters_active()

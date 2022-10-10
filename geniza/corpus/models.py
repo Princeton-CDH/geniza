@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from functools import cached_property
+from functools import cache, cached_property
 from itertools import chain
 from urllib.parse import urlparse
 
@@ -380,6 +380,17 @@ class DocumentType(models.Model):
     def natural_key(self):
         """Natural key, name"""
         return (self.name,)
+
+    @classmethod
+    @property
+    @cache
+    def objects_by_label(cls):
+        """A dict of DocumentType object instances keyed on English display label"""
+        return {
+            # lookup on display_label_en/name_en since solr should always index in English
+            (doctype.display_label_en or doctype.name_en): doctype
+            for doctype in cls.objects.all()
+        }
 
 
 class DocumentSignalHandlers:

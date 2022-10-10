@@ -51,7 +51,8 @@ class CheckboxSelectWithCount(forms.CheckboxSelectMultiple):
         context = super().get_context(name, value, attrs)
         for optgroup in context["widget"].get("optgroups", []):
             for option in optgroup[1]:
-                (facet, count) = self.facet_counts.get(
+                # each value of facet_counts is a tuple of label and count
+                (label, count) = self.facet_counts.get(
                     option["value"], (option["value"], None)
                 )
                 # make facet count available as data-count attribute
@@ -115,7 +116,8 @@ class CheckboxInputWithCount(forms.CheckboxInput):
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
-        (facet, count) = self.facet_counts.get("true", ("true", None))
+        # each value of facet_counts is a tuple of label and count
+        (label, count) = self.facet_counts.get("true", ("true", None))
         # make facet count available as data-count attribute
         if count:
             context["widget"]["attrs"]["data-count"] = f"{count:,}"
@@ -129,7 +131,10 @@ class BooleanFacetField(FacetFieldMixin, forms.BooleanField):
         """
         Set the label from the facets returned by solr.
         """
-        (facet, count) = facet_dict.get("true", ("true", 0))
+        # each value of facet_counts is a tuple of label and count; boolean facet label is always
+        # just "true" or "false"
+        (label, count) = facet_dict.get("true", ("true", 0))
+        # use self.label for the actual label instead, so we use the field name and not true/false
         self.label = mark_safe(
             f'<span class="label">{self.label}</span><span class="count">{count:,}</span>'
         )
@@ -242,13 +247,6 @@ class DocumentSearchForm(RangeForm):
         """
         super().__init__(data=data, *args, **kwargs)
 
-        # mapping of doctype labels to objects
-        self.doctype_objects = {
-            # lookup on display_label_en/name_en since solr should always index in English
-            (doctype.display_label_en or doctype.name_en): doctype
-            for doctype in DocumentType.objects.all()
-        }
-
         # if a keyword search term is not present, relevance sort is disabled
         if not data or not data.get("q", None):
             self.fields["sort"].widget.choices[0] = (
@@ -273,24 +271,25 @@ class DocumentSearchForm(RangeForm):
         # borrowed from ppa-django;
         # populate facet field choices from current facets
         for key, facet_dict in facets.items():
+            # restructure dict to set values of each key to tuples of (label, count)
+            if key == "type":
+                # for doctype, label should be translated, so use doctype object
+                facet_dict = {
+                    label: (
+                        DocumentType.objects_by_label.get(label, _("Unknown type")),
+                        count,
+                    )
+                    for (label, count) in facet_dict.items()
+                }
+            else:
+                # for other formfields, label == facet name
+                facet_dict = {
+                    label: (label, count) for (label, count) in facet_dict.items()
+                }
             # use field from facet fields map or else field name as is
             formfield = self.solr_facet_fields.get(key, key)
             # for each facet, set the corresponding choice field
             if formfield in self.fields:
-                # set values of each key to tuples of (label, count)
-                for (facet, count) in facet_dict.items():
-                    facet_dict[facet] = (
-                        # for doctype, label should be translated, so use doctype object
-                        (
-                            (_("Unknown type"), count)
-                            if facet == "Unknown type"
-                            else (self.doctype_objects.get(facet, facet), count)
-                        )
-                        if formfield == "doctype"
-                        # for other formfields, label is facet name
-                        else (facet, count)
-                    )
-
                 self.fields[formfield].populate_from_facets(facet_dict)
 
     def clean_q(self):

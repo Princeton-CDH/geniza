@@ -7,10 +7,8 @@ from geniza.corpus.models import Document, DocumentType, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet, clean_html
 
 
-# patch "apps" across entire test class to avoid DB access in __init__
-@patch("geniza.corpus.solr_queryset.apps")
 class TestDocumentSolrQuerySet:
-    def test_admin_search(self, mock_apps):
+    def test_admin_search(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             dqs.admin_search("deed of sale")
@@ -19,7 +17,7 @@ class TestDocumentSolrQuerySet:
                 doc_query="deed of sale"
             )
 
-    def test_admin_search_shelfmark(self, mock_apps):
+    def test_admin_search_shelfmark(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             # ignore + when searching on joins
@@ -28,7 +26,7 @@ class TestDocumentSolrQuerySet:
                 doc_query="CUL Or.1080 3.41 T-S 13J16.20 T-S 13J8.14"
             )
 
-    def test_keyword_search_shelfmark(self, mock_apps):
+    def test_keyword_search_shelfmark(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             # ignore + when searching on joins
@@ -37,7 +35,7 @@ class TestDocumentSolrQuerySet:
                 keyword_query="CUL Or.1080 3.41 T-S 13J16.20 T-S 13J8.14"
             )
 
-    def test_keyword_search_field_aliases(self, mock_apps):
+    def test_keyword_search_field_aliases(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             dqs.keyword_search("pgpid:950 old_pgpid:931 tag:state")
@@ -45,7 +43,7 @@ class TestDocumentSolrQuerySet:
                 keyword_query="pgpid_i:950 old_pgpids_is:931 tags_ss_lower:state"
             )
 
-    def test_keyword_search_field_alias_shelfmark(self, mock_apps):
+    def test_keyword_search_field_alias_shelfmark(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             dqs.keyword_search("shelfmark:ena")
@@ -53,7 +51,7 @@ class TestDocumentSolrQuerySet:
                 keyword_query="%sena" % dqs.shelfmark_qf
             )
 
-    def test_get_result_document_images(self, mock_apps):
+    def test_get_result_document_images(self):
         dqs = DocumentSolrQuerySet()
         mock_doc = {
             "iiif_images": [
@@ -76,9 +74,7 @@ class TestDocumentSolrQuerySet:
             )
             assert result_imgs[0][1] == "1r"
 
-    def test_get_result_document_type(self, mock_apps, document):
-        # mock: populate the DocumentSolrQuerySet.doctype_objects property with this doc's doctype
-        mock_apps.get_model.return_value.objects.all.return_value = [document.doctype]
+    def test_get_result_document_type(self, document):
         dqs = DocumentSolrQuerySet()
         mock_doc = {
             "type": document.doctype.display_label_en or document.doctype.name_en,
@@ -115,12 +111,12 @@ class TestDocumentSolrQuerySet:
             assert isinstance(result_doc["type"], str)
             assert result_doc["type"] == mock_doc["type"]
 
-    def test_search_term_cleanup__arabic_to_ja(self, mock_apps):
+    def test_search_term_cleanup__arabic_to_ja(self):
         dqs = DocumentSolrQuerySet()
         # confirm arabic to judaeo-arabic runs here
         dqs._search_term_cleanup("دينار") == "(دينار|דיהאר)"
 
-    def test_related_to(self, mock_apps, document, join, fragment, empty_solr):
+    def test_related_to(self, document, join, fragment, empty_solr):
         """should give filtered result: public documents with any shared shelfmarks"""
 
         # create suppressed document on the same fragment as document fixture
@@ -144,11 +140,11 @@ class TestDocumentSolrQuerySet:
         # should include related
         assert related_docs.filter(pgpid=join.id).count() == 1
 
-    def test_clean_html(self, mock_apps):
+    def test_clean_html(self):
         # minimal prettifier; introduces whitespace changes
         assert clean_html("<li>foo").replace("\n", "") == "<li> foo</li>"
 
-    def test_get_highlighting(self, mock_apps):
+    def test_get_highlighting(self):
         dqs = DocumentSolrQuerySet()
         # no highlighting
         with patch("geniza.corpus.solr_queryset.super") as mock_super:
