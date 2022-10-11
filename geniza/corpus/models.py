@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from functools import cached_property
+from functools import cache, cached_property
 from itertools import chain
 from urllib.parse import urlparse
 
@@ -25,6 +25,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from djiffy.models import Manifest
+from modeltranslation.utils import fallbacks
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
@@ -41,6 +42,14 @@ from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote, Source
 
 logger = logging.getLogger(__name__)
+
+
+def cached_class_property(f):
+    """
+    Reusable decorator to cache a class property, as opposed to an instance property.
+    from https://stackoverflow.com/a/71887897
+    """
+    return classmethod(property(cache(f)))
 
 
 class CollectionManager(models.Manager):
@@ -375,11 +384,27 @@ class DocumentType(models.Model):
     objects = DocumentTypeManager()
 
     def __str__(self):
-        return self.display_label or self.name
+        # temporarily turn off model translate fallbacks;
+        # if display label for current language is not defined,
+        # we want name for the current language rather than the
+        # fallback value for display label
+        with fallbacks(False):
+            current_lang_label = self.display_label or self.name
+
+        return current_lang_label or self.display_label or self.name
 
     def natural_key(self):
         """Natural key, name"""
         return (self.name,)
+
+    @cached_class_property
+    def objects_by_label(cls):
+        """A dict of DocumentType object instances keyed on English display label"""
+        return {
+            # lookup on display_label_en/name_en since solr should always index in English
+            (doctype.display_label_en or doctype.name_en): doctype
+            for doctype in cls.objects.all()
+        }
 
 
 class DocumentSignalHandlers:
@@ -897,7 +922,9 @@ class Document(ModelIndexable, DocumentDateMixin):
         index_data.update(
             {
                 "pgpid_i": self.id,
-                "type_s": str(self.doctype) if self.doctype else _("Unknown type"),
+                # type gets matched back to DocumentType object in get_result_document, for i18n;
+                # should always be indexed in English
+                "type_s": str(self.doctype) if self.doctype else "Unknown type",
                 # use english description for now
                 "description_t": strip_tags(self.description_en),
                 "notes_t": self.notes or None,
