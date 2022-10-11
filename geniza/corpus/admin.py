@@ -17,7 +17,6 @@ from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.common.admin import custom_empty_field_list_filter
-from geniza.common.utils import timeprint
 from geniza.corpus.metadata_export import DocumentExporter
 from geniza.corpus.models import (
     Collection,
