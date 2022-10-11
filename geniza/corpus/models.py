@@ -450,7 +450,7 @@ class TagSignalHandlers:
         instance.name = unidecode(instance.name)
 
 
-class DocumentMetadataQuery(models.QuerySet):
+class DocumentQuerySet(models.QuerySet):
     def metadata_prefetch(self):
         return (
             # super()
