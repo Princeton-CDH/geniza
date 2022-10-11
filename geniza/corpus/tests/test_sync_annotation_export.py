@@ -137,6 +137,8 @@ class TestSyncAnnationExport:
             # set lastrun before we create a test log entry
             now = timezone.now()
             cmd.update_lastrun_info(now)
+            # set a default commit message
+            mock_annoexporter.default_commit_msg = "Automatic export"
 
             # create a log entry for our fixture annotation
             script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
@@ -162,7 +164,10 @@ class TestSyncAnnationExport:
             mock_exporter.setup_repo.assert_called()
             pgpid = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
             mock_exporter.export.assert_called_with(
-                pgpids=[pgpid], modifying_users=set([script_user])
+                pgpids=[pgpid],
+                modifying_users=set([script_user]),
+                commit_msg="%s - PGPID %s"
+                % (mock_annoexporter.default_commit_msg, pgpid),
             )
             assert mock_exporter.sync_github.call_count == 1
 
@@ -179,6 +184,9 @@ class TestSyncAnnationExport:
         ):
 
             stdout = StringIO()
+            # set a default commit message
+            mock_annoexporter.default_commit_msg = "Automatic export"
+
             cmd = sync_annotation_export.Command(stdout=stdout)
             cmd.lastrun_filename = tmpdir / "test_lastrun"
             # set lastrun
@@ -202,6 +210,9 @@ class TestSyncAnnationExport:
             mock_exporter.setup_repo.assert_called()
             doc = Document.from_manifest_uri(annotation.target_source_manifest_id)
             mock_exporter.export.assert_called_with(
-                pgpids=[pgpid], modifying_users=set([admin_user])
+                pgpids=[pgpid],
+                modifying_users=set([admin_user]),
+                commit_msg="%s - PGPID %s"
+                % (mock_annoexporter.default_commit_msg, pgpid),
             )
             assert mock_exporter.sync_github.call_count == 1
