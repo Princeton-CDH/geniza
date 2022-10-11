@@ -6,7 +6,7 @@ Princeton Geniza Project
 Python/Django web application for a version 4.x of the `Princeton Geniza Project
 <https://cdh.princeton.edu/projects/princeton-geniza-project/>`_.
 
-Python 3.8 / Django 3.2 / Node 16 / Postgresql / Solr 8.6
+Python 3.9 / Django 3.2 / Node 16 / Postgresql / Solr 8.6
 
 
 .. image:: https://github.com/Princeton-CDH/geniza/workflows/unit%20tests/badge.svg

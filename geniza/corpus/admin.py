@@ -581,6 +581,9 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
 class DocumentTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = ("name", "display_label")
 
+    class Media:
+        css = {"all": ("css/admin-local.css",)}
+
 
 @admin.register(Fragment)
 class FragmentAdmin(admin.ModelAdmin):

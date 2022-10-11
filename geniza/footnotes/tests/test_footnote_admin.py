@@ -271,7 +271,6 @@ class TestFootnoteAdmin:
             headers = export_args[1]
             assert "document" in headers
             assert "source" in headers
-            assert "content" in headers
 
 
 class TestSourceFootnoteInline:
