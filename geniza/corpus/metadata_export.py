@@ -52,6 +52,7 @@ from geniza.corpus.models import Document, TextBlock
 class Exporter(object):
     model = None
     str_plural = "objects"
+    csv_fields = []
 
     def __init__(
         self, qset=None, progress=CSV_EXPORT_PROGRESS, sep_within_cells=SEP_WITHIN_CELLS
