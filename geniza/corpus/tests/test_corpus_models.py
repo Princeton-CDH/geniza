@@ -440,7 +440,6 @@ class TestDocumentType:
             # __func__ returns a property
             # fget returns the actual cached function
             DocumentType.__dict__["objects_by_label"].__func__.fget.cache_clear()
-        # DocumentType.cache_clear()
         # add some new doctypes
         doc_type = DocumentType(name_en="SomeType")
         doc_type.save()
