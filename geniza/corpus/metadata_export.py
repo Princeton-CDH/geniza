@@ -69,19 +69,54 @@ class Exporter(object):
         return self.model.objects.metadata_prefetch() if not self.qset else self.qset
 
     def get_export_data_dict(self, obj):
+        # @NOTE: THIS NEEDS TO BE SUBCLASSED
         pass
 
-    def iter_export_data_as_dicts(self, pseudo_buffer=False):
-        pass
+    def iter_export_data_as_dicts(self):
+        timeprint("iter_export_data_as_dicts")
+        # get qset
+        qset = self.get_queryset()
 
-    def iter_export_data_as_csv(self, fn=None):
-        pass
+        # progress bar?
+        iterr = (
+            qset
+            if not self.progress
+            else track(qset, description=f"Writing rows to file")
+        )
+
+        # save
+        yield from (self.get_export_data_dict(obj) for obj in iterr)
+
+    def iter_export_data_as_csv(self, fn=None, pseudo_buffer=False):
+        timeprint("iter_export_data_as_csv")
+        with (
+            open(self.csv_filename() if not fn else fn, "w")
+            if not pseudo_buffer
+            else Echo()
+        ) as of:
+            writer = csv.DictWriter(
+                of, fieldnames=self.csv_fields, extrasaction="ignore"
+            )
+            yield writer.writeheader()
+            yield from (
+                writer.writerow(docd) for docd in self.iter_export_data_as_dicts()
+            )
 
     def write_export_data_csv(self, fn=None):
-        pass
+        timeprint("write_export_data_csv")
+        if not fn:
+            fn = self.csv_filename()
+        for row in self.iter_export_data_as_csv(fn=fn, pseudo_buffer=False):
+            pass
 
     def http_export_data_csv(self, fn=None):
-        pass
+        timeprint("http_export_data_csv")
+        if not fn:
+            fn = self.csv_filename()
+        iterr = self.iter_export_data_as_csv(pseudo_buffer=True)
+        response = StreamingHttpResponse(iterr, content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = f"attachment; filename={fn}"
+        return response
 
 
 class DocumentExporter(Exporter):
@@ -179,49 +214,3 @@ class DocumentExporter(Exporter):
         )
 
         return outd
-
-    def iter_export_data_as_dicts(self):
-        timeprint("iter_export_data_as_dicts")
-        # get qset
-        qset = self.get_queryset()
-
-        # progress bar?
-        iterr = (
-            qset
-            if not self.progress
-            else track(qset, description=f"Writing rows to file")
-        )
-
-        # save
-        yield from (self.get_export_data_dict(obj) for obj in iterr)
-
-    def iter_export_data_as_csv(self, fn=None, pseudo_buffer=False):
-        timeprint("iter_export_data_as_csv")
-        with (
-            open(self.csv_filename() if not fn else fn, "w")
-            if not pseudo_buffer
-            else Echo()
-        ) as of:
-            writer = csv.DictWriter(
-                of, fieldnames=self.csv_fields, extrasaction="ignore"
-            )
-            yield writer.writeheader()
-            yield from (
-                writer.writerow(docd) for docd in self.iter_export_data_as_dicts()
-            )
-
-    def write_export_data_csv(self, fn=None):
-        timeprint("write_export_data_csv")
-        if not fn:
-            fn = self.csv_filename()
-        for row in self.iter_export_data_as_csv(fn=fn, pseudo_buffer=False):
-            pass
-
-    def http_export_data_csv(self, fn=None):
-        timeprint("http_export_data_csv")
-        if not fn:
-            fn = self.csv_filename()
-        iterr = self.iter_export_data_as_csv(pseudo_buffer=True)
-        response = StreamingHttpResponse(iterr, content_type="text/csv; charset=utf-8")
-        response["Content-Disposition"] = f"attachment; filename={fn}"
-        return response
