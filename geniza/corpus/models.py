@@ -381,6 +381,9 @@ class DocumentType(models.Model):
         """Natural key, name"""
         return (self.name,)
 
+    # cached class property:
+    # set of decorators to cache a class property, as opposed to an instance property.
+    # from https://stackoverflow.com/a/71887897 (refactor as reusable decorator not working)
     @classmethod
     @property
     @cache
