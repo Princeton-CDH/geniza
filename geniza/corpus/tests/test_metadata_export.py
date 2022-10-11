@@ -29,10 +29,8 @@ def test_doc_exporter_cli(document, join):
 
     iter = exporter.iter_export_data_as_dicts()
     row1 = next(iter)
-    print(row1)
     assert row1["pgpid"] == document.id  # this should be first row
 
     # correct description in second row?
     row2 = next(iter)
-    print(row2)
     assert row2.get("description") == join.description

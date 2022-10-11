@@ -22,7 +22,7 @@ class Command(BaseCommand):
         ofn = options["output_filename"]
         self.print(f"Exporting data as CSV to: {ofn}")
 
-        exporter = DocumentExporter(progress=True)
-        exporter.write_export_data_csv(fn=ofn)
+        exporter = DocumentExporter()
+        exporter.write_export_data_csv(fn=ofn, progress=True)
 
         self.print(f"Finished CSV export in {time.time()-began:.1f} seconds")
