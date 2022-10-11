@@ -520,7 +520,7 @@ class Document(ModelIndexable, DocumentDateMixin):
     )
     old_pgpids = ArrayField(models.IntegerField(), null=True, verbose_name="Old PGPIDs")
 
-    objects = DocumentMetadataQuery.as_manager()
+    objects = DocumentQuerySet.as_manager()
 
     PUBLIC = "P"
     STATUS_PUBLIC = "Public"
