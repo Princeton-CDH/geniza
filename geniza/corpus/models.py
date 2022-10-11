@@ -43,6 +43,14 @@ from geniza.footnotes.models import Creator, Footnote, Source
 logger = logging.getLogger(__name__)
 
 
+def cached_class_property(f):
+    """
+    Reusable decorator to cache a class property, as opposed to an instance property.
+    from https://stackoverflow.com/a/71887897
+    """
+    return classmethod(property(cache(f)))
+
+
 class CollectionManager(models.Manager):
     """Custom manager for :class:`Collection` with natural key lookup"""
 
@@ -381,12 +389,7 @@ class DocumentType(models.Model):
         """Natural key, name"""
         return (self.name,)
 
-    # cached class property:
-    # set of decorators to cache a class property, as opposed to an instance property.
-    # from https://stackoverflow.com/a/71887897 (refactor as reusable decorator not working)
-    @classmethod
-    @property
-    @cache
+    @cached_class_property
     def objects_by_label(cls):
         """A dict of DocumentType object instances keyed on English display label"""
         return {

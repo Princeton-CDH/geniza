@@ -434,11 +434,21 @@ class TestDocumentType:
 
     def test_objects_by_label(self):
         """Should return dict of DocumentType objects keyed on English label"""
+        # invalidate cached property (it is computed in other tests in the suite)
+        if "objects_by_label" in DocumentType.__dict__:
+            # __dict__["objects_by_label"] returns a classmethod
+            # __func__ returns a property
+            # fget returns the actual cached function
+            DocumentType.__dict__["objects_by_label"].__func__.fget.cache_clear()
+        # DocumentType.cache_clear()
+        # add some new doctypes
         doc_type = DocumentType(name_en="SomeType")
         doc_type.save()
         doc_type_2 = DocumentType(display_label_en="Type2")
         doc_type_2.save()
+        # should be able to get a document type by label
         assert isinstance(DocumentType.objects_by_label.get("SomeType"), DocumentType)
+        # should match by name_en or display_label_en, depending on what's set
         assert DocumentType.objects_by_label.get("SomeType").pk == doc_type.pk
         assert DocumentType.objects_by_label.get("Type2").pk == doc_type_2.pk
 
