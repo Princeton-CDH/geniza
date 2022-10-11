@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+4.10
+----
+
+
+-   maintenance/other
+    - upgrade to python 3.9
+    - removed code for TEI migration and interim transcription support
+
 4.9
 ---
 
