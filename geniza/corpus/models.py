@@ -468,8 +468,8 @@ class DocumentMetadataQuery(models.QuerySet):
             )
             .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
             .order_by("shelfmk_all")
-            .order_by("id")
-            .prefetch_related("secondary_languages", "log_entries")
+            # .order_by("id")   # @TODO: Where does this go?
+            # .prefetch_related("secondary_languages", "log_entries")
         )
 
 
