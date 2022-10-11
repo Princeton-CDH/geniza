@@ -1,6 +1,3 @@
-CSV_EXPORT_PROGRESS = True
-SEP_WITHIN_CELLS = "; "
-
 import csv
 import os
 
@@ -20,16 +17,14 @@ from geniza.common.utils import Echo, timeprint
 from geniza.corpus.models import Document, TextBlock
 
 
-class Exporter(object):
+class Exporter:
     model = None
     csv_fields = []
+    sep_within_cells = "; "
+    progress = True
 
-    def __init__(
-        self, qset=None, progress=CSV_EXPORT_PROGRESS, sep_within_cells=SEP_WITHIN_CELLS
-    ):
-        self.qset = qset
-        self.progress = progress
-        self.sep_within_cells = sep_within_cells
+    def __init__(self, queryset=None):
+        self.queryset = queryset
 
     def csv_filename(self):
         str_plural = self.model._meta.verbose_name_plural
@@ -37,28 +32,32 @@ class Exporter(object):
         return f"geniza-{str_plural}-{str_time}.csv"
 
     def get_queryset(self):
-        return self.model.objects.metadata_prefetch() if not self.qset else self.qset
+        return (
+            self.model.objects.metadata_prefetch()
+            if not self.queryset
+            else self.queryset
+        )
 
     def get_export_data_dict(self, obj):
         # THIS NEEDS TO BE SUBCLASSED
         raise NotImplementedError
 
-    def iter_export_data_as_dicts(self):
+    def iter_export_data_as_dicts(self, progress=None):
         timeprint("iter_export_data_as_dicts")
-        # get qset
-        qset = self.get_queryset()
+        # get queryset
+        queryset = self.get_queryset()
 
         # progress bar?
         iterr = (
-            qset
-            if not self.progress
-            else track(qset, description=f"Writing rows to file")
+            queryset
+            if not (self.progress if progress is None else progress)
+            else track(queryset, description=f"Writing rows to file")
         )
 
         # save
         yield from (self.get_export_data_dict(obj) for obj in iterr)
 
-    def iter_export_data_as_csv(self, fn=None, pseudo_buffer=False):
+    def iter_export_data_as_csv(self, fn=None, pseudo_buffer=False, progress=None):
         timeprint("iter_export_data_as_csv")
         with (
             open(self.csv_filename() if not fn else fn, "w")
@@ -70,21 +69,24 @@ class Exporter(object):
             )
             yield writer.writeheader()
             yield from (
-                writer.writerow(docd) for docd in self.iter_export_data_as_dicts()
+                writer.writerow(docd)
+                for docd in self.iter_export_data_as_dicts(progress=progress)
             )
 
-    def write_export_data_csv(self, fn=None):
+    def write_export_data_csv(self, fn=None, progress=True):
         timeprint("write_export_data_csv")
         if not fn:
             fn = self.csv_filename()
-        for row in self.iter_export_data_as_csv(fn=fn, pseudo_buffer=False):
+        for row in self.iter_export_data_as_csv(
+            fn=fn, pseudo_buffer=False, progress=progress
+        ):
             pass
 
-    def http_export_data_csv(self, fn=None):
+    def http_export_data_csv(self, fn=None, progress=False):
         timeprint("http_export_data_csv")
         if not fn:
             fn = self.csv_filename()
-        iterr = self.iter_export_data_as_csv(pseudo_buffer=True)
+        iterr = self.iter_export_data_as_csv(pseudo_buffer=True, progress=progress)
         response = StreamingHttpResponse(iterr, content_type="text/csv; charset=utf-8")
         response["Content-Disposition"] = f"attachment; filename={fn}"
         return response
@@ -122,7 +124,7 @@ class DocumentExporter(Exporter):
         "collection",
     ]
 
-    def get_export_data_dict(self, doc, sep_within_cells=SEP_WITHIN_CELLS):
+    def get_export_data_dict(self, doc):
         all_textblocks = doc.textblock_set.all()
         all_fragments = [tb.fragment for tb in all_textblocks]
         all_log_entries = doc.log_entries.all()
@@ -168,6 +170,9 @@ class DocumentExporter(Exporter):
         outd[
             "url"
         ] = f"{url_scheme}{site_domain}/documents/{doc.id}/"  # public site url
+
+        sep_within_cells = self.sep_within_cells
+
         outd["iiif_urls"] = sep_within_cells.join(iiif_urls) if any(iiif_urls) else ""
         outd["fragment_urls"] = (
             sep_within_cells.join(view_urls) if any(view_urls) else ""

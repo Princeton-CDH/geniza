@@ -12,9 +12,9 @@ def test_doc_exporter_cli(document, join):
 
     # correct number of rows?
 
-    ## ...in qset?
-    qset = exporter.get_queryset()
-    assert len(qset) == 2
+    ## ...in queryset?
+    queryset = exporter.get_queryset()
+    assert len(queryset) == 2
 
     ## ...in data?
     rows = list(exporter.iter_export_data_as_dicts())
