@@ -1,34 +1,5 @@
 CSV_EXPORT_PROGRESS = True
 SEP_WITHIN_CELLS = "; "
-CSV_EXPORT_FIELDS_DOC = [
-    "pgpid",
-    "url",
-    "iiif_urls",
-    "fragment_urls",
-    "shelfmark",
-    "multifragment",
-    "side",
-    "region",
-    "type",
-    "tags",
-    "description",
-    "shelfmarks_historic",
-    "languages_primary",
-    "languages_secondary",
-    "language_note",
-    "doc_date_original",
-    "doc_date_calendar",
-    "doc_date_standard",
-    "notes",
-    "needs_review",
-    "url_admin",
-    "initial_entry",
-    "last_modified",
-    "input_by",
-    "status",
-    "library",
-    "collection",
-]
 
 import csv
 import os
@@ -121,7 +92,35 @@ class Exporter(object):
 
 class DocumentExporter(Exporter):
     model = Document
-    csv_fields = CSV_EXPORT_FIELDS_DOC
+    csv_fields = [
+        "pgpid",
+        "url",
+        "iiif_urls",
+        "fragment_urls",
+        "shelfmark",
+        "multifragment",
+        "side",
+        "region",
+        "type",
+        "tags",
+        "description",
+        "shelfmarks_historic",
+        "languages_primary",
+        "languages_secondary",
+        "language_note",
+        "doc_date_original",
+        "doc_date_calendar",
+        "doc_date_standard",
+        "notes",
+        "needs_review",
+        "url_admin",
+        "initial_entry",
+        "last_modified",
+        "input_by",
+        "status",
+        "library",
+        "collection",
+    ]
 
     def get_export_data_dict(self, doc, sep_within_cells=SEP_WITHIN_CELLS):
         all_textblocks = doc.textblock_set.all()
