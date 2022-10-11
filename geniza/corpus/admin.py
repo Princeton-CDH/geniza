@@ -18,7 +18,7 @@ from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.common.admin import custom_empty_field_list_filter
 from geniza.common.utils import timeprint
-from geniza.corpus.metadata_export import http_stream_export_data_for_docs
+from geniza.corpus.metadata_export import DocumentExporter
 from geniza.corpus.models import (
     Collection,
     Document,
@@ -314,7 +314,10 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
 
     def get_queryset(self, request):
         # code adapted from BaseModelAdmin.query_set()
-        qset = self.model.metadata_objects.get_queryset()
+
+        # @TODO: Is this how to combine request object with our custom queryset?
+
+        qset = self.model.objects.metadata_prefetch()
         ordering = self.get_ordering(request)
         if ordering:
             qset = qset.order_by(*ordering)
@@ -434,21 +437,9 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     def export_to_csv(self, request, queryset=None):
         """Stream tabular data as a CSV file"""
 
-        timeprint("Querying")
-
         queryset = queryset or self.get_queryset(request)
-
-        # @TODO: Do we need this? Doesn't seem so...
-        # .order_by("id").prefetch_related(
-        #     "secondary_languages",
-        #     "log_entries",
-        # )
-
-        timeprint(f"Done querying")
-
-        return http_stream_export_data_for_docs(
-            fn=self.csv_filename(), docs=queryset, csv_fields=self.csv_fields
-        )
+        exporter = DocumentExporter(qset=queryset, progress=False)
+        return exporter.http_export_data_csv()
 
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all documents

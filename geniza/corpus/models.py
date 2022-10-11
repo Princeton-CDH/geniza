@@ -450,12 +450,12 @@ class TagSignalHandlers:
         instance.name = unidecode(instance.name)
 
 
-class MetadataManager(models.Manager):
-    def get_queryset(self):
+class DocumentMetadataQuery(models.QuerySet):
+    def metadata_prefetch(self):
         return (
-            super()
-            .get_queryset()
-            .select_related("doctype")
+            # super()
+            # .get_queryset()
+            self.select_related("doctype")
             .prefetch_related(
                 "tags",
                 "languages",
@@ -468,6 +468,8 @@ class MetadataManager(models.Manager):
             )
             .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
             .order_by("shelfmk_all")
+            .order_by("id")
+            .prefetch_related("secondary_languages", "log_entries")
         )
 
 
@@ -518,10 +520,7 @@ class Document(ModelIndexable, DocumentDateMixin):
     )
     old_pgpids = ArrayField(models.IntegerField(), null=True, verbose_name="Old PGPIDs")
 
-    objects = (
-        models.Manager()
-    )  # needs to be defined first in order for this to be 'default manager'? https://docs.djangoproject.com/en/4.1/topics/db/managers/#django.db.models.Model._default_manager
-    metadata_objects = MetadataManager()
+    objects = DocumentMetadataQuery.as_manager()
 
     PUBLIC = "P"
     STATUS_PUBLIC = "Public"

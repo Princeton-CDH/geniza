@@ -4,7 +4,7 @@ from asyncore import write
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from geniza.corpus.metadata_export import write_stream_export_data_for_docs
+from geniza.corpus.metadata_export import DocumentExporter
 
 
 class Command(BaseCommand):
@@ -22,6 +22,7 @@ class Command(BaseCommand):
         ofn = options["output_filename"]
         self.print(f"Exporting data as CSV to: {ofn}")
 
-        write_stream_export_data_for_docs(fn=ofn, progress=True)
+        exporter = DocumentExporter(progress=True)
+        exporter.write_export_data_csv(fn=ofn)
 
         self.print(f"Finished CSV export in {time.time()-began:.1f} seconds")
