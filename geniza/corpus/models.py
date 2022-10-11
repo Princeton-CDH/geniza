@@ -25,6 +25,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from djiffy.models import Manifest
+from modeltranslation.utils import fallbacks
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
@@ -383,7 +384,14 @@ class DocumentType(models.Model):
     objects = DocumentTypeManager()
 
     def __str__(self):
-        return self.display_label or self.name
+        # temporarily turn off model translate fallbacks;
+        # if display label for current language is not defined,
+        # we want name for the current language rather than the
+        # fallback value for display label
+        with fallbacks(False):
+            current_lang_label = self.display_label or self.name
+
+        return current_lang_label or self.display_label or self.name
 
     def natural_key(self):
         """Natural key, name"""

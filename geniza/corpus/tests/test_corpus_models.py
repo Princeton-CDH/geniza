@@ -16,6 +16,7 @@ from django.utils import timezone
 from django.utils.html import strip_tags
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
+from django.utils.translation import override as translation_override
 from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
 from modeltranslation.manager import MultilingualQuerySet
 from piffle.presentation import IIIFException as piffle_IIIFException
@@ -419,6 +420,16 @@ class TestDocumentType:
         assert str(doctype) == doctype.name_en
         doctype.display_label_en = "Legal document"
         assert str(doctype) == "Legal document"
+
+    def test_str_not_en(self):
+        # when a translated name is defined without a translated display label,
+        # and that language is the active language,
+        # we want the translated name, NOT the fallback english display label
+        with translation_override("he"):
+            doctype = DocumentType(
+                name_en="Legal", display_label_en="Legal Document", name_he="מסמך משפטי"
+            )
+            assert str(doctype) == "מסמך משפטי"
 
     def test_natural_key(self):
         """Should use name as natural key"""
