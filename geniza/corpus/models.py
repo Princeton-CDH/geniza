@@ -672,7 +672,10 @@ class Document(ModelIndexable, DocumentDateMixin):
         )
 
     def iiif_images(self, filter_side=False, with_placeholders=False):
-        """Dict of IIIF images and labels for images of the Document's Fragments, keyed on canvas.
+        """
+        Dict of IIIF images and labels for images of the Document's Fragments, keyed on canvas.
+
+
         :param filter_side: if TextBlocks have side info, filter images by side (default: False)
         :param with_placeholders: if there are digital editions with canvases missing images,
             include placeholder images for each additional canvas (default: False)"""
