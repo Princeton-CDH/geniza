@@ -165,6 +165,9 @@ class DocumentExporter(Exporter):
 
         outd = {}
         outd["pgpid"] = doc.id
+
+        # to make the download as efficient as possible, don't use
+        # absolutize_url, reverse, or get_absolute_url methods
         outd[
             "url"
         ] = f"{url_scheme}{site_domain}/documents/{doc.id}/"  # public site url
@@ -197,17 +200,18 @@ class DocumentExporter(Exporter):
         outd[
             "url_admin"
         ] = f"{url_scheme}{site_domain}/admin/corpus/document/{doc.id}/change/"
+
+        # default sort is most recent first, so initial input is last
         outd["initial_entry"] = (
             all_log_entries.last().action_time if all_log_entries else ""
         )
+
         outd["last_modified"] = doc.last_modified
+
         outd["input_by"] = sep_within_cells.join(
-            sorted(
-                list(
-                    set([user.get_full_name() or user.username for user in input_users])
-                )
-            )
-        )  # sorting to ensure deterministic order
+            set([user.get_full_name() or user.username for user in input_users])
+        )
+
         outd["status"] = doc.get_status_display()
         outd["library"] = sep_within_cells.join(libraries) if any(libraries) else ""
         outd["collection"] = (
