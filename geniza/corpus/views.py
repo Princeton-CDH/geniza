@@ -450,7 +450,7 @@ class DocumentManifestView(DocumentDetailView):
     incorporating available canvases and attaching transcription
     content via annotation."""
 
-    viewname = "corpus:document-manifest"
+    viewname = "corpus-uris:document-manifest"
 
     def get(self, request, *args, **kwargs):
         document = self.get_object()
@@ -535,7 +535,7 @@ class DocumentManifestView(DocumentDetailView):
             other_content = {
                 "@context": "http://iiif.io/api/presentation/2/context.json",
                 "@id": absolutize_url(
-                    reverse("corpus:document-annotations", args=[document.pk]),
+                    reverse("corpus-uris:document-annotations", args=[document.pk]),
                     request=request,  # request is needed to avoid getting https:// urls in dev
                 ),
                 "@type": "sc:AnnotationList",
@@ -555,7 +555,7 @@ class DocumentAnnotationListView(DocumentDetailView):
     """Generate a IIIF Annotation List for a document to make transcription
     content available for inclusion in local IIIF manifest."""
 
-    viewname = "corpus:document-annotations"
+    viewname = "corpus-uris:document-annotations"
 
     def get(self, request, *args, **kwargs):
         """handle GET request: construct and return JSON annotation list"""

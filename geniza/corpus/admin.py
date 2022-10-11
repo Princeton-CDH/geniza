@@ -371,42 +371,6 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             request, object_id, form_url, extra_context=extra_ctx
         )
 
-    # CSV EXPORT -------------------------------------------------------------
-
-    def csv_filename(self):
-        """Generate filename for CSV download"""
-        return f'geniza-documents-{timezone.now().strftime("%Y%m%dT%H%M%S")}.csv'
-
-    csv_fields = [
-        "pgpid",
-        "url",
-        "iiif_urls",
-        "fragment_urls",
-        "shelfmark",
-        "multifragment",
-        "side",
-        "region",
-        "type",
-        "tags",
-        "description",
-        "shelfmarks_historic",
-        "languages_primary",
-        "languages_secondary",
-        "language_note",
-        "doc_date_original",
-        "doc_date_calendar",
-        "doc_date_standard",
-        "notes",
-        "needs_review",
-        "url_admin",
-        "initial_entry",
-        "last_modified",
-        "input_by",
-        "status",
-        "library",
-        "collection",
-    ]
-
     @admin.display(description="Merge selected documents")
     def merge_documents(self, request, queryset=None):
         """Admin action to merge selected documents. This action redirects to an intermediate
@@ -456,6 +420,9 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
 @admin.register(DocumentType)
 class DocumentTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = ("name", "display_label")
+
+    class Media:
+        css = {"all": ("css/admin-local.css",)}
 
 
 @admin.register(Fragment)

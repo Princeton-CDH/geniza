@@ -43,9 +43,6 @@ manage commands
 .. automodule:: geniza.corpus.management.commands.merge_documents
     :members:
 
-.. automodule:: geniza.corpus.management.commands.sync_transcriptions
-    :members:
-
 .. automodule:: geniza.corpus.management.commands.convert_dates
     :members:
 

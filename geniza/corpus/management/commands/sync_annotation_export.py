@@ -110,6 +110,8 @@ class Command(BaseCommand):
                 self.anno_exporter.export(
                     pgpids=[document.pk],
                     modifying_users=users,
+                    commit_msg="%s - PGPID %d"
+                    % (AnnotationExporter.default_commit_msg, document.pk),
                 )
 
             # push changes to remote

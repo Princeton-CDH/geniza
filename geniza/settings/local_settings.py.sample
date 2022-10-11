@@ -5,8 +5,12 @@
 
 DEBUG = True
 
-# Turn this on in test/QA site to show test banner
-# SHOW_TEST_WARNING = True
+FEATURE_FLAGS = [
+    # "SHOW_WARNING_BANNER", # Uncomment this in test/QA site to show test banner
+]
+# Uncomment and change these to override the default test banner message
+# WARNING_BANNER_HEADING = "This is a test site"
+# WARNING_BANNER_MESSAGE = "Content may change or be removed without warning"
 
 # Turn this on to enable google analytics in production
 # INCLUDE_ANALYTICS = True

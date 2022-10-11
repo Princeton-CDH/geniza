@@ -22,17 +22,18 @@ def test_convert_date_report(tmp_path, document, join):
 
     stderr = StringIO()
     report_file = tmp_path / "date-conversion-report.csv"
-    call_command("convert_dates", "report", report_file.name, stderr=stderr)
-    with open(report_file.name) as f:
+    call_command("convert_dates", "report", str(report_file), stderr=stderr)
+
+    with open(report_file) as f:
         lines = f.readlines()
-        # header + two documents with convertable dates
-        assert len(lines) == 3
-        assert document.doc_date_original in lines[1]
-        assert document.get_doc_date_calendar_display() in lines[1]
-        assert document.doc_date_standard in lines[1]
-        # converted date
-        assert "1113-06-18/1114-06-06" in lines[1]
-        assert "1208-08-26" in lines[2]
+    # header + two documents with convertable dates
+    assert len(lines) == 3
+    assert document.doc_date_original in lines[1]
+    assert document.get_doc_date_calendar_display() in lines[1]
+    assert document.doc_date_standard in lines[1]
+    # converted date
+    assert "1113-06-18/1114-06-06" in lines[1]
+    assert "1208-08-26" in lines[2]
 
 
 @pytest.mark.django_db

@@ -3,6 +3,13 @@
 ## 4.9.0
 
 -   Must configure **ANNOTATION_BACKUP_PATH** and **ANNOTATION_BACKUP_GITREPO** in local settings. For proper setup, the directory at **ANNOTATION_BACKUP_PATH** should not exist when first run, but the containing directory should.
+-   Load IIIF manifests for JRL Manchester content: download the csv at
+    https://princetongenizalab.github.io/iiif/jrl/pgp-jrl-manifests.csv
+    and run `python manage.py add_fragment_urls pgp-jrl-manifests.csv --overwrite --skip-indexing`
+-   Load IIIF manifests for Bodleian content: download the csv at
+    https://princetongenizalab.github.io/iiif/bodleian/pgp-bodleian-manifests.csv
+    and run `python manage.py add_fragment_urls pgp-bodleian-manifests.csv --overwrite --skip-indexing`
+
 -   Migrate transcription content from TEI xml to the new IIIF annotation
     format: `python manage.py tei_to_annotation -v 0`
 
@@ -18,6 +25,7 @@ to avoid the annotation backup git repository getting into a bad state.
     update remote git repository with annotation exports generated via signal handler.
 -   Copy the new fonts `WF-037420-012177-002520.woff`, `WF-037420-012177-002520.woff2`, and all `Amiri-*` and `Hassan*` from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`
 -   Copy the new versions of FrankRuhl, `FrankRuhl1924MF-Medium-Medium.woff` and `FrankRuhl1924MF-Medium-Medium.woff2` (note the dashes!) from the shared Google Drive folder "Geniza – woff files only" to `sitemedia/fonts`. There was an error with the original font's vertical metrics.
+-   To enable the new warning banner, add the `FEATURE_FLAGS` list to local settings and populate it with the string `"SHOW_WARNING_BANNER"`. To change its contents, configure `WARNING_BANNER_HEADING` and `WARNING_BANNER_MESSAGE` in local settings.
 
 ## 4.8
 
