@@ -32,11 +32,7 @@ class Exporter:
         return f"geniza-{str_plural}-{str_time}.csv"
 
     def get_queryset(self):
-        return (
-            self.model.objects.metadata_prefetch()
-            if not self.queryset
-            else self.queryset
-        )
+        return self.queryset or self.model.objects.all()
 
     def get_export_data_dict(self, obj):
         # THIS NEEDS TO BE SUBCLASSED
@@ -123,6 +119,15 @@ class DocumentExporter(Exporter):
         "library",
         "collection",
     ]
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .metadata_prefetch()
+            .prefetch_related("secondary_languages", "log_entries")
+            .order_by("id")
+        )
 
     def get_export_data_dict(self, doc):
         all_textblocks = doc.textblock_set.all()

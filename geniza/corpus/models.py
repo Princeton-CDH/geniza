@@ -453,8 +453,6 @@ class TagSignalHandlers:
 class DocumentQuerySet(models.QuerySet):
     def metadata_prefetch(self):
         return (
-            # super()
-            # .get_queryset()
             self.select_related("doctype")
             .prefetch_related(
                 "tags",
@@ -467,9 +465,6 @@ class DocumentQuerySet(models.QuerySet):
                 ),
             )
             .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
-            .order_by("shelfmk_all")
-            # .order_by("id")   # @TODO: Where does this go?
-            # .prefetch_related("secondary_languages", "log_entries")
         )
 
 
