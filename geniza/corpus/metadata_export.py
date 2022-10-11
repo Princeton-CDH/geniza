@@ -51,7 +51,6 @@ from geniza.corpus.models import Document, TextBlock
 
 class Exporter(object):
     model = None
-    str_plural = "objects"
     csv_fields = []
 
     def __init__(
@@ -62,16 +61,16 @@ class Exporter(object):
         self.sep_within_cells = sep_within_cells
 
     def csv_filename(self):
-        return (
-            f'geniza-{self.str_plural}-{timezone.now().strftime("%Y%m%dT%H%M%S")}.csv'
-        )
+        str_plural = self.model._meta.verbose_name_plural
+        str_time = timezone.now().strftime("%Y%m%dT%H%M%S")
+        return f"geniza-{str_plural}-{str_time}.csv"
 
     def get_queryset(self):
         return self.model.objects.metadata_prefetch() if not self.qset else self.qset
 
     def get_export_data_dict(self, obj):
-        # @NOTE: THIS NEEDS TO BE SUBCLASSED
-        pass
+        # THIS NEEDS TO BE SUBCLASSED
+        raise NotImplementedError
 
     def iter_export_data_as_dicts(self):
         timeprint("iter_export_data_as_dicts")
@@ -122,7 +121,6 @@ class Exporter(object):
 
 class DocumentExporter(Exporter):
     model = Document
-    str_plural = "documents"
     csv_fields = CSV_EXPORT_FIELDS_DOC
 
     def get_export_data_dict(self, doc, sep_within_cells=SEP_WITHIN_CELLS):
