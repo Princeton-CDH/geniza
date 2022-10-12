@@ -452,6 +452,9 @@ class TagSignalHandlers:
 
 class DocumentQuerySet(models.QuerySet):
     def metadata_prefetch(self):
+        """
+        Returns a further QuerySet that has been prefetched for relevant document information.
+        """
         return (
             self.select_related("doctype")
             .prefetch_related(
