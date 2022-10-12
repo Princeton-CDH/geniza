@@ -658,6 +658,25 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     all_secondary_languages.short_description = "Secondary Language"
 
+    @cached_property
+    def primary_lang_code(self):
+        """Primary language code for this document, when there is only one
+        primary language set and it has an ISO code available. Returns
+        None if unset or unavailable.
+        """
+        if self.languages.count() == 1:
+            return self.languages.first().iso_code or None
+
+    @cached_property
+    def primary_script(self):
+        """Primary script for this document, if shared across all primary languages."""
+        # aggregate all scripts for primary document languages
+        # convert to set for uniqueness
+        scripts = set([ls.script for ls in self.languages.all()])
+        # if there is only one script, return it; otherwire return None
+        if len(scripts) == 1:
+            return list(scripts)[0]
+
     def all_tags(self):
         """comma delimited string of all tags for this document"""
         return ", ".join(t.name for t in self.tags.all())
@@ -956,7 +975,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "tags_ss_lower": [t.name for t in self.tags.all()],
                 "status_s": self.get_status_display(),
                 "old_pgpids_is": self.old_pgpids,
-                "language_code_ss": [lang.iso_code for lang in self.languages.all()],
+                "language_code_s": self.primary_lang_code,
+                "language_script_s": self.primary_script,
                 # use image info link without trailing info.json to easily convert back to iiif image client
                 "iiif_images_ss": [
                     img["image"].info()[:-10]  # i.e., remove /info.json

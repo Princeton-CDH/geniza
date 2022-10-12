@@ -31,7 +31,6 @@ class TestDocumentDetailTemplate:
         """Document detail template should include document first input date"""
         response = client.get(document.get_absolute_url())
         # NOTE: No longer using definition list
-        print(response.content)
         assertContains(response, "In PGP since 2004")
 
     def test_tags(self, client, document):
@@ -343,7 +342,6 @@ class TestDocumentScholarshipTemplate:
         response = client.get(
             reverse("corpus:document-scholarship", args=[document.pk])
         )
-        print(response.content)
         assertContains(
             response,
             '<dt class="relation">for edition, translation see</dt>',
@@ -559,11 +557,15 @@ class TestDocumentResult:
         assert transcription_txt[:150] in rendered
         # language not specified
         assert 'lang=""' in rendered
+        # language script not specified if unset
+        assert "data-lang-script" not in rendered
 
-        # use first language code, if specified
-        context["document"]["language_code"] = ["jrb", "ara"]
+        # use language code & script, when specified
+        context["document"]["language_code"] = "jrb"
+        context["document"]["language_script"] = "Hebrew"
         rendered = self.template.render(context)
         assert 'lang="jrb"' in rendered
+        assert 'data-lang-script="hebrew"' in rendered
 
     def test_transcription_highlighting(self, document):
         test_highlight = "<em>לסידנא</em> אלרב ותערפני וצולהא פי רסאלתך אן שא אללה"

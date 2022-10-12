@@ -591,6 +591,67 @@ class TestDocument:
         doc.secondary_languages.add(arabic)
         assert doc.all_secondary_languages() == "%s,%s" % (arabic, lang)
 
+    def test_primary_lang_code(self):
+        doc = Document.objects.create()
+        # no language, no code
+        assert doc.primary_lang_code is None
+
+        # single language with code
+        lang = LanguageScript.objects.create(
+            language="Judaeo-Arabic", script="Hebrew", iso_code="jrb"
+        )
+        doc.languages.add(lang)
+        # delete cached property to recalculate
+        del doc.primary_lang_code
+        assert doc.primary_lang_code == lang.iso_code
+
+        # second language; no single primary code
+        arabic = LanguageScript.objects.create(
+            language="Arabic", script="Arabic", iso_code="ar"
+        )
+        doc.languages.add(arabic)
+        del doc.primary_lang_code
+        # can't determine primary code
+        assert doc.primary_lang_code is None
+
+        # single document with lang but no code
+        doc2 = Document.objects.create()
+        unknown_lang = LanguageScript.objects.create(
+            language="Unknown", script="Hebrew"
+        )
+        doc2.languages.add(unknown_lang)
+        assert doc.primary_lang_code is None
+
+    def test_primary_script(self):
+        doc = Document.objects.create()
+        # no language, no scrip
+        assert doc.primary_script is None
+
+        # single language + script
+        lang = LanguageScript.objects.create(
+            language="Judaeo-Arabic", script="Hebrew", iso_code="jrb"
+        )
+        doc.languages.add(lang)
+        # delete cached property to recalculate
+        del doc.primary_script
+        assert doc.primary_script == lang.script
+
+        # second language with the same script
+        hebrew = LanguageScript.objects.create(
+            language="Hebrew", script="Hebrew", iso_code="he"
+        )
+        doc.languages.add(hebrew)
+        del doc.primary_script
+        assert doc.primary_script == lang.script
+
+        # third language, different script; can't calculate
+        arabic = LanguageScript.objects.create(
+            language="Arabic", script="Arabic", iso_code="ar"
+        )
+        doc.languages.add(arabic)
+        del doc.primary_script
+        assert doc.primary_script is None
+
     def test_all_tags(self):
         doc = Document.objects.create()
         doc.tags.add("marriage", "women")
