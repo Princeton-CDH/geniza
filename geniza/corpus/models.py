@@ -658,6 +658,25 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     all_secondary_languages.short_description = "Secondary Language"
 
+    @cached_property
+    def primary_lang_code(self):
+        """Primary language code for this document, when there is only one
+        primary language set and it has an ISO code available. Returns
+        None if unset or unavailable.
+        """
+        if self.languages.count() == 1:
+            return self.languages.first().iso_code or None
+
+    @cached_property
+    def primary_script(self):
+        """Primary script for this document, if shared across all primary languages."""
+        # aggregate all scripts for primary document languages
+        # convert to set for uniqueness
+        scripts = set([ls.script for ls in self.languages.all()])
+        # if there is only one script, return it; otherwire return None
+        if len(scripts) == 1:
+            return list(scripts)[0]
+
     def all_tags(self):
         """comma delimited string of all tags for this document"""
         return ", ".join(t.name for t in self.tags.all())
