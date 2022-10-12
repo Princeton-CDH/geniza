@@ -6,14 +6,19 @@ from django.http import StreamingHttpResponse
 from django.utils import timezone
 from rich.progress import track
 
-from geniza.common.utils import Echo, timeprint
+from geniza.common.utils import Echo
 
 
 class Exporter:
     """
-    Base class for data exports.
+    Base class for data exports. See DocumentExporter `geniza/corpus/metadata_export.py` for an example of a subclass implementation of Exporter.
 
-    @TODO: init params
+    For initializing:
+
+    :param queryset: Limit this export to a given queryset?, defaults to None
+    :type queryset: QuerySet, optional
+    :param progress: Use a progress bar?, defaults to False
+    :type progress: bool, optional
     """
 
     model = None
@@ -28,19 +33,38 @@ class Exporter:
         self.url_scheme = "https://"
 
     def csv_filename(self):
+        """Generate the appropriate CSV filename for model and time
+
+        :return: Filename string
+        :rtype: str
+        """
         str_plural = self.model._meta.verbose_name_plural
         str_time = timezone.now().strftime("%Y%m%dT%H%M%S")
         return f"geniza-{str_plural}-{str_time}.csv"
 
     def get_queryset(self):
+        """Get the queryset in use. If not set at init, this will be all objects from the given model.
+
+        :return: QuerySet of documents to export
+        :rtype: QuerySet
+        """
         return self.queryset or self.model.objects.all()
 
     def get_export_data_dict(self, obj):
-        # THIS NEEDS TO BE SUBCLASSED
+        """A given Exporter class (DocumentExporter, FootnoteExporter, etc) must implement this function. It ought to return a dictionary of exported information for a given object.
+
+        :param obj: Model object (document, footnote, etc)
+        :type obj: object
+        :raises NotImplementedError: This method must be implemented by subclasses
+        """
         raise NotImplementedError
 
     def iter_export_data_as_dicts(self):
-        timeprint("iter_export_data_as_dicts")
+        """Iterate over the exportable data, one dictionary per row
+
+        :yield: Dictionary of information for each object
+        :rtype: dict
+        """
         # get queryset
         queryset = self.get_queryset()
 
@@ -55,7 +79,17 @@ class Exporter:
         yield from (self.get_export_data_dict(obj) for obj in iterr)
 
     def iter_export_data_as_csv(self, fn=None, pseudo_buffer=False):
-        timeprint("iter_export_data_as_csv")
+        """Iterate over the string lines of a CSV file as it's being written, either to file or a string buffer.
+
+        :param fn: Filename to save CSV to (if pseudo_buffer is False), defaults to None
+        :type fn: str, optional
+
+        :param pseudo_buffer: Save to string buffer instead of file?, defaults to False
+        :type pseudo_buffer: bool, optional
+
+        :yield: String of current line in CSV
+        :rtype: str
+        """
         with (
             open(self.csv_filename() if not fn else fn, "w")
             if not pseudo_buffer
@@ -70,14 +104,22 @@ class Exporter:
             )
 
     def write_export_data_csv(self, fn=None):
-        timeprint("write_export_data_csv")
+        """Save CSV of exportable data to file.
+
+        :param fn: Filename to save CSV to, defaults to None
+        :type fn: str, optional
+        """
         if not fn:
             fn = self.csv_filename()
         for row in self.iter_export_data_as_csv(fn=fn, pseudo_buffer=False):
             pass
 
     def http_export_data_csv(self, fn=None):
-        timeprint("http_export_data_csv")
+        """Download CSV of exportable data to file.
+
+        :param fn: Filename to download CSV as, defaults to None
+        :type fn: str, optional
+        """
         if not fn:
             fn = self.csv_filename()
         iterr = self.iter_export_data_as_csv(pseudo_buffer=True)
