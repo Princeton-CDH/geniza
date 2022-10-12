@@ -979,7 +979,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # (may need splitting out and weighting based on type of scholarship)
                 "scholarship_t": [fn.display() for fn in self.footnotes.all()],
                 # transcription content as html
-                "transcription_ht": transcription_texts,
+                "text_transcription": transcription_texts,
                 "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),
                 "has_translation_b": bool(counts[Footnote.TRANSLATION]),
                 "has_discussion_b": bool(counts[Footnote.DISCUSSION]),

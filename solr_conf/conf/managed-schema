@@ -100,6 +100,25 @@
     </analyzer>
   </fieldType>
 
+   <!-- custom text field for transcriptions; html stripping, bigram, etc -->
+    <fieldType name="transcription_text" class="solr.TextField" positionIncrementGap="100" multiValued="true">
+    <analyzer type="index">
+      <charFilter class="solr.HTMLStripCharFilterFactory"/>
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.ICUFoldingFilterFactory"/>
+      <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+      <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="20" luceneMatchVersion="4.3"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+    </analyzer>
+    <analyzer type="query">
+      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <filter class="solr.ICUFoldingFilterFactory"/>
+      <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+      <filter class="solr.SynonymGraphFilterFactory" expand="true" ignoreCase="true" synonyms="synonyms.txt"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+    </analyzer>
+  </fieldType>
+
 
   <!-- A text field with defaults appropriate for English: it
          tokenizes with StandardTokenizer, removes English stop words
@@ -251,6 +270,7 @@
   <dynamicField name="*_l" type="long" indexed="true" stored="true"/>
   <dynamicField name="*_t" type="text_general" indexed="true" stored="true"/>
   <dynamicField name="*_ht" type="html_text_general" indexed="true" stored="true"/>  
+  <dynamicField name="*_transcription" type="transcription_text" indexed="true" stored="true"/>  
   <dynamicField name="*_b" type="boolean" indexed="true" stored="true"/>
   <dynamicField name="*_f" type="float" indexed="true" stored="true"/>
   <dynamicField name="*_d" type="double" indexed="true" stored="true"/>
