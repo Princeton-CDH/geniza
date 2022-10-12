@@ -1,5 +1,10 @@
 # Deploy Notes
 
+## 4.10
+
+-   Solr configuration has changed. Ensure Solr configset has been updated
+    and then reindex all content: `python manage.py index`
+
 ## 4.9.0
 
 -   Must configure **ANNOTATION_BACKUP_PATH** and **ANNOTATION_BACKUP_GITREPO** in local settings. For proper setup, the directory at **ANNOTATION_BACKUP_PATH** should not exist when first run, but the containing directory should.
