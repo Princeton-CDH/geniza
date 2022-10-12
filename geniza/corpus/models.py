@@ -975,7 +975,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "tags_ss_lower": [t.name for t in self.tags.all()],
                 "status_s": self.get_status_display(),
                 "old_pgpids_is": self.old_pgpids,
-                "language_code_ss": [lang.iso_code for lang in self.languages.all()],
+                "language_code_s": self.primary_lang_code,
+                "language_script_s": self.primary_script,
                 # use image info link without trailing info.json to easily convert back to iiif image client
                 "iiif_images_ss": [
                     img["image"].info()[:-10]  # i.e., remove /info.json

@@ -134,7 +134,12 @@
                             <div class="editions">
                                 {# display transcription in chunks by index #}
                                 {% for edition in document.digital_editions.all %}
-                                    <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}" lang="{{ document.primary_lang_code }}">
+                                    <div class="transcription ed-{{ edition.pk }}"
+                                        data-label="{{ edition.source.formatted_display }}"
+                                        lang="{{ document.primary_lang_code|default:"" }}"
+                                        {% if document.primary_script %}
+                                            data-lang-script="{{ document.primary_script|lower }}"{% endif %}
+                                    >
                                         {% for html_section in edition.content_html|dict_item:canvas_uri %}
                                             {{ html_section|safe }}
                                         {% endfor %}
