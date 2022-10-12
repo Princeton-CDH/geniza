@@ -756,17 +756,17 @@
         document_date_t
       </str>
       <str name="keyword_pf">
-        description_t^500
-        description_txt_ens^200
-        shelfmark_bigram^500
-        shelfmark_textnum^140   
+        description_t^100
+        description_txt_ens^75
+        shelfmark_bigram^750
+        shelfmark_textnum^750
         old_shelfmark_t
         old_shelfmark_textnum
         old_shelfmark_bigram^100
         tags_t
         scholarship_t^80
         text_transcription^1000
-        document_date_t^500
+        document_date_t^550
       </str>
 
        <!-- admin search field for Document model (no boosting because no relevance sort) -->

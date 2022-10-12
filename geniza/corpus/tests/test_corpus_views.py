@@ -770,6 +770,24 @@ class TestDocumentSearchView:
         resulting_ids = [result["pgpid"] for result in qs]
         assert document.id in resulting_ids
 
+    def test_transcription_bigram(self, empty_solr, annotation):
+        # integration test for transcription indexing with bigram search
+        # - using empty solr fixture to ensure solr is empty when this test starts
+
+        # annotation with body content "test annotation"
+        document = Document.from_manifest_uri(annotation.target_source_manifest_id)
+        SolrClient().update.index([document.index_data()], commit=True)
+
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # sort doesn't matter in this case; two characters minimum
+        docsearch_view.request.GET = {"q": "st anno"}
+        qs = docsearch_view.get_queryset()
+        # should return the document
+        assert qs.count() == 1
+        resulting_ids = [result["pgpid"] for result in qs]
+        assert document.id in resulting_ids
+
     def test_search_shelfmark_override(self, empty_solr, document):
         orig_shelfmark = document.shelfmark
         document.shelfmark_override = "foo 12.34"
