@@ -31,6 +31,9 @@
         </span>
     </a>
 
+    {# alerts container, starts empty and is popualted by stimulus controller #}
+    <div id="alerts" data-controller="alert"></div>
+
     {# viewer #}
     {% include "corpus/snippets/document_transcription.html" with edit_mode=True %}
 {% endblock main %}
