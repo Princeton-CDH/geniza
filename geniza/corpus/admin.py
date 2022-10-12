@@ -393,7 +393,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         """Stream tabular data as a CSV file"""
         queryset = queryset or self.get_queryset(request)
         exporter = DocumentExporter(queryset=queryset, progress=False)
-        return exporter.http_export_data_csv(progress=False)
+        return exporter.http_export_data_csv()
 
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all documents
