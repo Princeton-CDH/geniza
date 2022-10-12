@@ -119,6 +119,23 @@
     </analyzer>
   </fieldType>
 
+  <!-- natural sort field; adapted from https://stackoverflow.com/a/39701503 -->
+  <fieldType name="natural_sort" class="solr.TextField" sortMissingLast="false" omitNorms="true">
+    <analyzer>
+      <!-- treat field as a single token -->
+      <tokenizer class="solr.KeywordTokenizerFactory"/>
+      <!-- lower case everything for case-insensitive sort -->
+      <filter class="solr.LowerCaseFilterFactory" />
+      <!-- strip whitespace -->
+      <filter class="solr.TrimFilterFactory" />
+      <!-- Left-pad numbers with zeroes -->
+      <filter class="solr.PatternReplaceFilterFactory"
+              pattern="(\d+)" replacement="00000$1" replace="all" />
+      <!-- Left-trim zeroes to produce 6 digit numbers -->
+      <filter class="solr.PatternReplaceFilterFactory"
+              pattern="0*([0-9]{6,})" replacement="$1" replace="all" />
+    </analyzer>
+  </fieldType>
 
   <!-- A text field with defaults appropriate for English: it
          tokenizes with StandardTokenizer, removes English stop words
@@ -208,6 +225,7 @@
 
   <copyField source="shelfmark_s" dest="shelfmark_bigram" maxChars="30000" />
   <copyField source="shelfmark_s" dest="shelfmark_textnum" maxChars="30000" />
+  <copyField source="shelfmark_s" dest="shelfmark_natsort" maxChars="30000" />
   <!-- individual shelfmarks -->
   <copyField source="fragment_shelfmark_ss" dest="shelfmark_t" maxChars="30000" />
   <copyField source="fragment_shelfmark_ss" dest="shelfmark_textnum" maxChars="30000" />
@@ -215,7 +233,7 @@
   <!-- old / historic shelfmarks -->
   <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_t" maxChars="30000" />
   <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_textnum" maxChars="30000" />
-  <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_bigram" maxChars="30000" />  
+  <copyField source="fragment_old_shelfmark_ss" dest="old_shelfmark_bigram" maxChars="30000" />
   
   <copyField source="tags_ss_lower" dest="tags_t" maxChars="30000" />
   <copyField source="type_s" dest="type_t" maxChars="300" />
@@ -275,4 +293,6 @@
   <dynamicField name="*_f" type="float" indexed="true" stored="true"/>
   <dynamicField name="*_d" type="double" indexed="true" stored="true"/>
   <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
+  <dynamicField name="*_natsort" type="natural_sort" indexed="true" stored="true" sortMissingLast="true"/>
+
 </schema>

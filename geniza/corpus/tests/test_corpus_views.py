@@ -559,6 +559,11 @@ class TestDocumentSearchView:
         """integration test for sorting by shelfmark"""
         doc2 = Document.objects.create()
         TextBlock.objects.create(document=doc2, fragment=multifragment)
+        # create a third document with shelfmark that should come after
+        # one of ours only when natural sorting is enabled
+        doc3 = Document.objects.create()
+        frag3 = Fragment.objects.create(shelfmark="T-S 16.4")
+        TextBlock.objects.create(document=doc3, fragment=frag3)
         SolrClient().update.index(
             [
                 document.index_data(),  # shelfmark = CUL Add.2586
@@ -575,6 +580,10 @@ class TestDocumentSearchView:
         assert (
             qs[0]["pgpid"] == document.id
         ), "document with shelfmark CUL Add.2586 returned first"
+        # should return 16.4 before 16.377
+        assert (
+            qs[1]["pgpid"] == doc3.id
+        ), "document with shelfmark T-S 16.4 returned before T-S 16.377"
 
     def test_input_date_sort(self, document, join, empty_solr):
         """Tests for sorting by input date, ascending and descending"""

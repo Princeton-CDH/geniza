@@ -54,7 +54,7 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
         "scholarship_asc": "scholarship_count_i",
         "input_date_desc": "-input_date_dt",
         "input_date_asc": "input_date_dt",
-        "shelfmark": "shelfmark_s",
+        "shelfmark": "shelfmark_natsort",
         "docdate_asc": "start_date_i",
         "docdate_desc": "-end_date_i",
     }
