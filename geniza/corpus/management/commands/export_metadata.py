@@ -1,5 +1,4 @@
 import time
-from asyncore import write
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -9,6 +8,9 @@ from geniza.corpus.metadata_export import DocumentExporter
 
 class Command(BaseCommand):
     def print(self, *x, **y):
+        """
+        A stdout-friendly method of printing for manage.py commands
+        """
         self.stdout.write(" ".join(str(xx) for xx in x), ending="\n", **y)
 
     def add_arguments(self, parser):
