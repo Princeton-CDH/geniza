@@ -26,3 +26,8 @@ middleware
 .. automodule:: geniza.common.middleware
     :members:
 
+metadata export
+---------------
+
+.. automodule:: geniza.common.metadata_export
+    :members:
