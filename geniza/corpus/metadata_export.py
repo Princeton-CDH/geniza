@@ -3,6 +3,10 @@ from geniza.corpus.models import Document
 
 
 class DocumentExporter(Exporter):
+    """
+    A subclass of geniza.common.metadata_export.Exporter that exports information relating to Documents. It custom implements only two methods: `get_queryset` and `get_export_data_dict`.
+    """
+
     model = Document
     csv_fields = [
         "pgpid",
@@ -35,6 +39,12 @@ class DocumentExporter(Exporter):
     ]
 
     def get_queryset(self):
+        """
+        Applies some prefetching to the base Exporter's get_queryset functionality.
+
+        :return: Custom-given query set or query set of all documents
+        :rtype: QuerySet
+        """
         return (
             super()
             .get_queryset()
@@ -44,6 +54,15 @@ class DocumentExporter(Exporter):
         )
 
     def get_export_data_dict(self, doc):
+        """
+        Get back data about a document in dictionary format.
+
+        :param doc: A given Document object
+        :type doc: Document
+
+        :return: Dictionary of data about the document
+        :rtype: dict
+        """
         all_textblocks = doc.textblock_set.all()
         all_fragments = [tb.fragment for tb in all_textblocks]
         all_log_entries = doc.log_entries.all()
