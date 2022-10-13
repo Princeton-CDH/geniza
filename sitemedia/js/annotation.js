@@ -6,6 +6,6 @@ const application = Application.start();
 const context = require.context(
     "./controllers",
     true,
-    /annotation_controller\.js$/
+    /(annotation_controller|alert_controller)\.js$/
 );
 application.load(definitionsFromContext(context));

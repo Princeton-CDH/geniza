@@ -10,6 +10,7 @@ from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -25,6 +26,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from djiffy.models import Manifest
+from modeltranslation.manager import MultilingualQuerySet
 from modeltranslation.utils import fallbacks
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
@@ -474,11 +476,33 @@ class TagSignalHandlers:
         instance.name = unidecode(instance.name)
 
 
+class DocumentQuerySet(MultilingualQuerySet):
+    def metadata_prefetch(self):
+        """
+        Returns a further QuerySet that has been prefetched for relevant document information.
+        """
+        return (
+            self.select_related("doctype")
+            .prefetch_related(
+                "tags",
+                "languages",
+                Prefetch(
+                    "textblock_set",
+                    queryset=TextBlock.objects.select_related(
+                        "fragment", "fragment__collection"
+                    ),
+                ),
+            )
+            .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
+        )
+
+
 class Document(ModelIndexable, DocumentDateMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
 
     id = models.AutoField("PGPID", primary_key=True)
+
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
     )
@@ -519,6 +543,8 @@ class Document(ModelIndexable, DocumentDateMixin):
         help_text="Enter text here if an administrator needs to review this document.",
     )
     old_pgpids = ArrayField(models.IntegerField(), null=True, verbose_name="Old PGPIDs")
+
+    objects = DocumentQuerySet.as_manager()
 
     PUBLIC = "P"
     STATUS_PUBLIC = "Public"

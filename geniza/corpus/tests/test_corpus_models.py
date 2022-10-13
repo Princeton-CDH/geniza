@@ -1420,4 +1420,4 @@ def test_items_to_index(document, footnote):
     # Footnote fixture must be included to check source/creator prefetching.
     docs = Document.items_to_index()
     assert docs
-    assert type(docs) is MultilingualQuerySet
+    assert isinstance(docs, MultilingualQuerySet)

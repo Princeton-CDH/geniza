@@ -1,0 +1,53 @@
+/* styles for transcription/annotation alerts, success/error messages */
+
+// alert container: fixed position in bottom middle of screen
+div#alerts {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    z-index: 50;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+
+    // alerts appear from the bottom up
+    div.alert {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        min-width: 20rem;
+        height: 1rem;
+        padding: 1.25rem;
+        margin-bottom: 0.25rem;
+        background-color: var(--background-gray);
+        color: var(--on-background-light);
+        border: 2px solid var(--on-background-alt);
+        border-radius: 5px;
+        visibility: hidden;
+        opacity: 0;
+        flex-grow: 1;
+        // fade away in 300ms
+        transition: opacity 300ms, visibility 300ms;
+        // show alert; remove this class when time to hide
+        &.alert-visible {
+            opacity: 0.75;
+            visibility: visible;
+        }
+        // success msg
+        &.alert-success {
+            background-color: var(--alert-success);
+        }
+        // error msg, keeping this the same cross-theme to ensure it stands out
+        &.alert-error {
+            // allow copy-paste
+            pointer-events: all;
+            opacity: 1;
+            background-color: var(--alert-error);
+            color: var(--alert-error-text);
+        }
+    }
+}

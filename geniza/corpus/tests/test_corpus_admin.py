@@ -226,96 +226,24 @@ class TestDocumentAdmin:
         assert queryset.count() == Document.objects.all().count()
 
     @pytest.mark.django_db
-    def test_tabulate_queryset(self, document):
-        # Create all documents
-        cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
-        frag = Fragment.objects.create(shelfmark="T-S 8J22.21", collection=cul)
-
-        contract = DocumentType.objects.create(name_en="Contract")
-        doc = Document.objects.create(
-            description="Business contracts with tables",
-            doctype=contract,
-            notes="Goitein cards",
-            needs_review="demerged",
-            status=Document.PUBLIC,
-        )
-        doc.fragments.add(frag)
-        doc.tags.add("table")
-
-        arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
-        french = LanguageScript.objects.create(language="French", script="Latin")
-
-        doc.languages.add(arabic)
-        doc.secondary_languages.add(french)
-
-        marina = Creator.objects.create(last_name_en="Rustow", first_name_en="Marina")
-        book = SourceType.objects.create(type="Book")
-        source = Source.objects.create(source_type=book)
-        source.authors.add(marina)
-        footnote = Footnote.objects.create(
-            doc_relation=["E"],
-            source=source,
-            content_type_id=ContentType.objects.get(
-                app_label="corpus", model="document"
-            ).id,
-            object_id=0,
-        )
-        doc.footnotes.add(footnote)
-
+    @patch("geniza.corpus.admin.DocumentExporter")
+    def test_export_to_csv(self, mock_documentexporter):
         doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
-        doc_qs = Document.objects.all()
+        # if no queryset provided, should use default queryset
+        with patch.object(doc_admin, "get_queryset") as mock_get_queryset:
+            docs = mock_get_queryset.return_value
+            # call export; using a mock for request
+            result = doc_admin.export_to_csv(Mock())
 
-        for doc, doc_data in zip(doc_qs, doc_admin.tabulate_queryset(doc_qs)):
-            # test some properties
-            assert doc.id in doc_data
-            assert doc.shelfmark in doc_data
-            assert doc.collection in doc_data
-
-            # test callables
-            assert doc.all_tags() in doc_data
-
-            # test new functions
-            assert f"https://example.com/documents/{doc.id}/" in doc_data
-            assert "Public" in doc_data
+            # should be called once to initialize
+            mock_documentexporter.assert_called_with(queryset=docs, progress=False)
+            # exporter instance called to generate http export
+            mock_documentexporter.return_value.http_export_data_csv.assert_called()
+            # export returned as result from method
             assert (
-                f"https://example.com/admin/corpus/document/{doc.id}/change/"
-                in doc_data
+                result
+                == mock_documentexporter.return_value.http_export_data_csv.return_value
             )
-            # initial input should be before last modified
-            # (document fixture has a log entry, so should have a first input)
-            input_date = doc_data[-6]
-            last_modified = doc_data[-5]
-            if input_date:
-                assert input_date < last_modified, (
-                    "expect input date (%s) to be earlier than last modified (%s) [PGPID %s]"
-                    % (input_date, last_modified, doc.id)
-                )
-
-    @pytest.mark.django_db
-    @patch("geniza.corpus.admin.export_to_csv_response")
-    def test_export_to_csv(self, mock_export_to_csv_response):
-        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
-        with patch.object(doc_admin, "tabulate_queryset") as tabulate_queryset:
-            # if no queryset provided, should use default queryset
-            docs = doc_admin.get_queryset(Mock())
-            doc_admin.export_to_csv(Mock())
-            assert tabulate_queryset.called_once_with(docs)
-            # otherwise should respect the provided queryset
-            first_person = Document.objects.first()
-            doc_admin.export_to_csv(Mock(), first_person)
-            assert tabulate_queryset.called_once_with(first_person)
-
-            export_args, export_kwargs = mock_export_to_csv_response.call_args
-            # first arg is filename
-            csvfilename = export_args[0]
-            assert csvfilename.endswith(".csv")
-            assert csvfilename.startswith("geniza-documents")
-            # should include current date
-            assert now().strftime("%Y%m%d") in csvfilename
-            headers = export_args[1]
-            assert "pgpid" in headers
-            assert "description" in headers
-            assert "needs_review" in headers
 
     def test_view_old_pgpids(self):
         doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
