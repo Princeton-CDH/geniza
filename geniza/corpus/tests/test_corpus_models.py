@@ -1322,6 +1322,7 @@ class TestTextBlock:
         assert both_sides.side == "recto and verso"
 
 
+@pytest.mark.skip  # temporarily skip to check coverage
 @pytest.mark.django_db
 def test_items_to_index(document, footnote):
     """Test that prefetching is properly configured."""

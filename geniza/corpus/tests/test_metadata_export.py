@@ -74,7 +74,7 @@ def test_doc_exporter_cli(document, join):
 
 
 @pytest.mark.django_db
-def test_tabulate_queryset(document):
+def test_iter_export_data_as_dicts(document):
     # Create all documents
     cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
     frag = Fragment.objects.create(shelfmark="T-S 8J22.21", collection=cul)
@@ -110,17 +110,11 @@ def test_tabulate_queryset(document):
     )
     doc.footnotes.add(footnote)
 
-    # doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
     doc_qs = Document.objects.all().order_by("id")
-    print(doc_qs)
     exporter = DocumentExporter(queryset=doc_qs)
 
-    # for doc, doc_data in zip(doc_qs, doc_admin.tabulate_queryset(doc_qs)):
     for doc, doc_data in zip(doc_qs, exporter.iter_export_data_as_dicts()):
 
-        from pprint import pprint
-
-        pprint(doc_data)
         # test some properties
         assert doc.id == doc_data.get("pgpid")
         assert doc.shelfmark == doc_data.get("shelfmark")

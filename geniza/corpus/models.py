@@ -26,6 +26,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from djiffy.models import Manifest
+from modeltranslation.manager import MultilingualQuerySet
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
@@ -450,7 +451,7 @@ class TagSignalHandlers:
         instance.name = unidecode(instance.name)
 
 
-class DocumentQuerySet(models.QuerySet):
+class DocumentQuerySet(MultilingualQuerySet):
     def metadata_prefetch(self):
         """
         Returns a further QuerySet that has been prefetched for relevant document information.
