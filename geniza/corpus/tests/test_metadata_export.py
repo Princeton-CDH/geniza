@@ -45,6 +45,13 @@ def test_doc_exporter_cli(document, join):
     # get artificial dataset
     exporter = DocumentExporter()
 
+    # csv filename?
+    str_time_pref = timezone.now().strftime("%Y%m%dT")
+    csv_filename = exporter.csv_filename()
+    assert type(csv_filename) == str and csv - filename
+    assert csv_filename.startswith(str_time_pref)
+    assert csv_filename.endswith(".csv")
+
     # correct number of rows?
 
     ## ...in queryset?
@@ -139,3 +146,27 @@ def test_iter_export_data_as_dicts(document):
                 "expect input date (%s) to be earlier than last modified (%s) [PGPID %s]"
                 % (input_date, last_modified, doc.id)
             )
+
+
+@pytest.mark.django_db
+def test_http_export_data_csv(document):
+    exporter = DocumentExporter()
+    ofn = "test_http_export.csv"
+    response = exporter.http_export_data_csv(fn=ofn)
+    headers_d = response.headers
+    assert headers_d.get("Content-Type") == "text/csv; charset=utf-8"
+    assert headers_d.get("Content-Disposition") == f"attachment; filename={ofn}"
+
+    assert response.status_code == 200
+
+    def iter_http_response_lines_str(response):
+        for x in response:
+            yield x.decode()
+
+    row = next(csv.DictReader(iter_http_response_lines_str(response)))
+
+    # correct row?
+    assert row.get("pgpid") == str(document.id)
+
+    # correct header?
+    assert set(exporter.csv_fields) == set(row.keys())

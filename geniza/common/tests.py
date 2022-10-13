@@ -1,3 +1,4 @@
+import random
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -18,9 +19,10 @@ from geniza.common.admin import (
     custom_empty_field_list_filter,
 )
 from geniza.common.fields import NaturalSortField, RangeField, RangeWidget
+from geniza.common.metadata_export import Exporter
 from geniza.common.middleware import PublicLocaleMiddleware
 from geniza.common.models import UserProfile
-from geniza.common.utils import absolutize_url, custom_tag_string
+from geniza.common.utils import Echo, absolutize_url, custom_tag_string
 from geniza.corpus.models import Document
 
 
@@ -329,3 +331,25 @@ class TestCustomTagAdmin:
         item_count = tag_admin.item_count(qs.first())
 
         assert item_count == 2
+
+
+def test_echo():
+    echo = Echo()
+
+    value = random.random()
+    assert value is echo.write(value)
+
+    with Echo() as e:
+        assert type(e) == Echo
+
+
+@pytest.mark.django_db
+def test_base_exporter():
+    exporter = Exporter()
+
+    # raises correct error?
+    try:
+        exporter.get_export_data_dict(obj=None)
+        assert False  #
+    except NotImplementedError:
+        pass

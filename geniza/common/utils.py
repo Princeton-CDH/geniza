@@ -78,24 +78,6 @@ def simplify_quotes(text):
     return text.translate(smart_quote_conversion)
 
 
-import logging
-import time
-
-TIMENOW = time.time()
-logger = logging.getLogger(__name__)
-
-
-def timeprint(*x, **y):
-    global TIMENOW
-    now = time.time()
-    xstr = " ".join(str(xx) for xx in x)
-    logger.debug(f"[+{now-TIMENOW:.3f}s] {xstr}")
-    TIMENOW = now
-
-
-######
-
-
 ## adapted from tabular_export.admin
 class Echo(object):
     # See https://docs.djangoproject.com/en/1.8/howto/outputting-csv/#streaming-csv-files
