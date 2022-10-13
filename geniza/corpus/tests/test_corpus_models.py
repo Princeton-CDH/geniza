@@ -16,6 +16,7 @@ from django.utils import timezone
 from django.utils.html import strip_tags
 from django.utils.safestring import SafeString
 from django.utils.translation import activate, deactivate_all, get_language
+from django.utils.translation import override as translation_override
 from djiffy.models import Canvas, IIIFException, IIIFImage, Manifest
 from modeltranslation.manager import MultilingualQuerySet
 from piffle.presentation import IIIFException as piffle_IIIFException
@@ -420,6 +421,16 @@ class TestDocumentType:
         doctype.display_label_en = "Legal document"
         assert str(doctype) == "Legal document"
 
+    def test_str_not_en(self):
+        # when a translated name is defined without a translated display label,
+        # and that language is the active language,
+        # we want the translated name, NOT the fallback english display label
+        with translation_override("he"):
+            doctype = DocumentType(
+                name_en="Legal", display_label_en="Legal Document", name_he="מסמך משפטי"
+            )
+            assert str(doctype) == "מסמך משפטי"
+
     def test_natural_key(self):
         """Should use name as natural key"""
         doc_type = DocumentType(name_en="SomeType")
@@ -431,6 +442,25 @@ class TestDocumentType:
         doc_type = DocumentType(name_en="SomeType")
         doc_type.save()
         assert DocumentType.objects.get_by_natural_key("SomeType") == doc_type
+
+    def test_objects_by_label(self):
+        """Should return dict of DocumentType objects keyed on English label"""
+        # invalidate cached property (it is computed in other tests in the suite)
+        if "objects_by_label" in DocumentType.__dict__:
+            # __dict__["objects_by_label"] returns a classmethod
+            # __func__ returns a property
+            # fget returns the actual cached function
+            DocumentType.__dict__["objects_by_label"].__func__.fget.cache_clear()
+        # add some new doctypes
+        doc_type = DocumentType(name_en="SomeType")
+        doc_type.save()
+        doc_type_2 = DocumentType(display_label_en="Type2")
+        doc_type_2.save()
+        # should be able to get a document type by label
+        assert isinstance(DocumentType.objects_by_label.get("SomeType"), DocumentType)
+        # should match by name_en or display_label_en, depending on what's set
+        assert DocumentType.objects_by_label.get("SomeType").pk == doc_type.pk
+        assert DocumentType.objects_by_label.get("Type2").pk == doc_type_2.pk
 
 
 MockImporter = Mock()
@@ -560,6 +590,67 @@ class TestDocument:
         arabic = LanguageScript.objects.create(language="Arabic", script="Arabic")
         doc.secondary_languages.add(arabic)
         assert doc.all_secondary_languages() == "%s,%s" % (arabic, lang)
+
+    def test_primary_lang_code(self):
+        doc = Document.objects.create()
+        # no language, no code
+        assert doc.primary_lang_code is None
+
+        # single language with code
+        lang = LanguageScript.objects.create(
+            language="Judaeo-Arabic", script="Hebrew", iso_code="jrb"
+        )
+        doc.languages.add(lang)
+        # delete cached property to recalculate
+        del doc.primary_lang_code
+        assert doc.primary_lang_code == lang.iso_code
+
+        # second language; no single primary code
+        arabic = LanguageScript.objects.create(
+            language="Arabic", script="Arabic", iso_code="ar"
+        )
+        doc.languages.add(arabic)
+        del doc.primary_lang_code
+        # can't determine primary code
+        assert doc.primary_lang_code is None
+
+        # single document with lang but no code
+        doc2 = Document.objects.create()
+        unknown_lang = LanguageScript.objects.create(
+            language="Unknown", script="Hebrew"
+        )
+        doc2.languages.add(unknown_lang)
+        assert doc.primary_lang_code is None
+
+    def test_primary_script(self):
+        doc = Document.objects.create()
+        # no language, no scrip
+        assert doc.primary_script is None
+
+        # single language + script
+        lang = LanguageScript.objects.create(
+            language="Judaeo-Arabic", script="Hebrew", iso_code="jrb"
+        )
+        doc.languages.add(lang)
+        # delete cached property to recalculate
+        del doc.primary_script
+        assert doc.primary_script == lang.script
+
+        # second language with the same script
+        hebrew = LanguageScript.objects.create(
+            language="Hebrew", script="Hebrew", iso_code="he"
+        )
+        doc.languages.add(hebrew)
+        del doc.primary_script
+        assert doc.primary_script == lang.script
+
+        # third language, different script; can't calculate
+        arabic = LanguageScript.objects.create(
+            language="Arabic", script="Arabic", iso_code="ar"
+        )
+        doc.languages.add(arabic)
+        del doc.primary_script
+        assert doc.primary_script is None
 
     def test_all_tags(self):
         doc = Document.objects.create()
@@ -879,7 +970,7 @@ class TestDocument:
         assert index_data["has_digital_edition_b"] == True
         assert index_data["num_translations_i"] == 2
         assert index_data["scholarship_count_i"] == 3  # unique sources
-        assert index_data["transcription_ht"] == ["transcription lines"]
+        assert index_data["text_transcription"] == ["transcription lines"]
 
         for note in [edition, edition2, translation]:
             assert note.display() in index_data["scholarship_t"]

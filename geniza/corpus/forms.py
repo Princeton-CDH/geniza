@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 
 from geniza.common.fields import RangeField, RangeForm, RangeWidget
 from geniza.common.utils import simplify_quotes
-from geniza.corpus.models import Document
+from geniza.corpus.models import Document, DocumentType
 
 
 class SelectDisabledMixin:
@@ -51,7 +51,10 @@ class CheckboxSelectWithCount(forms.CheckboxSelectMultiple):
         context = super().get_context(name, value, attrs)
         for optgroup in context["widget"].get("optgroups", []):
             for option in optgroup[1]:
-                count = self.facet_counts.get(option["value"], None)
+                # each value of facet_counts is a tuple of label and count
+                (label, count) = self.facet_counts.get(
+                    option["value"], (option["value"], None)
+                )
                 # make facet count available as data-count attribute
                 if count:
                     option["attrs"]["data-count"] = f"{count:,}"
@@ -97,8 +100,11 @@ class FacetChoiceField(FacetFieldMixin, forms.ChoiceField):
         # generate the list of choice from the facets
 
         self.choices = (
-            (val, mark_safe(f'<span>{val}</span><span class="count">{count:,}</span>'))
-            for val, count in facet_dict.items()
+            (
+                val,
+                mark_safe(f'<span>{label}</span><span class="count">{count:,}</span>'),
+            )
+            for val, (label, count) in facet_dict.items()
         )
         # pass the counts to the widget so it can be set as a data attribute
         self.widget.facet_counts = facet_dict
@@ -110,7 +116,8 @@ class CheckboxInputWithCount(forms.CheckboxInput):
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
-        count = self.facet_counts.get("true", None)
+        # each value of facet_counts is a tuple of label and count
+        (label, count) = self.facet_counts.get("true", ("true", None))
         # make facet count available as data-count attribute
         if count:
             context["widget"]["attrs"]["data-count"] = f"{count:,}"
@@ -124,7 +131,10 @@ class BooleanFacetField(FacetFieldMixin, forms.BooleanField):
         """
         Set the label from the facets returned by solr.
         """
-        count = facet_dict.get("true", 0)
+        # each value of facet_counts is a tuple of label and count; boolean facet label is always
+        # just "true" or "false"
+        (label, count) = facet_dict.get("true", ("true", 0))
+        # use self.label for the actual label instead, so we use the field name and not true/false
         self.label = mark_safe(
             f'<span class="label">{self.label}</span><span class="count">{count:,}</span>'
         )
@@ -261,6 +271,21 @@ class DocumentSearchForm(RangeForm):
         # borrowed from ppa-django;
         # populate facet field choices from current facets
         for key, facet_dict in facets.items():
+            # restructure dict to set values of each key to tuples of (label, count)
+            if key == "type":
+                # for doctype, label should be translated, so use doctype object
+                facet_dict = {
+                    label: (
+                        DocumentType.objects_by_label.get(label, _("Unknown type")),
+                        count,
+                    )
+                    for (label, count) in facet_dict.items()
+                }
+            else:
+                # for other formfields, label == facet name
+                facet_dict = {
+                    label: (label, count) for (label, count) in facet_dict.items()
+                }
             # use field from facet fields map or else field name as is
             formfield = self.solr_facet_fields.get(key, key)
             # for each facet, set the corresponding choice field
