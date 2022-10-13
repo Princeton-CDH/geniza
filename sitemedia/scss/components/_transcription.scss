@@ -941,17 +941,18 @@ a.editor-navigation {
     // hebrew script
     &[lang="he"],
     &[lang="jrb"],
-    &[data-lang-script="hebrew"] {
+    &[data-lang-script="hebrew"],
+    span[lang="he"],
+    span[lang="jrb"] {
         @include typography.hebrew-transcription;
     }
 
     // arabic script
     &[lang="ar"],
-    &[data-lang-script="arabic"] {
+    &[data-lang-script="arabic"],
+    span[lang="ar"] {
         @include typography.arabic-transcription;
     }
-
-    overflow: hidden; // prevent scroll trap in transcription div
 
     align-self: flex-end;
 
@@ -1009,7 +1010,7 @@ a.editor-navigation {
         font-weight: bold;
         text-align: left;
         position: absolute;
-        width: 34px;
+        width: 35px;
         /* text color should match background, rendering period invisible */
         color: var(--background-light);
         /* uncomment to debug positioning
@@ -1017,13 +1018,13 @@ a.editor-navigation {
 
         /* make font larger than list number font to cover completely;
            shrink line height to adjust placement */
-        font-size: 34px;
+        font-size: 35px;
         line-height: 16px;
         right: -37.5px;
 
         @include breakpoints.for-tablet-landscape-up {
             line-height: 24px;
-            right: -38.5px;
+            right: -39.5px;
         }
     }
 
@@ -1040,6 +1041,7 @@ a.editor-navigation {
         }
     }
 
+    // NOTE: Broken in stable Safari for now, but fixed in Safari preview release.
     li::marker {
         text-align: right;
         float: right;
