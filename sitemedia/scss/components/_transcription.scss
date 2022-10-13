@@ -934,7 +934,25 @@ a.editor-navigation {
 // appear in ITT viewer and in search results
 .transcription {
     @include typography.transcription;
-    @include typography.hebrew;
+
+    // hebrew by default, in case there are no lang/script attributes
+    @include typography.hebrew-transcription;
+
+    // hebrew script
+    &[lang="he"],
+    &[lang="jrb"],
+    &[data-lang-script="hebrew"] {
+        @include typography.hebrew-transcription;
+    }
+
+    // arabic script
+    &[lang="ar"],
+    &[data-lang-script="arabic"] {
+        @include typography.arabic-transcription;
+    }
+
+    overflow: hidden; // prevent scroll trap in transcription div
+
     align-self: flex-end;
 
     text-align: right;
@@ -1006,6 +1024,19 @@ a.editor-navigation {
         @include breakpoints.for-tablet-landscape-up {
             line-height: 24px;
             right: -38.5px;
+        }
+    }
+
+    // decimal cover adjustments for arabic
+    &[lang="ar"] ol li:not([value])::before,
+    &[data-lang-script="arabic"] ol li:not([value])::before {
+        font-size: 37px;
+        width: 37px;
+        line-height: 19px;
+        right: -41px;
+        @include breakpoints.for-tablet-landscape-up {
+            line-height: 27px;
+            right: -41.5px;
         }
     }
 

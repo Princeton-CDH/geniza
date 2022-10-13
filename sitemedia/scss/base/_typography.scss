@@ -283,7 +283,7 @@ $text-size-5xl: 2rem; //     = 32px
     }
 }
 
-// hebrew transcriptions on search results +
+// hebrew, arabic transcriptions on search results +
 // doc detail
 @mixin transcription {
     font-family: fonts.$primary;
@@ -292,13 +292,18 @@ $text-size-5xl: 2rem; //     = 32px
         font-size: $text-size-2xl;
     }
 }
-// TODO: Use classes to only use this on hebrew transcriptions
-// (currently used on all transcriptions)
-@mixin hebrew {
+@mixin hebrew-transcription {
     font-family: fonts.$hebrew;
     line-height: calc(27 / 20);
     @include breakpoints.for-tablet-landscape-up {
         line-height: calc(32 / 22);
+    }
+}
+@mixin arabic-transcription {
+    font-family: fonts.$arabic;
+    line-height: calc(27 / 20);
+    @include breakpoints.for-tablet-landscape-up {
+        line-height: calc(34 / 22);
     }
 }
 
@@ -417,7 +422,7 @@ $text-size-5xl: 2rem; //     = 32px
     }
 }
 @mixin language-switch-he {
-    @include hebrew;
+    @include hebrew-transcription;
     font-size: $text-size-xl;
     @include breakpoints.for-tablet-landscape-up {
         font-size: calc(26rem / 16);
