@@ -1,5 +1,7 @@
 import { Controller } from "@hotwired/stimulus";
 
+// Controller for handling alert events and displaying "toast" alerts with their message contents.
+// used with tahqiq for now, but could be extended to other types of alert events.
 export default class extends Controller {
     initialize() {
         // bind "this" so we can append elements
