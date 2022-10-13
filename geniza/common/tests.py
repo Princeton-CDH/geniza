@@ -343,13 +343,9 @@ def test_echo():
         assert type(e) == Echo
 
 
-@pytest.mark.django_db
 def test_base_exporter():
     exporter = Exporter()
 
     # raises correct error?
-    try:
+    with pytest.raises(NotImplementedError):
         exporter.get_export_data_dict(obj=None)
-        assert False  #
-    except NotImplementedError:
-        pass
