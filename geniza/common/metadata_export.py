@@ -78,6 +78,22 @@ class Exporter:
         # save
         yield from (self.get_export_data_dict(obj) for obj in iterr)
 
+    def serialize_value(self, value):
+        """A quick serialize methodpy to transform a value into a CSV-friendly string.
+
+        :param value: Any value
+        :type value: object
+        :return: Stringified value
+        :rtype: str
+        """
+        if type(value) is bool:
+            return "y" if value else "n"
+        else:
+            return str(value)
+
+    def serialize_dict(self, data_dict):
+        return {str(k): self.serialize_value(v) for k, v in data_dict.items()}
+
     def iter_export_data_as_csv(self, fn=None, pseudo_buffer=False):
         """Iterate over the string lines of a CSV file as it's being written, either to file or a string buffer.
 
@@ -100,7 +116,8 @@ class Exporter:
             )
             yield writer.writeheader()
             yield from (
-                writer.writerow(docd) for docd in self.iter_export_data_as_dicts()
+                writer.writerow(self.serialize_dict(docd))
+                for docd in self.iter_export_data_as_dicts()
             )
 
     def write_export_data_csv(self, fn=None):

@@ -36,6 +36,8 @@ class DocumentExporter(Exporter):
         "status",
         "library",
         "collection",
+        "has_transcription",
+        "has_translation",
     ]
 
     def get_queryset(self):
@@ -157,5 +159,9 @@ class DocumentExporter(Exporter):
         outd["collection"] = (
             sep_within_cells.join(collections) if any(collections) else ""
         )
+
+        # has transcription and translation?
+        outd["has_transcription"] = doc.has_transcription()
+        outd["has_translation"] = doc.has_translation()
 
         return outd
