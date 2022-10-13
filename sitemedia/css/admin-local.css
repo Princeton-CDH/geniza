@@ -133,7 +133,9 @@ a#needsreview:target {
     .transcription
     ol
     li::before {
-    right: 163px;
+    right: -38px;
+    line-height: 24px;
+    font-size: 35px;
 }
 
 /* remove overlays for non-document images in admin */
