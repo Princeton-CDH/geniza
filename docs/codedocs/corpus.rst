@@ -19,6 +19,13 @@ dates
 .. automodule:: geniza.corpus.dates
     :members:
 
+
+metadata export
+---------------
+
+.. automodule:: geniza.corpus.metadata_export
+    :members:
+
 views
 -----
 
@@ -47,6 +54,9 @@ manage commands
     :members:
 
 .. automodule:: geniza.corpus.management.commands.generate_fixtures
+    :members:
+
+.. automodule:: geniza.corpus.management.commands.export_metadata
     :members:
 
 
