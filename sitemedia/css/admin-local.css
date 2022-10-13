@@ -105,7 +105,11 @@ a#needsreview:target {
     white-space: pre-line;
 }
 
-/* Transcription styles in admin */
+/*
+ *
+ * Transcription styles in admin
+ *
+ */
 @media (min-width: 900px) {
     .form-row #iiif-viewer {
         padding: 10px;
@@ -114,16 +118,45 @@ a#needsreview:target {
 #iiif-viewer .transcription.no-image {
     max-width: 100%;
 }
-/* rtl is controlled thru html "dir=" attribute */
-.transcription {
-    direction: rtl;
-    text-align: right;
+.form-row .transcription {
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
 }
-.transcription h3,
-.transcription section h1 {
-    text-align: left;
-    direction: ltr;
-    font-size: 115%;
+/* need to apply these manually for overriding purposes */
+.form-row .transcription p,
+.form-row .transcription li {
+    font-size: 22px;
+}
+/* headers */
+.form-row .transcription h3 {
+    font-family: "Greta Sans Regular Bold", "Greta Sans Hebrew Bold",
+        "HassanLTBold", "arial-bold", sans-serif;
+}
+/* no script or hebrew script */
+.form-row .transcription p,
+.form-row .transcription li,
+.form-row .transcription[lang="he"] p,
+.form-row .transcription[lang="he"] li,
+.form-row .transcription[lang="jrb"] p,
+.form-row .transcription[lang="jrb"] li,
+.form-row .transcription[data-lang-script="hebrew"] p,
+.form-row .transcription[data-lang-script="hebrew"] li {
+    font-family: "FrankRuhl 1924 MF Medium", serif;
+    line-height: 32px;
+}
+/* arabic script */
+.form-row .transcription[lang="ar"] p,
+.form-row .transcription[lang="ar"] li,
+.form-row .transcription[data-lang-script="arabic"] p,
+.form-row .transcription[data-lang-script="arabic"] li {
+    font-family: "Amiri", serif;
+}
+.form-row .transcription h3 {
+    font-size: 20px;
+}
+
+.form-row .transcription-select ul {
+    margin-left: 0;
 }
 
 /* adjust spacing of decimal cover */
