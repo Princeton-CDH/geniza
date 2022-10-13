@@ -343,6 +343,8 @@ def test_echo():
         assert type(e) == Echo
 
 
+# db access necessary because Exporter.__init__ will access Site information
+@pytest.mark.django_db
 def test_base_exporter():
     exporter = Exporter()
 
