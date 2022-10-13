@@ -185,12 +185,11 @@ footer {
             }
         }
 
-        // CC-BY license icon
+        // CC-BY license icon, software version
         li#license,
         li#sw-version {
             margin: 0;
             text-align: center;
-            min-height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -204,6 +203,10 @@ footer {
             a {
                 text-decoration: none;
             }
+        }
+
+        li#license {
+            min-height: 48px;
         }
 
         li#sw-version {
