@@ -48,8 +48,8 @@ def test_doc_exporter_cli(document, join):
     # csv filename?
     str_time_pref = timezone.now().strftime("%Y%m%dT")
     csv_filename = exporter.csv_filename()
-    assert type(csv_filename) == str and csv - filename
-    assert csv_filename.startswith(str_time_pref)
+    assert type(csv_filename) == str and csv_filename
+    assert csv_filename.startswith(f"geniza-documents-{str_time_pref}")
     assert csv_filename.endswith(".csv")
 
     # correct number of rows?
