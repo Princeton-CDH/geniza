@@ -96,7 +96,8 @@ export default class extends Controller {
         const maxZoom = 1.5; // Maximum zoom as a multiple of image size
         const url = this.osdTarget.dataset.iiifUrl;
 
-        // allow placeholder image (url ending in .png instead of .json)
+        // allow placeholder image (url ending in .png instead of .json; assumes all real
+        // images are IIIF)
         const isPlaceholder = url.endsWith(".png");
         const tileSource = isPlaceholder ? { type: "image", url } : url;
 
