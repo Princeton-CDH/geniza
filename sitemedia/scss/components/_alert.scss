@@ -46,8 +46,8 @@ div#alerts {
             // allow copy-paste
             pointer-events: all;
             opacity: 1;
-            color: white;
-            background-color: #ce2029;
+            background-color: var(--alert-error);
+            color: var(--alert-error-text);
         }
     }
 }

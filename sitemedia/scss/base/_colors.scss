@@ -79,8 +79,10 @@ $off-white: #f7f7f7;
     --tag-bg: #e5eee5;
     // selected language background color
     --selected-language: #f7f7f7;
-    // alert message border/text colors
+    // alert message border/text/background colors
     --alert-success: #7bac7b;
+    --alert-error: #ce2029;
+    --alert-error-text: #f7f7f7;
 }
 
 // Dark mode theme colors
@@ -145,8 +147,10 @@ $off-white: #f7f7f7;
     --tag-bg: rgba(195, 127, 151, 0.2);
     // selected language background color
     --selected-language: #161616;
-    // alert message border/text colors
+    // alert message border/text/background colors
     --alert-success: #436043;
+    --alert-error: #ce2029;
+    --alert-error-text: #f7f7f7;
 }
 
 html {
