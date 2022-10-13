@@ -214,7 +214,13 @@ footer {
         }
 
         li#sw-version {
+            a {
+                padding-bottom: 1.5rem;
+            }
             @include breakpoints.for-tablet-landscape-up {
+                a {
+                    padding-bottom: 0;
+                }
                 margin: 0 0 0 1.5rem;
                 flex: 0 1 auto;
             }
