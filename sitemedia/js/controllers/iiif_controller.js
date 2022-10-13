@@ -96,8 +96,10 @@ export default class extends Controller {
         const maxZoom = 1.5; // Maximum zoom as a multiple of image size
         const url = this.osdTarget.dataset.iiifUrl;
 
-        // allow placeholder image (url ending in .png instead of .json)
-        const tileSource = url.endsWith(".png") ? { type: "image", url } : url;
+        // allow placeholder image (url ending in .png instead of .json; assumes all real
+        // images are IIIF)
+        const isPlaceholder = url.endsWith(".png");
+        const tileSource = isPlaceholder ? { type: "image", url } : url;
 
         // inject OSD into the image container
         let viewer = OpenSeadragon({
@@ -114,8 +116,8 @@ export default class extends Controller {
             },
             showZoomControl: false,
             showNavigationControl: false,
-            // show navigator in top left
-            showNavigator: true,
+            // show navigator in top left (unless placeholder)
+            showNavigator: !isPlaceholder,
             navigatorPosition: "TOP_LEFT",
             navigatorOpacity: 0.5,
             showFullPageControl: false,
