@@ -8,13 +8,7 @@ export default class extends Controller {
         this.boundAlertHandler = this.handleAlert.bind(this);
     }
     connect() {
-        // avoid adding a duplicate event listener, it happens sometimes(?)
-        // regardless of the number of images on the page; bound to alerts
-        // div in document_transcribe.html... TODO: figure out why
-        if (!this.element.alertListenerInitialized) {
-            document.addEventListener("tahqiq-alert", this.boundAlertHandler);
-            this.element.alertListenerInitialized = true;
-        }
+        document.addEventListener("tahqiq-alert", this.boundAlertHandler);
     }
     disconnect() {
         document.removeEventListener("tahqiq-alert", this.boundAlertHandler);
