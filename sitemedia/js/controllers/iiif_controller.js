@@ -97,7 +97,8 @@ export default class extends Controller {
         const url = this.osdTarget.dataset.iiifUrl;
 
         // allow placeholder image (url ending in .png instead of .json)
-        const tileSource = url.endsWith(".png") ? { type: "image", url } : url;
+        const isPlaceholder = url.endsWith(".png");
+        const tileSource = isPlaceholder ? { type: "image", url } : url;
 
         // inject OSD into the image container
         let viewer = OpenSeadragon({
@@ -114,8 +115,8 @@ export default class extends Controller {
             },
             showZoomControl: false,
             showNavigationControl: false,
-            // show navigator in top left
-            showNavigator: true,
+            // show navigator in top left (unless placeholder)
+            showNavigator: !isPlaceholder,
             navigatorPosition: "TOP_LEFT",
             navigatorOpacity: 0.5,
             showFullPageControl: false,
