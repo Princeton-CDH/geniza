@@ -447,6 +447,11 @@ class Footnote(TrackChangesModel):
         help_text="How does the source relate to this document?",
     )
     notes = models.TextField(blank=True)
+    content = models.JSONField(
+        blank=True,
+        null=True,
+        help_text="Transcription content (transitional; edit with care and only when needed)",
+    )
     url = models.URLField(
         "URL", blank=True, max_length=300, help_text="Link to the source (optional)"
     )

@@ -304,6 +304,13 @@ class FootnoteAdmin(admin.ModelAdmin):
     )
     autocomplete_fields = ["source"]
     list_filter = (
+        DocumentRelationTypesFilter,
+        (
+            "content",
+            custom_empty_field_list_filter(
+                "transcription", "Digitized", "Not digitized"
+            ),
+        ),
         (
             "url",
             custom_empty_field_list_filter("url", "Has URL", "No URL"),
@@ -315,6 +322,7 @@ class FootnoteAdmin(admin.ModelAdmin):
         "source__title",
         "source__authors__first_name",
         "source__authors__last_name",
+        "content",
         "notes",
         "document__id",
         "document__fragments__shelfmark",
@@ -375,8 +383,8 @@ class FootnoteAdmin(admin.ModelAdmin):
         "doc_relation",
         "notes",
         "url",
+        "content",
         "admin_url",
-        # TODO: include transcription text here? (in public version?)
     ]
 
     def csv_filename(self):
