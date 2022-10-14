@@ -1025,6 +1025,10 @@ a.editor-navigation {
         @include typography.transcription-numerals;
         text-align: right;
         float: right;
+        font-size: typography.$text-size-md;
+        @include breakpoints.for-tablet-landscape-up {
+            font-size: typography.$text-size-xl;
+        }
     }
 }
 
