@@ -231,12 +231,15 @@ section#document-list {
     .transcription li {
         direction: rtl;
         list-style-type: none; /* hide automatic ol numbering */
+        display: flex;
+        align-items: flex-end;
         &::before {
+            @include typography.transcription-numerals;
             content: attr(value);
             margin-right: -2rem; /* shift outside text margin */
+            margin-left: 1.5rem;
             text-align: right;
             float: right;
-            font-weight: bold;
         }
     }
 

@@ -87,17 +87,6 @@
         font-display: swap;
     }
 
-    // Frank Ruhl1924 MF Medium for Hebrew text (transcriptions)
-    @font-face {
-        font-family: "FrankRuhl 1924 MF Medium";
-        font-style: normal;
-        src: url("#{$base_url}/FrankRuhl1924MF-Medium-Medium.woff2")
-                format("woff2"),
-            url("#{$base_url}/FrankRuhl1924MF-Medium-Medium.woff")
-                format("woff");
-        font-display: swap;
-    }
-
     // HassanLTLight for Arabic text
     @font-face {
         font-family: "HassanLTLight";
@@ -120,6 +109,22 @@
         font-display: swap;
     }
 
+    // Frank Ruhl1924 MF Medium for Hebrew text (transcriptions)
+    @font-face {
+        font-family: "FrankRuhl 1924 MF Medium";
+        font-style: normal;
+        src: url("#{$base_url}/FrankRuhl1924MF-Medium-Medium.woff2")
+                format("woff2"),
+            url("#{$base_url}/FrankRuhl1924MF-Medium-Medium.woff")
+                format("woff");
+        font-display: swap;
+        unicode-range:
+            // Hebrew
+            U+0590-05FF,
+            // Hebrew presentation forms
+            U+FB1D-FB4F;
+    }
+
     // Amiri for Arabic text (transcriptions)
     @font-face {
         font-family: "Amiri";
@@ -127,6 +132,29 @@
         src: url("#{$base_url}/Amiri-Regular.woff2") format("woff2"),
             url("#{$base_url}/Amiri-Regular.woff") format("woff");
         font-display: swap;
+        unicode-range:
+            // Arabic
+            U+600-6FF,
+            // Arabic Supplement
+            U+750-77F,
+            // Arabic Extended-A
+            U+08A0-08FF,
+            // Arabic Extended-B
+            U+0870-089F,
+            // Arabic Extended-C
+            U+10EC0-10EFF,
+            // Arabic Presentation Forms-A
+            U+FB50-FDFF,
+            // Arabic Presentation Forms-B
+            U+FE70-FEFF,
+            // Rumi Numeral Symbols
+            U+10E60-10E7F,
+            // Indic Siyaq Numbers
+            U+1EC70-1ECBF,
+            // Ottoman Siyaq Numbers
+            U+1ED00-1ED4F,
+            // Arabic Mathematical Alphabetic Symbols
+            U+1EE00-1EEFF;
     }
 }
 
@@ -191,8 +219,6 @@ $primary-semibold: (
 );
 $primary-italic: ("Greta Sans Regular Italic", "arial-italic", sans-serif);
 
-// Hebrew transcriptions
-$hebrew: ("FrankRuhl 1924 MF Medium", serif);
-
-// Arabic transcriptions
-$arabic: ("Amiri", serif);
+// Transcriptions (Combined Hebrew and Arabic, chosen by Unicode character,
+// with Times New Roman for missing glyphs)
+$transcription: ("FrankRuhl 1924 MF Medium", "Amiri", "Times New Roman", serif);

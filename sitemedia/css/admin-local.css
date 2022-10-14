@@ -131,44 +131,21 @@ a#needsreview:target {
 .form-row .transcription h3 {
     font-family: "Greta Sans Regular Bold", "Greta Sans Hebrew Bold",
         "HassanLTBold", "arial-bold", sans-serif;
+    font-size: 20px;
 }
-/* no script or hebrew script */
 .form-row .transcription p,
-.form-row .transcription li,
-.form-row .transcription[lang="he"] p,
-.form-row .transcription[lang="he"] li,
-.form-row .transcription[lang="jrb"] p,
-.form-row .transcription[lang="jrb"] li,
-.form-row .transcription[data-lang-script="hebrew"] p,
-.form-row .transcription[data-lang-script="hebrew"] li {
-    font-family: "FrankRuhl 1924 MF Medium", serif;
+.form-row .transcription li {
+    font-family: "FrankRuhl 1924 MF Medium", "Amiri", "Times New Roman", serif;
     line-height: 32px;
 }
-/* arabic script */
 .form-row .transcription[lang="ar"] p,
 .form-row .transcription[lang="ar"] li,
 .form-row .transcription[data-lang-script="arabic"] p,
 .form-row .transcription[data-lang-script="arabic"] li {
-    font-family: "Amiri", serif;
+    line-height: 34px;
 }
-.form-row .transcription h3 {
-    font-size: 20px;
-}
-
 .form-row .transcription-select ul {
     margin-left: 0;
-}
-
-/* adjust spacing of decimal cover */
-#itt-panel
-    .panel-container
-    div.transcription-panel
-    .transcription
-    ol
-    li::before {
-    right: -38px;
-    line-height: 24px;
-    font-size: 35px;
 }
 
 /* remove overlays for non-document images in admin */
