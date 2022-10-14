@@ -422,7 +422,7 @@ $text-size-5xl: 2rem; //     = 32px
     }
 }
 @mixin language-switch-he {
-    font-family: "FrankRuhl 1924 MF Medium";
+    font-family: fonts.$transcription;
     font-size: $text-size-xl;
     @include breakpoints.for-tablet-landscape-up {
         font-size: calc(26rem / 16);
