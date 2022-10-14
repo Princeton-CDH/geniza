@@ -3,11 +3,12 @@ import { definitionsFromContext } from "@hotwired/stimulus-webpack-helpers";
 import * as Turbo from "@hotwired/turbo";
 
 const application = Application.start();
-// exclude iiif_controller.js
+// NOTE: Any new controllers that should not be part of this bundle must be explicitly excluded
 const context = require.context(
     "./controllers",
     true,
-    /^.*\/(?!iiif_controller)(?!annotation_controller)(?!alert_controller)(?!transcription_controller).*\.js$/
+    // exclude alert, annotation, iiif, and transcription controllers using negative lookahead
+    /^.*\/(?!iiif)(?!annotation)(?!alert)(?!transcription).*_controller.*\.js$/
 );
 application.load(definitionsFromContext(context));
 
