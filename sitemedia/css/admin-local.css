@@ -105,7 +105,11 @@ a#needsreview:target {
     white-space: pre-line;
 }
 
-/* Transcription styles in admin */
+/*
+ *
+ * Transcription styles in admin
+ *
+ */
 @media (min-width: 900px) {
     .form-row #iiif-viewer {
         padding: 10px;
@@ -114,26 +118,34 @@ a#needsreview:target {
 #iiif-viewer .transcription.no-image {
     max-width: 100%;
 }
-/* rtl is controlled thru html "dir=" attribute */
-.transcription {
-    direction: rtl;
-    text-align: right;
+.form-row .transcription {
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
 }
-.transcription h3,
-.transcription section h1 {
-    text-align: left;
-    direction: ltr;
-    font-size: 115%;
+/* need to apply these manually for overriding purposes */
+.form-row .transcription p,
+.form-row .transcription li {
+    font-size: 22px;
 }
-
-/* adjust spacing of decimal cover */
-#itt-panel
-    .panel-container
-    div.transcription-panel
-    .transcription
-    ol
-    li::before {
-    right: 163px;
+/* headers */
+.form-row .transcription h3 {
+    font-family: "Greta Sans Regular Bold", "Greta Sans Hebrew Bold",
+        "HassanLTBold", "arial-bold", sans-serif;
+    font-size: 20px;
+}
+.form-row .transcription p,
+.form-row .transcription li {
+    font-family: "FrankRuhl 1924 MF Medium", "Amiri", "Times New Roman", serif;
+    line-height: 32px;
+}
+.form-row .transcription[lang="ar"] p,
+.form-row .transcription[lang="ar"] li,
+.form-row .transcription[data-lang-script="arabic"] p,
+.form-row .transcription[data-lang-script="arabic"] li {
+    line-height: 34px;
+}
+.form-row .transcription-select ul {
+    margin-left: 0;
 }
 
 /* remove overlays for non-document images in admin */

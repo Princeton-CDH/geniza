@@ -232,11 +232,12 @@ section#document-list {
         direction: rtl;
         list-style-type: none; /* hide automatic ol numbering */
         &::before {
+            @include typography.transcription-numerals;
             content: attr(value);
             margin-right: -2rem; /* shift outside text margin */
             text-align: right;
             float: right;
-            font-weight: bold;
+            height: 100%;
         }
     }
 
