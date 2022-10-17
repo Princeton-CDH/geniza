@@ -489,12 +489,12 @@ class DocumentQuerySet(MultilingualQuerySet):
                 # @TODO: This is causing error?
                 #       ValueError: 'textblock_set' lookup was already seen with a different queryset. You may need to adjust the ordering of your lookups.
                 #
-                # Prefetch(
-                #     "textblock_set",
-                #     queryset=TextBlock.objects.select_related(
-                #         "fragment", "fragment__collection"
-                #     ),
-                # ),
+                Prefetch(
+                    "textblock_set",
+                    queryset=TextBlock.objects.select_related(
+                        "fragment", "fragment__collection"
+                    ),
+                ),
             )
             .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
         )
@@ -859,9 +859,6 @@ class Document(ModelIndexable, DocumentDateMixin):
         return any(
             [Footnote.TRANSLATION in note.doc_relation for note in self.footnotes.all()]
         )
-
-    has_translation.short_description = "Translation"
-    has_translation.boolean = True
 
     def has_image(self):
         """Admin display field indicating if document has a IIIF image."""

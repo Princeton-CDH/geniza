@@ -88,6 +88,10 @@ class Exporter:
         """
         if type(value) is bool:
             return "y" if value else "n"
+        elif type(value) in {list, tuple, set}:
+            return self.sep_within_cells.join(
+                self.serialize_value(subval) for subval in sorted(list(value))
+            )
         else:
             return str(value)
 
