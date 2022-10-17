@@ -88,6 +88,8 @@ class Exporter:
         """
         if type(value) is bool:
             return "y" if value else "n"
+        elif value is None:
+            return ""
         elif type(value) in {list, tuple, set}:
             return self.sep_within_cells.join(
                 self.serialize_value(subval) for subval in sorted(list(value))
@@ -95,8 +97,13 @@ class Exporter:
         else:
             return str(value)
 
+    def serialize_key(self, key):
+        return self.serialize_value(key)
+
     def serialize_dict(self, data_dict):
-        return {str(k): self.serialize_value(v) for k, v in data_dict.items()}
+        return {
+            self.serialize_key(k): self.serialize_value(v) for k, v in data_dict.items()
+        }
 
     def iter_export_data_as_csv(self, fn=None, pseudo_buffer=False):
         """Iterate over the string lines of a CSV file as it's being written, either to file or a string buffer.

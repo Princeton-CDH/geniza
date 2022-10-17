@@ -868,9 +868,9 @@ class TestDocument:
         assert not document.has_translation()
 
         # doc with digital edition footnote does have a transcription
-        fn.doc_relation = [Footnote.DIGITAL_EDITION]
+        fn.doc_relation = [Footnote.TRANSLATION]
         fn.save()
-        assert document.has_transcription()
+        assert document.has_translation()
 
     def test_has_image(self, document, fragment):
         # doc with fragment with IIIF url has image
