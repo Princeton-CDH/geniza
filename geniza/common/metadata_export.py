@@ -1,7 +1,9 @@
 import csv
+from collections.abc import Generator
 
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.db.models import QuerySet
 from django.http import StreamingHttpResponse
 from django.utils import timezone
 from rich.progress import track
@@ -32,7 +34,7 @@ class Exporter:
         self.site_domain = Site.objects.get_current().domain.rstrip("/")
         self.url_scheme = "https://"
 
-    def csv_filename(self):
+    def csv_filename(self) -> str:
         """Generate the appropriate CSV filename for model and time
 
         :return: Filename string
@@ -42,7 +44,7 @@ class Exporter:
         str_time = timezone.now().strftime("%Y%m%dT%H%M%S")
         return f"geniza-{str_plural}-{str_time}.csv"
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         """Get the queryset in use. If not set at init, this will be all objects from the given model.
 
         :return: QuerySet of documents to export
@@ -50,7 +52,7 @@ class Exporter:
         """
         return self.queryset or self.model.objects.all()
 
-    def get_export_data_dict(self, obj):
+    def get_export_data_dict(self, obj: object):
         """A given Exporter class (DocumentExporter, FootnoteExporter, etc) must implement this function. It ought to return a dictionary of exported information for a given object.
 
         :param obj: Model object (document, footnote, etc)
@@ -59,11 +61,11 @@ class Exporter:
         """
         raise NotImplementedError
 
-    def iter_export_data_as_dicts(self):
+    def iter_export_data_as_dicts(self) -> Generator[dict]:
         """Iterate over the exportable data, one dictionary per row
 
         :yield: Dictionary of information for each object
-        :rtype: dict
+        :rtype: Generator[dict]
         """
         # get queryset
         queryset = self.get_queryset()
@@ -78,11 +80,12 @@ class Exporter:
         # save
         yield from (self.get_export_data_dict(obj) for obj in iterr)
 
-    def serialize_value(self, value):
+    def serialize_value(self, value: object) -> str:
         """A quick serialize methodpy to transform a value into a CSV-friendly string.
 
         :param value: Any value
         :type value: object
+
         :return: Stringified value
         :rtype: str
         """
@@ -97,15 +100,31 @@ class Exporter:
         else:
             return str(value)
 
-    def serialize_key(self, key):
+    def serialize_key(self, key: object) -> str:
+        """Serialize the keys in the serialized dictionary. For now, this is identical to serializing values. Keys ought to be strings but this method enforces it.
+
+        :param key: Any object but it ought to be a string
+        :type key: object
+
+        :return: That object as a safe string
+        :rtype: str
+        """
         return self.serialize_value(key)
 
-    def serialize_dict(self, data_dict):
-        return {
-            self.serialize_key(k): self.serialize_value(v) for k, v in data_dict.items()
-        }
+    def serialize_dict(self, data: dict) -> str:
+        """_summary_
 
-    def iter_export_data_as_csv(self, fn=None, pseudo_buffer=False):
+        :param data: Dictionary of keys and values
+        :type data: dict
+
+        :return: Dictionary with keys and values safely serialized as strings
+        :rtype: str
+        """
+        return {self.serialize_key(k): self.serialize_value(v) for k, v in data.items()}
+
+    def iter_export_data_as_csv(
+        self, fn: str = None, pseudo_buffer: bool = False
+    ) -> Generator[str]:
         """Iterate over the string lines of a CSV file as it's being written, either to file or a string buffer.
 
         :param fn: Filename to save CSV to (if pseudo_buffer is False), defaults to None
@@ -115,7 +134,7 @@ class Exporter:
         :type pseudo_buffer: bool, optional
 
         :yield: String of current line in CSV
-        :rtype: str
+        :rtype: Generator[str]
         """
         with (
             open(self.csv_filename() if not fn else fn, "w")
@@ -131,7 +150,7 @@ class Exporter:
                 for docd in self.iter_export_data_as_dicts()
             )
 
-    def write_export_data_csv(self, fn=None):
+    def write_export_data_csv(self, fn: str = None):
         """Save CSV of exportable data to file.
 
         :param fn: Filename to save CSV to, defaults to None
@@ -142,11 +161,14 @@ class Exporter:
         for row in self.iter_export_data_as_csv(fn=fn, pseudo_buffer=False):
             pass
 
-    def http_export_data_csv(self, fn=None):
+    def http_export_data_csv(self, fn: str = None) -> StreamingHttpResponse:
         """Download CSV of exportable data to file.
 
         :param fn: Filename to download CSV as, defaults to None
         :type fn: str, optional
+
+        :return: Django implementation of StreamingHttpResponse which can be downloaded via web client or programmatically.
+        :rtype: StreamingHttpResponse
         """
         if not fn:
             fn = self.csv_filename()

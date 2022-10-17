@@ -854,8 +854,12 @@ class Document(ModelIndexable, DocumentDateMixin):
     has_transcription.short_description = "Transcription"
     has_transcription.boolean = True
 
-    def has_translation(self):
-        """Does document have a translation?"""
+    def has_translation(self) -> bool:
+        """Helper method to determine if document has translation (accessible via its footnotes).
+
+        :return: Whether document has translation
+        :rtype: bool
+        """
         return any(
             [Footnote.TRANSLATION in note.doc_relation for note in self.footnotes.all()]
         )

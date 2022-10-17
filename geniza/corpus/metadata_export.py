@@ -1,3 +1,5 @@
+from django.db.models import QuerySet
+
 from geniza.common.metadata_export import Exporter
 from geniza.corpus.models import Document
 
@@ -40,7 +42,7 @@ class DocumentExporter(Exporter):
         "has_translation",
     ]
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         """
         Applies some prefetching to the base Exporter's get_queryset functionality.
 
@@ -55,7 +57,7 @@ class DocumentExporter(Exporter):
             .order_by("id")
         )
 
-    def get_export_data_dict(self, doc):
+    def get_export_data_dict(self, doc: Document) -> dict:
         """
         Get back data about a document in dictionary format.
 
