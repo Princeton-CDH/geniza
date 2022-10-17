@@ -81,7 +81,7 @@ class Exporter:
         yield from (self.get_export_data_dict(obj) for obj in iterr)
 
     def serialize_value(self, value: object) -> str:
-        """A quick serialize methodpy to transform a value into a CSV-friendly string.
+        """A quick serialize method to transform a value into a CSV-friendly string.
 
         :param value: Any value
         :type value: object
@@ -111,14 +111,14 @@ class Exporter:
         """
         return self.serialize_value(key)
 
-    def serialize_dict(self, data: dict) -> str:
-        """_summary_
+    def serialize_dict(self, data: dict) -> dict:
+        """Return a new dictionary whose keys and values are safe, serialized strings in input dictionary `data`.
 
         :param data: Dictionary of keys and values
         :type data: dict
 
         :return: Dictionary with keys and values safely serialized as strings
-        :rtype: str
+        :rtype: dict
         """
         return {self.serialize_key(k): self.serialize_value(v) for k, v in data.items()}
 
