@@ -486,9 +486,6 @@ class DocumentQuerySet(MultilingualQuerySet):
             .prefetch_related(
                 "tags",
                 "languages",
-                # @TODO: This is causing error?
-                #       ValueError: 'textblock_set' lookup was already seen with a different queryset. You may need to adjust the ordering of your lookups.
-                #
                 Prefetch(
                     "textblock_set",
                     queryset=TextBlock.objects.select_related(

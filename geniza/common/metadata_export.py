@@ -112,7 +112,7 @@ class Exporter:
         return self.serialize_value(key)
 
     def serialize_dict(self, data: dict) -> dict:
-        """Return a new dictionary whose keys and values are safe, serialized strings in input dictionary `data`.
+        """Return a new dictionary whose keys and values are safe, serialized string versions of the keys and values in input dictionary `data`.
 
         :param data: Dictionary of keys and values
         :type data: dict
