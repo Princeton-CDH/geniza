@@ -53,7 +53,7 @@ class Exporter:
         """
         return self.queryset or self.model.objects.all()
 
-    def get_export_data_dict(self, obj: object):
+    def get_export_data_dict(self, obj):
         """A given Exporter class (DocumentExporter, FootnoteExporter, etc) must implement this function. It ought to return a dictionary of exported information for a given object.
 
         :param obj: Model object (document, footnote, etc)
@@ -81,7 +81,7 @@ class Exporter:
         # save
         yield from (self.get_export_data_dict(obj) for obj in iterr)
 
-    def serialize_value(self, value: object):
+    def serialize_value(self, value):
         """A quick serialize method to transform a value into a CSV-friendly string.
 
         :param value: Any value
