@@ -42,22 +42,20 @@ class DocumentExporter(Exporter):
         "has_translation",
     ]
 
-    def get_queryset(self) -> QuerySet:
+    def get_queryset(self):
         """
         Applies some prefetching to the base Exporter's get_queryset functionality.
 
         :return: Custom-given query set or query set of all documents
         :rtype: QuerySet
         """
-        return (
-            super()
-            .get_queryset()
-            .metadata_prefetch()
-            .prefetch_related("secondary_languages", "log_entries")
-            .order_by("id")
+        qset = self.queryset or self.model.objects.all().metadata_prefetch()
+        qset = qset.prefetch_related("secondary_languages", "log_entries").order_by(
+            "id"
         )
+        return qset
 
-    def get_export_data_dict(self, doc: Document) -> dict:
+    def get_export_data_dict(self, doc):
         """
         Get back data about a document in dictionary format.
 

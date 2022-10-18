@@ -26,6 +26,7 @@ class Exporter:
     model = None
     csv_fields = []
     sep_within_cells = " ; "
+    true_false = {True: "y", False: "n"}
 
     def __init__(self, queryset=None, progress=False):
         self.queryset = queryset
@@ -34,7 +35,7 @@ class Exporter:
         self.site_domain = Site.objects.get_current().domain.rstrip("/")
         self.url_scheme = "https://"
 
-    def csv_filename(self) -> str:
+    def csv_filename(self):
         """Generate the appropriate CSV filename for model and time
 
         :return: Filename string
@@ -44,7 +45,7 @@ class Exporter:
         str_time = timezone.now().strftime("%Y%m%dT%H%M%S")
         return f"geniza-{str_plural}-{str_time}.csv"
 
-    def get_queryset(self) -> QuerySet:
+    def get_queryset(self):
         """Get the queryset in use. If not set at init, this will be all objects from the given model.
 
         :return: QuerySet of documents to export
@@ -61,7 +62,7 @@ class Exporter:
         """
         raise NotImplementedError
 
-    def iter_export_data_as_dicts(self) -> Generator[dict]:
+    def iter_export_data_as_dicts(self):
         """Iterate over the exportable data, one dictionary per row
 
         :yield: Dictionary of information for each object
@@ -80,7 +81,7 @@ class Exporter:
         # save
         yield from (self.get_export_data_dict(obj) for obj in iterr)
 
-    def serialize_value(self, value: object) -> str:
+    def serialize_value(self, value: object):
         """A quick serialize method to transform a value into a CSV-friendly string.
 
         :param value: Any value
@@ -90,7 +91,7 @@ class Exporter:
         :rtype: str
         """
         if type(value) is bool:
-            return "y" if value else "n"
+            return self.true_false[value]
         elif value is None:
             return ""
         elif type(value) in {list, tuple, set}:
@@ -100,18 +101,7 @@ class Exporter:
         else:
             return str(value)
 
-    def serialize_key(self, key: object) -> str:
-        """Serialize the keys in the serialized dictionary. For now, this is identical to serializing values. Keys ought to be strings but this method enforces it.
-
-        :param key: Any object but it ought to be a string
-        :type key: object
-
-        :return: That object as a safe string
-        :rtype: str
-        """
-        return self.serialize_value(key)
-
-    def serialize_dict(self, data: dict) -> dict:
+    def serialize_dict(self, data):
         """Return a new dictionary whose keys and values are safe, serialized string versions of the keys and values in input dictionary `data`.
 
         :param data: Dictionary of keys and values
@@ -120,11 +110,9 @@ class Exporter:
         :return: Dictionary with keys and values safely serialized as strings
         :rtype: dict
         """
-        return {self.serialize_key(k): self.serialize_value(v) for k, v in data.items()}
+        return {k: self.serialize_value(v) for k, v in data.items()}
 
-    def iter_export_data_as_csv(
-        self, fn: str = None, pseudo_buffer: bool = False
-    ) -> Generator[str]:
+    def iter_export_data_as_csv(self, fn=None, pseudo_buffer=False):
         """Iterate over the string lines of a CSV file as it's being written, either to file or a string buffer.
 
         :param fn: Filename to save CSV to (if pseudo_buffer is False), defaults to None
@@ -150,7 +138,7 @@ class Exporter:
                 for docd in self.iter_export_data_as_dicts()
             )
 
-    def write_export_data_csv(self, fn: str = None):
+    def write_export_data_csv(self, fn=None):
         """Save CSV of exportable data to file.
 
         :param fn: Filename to save CSV to, defaults to None
@@ -161,7 +149,7 @@ class Exporter:
         for row in self.iter_export_data_as_csv(fn=fn, pseudo_buffer=False):
             pass
 
-    def http_export_data_csv(self, fn: str = None) -> StreamingHttpResponse:
+    def http_export_data_csv(self, fn=None):
         """Download CSV of exportable data to file.
 
         :param fn: Filename to download CSV as, defaults to None

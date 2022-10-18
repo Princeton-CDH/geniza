@@ -358,9 +358,11 @@ def test_base_exporter():
     assert exporter.serialize_value([1, 3, 2]) == f"1{sep}2{sep}3"
     assert exporter.serialize_value({1, 3, 2}) == f"1{sep}2{sep}3"
     assert exporter.serialize_dict({"key": [1, 3, 2]}) == {"key": f"1{sep}2{sep}3"}
-    assert exporter.serialize_dict({0: [1, 3, 2]}) == {"0": f"1{sep}2{sep}3"}
 
-    assert exporter.serialize_key(123) == "123"
+    # keys already enforced to be strings by database
+    assert exporter.serialize_dict({"0": [1, 3, 2]}) == {"0": f"1{sep}2{sep}3"}
+
+    assert exporter.serialize_value(123) == "123"
 
     assert exporter.serialize_value(True) == "y"
     assert exporter.serialize_value(False) == "n"

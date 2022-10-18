@@ -312,7 +312,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         return deletable_objects, model_count, perms_needed, protected
 
     def get_queryset(self, request):
-        return super().get_queryset(request)
+        return super().get_queryset(request).metadata_prefetch()
 
     def get_search_results(self, request, queryset, search_term):
         """Override admin search to use Solr."""
