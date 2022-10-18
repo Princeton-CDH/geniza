@@ -1,5 +1,3 @@
-from django.db.models import QuerySet
-
 from geniza.common.metadata_export import Exporter
 from geniza.corpus.models import Document
 

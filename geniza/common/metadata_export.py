@@ -1,9 +1,7 @@
 import csv
-from collections.abc import Generator
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.db.models import QuerySet
 from django.http import StreamingHttpResponse
 from django.utils import timezone
 from rich.progress import track
