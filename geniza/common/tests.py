@@ -351,3 +351,19 @@ def test_base_exporter():
     # raises correct error?
     with pytest.raises(NotImplementedError):
         exporter.get_export_data_dict(obj=None)
+
+    # serializes correctly?
+    sep = exporter.sep_within_cells
+    assert exporter.serialize_value([1, 2, 3]) == f"1{sep}2{sep}3"
+    assert exporter.serialize_value([1, 3, 2]) == f"1{sep}2{sep}3"
+    assert exporter.serialize_value({1, 3, 2}) == f"1{sep}2{sep}3"
+    assert exporter.serialize_dict({"key": [1, 3, 2]}) == {"key": f"1{sep}2{sep}3"}
+
+    # keys already enforced to be strings by database
+    assert exporter.serialize_dict({"0": [1, 3, 2]}) == {"0": f"1{sep}2{sep}3"}
+
+    assert exporter.serialize_value(123) == "123"
+
+    assert exporter.serialize_value(True) == "y"
+    assert exporter.serialize_value(False) == "n"
+    assert exporter.serialize_value(None) == ""

@@ -36,6 +36,8 @@ class DocumentExporter(Exporter):
         "status",
         "library",
         "collection",
+        "has_transcription",
+        "has_translation",
     ]
 
     def get_queryset(self):
@@ -45,13 +47,11 @@ class DocumentExporter(Exporter):
         :return: Custom-given query set or query set of all documents
         :rtype: QuerySet
         """
-        return (
-            super()
-            .get_queryset()
-            .metadata_prefetch()
-            .prefetch_related("secondary_languages", "log_entries")
-            .order_by("id")
+        qset = self.queryset or self.model.objects.all().metadata_prefetch()
+        qset = qset.prefetch_related("secondary_languages", "log_entries").order_by(
+            "id"
         )
+        return qset
 
     def get_export_data_dict(self, doc):
         """
@@ -157,5 +157,9 @@ class DocumentExporter(Exporter):
         outd["collection"] = (
             sep_within_cells.join(collections) if any(collections) else ""
         )
+
+        # has transcription and translation?
+        outd["has_transcription"] = doc.has_transcription()
+        outd["has_translation"] = doc.has_translation()
 
         return outd

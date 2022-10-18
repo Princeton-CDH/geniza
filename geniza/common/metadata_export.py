@@ -24,6 +24,7 @@ class Exporter:
     model = None
     csv_fields = []
     sep_within_cells = " ; "
+    true_false = {True: "y", False: "n"}
 
     def __init__(self, queryset=None, progress=False):
         self.queryset = queryset
@@ -63,7 +64,7 @@ class Exporter:
         """Iterate over the exportable data, one dictionary per row
 
         :yield: Dictionary of information for each object
-        :rtype: dict
+        :rtype: Generator[dict]
         """
         # get queryset
         queryset = self.get_queryset()
@@ -78,6 +79,37 @@ class Exporter:
         # save
         yield from (self.get_export_data_dict(obj) for obj in iterr)
 
+    def serialize_value(self, value):
+        """A quick serialize method to transform a value into a CSV-friendly string.
+
+        :param value: Any value
+        :type value: object
+
+        :return: Stringified value
+        :rtype: str
+        """
+        if type(value) is bool:
+            return self.true_false[value]
+        elif value is None:
+            return ""
+        elif type(value) in {list, tuple, set}:
+            return self.sep_within_cells.join(
+                self.serialize_value(subval) for subval in sorted(list(value))
+            )
+        else:
+            return str(value)
+
+    def serialize_dict(self, data):
+        """Return a new dictionary whose keys and values are safe, serialized string versions of the keys and values in input dictionary `data`.
+
+        :param data: Dictionary of keys and values
+        :type data: dict
+
+        :return: Dictionary with keys and values safely serialized as strings
+        :rtype: dict
+        """
+        return {k: self.serialize_value(v) for k, v in data.items()}
+
     def iter_export_data_as_csv(self, fn=None, pseudo_buffer=False):
         """Iterate over the string lines of a CSV file as it's being written, either to file or a string buffer.
 
@@ -88,7 +120,7 @@ class Exporter:
         :type pseudo_buffer: bool, optional
 
         :yield: String of current line in CSV
-        :rtype: str
+        :rtype: Generator[str]
         """
         with (
             open(self.csv_filename() if not fn else fn, "w")
@@ -100,7 +132,8 @@ class Exporter:
             )
             yield writer.writeheader()
             yield from (
-                writer.writerow(docd) for docd in self.iter_export_data_as_dicts()
+                writer.writerow(self.serialize_dict(docd))
+                for docd in self.iter_export_data_as_dicts()
             )
 
     def write_export_data_csv(self, fn=None):
@@ -119,6 +152,9 @@ class Exporter:
 
         :param fn: Filename to download CSV as, defaults to None
         :type fn: str, optional
+
+        :return: Django implementation of StreamingHttpResponse which can be downloaded via web client or programmatically.
+        :rtype: StreamingHttpResponse
         """
         if not fn:
             fn = self.csv_filename()
