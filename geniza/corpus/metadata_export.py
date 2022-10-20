@@ -48,9 +48,9 @@ class DocumentExporter(Exporter):
         :rtype: QuerySet
         """
         qset = self.queryset or self.model.objects.all().metadata_prefetch()
-        qset = qset.prefetch_related("secondary_languages", "log_entries").order_by(
-            "id"
-        )
+        qset = qset.prefetch_related(
+            "secondary_languages", "log_entries", "log_entries__user"
+        ).order_by("id")
         return qset
 
     def get_export_data_dict(self, doc):
@@ -133,7 +133,7 @@ class DocumentExporter(Exporter):
         outd["languages_secondary"] = doc.all_secondary_languages()
         outd["language_note"] = doc.language_note
         outd["doc_date_original"] = doc.doc_date_original
-        outd["doc_date_calendar"] = doc.doc_date_calendar
+        outd["doc_date_calendar"] = doc.get_doc_date_calendar_display()
         outd["doc_date_standard"] = doc.doc_date_standard
         outd["notes"] = doc.notes
         outd["needs_review"] = doc.needs_review
@@ -142,8 +142,10 @@ class DocumentExporter(Exporter):
         ] = f"{self.url_scheme}{self.site_domain}/admin/corpus/document/{doc.id}/change/"
 
         # default sort is most recent first, so initial input is last
+        # convert to list so we can do negative indexing, instead of calling last()
+        # which incurs a database call
         outd["initial_entry"] = (
-            all_log_entries.last().action_time if all_log_entries else ""
+            list(all_log_entries)[-1].action_time if all_log_entries else ""
         )
 
         outd["last_modified"] = doc.last_modified

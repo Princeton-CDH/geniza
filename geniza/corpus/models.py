@@ -492,6 +492,7 @@ class DocumentQuerySet(MultilingualQuerySet):
                         "fragment", "fragment__collection"
                     ),
                 ),
+                "footnotes",
             )
             .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
         )
