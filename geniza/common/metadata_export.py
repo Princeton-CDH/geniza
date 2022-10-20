@@ -24,7 +24,7 @@ class Exporter:
     model = None
     csv_fields = []
     sep_within_cells = " ; "
-    true_false = {True: "y", False: "n"}
+    true_false = {True: "Y", False: "N"}
 
     def __init__(self, queryset=None, progress=False):
         self.queryset = queryset

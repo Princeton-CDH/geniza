@@ -364,6 +364,6 @@ def test_base_exporter():
 
     assert exporter.serialize_value(123) == "123"
 
-    assert exporter.serialize_value(True) == "y"
-    assert exporter.serialize_value(False) == "n"
+    assert exporter.serialize_value(True) == "Y"
+    assert exporter.serialize_value(False) == "N"
     assert exporter.serialize_value(None) == ""
