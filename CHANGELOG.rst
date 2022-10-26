@@ -4,39 +4,31 @@ Change Log
 4.10
 ----
 
--   public site
+- public site
     - As a frontend user, I want search results to include partial matches of words in transcriptions, so that I can search by substrings of words.
     - As a front-end user, when I sort documents by shelfmark I want it sorted in logical, human-readable order instead of by string so that I can more easily find the records I'm interested in.
     - As a frontend user, I want keyword search for Seleucid dates to give me complete matches first so that I can browse by decreasing relevancy in the date field.
+    - As a front end user who speaks Hebrew or Arabic, I want document types in search results in the currently active language, so that I can read and understand them.
 
--   transcription editor
+- transcription editor
     - OpenSeadragon navigator should not be visible on placeholder images
     - As a content editor, I want commit messages for transcription export data on GitHub to include PGPID so that I can more easily find the changes I'm interested in.
     - bugfix: sometimes transcriptions changes appear not to save in the editor
     - bugfix: in transcription editor, there is no way to tell whether saving
     changes has succeeded or failed
 
--   admin
+- admin
     - As a content editor, I want the admin csv download to include transcription and translation indicators (Y/N) so that I can filter documents to those with or without transcription or translation.
     - As a content editor, I want database translation fields for Hebrew and Arabic content in the admin site to render text RTL, so that I can read and edit the content properly.
     - bugfix: In .csv downloads from the admin interface, for joins, the IIIF_url field needs a space after the semicolon.
     - bugfix: support for switching between multiple digital editions on a single document in admin version of image + transcription panel
     - transcription type styles in admin view
 
--   accessibility
-    - transcription content should have a lang attribute in html
-
--   i18n/l18n
-    - As a front end user who speaks Hebrew or Arabic, I want document types in search results in my native language, so that I can read and understand them.
-
-
-- design
-    - Implement the revised RTL mobile headers
-
--   maintenance/other
+- maintenance/other
     - include ISSN in public site footer
+    - accessibility: transcription content should have a lang attribute in html
+    - design: implement the revised RTL mobile headers
     - upgrade to python 3.9
-
 
 4.9
 ---
