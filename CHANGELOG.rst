@@ -14,8 +14,7 @@ Change Log
     - OpenSeadragon navigator should not be visible on placeholder images
     - As a content editor, I want commit messages for transcription export data on GitHub to include PGPID so that I can more easily find the changes I'm interested in.
     - bugfix: sometimes transcriptions changes appear not to save in the editor
-    - bugfix: in transcription editor, there is no way to tell whether saving
-    changes has succeeded or failed
+    - bugfix: in transcription editor, there is no way to tell whether saving changes has succeeded or failed
 
 - admin
     - As a content editor, I want the admin csv download to include transcription and translation indicators (Y/N) so that I can filter documents to those with or without transcription or translation.
@@ -91,8 +90,12 @@ support for importing and displaying those manifests.
 - As a content admin, I want images from the Bodleian Genizah collection made available as IIIF so they can be displayed on the site and be linked to transcription text.
 - As a content admin, I want IIIF from the Manchester JRL Genizah collection remixed to match our data model so that images can be displayed on the site and be linked to transcription text.
 
+admin 
+~~~~~
+
+- bugfix: In .csv downloads from the admin interface, for joins, the IIIF_url field needs a space after the semicolon.
 - add a configurable warning banner that can be displayed during the TEI migration and then turned off
-- As an admin/content editor, I want to see all the images associated with a document so that I can determine whether I need to associate more images, clone the record, etc.
+- As an admin/content editor, I want to see all the images associated with a document so that I can determine whether I need to associate more images, clone the record, etc. 
 
 accessibility
 ~~~~~~~~~~~~~
