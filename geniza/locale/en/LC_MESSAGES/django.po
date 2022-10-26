@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: geniza\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-08 11:23-0400\n"
+"Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
+"POT-Creation-Date: 2022-10-14 12:15-0400\n"
 "PO-Revision-Date: 2022-08-01 14:25\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -18,134 +18,134 @@ msgstr ""
 "X-Crowdin-File-ID: 28\n"
 
 #. Translators: placeholder for keyword search input
-#: corpus/forms.py:152
+#: corpus/forms.py:161
 msgid "search by keyword"
 msgstr ""
 
 #. Translators: accessible label for keyword search input
-#: corpus/forms.py:154
+#: corpus/forms.py:163
 msgid "Keyword or Phrase"
 msgstr ""
 
 #. Translators: label for sort by relevance
-#: corpus/forms.py:163
+#: corpus/forms.py:172
 msgid "Relevance"
 msgstr ""
 
 #. Translators: label for sort in random order
-#: corpus/forms.py:165
+#: corpus/forms.py:174
 msgid "Random"
 msgstr ""
 
 #. Translators: label for sort by document date (most recent first)
-#: corpus/forms.py:167
+#: corpus/forms.py:176
 msgid "Document Date (Latest–Earliest)"
 msgstr ""
 
 #. Translators: label for sort by document date (oldest first)
-#: corpus/forms.py:169
+#: corpus/forms.py:178
 msgid "Document Date (Earliest–Latest)"
 msgstr ""
 
 #. Translators: label for alphabetical sort by shelfmark
-#: corpus/forms.py:171
+#: corpus/forms.py:180
 msgid "Shelfmark (A–Z)"
 msgstr ""
 
 #. Translators: label for descending sort by number of scholarship records
-#: corpus/forms.py:173
+#: corpus/forms.py:182
 msgid "Scholarship Records (Most–Least)"
 msgstr ""
 
 #. Translators: label for ascending sort by number of scholarship records
-#: corpus/forms.py:175
+#: corpus/forms.py:184
 msgid "Scholarship Records (Least–Most)"
 msgstr ""
 
 #. Translators: label for sort by when document was added to PGP (most recent first)
-#: corpus/forms.py:177
+#: corpus/forms.py:186
 msgid "PGP Input Date (Latest–Earliest)"
 msgstr ""
 
 #. Translators: label for sort by when document was added to PGP (oldest first)
-#: corpus/forms.py:179
+#: corpus/forms.py:188
 msgid "PGP Input Date (Earliest–Latest)"
 msgstr ""
 
 #. Translators: label for start year when filtering by date range
-#: corpus/forms.py:182 corpus/templates/corpus/widgets/yearrangewidget.html:5
+#: corpus/forms.py:191 corpus/templates/corpus/widgets/yearrangewidget.html:5
 msgid "From year"
 msgstr ""
 
 #. Translators: label for end year when filtering by date range
-#: corpus/forms.py:184 corpus/templates/corpus/widgets/yearrangewidget.html:5
+#: corpus/forms.py:193 corpus/templates/corpus/widgets/yearrangewidget.html:5
 msgid "To year"
 msgstr ""
 
 #. Translators: label for form sort field
-#: corpus/forms.py:192
+#: corpus/forms.py:201
 msgid "Sort by"
 msgstr ""
 
-#: corpus/forms.py:202
+#: corpus/forms.py:208
 msgid "Document Dates (CE)"
 msgstr ""
 
 #. Translators: label for document type search form filter
-#: corpus/forms.py:211
+#: corpus/forms.py:217
 msgid "Document Type"
 msgstr ""
 
 #. Translators: label for "has image" search form filter
-#: corpus/forms.py:215
+#: corpus/forms.py:221
 msgid "Has Image"
 msgstr ""
 
 #. Translators: label for "has transcription" search form filter
-#: corpus/forms.py:219
+#: corpus/forms.py:225
 msgid "Has Transcription"
 msgstr ""
 
 #. Translators: label for "has translation" search form filter
-#: corpus/forms.py:223
+#: corpus/forms.py:229
 msgid "Has Translation"
 msgstr ""
 
 #. Translators: label for "has discussion" search form filter
-#: corpus/forms.py:227
+#: corpus/forms.py:233
 msgid "Has Discussion"
 msgstr ""
 
-#: corpus/forms.py:277
+#. Translators: Default label when document does not have a type
+#: corpus/forms.py:279 corpus/solr_queryset.py:152
+#: corpus/templates/corpus/snippets/document_header.html:17
+#: corpus/templates/corpus/snippets/document_transcription.html:95
+msgid "Unknown type"
+msgstr ""
+
+#: corpus/forms.py:311
 msgid "Relevance sort is not available without a keyword search term."
 msgstr ""
 
-#: corpus/models.py:799 templates/base.html:21
+#: corpus/models.py:911 templates/base.html:21
 msgid "Princeton Geniza Project"
 msgstr ""
 
 #. Translators: attribution for local IIIF manifests
-#: corpus/models.py:801
+#: corpus/models.py:913
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr ""
 
 #. Translators: attribution for local IIIF manifests that include transcription
-#: corpus/models.py:804
+#: corpus/models.py:916
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr ""
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: corpus/models.py:806
+#: corpus/models.py:918
 msgid "Additional restrictions may apply."
-msgstr ""
-
-#. Translators: Default label when document does not have a type
-#: corpus/models.py:858
-#: corpus/templates/corpus/snippets/document_header.html:17
-#: corpus/templates/corpus/snippets/document_transcription.html:77
-msgid "Unknown type"
 msgstr ""
 
 #. Translators: label for 'home' link in footer navigation
@@ -199,7 +199,7 @@ msgstr[1] ""
 
 #. Translators: label for tags on a document
 #: corpus/templates/corpus/document_detail.html:109
-#: corpus/templates/corpus/snippets/document_result.html:107
+#: corpus/templates/corpus/snippets/document_result.html:112
 msgid "Tags"
 msgstr ""
 
@@ -223,7 +223,7 @@ msgid "Description"
 msgstr ""
 
 #. Translators: label for permanent link to a document
-#: corpus/templates/corpus/document_detail.html:161
+#: corpus/templates/corpus/document_detail.html:146
 msgid "Permalink"
 msgstr ""
 
@@ -246,13 +246,8 @@ msgstr ""
 msgid "Apply"
 msgstr ""
 
-#. Translators: Button to open or close sort options menu
-#: corpus/templates/corpus/document_list.html:76
-msgid "Toggle sort options menu"
-msgstr ""
-
 #. Translators: number of search results
-#: corpus/templates/corpus/document_list.html:99
+#: corpus/templates/corpus/document_list.html:87
 #, python-format
 msgid "1 result"
 msgid_plural "%(count_humanized)s total results"
@@ -308,7 +303,7 @@ msgid "In PGP since"
 msgstr ""
 
 #. Translators: number of editions for this document
-#: corpus/templates/corpus/snippets/document_result.html:72
+#: corpus/templates/corpus/snippets/document_result.html:77
 #, python-format
 msgid "1 Transcription"
 msgid_plural "%(counter)s Transcriptions"
@@ -316,7 +311,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: number of translations for this document
-#: corpus/templates/corpus/snippets/document_result.html:82
+#: corpus/templates/corpus/snippets/document_result.html:87
 #, python-format
 msgid "1 Translation"
 msgid_plural "%(counter)s Translations"
@@ -324,22 +319,22 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: number of sources that discuss this document
-#: corpus/templates/corpus/snippets/document_result.html:92
+#: corpus/templates/corpus/snippets/document_result.html:97
 #, python-format
 msgid "1 Discussion"
 msgid_plural "%(counter)s Discussions"
 msgstr[0] ""
 msgstr[1] ""
 
-#: corpus/templates/corpus/snippets/document_result.html:100
+#: corpus/templates/corpus/snippets/document_result.html:105
 msgid "No Scholarship Records"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_result.html:114
+#: corpus/templates/corpus/snippets/document_result.html:119
 msgid "more"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_result.html:133
+#: corpus/templates/corpus/snippets/document_result.html:138
 msgid "View document details"
 msgstr ""
 
@@ -363,25 +358,29 @@ msgstr ""
 msgid "Related Documents (%(n_reldocs)s)"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_transcription.html:6
+#: corpus/templates/corpus/snippets/document_transcription.html:23
 msgid "show images"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_transcription.html:10
+#: corpus/templates/corpus/snippets/document_transcription.html:27
 msgid "show transcription"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_transcription.html:14
+#: corpus/templates/corpus/snippets/document_transcription.html:31
 msgid "show translation"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_transcription.html:56
+#: corpus/templates/corpus/snippets/document_transcription.html:74
 msgid "Zoom and Rotate"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_transcription.html:80
+#: corpus/templates/corpus/snippets/document_transcription.html:98
 #, python-format
 msgid "View %(related_doc)s"
+msgstr ""
+
+#: corpus/templates/corpus/snippets/document_transcription.html:128
+msgid "Transcription"
 msgstr ""
 
 #. Translators: label for a link to a resource with no named location
@@ -406,22 +405,22 @@ msgid "Next"
 msgstr ""
 
 #. Translators: title of document search page
-#: corpus/views.py:36
+#: corpus/views.py:42
 msgid "Search Documents"
 msgstr "Search Documents"
 
 #. Translators: description of document search page, for search engines
-#: corpus/views.py:38
+#: corpus/views.py:44
 msgid "Search and browse Geniza documents."
 msgstr ""
 
 #. Translators: title of document scholarship page
-#: corpus/views.py:339
+#: corpus/views.py:350
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr ""
 
-#: corpus/views.py:346
+#: corpus/views.py:357
 #, python-format
 msgid "%(count)d scholarship record"
 msgid_plural "%(count)d scholarship records"
@@ -429,12 +428,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: title of related documents page
-#: corpus/views.py:387
+#: corpus/views.py:398
 #, python-format
 msgid "Related documents for %(doc)s"
 msgstr ""
 
-#: corpus/views.py:394
+#: corpus/views.py:405
 #, python-format
 msgid "%(count)d related document"
 msgid_plural "%(count)d related documents"
@@ -442,20 +441,24 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Translators: Placeholder for when a work has no title available
-#: footnotes/models.py:201
+#: footnotes/models.py:211
 msgid "[digital geniza document edition]"
 msgstr ""
 
-#: footnotes/models.py:410
+#: footnotes/models.py:438
 msgid "Edition"
 msgstr ""
 
-#: footnotes/models.py:411
+#: footnotes/models.py:439
 msgid "Translation"
 msgstr ""
 
-#: footnotes/models.py:412
+#: footnotes/models.py:440
 msgid "Discussion"
+msgstr ""
+
+#: footnotes/models.py:441
+msgid "Digital Edition"
 msgstr ""
 
 #: pages/models.py:13
@@ -495,7 +498,7 @@ msgstr ""
 msgid "Django site admin"
 msgstr ""
 
-#: templates/base.html:80
+#: templates/base.html:91
 msgid "Skip to main content"
 msgstr ""
 
@@ -539,13 +542,18 @@ msgstr ""
 msgid "Creative Commons CC-BY license"
 msgstr ""
 
-#. Translators: software version, for footer
+#. Translators: International Standard Serial Number (ISSN), for footer
 #: templates/footer.html:72
+msgid "ISSN: 2834-4146"
+msgstr ""
+
+#. Translators: software version, for footer
+#: templates/footer.html:76
 msgid "software version"
 msgstr ""
 
 #. Translators: official name of Princeton University, for footer
-#: templates/footer.html:79
+#: templates/footer.html:83
 msgid "Princeton University homepage"
 msgstr ""
 
@@ -575,15 +583,9 @@ msgid "Close main navigation menu"
 msgstr ""
 
 #. Translators: label for language choices in navigation
-#: templates/snippets/language_switcher.html:15
+#: templates/snippets/language_switcher.html:11
 #, python-format
 msgid "read this page in %(language_name)s (%(language_code)s)"
-msgstr ""
-
-#. Translators: button on language chooser in navigation
-#: templates/snippets/language_switcher.html:24
-msgctxt "choose this option"
-msgid "go"
 msgstr ""
 
 #. Translators: label for link to 'Search' page in main navigation

@@ -56,6 +56,10 @@ def pgpize_shelfmark(shelfmark):
         # after volume/series letter
         return "Bodl. %s" % bodl_shelfmark_re.sub(r"MS heb. \1", shelfmark)
 
+    # this JRL manifest series was labeled incorrectly when generated
+    if shelfmark.startswith("JRL SERIES Ar. "):
+        return shelfmark.replace("JRL SERIES Ar. ", "JRL Gaster Ar. ")
+
     return shelfmark
 
 

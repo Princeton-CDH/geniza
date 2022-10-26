@@ -752,21 +752,21 @@
         tags_ss_lower
         scholarship_t
         old_pgpids_is
-        transcription_ht
+        text_transcription^30
         document_date_t
       </str>
       <str name="keyword_pf">
-        description_t^50
-        description_txt_ens^20
-        shelfmark_bigram^100
-        shelfmark_textnum^140   
+        description_t^100
+        description_txt_ens^75
+        shelfmark_bigram^750
+        shelfmark_textnum^750
         old_shelfmark_t
         old_shelfmark_textnum
-        old_shelfmark_bigram
+        old_shelfmark_bigram^100
         tags_t
         scholarship_t^80
-        transcription_ht^80
-        document_date_t
+        text_transcription^1000
+        document_date_t^550
       </str>
 
        <!-- admin search field for Document model (no boosting because no relevance sort) -->
@@ -774,7 +774,7 @@
         type_s
         shelfmark_bigram
         shelfmark_s
-        fragment_shelfmark_ss^50
+        fragment_shelfmark_ss
         shelfmark_textnum
         tags_t
         tags_ss_lower
@@ -785,7 +785,7 @@
         pgpid_i
         old_pgpids_is
         scholarship_t
-        transcription_ht
+        text_transcription
         fragment_old_shelfmark_ss
         old_shelfmark_t
         old_shelfmark_textnum
@@ -802,7 +802,7 @@
         notes_t
         needs_review_t
         scholarship_t
-        transcription_ht
+        text_transcription
         old_shelfmark_t
         old_shelfmark_textnum
         old_shelfmark_bigram

@@ -76,3 +76,16 @@ smart_quote_conversion = str.maketrans(
 
 def simplify_quotes(text):
     return text.translate(smart_quote_conversion)
+
+
+## adapted from tabular_export.admin
+class Echo(object):
+    # See https://docs.djangoproject.com/en/1.8/howto/outputting-csv/#streaming-csv-files
+    def write(self, value):
+        return value
+
+    def __enter__(self, *x, **y):
+        return self
+
+    def __exit__(self, *x, **y):
+        return

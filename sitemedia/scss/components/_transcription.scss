@@ -792,6 +792,9 @@
         div.editions {
             display: flex;
             overflow-x: hidden;
+            overflow-y: clip; // prevent overflow-y scrollbar
+            // NOTE: setting different properties for overflow-x and y does not work in Safari.
+            // carousel still works, but overflow-y scrollbar may remain.
             & > div {
                 flex: 1 0 100%;
                 align-self: flex-start;
@@ -934,7 +937,14 @@ a.editor-navigation {
 // appear in ITT viewer and in search results
 .transcription {
     @include typography.transcription;
-    @include typography.hebrew;
+
+    // arabic script
+    &[lang="ar"],
+    &[data-lang-script="arabic"],
+    span[lang="ar"] {
+        @include typography.arabic-transcription;
+    }
+
     align-self: flex-end;
 
     text-align: right;
@@ -985,33 +995,40 @@ a.editor-navigation {
 
     /* don't apply to li with value attribute in search results */
     ol li:not([value])::before {
+        @include typography.transcription-numerals;
         /* content is a copy of ONLY the period we want to hide
            to avoid obscuring anything else should position be off */
         content: ".";
-        font-weight: bold;
         text-align: left;
         position: absolute;
-        width: 32px;
-        right: -37px;
+        width: 35px;
         /* text color should match background, rendering period invisible */
         color: var(--background-light);
-        /* uncomment to debug positioning
-        color: yellow;  */
+        /* uncomment to debug positioning */
+        // color: yellow;
 
         /* make font larger than list number font to cover completely;
            shrink line height to adjust placement */
-        font-size: 32px;
-        line-height: 23px;
+        right: -35.75px;
+        font-size: 37px;
+        line-height: 22px;
 
         @include breakpoints.for-tablet-landscape-up {
-            line-height: 28px; /* smaller line height to adjust */
+            font-size: 38px;
+            line-height: 26px;
+            right: -37px;
         }
     }
 
+    // NOTE: Broken in stable Safari for now, but fixed in Safari preview release.
     li::marker {
+        @include typography.transcription-numerals;
         text-align: right;
         float: right;
-        font-weight: bold;
+        font-size: typography.$text-size-md;
+        @include breakpoints.for-tablet-landscape-up {
+            font-size: typography.$text-size-xl;
+        }
     }
 }
 

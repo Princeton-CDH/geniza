@@ -15,6 +15,7 @@
 {% endif %}
 {# only enable ITT panel if transcription or images are present, or we are in edit mode #}
 {% if document.has_transcription or document.iiif_urls or edit_mode %}
+
     <section id="itt-panel" {% if not edit_mode %}data-controller="transcription" data-action="click@document->transcription#clickCloseDropdown"{% endif %}>
         {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
         {# images displayed by default; disable if no images are available #}
@@ -133,7 +134,12 @@
                             <div class="editions">
                                 {# display transcription in chunks by index #}
                                 {% for edition in document.digital_editions.all %}
-                                    <div class="transcription ed-{{ edition.pk }}" data-label="{{ edition.source.formatted_display }}">
+                                    <div class="transcription ed-{{ edition.pk }}"
+                                        data-label="{{ edition.source.formatted_display }}"
+                                        lang="{{ document.primary_lang_code|default:"" }}"
+                                        {% if document.primary_script %}
+                                            data-lang-script="{{ document.primary_script|lower }}"{% endif %}
+                                    >
                                         {% for html_section in edition.content_html|dict_item:canvas_uri %}
                                             {{ html_section|safe }}
                                         {% endfor %}

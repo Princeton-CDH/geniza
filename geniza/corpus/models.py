@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from functools import cached_property
+from functools import cache, cached_property
 from itertools import chain
 from urllib.parse import urlparse
 
@@ -10,6 +10,7 @@ from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -25,6 +26,8 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from djiffy.models import Manifest
+from modeltranslation.manager import MultilingualQuerySet
+from modeltranslation.utils import fallbacks
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
@@ -41,6 +44,14 @@ from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote, Source
 
 logger = logging.getLogger(__name__)
+
+
+def cached_class_property(f):
+    """
+    Reusable decorator to cache a class property, as opposed to an instance property.
+    from https://stackoverflow.com/a/71887897
+    """
+    return classmethod(property(cache(f)))
 
 
 class CollectionManager(models.Manager):
@@ -375,11 +386,27 @@ class DocumentType(models.Model):
     objects = DocumentTypeManager()
 
     def __str__(self):
-        return self.display_label or self.name
+        # temporarily turn off model translate fallbacks;
+        # if display label for current language is not defined,
+        # we want name for the current language rather than the
+        # fallback value for display label
+        with fallbacks(False):
+            current_lang_label = self.display_label or self.name
+
+        return current_lang_label or self.display_label or self.name
 
     def natural_key(self):
         """Natural key, name"""
         return (self.name,)
+
+    @cached_class_property
+    def objects_by_label(cls):
+        """A dict of DocumentType object instances keyed on English display label"""
+        return {
+            # lookup on display_label_en/name_en since solr should always index in English
+            (doctype.display_label_en or doctype.name_en): doctype
+            for doctype in cls.objects.all()
+        }
 
 
 class DocumentSignalHandlers:
@@ -449,11 +476,34 @@ class TagSignalHandlers:
         instance.name = unidecode(instance.name)
 
 
+class DocumentQuerySet(MultilingualQuerySet):
+    def metadata_prefetch(self):
+        """
+        Returns a further QuerySet that has been prefetched for relevant document information.
+        """
+        return (
+            self.select_related("doctype")
+            .prefetch_related(
+                "tags",
+                "languages",
+                Prefetch(
+                    "textblock_set",
+                    queryset=TextBlock.objects.select_related(
+                        "fragment", "fragment__collection"
+                    ),
+                ),
+                "footnotes",
+            )
+            .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
+        )
+
+
 class Document(ModelIndexable, DocumentDateMixin):
     """A unified document such as a letter or legal document that
     appears on one or more fragments."""
 
     id = models.AutoField("PGPID", primary_key=True)
+
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
     )
@@ -494,6 +544,8 @@ class Document(ModelIndexable, DocumentDateMixin):
         help_text="Enter text here if an administrator needs to review this document.",
     )
     old_pgpids = ArrayField(models.IntegerField(), null=True, verbose_name="Old PGPIDs")
+
+    objects = DocumentQuerySet.as_manager()
 
     PUBLIC = "P"
     STATUS_PUBLIC = "Public"
@@ -633,6 +685,25 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     all_secondary_languages.short_description = "Secondary Language"
 
+    @cached_property
+    def primary_lang_code(self):
+        """Primary language code for this document, when there is only one
+        primary language set and it has an ISO code available. Returns
+        None if unset or unavailable.
+        """
+        if self.languages.count() == 1:
+            return self.languages.first().iso_code or None
+
+    @cached_property
+    def primary_script(self):
+        """Primary script for this document, if shared across all primary languages."""
+        # aggregate all scripts for primary document languages
+        # convert to set for uniqueness
+        scripts = set([ls.script for ls in self.languages.all()])
+        # if there is only one script, return it; otherwire return None
+        if len(scripts) == 1:
+            return list(scripts)[0]
+
     def all_tags(self):
         """comma delimited string of all tags for this document"""
         return ", ".join(t.name for t in self.tags.all())
@@ -672,7 +743,10 @@ class Document(ModelIndexable, DocumentDateMixin):
         )
 
     def iiif_images(self, filter_side=False, with_placeholders=False):
-        """Dict of IIIF images and labels for images of the Document's Fragments, keyed on canvas.
+        """
+        Dict of IIIF images and labels for images of the Document's Fragments, keyed on canvas.
+
+
         :param filter_side: if TextBlocks have side info, filter images by side (default: False)
         :param with_placeholders: if there are digital editions with canvases missing images,
             include placeholder images for each additional canvas (default: False)"""
@@ -777,6 +851,16 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     has_transcription.short_description = "Transcription"
     has_transcription.boolean = True
+
+    def has_translation(self):
+        """Helper method to determine if document has translation (accessible via its footnotes).
+
+        :return: Whether document has translation
+        :rtype: bool
+        """
+        return any(
+            [Footnote.TRANSLATION in note.doc_relation for note in self.footnotes.all()]
+        )
 
     def has_image(self):
         """Admin display field indicating if document has a IIIF image."""
@@ -894,7 +978,9 @@ class Document(ModelIndexable, DocumentDateMixin):
         index_data.update(
             {
                 "pgpid_i": self.id,
-                "type_s": str(self.doctype) if self.doctype else _("Unknown type"),
+                # type gets matched back to DocumentType object in get_result_document, for i18n;
+                # should always be indexed in English
+                "type_s": str(self.doctype) if self.doctype else "Unknown type",
                 # use english description for now
                 "description_t": strip_tags(self.description_en),
                 "notes_t": self.notes or None,
@@ -926,7 +1012,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "tags_ss_lower": [t.name for t in self.tags.all()],
                 "status_s": self.get_status_display(),
                 "old_pgpids_is": self.old_pgpids,
-                "language_code_ss": [lang.iso_code for lang in self.languages.all()],
+                "language_code_s": self.primary_lang_code,
+                "language_script_s": self.primary_script,
                 # use image info link without trailing info.json to easily convert back to iiif image client
                 "iiif_images_ss": [
                     img["image"].info()[:-10]  # i.e., remove /info.json
@@ -979,7 +1066,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # (may need splitting out and weighting based on type of scholarship)
                 "scholarship_t": [fn.display() for fn in self.footnotes.all()],
                 # transcription content as html
-                "transcription_ht": transcription_texts,
+                "text_transcription": transcription_texts,
                 "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),
                 "has_translation_b": bool(counts[Footnote.TRANSLATION]),
                 "has_discussion_b": bool(counts[Footnote.DISCUSSION]),

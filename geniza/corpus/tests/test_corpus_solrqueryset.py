@@ -51,7 +51,7 @@ class TestDocumentSolrQuerySet:
                 keyword_query="%sena" % dqs.shelfmark_qf
             )
 
-    def test_get_result_document(self):
+    def test_get_result_document_images(self):
         dqs = DocumentSolrQuerySet()
         mock_doc = {
             "iiif_images": [
@@ -73,6 +73,43 @@ class TestDocumentSolrQuerySet:
                 == "http://example.co/iiif/ts-1/00001/info.json"
             )
             assert result_imgs[0][1] == "1r"
+
+    def test_get_result_document_type(self, document):
+        dqs = DocumentSolrQuerySet()
+        mock_doc = {
+            "type": document.doctype.display_label_en or document.doctype.name_en,
+        }
+        with patch.object(
+            AliasedSolrQuerySet, "get_result_document", return_value=mock_doc
+        ):
+            # should match a DocumentType by name
+            result_doc = dqs.get_result_document(mock_doc)
+            print(result_doc["type"])
+            assert isinstance(result_doc["type"], DocumentType)
+
+        # special case for Unknown type
+        mock_doc = {
+            "type": "Unknown type",
+        }
+        with patch.object(
+            AliasedSolrQuerySet, "get_result_document", return_value=mock_doc
+        ):
+            with patch("geniza.corpus.solr_queryset._") as mock_gettext:
+                # should run translate.gettext (in order to get unknown in current language)
+                dqs.get_result_document(mock_doc)
+                mock_gettext.assert_called_once_with("Unknown type")
+
+        # no match
+        mock_doc = {
+            "type": "Fake type. Should not match!",
+        }
+        with patch.object(
+            AliasedSolrQuerySet, "get_result_document", return_value=mock_doc
+        ):
+            # should return the original string
+            result_doc = dqs.get_result_document(mock_doc)
+            assert isinstance(result_doc["type"], str)
+            assert result_doc["type"] == mock_doc["type"]
 
     def test_search_term_cleanup__arabic_to_ja(self):
         dqs = DocumentSolrQuerySet()
@@ -107,24 +144,25 @@ class TestDocumentSolrQuerySet:
         # minimal prettifier; introduces whitespace changes
         assert clean_html("<li>foo").replace("\n", "") == "<li> foo</li>"
 
-    @patch("geniza.corpus.solr_queryset.super")
-    def test_get_highlighting(self, mock_super):
-        mock_get_highlighting = mock_super.return_value.get_highlighting
-
+    def test_get_highlighting(self):
         dqs = DocumentSolrQuerySet()
         # no highlighting
-        mock_get_highlighting.return_value = {}
-        assert dqs.get_highlighting() == {}
+        with patch("geniza.corpus.solr_queryset.super") as mock_super:
+            mock_get_highlighting = mock_super.return_value.get_highlighting
+            mock_get_highlighting.return_value = {}
+            assert dqs.get_highlighting() == {}
 
-        # highlighting but no transcription
-        test_highlight = {"doc.1": {"description": ["foo bar baz"]}}
-        mock_get_highlighting.return_value = test_highlight
-        # returned unchanged
-        assert dqs.get_highlighting() == test_highlight
+            # highlighting but no transcription
+            test_highlight = {"doc.1": {"description": ["foo bar baz"]}}
+            mock_get_highlighting.return_value = test_highlight
+            # returned unchanged
+            assert dqs.get_highlighting() == test_highlight
 
-        # transcription highlight
-        test_highlight = {"doc.1": {"transcription": ["<li>foo"]}}
-        mock_get_highlighting.return_value = test_highlight
-        # transcription html should be cleaned
-        cleaned_highlight = dqs.get_highlighting()
-        assert cleaned_highlight["doc.1"]["transcription"] == [clean_html("<li>foo")]
+            # transcription highlight
+            test_highlight = {"doc.1": {"transcription": ["<li>foo"]}}
+            mock_get_highlighting.return_value = test_highlight
+            # transcription html should be cleaned
+            cleaned_highlight = dqs.get_highlighting()
+            assert cleaned_highlight["doc.1"]["transcription"] == [
+                clean_html("<li>foo")
+            ]

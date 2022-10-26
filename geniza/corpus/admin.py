@@ -15,9 +15,9 @@ from django.urls import path, resolve, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
-from tabular_export.admin import export_to_csv_response
 
 from geniza.common.admin import custom_empty_field_list_filter
+from geniza.corpus.metadata_export import DocumentExporter
 from geniza.corpus.models import (
     Collection,
     Document,
@@ -312,36 +312,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         return deletable_objects, model_count, perms_needed, protected
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .select_related(
-                "doctype",
-            )
-            .prefetch_related(
-                "tags",
-                "languages",
-                # Optimize lookup of fragments in two steps: prefetch_related on
-                # TextBlock, then select_related on Fragment.
-                #
-                # prefetch_related works on m2m and generic relationships and
-                # operates at the python level, while select_related only works
-                # on fk or one-to-one and operates at the database level. We
-                # can chain the latter onto the former because TextBlocks have
-                # only one Fragment.
-                #
-                # For more, see:
-                # https://docs.djangoproject.com/en/3.2/ref/models/querysets/#prefetch-related
-                Prefetch(
-                    "textblock_set",
-                    queryset=TextBlock.objects.select_related(
-                        "fragment", "fragment__collection"
-                    ),
-                ),
-            )
-            .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
-            .order_by("shelfmk_all")
-        )
+        return super().get_queryset(request).metadata_prefetch()
 
     def get_search_results(self, request, queryset, search_term):
         """Override admin search to use Solr."""
@@ -400,127 +371,6 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             request, object_id, form_url, extra_context=extra_ctx
         )
 
-    # CSV EXPORT -------------------------------------------------------------
-
-    def csv_filename(self):
-        """Generate filename for CSV download"""
-        return f'geniza-documents-{timezone.now().strftime("%Y%m%dT%H%M%S")}.csv'
-
-    def tabulate_queryset(self, queryset, sep_within_cells="; "):
-        """Generator for data in tabular form, including custom fields"""
-
-        script_user = settings.SCRIPT_USERNAME
-        # generate absolute urls locally with a single db call,
-        # instead of calling out to absolutize_url method
-        site_domain = Site.objects.get_current().domain.rstrip("/")
-        # qa / prod always https
-        url_scheme = "https://"
-
-        for doc in queryset:
-
-            all_textblocks = doc.textblock_set.all()
-            all_fragments = [tb.fragment for tb in all_textblocks]
-            all_log_entries = doc.log_entries.all()
-            input_users = set(
-                [
-                    log_entry.user
-                    for log_entry in all_log_entries
-                    if log_entry.user.username != script_user
-                ]
-            )
-            iiif_urls = [fr.iiif_url for fr in all_fragments]
-            view_urls = [fr.url for fr in all_fragments]
-            multifrag = [tb.multifragment for tb in all_textblocks]
-            side = [tb.side for tb in all_textblocks]
-            region = [tb.region for tb in all_textblocks]
-            old_shelfmarks = [fragment.old_shelfmarks for fragment in all_fragments]
-            libraries = set(
-                [
-                    fragment.collection.lib_abbrev or fragment.collection.library
-                    if fragment.collection
-                    else ""
-                    for fragment in all_fragments
-                ]
-            ) - {
-                ""
-            }  # exclude empty string for any fragments with no library
-            collections = set(
-                [
-                    fragment.collection.abbrev or fragment.collection.name
-                    if fragment.collection
-                    else ""
-                    for fragment in all_fragments
-                ]
-            ) - {
-                ""
-            }  # exclude empty string for any with no collection
-
-            yield [
-                doc.id,  # pgpid
-                # to make the download as efficient as possible, don't use
-                # absolutize_url, reverse, or get_absolute_url methods
-                f"{url_scheme}{site_domain}/documents/{doc.id}/",  # public site url
-                # we're not omitting empty strings in the lists so that (in theory) you can match up the ones that go together across the different cells
-                sep_within_cells.join(iiif_urls) if any(iiif_urls) else "",
-                sep_within_cells.join(view_urls) if any(view_urls) else "",
-                doc.shelfmark,  # shelfmark
-                sep_within_cells.join(s for s in multifrag if s),
-                sep_within_cells.join(s for s in side if s),  # side (recto/verso)
-                sep_within_cells.join(r for r in region if r),  # text block region
-                doc.doctype,
-                doc.all_tags(),
-                doc.description,
-                sep_within_cells.join(os for os in old_shelfmarks if os),
-                doc.all_languages(),
-                doc.all_secondary_languages(),
-                doc.language_note,
-                doc.doc_date_original,
-                doc.doc_date_calendar,
-                doc.doc_date_standard,
-                doc.notes,
-                doc.needs_review,
-                f"{url_scheme}{site_domain}/admin/corpus/document/{doc.id}/change/",
-                # default sort is most recent first, so initial input is last
-                all_log_entries.last().action_time if all_log_entries else "",
-                doc.last_modified,
-                sep_within_cells.join(
-                    set([user.get_full_name() or user.username for user in input_users])
-                ),  # input by
-                doc.get_status_display(),
-                sep_within_cells.join(libraries) if any(libraries) else "",
-                sep_within_cells.join(collections) if any(collections) else "",
-            ]
-
-    csv_fields = [
-        "pgpid",
-        "url",
-        "iiif_urls",
-        "fragment_urls",
-        "shelfmark",
-        "multifragment",
-        "side",
-        "region",
-        "type",
-        "tags",
-        "description",
-        "shelfmarks_historic",
-        "languages_primary",
-        "languages_secondary",
-        "language_note",
-        "doc_date_original",
-        "doc_date_calendar",
-        "doc_date_standard",
-        "notes",
-        "needs_review",
-        "url_admin",
-        "initial_entry",
-        "last_modified",
-        "input_by",
-        "status",
-        "library",
-        "collection",
-    ]
-
     @admin.display(description="Merge selected documents")
     def merge_documents(self, request, queryset=None):
         """Admin action to merge selected documents. This action redirects to an intermediate
@@ -542,18 +392,8 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     def export_to_csv(self, request, queryset=None):
         """Stream tabular data as a CSV file"""
         queryset = queryset or self.get_queryset(request)
-        # additional prefetching needed to optimize csv export but
-        # not needed for admin list view
-        queryset = queryset.order_by("id").prefetch_related(
-            "secondary_languages",
-            "log_entries",
-        )
-
-        return export_to_csv_response(
-            self.csv_filename(),
-            self.csv_fields,
-            self.tabulate_queryset(queryset),
-        )
+        exporter = DocumentExporter(queryset=queryset, progress=False)
+        return exporter.http_export_data_csv()
 
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all documents
@@ -580,6 +420,9 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
 @admin.register(DocumentType)
 class DocumentTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     list_display = ("name", "display_label")
+
+    class Media:
+        css = {"all": ("css/admin-local.css",)}
 
 
 @admin.register(Fragment)

@@ -559,6 +559,11 @@ class TestDocumentSearchView:
         """integration test for sorting by shelfmark"""
         doc2 = Document.objects.create()
         TextBlock.objects.create(document=doc2, fragment=multifragment)
+        # create a third document with shelfmark that should come after
+        # one of ours only when natural sorting is enabled
+        doc3 = Document.objects.create()
+        frag3 = Fragment.objects.create(shelfmark="T-S 16.4")
+        TextBlock.objects.create(document=doc3, fragment=frag3)
         SolrClient().update.index(
             [
                 document.index_data(),  # shelfmark = CUL Add.2586
@@ -575,6 +580,10 @@ class TestDocumentSearchView:
         assert (
             qs[0]["pgpid"] == document.id
         ), "document with shelfmark CUL Add.2586 returned first"
+        # should return 16.4 before 16.377
+        assert (
+            qs[1]["pgpid"] == doc3.id
+        ), "document with shelfmark T-S 16.4 returned before T-S 16.377"
 
     def test_input_date_sort(self, document, join, empty_solr):
         """Tests for sorting by input date, ascending and descending"""
@@ -764,6 +773,24 @@ class TestDocumentSearchView:
         docsearch_view.request = Mock()
         # sort doesn't matter in this case; two characters should be enough
         docsearch_view.request.GET = {"q": "25"}
+        qs = docsearch_view.get_queryset()
+        # should return the document
+        assert qs.count() == 1
+        resulting_ids = [result["pgpid"] for result in qs]
+        assert document.id in resulting_ids
+
+    def test_transcription_bigram(self, empty_solr, annotation):
+        # integration test for transcription indexing with bigram search
+        # - using empty solr fixture to ensure solr is empty when this test starts
+
+        # annotation with body content "test annotation"
+        document = Document.from_manifest_uri(annotation.target_source_manifest_id)
+        SolrClient().update.index([document.index_data()], commit=True)
+
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        # sort doesn't matter in this case; two characters minimum
+        docsearch_view.request.GET = {"q": "st anno"}
         qs = docsearch_view.get_queryset()
         # should return the document
         assert qs.count() == 1

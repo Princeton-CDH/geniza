@@ -52,15 +52,19 @@
                 </p>
 
                 {# transcription: keywords in context if any, or excerpt #}
-                {% with document_highlights=highlighting|dict_item:document.id lang=document.language_code.0 %}
-                    {# use first language code, if any; otherwise empty lang attribute to indicate unknown language #}
-                    {# NOTE: this is problematic for documents with multiple primary languages #}
-                    {% if document_highlights.transcription %}
-                        <div class="transcription" lang="{{ lang }}">{% for snippet in document_highlights.transcription %}{{ snippet.strip|safe }}{% endfor %}</div>
-                    {% elif document.transcription %}
-                        {# otherwise, display truncated transcription #}
-                        {# NOTE: might be nice to display N lines instead of using truncatechars #}
-                        <div class="transcription" lang="{{ lang }}">{{ document.transcription.0|safe|truncatechars_html:150 }}</div>
+                {% with document_highlights=highlighting|dict_item:document.id lang=document.language_code lang_script=document.language_script %}
+                    <!-- indicate language when possible, or at least change of language (if unknown) for screen readers -->
+                    {% if document_highlights.transcription or document.transcription %}
+                        <div class="transcription" dir="rtl" lang="{{ lang }}" {% if lang_script %}data-lang-script="{{ lang_script|lower }}"{% endif %}>
+
+                            {% if document_highlights.transcription %}
+                                {% for snippet in document_highlights.transcription %}{{ snippet.strip|safe }}{% endfor %}
+                            {% elif document.transcription %}
+                                {# otherwise, display truncated transcription #}
+                                {# NOTE: might be nice to display N lines instead of using truncatechars #}
+                                {{ document.transcription.0|safe|truncatechars_html:150 }}
+                            {% endif %}
+                        </div>
                     {% endif %}
                 {% endwith %}
 

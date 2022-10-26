@@ -67,6 +67,10 @@
             <img src="{% static 'img/icons/license-icon.svg' %}" width="32" height="16" alt="{{ license_text }}" />
         </a>
     </li>
+    <li id="issn">
+        {# Translators: International Standard Serial Number (ISSN), for footer #}
+        <span>{% translate 'ISSN: 2834-4146' %}</span>
+    </li>
     <li id="sw-version">
         {# Translators: software version, for footer #}
         {% translate 'software version' as version_text %}

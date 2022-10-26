@@ -1,3 +1,4 @@
+import random
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -18,9 +19,10 @@ from geniza.common.admin import (
     custom_empty_field_list_filter,
 )
 from geniza.common.fields import NaturalSortField, RangeField, RangeWidget
+from geniza.common.metadata_export import Exporter
 from geniza.common.middleware import PublicLocaleMiddleware
 from geniza.common.models import UserProfile
-from geniza.common.utils import absolutize_url, custom_tag_string
+from geniza.common.utils import Echo, absolutize_url, custom_tag_string
 from geniza.corpus.models import Document
 
 
@@ -329,3 +331,39 @@ class TestCustomTagAdmin:
         item_count = tag_admin.item_count(qs.first())
 
         assert item_count == 2
+
+
+def test_echo():
+    echo = Echo()
+
+    value = random.random()
+    assert value is echo.write(value)
+
+    with Echo() as e:
+        assert type(e) == Echo
+
+
+# db access necessary because Exporter.__init__ will access Site information
+@pytest.mark.django_db
+def test_base_exporter():
+    exporter = Exporter()
+
+    # raises correct error?
+    with pytest.raises(NotImplementedError):
+        exporter.get_export_data_dict(obj=None)
+
+    # serializes correctly?
+    sep = exporter.sep_within_cells
+    assert exporter.serialize_value([1, 2, 3]) == f"1{sep}2{sep}3"
+    assert exporter.serialize_value([1, 3, 2]) == f"1{sep}2{sep}3"
+    assert exporter.serialize_value({1, 3, 2}) == f"1{sep}2{sep}3"
+    assert exporter.serialize_dict({"key": [1, 3, 2]}) == {"key": f"1{sep}2{sep}3"}
+
+    # keys already enforced to be strings by database
+    assert exporter.serialize_dict({"0": [1, 3, 2]}) == {"0": f"1{sep}2{sep}3"}
+
+    assert exporter.serialize_value(123) == "123"
+
+    assert exporter.serialize_value(True) == "Y"
+    assert exporter.serialize_value(False) == "N"
+    assert exporter.serialize_value(None) == ""

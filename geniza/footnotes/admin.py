@@ -445,3 +445,6 @@ class CreatorAdmin(TabbedTranslationAdmin):
     list_display = ("last_name", "first_name")
     search_fields = ("first_name", "last_name")
     fields = ("last_name", "first_name")
+
+    class Media:
+        css = {"all": ("css/admin-local.css",)}
