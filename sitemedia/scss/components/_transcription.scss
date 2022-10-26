@@ -1004,19 +1004,19 @@ a.editor-navigation {
         width: 35px;
         /* text color should match background, rendering period invisible */
         color: var(--background-light);
-        /* uncomment to debug positioning
-        color: yellow;  */
+        /* uncomment to debug positioning */
+        // color: yellow;
 
         /* make font larger than list number font to cover completely;
            shrink line height to adjust placement */
-        right: -35.5px;
+        right: -35.75px;
         font-size: 37px;
         line-height: 22px;
 
         @include breakpoints.for-tablet-landscape-up {
             font-size: 38px;
             line-height: 26px;
-            right: -36.5px;
+            right: -37px;
         }
     }
 
