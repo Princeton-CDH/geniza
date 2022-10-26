@@ -14,7 +14,7 @@ Change Log
     - As a content editor, I want commit messages for transcription export data on GitHub to include PGPID so that I can more easily find the changes I'm interested in.
     - bugfix: sometimes transcriptions changes appear not to save in the editor
     - bugfix: in transcription editor, there is no way to tell whether saving
-      changes has succeeded or failed
+    changes has succeeded or failed
 
 -   admin
     - As a content editor, I want the admin csv download to include transcription and translation indicators (Y/N) so that I can filter documents to those with or without transcription or translation.
@@ -58,7 +58,7 @@ transcription editing
 ~~~~~~~~~~~~~~~~~~~~~
 
 - As a content editor, I want to add block-level transcription to documents with images so that I can make existing transcription content available in the site.
-As a user, when I’m reading transcription text, numbered lines should only wrap when necessary (based on display width), so that I can see more clearly how the lines match up with the original. #755
+- As a user, when I’m reading transcription text, numbered lines should only wrap when necessary (based on display width), so that I can see more clearly how the lines match up with the original. #755
 - As a content editor, I want to add and edit transcriptions on a separate page from the document detail or admin edit form, so that permissions and saving just the transcription can be managed more easily.
 - As a content editor, I want transcription content linked to a scholarship record so that it is clearly documented who authored the transcription and where it came from.
 - As a content editor I want to add or edit labels for blocks of transcription text so that I can indicate new sections or different kinds of texts.
