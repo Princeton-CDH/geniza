@@ -4,10 +4,39 @@ Change Log
 4.10
 ----
 
+-   public site
+    - As a frontend user, I want search results to include partial matches of words in transcriptions, so that I can search by substrings of words.
+    - As a front-end user, when I sort documents by shelfmark I want it sorted in logical, human-readable order instead of by string so that I can more easily find the records I'm interested in.
+    - As a frontend user, I want keyword search for Seleucid dates to give me complete matches first so that I can browse by decreasing relevancy in the date field.
+
+-   transcription editor
+    - OpenSeadragon navigator should not be visible on placeholder images
+    - As a content editor, I want commit messages for transcription export data on GitHub to include PGPID so that I can more easily find the changes I'm interested in.
+    - bugfix: sometimes transcriptions changes appear not to save in the editor
+    - bugfix: in transcription editor, there is no way to tell whether saving
+      changes has succeeded or failed
+
+-   admin
+    - As a content editor, I want the admin csv download to include transcription and translation indicators (Y/N) so that I can filter documents to those with or without transcription or translation.
+    - As a content editor, I want database translation fields for Hebrew and Arabic content in the admin site to render text RTL, so that I can read and edit the content properly.
+    - bugfix: In .csv downloads from the admin interface, for joins, the IIIF_url field needs a space after the semicolon.
+    - bugfix: support for switching between multiple digital editions on a single document in admin version of image + transcription panel
+    - transcription type styles in admin view
+
+-   accessibility
+    - transcription content should have a lang attribute in html
+
+-   i18n/l18n
+    - As a front end user who speaks Hebrew or Arabic, I want document types in search results in my native language, so that I can read and understand them.
+
+
+- design
+    - Implement the revised RTL mobile headers
 
 -   maintenance/other
+    - include ISSN in public site footer
     - upgrade to python 3.9
-    - removed code for TEI migration and interim transcription support
+
 
 4.9
 ---
@@ -17,7 +46,7 @@ Change Log
 public site
 ~~~~~~~~~~~
 
-- As a content editor, I want transcription formatting preserved in search result display but ignored for search text so that I can see where in the transcription matching terms are. 
+- As a content editor, I want transcription formatting preserved in search result display but ignored for search text so that I can see where in the transcription matching terms are.
 - As a user, I want to see all transcription content for a document even if it extends beyond the currently available iiif images.
 - As a frontend user, I want to search by partial shelfmarks so I can more easily find documents by exact shelfmark or groups of shelfmarks.
 - As a frontend user, I want to be able to search by historic shelfmark so I can find documents by what they're called today.
@@ -28,54 +57,50 @@ public site
 transcription editing
 ~~~~~~~~~~~~~~~~~~~~~
 
-- As a content editor, I want to add block-level transcription to documents with images so that I can make existing transcription content available in the site. 
+- As a content editor, I want to add block-level transcription to documents with images so that I can make existing transcription content available in the site.
 As a user, when I’m reading transcription text, numbered lines should only wrap when necessary (based on display width), so that I can see more clearly how the lines match up with the original. #755
-- As a content editor, I want to add and edit transcriptions on a separate page from the document detail or admin edit form, so that permissions and saving just the transcription can be managed more easily. 
-- As a content editor, I want transcription content linked to a scholarship record so that it is clearly documented who authored the transcription and where it came from. 
-- As a content editor I want to add or edit labels for blocks of transcription text so that I can indicate new sections or different kinds of texts. 
-- As a content editor I want to use basic formatting in transcription content so that I can enter lines as numbered lists or tag when the language changes within a document. 
+- As a content editor, I want to add and edit transcriptions on a separate page from the document detail or admin edit form, so that permissions and saving just the transcription can be managed more easily.
+- As a content editor, I want transcription content linked to a scholarship record so that it is clearly documented who authored the transcription and where it came from.
+- As a content editor I want to add or edit labels for blocks of transcription text so that I can indicate new sections or different kinds of texts.
+- As a content editor I want to use basic formatting in transcription content so that I can enter lines as numbered lists or tag when the language changes within a document.
 - As a transcription editor, I want to move transcription blocks to a different image so that I can easily correct content associated with the wrong image.
-- As a transcription editor, I want to reorder transcription blocks within a page so that I can make sure text content matches logical document order. 
-- As a content editor, I want new and revised transcriptions available for search immediately so that changes and new content are all available to all site users. 
+- As a transcription editor, I want to reorder transcription blocks within a page so that I can make sure text content matches logical document order.
+- As a content editor, I want new and revised transcriptions available for search immediately so that changes and new content are all available to all site users.
 - As a content editor, I want footnotes to indicate when a digital edition is available so that I can see and filter on records with and without transcription in the admin interface.
-- As a content editor, I want to add and edit transcriptions for records without all IIIF images available so that transcriptions aren't limited to records with all images. 
-- As a transcription editor I want to edit and rearrange transcription content as numbered lists so that I can correct line wrapping introduced to match printed editions. 
+- As a content editor, I want to add and edit transcriptions for records without all IIIF images available so that transcriptions aren't limited to records with all images.
+- As a transcription editor I want to edit and rearrange transcription content as numbered lists so that I can correct line wrapping introduced to match printed editions.
 - As a content editor, I want to cut and paste transcription content from a Google Doc or similar and have it display properly with site styles so that I can easily add existing transcription content.
 
 
 transcription migration and backup
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- As an admin, I want transcription content synchronized from annotation storage to a GitHub repository so that the content is backed up, versioned, and available for use in generating a text corpus. 
-- As an admin I want TEI transcription content migrated to IIIF annotation so that I can manage and edit it in the new transcription editor. 
-- As a content admin, I want to add content editor user's github coauthor emails and link their account to scholarship records so that their contributions will be properly documented. 
-- As a content admin, I want TEI contributors documented in the new GitHub annotation and transcription backups so that there is a record of everyone who has contributed to the transcription structure and content. 
-- As a content admin, I want transcription content backups to be regularly updated as edits are made, so that the backup is up to date, version history is more granular, and I can compare changes. 
-- As a content admin, I want transcription backups to include information about who made edits when possible, so that I can track changes in versioned transcription content. 
+- As an admin, I want transcription content synchronized from annotation storage to a GitHub repository so that the content is backed up, versioned, and available for use in generating a text corpus.
+- As an admin I want TEI transcription content migrated to IIIF annotation so that I can manage and edit it in the new transcription editor.
+- As a content admin, I want to add content editor user's github coauthor emails and link their account to scholarship records so that their contributions will be properly documented.
+- As a content admin, I want TEI contributors documented in the new GitHub annotation and transcription backups so that there is a record of everyone who has contributed to the transcription structure and content.
+- As a content admin, I want transcription content backups to be regularly updated as edits are made, so that the backup is up to date, version history is more granular, and I can compare changes.
+- As a content admin, I want transcription backups to include information about who made edits when possible, so that I can track changes in versioned transcription content.
 - As a content editor, I want to navigate the transcription export data on GitHub so that I can find exported content by PGPID.
 
 design
 ~~~~~~
 
 - Implement a language switch so that users can choose to view the site in English, Hebrew, or Arabic
-- Implement the Hebrew type styles 
+- Implement the Hebrew type styles
 
 
 iiif
 ~~~~
 
 This release includes scripts to generate iiif manifests for Bodleian and Manchester images and
-support for importing and displaying those manifests. 
+support for importing and displaying those manifests.
 
-- As a content admin, I want images from the Bodleian Genizah collection made available as IIIF so they can be displayed on the site and be linked to transcription text. 
+- As a content admin, I want images from the Bodleian Genizah collection made available as IIIF so they can be displayed on the site and be linked to transcription text.
 - As a content admin, I want IIIF from the Manchester JRL Genizah collection remixed to match our data model so that images can be displayed on the site and be linked to transcription text.
 
-admin 
-~~~~~
-
-- bugfix: In .csv downloads from the admin interface, for joins, the IIIF_url field needs a space after the semicolon.
 - add a configurable warning banner that can be displayed during the TEI migration and then turned off
-- As an admin/content editor, I want to see all the images associated with a document so that I can determine whether I need to associate more images, clone the record, etc. 
+- As an admin/content editor, I want to see all the images associated with a document so that I can determine whether I need to associate more images, clone the record, etc.
 
 accessibility
 ~~~~~~~~~~~~~
