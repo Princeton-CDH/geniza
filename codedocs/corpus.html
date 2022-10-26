@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.9.0 documentation</title>
+    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.10.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -223,6 +223,20 @@ its pgpid</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.models.Document.has_translation">
+<span class="sig-name descname"><span class="pre">has_translation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Document.has_translation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Document.has_translation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper method to determine if document has translation (accessible via its footnotes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Whether document has translation</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="geniza.corpus.models.Document.id_from_manifest_uri">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id_from_manifest_uri</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uri</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Document.id_from_manifest_uri"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Document.id_from_manifest_uri" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a manifest URI (as used in transcription annotations), return
@@ -232,12 +246,16 @@ the document id</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.corpus.models.Document.iiif_images">
 <span class="sig-name descname"><span class="pre">iiif_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_side</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_placeholders</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Document.iiif_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Document.iiif_images" title="Permalink to this definition">¶</a></dt>
-<dd><p>Dict of IIIF images and labels for images of the Document’s Fragments, keyed on canvas.
-:param filter_side: if TextBlocks have side info, filter images by side (default: False)
-:param with_placeholders: if there are digital editions with canvases missing images,</p>
-<blockquote>
-<div><p>include placeholder images for each additional canvas (default: False)</p>
-</div></blockquote>
+<dd><p>Dict of IIIF images and labels for images of the Document’s Fragments, keyed on canvas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter_side</strong> – if TextBlocks have side info, filter images by side (default: False)</p></li>
+<li><p><strong>with_placeholders</strong> – if there are digital editions with canvases missing images,
+include placeholder images for each additional canvas (default: False)</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -272,6 +290,20 @@ bulk.</p>
 metadata into this document, adds the merged documents into
 list of old PGP IDs, and creates a log entry documenting
 the merge, including the rationale.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.corpus.models.Document.primary_lang_code">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">primary_lang_code</span></span><a class="headerlink" href="#geniza.corpus.models.Document.primary_lang_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Primary language code for this document, when there is only one
+primary language set and it has an ISO code available. Returns
+None if unset or unavailable.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.corpus.models.Document.primary_script">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">primary_script</span></span><a class="headerlink" href="#geniza.corpus.models.Document.primary_script" title="Permalink to this definition">¶</a></dt>
+<dd><p>Primary script for this document, if shared across all primary languages.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -346,6 +378,17 @@ associated fragments; uses <code class="xref py py-attr docutils literal notrans
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="geniza.corpus.models.DocumentQuerySet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.models.</span></span><span class="sig-name descname"><span class="pre">DocumentQuerySet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#DocumentQuerySet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.DocumentQuerySet" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.models.DocumentQuerySet.metadata_prefetch">
+<span class="sig-name descname"><span class="pre">metadata_prefetch</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#DocumentQuerySet.metadata_prefetch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.DocumentQuerySet.metadata_prefetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a further QuerySet that has been prefetched for relevant document information.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="geniza.corpus.models.DocumentSignalHandlers">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.models.</span></span><span class="sig-name descname"><span class="pre">DocumentSignalHandlers</span></span><a class="reference internal" href="../_modules/geniza/corpus/models.html#DocumentSignalHandlers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.DocumentSignalHandlers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Signal handlers for indexing <a class="reference internal" href="#geniza.corpus.models.Document" title="geniza.corpus.models.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a> records when
@@ -401,6 +444,12 @@ of all validation errors if any occur.</p>
 <dt class="sig sig-object py" id="geniza.corpus.models.DocumentType.natural_key">
 <span class="sig-name descname"><span class="pre">natural_key</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#DocumentType.natural_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.DocumentType.natural_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Natural key, name</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.corpus.models.DocumentType.objects_by_label">
+<em class="property"><span class="pre">class</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">objects_by_label</span></span><a class="headerlink" href="#geniza.corpus.models.DocumentType.objects_by_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dict of DocumentType object instances keyed on English display label</p>
 </dd></dl>
 
 <dl class="py method">
@@ -593,6 +642,13 @@ in the old_shelfmarks field</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="geniza.corpus.models.cached_class_property">
+<span class="sig-prename descclassname"><span class="pre">geniza.corpus.models.</span></span><span class="sig-name descname"><span class="pre">cached_class_property</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#cached_class_property"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.cached_class_property" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reusable decorator to cache a class property, as opposed to an instance property.
+from <a class="reference external" href="https://stackoverflow.com/a/71887897">https://stackoverflow.com/a/71887897</a></p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="geniza.corpus.models.detach_document_logentries">
 <span class="sig-prename descclassname"><span class="pre">geniza.corpus.models.</span></span><span class="sig-name descname"><span class="pre">detach_document_logentries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sender</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">instance</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#detach_document_logentries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.detach_document_logentries" title="Permalink to this definition">¶</a></dt>
 <dd><p><a class="reference internal" href="#geniza.corpus.models.Document" title="geniza.corpus.models.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a> pre-delete signal handler.</p>
@@ -756,7 +812,7 @@ See <a class="reference internal" href="#geniza.corpus.dates.PartialDate.isoform
 
 <dl class="py data">
 <dt class="sig sig-object py" id="geniza.corpus.dates.calendar_converter">
-<span class="sig-prename descclassname"><span class="pre">geniza.corpus.dates.</span></span><span class="sig-name descname"><span class="pre">calendar_converter</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'am':</span> <span class="pre">&lt;module</span> <span class="pre">'convertdate.hebrew'</span> <span class="pre">from</span> <span class="pre">'/opt/hostedtoolcache/Python/3.8.3/x64/lib/python3.8/site-packages/convertdate/hebrew.py'&gt;,</span> <span class="pre">'h':</span> <span class="pre">&lt;module</span> <span class="pre">'convertdate.islamic'</span> <span class="pre">from</span> <span class="pre">'/opt/hostedtoolcache/Python/3.8.3/x64/lib/python3.8/site-packages/convertdate/islamic.py'&gt;}</span></em><a class="headerlink" href="#geniza.corpus.dates.calendar_converter" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">geniza.corpus.dates.</span></span><span class="sig-name descname"><span class="pre">calendar_converter</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'am':</span> <span class="pre">&lt;module</span> <span class="pre">'convertdate.hebrew'</span> <span class="pre">from</span> <span class="pre">'/opt/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/convertdate/hebrew.py'&gt;,</span> <span class="pre">'h':</span> <span class="pre">&lt;module</span> <span class="pre">'convertdate.islamic'</span> <span class="pre">from</span> <span class="pre">'/opt/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/convertdate/islamic.py'&gt;}</span></em><a class="headerlink" href="#geniza.corpus.dates.calendar_converter" title="Permalink to this definition">¶</a></dt>
 <dd><p>mapping between supported calendars and corresponding convertdate module</p>
 </dd></dl>
 
@@ -827,6 +883,52 @@ with or without accents, and supports local month-name overrides.</p>
 <dt class="sig sig-object py" id="geniza.corpus.dates.standardize_date">
 <span class="sig-prename descclassname"><span class="pre">geniza.corpus.dates.</span></span><span class="sig-name descname"><span class="pre">standardize_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">historic_date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calendar</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/dates.html#standardize_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.dates.standardize_date" title="Permalink to this definition">¶</a></dt>
 <dd><p>convert hebrew date in text format to standard date range</p>
+</dd></dl>
+
+</section>
+<section id="module-geniza.corpus.metadata_export">
+<span id="metadata-export"></span><h2>metadata export<a class="headerlink" href="#module-geniza.corpus.metadata_export" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.corpus.metadata_export.DocumentExporter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.metadata_export.</span></span><span class="sig-name descname"><span class="pre">DocumentExporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#DocumentExporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.DocumentExporter" title="Permalink to this definition">¶</a></dt>
+<dd><p>A subclass of geniza.common.metadata_export.Exporter that exports information relating to Documents. It custom implements only two methods: <cite>get_queryset</cite> and <cite>get_export_data_dict</cite>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.metadata_export.DocumentExporter.get_export_data_dict">
+<span class="sig-name descname"><span class="pre">get_export_data_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#DocumentExporter.get_export_data_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.DocumentExporter.get_export_data_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get back data about a document in dictionary format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>doc</strong> (<a class="reference internal" href="#geniza.corpus.models.Document" title="geniza.corpus.models.Document"><em>Document</em></a>) – A given Document object</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of data about the document</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.metadata_export.DocumentExporter.get_queryset">
+<span class="sig-name descname"><span class="pre">get_queryset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#DocumentExporter.get_queryset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.DocumentExporter.get_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies some prefetching to the base Exporter’s get_queryset functionality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Custom-given query set or query set of all documents</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>QuerySet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geniza.corpus.metadata_export.DocumentExporter.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#geniza.corpus.metadata_export.DocumentExporter.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#geniza.corpus.models.Document" title="geniza.corpus.models.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a></p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -1466,108 +1568,6 @@ Will find and merge the documents if possible.</p>
 
 </dd></dl>
 
-<span class="target" id="module-geniza.corpus.management.commands.sync_transcriptions"></span><p>Script to synchronize transcription content from PGP v3 TEI files
-to an _interim_ html format in the database.</p>
-<p>The script checks out and updates the transcription files from the
-git repository, and then loops through all xml files and
-identifies the document and footnote to update, if possible.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="geniza.corpus.management.commands.sync_transcriptions.Command">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.management.commands.sync_transcriptions.</span></span><span class="sig-name descname"><span class="pre">Command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stdout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/sync_transcriptions.html#Command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.sync_transcriptions.Command" title="Permalink to this definition">¶</a></dt>
-<dd><p>Synchronize TEI transcriptions to edition footnote content</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.management.commands.sync_transcriptions.Command.add_arguments">
-<span class="sig-name descname"><span class="pre">add_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/sync_transcriptions.html#Command.add_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.sync_transcriptions.Command.add_arguments" title="Permalink to this definition">¶</a></dt>
-<dd><p>Entry point for subclassed commands to add custom arguments.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.management.commands.sync_transcriptions.Command.check_tei">
-<span class="sig-name descname"><span class="pre">check_tei</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmlfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/sync_transcriptions.html#Command.check_tei"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.sync_transcriptions.Command.check_tei" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check TEI and report if it is empty, labels only, or has no content.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>tei</strong> – xmlmap tei instance to check; <code class="xref py py-class docutils literal notranslate"><span class="pre">GenizaTei</span></code></p></li>
-<li><p><strong>xmlfile</strong> – xml filename, for reporting</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>True if check passes; False if the TEI should be skipped.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.management.commands.sync_transcriptions.Command.choose_edition_by_authors">
-<span class="sig-name descname"><span class="pre">choose_edition_by_authors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">editions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/sync_transcriptions.html#Command.choose_edition_by_authors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.sync_transcriptions.Command.choose_edition_by_authors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Try to choose correct edition from a list based on author names;
-based on structured author names in the TEI</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.management.commands.sync_transcriptions.Command.create_goitein_footnote">
-<span class="sig-name descname"><span class="pre">create_goitein_footnote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/sync_transcriptions.html#Command.create_goitein_footnote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.sync_transcriptions.Command.create_goitein_footnote" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new footnote for a Goitein unpublished edition</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.management.commands.sync_transcriptions.Command.get_edition_footnote">
-<span class="sig-name descname"><span class="pre">get_edition_footnote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/sync_transcriptions.html#Command.get_edition_footnote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.sync_transcriptions.Command.get_edition_footnote" title="Permalink to this definition">¶</a></dt>
-<dd><p>identify the edition footnote to be updated</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.management.commands.sync_transcriptions.Command.get_footnote_editions">
-<span class="sig-name descname"><span class="pre">get_footnote_editions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/sync_transcriptions.html#Command.get_footnote_editions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.sync_transcriptions.Command.get_footnote_editions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get all edition footnotes of a document; used by <a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command.get_edition_footnote" title="geniza.corpus.management.commands.sync_transcriptions.Command.get_edition_footnote"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_edition_footnote()</span></code></a>,
-extend to include digital editions in tei to annotation script.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.management.commands.sync_transcriptions.Command.get_pgp_document">
-<span class="sig-name descname"><span class="pre">get_pgp_document</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xmlfile_basename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/sync_transcriptions.html#Command.get_pgp_document"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.sync_transcriptions.Command.get_pgp_document" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find the PGP document for the specified TEI file, based on filename,
-if possible.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>instance of <a class="reference internal" href="#geniza.corpus.models.Document" title="geniza.corpus.models.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a> or None if not found</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.management.commands.sync_transcriptions.Command.handle">
-<span class="sig-name descname"><span class="pre">handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/sync_transcriptions.html#Command.handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.sync_transcriptions.Command.handle" title="Permalink to this definition">¶</a></dt>
-<dd><p>The actual logic of the command. Subclasses must implement
-this method.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.management.commands.sync_transcriptions.Command.is_it_goitein">
-<span class="sig-name descname"><span class="pre">is_it_goitein</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tei</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/sync_transcriptions.html#Command.is_it_goitein"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.sync_transcriptions.Command.is_it_goitein" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if a TEI document is a Goitein edition. If no edition exists
-and we can identify based on the TEI as a Goitein unpublished edition,
-then create a new footnote.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.management.commands.sync_transcriptions.Command.log_footnote_update">
-<span class="sig-name descname"><span class="pre">log_footnote_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">footnote</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xmlfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/sync_transcriptions.html#Command.log_footnote_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.sync_transcriptions.Command.log_footnote_update" title="Permalink to this definition">¶</a></dt>
-<dd><p>create a log entry for a footnote that has been updated</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="geniza.corpus.management.commands.sync_transcriptions.Command.sync_git">
-<span class="sig-name descname"><span class="pre">sync_git</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gitrepo_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/sync_transcriptions.html#Command.sync_git"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.sync_transcriptions.Command.sync_git" title="Permalink to this definition">¶</a></dt>
-<dd><p>ensure git repository has been cloned and content is up to date</p>
-</dd></dl>
-
-</dd></dl>
-
 <span class="target" id="module-geniza.corpus.management.commands.convert_dates"></span><dl class="py class">
 <dt class="sig sig-object py" id="geniza.corpus.management.commands.convert_dates.Command">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.management.commands.convert_dates.</span></span><span class="sig-name descname"><span class="pre">Command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stdout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/convert_dates.html#Command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.convert_dates.Command" title="Permalink to this definition">¶</a></dt>
@@ -1621,6 +1621,30 @@ that support conversion.</p>
 <span class="sig-name descname"><span class="pre">handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/generate_fixtures.html#Command.handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.generate_fixtures.Command.handle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Export fixtures from the database, given a list of PGPIDs.</p>
 <p>Example usage with PGPIDs 1, 20, and 1234: python manage.py generate_fixtures 1 20 1234</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-geniza.corpus.management.commands.export_metadata"></span><dl class="py class">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.Command">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.management.commands.export_metadata.</span></span><span class="sig-name descname"><span class="pre">Command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stdout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#Command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.Command" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.Command.add_arguments">
+<span class="sig-name descname"><span class="pre">add_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#Command.add_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.Command.add_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Entry point for subclassed commands to add custom arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.Command.handle">
+<span class="sig-name descname"><span class="pre">handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#Command.handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.Command.handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>The actual logic of the command. Subclasses must implement
+this method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.Command.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#Command.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.Command.print" title="Permalink to this definition">¶</a></dt>
+<dd><p>A stdout-friendly method of printing for manage.py commands</p>
 </dd></dl>
 
 </dd></dl>
@@ -1713,6 +1737,7 @@ that support conversion.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.get_deferred_fields"><code class="docutils literal notranslate"><span class="pre">Document.get_deferred_fields()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.has_image"><code class="docutils literal notranslate"><span class="pre">Document.has_image()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.has_transcription"><code class="docutils literal notranslate"><span class="pre">Document.has_transcription()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Document.has_translation"><code class="docutils literal notranslate"><span class="pre">Document.has_translation()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.id_from_manifest_uri"><code class="docutils literal notranslate"><span class="pre">Document.id_from_manifest_uri()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.iiif_images"><code class="docutils literal notranslate"><span class="pre">Document.iiif_images()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.iiif_urls"><code class="docutils literal notranslate"><span class="pre">Document.iiif_urls()</span></code></a></li>
@@ -1720,6 +1745,8 @@ that support conversion.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.is_public"><code class="docutils literal notranslate"><span class="pre">Document.is_public()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.items_to_index"><code class="docutils literal notranslate"><span class="pre">Document.items_to_index()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.merge_with"><code class="docutils literal notranslate"><span class="pre">Document.merge_with()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Document.primary_lang_code"><code class="docutils literal notranslate"><span class="pre">Document.primary_lang_code</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Document.primary_script"><code class="docutils literal notranslate"><span class="pre">Document.primary_script</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.refresh_from_db"><code class="docutils literal notranslate"><span class="pre">Document.refresh_from_db()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.related_documents"><code class="docutils literal notranslate"><span class="pre">Document.related_documents</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.save"><code class="docutils literal notranslate"><span class="pre">Document.save()</span></code></a></li>
@@ -1729,6 +1756,10 @@ that support conversion.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.status"><code class="docutils literal notranslate"><span class="pre">Document.status</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.title"><code class="docutils literal notranslate"><span class="pre">Document.title</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.total_to_index"><code class="docutils literal notranslate"><span class="pre">Document.total_to_index()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.corpus.models.DocumentQuerySet"><code class="docutils literal notranslate"><span class="pre">DocumentQuerySet</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.corpus.models.DocumentQuerySet.metadata_prefetch"><code class="docutils literal notranslate"><span class="pre">DocumentQuerySet.metadata_prefetch()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#geniza.corpus.models.DocumentSignalHandlers"><code class="docutils literal notranslate"><span class="pre">DocumentSignalHandlers</span></code></a><ul>
@@ -1743,6 +1774,7 @@ that support conversion.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.DocumentType.clean_fields"><code class="docutils literal notranslate"><span class="pre">DocumentType.clean_fields()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.DocumentType.get_deferred_fields"><code class="docutils literal notranslate"><span class="pre">DocumentType.get_deferred_fields()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.DocumentType.natural_key"><code class="docutils literal notranslate"><span class="pre">DocumentType.natural_key()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.DocumentType.objects_by_label"><code class="docutils literal notranslate"><span class="pre">DocumentType.objects_by_label</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.DocumentType.refresh_from_db"><code class="docutils literal notranslate"><span class="pre">DocumentType.refresh_from_db()</span></code></a></li>
 </ul>
 </li>
@@ -1789,6 +1821,7 @@ that support conversion.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.TextBlock.thumbnail"><code class="docutils literal notranslate"><span class="pre">TextBlock.thumbnail()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#geniza.corpus.models.cached_class_property"><code class="docutils literal notranslate"><span class="pre">cached_class_property()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.detach_document_logentries"><code class="docutils literal notranslate"><span class="pre">detach_document_logentries()</span></code></a></li>
 </ul>
 </li>
@@ -1831,6 +1864,15 @@ that support conversion.</p>
 <li><a class="reference internal" href="#geniza.corpus.dates.get_islamic_month"><code class="docutils literal notranslate"><span class="pre">get_islamic_month()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.re_original_date"><code class="docutils literal notranslate"><span class="pre">re_original_date</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.standardize_date"><code class="docutils literal notranslate"><span class="pre">standardize_date()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-geniza.corpus.metadata_export">metadata export</a><ul>
+<li><a class="reference internal" href="#geniza.corpus.metadata_export.DocumentExporter"><code class="docutils literal notranslate"><span class="pre">DocumentExporter</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.corpus.metadata_export.DocumentExporter.get_export_data_dict"><code class="docutils literal notranslate"><span class="pre">DocumentExporter.get_export_data_dict()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.metadata_export.DocumentExporter.get_queryset"><code class="docutils literal notranslate"><span class="pre">DocumentExporter.get_queryset()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.metadata_export.DocumentExporter.model"><code class="docutils literal notranslate"><span class="pre">DocumentExporter.model</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-geniza.corpus.views">views</a><ul>
@@ -1961,20 +2003,6 @@ that support conversion.</p>
 <li><a class="reference internal" href="#geniza.corpus.management.commands.merge_documents.Command.merge_group"><code class="docutils literal notranslate"><span class="pre">Command.merge_group()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command"><code class="docutils literal notranslate"><span class="pre">Command</span></code></a><ul>
-<li><a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command.add_arguments"><code class="docutils literal notranslate"><span class="pre">Command.add_arguments()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command.check_tei"><code class="docutils literal notranslate"><span class="pre">Command.check_tei()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command.choose_edition_by_authors"><code class="docutils literal notranslate"><span class="pre">Command.choose_edition_by_authors()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command.create_goitein_footnote"><code class="docutils literal notranslate"><span class="pre">Command.create_goitein_footnote()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command.get_edition_footnote"><code class="docutils literal notranslate"><span class="pre">Command.get_edition_footnote()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command.get_footnote_editions"><code class="docutils literal notranslate"><span class="pre">Command.get_footnote_editions()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command.get_pgp_document"><code class="docutils literal notranslate"><span class="pre">Command.get_pgp_document()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command.handle"><code class="docutils literal notranslate"><span class="pre">Command.handle()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command.is_it_goitein"><code class="docutils literal notranslate"><span class="pre">Command.is_it_goitein()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command.log_footnote_update"><code class="docutils literal notranslate"><span class="pre">Command.log_footnote_update()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.management.commands.sync_transcriptions.Command.sync_git"><code class="docutils literal notranslate"><span class="pre">Command.sync_git()</span></code></a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#geniza.corpus.management.commands.convert_dates.Command"><code class="docutils literal notranslate"><span class="pre">Command</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.corpus.management.commands.convert_dates.Command.add_arguments"><code class="docutils literal notranslate"><span class="pre">Command.add_arguments()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.management.commands.convert_dates.Command.clean_standard_dates"><code class="docutils literal notranslate"><span class="pre">Command.clean_standard_dates()</span></code></a></li>
@@ -1986,6 +2014,12 @@ that support conversion.</p>
 <li><a class="reference internal" href="#geniza.corpus.management.commands.generate_fixtures.Command"><code class="docutils literal notranslate"><span class="pre">Command</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.corpus.management.commands.generate_fixtures.Command.add_arguments"><code class="docutils literal notranslate"><span class="pre">Command.add_arguments()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.management.commands.generate_fixtures.Command.handle"><code class="docutils literal notranslate"><span class="pre">Command.handle()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.Command"><code class="docutils literal notranslate"><span class="pre">Command</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.Command.add_arguments"><code class="docutils literal notranslate"><span class="pre">Command.add_arguments()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.Command.handle"><code class="docutils literal notranslate"><span class="pre">Command.handle()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.Command.print"><code class="docutils literal notranslate"><span class="pre">Command.print()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -2019,7 +2053,7 @@ that support conversion.</p>
       &copy;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.2.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
