@@ -482,8 +482,7 @@ class DocumentQuerySet(MultilingualQuerySet):
         Returns a further QuerySet that has been prefetched for relevant document information.
         """
         return (
-            self.select_related("doctype")
-            .prefetch_related(
+            self.select_related("doctype").prefetch_related(
                 "tags",
                 "languages",
                 Prefetch(
@@ -494,7 +493,7 @@ class DocumentQuerySet(MultilingualQuerySet):
                 ),
                 "footnotes",
             )
-            .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
+            # .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
         )
 
 

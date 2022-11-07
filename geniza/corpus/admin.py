@@ -312,7 +312,14 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         return deletable_objects, model_count, perms_needed, protected
 
     def get_queryset(self, request):
-        return super().get_queryset(request).metadata_prefetch()
+        return (
+            super()
+            .get_queryset(request)
+            .metadata_prefetch()
+            .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
+            # .order_by('shelfmark_override')
+            .order_by("shelfmk_all")
+        )
 
     def get_search_results(self, request, queryset, search_term):
         """Override admin search to use Solr."""
@@ -388,7 +395,9 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             status=303,
         )  # status code 303 means "See Other"
 
-    @admin.display(description="Export selected documents to CSV")
+    @admin.display(
+        description="Export selected documents to CSV", ordering="-shelfmark"
+    )  # @TODO: This ordering doesn't affect the order of the export because in the exporter we're ordering by ID
     def export_to_csv(self, request, queryset=None):
         """Stream tabular data as a CSV file"""
         queryset = queryset or self.get_queryset(request)
