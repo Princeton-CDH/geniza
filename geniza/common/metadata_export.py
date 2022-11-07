@@ -33,6 +33,9 @@ class Exporter:
         self.site_domain = Site.objects.get_current().domain.rstrip("/")
         self.url_scheme = "https://"
 
+    def __iter__(self):
+        yield from self.iter_export_data_as_dicts()
+
     def csv_filename(self):
         """Generate the appropriate CSV filename for model and time
 
