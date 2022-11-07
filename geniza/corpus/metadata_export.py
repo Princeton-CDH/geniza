@@ -39,7 +39,6 @@ class DocumentExporter(Exporter):
         "has_transcription",
         "has_translation",
     ]
-    exclude_csv_fields = set()
 
     def get_queryset(self):
         """
@@ -137,16 +136,6 @@ class DocumentExporter(Exporter):
         outd["doc_date_calendar"] = doc.get_doc_date_calendar_display()
         outd["doc_date_standard"] = doc.doc_date_standard
 
-        if not "notes" in self.exclude_csv_fields:
-            outd["notes"] = doc.notes
-        if not "needs_review" in self.exclude_csv_fields:
-            outd["needs_review"] = doc.needs_review
-
-        if not "url_admin" in self.exclude_csv_fields:
-            outd[
-                "url_admin"
-            ] = f"{self.url_scheme}{self.site_domain}/admin/corpus/document/{doc.id}/change/"
-
         # default sort is most recent first, so initial input is last
         # convert to list so we can do negative indexing, instead of calling last()
         # which incurs a database call
@@ -160,8 +149,6 @@ class DocumentExporter(Exporter):
             set([user.get_full_name() or user.username for user in input_users])
         )
 
-        if not "status" in self.exclude_csv_fields:
-            outd["status"] = doc.get_status_display()
         outd["library"] = sep_within_cells.join(libraries) if any(libraries) else ""
         outd["collection"] = (
             sep_within_cells.join(collections) if any(collections) else ""
@@ -175,11 +162,18 @@ class DocumentExporter(Exporter):
 
 
 class AdminDocumentExporter(DocumentExporter):
-    exclude_csv_fields = set()
+    def get_export_data_dict(self, doc):
+        outd = super().get_export_data_dict(doc)
+        outd["notes"] = doc.notes
+        outd["needs_review"] = doc.needs_review
+        outd["status"] = doc.get_status_display()
+        outd[
+            "url_admin"
+        ] = f"{self.url_scheme}{self.site_domain}/admin/corpus/document/{doc.id}/change/"
+
+        return outd
 
 
 class PublicDocumentExporter(DocumentExporter):
-    exclude_csv_fields = {"notes", "needs_review", "url_admin", "status"}
-
     def get_queryset(self):
-        return super().get_queryset().filter(status="P")
+        return super().get_queryset().filter(status=Document.PUBLIC)
