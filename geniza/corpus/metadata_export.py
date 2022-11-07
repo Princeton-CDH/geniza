@@ -165,3 +165,11 @@ class DocumentExporter(Exporter):
         outd["has_translation"] = doc.has_translation()
 
         return outd
+
+
+class PublicDocumentExporter(DocumentExporter):
+    csv_fields = []  # @TODO: Which fields here?
+
+
+class AdminDocumentExporter(DocumentExporter):
+    csv_fields = []  # @TODO: Which fields here?
