@@ -47,6 +47,7 @@ class AnnotationExporter:
             )
 
         self.base_output_dir = settings.ANNOTATION_BACKUP_PATH
+        self.annotations_output_dir = os.path.join(self.base_output_dir, "annotations")
         self.git_repo = settings.ANNOTATION_BACKUP_GITREPO
         self.pgpids = pgpids
         self.push_changes = push_changes
@@ -69,7 +70,7 @@ class AnnotationExporter:
         self.setup_repo()
 
         # define paths and ensure directories exist for compiled transcription
-        annotations_output_dir = os.path.join(self.base_output_dir, "annotations")
+
         # identify content to export
 
         # if ids are specified, limit to just those documents
@@ -106,7 +107,7 @@ class AnnotationExporter:
             # {prefix}/{identifier}/list/{name}
             doc_output_dir = self.document_path(document.pk)
             doc_annotations_dir = os.path.join(
-                annotations_output_dir, doc_output_dir, "list"
+                self.annotations_output_dir, doc_output_dir, "list"
             )
             doc_transcription_dir = os.path.join(self.base_output_dir, doc_output_dir)
             # ensure output directories exist
@@ -210,7 +211,7 @@ class AnnotationExporter:
         # {prefix}/{identifier}/list/{name}
         doc_output_dir = self.document_path(document_id)
         doc_annotations_dir = os.path.join(
-            annotations_output_dir, doc_output_dir, "list"
+            self.annotations_output_dir, doc_output_dir, "list"
         )
         doc_transcription_dir = os.path.join(self.base_output_dir, doc_output_dir)
 
