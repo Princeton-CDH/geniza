@@ -163,6 +163,10 @@ class DocumentExporter(Exporter):
 
 class AdminDocumentExporter(DocumentExporter):
     def get_export_data_dict(self, doc):
+        """
+        Adding certain fields to DocumentExporter.get_export_data_dict that are admin-only.
+        """
+
         outd = super().get_export_data_dict(doc)
         outd["notes"] = doc.notes
         outd["needs_review"] = doc.needs_review
@@ -175,5 +179,11 @@ class AdminDocumentExporter(DocumentExporter):
 
 
 class PublicDocumentExporter(DocumentExporter):
+    """
+    Public version of the document exporter. It does not need to subset the list of CSV fields;
+    the csv.DictWriter will use all fields in DocumentExporter.csv_fields that are also in the
+    output dictionary given to the writer.
+    """
+
     def get_queryset(self):
         return super().get_queryset().filter(status=Document.PUBLIC)
