@@ -134,61 +134,6 @@ class TestSourceAdmin:
         assert f"={source.id}" in html
         assert ">1<" in html
 
-    @pytest.mark.django_db
-    def test_tabulate_queryset(self, source, twoauthor_source, article):
-        source_admin = SourceAdmin(model=Source, admin_site=admin.site)
-        qs = source_admin.get_queryset("rqst")
-
-        # add a url to one of the sources
-        source.url = "http://example.com"
-        source.save()
-
-        for source, source_data in zip(qs, source_admin.tabulate_queryset(qs)):
-            # test some properties
-            assert source.title in source_data
-            assert source.journal in source_data
-            assert source.year in source_data
-            assert source.url in source_data
-
-            # test compiled data
-            for authorship in source.authorship_set.all():
-                assert str(authorship.creator) in source_data[1]
-            for lang in source.languages.all():
-                assert lang.name in source_data[12]
-
-            # none of the fixtures have footnotes, but count should be included
-            assert 0 in source_data
-            assert (
-                f"https://example.com/admin/footnotes/source/{source.id}/change/"
-                in source_data
-            )
-
-    @pytest.mark.django_db
-    @patch("geniza.footnotes.admin.export_to_csv_response")
-    def test_export_to_csv(self, mock_export_to_csv_response):
-        source_admin = SourceAdmin(model=Source, admin_site=admin.site)
-        with patch.object(source_admin, "tabulate_queryset") as tabulate_queryset:
-            # if no queryset provided, should use default queryset
-            sources = source_admin.get_queryset(Mock())
-            source_admin.export_to_csv(Mock())
-            assert tabulate_queryset.called_once_with(sources)
-            # otherwise should respect the provided queryset
-            first_source = Source.objects.first()
-            source_admin.export_to_csv(Mock(), first_source)
-            assert tabulate_queryset.called_once_with(first_source)
-
-            export_args, export_kwargs = mock_export_to_csv_response.call_args
-            # first arg is filename
-            csvfilename = export_args[0]
-            assert csvfilename.endswith(".csv")
-            assert csvfilename.startswith("geniza-sources")
-            # should include current date
-            assert timezone.now().strftime("%Y%m%d") in csvfilename
-            headers = export_args[1]
-            assert "source_type" in headers
-            assert "authors" in headers
-            assert "title" in headers
-
 
 class TestFootnoteAdmin:
     @pytest.mark.django_db
@@ -201,40 +146,6 @@ class TestFootnoteAdmin:
             source=source, doc_relation=[Footnote.EDITION, Footnote.DISCUSSION]
         )
         assert fnoteadmin.doc_relation_list(footnote) == str(footnote.doc_relation)
-
-    @pytest.mark.django_db
-    def test_tabulate_queryset(self, source, document):
-        fnoteadmin = FootnoteAdmin(Footnote, admin.site)
-        Footnote.objects.create(
-            source=source,
-            content_object=document,
-            doc_relation=[Footnote.EDITION, Footnote.DISCUSSION],
-        )
-        Footnote.objects.create(
-            source=source,
-            content_object=document,
-            doc_relation=[Footnote.DIGITAL_EDITION],
-        )
-
-        qs = fnoteadmin.get_queryset("rqst")
-
-        for footnote, footnote_data in zip(qs, fnoteadmin.tabulate_queryset(qs)):
-            # test some properties
-            assert footnote.content_object in footnote_data
-            assert footnote.content_object.pk in footnote_data
-            assert footnote.source in footnote_data
-            assert footnote.location in footnote_data
-            assert footnote.doc_relation in footnote_data
-            assert footnote.notes in footnote_data
-            assert footnote.url in footnote_data
-
-            if Footnote.DIGITAL_EDITION in footnote.doc_relation:
-                assert footnote.content_text in footnote_data
-
-            assert (
-                f"https://example.com/admin/footnotes/footnote/{footnote.id}/change/"
-                in footnote_data
-            )
 
     @pytest.mark.django_db
     @patch("geniza.footnotes.admin.export_to_csv_response")

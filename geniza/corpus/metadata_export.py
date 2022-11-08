@@ -4,7 +4,9 @@ from geniza.corpus.models import Document
 
 class DocumentExporter(Exporter):
     """
-    A subclass of geniza.common.metadata_export.Exporter that exports information relating to Documents. It custom implements only two methods: `get_queryset` and `get_export_data_dict`.
+    A subclass of :class:`geniza.common.metadata_export.Exporter` that
+    exports information relating to :class:`~geniza.corpus.models.Documents`.
+    Extends :meth:`get_queryset` and :meth:`get_export_data_dict`.
     """
 
     model = Document
