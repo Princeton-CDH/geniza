@@ -650,7 +650,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         )
 
     @property
-    @admin.display(description="Shelfmark")
+    @admin.display(description="Shelfmark", ordering="shelfmark")
     def shelfmark_display(self):
         """Label for this document; by default, based on the combined shelfmarks from all certain
         associated fragments; uses :attr:`shelfmark_override` if set"""

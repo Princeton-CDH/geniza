@@ -395,9 +395,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             status=303,
         )  # status code 303 means "See Other"
 
-    @admin.display(
-        description="Export selected documents to CSV", ordering="-shelfmark"
-    )  # @TODO: This ordering doesn't affect the order of the export because in the exporter we're ordering by ID
+    @admin.display(description="Export selected documents to CSV")
     def export_to_csv(self, request, queryset=None):
         """Stream tabular data as a CSV file"""
         queryset = queryset or self.get_queryset(request)
