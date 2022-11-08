@@ -83,7 +83,8 @@ class Command(BaseCommand):
             annos_by_manifest = annotations.group_by_manifest()
 
             # special case: deleted annotations don't exist in the db,
-            # but the transcription should be re-exported to reflect remvoal
+            # but the transcription should be re-exported to reflect removal
+            manifest_deletions = []  # track manifests with deletions
             for log_entry in deletions:
                 # if modified via annotation delete view, change message
                 # should include manifest uri
@@ -93,11 +94,12 @@ class Command(BaseCommand):
                     annos_by_manifest[manifest_uri].append(
                         Annotation(id=log_entry.object_id)
                     )
+                    manifest_deletions.append(manifest_uri)
 
             for manifest, annotations in annos_by_manifest.items():
                 # export transcription for the specified document,
                 # documenting the users who modified it
-                document = Document.from_manifest_uri(manifest)
+                document_id = Document.id_from_manifest_uri(manifest)
 
                 # collect all users who modified any of the annotations
                 # for this document based on the collected log entries
@@ -107,12 +109,21 @@ class Command(BaseCommand):
                     # for dict lookup to succeeed
                     users |= set(modified_annotations[str(anno.id)])
 
-                self.anno_exporter.export(
-                    pgpids=[document.pk],
+                exported = self.anno_exporter.export(
+                    pgpids=[document_id],
                     modifying_users=users,
                     commit_msg="%s - PGPID %d"
-                    % (AnnotationExporter.default_commit_msg, document.pk),
+                    % (AnnotationExporter.default_commit_msg, document_id),
                 )
+                # special case: if annotation has been deleted AND
+                # corresponding document has been deleted
+                if not exported and manifest in manifest_deletions:
+                    self.anno_exporter.cleanup(
+                        document_id,
+                        modifying_users=users,
+                        commit_msg="%s - PGPID %d"
+                        % (AnnotationExporter.default_commit_msg, document_id),
+                    )
 
             # push changes to remote
             self.anno_exporter.sync_github()
