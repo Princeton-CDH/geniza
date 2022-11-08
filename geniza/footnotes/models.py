@@ -99,7 +99,11 @@ class Authorship(models.Model):
 
 
 class SourceQuerySet(MultilingualQuerySet):
+    """Custom queryset for :class:`Source`, for reusable
+    prefetching and count annotation."""
+
     def metadata_prefetch(self):
+        "prefetch source type and authors"
         return self.select_related("source_type").prefetch_related(
             Prefetch(
                 "authorship_set",
@@ -108,6 +112,7 @@ class SourceQuerySet(MultilingualQuerySet):
         )
 
     def footnote_count(self):
+        "annotate with footnote count"
         return self.annotate(Count("footnote", distinct=True))
 
 
