@@ -201,9 +201,7 @@ class AnnotationExporter:
 
     def cleanup(self, document_id, modifying_users=None, commit_msg=None):
         "Cleanup files when both annotation and document have been removed."
-        self.output_info(
-            "Removing all exported files for removed PGPID %s" % document_id
-        )
+        self.output_info("Removing all exported files for PGPID %s" % document_id)
         # NOTE: some duplication here from main export method
 
         # use PGPID for annotation directory name
@@ -222,7 +220,7 @@ class AnnotationExporter:
         )
 
         # commit changes removing all existing files
-        self.commit_changed_files([], remove_filenames)
+        self.commit_changed_files([], existing_files)
 
     def document_path(self, pgpid):
         """Generate path based on pgpid so records are chunked by 1000s,

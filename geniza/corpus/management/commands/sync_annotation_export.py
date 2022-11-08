@@ -121,7 +121,7 @@ class Command(BaseCommand):
                     self.anno_exporter.cleanup(
                         document_id,
                         modifying_users=users,
-                        commit_msg="%s - PGPID %d"
+                        commit_msg="%s - removing files for PGPID %d"
                         % (AnnotationExporter.default_commit_msg, document_id),
                     )
 

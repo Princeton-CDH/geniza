@@ -223,7 +223,7 @@ class TestSyncAnnationExport:
             mock_exporter.cleanup.assert_called_with(
                 pgpid,
                 modifying_users=set([admin_user]),
-                commit_msg="%s - PGPID %s"
+                commit_msg="%s - removing files for PGPID %s"
                 % (mock_annoexporter.default_commit_msg, pgpid),
             )
 
