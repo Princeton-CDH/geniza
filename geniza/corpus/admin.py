@@ -317,7 +317,6 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             .get_queryset(request)
             .metadata_prefetch()
             .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
-            # .order_by('shelfmark_override')
             .order_by("shelfmk_all")
         )
 
