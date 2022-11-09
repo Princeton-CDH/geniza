@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+4.10.1
+------
+
+- bugfix: annotation export script errors if manifest uri doesn't resolve
+  to a valid document (handle deleted annotations on deleted documents)
+- bugfix: documents in admin should be sorted by shelfmark by default
+
 4.10
 ----
 
