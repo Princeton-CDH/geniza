@@ -28,7 +28,7 @@ from geniza.corpus.admin import (
     HasTranscriptionListFilter,
     LanguageScriptAdmin,
 )
-from geniza.corpus.metadata_export import DocumentExporter
+from geniza.corpus.metadata_export import AdminDocumentExporter, PublicDocumentExporter
 from geniza.corpus.models import (
     Collection,
     Document,
@@ -43,7 +43,7 @@ from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 @pytest.mark.django_db
 def test_doc_exporter_cli(document, join):
     # get artificial dataset
-    exporter = DocumentExporter()
+    exporter = AdminDocumentExporter()
 
     # csv filename?
     str_time_pref = timezone.now().strftime("%Y%m%dT")
@@ -59,7 +59,7 @@ def test_doc_exporter_cli(document, join):
     assert len(queryset) == 2
 
     ## ...in data?
-    rows = list(exporter.iter_export_data_as_dicts())
+    rows = list(exporter.iter_dicts())
     assert len(rows) == 2
 
     ## ...in csv output?
@@ -69,7 +69,7 @@ def test_doc_exporter_cli(document, join):
         csv_reader = csv.DictReader(f)
         assert len(list(csv_reader)) == 2  # 2 rows of data (as defined in conftest.py)
 
-    iter = exporter.iter_export_data_as_dicts()
+    iter = exporter.iter_dicts()
     row1 = next(iter)
     assert (
         row1["pgpid"] == join.id
@@ -81,7 +81,7 @@ def test_doc_exporter_cli(document, join):
 
 
 @pytest.mark.django_db
-def test_iter_export_data_as_dicts(document):
+def test_iter_dicts(document):
     # Create all documents
     cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
     frag = Fragment.objects.create(shelfmark="T-S 8J22.21", collection=cul)
@@ -118,9 +118,9 @@ def test_iter_export_data_as_dicts(document):
     doc.footnotes.add(footnote)
 
     doc_qs = Document.objects.all().order_by("id")
-    exporter = DocumentExporter(queryset=doc_qs)
+    exporter = AdminDocumentExporter(queryset=doc_qs)
 
-    for doc, doc_data in zip(doc_qs, exporter.iter_export_data_as_dicts()):
+    for doc, doc_data in zip(doc_qs, exporter.iter_dicts()):
 
         # test some properties
         assert doc.id == doc_data.get("pgpid")
@@ -150,7 +150,7 @@ def test_iter_export_data_as_dicts(document):
 
 @pytest.mark.django_db
 def test_http_export_data_csv(document):
-    exporter = DocumentExporter()
+    exporter = AdminDocumentExporter()
     ofn = "test_http_export.csv"
     response = exporter.http_export_data_csv(fn=ofn)
     headers_d = response.headers
@@ -170,3 +170,19 @@ def test_http_export_data_csv(document):
 
     # correct header?
     assert set(exporter.csv_fields) == set(row.keys())
+
+
+@pytest.mark.django_db
+def test_public_vs_admin_exporter(document):
+    pde = PublicDocumentExporter()
+    ade = AdminDocumentExporter()
+
+    pde_d = next(pde.iter_dicts())
+    ade_d = next(ade.iter_dicts())
+
+    pde_keys = set(pde_d.keys())
+    ade_keys = set(ade_d.keys())
+
+    assert len(pde_keys) < len(ade_keys)
+    assert ade_keys - pde_keys
+    assert ade_keys - pde_keys == {"notes", "needs_review", "status", "url_admin"}
