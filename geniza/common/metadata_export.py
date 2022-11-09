@@ -33,6 +33,9 @@ class Exporter:
         self.site_domain = Site.objects.get_current().domain.rstrip("/")
         self.url_scheme = "https://"
 
+    def __iter__(self):
+        yield from self.iter_dicts()
+
     def csv_filename(self):
         """Generate the appropriate CSV filename for model and time
 
@@ -60,7 +63,7 @@ class Exporter:
         """
         raise NotImplementedError
 
-    def iter_export_data_as_dicts(self):
+    def iter_dicts(self):
         """Iterate over the exportable data, one dictionary per row
 
         :yield: Dictionary of information for each object
@@ -110,7 +113,7 @@ class Exporter:
         """
         return {k: self.serialize_value(v) for k, v in data.items()}
 
-    def iter_export_data_as_csv(self, fn=None, pseudo_buffer=False):
+    def iter_csv(self, fn=None, pseudo_buffer=False):
         """Iterate over the string lines of a CSV file as it's being written, either to file or a string buffer.
 
         :param fn: Filename to save CSV to (if pseudo_buffer is False), defaults to None
@@ -132,8 +135,7 @@ class Exporter:
             )
             yield writer.writeheader()
             yield from (
-                writer.writerow(self.serialize_dict(docd))
-                for docd in self.iter_export_data_as_dicts()
+                writer.writerow(self.serialize_dict(docd)) for docd in self.iter_dicts()
             )
 
     def write_export_data_csv(self, fn=None):
@@ -144,7 +146,7 @@ class Exporter:
         """
         if not fn:
             fn = self.csv_filename()
-        for row in self.iter_export_data_as_csv(fn=fn, pseudo_buffer=False):
+        for row in self.iter_csv(fn=fn, pseudo_buffer=False):
             pass
 
     def http_export_data_csv(self, fn=None):
@@ -158,7 +160,7 @@ class Exporter:
         """
         if not fn:
             fn = self.csv_filename()
-        iterr = self.iter_export_data_as_csv(pseudo_buffer=True)
+        iterr = self.iter_csv(pseudo_buffer=True)
         response = StreamingHttpResponse(iterr, content_type="text/csv; charset=utf-8")
         response["Content-Disposition"] = f"attachment; filename={fn}"
         return response
