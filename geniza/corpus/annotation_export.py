@@ -203,6 +203,10 @@ class AnnotationExporter:
         "Cleanup files when both annotation and document have been removed."
         self.output_info("Removing all exported files for PGPID %s" % document_id)
         # NOTE: some duplication here from main export method
+        if modifying_users:
+            self.modifying_users = modifying_users
+        if commit_msg:
+            self.commit_msg = commit_msg
 
         # use PGPID for annotation directory name
         # path based on recommended uri pattern from the spec

@@ -411,6 +411,8 @@ def test_annotation_cleanup(mock_repo, annotation, tmpdir):
             modifying_users=["user1", "user2"],
             commit_msg="change this",
         )
+        assert anno_ex.modifying_users == ["user1", "user2"]
+        assert anno_ex.commit_msg == "change this"
 
         # should remove extra file from git index and local file system
         anno_ex.repo.index.remove.assert_called()
