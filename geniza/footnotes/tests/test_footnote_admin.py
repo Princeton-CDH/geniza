@@ -134,6 +134,22 @@ class TestSourceAdmin:
         assert f"={source.id}" in html
         assert ">1<" in html
 
+    @pytest.mark.django_db
+    def test_export_to_csv(self, source, twoauthor_source):
+        source_admin = SourceAdmin(Source, admin.site)
+        response = source_admin.export_to_csv(Mock())
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
+
+        # spot-check that we get expected data
+        # - header row
+        assert "source_type,authors,title" in content
+        # - some content
+        assert str(source.source_type) in content
+        assert source.title in content
+        assert str(twoauthor_source.source_type) in content
+        assert twoauthor_source.title in content
+
 
 class TestFootnoteAdmin:
     @pytest.mark.django_db
