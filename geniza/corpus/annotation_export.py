@@ -47,6 +47,7 @@ class AnnotationExporter:
             )
 
         self.base_output_dir = settings.ANNOTATION_BACKUP_PATH
+        self.annotations_output_dir = os.path.join(self.base_output_dir, "annotations")
         self.git_repo = settings.ANNOTATION_BACKUP_GITREPO
         self.pgpids = pgpids
         self.push_changes = push_changes
@@ -69,7 +70,7 @@ class AnnotationExporter:
         self.setup_repo()
 
         # define paths and ensure directories exist for compiled transcription
-        annotations_output_dir = os.path.join(self.base_output_dir, "annotations")
+
         # identify content to export
 
         # if ids are specified, limit to just those documents
@@ -106,7 +107,7 @@ class AnnotationExporter:
             # {prefix}/{identifier}/list/{name}
             doc_output_dir = self.document_path(document.pk)
             doc_annotations_dir = os.path.join(
-                annotations_output_dir, doc_output_dir, "list"
+                self.annotations_output_dir, doc_output_dir, "list"
             )
             doc_transcription_dir = os.path.join(self.base_output_dir, doc_output_dir)
             # ensure output directories exist
@@ -194,6 +195,36 @@ class AnnotationExporter:
 
         # commit and push (if configured) all the exported files
         self.commit_changed_files(updated_filenames, remove_filenames)
+
+        # return a count of the number of documents processed
+        return len(docs)
+
+    def cleanup(self, document_id, modifying_users=None, commit_msg=None):
+        "Cleanup files when both annotation and document have been removed."
+        self.output_info("Removing all exported files for PGPID %s" % document_id)
+        # NOTE: some duplication here from main export method
+        if modifying_users:
+            self.modifying_users = modifying_users
+        if commit_msg:
+            self.commit_msg = commit_msg
+
+        # use PGPID for annotation directory name
+        # path based on recommended uri pattern from the spec
+        # {prefix}/{identifier}/list/{name}
+        doc_output_dir = self.document_path(document_id)
+        doc_annotations_dir = os.path.join(
+            self.annotations_output_dir, doc_output_dir, "list"
+        )
+        doc_transcription_dir = os.path.join(self.base_output_dir, doc_output_dir)
+
+        # get a list of existing files to be  cleaned up
+        existing_files = glob.glob(os.path.join(doc_annotations_dir, "*.json"))
+        existing_files.extend(
+            glob.glob(os.path.join(doc_transcription_dir, "PGPID%s_*" % document_id))
+        )
+
+        # commit changes removing all existing files
+        self.commit_changed_files([], existing_files)
 
     def document_path(self, pgpid):
         """Generate path based on pgpid so records are chunked by 1000s,

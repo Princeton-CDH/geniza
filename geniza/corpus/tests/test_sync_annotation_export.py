@@ -186,6 +186,8 @@ class TestSyncAnnationExport:
             stdout = StringIO()
             # set a default commit message
             mock_annoexporter.default_commit_msg = "Automatic export"
+            # simulate deleted doc: regular export does nothing
+            mock_annoexporter.return_value.export.return_value = 0
 
             cmd = sync_annotation_export.Command(stdout=stdout)
             cmd.lastrun_filename = tmpdir / "test_lastrun"
@@ -194,9 +196,12 @@ class TestSyncAnnationExport:
 
             pgpid = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
 
-            # delete fixeture annotation with DELETE request as admin;
+            # delete fixture annotation with DELETE request as admin;
             # this will create a log entry with expected change message
             response = admin_client.delete(annotation.get_absolute_url())
+
+            # now delete the document as well
+            Document.objects.filter(pk=pgpid).delete()
 
             # run the handle method
             cmd.handle(verbosity=1)
@@ -208,11 +213,18 @@ class TestSyncAnnationExport:
             assert mock_annoexporter.call_count == 1
             mock_exporter = mock_annoexporter.return_value
             mock_exporter.setup_repo.assert_called()
-            doc = Document.from_manifest_uri(annotation.target_source_manifest_id)
             mock_exporter.export.assert_called_with(
                 pgpids=[pgpid],
                 modifying_users=set([admin_user]),
                 commit_msg="%s - PGPID %s"
                 % (mock_annoexporter.default_commit_msg, pgpid),
             )
+            # cleanup should be called because export didn't do anything
+            mock_exporter.cleanup.assert_called_with(
+                pgpid,
+                modifying_users=set([admin_user]),
+                commit_msg="%s - removing files for PGPID %s"
+                % (mock_annoexporter.default_commit_msg, pgpid),
+            )
+
             assert mock_exporter.sync_github.call_count == 1
