@@ -8,13 +8,15 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
+from django.db.models import Count
 from django.db.models.functions import NullIf
+from django.db.models.query import Prefetch
 from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from gfklookupwidget.fields import GfkLookupField
-from modeltranslation.manager import MultilingualManager
+from modeltranslation.manager import MultilingualManager, MultilingualQuerySet
 from multiselectfield import MultiSelectField
 
 from geniza.annotations.models import Annotation
@@ -96,6 +98,24 @@ class Authorship(models.Model):
         )
 
 
+class SourceQuerySet(MultilingualQuerySet):
+    """Custom queryset for :class:`Source`, for reusable
+    prefetching and count annotation."""
+
+    def metadata_prefetch(self):
+        "prefetch source type and authors"
+        return self.select_related("source_type").prefetch_related(
+            Prefetch(
+                "authorship_set",
+                queryset=Authorship.objects.select_related("creator"),
+            )
+        )
+
+    def footnote_count(self):
+        "annotate with footnote count"
+        return self.annotate(Count("footnote", distinct=True))
+
+
 class Source(models.Model):
     """a published or unpublished work related to geniza materials"""
 
@@ -140,6 +160,8 @@ class Source(models.Model):
     url = models.URLField(blank=True, max_length=300, verbose_name="URL")
     # preliminary place to store transcription text; should not be editable
     notes = models.TextField(blank=True)
+
+    objects = SourceQuerySet.as_manager()
 
     class Meta:
         # set default order to title, year for now since first-author order
