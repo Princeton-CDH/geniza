@@ -481,20 +481,16 @@ class DocumentQuerySet(MultilingualQuerySet):
         """
         Returns a further QuerySet that has been prefetched for relevant document information.
         """
-        return (
-            self.select_related("doctype")
-            .prefetch_related(
-                "tags",
-                "languages",
-                Prefetch(
-                    "textblock_set",
-                    queryset=TextBlock.objects.select_related(
-                        "fragment", "fragment__collection"
-                    ),
+        return self.select_related("doctype").prefetch_related(
+            "tags",
+            "languages",
+            Prefetch(
+                "textblock_set",
+                queryset=TextBlock.objects.select_related(
+                    "fragment", "fragment__collection"
                 ),
-                "footnotes",
-            )
-            .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
+            ),
+            "footnotes",
         )
 
 
@@ -651,7 +647,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         )
 
     @property
-    @admin.display(description="Shelfmark")
+    @admin.display(description="Shelfmark", ordering="shelfmk_all")
     def shelfmark_display(self):
         """Label for this document; by default, based on the combined shelfmarks from all certain
         associated fragments; uses :attr:`shelfmark_override` if set"""

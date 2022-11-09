@@ -21,8 +21,7 @@ Change Log
     - OpenSeadragon navigator should not be visible on placeholder images
     - As a content editor, I want commit messages for transcription export data on GitHub to include PGPID so that I can more easily find the changes I'm interested in.
     - bugfix: sometimes transcriptions changes appear not to save in the editor
-    - bugfix: in transcription editor, there is no way to tell whether saving
-    changes has succeeded or failed
+    - bugfix: in transcription editor, there is no way to tell whether saving changes has succeeded or failed
 
 - admin
     - As a content editor, I want the admin csv download to include transcription and translation indicators (Y/N) so that I can filter documents to those with or without transcription or translation.

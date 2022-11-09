@@ -22,7 +22,7 @@ class Calendar:
     HIJRI = "h"
     #: Kharaji calendar
     KHARAJI = "k"
-    #: Seleucide calendar
+    #: Seleucid calendar
     SELEUCID = "s"
     #: Anno Mundi calendar (Hebrew)
     ANNO_MUNDI = "am"

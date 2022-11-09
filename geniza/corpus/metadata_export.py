@@ -135,11 +135,6 @@ class DocumentExporter(Exporter):
         outd["doc_date_original"] = doc.doc_date_original
         outd["doc_date_calendar"] = doc.get_doc_date_calendar_display()
         outd["doc_date_standard"] = doc.doc_date_standard
-        outd["notes"] = doc.notes
-        outd["needs_review"] = doc.needs_review
-        outd[
-            "url_admin"
-        ] = f"{self.url_scheme}{self.site_domain}/admin/corpus/document/{doc.id}/change/"
 
         # default sort is most recent first, so initial input is last
         # convert to list so we can do negative indexing, instead of calling last()
@@ -154,7 +149,6 @@ class DocumentExporter(Exporter):
             set([user.get_full_name() or user.username for user in input_users])
         )
 
-        outd["status"] = doc.get_status_display()
         outd["library"] = sep_within_cells.join(libraries) if any(libraries) else ""
         outd["collection"] = (
             sep_within_cells.join(collections) if any(collections) else ""
@@ -165,3 +159,31 @@ class DocumentExporter(Exporter):
         outd["has_translation"] = doc.has_translation()
 
         return outd
+
+
+class AdminDocumentExporter(DocumentExporter):
+    def get_export_data_dict(self, doc):
+        """
+        Adding certain fields to DocumentExporter.get_export_data_dict that are admin-only.
+        """
+
+        outd = super().get_export_data_dict(doc)
+        outd["notes"] = doc.notes
+        outd["needs_review"] = doc.needs_review
+        outd["status"] = doc.get_status_display()
+        outd[
+            "url_admin"
+        ] = f"{self.url_scheme}{self.site_domain}/admin/corpus/document/{doc.id}/change/"
+
+        return outd
+
+
+class PublicDocumentExporter(DocumentExporter):
+    """
+    Public version of the document exporter. It does not need to subset the list of CSV fields;
+    the csv.DictWriter will use all fields in DocumentExporter.csv_fields that are also in the
+    output dictionary given to the writer.
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(status=Document.PUBLIC)
