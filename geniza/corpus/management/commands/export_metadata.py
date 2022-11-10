@@ -19,9 +19,17 @@ class MetadataExportRepo:
     ext_csv = ".csv"
 
     def __init__(self, local_path=None, remote_url=None):
+        # init vars
         self._local_path = local_path
         self._remote_url = remote_url
         self._repo = None
+
+        # make sure repo exists and is initialized in directory
+        if not os.path.exists(self.local_path):
+            Repo.clone_from(url=self.remote_url, to_path=self.local_path)
+
+        # set repo obj
+        self.repo = Repo(self.local_path)
 
     @property
     def local_path(self):
@@ -44,16 +52,6 @@ class MetadataExportRepo:
                     self.default_remote_url_org, self.repo_name
                 )
         return self._remote_url
-
-    @property
-    def repo(self):
-        if self._repo is None:
-            # clone ?
-            if not os.path.isdir(self.local_path):
-                Repo.clone_from(url=self.remote_url, to_path=self.local_path)
-            # set repo
-            self._repo = Repo(self.local_path)
-        return self._repo
 
     def sync_repo(self):
         """Sync local repository content with origin repository. Assumes
