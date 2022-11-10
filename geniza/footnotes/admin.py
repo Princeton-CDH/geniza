@@ -5,19 +5,17 @@ from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.sites.models import Site
 from django.db import models
-from django.db.models import Count
 from django.db.models.fields import CharField, TextField
 from django.db.models.functions import Concat
-from django.db.models.query import Prefetch
 from django.forms.widgets import Textarea, TextInput
 from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from django_admin_inline_paginator.admin import TabularInlinePaginated
 from modeltranslation.admin import TabbedTranslationAdmin
-from tabular_export.admin import export_to_csv_response
 
 from geniza.common.admin import custom_empty_field_list_filter
+from geniza.footnotes.metadata_export import FootnoteExporter, SourceExporter
 from geniza.footnotes.models import (
     Authorship,
     Creator,
@@ -149,21 +147,15 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
         return (
             super()
             .get_queryset(request)
+            .metadata_prefetch()
+            .footnote_count()
             .filter(
                 models.Q(authorship__isnull=True) | models.Q(authorship__sort_order=1)
             )
             .annotate(
-                Count("footnote", distinct=True),
                 first_author=Concat(
                     "authorship__creator__last_name", "authorship__creator__first_name"
                 ),
-            )
-            .select_related("source_type")
-            .prefetch_related(
-                Prefetch(
-                    "authorship_set",
-                    queryset=Authorship.objects.select_related("creator"),
-                )
             )
         )
 
@@ -176,72 +168,13 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
             obj.footnote__count,
         )
 
-    csv_fields = [
-        "source_type",
-        "authors",
-        "title",
-        "journal_book",
-        "volume",
-        "issue",
-        "year",
-        "place_published",
-        "publisher",
-        "edition",
-        "other_info",
-        "page_range",
-        "languages",
-        "url",
-        "notes",
-        "num_footnotes",
-        "admin_url",
-    ]
-
-    def csv_filename(self):
-        """Generate filename for CSV download"""
-        return f'geniza-sources-{timezone.now().strftime("%Y%m%dT%H%M%S")}.csv'
-
-    def tabulate_queryset(self, queryset):
-        """Generator of source data for csv export"""
-
-        # generate absolute urls locally with a single db call,
-        # instead of calling out to absolutize_url method
-        site_domain = Site.objects.get_current().domain.rstrip("/")
-        # qa / prod always https
-        url_scheme = "https://"
-
-        for source in queryset:
-            yield [
-                source.source_type,
-                # authors in order, lastname first
-                ";".join([str(a.creator) for a in source.authorship_set.all()]),
-                source.title,
-                source.journal,
-                source.volume,
-                source.issue,
-                source.year,
-                source.place_published,
-                source.publisher,
-                source.edition,
-                source.other_info,
-                source.page_range,
-                ";".join([lang.name for lang in source.languages.all()]),
-                source.url,
-                source.notes,
-                source.footnote__count,  # via annotated queryset
-                f"{url_scheme}{site_domain}/admin/footnotes/source/{source.id}/change/",
-            ]
-
     @admin.display(
         description="Export selected sources to CSV",
     )
     def export_to_csv(self, request, queryset=None):
         """Stream source records as CSV"""
         queryset = queryset or self.get_queryset(request)
-        return export_to_csv_response(
-            self.csv_filename(),
-            self.csv_fields,
-            self.tabulate_queryset(queryset),
-        )
+        return SourceExporter(queryset=queryset, progress=False).http_export_data_csv()
 
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all sources
@@ -358,12 +291,7 @@ class FootnoteAdmin(admin.ModelAdmin):
         css = {"all": ("css/admin-local.css",)}
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .select_related("source")
-            .prefetch_related("content_object", "source__authors")
-        )
+        return super().get_queryset(request).metadata_prefetch()
 
     @admin.display(
         ordering="doc_relation",
@@ -375,55 +303,13 @@ class FootnoteAdmin(admin.ModelAdmin):
         return str(obj.doc_relation)
         # FIXME: property no longer in use?
 
-    csv_fields = [
-        "document",  # ~ content object
-        "document_id",
-        "source",
-        "location",
-        "doc_relation",
-        "notes",
-        "url",
-        "content",
-        "admin_url",
-    ]
-
-    def csv_filename(self):
-        """Generate filename for CSV download"""
-        return f'geniza-footnotes-{timezone.now().strftime("%Y%m%dT%H%M%S")}.csv'
-
-    def tabulate_queryset(self, queryset):
-        """Generator of footnote data for csv export"""
-
-        # generate absolute urls locally with a single db call,
-        # instead of calling out to absolutize_url method
-        site_domain = Site.objects.get_current().domain.rstrip("/")
-        # qa / prod always https
-        url_scheme = "https://"
-
-        for footnote in queryset:
-            yield [
-                footnote.content_object,
-                footnote.content_object.pk,
-                footnote.source,
-                footnote.location,
-                footnote.doc_relation,
-                footnote.notes,
-                footnote.url,
-                footnote.content_text
-                if Footnote.DIGITAL_EDITION in footnote.doc_relation
-                else "",
-                f"{url_scheme}{site_domain}/admin/footnotes/footnote/{footnote.id}/change/",
-            ]
-
     @admin.display(description="Export selected footnotes to CSV")
     def export_to_csv(self, request, queryset=None):
         """Stream footnote records as CSV"""
         queryset = queryset or self.get_queryset(request)
-        return export_to_csv_response(
-            self.csv_filename(),
-            self.csv_fields,
-            self.tabulate_queryset(queryset),
-        )
+        return FootnoteExporter(
+            queryset=queryset, progress=False
+        ).http_export_data_csv()
 
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all sources
