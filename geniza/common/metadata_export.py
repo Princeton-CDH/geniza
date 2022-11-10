@@ -63,7 +63,7 @@ class Exporter:
         """
         raise NotImplementedError
 
-    def iter_dicts(self):
+    def iter_dicts(self, desc="Iterating rows"):
         """Iterate over the exportable data, one dictionary per row
 
         :yield: Dictionary of information for each object
@@ -73,11 +73,7 @@ class Exporter:
         queryset = self.get_queryset()
 
         # progress bar?
-        iterr = (
-            queryset
-            if not self.progress
-            else track(queryset, description=f"Writing rows to file")
-        )
+        iterr = queryset if not self.progress else track(queryset, description=desc)
 
         # save
         yield from (self.get_export_data_dict(obj) for obj in iterr)
