@@ -46,7 +46,7 @@
                             {% endfor %}
                         {% else %}
                             {# otherwise, display truncated description #}
-                            {{ document.description.0|truncatewords:25 }}
+                            {{ document.description|truncatewords:25 }}
                         {% endif %}
                     {% endwith %}
                 </p>

@@ -1,5 +1,11 @@
 # Deploy Notes
 
+## 4.11
+
+-   Solr configuration has changed (change to description field).
+    Ensure Solr configset has been updated and then reindex all
+    content: `python manage.py index`
+
 ## 4.10
 
 -   Solr configuration has changed. Ensure Solr configset has been updated
