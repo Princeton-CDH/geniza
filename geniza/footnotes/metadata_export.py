@@ -56,3 +56,39 @@ class SourceExporter(Exporter):
             # construct directly to avoid extra db calls
             "admin_url": f"{self.url_scheme}{self.site_domain}/admin/footnotes/source/{source.id}/change/",
         }
+
+
+class FootnoteExporter(Exporter):
+    """
+    A subclass of :class:`geniza.common.metadata_export.Exporter` that
+    exports information relating to :class:`~geniza.footnotes.models.Footnote`.
+    """
+
+    model = Footnote
+    csv_fields = [
+        "document",  # ~ content object
+        "document_id",
+        "source",
+        "location",
+        "doc_relation",
+        "notes",
+        "url",
+        "content",
+        "admin_url",
+    ]
+
+    def get_queryset(self):
+        return self.queryset or self.model.objects.all().metadata_prefetch()
+
+    def get_export_data_dict(self, footnote):
+        return {
+            "document": footnote.content_object,
+            "document_id": footnote.content_object.pk,
+            "source": footnote.source,
+            "location": footnote.location,
+            "doc_relation": footnote.get_doc_relation_list(),
+            "notes": footnote.notes,
+            "url": footnote.url,
+            "content": footnote.content_text or "",
+            "admin_url": f"{self.url_scheme}{self.site_domain}/admin/footnotes/footnote/{footnote.id}/change/",
+        }

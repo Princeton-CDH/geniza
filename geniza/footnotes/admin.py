@@ -13,10 +13,9 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django_admin_inline_paginator.admin import TabularInlinePaginated
 from modeltranslation.admin import TabbedTranslationAdmin
-from tabular_export.admin import export_to_csv_response
 
 from geniza.common.admin import custom_empty_field_list_filter
-from geniza.footnotes.metadata_export import SourceExporter
+from geniza.footnotes.metadata_export import FootnoteExporter, SourceExporter
 from geniza.footnotes.models import (
     Authorship,
     Creator,
@@ -175,8 +174,7 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     def export_to_csv(self, request, queryset=None):
         """Stream source records as CSV"""
         queryset = queryset or self.get_queryset(request)
-        exporter = SourceExporter(queryset=queryset, progress=False)
-        return exporter.http_export_data_csv()
+        return SourceExporter(queryset=queryset, progress=False).http_export_data_csv()
 
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all sources
@@ -293,12 +291,7 @@ class FootnoteAdmin(admin.ModelAdmin):
         css = {"all": ("css/admin-local.css",)}
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .select_related("source")
-            .prefetch_related("content_object", "source__authors")
-        )
+        return super().get_queryset(request).metadata_prefetch()
 
     @admin.display(
         ordering="doc_relation",
@@ -310,55 +303,13 @@ class FootnoteAdmin(admin.ModelAdmin):
         return str(obj.doc_relation)
         # FIXME: property no longer in use?
 
-    csv_fields = [
-        "document",  # ~ content object
-        "document_id",
-        "source",
-        "location",
-        "doc_relation",
-        "notes",
-        "url",
-        "content",
-        "admin_url",
-    ]
-
-    def csv_filename(self):
-        """Generate filename for CSV download"""
-        return f'geniza-footnotes-{timezone.now().strftime("%Y%m%dT%H%M%S")}.csv'
-
-    def tabulate_queryset(self, queryset):
-        """Generator of footnote data for csv export"""
-
-        # generate absolute urls locally with a single db call,
-        # instead of calling out to absolutize_url method
-        site_domain = Site.objects.get_current().domain.rstrip("/")
-        # qa / prod always https
-        url_scheme = "https://"
-
-        for footnote in queryset:
-            yield [
-                footnote.content_object,
-                footnote.content_object.pk,
-                footnote.source,
-                footnote.location,
-                footnote.doc_relation,
-                footnote.notes,
-                footnote.url,
-                footnote.content_text
-                if Footnote.DIGITAL_EDITION in footnote.doc_relation
-                else "",
-                f"{url_scheme}{site_domain}/admin/footnotes/footnote/{footnote.id}/change/",
-            ]
-
     @admin.display(description="Export selected footnotes to CSV")
     def export_to_csv(self, request, queryset=None):
         """Stream footnote records as CSV"""
         queryset = queryset or self.get_queryset(request)
-        return export_to_csv_response(
-            self.csv_filename(),
-            self.csv_fields,
-            self.tabulate_queryset(queryset),
-        )
+        return FootnoteExporter(
+            queryset=queryset, progress=False
+        ).http_export_data_csv()
 
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all sources

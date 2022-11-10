@@ -96,8 +96,9 @@ class Exporter:
         elif value is None:
             return ""
         elif type(value) in {list, tuple, set}:
+            # don't sort here since order may be meaningful
             return self.sep_within_cells.join(
-                self.serialize_value(subval) for subval in sorted(list(value))
+                self.serialize_value(subval) for subval in list(value)
             )
         else:
             return str(value)

@@ -439,6 +439,12 @@ class FootnoteQuerySet(models.QuerySet):
         """Filter to all footnotes that provide editions/transcriptions."""
         return self.filter(doc_relation__contains=Footnote.EDITION)
 
+    def metadata_prefetch(self):
+        "prefetch source, source authors, and content object"
+        return self.select_related("source").prefetch_related(
+            "content_object", "source__authors"
+        )
+
 
 class Footnote(TrackChangesModel):
     """a footnote that links a :class:`~geniza.corpus.models.Document` to a :class:`Source`"""
@@ -564,13 +570,15 @@ class Footnote(TrackChangesModel):
     def content_html_str(self):
         "content as a single string of html, if available"
         # content html is a dict; values are lists of html content
-        return "\n".join(
-            [
-                section
-                for canvas_annos in self.content_html.values()
-                for section in canvas_annos
-            ]
-        )
+        content_html = self.content_html
+        if content_html:
+            return "\n".join(
+                [
+                    section
+                    for canvas_annos in content_html.values()
+                    for section in canvas_annos
+                ]
+            )
 
     @staticmethod
     def explicit_line_numbers(html):
