@@ -14,6 +14,7 @@ from geniza.footnotes.admin import (
     SourceAdmin,
     SourceFootnoteInline,
 )
+from geniza.footnotes.metadata_export import FootnoteExporter
 from geniza.footnotes.models import Footnote, Source, SourceType
 
 
@@ -164,41 +165,42 @@ class TestFootnoteAdmin:
         assert fnoteadmin.doc_relation_list(footnote) == str(footnote.doc_relation)
 
     @pytest.mark.django_db
-    @patch("geniza.footnotes.admin.export_to_csv_response")
-    def test_export_to_csv(self, mock_export_to_csv_response, source, document):
+    def test_export_to_csv(self, source, document):
         fnoteadmin = FootnoteAdmin(Footnote, admin.site)
-        Footnote.objects.create(
+        # create footnotes for our source & document to export
+        fnote1 = Footnote.objects.create(
             source=source,
             doc_relation=[Footnote.EDITION, Footnote.DISCUSSION],
             content_object=document,
         )
-        Footnote.objects.create(
+        fnote2 = Footnote.objects.create(
             source=source,
             content_object=document,
             doc_relation=[Footnote.DIGITAL_EDITION],
+            url="http://example.com/some/digital/edition.pdf",
+            notes="amendations by AE",
         )
 
-        with patch.object(fnoteadmin, "tabulate_queryset") as tabulate_queryset:
-            # if no queryset provided, should use default queryset
-            footnotes = fnoteadmin.get_queryset(Mock())
-            fnoteadmin.export_to_csv(Mock())
-            assert tabulate_queryset.called_once_with(footnotes)
-            # otherwise should respect the provided queryset
-            first_note = Footnote.objects.first()
-            fnoteadmin.export_to_csv(Mock(), first_note)
-            assert tabulate_queryset.called_once_with(first_note)
+        response = fnoteadmin.export_to_csv(Mock())  # mock request, unused
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
 
-            export_args, export_kwargs = mock_export_to_csv_response.call_args
-            # first arg is filename
-            csvfilename = export_args[0]
-            assert csvfilename.endswith(".csv")
-            assert csvfilename.startswith("geniza-footnotes")
-            # should include current date
-            assert timezone.now().strftime("%Y%m%d") in csvfilename
-            headers = export_args[1]
-            assert "document" in headers
-            assert "source" in headers
-            assert "content" in headers
+        # spot-check that we get expected data
+        # - header row
+        assert "document,document_id,source" in content
+        # - some content
+        assert str(document) in content
+        assert str(document.pk) in content
+        assert str(source) in content
+        assert fnote2.notes in content
+        assert fnote2.url in content
+        for fnote in [fnote1, fnote2]:
+            doc_relation_list = fnote.get_doc_relation_list()
+            separator = FootnoteExporter.sep_within_cells
+            assert separator.join(doc_relation_list) in content
+            assert (
+                reverse("admin:footnotes_footnote_change", args=[fnote.pk]) in content
+            )
 
 
 class TestSourceFootnoteInline:

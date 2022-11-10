@@ -354,13 +354,16 @@ def test_base_exporter():
 
     # serializes correctly?
     sep = exporter.sep_within_cells
+    # should preserve order passed in
     assert exporter.serialize_value([1, 2, 3]) == f"1{sep}2{sep}3"
-    assert exporter.serialize_value([1, 3, 2]) == f"1{sep}2{sep}3"
-    assert exporter.serialize_value({1, 3, 2}) == f"1{sep}2{sep}3"
-    assert exporter.serialize_dict({"key": [1, 3, 2]}) == {"key": f"1{sep}2{sep}3"}
+    assert exporter.serialize_value([1, 3, 2]) == f"1{sep}3{sep}2"
+    assert (
+        exporter.serialize_value({3, 2, 1}) == f"1{sep}2{sep}3"
+    )  # set order not preserved
+    assert exporter.serialize_dict({"key": [1, 3, 2]}) == {"key": f"1{sep}3{sep}2"}
 
     # keys already enforced to be strings by database
-    assert exporter.serialize_dict({"0": [1, 3, 2]}) == {"0": f"1{sep}2{sep}3"}
+    assert exporter.serialize_dict({"0": [1, 3, 2]}) == {"0": f"1{sep}3{sep}2"}
 
     assert exporter.serialize_value(123) == "123"
 
