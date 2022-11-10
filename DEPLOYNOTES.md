@@ -4,6 +4,7 @@
 
 -   Solr configuration has changed. Ensure Solr configset has been updated
     and then reindex all content: `python manage.py index`
+-   Must configure **METADATA_REPO_REMOTE_URL** and **METADATA_REPO_LOCAL_PATH** in local settings. These will determine locations for (respectively) the remote metadata repository (e.g. "https://github.com/Princeton-CDH/test-geniza-metadata") and the local files for the metadata exposts and syncing (e.g. "~/github/test-geniza-metadata").
 
 ## 4.9.0
 
