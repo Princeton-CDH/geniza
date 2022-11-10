@@ -8,6 +8,7 @@ from django.utils import timezone
 from git import GitCommandError, Repo
 
 from geniza.corpus.metadata_export import PublicDocumentExporter
+from geniza.footnotes.metadata_export import FootnoteExporter, SourceExporter
 
 
 class MetadataExportRepo:
@@ -17,9 +18,10 @@ class MetadataExportRepo:
     repo_dir_data = "data"
     ext_csv = ".csv"
 
-    def __init__(self, local_path=None, remote_url=None):
+    def __init__(self, local_path=None, remote_url=None, print=None):
         self._local_path = local_path
         self._remote_url = remote_url
+        self.print = print
 
         # make sure repo exists and is initialized in directory
         try:
@@ -56,22 +58,56 @@ class MetadataExportRepo:
         odir = os.path.join(self.local_path, self.repo_dir_data)
         if not os.path.exists(odir):
             os.makedirs(odir)
-        self.repo.index.add(odir)
         return odir
+
+    def get_path_csv(self, docname):
+        ofn = os.path.join(self.path_data, docname + self.ext_csv)
+        return ofn
 
     @cached_property
     def path_documents_csv(self):
-        ofn = os.path.join(self.path_data, "documents" + self.ext_csv)
-        self.repo.index.add(ofn)
-        return ofn
+        return self.get_path_csv("documents")
+
+    @cached_property
+    def path_footnotes_csv(self):
+        return self.get_path_csv("footnotes")
+
+    @cached_property
+    def path_sources_csv(self):
+        return self.get_path_csv("sources")
+
+    @cached_property
+    def path_fragments_csv(self):
+        return self.get_path_csv("fragments")
+
+    @cached_property
+    def paths(self):
+        return [
+            self.path_documents_csv,
+            self.path_footnotes_csv,
+            self.path_sources_csv,
+            self.path_fragments_csv,
+        ]
+
+    def add_and_commit(self):
+        for fn in self.paths:
+            if os.path.exists(fn):
+                self.repo.index.add(fn)
+        self.repo.index.commit(
+            "Auto-syncing @ " + timezone.now().strftime("%Y%m%dT%H%M%S")
+        )
 
     def write_local(self):
         # write docs
-        pde = PublicDocumentExporter(progress=True)
-        pde.write_export_data_csv(self.path_documents_csv)
+        PublicDocumentExporter(progress=True).write_export_data_csv(
+            self.path_documents_csv
+        )
 
         # write sources
-        # ...
+        SourceExporter(progress=True).write_export_data_csv(self.path_sources_csv)
+
+        # write footnotes
+        FootnoteExporter(progress=True).write_export_data_csv(self.path_footnotes_csv)
 
     def sync_remote(self):
         """Sync local repository content with origin repository. Assumes
@@ -83,9 +119,7 @@ class MetadataExportRepo:
             origin.pull()
 
             # commit?
-            self.repo.index.commit(
-                "Auto-syncing @ " + timezone.now().strftime("%Y%m%dT%H%M%S")
-            )
+            self.add_and_commit()
 
             # push data updates
             result = origin.push()

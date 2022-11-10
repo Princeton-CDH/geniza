@@ -1,4 +1,5 @@
 import csv
+import os
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -110,7 +111,7 @@ class Exporter:
         """
         return {k: self.serialize_value(v) for k, v in data.items()}
 
-    def iter_csv(self, fn=None, pseudo_buffer=False):
+    def iter_csv(self, fn=None, pseudo_buffer=False, **kwargs):
         """Iterate over the string lines of a CSV file as it's being written, either to file or a string buffer.
 
         :param fn: Filename to save CSV to (if pseudo_buffer is False), defaults to None
@@ -132,7 +133,8 @@ class Exporter:
             )
             yield writer.writeheader()
             yield from (
-                writer.writerow(self.serialize_dict(docd)) for docd in self.iter_dicts()
+                writer.writerow(self.serialize_dict(docd))
+                for docd in self.iter_dicts(**kwargs)
             )
 
     def write_export_data_csv(self, fn=None):
@@ -143,7 +145,9 @@ class Exporter:
         """
         if not fn:
             fn = self.csv_filename()
-        for row in self.iter_csv(fn=fn, pseudo_buffer=False):
+        for row in self.iter_csv(
+            fn=fn, pseudo_buffer=False, desc=f"Writing {os.path.basename(fn)}"
+        ):
             pass
 
     def http_export_data_csv(self, fn=None):
