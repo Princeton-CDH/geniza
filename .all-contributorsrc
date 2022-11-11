@@ -19,6 +19,20 @@
       ]
     },
     {
+      "login": "rlskoeser",
+      "name": "Rebecca Sutton Koeser",
+      "avatar_url": "https://avatars.githubusercontent.com/u/691231?v=4",
+      "profile": "http://rlskoeser.github.io",
+      "contributions": [
+        "code",
+        "test",
+        "doc",
+        "a11y",
+        "projectManagement",
+        "review"
+      ]
+    },
+     {
       "login": "gissoo",
       "name": "gissoo",
       "avatar_url": "https://avatars.githubusercontent.com/u/44615389?v=4",
@@ -27,7 +41,8 @@
         "design",
         "research"
       ]
-    }
+    },
+
   ],
   "contributorsPerLine": 7,
   "skipCi": true,
