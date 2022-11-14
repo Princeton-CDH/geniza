@@ -102,15 +102,19 @@ class MetadataExportRepo(Timerable):
         # write docs
 
         with self.timer("Exporting document objects"):
-            PublicDocumentExporter(progress=True).to_csv(self.path_documents_csv)
+            PublicDocumentExporter(progress=True).write_export_data_csv(
+                self.path_documents_csv
+            )
 
         # write sources
         with self.timer("Exporting source objects"):
-            SourceExporter(progress=True).to_csv(self.path_sources_csv)
+            SourceExporter(progress=True).write_export_data_csv(self.path_sources_csv)
 
         # write footnotes
         with self.timer("Exporting footnote objects"):
-            FootnoteExporter(progress=True).to_csv(self.path_footnotes_csv)
+            FootnoteExporter(progress=True).write_export_data_csv(
+                self.path_footnotes_csv
+            )
 
     def sync_remote(self):
         """Sync local repository content with origin repository. Assumes

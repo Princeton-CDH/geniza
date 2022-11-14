@@ -113,24 +113,16 @@ class DocumentExporter(Exporter):
 
         sep_within_cells = self.sep_within_cells
 
-        outd["iiif_urls"] = sep_within_cells.join(iiif_urls) if any(iiif_urls) else ""
-        outd["fragment_urls"] = (
-            sep_within_cells.join(view_urls) if any(view_urls) else ""
-        )
+        outd["iiif_urls"] = iiif_urls
+        outd["fragment_urls"] = view_urls
         outd["shelfmark"] = doc.shelfmark
-        outd["multifragment"] = sep_within_cells.join([s for s in multifrag if s])
-        outd["side"] = sep_within_cells.join(
-            [s for s in side if s]
-        )  # side (recto/verso)
-        outd["region"] = sep_within_cells.join(
-            [r for r in region if r]
-        )  # text block region
+        outd["multifragment"] = [s for s in multifrag if s]
+        outd["side"] = [s for s in side if s]
+        outd["region"] = [r for r in region if r]
         outd["type"] = doc.doctype
         outd["tags"] = doc.all_tags()
         outd["description"] = doc.description
-        outd["shelfmarks_historic"] = sep_within_cells.join(
-            [os for os in old_shelfmarks if os]
-        )
+        outd["shelfmarks_historic"] = [os for os in old_shelfmarks if os]
         outd["languages_primary"] = doc.all_languages()
         outd["languages_secondary"] = doc.all_secondary_languages()
         outd["language_note"] = doc.language_note
@@ -147,14 +139,11 @@ class DocumentExporter(Exporter):
 
         outd["last_modified"] = doc.last_modified
 
-        outd["input_by"] = sep_within_cells.join(
-            set([user.get_full_name() or user.username for user in input_users])
-        )
-
-        outd["library"] = sep_within_cells.join(libraries) if any(libraries) else ""
-        outd["collection"] = (
-            sep_within_cells.join(collections) if any(collections) else ""
-        )
+        outd["input_by"] = {
+            user.get_full_name() or user.username for user in input_users
+        }
+        outd["library"] = libraries
+        outd["collection"] = collections
 
         # has transcription and translation?
         outd["has_transcription"] = doc.has_transcription()

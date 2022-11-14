@@ -88,17 +88,24 @@ class Exporter(Timerable):
         :return: Stringified value
         :rtype: str
         """
+        valtype = type(value)
         if type(value) is bool:
             return self.true_false[value]
         elif value is None:
             return ""
         elif type(value) in {list, tuple, set}:
             # don't sort here since order may be meaningful
-            return self.sep_within_cells.join(
-                self.serialize_value(subval) for subval in list(value)
+            return (
+                self.sep_within_cells.join(
+                    sorted(
+                        self.serialize_value(subval) for subval in list(value) if subval
+                    )
+                )
+                if value
+                else ""
             )
         else:
-            return str(value).replace("\r\n", " ").replace("\n", " ").strip()
+            return str(value)  # .replace("\r\n", " ").replace("\n", " ").strip()
 
     def serialize_dict(self, data):
         """Return a new dictionary whose keys and values are safe, serialized string versions of the keys and values in input dictionary `data`.
@@ -170,17 +177,3 @@ class Exporter(Timerable):
         response = StreamingHttpResponse(iterr, content_type="text/csv; charset=utf-8")
         response["Content-Disposition"] = f"attachment; filename={fn}"
         return response
-
-    def to_csv(self, fn=None, desc="Assembling CSV data"):
-        if not fn:
-            fn = self.csv_filename()
-
-        import pandas as pd
-
-        with self.timer("Creating dataframe"):
-            df = pd.DataFrame(self.iter_dicts(desc=desc))
-            ok_cols = set(df.columns) & set(self.csv_fields)
-            df = df[[col for col in self.csv_fields if col in ok_cols]]
-
-        with self.timer("Saving to CSV"):
-            df.to_csv(fn, index=False)
