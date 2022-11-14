@@ -105,7 +105,7 @@ class Exporter(Timerable):
                 else ""
             )
         else:
-            return str(value)  # .replace("\r\n", " ").replace("\n", " ").strip()
+            return str(value)
 
     def serialize_dict(self, data):
         """Return a new dictionary whose keys and values are safe, serialized string versions of the keys and values in input dictionary `data`.
