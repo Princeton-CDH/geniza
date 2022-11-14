@@ -61,8 +61,7 @@ class MetadataExportRepo:
         return odir
 
     def get_path_csv(self, docname):
-        ofn = os.path.join(self.path_data, docname + self.ext_csv)
-        return ofn
+        return os.path.join(self.path_data, docname + self.ext_csv)
 
     @cached_property
     def path_documents_csv(self):
