@@ -95,15 +95,14 @@ class Exporter(Timerable):
             return ""
         elif type(value) in {list, tuple, set}:
             # don't sort here since order may be meaningful
-            return (
-                self.sep_within_cells.join(
-                    sorted(
-                        self.serialize_value(subval) for subval in list(value) if subval
-                    )
-                )
-                if value
-                else ""
-            )
+            valstrs = [self.serialize_value(subval) for subval in value]
+            valstrs = [vstr for vstr in valstrs if vstr]
+            if not valstrs:
+                return ""
+            else:
+                if type(value) is set:
+                    valstrs.sort()
+                return self.sep_within_cells.join(valstrs)
         else:
             return str(value)
 

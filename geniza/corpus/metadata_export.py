@@ -66,39 +66,35 @@ class DocumentExporter(Exporter):
         :rtype: dict
         """
         all_textblocks = doc.textblock_set.all()
+        # if len(all_textblocks)>1:
+        #    print(f'Doc text blocks: {doc.id} -> {[x.id for x in all_textblocks]}')
         all_fragments = [tb.fragment for tb in all_textblocks]
         all_log_entries = doc.log_entries.all()
-        input_users = set(
-            [
-                log_entry.user
-                for log_entry in all_log_entries
-                if log_entry.user.username != self.script_user
-            ]
-        )
+        input_users = {
+            log_entry.user
+            for log_entry in all_log_entries
+            if log_entry.user.username != self.script_user
+        }
         iiif_urls = [fr.iiif_url for fr in all_fragments]
         view_urls = [fr.url for fr in all_fragments]
         multifrag = [tb.multifragment for tb in all_textblocks]
         side = [tb.side for tb in all_textblocks]
         region = [tb.region for tb in all_textblocks]
         old_shelfmarks = [fragment.old_shelfmarks for fragment in all_fragments]
-        libraries = set(
-            [
-                fragment.collection.lib_abbrev or fragment.collection.library
-                if fragment.collection
-                else ""
-                for fragment in all_fragments
-            ]
-        ) - {
+        libraries = {
+            fragment.collection.lib_abbrev or fragment.collection.library
+            if fragment.collection
+            else ""
+            for fragment in all_fragments
+        } - {
             ""
         }  # exclude empty string for any fragments with no library
-        collections = set(
-            [
-                fragment.collection.abbrev or fragment.collection.name
-                if fragment.collection
-                else ""
-                for fragment in all_fragments
-            ]
-        ) - {
+        collections = {
+            fragment.collection.abbrev or fragment.collection.name
+            if fragment.collection
+            else ""
+            for fragment in all_fragments
+        } - {
             ""
         }  # exclude empty string for any with no collection
 
