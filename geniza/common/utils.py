@@ -112,3 +112,14 @@ class Timer:
     def print(self, x, end="\n"):
         if self.to_print:
             self.print_func(x, end=end)
+
+
+class Timerable:
+    def timer(self, desc="", **kwargs):
+        return Timer(
+            desc=desc if desc else self.__class__.__name__,
+            print_func=self.print
+            if hasattr(self, "print") and callable(self.print)
+            else print,
+            **kwargs,
+        )
