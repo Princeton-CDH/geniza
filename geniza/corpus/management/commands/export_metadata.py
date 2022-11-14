@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 from git import GitCommandError, Repo
 
+from geniza.common.utils import Timer
 from geniza.corpus.metadata_export import PublicDocumentExporter
 from geniza.footnotes.metadata_export import FootnoteExporter, SourceExporter
 
@@ -18,10 +19,10 @@ class MetadataExportRepo:
     repo_dir_data = "data"
     ext_csv = ".csv"
 
-    def __init__(self, local_path=None, remote_url=None, print=None):
+    def __init__(self, local_path=None, remote_url=None, print_func=None):
         self._local_path = local_path
         self._remote_url = remote_url
-        self.print = print
+        self.print = print_func if print_func is not None else print
 
         # make sure repo exists and is initialized in directory
         try:
@@ -98,32 +99,44 @@ class MetadataExportRepo:
 
     def write_local(self):
         # write docs
-        PublicDocumentExporter(progress=True).write_export_data_csv(
-            self.path_documents_csv
-        )
+
+        with Timer("Exporting document objects", print_func=self.print):
+            PublicDocumentExporter(progress=True).write_export_data_csv(
+                self.path_documents_csv
+            )
 
         # write sources
-        SourceExporter(progress=True).write_export_data_csv(self.path_sources_csv)
+        with Timer("Exporting source objects", print_func=self.print):
+            SourceExporter(progress=True).write_export_data_csv(self.path_sources_csv)
 
         # write footnotes
-        FootnoteExporter(progress=True).write_export_data_csv(self.path_footnotes_csv)
+        with Timer("Exporting footnote objects", print_func=self.print):
+            FootnoteExporter(progress=True).write_export_data_csv(
+                self.path_footnotes_csv
+            )
 
     def sync_remote(self):
         """Sync local repository content with origin repository. Assumes
         :meth:`setup_repo` has already been run, and any new or modified
         files have been committed."""
         try:
-            origin = self.repo.remote(name="origin")
-            # pull any remote changes since our last commit
-            origin.pull()
+            with Timer("Pulling repository", print_func=self.print):
+                origin = self.repo.remote(name="origin")
+                # pull any remote changes since our last commit
+                origin.pull()
 
             # commit?
-            self.add_and_commit()
+            with Timer("Adding any changes", print_func=self.print):
+                self.add_and_commit()
 
             # push data updates
-            result = origin.push()
+            with Timer("Pushing any changes", print_func=self.print):
+                result = origin.push()
+                if result:
+                    info = result[0]
+                    self.print(f"Result = {info.flags}")
         except ValueError:
-            print("No origin repository, unable to push updates")
+            self.print("No origin repository, unable to push updates")
 
 
 class Command(BaseCommand):
@@ -131,7 +144,8 @@ class Command(BaseCommand):
         """
         A stdout-friendly method of printing for manage.py commands
         """
-        self.stdout.write(" ".join(str(xx) for xx in x), ending="\n", **y)
+        end = y.get("end", "\n")
+        self.stdout.write(" ".join(str(xx) for xx in x), ending=end)
 
     def add_arguments(self, parser):
         parser.add_argument("-w", "--write", action="store_true")
@@ -143,17 +157,18 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # get
         mrepo = MetadataExportRepo(
-            local_path=options["path"], remote_url=options["url"]
+            local_path=options["path"], remote_url=options["url"], print_func=self.print
         )
-        self.print(f"Repository local path = {mrepo.local_path}")
-        self.print(f"Repository remote url = {mrepo.remote_url}")
+        with Timer("Getting repository information", print_func=self.print):
+            self.print(f"Repository local path = {mrepo.local_path}")
+            self.print(f"Repository remote url = {mrepo.remote_url}")
 
         # Write
         if options["write"]:
-            self.print("\nRewriting metadata into local path ...")
-            mrepo.write_local()
+            with Timer("Rewriting metadata into local path", print_func=self.print):
+                mrepo.write_local()
 
         # Sync?
         if options["sync"]:
-            self.print("\nSyncing metadata into remote repo ...")
-            mrepo.sync_remote()
+            with Timer("Syncing metadata into remote repo", print_func=self.print):
+                mrepo.sync_remote()
