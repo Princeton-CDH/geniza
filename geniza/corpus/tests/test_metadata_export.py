@@ -125,7 +125,10 @@ def test_iter_dicts(document):
         # test some properties
         assert doc.id == doc_data.get("pgpid")
         assert doc.shelfmark == doc_data.get("shelfmark")
-        assert doc.collection == doc_data.get("collection")
+        if doc.collection:
+            assert doc.collection in doc_data.get(
+                "collection"
+            )  # collection now a set in doc_data
 
         # test callables
         assert doc.all_tags() == doc_data.get("tags")
