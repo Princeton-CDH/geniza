@@ -19,10 +19,13 @@ class MetadataExportRepo(Timerable):
     repo_dir_data = "data"
     ext_csv = ".csv"
 
-    def __init__(self, local_path=None, remote_url=None, print_func=None):
+    def __init__(
+        self, local_path=None, remote_url=None, print_func=None, progress=True
+    ):
         self._local_path = local_path
         self._remote_url = remote_url
         self.print = print_func if print_func is not None else print
+        self.progress = progress
 
         # make sure repo exists and is initialized in directory
         try:
@@ -102,17 +105,19 @@ class MetadataExportRepo(Timerable):
         # write docs
 
         with self.timer("Exporting document objects"):
-            PublicDocumentExporter(progress=True).write_export_data_csv(
+            PublicDocumentExporter(progress=self.progress).write_export_data_csv(
                 self.path_documents_csv
             )
 
         # write sources
         with self.timer("Exporting source objects"):
-            SourceExporter(progress=True).write_export_data_csv(self.path_sources_csv)
+            SourceExporter(progress=self.progress).write_export_data_csv(
+                self.path_sources_csv
+            )
 
         # write footnotes
         with self.timer("Exporting footnote objects"):
-            FootnoteExporter(progress=True).write_export_data_csv(
+            FootnoteExporter(progress=self.progress).write_export_data_csv(
                 self.path_footnotes_csv
             )
 
@@ -145,8 +150,8 @@ class Command(BaseCommand, Timerable):
         """
         A stdout-friendly method of printing for manage.py commands
         """
-        end = y.get("end", "\n")
-        self.stdout.write(" ".join(str(xx) for xx in x), ending=end)
+        if not hasattr(self, "to_print") or self.to_print:
+            self.stdout.write(" ".join(str(xx) for xx in x), ending=y.get("end", "\n"))
 
     def add_arguments(self, parser):
         parser.add_argument("-w", "--write", action="store_true")
@@ -155,10 +160,19 @@ class Command(BaseCommand, Timerable):
         parser.add_argument("-p", "--path", type=str, default="", required=False)
         parser.add_argument("-u", "--url", type=str, default="", required=False)
 
+        parser.add_argument("-q", "--quiet", action="count", default=0)
+
     def handle(self, *args, **options):
+        from pprint import pprint
+
         # get
+        self.to_print = options["quiet"] < 1  # only if less than 'quiet' ("-q")
+
         mrepo = MetadataExportRepo(
-            local_path=options["path"], remote_url=options["url"], print_func=self.print
+            local_path=options["path"],
+            remote_url=options["url"],
+            print_func=self.print,
+            progress=options["quiet"] < 2,  # only if less than 'very quiet' ("-qq")
         )
         with self.timer("Getting repository information"):
             self.print(f"Repository local path = {mrepo.local_path}")
