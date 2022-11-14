@@ -239,12 +239,6 @@ class FootnoteAdmin(admin.ModelAdmin):
     list_filter = (
         DocumentRelationTypesFilter,
         (
-            "content",
-            custom_empty_field_list_filter(
-                "transcription", "Digitized", "Not digitized"
-            ),
-        ),
-        (
             "url",
             custom_empty_field_list_filter("url", "Has URL", "No URL"),
         ),
