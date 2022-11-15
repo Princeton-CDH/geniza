@@ -1,11 +1,11 @@
 from geniza.common.metadata_export import Exporter
-from geniza.corpus.models import Document
+from geniza.corpus.models import Document, Fragment
 
 
 class DocumentExporter(Exporter):
     """
     A subclass of :class:`geniza.common.metadata_export.Exporter` that
-    exports information relating to :class:`~geniza.corpus.models.Documents`.
+    exports information relating to :class:`~geniza.corpus.models.Document`.
     Extends :meth:`get_queryset` and :meth:`get_export_data_dict`.
     """
 
@@ -189,3 +189,83 @@ class PublicDocumentExporter(DocumentExporter):
 
     def get_queryset(self):
         return super().get_queryset().filter(status=Document.PUBLIC)
+
+
+class FragmentExporter(Exporter):
+    """
+    A subclass of :class:`geniza.common.metadata_export.Exporter` that
+    exports information relating to :class:`~geniza.corpus.models.Fragment`.
+    """
+
+    model = Fragment
+    csv_fields = [
+        "shelfmark",
+        "pgpids",
+        "old_shelfmarks",
+        "collection",
+        "library",
+        "library_abbrev",
+        "collection",
+        "collection_abbrev",
+        "url",
+        "iiif_url",
+        "is_multifragment",
+        "created",
+        "last_modified",
+    ]
+
+    def get_queryset(self):
+        """
+        Applies some prefetching to the base Exporter's get_queryset functionality.
+
+        :return: Custom-given query set or query set of all documents
+        :rtype: QuerySet
+        """
+        return (
+            super()
+            .get_queryset()
+            .select_related("collection")
+            .prefetch_related("documents")
+        )
+
+    def get_export_data_dict(self, fragment):
+        data = {
+            "shelfmark": fragment.shelfmark,
+            "pgpids": [doc.pk for doc in fragment.documents.all()],
+            "old_shelfmarks": fragment.old_shelfmarks,
+            "url": fragment.url,
+            "iiif_url": fragment.iiif_url,
+            "is_multifragment": fragment.is_multifragment,
+            "created": fragment.created,
+            "last_modified": fragment.last_modified,
+        }
+        # it's possible (although unlikely) for collection to be unset
+        if fragment.collection:
+            data.update(
+                {
+                    "collection": fragment.collection,
+                    "library": fragment.collection.library,
+                    "library_abbrev": fragment.collection.lib_abbrev,
+                    "collection_name": fragment.collection.name,
+                    "collection_abbrev": fragment.collection.abbrev,
+                }
+            )
+        return data
+
+
+# NOTE: may want a public version of fragment exporter
+# that would limit to fragments associated with public / non-suppressed documents
+
+
+class AdminFragmentExporter(FragmentExporter):
+    "Admin fragment export variant; adds notes, review, and admin url fields."
+    csv_fields = FragmentExporter.csv_fields + ["notes", "needs_review", "admin_url"]
+
+    def get_export_data_dict(self, fragment):
+        data = super().get_export_data_dict(fragment)
+        data["notes"] = fragment.notes
+        data["needs_review"] = fragment.needs_review
+        data[
+            "admin_url"
+        ] = f"{self.url_scheme}{self.site_domain}/admin/corpus/fragment/{fragment.id}/change/"
+        return data
