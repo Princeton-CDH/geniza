@@ -66,6 +66,8 @@ def test_footnote_export_data(source, document):
     assert data["doc_relation"] == footnote.get_doc_relation_list()
     assert data["notes"] == footnote.notes
     assert "admin_url" not in data
+    # empty content should not serialize to None
+    assert data["content"] == ""
 
 
 @pytest.mark.django_db

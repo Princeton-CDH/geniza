@@ -590,8 +590,10 @@ class Footnote(TrackChangesModel):
     @property
     def content_text(self):
         "content as plain text, if available"
-        # content html is a dict; values are lists of html content
-        return strip_tags(self.content_html_str)
+        # strip tags from content html (as single string), if set
+        # but only return if we have content (otherwise returns string "None")
+        if self.content_html_str:
+            return strip_tags(self.content_html_str)
 
     def iiif_annotation_content(self):
         """Return transcription content from this footnote (if any)
