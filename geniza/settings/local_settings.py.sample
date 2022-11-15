@@ -122,6 +122,6 @@ TRANSCRIPTIONS_JSON_FILE = BASE_DIR.parent / "data" / "transcriptions.json"
 # ANNOTATION_BACKUP_PATH = "data/annotations_backup"
 
 # URL for the metadata repository
-# METADATA_REPO_REMOTE_URL = 'https://github.com/Princeton-CDH/test-geniza-metadata'
+# METADATA_BACKUP_GITREPO = 'https://github.com/Princeton-CDH/test-geniza-metadata'
 # Local path for metadata repo
-# METADATA_REPO_LOCAL_PATH = 'data/metadata_repo'
+# METADATA_BACKUP_PATH = 'data/metadata_repo'

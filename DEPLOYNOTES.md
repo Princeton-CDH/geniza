@@ -2,7 +2,10 @@
 
 ## 4.11
 
--   Must configure **METADATA_REPO_REMOTE_URL** and **METADATA_REPO_LOCAL_PATH** in local settings. These will determine locations for (respectively) the remote metadata repository (e.g. "https://github.com/Princeton-CDH/test-geniza-metadata") and the local files for the metadata exposts and syncing (e.g. "~/github/test-geniza-metadata").
+-   Must configure **METADATA_BACKUP_GITREPO** and **METADATA_BACKUP_PATH** in local settings. These will determine locations for (respectively) the remote metadata repository (e.g. "https://github.com/Princeton-CDH/test-geniza-metadata") and the local files for the metadata exposts and syncing (e.g. "~/github/test-geniza-metadata").
+
+-   For a cron job to backup metadata, try: `python manage.py export_metadata -ws -v 2`
+    -   (i.e. Export metadata, making sure to write export files locally (`-w`) and sync those files to the remote repository (`-s`), while keeping a verbosity level of 2 (`-v 2`) so that both progress bar and printed statements come through.)
 
 ## 4.10
 
