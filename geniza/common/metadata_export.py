@@ -1,6 +1,7 @@
 import csv
 
 from django.conf import settings
+from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
 from django.contrib.sites.models import Site
 from django.http import StreamingHttpResponse
 from django.utils import timezone
@@ -165,3 +166,32 @@ class Exporter:
         response = StreamingHttpResponse(iterr, content_type="text/csv; charset=utf-8")
         response["Content-Disposition"] = f"attachment; filename={fn}"
         return response
+
+
+class LogEntryExporter(Exporter):
+    model = LogEntry
+    csv_fields = [
+        "action_time",
+        "user",
+        "content_type",
+        "content_type_app",
+        "object_id",
+        "change_message",
+        "action",
+    ]
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("content_type", "user")
+
+    action_label = {ADDITION: "addition", CHANGE: "change", DELETION: "deletion"}
+
+    def get_export_data_dict(self, log):
+        return {
+            "action_time": log.action_time,
+            "user": log.user,
+            "content_type": log.content_type.name,
+            "content_type_app": log.content_type.app_label,
+            "object_id": log.object_id,
+            "change_message": log.change_message,
+            "action": self.action_label[log.action_flag],
+        }

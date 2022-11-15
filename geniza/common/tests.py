@@ -19,7 +19,7 @@ from geniza.common.admin import (
     custom_empty_field_list_filter,
 )
 from geniza.common.fields import NaturalSortField, RangeField, RangeWidget
-from geniza.common.metadata_export import Exporter
+from geniza.common.metadata_export import Exporter, LogEntryExporter
 from geniza.common.middleware import PublicLocaleMiddleware
 from geniza.common.models import UserProfile
 from geniza.common.utils import Echo, absolutize_url, custom_tag_string
@@ -370,3 +370,18 @@ def test_base_exporter():
     assert exporter.serialize_value(True) == "Y"
     assert exporter.serialize_value(False) == "N"
     assert exporter.serialize_value(None) == ""
+
+
+@pytest.mark.django_db
+def test_logentry_exporter_data(document):
+    logentry_exporter = LogEntryExporter()
+    # document fixture has two log entries; first should be creation/addition
+    logentry = document.log_entries.first()
+    data = logentry_exporter.get_export_data_dict(logentry)
+    assert data["action_time"] == logentry.action_time
+    assert data["user"] == logentry.user
+    assert data["content_type"] == logentry.content_type.name
+    assert data["content_type_app"] == logentry.content_type.app_label
+    assert data["object_id"] == str(document.pk)
+    assert data["change_message"] == logentry.change_message
+    assert data["action"] == "addition"
