@@ -205,7 +205,7 @@ class FragmentExporter(Exporter):
         "collection",
         "library",
         "library_abbrev",
-        "collection",
+        "collection_name",
         "collection_abbrev",
         "url",
         "iiif_url",
@@ -241,6 +241,8 @@ class FragmentExporter(Exporter):
         }
         # it's possible (although unlikely) for collection to be unset
         if fragment.collection:
+            # NOTE: this results in a lot of redundant info;
+            # maybe collection shortname is enough for fragment csv?
             data.update(
                 {
                     "collection": fragment.collection,
