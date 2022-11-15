@@ -1,3 +1,4 @@
+import codecs
 import csv
 
 from django.conf import settings
@@ -132,8 +133,12 @@ class Exporter:
             else Echo()
         ) as of:
             writer = csv.DictWriter(
-                of, fieldnames=self.csv_fields, extrasaction="ignore"
+                of,
+                fieldnames=self.csv_fields,
+                extrasaction="ignore",
             )
+            # start with byte-order mark so Excel will read unicode properly
+            yield codecs.BOM_UTF8
             yield writer.writeheader()
             yield from (
                 writer.writerow(self.serialize_dict(docd)) for docd in self.iter_dicts()
