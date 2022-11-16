@@ -255,6 +255,17 @@ class FragmentExporter(Exporter):
         return data
 
 
+class PublicFragmentExporter(FragmentExporter):
+    """
+    Public version of the fragment exporter; limits fragments
+    to those associated with public documents. Unassociated fragments
+    or fragments only linked to suppressed documents are not included.
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(documents__status=Document.PUBLIC)
+
+
 # NOTE: may want a public version of fragment exporter
 # that would limit to fragments associated with public / non-suppressed documents
 

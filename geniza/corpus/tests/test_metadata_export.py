@@ -32,6 +32,7 @@ from geniza.corpus.metadata_export import (
     AdminDocumentExporter,
     FragmentExporter,
     PublicDocumentExporter,
+    PublicFragmentExporter,
 )
 from geniza.corpus.models import (
     Collection,
@@ -221,10 +222,34 @@ def test_fragment_export_data_collection(fragment):
 
 @pytest.mark.django_db
 def test_fragment_export_data_pgpids(fragment, multifragment, document, join):
-    # document and join are both on fragment; fragment is also on multifragment
+    # document and join are both on fragment; join is also on multifragment
     data = FragmentExporter().get_export_data_dict(fragment)
     assert document.pk in data["pgpids"]
     assert join.pk in data["pgpids"]
 
     data = FragmentExporter().get_export_data_dict(multifragment)
     assert data["pgpids"] == [join.pk]
+
+
+@pytest.mark.django_db
+def test_public_fragment_export(fragment, multifragment, document, join):
+    # document and join are both on fragment; join is also on multifragment
+    qs_frags = [f for f in PublicFragmentExporter().get_queryset()]
+    # should include both fragments
+    assert fragment in qs_frags
+    assert multifragment in qs_frags
+
+    # if we suppress join, then multifragment should no longer be included
+    join.status = Document.SUPPRESSED
+    join.save()
+    qs_frags = [f for f in PublicFragmentExporter().get_queryset()]
+    # should include fragment but not multifragment
+    assert fragment in qs_frags
+    assert multifragment not in qs_frags
+
+    document.delete()
+    join.delete()
+    # should still be two fragments in the main export
+    assert FragmentExporter().get_queryset().count() == 2
+    # but none in the public export
+    assert PublicFragmentExporter().get_queryset().count() == 0
