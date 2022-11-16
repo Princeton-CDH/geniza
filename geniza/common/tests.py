@@ -1,4 +1,5 @@
 import random
+import time
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -22,7 +23,13 @@ from geniza.common.fields import NaturalSortField, RangeField, RangeWidget
 from geniza.common.metadata_export import Exporter
 from geniza.common.middleware import PublicLocaleMiddleware
 from geniza.common.models import UserProfile
-from geniza.common.utils import Echo, absolutize_url, custom_tag_string
+from geniza.common.utils import (
+    Echo,
+    Timer,
+    Timerable,
+    absolutize_url,
+    custom_tag_string,
+)
 from geniza.corpus.models import Document
 
 
@@ -370,3 +377,52 @@ def test_base_exporter():
     assert exporter.serialize_value(True) == "Y"
     assert exporter.serialize_value(False) == "N"
     assert exporter.serialize_value(None) == ""
+
+
+fake_printed = ""
+
+
+def fake_printer(x, end="\n"):
+    global fake_printed
+    fake_printed = fake_printed + x + end
+
+
+def test_timer():
+    with Timer(to_print=False) as t:
+        pass
+    assert round(t.elapsed) == 0
+
+    with Timer(to_print=False) as t:
+        time.sleep(1)
+    assert round(t.elapsed) == 1
+
+    with Timer(to_print=False) as t:
+        time.sleep(2)
+    assert round(t.elapsed) == 2
+
+    timer_desc = "My Timer Description"
+    with Timer(print_func=fake_printer, desc=timer_desc, to_print=False) as t:
+        pass
+    assert timer_desc not in fake_printed
+
+    with Timer(print_func=fake_printer, desc=timer_desc, to_print=True) as t:
+        pass
+    assert timer_desc in fake_printed
+    assert "completed in 0.0s" in fake_printed
+
+    class newthing(Timerable):
+        pass
+
+    x = newthing()
+    timer_desc2 = "Totally Different Timer Description"
+    with x.timer(desc=timer_desc2, print_func=fake_printer, to_print=True) as t:
+        pass
+    assert round(t.elapsed) == 0
+    assert timer_desc2 in fake_printed
+
+    timer_desc3 = "A Thrice Different Description!"
+    y = newthing()
+    y.print = fake_printer
+    with y.timer(desc=timer_desc3) as t:
+        pass
+    assert timer_desc3 in fake_printed

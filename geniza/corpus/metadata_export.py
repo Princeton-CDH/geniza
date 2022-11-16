@@ -81,22 +81,16 @@ class DocumentExporter(Exporter):
         side = [tb.side for tb in all_textblocks]
         region = [tb.region for tb in all_textblocks]
         old_shelfmarks = [fragment.old_shelfmarks for fragment in all_fragments]
-        libraries = {
+        libraries = [
             fragment.collection.lib_abbrev or fragment.collection.library
-            if fragment.collection
-            else ""
             for fragment in all_fragments
-        } - {
-            ""
-        }  # exclude empty string for any fragments with no library
-        collections = {
-            fragment.collection.abbrev or fragment.collection.name
             if fragment.collection
-            else ""
+        ]
+        collections = [
+            str(fragment.collection)
             for fragment in all_fragments
-        } - {
-            ""
-        }  # exclude empty string for any with no collection
+            if fragment.collection
+        ]
 
         outd = {}
         outd["pgpid"] = doc.id

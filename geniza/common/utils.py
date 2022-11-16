@@ -102,12 +102,12 @@ class Timer:
     def __enter__(self):
         self.now = time.time()
         self.print(f"{self.desc} ...", end="\n")
+        self.t = self.elapsed = 0
         return self
 
     def __exit__(self, *x, **y):
-        self.print(
-            f"{self.desc} completed in {round(time.time() - self.now, 1)}s", end="\n\n"
-        )
+        self.t = self.elapsed = time.time() - self.now
+        self.print(f"{self.desc} completed in {round(self.elapsed,1)}s", end="\n\n")
 
     def print(self, x, end="\n"):
         if self.to_print:
@@ -115,11 +115,17 @@ class Timer:
 
 
 class Timerable:
-    def timer(self, desc="", **kwargs):
-        return Timer(
-            desc=desc if desc else self.__class__.__name__,
-            print_func=self.print
-            if hasattr(self, "print") and callable(self.print)
-            else print,
-            **kwargs,
-        )
+    def timer(self, desc="", to_print=True, print_func=None):
+        # get description
+        if not desc:
+            desc = self.__class__.__name__
+
+        # get print function
+        if not callable(print_func):
+            if hasattr(self, "print") and callable(self.print):
+                print_func = self.print
+            else:
+                print_func = print
+
+        # return a timer
+        return Timer(desc=desc, to_print=to_print, print_func=print_func)
