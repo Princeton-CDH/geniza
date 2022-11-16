@@ -37,9 +37,11 @@ class Command(BaseCommand):
 
         # find all documents with original dates set;
         # limit to calendars that we support converting
-        dated_docs = Document.objects.exclude(
-            doc_date_original="", doc_date_calendar=""
-        ).filter(doc_date_calendar__in=Calendar.can_convert)
+        dated_docs = (
+            Document.objects.exclude(doc_date_original="", doc_date_calendar="")
+            .filter(doc_date_calendar__in=Calendar.can_convert)
+            .order_by("pk")  # order by pk to ensure order is determinate
+        )
 
         if options["mode"] in ["update", "clean"]:
             self.doc_contenttype = ContentType.objects.get_for_model(Document)
