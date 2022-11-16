@@ -66,41 +66,31 @@ class DocumentExporter(Exporter):
         :rtype: dict
         """
         all_textblocks = doc.textblock_set.all()
+        # if len(all_textblocks)>1:
+        #    print(f'Doc text blocks: {doc.id} -> {[x.id for x in all_textblocks]}')
         all_fragments = [tb.fragment for tb in all_textblocks]
         all_log_entries = doc.log_entries.all()
-        input_users = set(
-            [
-                log_entry.user
-                for log_entry in all_log_entries
-                if log_entry.user.username != self.script_user
-            ]
-        )
+        input_users = {
+            log_entry.user
+            for log_entry in all_log_entries
+            if log_entry.user.username != self.script_user
+        }
         iiif_urls = [fr.iiif_url for fr in all_fragments]
         view_urls = [fr.url for fr in all_fragments]
         multifrag = [tb.multifragment for tb in all_textblocks]
         side = [tb.side for tb in all_textblocks]
         region = [tb.region for tb in all_textblocks]
         old_shelfmarks = [fragment.old_shelfmarks for fragment in all_fragments]
-        libraries = set(
-            [
-                fragment.collection.lib_abbrev or fragment.collection.library
-                if fragment.collection
-                else ""
-                for fragment in all_fragments
-            ]
-        ) - {
-            ""
-        }  # exclude empty string for any fragments with no library
-        collections = set(
-            [
-                fragment.collection.abbrev or fragment.collection.name
-                if fragment.collection
-                else ""
-                for fragment in all_fragments
-            ]
-        ) - {
-            ""
-        }  # exclude empty string for any with no collection
+        libraries = [
+            fragment.collection.lib_abbrev or fragment.collection.library
+            for fragment in all_fragments
+            if fragment.collection
+        ]
+        collections = [
+            str(fragment.collection)
+            for fragment in all_fragments
+            if fragment.collection
+        ]
 
         outd = {}
         outd["pgpid"] = doc.id
@@ -113,24 +103,16 @@ class DocumentExporter(Exporter):
 
         sep_within_cells = self.sep_within_cells
 
-        outd["iiif_urls"] = sep_within_cells.join(iiif_urls) if any(iiif_urls) else ""
-        outd["fragment_urls"] = (
-            sep_within_cells.join(view_urls) if any(view_urls) else ""
-        )
+        outd["iiif_urls"] = iiif_urls
+        outd["fragment_urls"] = view_urls
         outd["shelfmark"] = doc.shelfmark
-        outd["multifragment"] = sep_within_cells.join([s for s in multifrag if s])
-        outd["side"] = sep_within_cells.join(
-            [s for s in side if s]
-        )  # side (recto/verso)
-        outd["region"] = sep_within_cells.join(
-            [r for r in region if r]
-        )  # text block region
+        outd["multifragment"] = [s for s in multifrag if s]
+        outd["side"] = [s for s in side if s]
+        outd["region"] = [r for r in region if r]
         outd["type"] = doc.doctype
         outd["tags"] = doc.all_tags()
         outd["description"] = doc.description
-        outd["shelfmarks_historic"] = sep_within_cells.join(
-            [os for os in old_shelfmarks if os]
-        )
+        outd["shelfmarks_historic"] = [os for os in old_shelfmarks if os]
         outd["languages_primary"] = doc.all_languages()
         outd["languages_secondary"] = doc.all_secondary_languages()
         outd["language_note"] = doc.language_note
@@ -147,14 +129,11 @@ class DocumentExporter(Exporter):
 
         outd["last_modified"] = doc.last_modified
 
-        outd["input_by"] = sep_within_cells.join(
-            set([user.get_full_name() or user.username for user in input_users])
-        )
-
-        outd["library"] = sep_within_cells.join(libraries) if any(libraries) else ""
-        outd["collection"] = (
-            sep_within_cells.join(collections) if any(collections) else ""
-        )
+        outd["input_by"] = {
+            user.get_full_name() or user.username for user in input_users
+        }
+        outd["library"] = libraries
+        outd["collection"] = collections
 
         # has transcription and translation?
         outd["has_transcription"] = doc.has_transcription()

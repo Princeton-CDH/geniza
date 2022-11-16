@@ -80,7 +80,9 @@ class FootnoteExporter(Exporter):
     def get_export_data_dict(self, footnote):
         return {
             "document": footnote.content_object,
-            "document_id": footnote.content_object.pk,
+            "document_id": footnote.content_object.pk
+            if footnote.content_object is not None
+            else None,
             "source": footnote.source,
             "location": footnote.location,
             "doc_relation": footnote.get_doc_relation_list(),

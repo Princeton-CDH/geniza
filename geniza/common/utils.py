@@ -1,3 +1,5 @@
+import time
+
 from django.conf import settings
 from django.contrib.sites.models import Site
 from taggit.utils import _parse_tags
@@ -89,3 +91,41 @@ class Echo(object):
 
     def __exit__(self, *x, **y):
         return
+
+
+class Timer:
+    def __init__(self, desc="Timer", to_print=True, print_func=None):
+        self.desc = desc
+        self.to_print = to_print
+        self.print_func = print_func if print_func is not None else print
+
+    def __enter__(self):
+        self.now = time.time()
+        self.print(f"{self.desc} ...", end="\n")
+        self.t = self.elapsed = 0
+        return self
+
+    def __exit__(self, *x, **y):
+        self.t = self.elapsed = time.time() - self.now
+        self.print(f"{self.desc} completed in {round(self.elapsed,1)}s", end="\n\n")
+
+    def print(self, x, end="\n"):
+        if self.to_print:
+            self.print_func(x, end=end)
+
+
+class Timerable:
+    def timer(self, desc="", to_print=True, print_func=None):
+        # get description
+        if not desc:
+            desc = self.__class__.__name__
+
+        # get print function
+        if not callable(print_func):
+            if hasattr(self, "print") and callable(self.print):
+                print_func = self.print
+            else:
+                print_func = print
+
+        # return a timer
+        return Timer(desc=desc, to_print=to_print, print_func=print_func)
