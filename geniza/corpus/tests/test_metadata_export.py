@@ -28,7 +28,12 @@ from geniza.corpus.admin import (
     HasTranscriptionListFilter,
     LanguageScriptAdmin,
 )
-from geniza.corpus.metadata_export import AdminDocumentExporter, PublicDocumentExporter
+from geniza.corpus.metadata_export import (
+    AdminDocumentExporter,
+    FragmentExporter,
+    PublicDocumentExporter,
+    PublicFragmentExporter,
+)
 from geniza.corpus.models import (
     Collection,
     Document,
@@ -186,3 +191,65 @@ def test_public_vs_admin_exporter(document):
     assert len(pde_keys) < len(ade_keys)
     assert ade_keys - pde_keys
     assert ade_keys - pde_keys == {"notes", "needs_review", "status", "url_admin"}
+
+
+@pytest.mark.django_db
+def test_fragment_export_data(multifragment):
+    data = FragmentExporter().get_export_data_dict(multifragment)
+    assert data["shelfmark"] == multifragment.shelfmark
+    assert data["pgpids"] == []
+    assert data["old_shelfmarks"] == ""
+    # fixture is not in a collection
+    assert "collection" not in data
+
+    assert data["url"] == multifragment.url
+    assert data["iiif_url"] == multifragment.iiif_url
+    assert data["created"] == multifragment.created
+    assert data["last_modified"] == multifragment.last_modified
+
+
+@pytest.mark.django_db
+def test_fragment_export_data_collection(fragment):
+    cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
+    fragment.collection = cul
+    fragment.save()
+
+    data = FragmentExporter().get_export_data_dict(fragment)
+    assert data["collection"] == cul
+    assert data["library"] == cul.library
+    assert data["library_abbrev"] == cul.lib_abbrev
+
+
+@pytest.mark.django_db
+def test_fragment_export_data_pgpids(fragment, multifragment, document, join):
+    # document and join are both on fragment; join is also on multifragment
+    data = FragmentExporter().get_export_data_dict(fragment)
+    assert document.pk in data["pgpids"]
+    assert join.pk in data["pgpids"]
+
+    data = FragmentExporter().get_export_data_dict(multifragment)
+    assert data["pgpids"] == [join.pk]
+
+
+@pytest.mark.django_db
+def test_public_fragment_export(fragment, multifragment, document, join):
+    # document and join are both on fragment; join is also on multifragment
+    qs_frags = [f for f in PublicFragmentExporter().get_queryset()]
+    # should include both fragments
+    assert fragment in qs_frags
+    assert multifragment in qs_frags
+
+    # if we suppress join, then multifragment should no longer be included
+    join.status = Document.SUPPRESSED
+    join.save()
+    qs_frags = [f for f in PublicFragmentExporter().get_queryset()]
+    # should include fragment but not multifragment
+    assert fragment in qs_frags
+    assert multifragment not in qs_frags
+
+    document.delete()
+    join.delete()
+    # should still be two fragments in the main export
+    assert FragmentExporter().get_queryset().count() == 2
+    # but none in the public export
+    assert PublicFragmentExporter().get_queryset().count() == 0

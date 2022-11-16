@@ -360,6 +360,23 @@ class TestFragmentAdmin:
         args, kwargs = mock_super_save_model.call_args
         assert args[1].request == mock_request
 
+    @pytest.mark.django_db
+    def test_export_to_csv(self, document, join):
+        fragment_admin = FragmentAdmin(model=Fragment, admin_site=admin.site)
+        response = fragment_admin.export_to_csv(Mock())
+        assert isinstance(response, StreamingHttpResponse)
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
+
+        # spot-check that we get expected data
+        # - header row
+        assert "shelfmark,pgpids," in content
+        # - some content
+        assert str(document.id) in content
+        fragment = document.fragments.first()
+        assert fragment.shelfmark in content
+        assert str(fragment.last_modified) in content
+
 
 class TestHasTranscriptionListFilter:
     def init_filter(self):
