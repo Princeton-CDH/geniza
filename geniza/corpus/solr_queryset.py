@@ -32,7 +32,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "original_date_t": "original_date",
         "collection": "collection_ss",
         "tags": "tags_ss_lower",
-        "description": "description_txt_ens",  # use stemmed version for field search & highlight
+        "description": "description_en_bigram",  # use stemmed version for field search & highlight
         "notes": "notes_t",
         "needs_review": "needs_review_t",
         "pgpid": "pgpid_i",

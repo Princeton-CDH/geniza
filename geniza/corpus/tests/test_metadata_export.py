@@ -1,3 +1,4 @@
+import codecs
 import csv
 import time
 from datetime import datetime, timedelta
@@ -28,7 +29,12 @@ from geniza.corpus.admin import (
     HasTranscriptionListFilter,
     LanguageScriptAdmin,
 )
-from geniza.corpus.metadata_export import AdminDocumentExporter, PublicDocumentExporter
+from geniza.corpus.metadata_export import (
+    AdminDocumentExporter,
+    FragmentExporter,
+    PublicDocumentExporter,
+    PublicFragmentExporter,
+)
 from geniza.corpus.models import (
     Collection,
     Document,
@@ -159,18 +165,19 @@ def test_http_export_data_csv(document):
     headers_d = response.headers
     assert headers_d.get("Content-Type") == "text/csv; charset=utf-8"
     assert headers_d.get("Content-Disposition") == f"attachment; filename={ofn}"
-
     assert response.status_code == 200
 
-    def iter_http_response_lines_str(response):
-        for x in response:
-            yield x.decode()
+    yielded_content = [x.decode() for x in response]
+    # first bit of content should be byte order mark)
+    assert yielded_content[0] == codecs.BOM_UTF8.decode()
 
-    row = next(csv.DictReader(iter_http_response_lines_str(response)))
+    # remaining rows should be csv
+    csv_dictreader = csv.DictReader(yielded_content[1:])
 
-    # correct row?
+    # next row should be first row of csv dat
+    row = next(csv_dictreader)
+    # correct data?
     assert row.get("pgpid") == str(document.id)
-
     # correct header?
     assert set(exporter.csv_fields) == set(row.keys())
 
@@ -189,3 +196,65 @@ def test_public_vs_admin_exporter(document):
     assert len(pde_keys) < len(ade_keys)
     assert ade_keys - pde_keys
     assert ade_keys - pde_keys == {"notes", "needs_review", "status", "url_admin"}
+
+
+@pytest.mark.django_db
+def test_fragment_export_data(multifragment):
+    data = FragmentExporter().get_export_data_dict(multifragment)
+    assert data["shelfmark"] == multifragment.shelfmark
+    assert data["pgpids"] == []
+    assert data["old_shelfmarks"] == ""
+    # fixture is not in a collection
+    assert "collection" not in data
+
+    assert data["url"] == multifragment.url
+    assert data["iiif_url"] == multifragment.iiif_url
+    assert data["created"] == multifragment.created
+    assert data["last_modified"] == multifragment.last_modified
+
+
+@pytest.mark.django_db
+def test_fragment_export_data_collection(fragment):
+    cul = Collection.objects.create(library="Cambridge", abbrev="CUL")
+    fragment.collection = cul
+    fragment.save()
+
+    data = FragmentExporter().get_export_data_dict(fragment)
+    assert data["collection"] == cul
+    assert data["library"] == cul.library
+    assert data["library_abbrev"] == cul.lib_abbrev
+
+
+@pytest.mark.django_db
+def test_fragment_export_data_pgpids(fragment, multifragment, document, join):
+    # document and join are both on fragment; join is also on multifragment
+    data = FragmentExporter().get_export_data_dict(fragment)
+    assert document.pk in data["pgpids"]
+    assert join.pk in data["pgpids"]
+
+    data = FragmentExporter().get_export_data_dict(multifragment)
+    assert data["pgpids"] == [join.pk]
+
+
+@pytest.mark.django_db
+def test_public_fragment_export(fragment, multifragment, document, join):
+    # document and join are both on fragment; join is also on multifragment
+    qs_frags = [f for f in PublicFragmentExporter().get_queryset()]
+    # should include both fragments
+    assert fragment in qs_frags
+    assert multifragment in qs_frags
+
+    # if we suppress join, then multifragment should no longer be included
+    join.status = Document.SUPPRESSED
+    join.save()
+    qs_frags = [f for f in PublicFragmentExporter().get_queryset()]
+    # should include fragment but not multifragment
+    assert fragment in qs_frags
+    assert multifragment not in qs_frags
+
+    document.delete()
+    join.delete()
+    # should still be two fragments in the main export
+    assert FragmentExporter().get_queryset().count() == 2
+    # but none in the public export
+    assert PublicFragmentExporter().get_queryset().count() == 0

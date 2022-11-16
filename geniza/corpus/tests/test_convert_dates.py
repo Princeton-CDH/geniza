@@ -28,12 +28,16 @@ def test_convert_date_report(tmp_path, document, join):
         lines = f.readlines()
     # header + two documents with convertable dates
     assert len(lines) == 3
-    assert document.doc_date_original in lines[1]
-    assert document.get_doc_date_calendar_display() in lines[1]
-    assert document.doc_date_standard in lines[1]
+    # documents ordered by pk, join is first
+    assert join.doc_date_original in lines[1]
+    assert join.get_doc_date_calendar_display() in lines[1]
+    assert join.doc_date_standard in lines[1]
+    assert document.doc_date_original in lines[2]
+    assert document.get_doc_date_calendar_display() in lines[2]
+    assert document.doc_date_standard in lines[2]
     # converted date
-    assert "1113-06-18/1114-06-06" in lines[1]
-    assert "1208-08-26" in lines[2]
+    assert "1208-08-26" in lines[1]
+    assert "1113-06-18/1114-06-06" in lines[2]
 
 
 @pytest.mark.django_db
