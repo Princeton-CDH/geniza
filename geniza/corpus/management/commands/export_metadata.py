@@ -13,6 +13,9 @@ from geniza.footnotes.metadata_export import FootnoteExporter, SourceExporter
 
 
 class MetadataExportRepo(Timerable):
+    """Utility class with functionality for generating metadata exports
+    and commiting to git."""
+
     local_path_key = "METADATA_BACKUP_PATH"
     remote_url_key = "METADATA_BACKUP_GITREPO"
 
@@ -66,6 +69,7 @@ class MetadataExportRepo(Timerable):
         return odir
 
     def get_path_csv(self, docname):
+        "generate export path based on export type"
         return os.path.join(self.path_data, docname + self.ext_csv)
 
     @cached_property
@@ -98,6 +102,7 @@ class MetadataExportRepo(Timerable):
     ############################################
 
     def export_data(self):
+        "generate all exports"
         with self.timer("Exporting metadata into local path"):
             # make sure to pull first
             self.repo_pull()
@@ -131,29 +136,34 @@ class MetadataExportRepo(Timerable):
     ############################################
 
     def repo_origin(self):
+        "check if git repository has a remote origin"
         try:
             return self.repo.remote(name="origin")
         except ValueError:
             self.print("No origin repository, unable to push updates")
 
     def repo_pull(self):
+        "pull changes from remote"
         with self.timer("Pulling repository"):
             origin = self.repo_origin()
             if origin:
                 origin.pull()
 
     def repo_add(self):
+        "add modified files to git"
         with self.timer("Adding any changes"):
             for fn in self.paths:
                 if os.path.exists(fn):
                     self.repo.index.add(fn)
 
     def repo_commit(self):
+        "commit changes to local git repository"
         self.repo.index.commit(
             "Auto-syncing @ " + timezone.now().strftime("%Y-%m-%d %H:%M:%S")
         )
 
     def repo_push(self):
+        "push changes to remote git repository"
         # push data updates
         with self.timer("Pushing any changes"):
             origin = self.repo_origin()
@@ -161,6 +171,7 @@ class MetadataExportRepo(Timerable):
                 origin.push()
 
     def sync_remote(self):
+        "synchronize with remote git repository"
         with self.timer("Syncing metadata into remote repo"):
             # NOTE: can't pull here because it errors if there are
             # unstaged changes
