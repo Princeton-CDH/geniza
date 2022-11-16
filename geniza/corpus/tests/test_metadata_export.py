@@ -1,3 +1,4 @@
+import codecs
 import csv
 import time
 from datetime import datetime, timedelta
@@ -161,18 +162,19 @@ def test_http_export_data_csv(document):
     headers_d = response.headers
     assert headers_d.get("Content-Type") == "text/csv; charset=utf-8"
     assert headers_d.get("Content-Disposition") == f"attachment; filename={ofn}"
-
     assert response.status_code == 200
 
-    def iter_http_response_lines_str(response):
-        for x in response:
-            yield x.decode()
+    yielded_content = [x.decode() for x in response]
+    # first bit of content should be byte order mark)
+    assert yielded_content[0] == codecs.BOM_UTF8.decode()
 
-    row = next(csv.DictReader(iter_http_response_lines_str(response)))
+    # remaining rows should be csv
+    csv_dictreader = csv.DictReader(yielded_content[1:])
 
-    # correct row?
+    # next row should be first row of csv dat
+    row = next(csv_dictreader)
+    # correct data?
     assert row.get("pgpid") == str(document.id)
-
     # correct header?
     assert set(exporter.csv_fields) == set(row.keys())
 

@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 from django.contrib.humanize.templatetags.humanize import ordinal
+from django.utils.html import strip_tags
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.models import Document
@@ -298,6 +299,22 @@ class TestFootnote:
         # delete the cached value from cached property
         del digital_edition.content_html
         assert digital_edition.content_html == {}
+
+    def test_content_text(self, annotation):
+        manifest_uri = annotation.content["target"]["source"]["partOf"]["id"]
+        source_uri = annotation.content["dc:source"]
+        source = Source.from_uri(source_uri)
+        document = Document.from_manifest_uri(manifest_uri)
+        digital_edition_fnote = document.digital_editions()[0]
+        assert digital_edition_fnote.content_text == strip_tags(annotation.body_content)
+
+    def test_content_text_empty(self, source, document):
+        edition = Footnote.objects.create(
+            source=source, content_object=document, doc_relation=[Footnote.EDITION]
+        )
+        # should be unset, but not be the string "None"
+        assert edition.content_text == None
+        assert edition.content_text != "None"
 
     def test_explicit_line_numbers(self, document, source):
         # should parse html to include line numbers in li "value" attribute

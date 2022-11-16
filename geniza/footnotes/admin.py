@@ -15,7 +15,7 @@ from django_admin_inline_paginator.admin import TabularInlinePaginated
 from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.common.admin import custom_empty_field_list_filter
-from geniza.footnotes.metadata_export import FootnoteExporter, SourceExporter
+from geniza.footnotes.metadata_export import AdminFootnoteExporter, AdminSourceExporter
 from geniza.footnotes.models import (
     Authorship,
     Creator,
@@ -174,7 +174,9 @@ class SourceAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     def export_to_csv(self, request, queryset=None):
         """Stream source records as CSV"""
         queryset = queryset or self.get_queryset(request)
-        return SourceExporter(queryset=queryset, progress=False).http_export_data_csv()
+        return AdminSourceExporter(
+            queryset=queryset, progress=False
+        ).http_export_data_csv()
 
     def get_urls(self):
         """Return admin urls; adds a custom URL for exporting all sources
@@ -301,7 +303,7 @@ class FootnoteAdmin(admin.ModelAdmin):
     def export_to_csv(self, request, queryset=None):
         """Stream footnote records as CSV"""
         queryset = queryset or self.get_queryset(request)
-        return FootnoteExporter(
+        return AdminFootnoteExporter(
             queryset=queryset, progress=False
         ).http_export_data_csv()
 

@@ -1,3 +1,4 @@
+import codecs
 import csv
 
 from django.conf import settings
@@ -126,13 +127,18 @@ class Exporter:
         :yield: String of current line in CSV
         :rtype: Generator[str]
         """
+        csv_filename = fn or self.csv_filename()
         with (
-            open(self.csv_filename() if not fn else fn, "w")
+            codecs.open(csv_filename, "w", encoding="utf-8-sig")
             if not pseudo_buffer
             else Echo()
         ) as of:
+            # start with byte-order mark so Excel will read unicode properly
+            yield codecs.BOM_UTF8
             writer = csv.DictWriter(
-                of, fieldnames=self.csv_fields, extrasaction="ignore"
+                of,
+                fieldnames=self.csv_fields,
+                extrasaction="ignore",
             )
             yield writer.writeheader()
             yield from (

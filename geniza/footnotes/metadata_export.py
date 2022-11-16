@@ -26,7 +26,6 @@ class SourceExporter(Exporter):
         "url",
         "notes",
         "num_footnotes",
-        "admin_url",
     ]
 
     def get_queryset(self):
@@ -53,15 +52,13 @@ class SourceExporter(Exporter):
             "notes": source.notes,
             # count via annotated queryset
             "num_footnotes": source.footnote__count,
-            # construct directly to avoid extra db calls
-            "admin_url": f"{self.url_scheme}{self.site_domain}/admin/footnotes/source/{source.id}/change/",
         }
 
 
 class FootnoteExporter(Exporter):
     """
     A subclass of :class:`geniza.common.metadata_export.Exporter` that
-    exports information relating to :class:`~geniza.footnotes.models.Footnote`.
+    exports public information relating to :class:`~geniza.footnotes.models.Footnote`.
     """
 
     model = Footnote
@@ -90,5 +87,33 @@ class FootnoteExporter(Exporter):
             "notes": footnote.notes,
             "url": footnote.url,
             "content": footnote.content_text or "",
-            "admin_url": f"{self.url_scheme}{self.site_domain}/admin/footnotes/footnote/{footnote.id}/change/",
         }
+
+
+class AdminSourceExporter(SourceExporter):
+    """Admin version of :class:`~geniza.footnotes.metadata_export.SourceExporter`;
+    adds admin urls to the output."""
+
+    csv_fields = SourceExporter.csv_fields + ["admin_url"]
+
+    def get_export_data_dict(self, source):
+        data = super().get_export_data_dict(source)
+        # construct directly to avoid extra db calls
+        data[
+            "admin_url"
+        ] = f"{self.url_scheme}{self.site_domain}/admin/footnotes/source/{source.id}/change/"
+        return data
+
+
+class AdminFootnoteExporter(FootnoteExporter):
+    """Admin version of :class:`~geniza.footnotes.metadata_export.FootnoteExporter`;
+    adds admin urls to the output."""
+
+    csv_fields = FootnoteExporter.csv_fields + ["admin_url"]
+
+    def get_export_data_dict(self, footnote):
+        data = super().get_export_data_dict(footnote)
+        data[
+            "admin_url"
+        ] = f"{self.url_scheme}{self.site_domain}/admin/footnotes/footnote/{footnote.id}/change/"
+        return data
