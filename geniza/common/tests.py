@@ -4,17 +4,19 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import connection, models
 from django.db.migrations.executor import MigrationExecutor
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory, TestCase, TransactionTestCase, override_settings
 from taggit.models import Tag
 
 from geniza.common.admin import (
     CustomTagAdmin,
+    LocalLogEntryAdmin,
     LocalUserAdmin,
     custom_empty_field_list_filter,
 )
@@ -385,3 +387,22 @@ def test_logentry_exporter_data(document):
     assert data["object_id"] == str(document.pk)
     assert data["change_message"] == logentry.change_message
     assert data["action"] == "addition"
+
+
+@pytest.mark.django_db
+def test_admin_export_to_csv(document):
+    logentry_admin = LocalLogEntryAdmin(model=LogEntry, admin_site=admin.site)
+    response = logentry_admin.export_to_csv(Mock())
+    assert isinstance(response, StreamingHttpResponse)
+    # consume the binary streaming content and decode to inspect as str
+    content = b"".join([val for val in response.streaming_content]).decode()
+
+    # spot-check that we get expected data
+    # - header row
+    assert "action_time,user,content_type" in content
+    # - some content
+    for log_entry in document.log_entries.all():
+        assert str(log_entry.action_time) in content
+        assert log_entry.user.username in content
+        # action flag converted to text
+        assert LogEntryExporter.action_label[log_entry.action_flag] in content
