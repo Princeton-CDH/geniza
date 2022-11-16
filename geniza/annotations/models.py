@@ -69,6 +69,13 @@ class Annotation(TrackChangesModel):
     canonical = models.CharField(max_length=255, blank=True)
     #: uri of annotation when imported from another copy (optional)
     via = models.URLField(blank=True)
+    #: related scholarship record; used for source and manifest uri in JSON serialization
+    footnote = models.ForeignKey(
+        "footnotes.Footnote",
+        blank=True,
+        on_delete=models.SET_NULL,
+        null=True,
+    )
 
     # use custom manager & queryset
     objects = AnnotationQuerySet.as_manager()
