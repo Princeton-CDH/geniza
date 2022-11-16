@@ -180,10 +180,11 @@ class LogEntryExporter(Exporter):
         "action",
     ]
 
+    #: map log entry action flags to text labels
+    action_label = {ADDITION: "addition", CHANGE: "change", DELETION: "deletion"}
+
     def get_queryset(self):
         return super().get_queryset().select_related("content_type", "user")
-
-    action_label = {ADDITION: "addition", CHANGE: "change", DELETION: "deletion"}
 
     def get_export_data_dict(self, log):
         return {
