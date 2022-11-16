@@ -159,12 +159,12 @@ def test_http_export_data_csv(document):
     assert headers_d.get("Content-Disposition") == f"attachment; filename={ofn}"
     assert response.status_code == 200
 
-    content_lines = [x.decode() for x in response]
-    # first line should be byte order mark)
-    assert content_lines[0] == codecs.BOM_UTF8.decode()
+    yielded_content = [x.decode() for x in response]
+    # first bit of content should be byte order mark)
+    assert yielded_content[0] == codecs.BOM_UTF8.decode()
 
     # remaining rows should be csv
-    csv_dictreader = csv.DictReader(content_lines[1:])
+    csv_dictreader = csv.DictReader(yielded_content[1:])
 
     # next row should be first row of csv dat
     row = next(csv_dictreader)
