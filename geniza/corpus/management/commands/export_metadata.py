@@ -8,7 +8,7 @@ from django.utils import timezone
 from git import GitCommandError, Repo
 
 from geniza.common.utils import Timer, Timerable
-from geniza.corpus.metadata_export import PublicDocumentExporter
+from geniza.corpus.metadata_export import PublicDocumentExporter, PublicFragmentExporter
 from geniza.footnotes.metadata_export import FootnoteExporter, SourceExporter
 
 
@@ -103,19 +103,25 @@ class MetadataExportRepo(Timerable):
             self.repo_pull()
 
             # write docs
-            with self.timer("Exporting document objects"):
+            with self.timer("Exporting document data"):
                 PublicDocumentExporter(progress=self.progress).write_export_data_csv(
                     self.path_documents_csv
                 )
 
+            # write fragments
+            with self.timer("Exporting fragment data"):
+                PublicFragmentExporter(progress=self.progress).write_export_data_csv(
+                    self.path_fragments_csv
+                )
+
             # write sources
-            with self.timer("Exporting source objects"):
+            with self.timer("Exporting source data"):
                 SourceExporter(progress=self.progress).write_export_data_csv(
                     self.path_sources_csv
                 )
 
             # write footnotes
-            with self.timer("Exporting footnote objects"):
+            with self.timer("Exporting footnotes"):
                 FootnoteExporter(progress=self.progress).write_export_data_csv(
                     self.path_footnotes_csv
                 )
@@ -156,7 +162,8 @@ class MetadataExportRepo(Timerable):
 
     def sync_remote(self):
         with self.timer("Syncing metadata into remote repo"):
-            self.repo_pull()
+            # NOTE: can't pull here because it errors if there are
+            # unstaged changes
             self.repo_add()
             self.repo_commit()
             self.repo_push()
