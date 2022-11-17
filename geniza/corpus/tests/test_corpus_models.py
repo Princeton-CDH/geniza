@@ -961,11 +961,12 @@ class TestDocument:
             doc_relation=[Footnote.DIGITAL_EDITION],
         )
         Annotation.objects.create(
+            footnote=edition,
             content={
                 "body": [{"value": "transcription lines"}],
                 "target": {"source": {"partOf": {"id": document.manifest_uri}}},
                 "dc:source": source.uri,
-            }
+            },
         )
         # other footnotes
         edition2 = Footnote.objects.create(

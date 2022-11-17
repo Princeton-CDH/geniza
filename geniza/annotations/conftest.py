@@ -3,7 +3,7 @@ from django.urls import reverse
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.models import Document
-from geniza.footnotes.models import Source, SourceType
+from geniza.footnotes.models import Footnote, Source, SourceType
 
 
 @pytest.fixture
@@ -13,7 +13,11 @@ def annotation(db):
     source = Source.objects.create(
         title_en="The C Programming Language", source_type=book
     )
+    footnote = Footnote.objects.create(
+        source=source, content_object=document, doc_relation=Footnote.DIGITAL_EDITION
+    )
     annotation = Annotation.objects.create(
+        footnote=footnote,
         content={
             "body": [{"value": "Test annotation"}],
             "target": {
@@ -23,6 +27,6 @@ def annotation(db):
                 }
             },
             "dc:source": source.uri,
-        }
+        },
     )
     return annotation
