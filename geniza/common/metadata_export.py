@@ -1,5 +1,6 @@
 import codecs
 import csv
+import os
 
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
@@ -8,10 +9,10 @@ from django.http import StreamingHttpResponse
 from django.utils import timezone
 from rich.progress import track
 
-from geniza.common.utils import Echo
+from geniza.common.utils import Echo, Timerable
 
 
-class Exporter:
+class Exporter(Timerable):
     """
     Base class for data exports. See DocumentExporter `geniza/corpus/metadata_export.py` for an example of a subclass implementation of Exporter.
 
@@ -65,7 +66,7 @@ class Exporter:
         """
         raise NotImplementedError
 
-    def iter_dicts(self):
+    def iter_dicts(self, desc="Iterating rows"):
         """Iterate over the exportable data, one dictionary per row
 
         :yield: Dictionary of information for each object
@@ -75,11 +76,7 @@ class Exporter:
         queryset = self.get_queryset()
 
         # progress bar?
-        iterr = (
-            queryset
-            if not self.progress
-            else track(queryset, description=f"Writing rows to file")
-        )
+        iterr = queryset if not self.progress else track(queryset, description=desc)
 
         # save
         yield from (self.get_export_data_dict(obj) for obj in iterr)
@@ -93,15 +90,21 @@ class Exporter:
         :return: Stringified value
         :rtype: str
         """
+        valtype = type(value)
         if type(value) is bool:
             return self.true_false[value]
         elif value is None:
             return ""
         elif type(value) in {list, tuple, set}:
             # don't sort here since order may be meaningful
-            return self.sep_within_cells.join(
-                self.serialize_value(subval) for subval in list(value)
-            )
+            valstrs = [self.serialize_value(subval) for subval in value]
+            valstrs = [vstr for vstr in valstrs if vstr]
+            if not valstrs:
+                return ""
+            else:
+                if type(value) is set:
+                    valstrs.sort()
+                return self.sep_within_cells.join(valstrs)
         else:
             return str(value)
 
@@ -116,7 +119,7 @@ class Exporter:
         """
         return {k: self.serialize_value(v) for k, v in data.items()}
 
-    def iter_csv(self, fn=None, pseudo_buffer=False):
+    def iter_csv(self, fn=None, pseudo_buffer=False, **kwargs):
         """Iterate over the string lines of a CSV file as it's being written, either to file or a string buffer.
 
         :param fn: Filename to save CSV to (if pseudo_buffer is False), defaults to None
@@ -129,21 +132,25 @@ class Exporter:
         :rtype: Generator[str]
         """
         csv_filename = fn or self.csv_filename()
-        with (
-            codecs.open(csv_filename, "w", encoding="utf-8-sig")
-            if not pseudo_buffer
-            else Echo()
-        ) as of:
+        filelike_obj = (
+            Echo()
+            if pseudo_buffer
+            else open(csv_filename, "w", newline="", encoding="utf-8-sig")
+        )
+        with filelike_obj as of:
             # start with byte-order mark so Excel will read unicode properly
             yield codecs.BOM_UTF8
             writer = csv.DictWriter(
                 of,
                 fieldnames=self.csv_fields,
                 extrasaction="ignore",
+                lineterminator=os.linesep,
+                skipinitialspace=True,
             )
             yield writer.writeheader()
             yield from (
-                writer.writerow(self.serialize_dict(docd)) for docd in self.iter_dicts()
+                writer.writerow(self.serialize_dict(docd))
+                for docd in self.iter_dicts(**kwargs)
             )
 
     def write_export_data_csv(self, fn=None):
@@ -154,7 +161,9 @@ class Exporter:
         """
         if not fn:
             fn = self.csv_filename()
-        for row in self.iter_csv(fn=fn, pseudo_buffer=False):
+        for row in self.iter_csv(
+            fn=fn, pseudo_buffer=False, desc=f"Writing {os.path.basename(fn)}"
+        ):
             pass
 
     def http_export_data_csv(self, fn=None):
