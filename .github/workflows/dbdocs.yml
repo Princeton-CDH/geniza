@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       # Node is required to use dbdocs
       - name: Setup node
         uses: actions/setup-node@v2-beta
