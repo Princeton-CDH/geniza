@@ -265,18 +265,14 @@ class TestFootnote:
     def test_content_html(self, annotation, twoauthor_source):
         # should get each associated annotation's body text, separated by newline
         canvas_uri = annotation.content["target"]["source"]["id"]
-        manifest_uri = annotation.content["target"]["source"]["partOf"]["id"]
-        source_uri = annotation.content["dc:source"]
-        source = Source.from_uri(source_uri)
-        document = Document.from_manifest_uri(manifest_uri)
+        digital_edition = annotation.footnote
+        # create a second annotation
         Annotation.objects.create(
+            footnote=digital_edition,
             content={
                 **annotation.content,
                 "body": [{"label": "A label", "value": "Second annotation!"}],
-            }
-        )
-        digital_edition = document.footnotes.get(
-            source=source, doc_relation=[Footnote.DIGITAL_EDITION]
+            },
         )
         assert isinstance(digital_edition.content_html, dict)
         assert canvas_uri in digital_edition.content_html
@@ -286,27 +282,22 @@ class TestFootnote:
             "<h3>A label</h3>",
             "Second annotation!",
         ]
-
-        # should return None if not a digital edition
+        # should return None if there are no associated annotations
         edition = Footnote.objects.create(
-            source=source, content_object=document, doc_relation=[Footnote.EDITION]
+            source=digital_edition.source,
+            content_object=digital_edition.content_object,
+            doc_relation=[Footnote.EDITION],
         )
-        assert edition.content_html is None
+        assert edition.content_html == {}
 
-        # should return empty string if no annotations with content
-        digital_edition.source = twoauthor_source
-        digital_edition.save()
+        # should return empty dict if there are no annotations
+        digital_edition.annotation_set.all().delete()
         # delete the cached value from cached property
         del digital_edition.content_html
         assert digital_edition.content_html == {}
 
     def test_content_text(self, annotation):
-        manifest_uri = annotation.content["target"]["source"]["partOf"]["id"]
-        source_uri = annotation.content["dc:source"]
-        source = Source.from_uri(source_uri)
-        document = Document.from_manifest_uri(manifest_uri)
-        digital_edition_fnote = document.digital_editions()[0]
-        assert digital_edition_fnote.content_text == strip_tags(annotation.body_content)
+        assert annotation.footnote.content_text == strip_tags(annotation.body_content)
 
     def test_content_text_empty(self, source, document):
         edition = Footnote.objects.create(
@@ -318,12 +309,14 @@ class TestFootnote:
 
     def test_explicit_line_numbers(self, document, source):
         # should parse html to include line numbers in li "value" attribute
+        footnote = Footnote.objects.create(source=source, content_object=document)
         Annotation.objects.create(
+            footnote=footnote,
             content={
                 "dc:source": source.uri,
                 "target": {"source": {"partOf": {"id": document.manifest_uri}}},
                 "body": [{"value": "<ol><li>one</li><li>two</li></ol><p>test</p>"}],
-            }
+            },
         )
         digital_edition = document.footnotes.get(
             source=source, doc_relation=[Footnote.DIGITAL_EDITION]
