@@ -146,6 +146,10 @@ class MetadataExportRepo(Timerable):
                 self.repo_add(export_path)
                 self.repo_commit(modifying_users=users, msg=export_name)
 
+        # if sync is requested, push all committed changes
+        if sync:
+            self.repo_push()
+
     def get_modifying_users(self, log_entries):
         # given a log entry queryset, return the set of users who
         # associated with any of the log entries
@@ -176,8 +180,8 @@ class MetadataExportRepo(Timerable):
     def repo_add(self, filename=None):
         "add modified files to git"
         files_to_add = [filename] if filename else self.paths
-        path = files_to_add or "any changes"
-        with self.timer("Adding %s"):
+        path = filename or "any changes"
+        with self.timer("Adding %s" % path):
             for fn in files_to_add:
                 if os.path.exists(fn):
                     self.repo.index.add(fn)
