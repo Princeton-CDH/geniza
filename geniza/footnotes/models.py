@@ -582,9 +582,10 @@ class Footnote(TrackChangesModel):
     @staticmethod
     def explicit_line_numbers(html):
         """add explicit line numbers to passed HTML (in value attributes of ol > li)"""
-        parser = HTMLLineNumberParser()
-        parser.feed(html)
-        return parser.html_str
+        if html:  # don't attempt to parse if html is not set
+            parser = HTMLLineNumberParser()
+            parser.feed(html)
+            return parser.html_str
 
     @property
     def content_text(self):

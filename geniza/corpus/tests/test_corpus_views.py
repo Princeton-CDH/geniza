@@ -1233,12 +1233,13 @@ class TestDocumentAnnotationListView:
             },
         )
         # and another to the join document
-        Footnote.objects.create(
+        digitaledition = Footnote.objects.create(
             content_object=join,
             source=source,
             doc_relation=Footnote.DIGITAL_EDITION,
         )
         Annotation.objects.create(
+            footnote=digitaledition,
             content={
                 "body": [{"value": "here is completely different transcription text"}],
                 "target": {
@@ -1248,7 +1249,7 @@ class TestDocumentAnnotationListView:
                     }
                 },
                 "dc:source": source.uri,
-            }
+            },
         )
         # request once for document
         client.get(reverse(self.view_name, args=[document.pk]))

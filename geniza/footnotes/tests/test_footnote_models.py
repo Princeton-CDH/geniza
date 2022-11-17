@@ -309,17 +309,18 @@ class TestFootnote:
 
     def test_explicit_line_numbers(self, document, source):
         # should parse html to include line numbers in li "value" attribute
-        footnote = Footnote.objects.create(source=source, content_object=document)
+        digital_edition = Footnote.objects.create(
+            source=source,
+            content_object=document,
+            doc_relation=[Footnote.DIGITAL_EDITION],
+        )
         Annotation.objects.create(
-            footnote=footnote,
+            footnote=digital_edition,
             content={
                 "dc:source": source.uri,
                 "target": {"source": {"partOf": {"id": document.manifest_uri}}},
                 "body": [{"value": "<ol><li>one</li><li>two</li></ol><p>test</p>"}],
             },
-        )
-        digital_edition = document.footnotes.get(
-            source=source, doc_relation=[Footnote.DIGITAL_EDITION]
         )
         assert (
             Footnote.explicit_line_numbers(digital_edition.content_html_str)
@@ -328,36 +329,41 @@ class TestFootnote:
 
         # should respect ol "start" attribute in li "value" attributes
         doc2 = Document.objects.create()
+        digital_edition2 = Footnote.objects.create(
+            content_object=doc2, source=source, doc_relation=[Footnote.DIGITAL_EDITION]
+        )
         Annotation.objects.create(
+            footnote=digital_edition2,
             content={
                 "dc:source": source.uri,
                 "target": {"source": {"partOf": {"id": doc2.manifest_uri}}},
                 "body": [{"value": '<ol start="5"><li>one</li><li>two</li></ol>'}],
-            }
-        )
-        digital_edition = doc2.footnotes.get(
-            source=source, doc_relation=[Footnote.DIGITAL_EDITION]
+            },
         )
         assert (
-            Footnote.explicit_line_numbers(digital_edition.content_html_str)
+            Footnote.explicit_line_numbers(digital_edition2.content_html_str)
             == '<ol start="5"><li value="5">one</li><li value="6">two</li></ol>'
         )
 
         # should NOT add any value attributes to unordered list li
         doc3 = Document.objects.create()
+        digital_edition3 = Footnote.objects.create(
+            content_object=doc3, source=source, doc_relation=[Footnote.DIGITAL_EDITION]
+        )
         Annotation.objects.create(
+            footnote=digital_edition3,
             content={
                 "dc:source": source.uri,
                 "target": {"source": {"partOf": {"id": doc3.manifest_uri}}},
                 "body": [{"value": '<ul start="5"><li>one</li><li>two</li></ul>'}],
-            }
-        )
-        digital_edition = doc3.footnotes.get(
-            source=source, doc_relation=[Footnote.DIGITAL_EDITION]
+            },
         )
         assert "li value" not in Footnote.explicit_line_numbers(
-            digital_edition.content_html_str
+            digital_edition3.content_html_str
         )
+
+        # handle None as input
+        assert Footnote.explicit_line_numbers(None) is None
 
 
 class TestFootnoteQuerySet:
