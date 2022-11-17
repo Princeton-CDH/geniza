@@ -1,6 +1,7 @@
 from datetime import timedelta
 from unittest.mock import patch
 
+import pytest
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
 from django.contrib.auth.models import User
@@ -16,6 +17,7 @@ from geniza.corpus.models import Document
 from geniza.footnotes.models import Source
 
 
+@pytest.mark.skip("disabled until annotation signal footnote logic revamped")
 class TestCreateOrDeleteFootnote:
     def test_create_annotation(self, document, source):
         # should create a DIGITAL_EDITION footnote if one does not exist

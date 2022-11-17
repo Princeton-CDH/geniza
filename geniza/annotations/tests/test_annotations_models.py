@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from geniza.annotations.models import Annotation
 from geniza.common.utils import absolutize_url
+from geniza.footnotes.models import Footnote
 
 
 class TestAnnotation:
@@ -23,14 +24,15 @@ class TestAnnotation:
         assert anno.uri() == absolutize_url("/annotations/%s/" % anno.pk)
 
     @pytest.mark.django_db
-    def test_set_content(self):
+    def test_set_content(self, source, document):
+        footnote = Footnote.objects.create(source=source, content_object=document)
         content = {
             "@context": "http://www.w3.org/ns/anno.jsonld",
             "id": absolutize_url("/annotations/1"),
             "type": "Annotation",
             "foo": "bar",
         }
-        anno = Annotation()
+        anno = Annotation(footnote=footnote)
         anno.set_content(content)
 
         # check that appropriate fields were removed
@@ -126,7 +128,6 @@ class TestAnnotationQuerySet:
         assert not annos.exists()
 
         anno_manifest = annotation.target_source_manifest_id
-        print(anno_manifest)
         annos = Annotation.objects.by_target_context(anno_manifest)
         assert annos.count() == 1
         assert annos.first() == annotation
@@ -134,18 +135,22 @@ class TestAnnotationQuerySet:
     def test_group_by_canvas(self, annotation):
         # copy fixture annotation to make a second annotation on the same canvas
         anno2 = Annotation.objects.create(
+            footnote=annotation.footnote,
             content={
                 "target": {"source": {"id": annotation.target_source_id}},
-            }
+            },
         )
         other_canvas = "http://ex.co/iiif/canvas/3421"
         other_anno = Annotation.objects.create(
+            footnote=annotation.footnote,
             content={
                 "target": {"source": {"id": other_canvas}},
-            }
+            },
         )
         # should be ignored but not cause an error
-        no_target_anno = Annotation.objects.create(content={"body": "foo"})
+        no_target_anno = Annotation.objects.create(
+            footnote=annotation.footnote, content={"body": "foo"}
+        )
 
         annos_by_canvas = Annotation.objects.all().group_by_canvas()
         # expect two canvas uris
@@ -160,9 +165,10 @@ class TestAnnotationQuerySet:
         assert len(annos_by_canvas[other_canvas]) == 1
         assert other_anno in annos_by_canvas[other_canvas]
 
-    def test_group_by_manifest(self, annotation, document):
+    def test_group_by_manifest(self, annotation, document, source):
         # copy fixture annotation to make a second annotation on the same manifest
         anno2 = Annotation.objects.create(
+            footnote=annotation.footnote,
             content={
                 "body": "foo bar",
                 "target": {
@@ -171,10 +177,13 @@ class TestAnnotationQuerySet:
                         "partOf": {"id": annotation.target_source_manifest_id},
                     }
                 },
-            }
+            },
         )
         # and another annotation on a different manifest
+        other_footnote = Footnote.objects.create(source=source, content_object=document)
+
         other_anno = Annotation.objects.create(
+            footnote=other_footnote,
             content={
                 "body": "foo bar baz",
                 "target": {
@@ -183,10 +192,12 @@ class TestAnnotationQuerySet:
                         "partOf": {"id": document.manifest_uri},
                     }
                 },
-            }
+            },
         )
         # should be ignored but not cause an error
-        no_target_anno = Annotation.objects.create(content={"body": "foo"})
+        no_target_anno = Annotation.objects.create(
+            footnote=other_footnote, content={"body": "foo"}
+        )
 
         annos_by_manifest = Annotation.objects.all().group_by_manifest()
         # expect two manifest uris
