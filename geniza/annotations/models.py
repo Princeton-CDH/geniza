@@ -72,9 +72,8 @@ class Annotation(TrackChangesModel):
     #: related scholarship record; used for source and manifest uri in JSON serialization
     footnote = models.ForeignKey(
         "footnotes.Footnote",
-        blank=True,
-        on_delete=models.SET_NULL,
-        null=True,
+        on_delete=models.CASCADE,
+        null=False,
     )
 
     # use custom manager & queryset

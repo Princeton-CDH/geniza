@@ -36,10 +36,7 @@ def associate_related_footnotes(apps, schema_editor):
     Source = apps.get_model("footnotes", "Source")
     LogEntry = apps.get_model("admin", "LogEntry")
 
-    # stats for report
-    bad_manifest_uris = set()
-    failed_annotations = set()
-    created_footnotes = 0
+    DIGITAL_EDITION = "X"
 
     # much of this code adapted from signal handlers and static methods
     document_contenttype = ContentType.objects.get_for_model(Document)
@@ -58,13 +55,11 @@ def associate_related_footnotes(apps, schema_editor):
         try:
             document_id = document_id_from_manifest_uri(manifest_uri)
         except Resolver404:
-            bad_manifest_uris.add(manifest_uri)
-            failed_annotations.add(annotation.pk)
             continue
         try:
             # try to get a DIGITAL_EDITION footnote for this source and document
             footnote = Footnote.objects.get(
-                doc_relation=["X"],  # DIGITAL_EDITION at this point has a value of "X"
+                doc_relation=[DIGITAL_EDITION],
                 source__pk=source_id,
                 content_type=document_contenttype,
                 object_id=document_id,
@@ -74,7 +69,7 @@ def associate_related_footnotes(apps, schema_editor):
             source = Source.objects.get(pk=source_id)
             footnote = Footnote.objects.create(
                 source=source,
-                doc_relation=["X"],
+                doc_relation=[DIGITAL_EDITION],
                 object_id=document_id,
                 content_type=document_contenttype,
             )
@@ -86,24 +81,16 @@ def associate_related_footnotes(apps, schema_editor):
                 action_flag=ADDITION,
                 change_message=f"Footnote automatically created via annotation migration.",
             )
-            created_footnotes += 1
 
         # instantiate the FK relation
         annotation.footnote = footnote
 
-    # save all FK relations
-    Annotation.objects.bulk_update(annotations, ["footnote"])
+        # remove the existing manifest and source URIs from annotation content field
+        del annotation.content["dc:source"]
+        del annotation.content["target"]["source"]["partOf"]
 
-    print("\nFootnote association report:")
-    for uri in bad_manifest_uris:
-        print(f"- failed to resolve document from URI {uri}")
-    for pk in failed_annotations:
-        print(f"- failed to update annotation {pk}")
-
-    print(f"\nSuccessfully updated {annotations.count()} annotation(s).")
-    print(f"Failed to update {len(failed_annotations)} annotation(s).")
-    print(f"Created {created_footnotes} footnote(s).")
-    print("--------------")
+    # save all FK relations and content fields
+    Annotation.objects.bulk_update(annotations, ["content", "footnote"])
 
 
 class Migration(migrations.Migration):
