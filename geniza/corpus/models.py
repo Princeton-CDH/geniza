@@ -952,6 +952,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "footnotes__source__authorship_set__creator",
                 "footnotes__source__source_type",
                 "footnotes__source__languages",
+                "footnotes__annotation_set",  # for transcription content
                 "log_entries",
                 Prefetch(
                     "textblock_set",
