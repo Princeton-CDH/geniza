@@ -33,7 +33,7 @@ class MetadataExportRepo(Timerable):
         "documents": PublicDocumentExporter,
         "fragments": PublicFragmentExporter,
         "sources": SourceExporter,
-        # "footnotes": FootnoteExporter,
+        "footnotes": FootnoteExporter,
     }
 
     def __init__(
@@ -222,15 +222,8 @@ class MetadataExportRepo(Timerable):
 
 class Command(LastRunCommand, Timerable):
 
-    # filename for last run information (stored in current user's home)
-    # NOTE: file is shared with annotation export
-    lastrun_filename = os.path.join(os.path.expanduser("~"), ".pgp_export_lastrun")
     # id for this script in the last run file info
     script_id = "metadata-export"
-
-    # exports = {
-
-    # }
 
     def print(self, *x, **y):
         """
