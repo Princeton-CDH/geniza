@@ -23,6 +23,43 @@ from geniza.footnotes.models import Footnote
 logger = logging.getLogger(__name__)
 
 
+def generate_coauthor_commit(modifying_users):
+    """Given a list of users, generate a GitHub co-author commit message."""
+
+    # construct co-author commit and add to the commit message
+    coauthors = []
+    # first name, last name, coauthor email
+    coauth_msg = "Co-authored-by: %s <%s>"
+    for user in modifying_users:
+        # special case: there is one TEI bitbucket contributor
+        # without a github account; handle user as bare string
+        if isinstance(user, str):
+            display_name = user
+        else:
+            # username as fallback in case last/first names not set
+            display_name = user.get_full_name().strip() or user.username
+
+        coauthor_email = None
+        try:
+            # if github coauthor is available, add to list of coauthors
+            coauthor_email = user.profile.github_coauthor
+        except (User.profile.RelatedObjectDoesNotExist, AttributeError):
+            # ignore error if user has no profile,
+            # or if given a string instead of a User
+            pass
+
+        # always list name or username as co-author, even if no email
+        # GitHub won't be able to parse it, but it will be tracked)
+        if coauthor_email:
+            # co-author with email
+            coauthors.append(coauth_msg % (display_name, coauthor_email))
+        else:
+            # co-author with name only
+            coauthors.append("Co-authored-by: %s" % display_name)
+
+    return "\n".join(coauthors)
+
+
 class AnnotationExporter:
     v_normal = 1
 
@@ -269,39 +306,10 @@ class AnnotationExporter:
         # construct co-author commit (if any) and add to the commit message
         if not self.modifying_users:
             return self.commit_msg
-
-        # construct co-author commit and add to the commit message
-        coauthors = []
-        # first name, last name, coauthor email
-        coauth_msg = "Co-authored-by: %s <%s>"
-        for user in self.modifying_users:
-            # special case: there is one TEI bitbucket contributor
-            # without a github account; handle user as bare string
-            if isinstance(user, str):
-                display_name = user
-            else:
-                # username as fallback in case last/first names not set
-                display_name = user.get_full_name().strip() or user.username
-
-            coauthor_email = None
-            try:
-                # if github coauthor is available, add to list of coauthors
-                coauthor_email = user.profile.github_coauthor
-            except (User.profile.RelatedObjectDoesNotExist, AttributeError):
-                # ignore error if user has no profile,
-                # or if given a string instead of a User
-                pass
-
-            # always list name or username as co-author, even if no email
-            # GitHub won't be able to parse it, but it will be tracked)
-            if coauthor_email:
-                # co-author with email
-                coauthors.append(coauth_msg % (display_name, coauthor_email))
-            else:
-                # co-author with name only
-                coauthors.append("Co-authored-by: %s" % display_name)
-
-        return "%s\n\n%s" % (self.commit_msg, "\n".join(coauthors))
+        return "%s\n\n%s" % (
+            self.commit_msg,
+            generate_coauthor_commit(self.modifying_users),
+        )
 
     def sync_github(self):
         """Sync local repository content with origin repository. Assumes

@@ -82,7 +82,7 @@ class TestSyncAnnationExport:
         cmd.anno_exporter.repo.head.reference.log.return_value = [Mock(), mocklogref]
         # last_commit = self.anno_exporter.repo.head.reference.log()[-1]
 
-        script_lastrun = cmd.script_lastrun()
+        script_lastrun = cmd.script_lastrun(repo=cmd.anno_exporter.repo)
         # should be equivalent to the datetime we used to generate the timestamp
         assert script_lastrun == now
 
@@ -90,7 +90,7 @@ class TestSyncAnnationExport:
         # create last run file with our timestamp
         cmd.update_lastrun_info(now)
         # should get that time back
-        assert cmd.script_lastrun() == now
+        assert cmd.script_lastrun(repo=cmd.anno_exporter.repo) == now
         # and should not query git log
         assert cmd.anno_exporter.repo.head.reference.log.call_count == 0
 
