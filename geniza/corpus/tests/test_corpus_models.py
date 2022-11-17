@@ -1175,18 +1175,6 @@ class TestDocument:
             reverse("corpus-uris:document-manifest", args=[document.pk])
         )
 
-    def test_id_from_manifest_uri(self, document):
-        # should resolve correct manifest URI to Document id
-        resolved_doc_id = Document.id_from_manifest_uri(
-            reverse("corpus-uris:document-manifest", kwargs={"pk": document.pk})
-        )
-        assert isinstance(resolved_doc_id, int)
-        assert resolved_doc_id == document.pk
-
-        # should fail on resolvable non-manifest URI
-        with pytest.raises(Resolver404):
-            Document.id_from_manifest_uri(f"http://bad.com/documents/3/")
-
     def test_from_manifest_uri(self, document):
         # should resolve correct manifest URI to Document object
         resolved_doc = Document.from_manifest_uri(

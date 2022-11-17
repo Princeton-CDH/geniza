@@ -11,6 +11,7 @@ from parasolr.django.indexing import ModelIndexable
 
 from geniza.annotations.models import Annotation
 from geniza.annotations.signals import backup_annotation
+from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 from geniza.corpus.models import Document
 from geniza.footnotes.models import Source
 
@@ -82,7 +83,7 @@ class TestCreateOrDeleteFootnote:
 
 @patch("geniza.annotations.signals.AnnotationExporter")
 def test_backup_annotation(mock_annoexporter, annotation):
-    doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+    doc_id = document_id_from_manifest_uri(annotation.target_source_manifest_id)
     backup_annotation(doc_id, annotation)
 
     # should export this document only without pushing changes or coauthors
@@ -94,7 +95,7 @@ def test_backup_annotation(mock_annoexporter, annotation):
 
 @patch("geniza.annotations.signals.AnnotationExporter")
 def test_backup_annotation_coauthor(mock_annoexporter, annotation):
-    doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+    doc_id = document_id_from_manifest_uri(annotation.target_source_manifest_id)
     # create a log entry to check finding user for coauthor
     # get script user
     script_user = User.objects.get(username=settings.SCRIPT_USERNAME)

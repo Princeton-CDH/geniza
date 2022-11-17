@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.annotation_export import AnnotationExporter
-from geniza.corpus.models import Document
+from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 
 
 class Command(BaseCommand):
@@ -99,7 +99,7 @@ class Command(BaseCommand):
             for manifest, annotations in annos_by_manifest.items():
                 # export transcription for the specified document,
                 # documenting the users who modified it
-                document_id = Document.id_from_manifest_uri(manifest)
+                document_id = document_id_from_manifest_uri(manifest)
 
                 # collect all users who modified any of the annotations
                 # for this document based on the collected log entries

@@ -6,13 +6,13 @@ from django.conf import settings
 from django.contrib.admin.models import ADDITION, DELETION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import post_delete, post_save
 from django.utils import timezone
 from parasolr.django.indexing import ModelIndexable
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.annotation_export import AnnotationExporter
+from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 from geniza.corpus.models import Document
 from geniza.footnotes.models import Footnote, Source
 
@@ -40,7 +40,7 @@ def create_or_delete_footnote(instance, **kwargs):
 
     # get ids for referenced Source and Document
     source_id = Source.id_from_uri(source_uri)
-    document_id = Document.id_from_manifest_uri(manifest_uri)
+    document_id = document_id_from_manifest_uri(manifest_uri)
 
     document_contenttype = ContentType.objects.get_for_model(Document)
     # if deleted, created is None; if updated but not deleted, created is False

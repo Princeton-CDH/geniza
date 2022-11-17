@@ -12,6 +12,7 @@ from django.test import override_settings
 from django.utils import timezone
 
 from geniza.annotations.models import Annotation
+from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 from geniza.corpus.management.commands import sync_annotation_export
 from geniza.corpus.models import Document
 
@@ -162,7 +163,7 @@ class TestSyncAnnationExport:
             assert mock_annoexporter.call_count == 1
             mock_exporter = mock_annoexporter.return_value
             mock_exporter.setup_repo.assert_called()
-            pgpid = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+            pgpid = document_id_from_manifest_uri(annotation.target_source_manifest_id)
             mock_exporter.export.assert_called_with(
                 pgpids=[pgpid],
                 modifying_users=set([script_user]),
@@ -194,7 +195,7 @@ class TestSyncAnnationExport:
             # set lastrun
             now = timezone.now()
 
-            pgpid = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+            pgpid = document_id_from_manifest_uri(annotation.target_source_manifest_id)
 
             # delete fixture annotation with DELETE request as admin;
             # this will create a log entry with expected change message
