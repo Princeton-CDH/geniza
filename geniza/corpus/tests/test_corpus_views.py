@@ -1173,12 +1173,13 @@ class TestDocumentAnnotationListView:
         fragment.iiif_url = ""
         fragment.save()
         # add a footnote with transcription content
-        Footnote.objects.create(
+        footnote = Footnote.objects.create(
             content_object=document,
             source=source,
             doc_relation=Footnote.DIGITAL_EDITION,
         )
         Annotation.objects.create(
+            footnote=footnote,
             content={
                 "body": [{"value": "here is my transcription text"}],
                 "target": {
@@ -1188,7 +1189,7 @@ class TestDocumentAnnotationListView:
                     }
                 },
                 "dc:source": source.uri,
-            }
+            },
         )
         response = client.get(reverse(self.view_name, args=[document.pk]))
         assert response.status_code == 200
@@ -1213,12 +1214,13 @@ class TestDocumentAnnotationListView:
         fragment.iiif_url = ""
         fragment.save()
         # add a footnote with transcription content to document
-        Footnote.objects.create(
+        footnote = Footnote.objects.create(
             content_object=document,
             source=source,
             doc_relation=Footnote.DIGITAL_EDITION,
         )
         Annotation.objects.create(
+            footnote=footnote,
             content={
                 "body": [{"value": "here is my transcription text"}],
                 "target": {
@@ -1228,7 +1230,7 @@ class TestDocumentAnnotationListView:
                     }
                 },
                 "dc:source": source.uri,
-            }
+            },
         )
         # and another to the join document
         Footnote.objects.create(
@@ -1323,6 +1325,7 @@ class TestDocumentTranscriptionText:
             doc_relation=Footnote.DIGITAL_EDITION,
         )
         Annotation.objects.create(
+            footnote=edition,
             content={
                 "body": [{"value": "some transcription text"}],
                 "target": {
@@ -1332,7 +1335,7 @@ class TestDocumentTranscriptionText:
                     }
                 },
                 "dc:source": source.uri,
-            }
+            },
         )
         response = client.get(
             reverse(
