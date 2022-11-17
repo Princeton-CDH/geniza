@@ -59,7 +59,7 @@ def associate_related_footnotes(apps, schema_editor):
         try:
             # try to get a DIGITAL_EDITION footnote for this source and document
             footnote = Footnote.objects.get(
-                doc_relation=[DIGITAL_EDITION],
+                doc_relation__contains=DIGITAL_EDITION,
                 source__pk=source_id,
                 content_type=document_contenttype,
                 object_id=document_id,
