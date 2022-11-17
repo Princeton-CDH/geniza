@@ -19,7 +19,6 @@ from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager, MultilingualQuerySet
 from multiselectfield import MultiSelectField
 
-from geniza.annotations.models import Annotation
 from geniza.common.fields import NaturalSortField
 from geniza.common.models import TrackChangesModel
 from geniza.footnotes.utils import HTMLLineNumberParser
@@ -473,6 +472,8 @@ class Footnote(TrackChangesModel):
         "Document relation",
         choices=DOCUMENT_RELATION_TYPES,
         help_text="How does the source relate to this document?",
+        null=True,
+        blank=True,
     )
     notes = models.TextField(blank=True)
     content = models.JSONField(
