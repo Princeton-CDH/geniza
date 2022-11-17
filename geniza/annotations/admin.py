@@ -15,8 +15,17 @@ class AnnotationAdmin(admin.ModelAdmin):
         "display_content",
         "canonical",
         "via",
+        "footnote",
     )
-    fields = ["uri", "display_content", "created", "modified", "canonical", "via"]
+    fields = [
+        "uri",
+        "display_content",
+        "created",
+        "modified",
+        "canonical",
+        "via",
+        "footnote",
+    ]
     list_display = ["id", "pgpid", "target_id", "created", "modified"]
     search_fields = ("id", "content")
 
