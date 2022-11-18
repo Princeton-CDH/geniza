@@ -139,7 +139,7 @@ class DocumentExporter(Exporter):
         # include short display version of scholarship records;
         # need to use set since some sources have duplicate footnotes
         # in order to keep track of multiple links / PDFs
-        outd["scholarship_records"] = set([fn.display() for fn in doc.footnotes.all()])
+        outd["scholarship_records"] = {fn.display() for fn in doc.footnotes.all()}
         outd["shelfmarks_historic"] = [os for os in old_shelfmarks if os]
         outd["languages_primary"] = doc.all_languages()
         outd["languages_secondary"] = doc.all_secondary_languages()
