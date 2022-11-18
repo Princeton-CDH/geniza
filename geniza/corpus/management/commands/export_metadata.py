@@ -151,8 +151,9 @@ class MetadataExportRepo(Timerable):
             self.repo_push()
 
     def get_modifying_users(self, log_entries):
-        # given a log entry queryset, return the set of users who
-        # associated with any of the log entries
+        """Given a :class:`~django.contrib.admin.models.LogEentry` queryset,
+        return a :class:`~django.contrib.admin.models.User` queryset
+        for the set of users who associated with any of the log entries."""
         return User.objects.exclude(username=settings.SCRIPT_USERNAME).filter(
             username__in=set(
                 log_entries.only("user").values_list("user__username", flat=True)
@@ -193,8 +194,11 @@ class MetadataExportRepo(Timerable):
             self.repo.index.commit(commit_msg)
 
     def get_commit_message(self, modifying_users=None, msg=None):
-        # construct co-author commit (if any) and add to the commit message
-        # (copied from annotation_export)
+        """Construct a commit message. Uses the default commit with
+        optional addendum specified by `msg` parameter,
+        constructs a co-author commit if there are any modifying users,
+        and combines with the base commit message."""
+        # copied/adapted  from annotation_export
         commit_msg = self.default_commit_msg
         if msg is not None:
             commit_msg = "%s - %s" % (commit_msg, msg)
