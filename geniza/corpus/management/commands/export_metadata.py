@@ -3,11 +3,15 @@ import time
 from functools import cached_property
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.contrib.admin.models import LogEntry
+from django.contrib.auth.models import User
+from django.core.management.base import CommandError
 from django.utils import timezone
 from git import GitCommandError, Repo
 
 from geniza.common.utils import Timer, Timerable
+from geniza.corpus.annotation_export import generate_coauthor_commit
+from geniza.corpus.management.lastrun_command import LastRunCommand
 from geniza.corpus.metadata_export import PublicDocumentExporter, PublicFragmentExporter
 from geniza.footnotes.metadata_export import FootnoteExporter, SourceExporter
 
@@ -21,6 +25,16 @@ class MetadataExportRepo(Timerable):
 
     repo_dir_data = "data"
     ext_csv = ".csv"
+
+    #: default commit message
+    default_commit_msg = "Automated metadata export from PGP"
+
+    exports = {
+        "documents": PublicDocumentExporter,
+        "fragments": PublicFragmentExporter,
+        "sources": SourceExporter,
+        "footnotes": FootnoteExporter,
+    }
 
     def __init__(
         self, local_path=None, remote_url=None, print_func=None, progress=True
@@ -101,35 +115,50 @@ class MetadataExportRepo(Timerable):
     ## LOCAL EXPORTING
     ############################################
 
-    def export_data(self):
+    def export_data(self, lastrun, sync=False):
         "generate all exports"
-        with self.timer("Exporting metadata into local path"):
-            # make sure to pull first
-            self.repo_pull()
 
-            # write docs
-            with self.timer("Exporting document data"):
-                PublicDocumentExporter(progress=self.progress).write_export_data_csv(
-                    self.path_documents_csv
-                )
+        # pull any remote changes before making any local modifications
+        self.repo_pull()
 
-            # write fragments
-            with self.timer("Exporting fragment data"):
-                PublicFragmentExporter(progress=self.progress).write_export_data_csv(
-                    self.path_fragments_csv
-                )
+        # get all log entries since the last run
+        log_entries = LogEntry.objects.filter(action_time__gte=lastrun)
 
-            # write sources
-            with self.timer("Exporting source data"):
-                SourceExporter(progress=self.progress).write_export_data_csv(
-                    self.path_sources_csv
-                )
+        # if there are NO changes, bail out
+        if log_entries.count() == 0:
+            self.print("No changes since last run")
+            return
 
-            # write footnotes
-            with self.timer("Exporting footnotes"):
-                FootnoteExporter(progress=self.progress).write_export_data_csv(
-                    self.path_footnotes_csv
-                )
+        # run all configured exports
+        for export_name, exporter in self.exports.items():
+            with self.timer(f"Exporting { export_name } data"):
+                subset_logentries = log_entries.filter(**exporter.content_type_filter)
+                # if there are no changes, move to next export
+                if not subset_logentries.count():
+                    self.print("No changes for %s" % export_name)
+                    continue
+
+                export_path = self.get_path_csv(export_name)
+                exporter(progress=self.progress).write_export_data_csv(export_path)
+            if sync:
+                # filter log entries to those for this export
+                users = self.get_modifying_users(subset_logentries)
+                self.repo_add(export_path)
+                self.repo_commit(modifying_users=users, msg=export_name)
+
+        # if sync is requested, push all committed changes
+        if sync:
+            self.repo_push()
+
+    def get_modifying_users(self, log_entries):
+        """Given a :class:`~django.contrib.admin.models.LogEentry` queryset,
+        return a :class:`~django.contrib.admin.models.User` queryset
+        for the set of users who associated with any of the log entries."""
+        return User.objects.exclude(username=settings.SCRIPT_USERNAME).filter(
+            username__in=set(
+                log_entries.only("user").values_list("user__username", flat=True)
+            )
+        )
 
     ############################################
     ## Remote Repo Management
@@ -149,17 +178,36 @@ class MetadataExportRepo(Timerable):
             if origin:
                 origin.pull()
 
-    def repo_add(self):
+    def repo_add(self, filename=None):
         "add modified files to git"
-        with self.timer("Adding any changes"):
-            for fn in self.paths:
+        files_to_add = [filename] if filename else self.paths
+        path = filename or "any changes"
+        with self.timer("Adding %s" % path):
+            for fn in files_to_add:
                 if os.path.exists(fn):
                     self.repo.index.add(fn)
 
-    def repo_commit(self):
+    def repo_commit(self, modifying_users=None, msg=None):
         "commit changes to local git repository"
-        self.repo.index.commit(
-            "Auto-syncing @ " + timezone.now().strftime("%Y-%m-%d %H:%M:%S")
+        if self.repo.is_dirty():  # only commit if there are changes
+            commit_msg = self.get_commit_message(modifying_users, msg)
+            self.repo.index.commit(commit_msg)
+
+    def get_commit_message(self, modifying_users=None, msg=None):
+        """Construct a commit message. Uses the default commit with
+        optional addendum specified by `msg` parameter,
+        constructs a co-author commit if there are any modifying users,
+        and combines with the base commit message."""
+        # copied/adapted  from annotation_export
+        commit_msg = self.default_commit_msg
+        if msg is not None:
+            commit_msg = "%s - %s" % (commit_msg, msg)
+
+        if not modifying_users:
+            return commit_msg
+        return "%s\n\n%s" % (
+            commit_msg,
+            generate_coauthor_commit(modifying_users),
         )
 
     def repo_push(self):
@@ -180,7 +228,11 @@ class MetadataExportRepo(Timerable):
             self.repo_push()
 
 
-class Command(BaseCommand, Timerable):
+class Command(LastRunCommand, Timerable):
+
+    # id for this script in the last run file info
+    script_id = "metadata-export"
+
     def print(self, *x, **y):
         """
         A stdout-friendly method of printing for manage.py commands
@@ -232,10 +284,21 @@ class Command(BaseCommand, Timerable):
             self.print(f"Repository local path = {mrepo.local_path}")
             self.print(f"Repository remote url = {mrepo.remote_url}")
 
-        # Write
+        # Write with optional sync
         if options["write"]:
-            mrepo.export_data()
+            # determine script last run
+            lastrun = self.script_lastrun(mrepo.repo)
+            # store the datetime immediately after this query for the next run
+            new_lastrun = timezone.now()
+            mrepo.export_data(lastrun, sync=options["sync"])
+            # when we write and sync, update last run info
+            if options["sync"]:
+                self.update_lastrun_info(new_lastrun)
 
         # Sync?
-        if options["sync"]:
+        if options["sync"] and not options["write"]:
             mrepo.sync_remote()
+
+        # should we update last run if we sync changes to default location?
+        # if options["sync"] and not options["path"] and not options["url"]:
+        # self.update_lastrun_info() # needs new last run arg

@@ -46,6 +46,21 @@ class DocumentExporter(Exporter):
         "has_translation",
     ]
 
+    # queryset filter for content types included in this import
+    content_type_filter = {
+        "content_type__app_label__in": ["corpus", "footnotes"],
+        "content_type__model__in": [
+            "document",
+            "fragment",
+            "collection",
+            "languagescript",
+            "footnote",
+            "source",
+            "creator",
+            "languages",
+        ],
+    }
+
     def get_queryset(self):
         """
         Applies some prefetching to the base Exporter's get_queryset functionality.
@@ -220,6 +235,12 @@ class FragmentExporter(Exporter):
         "created",
         "last_modified",
     ]
+
+    # queryset filter for content types included in this import
+    content_type_filter = {
+        "content_type__app_label__in": ["corpus"],
+        "content_type__model__in": ["document", "fragment", "collection"],
+    }
 
     def get_queryset(self):
         """
