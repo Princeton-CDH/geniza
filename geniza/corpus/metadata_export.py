@@ -55,6 +55,9 @@ class DocumentExporter(Exporter):
             "collection",
             "languagescript",
             "footnote",
+            "source",
+            "creator",
+            "languages",
         ],
     }
 
