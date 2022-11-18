@@ -136,6 +136,9 @@ def test_iter_dicts(document):
                 "collection"
             )  # collection now a set in doc_data
 
+        for fn in doc.footnotes.all():
+            assert fn.display() in doc_data.get("scholarship_records")
+
         # test callables
         assert doc.all_tags() == doc_data.get("tags")
 

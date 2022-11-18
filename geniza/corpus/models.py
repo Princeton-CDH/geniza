@@ -490,8 +490,9 @@ class DocumentQuerySet(MultilingualQuerySet):
                     "fragment", "fragment__collection"
                 ),
             ),
-            "footnotes",
         )
+        # NOTE: footnotes likely should be prefetched depending on use case,
+        # but nested prefetching may vary
 
 
 class Document(ModelIndexable, DocumentDateMixin):
