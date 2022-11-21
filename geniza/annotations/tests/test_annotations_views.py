@@ -11,7 +11,8 @@ from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.annotations.models import Annotation
 from geniza.annotations.views import AnnotationResponse
-from geniza.footnotes.models import Footnote
+from geniza.corpus.models import Document
+from geniza.footnotes.models import Footnote, Source
 
 
 @pytest.mark.django_db
@@ -85,9 +86,43 @@ class TestAnnotationList:
         assert log_entry.action_flag == ADDITION
         assert log_entry.change_message == "Created via API"
 
+    def test_create_annotation(self, admin_client, document, source):
+        # should create a DIGITAL_EDITION footnote if one does not exist
+        assert not document.digital_editions().filter(source=source).exists()
+        admin_client.post(
+            self.anno_list_url,
+            json.dumps(
+                {
+                    "body": [{"value": "Test annotation"}],
+                    "target": {
+                        "source": {
+                            "partOf": {
+                                "id": reverse(
+                                    "corpus-uris:document-manifest",
+                                    kwargs={"pk": document.pk},
+                                )
+                            }
+                        }
+                    },
+                    "dc:source": source.uri,
+                }
+            ),
+            content_type="application/json",
+        )
+        # will raise error if digital edition footnote does not exist
+        footnote = document.digital_editions().get(source=source)
+
+        # should log action
+        assert LogEntry.objects.filter(
+            object_id=footnote.pk, action_flag=ADDITION
+        ).exists()
+
 
 @pytest.mark.django_db
 class TestAnnotationDetail:
+
+    anno_list_url = reverse("annotations:list")
+
     def test_get_annotation_detail(self, client, annotation):
         response = client.get(annotation.get_absolute_url())
         assert response.status_code == 200
@@ -112,9 +147,21 @@ class TestAnnotationDetail:
         self, mock_indexitems, admin_client, annotation
     ):
         # update annotation with POST request as admin
+        # POST req must include manifest and source URIs
         response = admin_client.post(
             annotation.get_absolute_url(),
-            json.dumps({**annotation.content, "body": [{"value": "new text"}]}),
+            json.dumps(
+                {
+                    "body": [{"value": "new text"}],
+                    "target": {
+                        "source": {
+                            "id": annotation.content["target"]["source"]["id"],
+                            "partOf": {"id": annotation.target_source_manifest_id},
+                        }
+                    },
+                    "dc:source": annotation.footnote.source.uri,
+                }
+            ),
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -127,6 +174,10 @@ class TestAnnotationDetail:
         # updated content should be returned in the response
         assert response.json() == updated_anno.compile()
 
+        # should call index_items on document when annotation updated
+        document = Document.from_manifest_uri(annotation.target_source_manifest_id)
+        mock_indexitems.assert_called_with([document])
+
         # should have log entry for update
         log_entry = LogEntry.objects.get(object_id=annotation.id)
         assert log_entry.action_flag == CHANGE
@@ -134,9 +185,21 @@ class TestAnnotationDetail:
 
     def test_post_annotation_detail_unchanged(self, admin_client, annotation):
         # update annotation unchanged with POST request as admin
+        # POST req must include manifest and source URIs
         response = admin_client.post(
             annotation.get_absolute_url(),
-            json.dumps({**annotation.content}),
+            json.dumps(
+                {
+                    **annotation.content,
+                    "target": {
+                        "source": {
+                            "id": annotation.content["target"]["source"]["id"],
+                            "partOf": {"id": annotation.target_source_manifest_id},
+                        }
+                    },
+                    "dc:source": annotation.footnote.source.uri,
+                }
+            ),
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -170,6 +233,56 @@ class TestAnnotationDetail:
         change_info = json.loads(log_entry.change_message)
         assert change_info["manifest_uri"] == annotation.target_source_manifest_id
         assert change_info["target_source_uri"] == annotation.target_source_id
+
+    def test_delete_last_annotation(self, admin_client, annotation):
+        # Should remove footnote DIGITAL_EDITION relation if deleted annotation
+        # is the only annotation on source + document
+        manifest_uri = annotation.target_source_manifest_id
+        source_uri = annotation.footnote.source.uri
+        source = Source.from_uri(source_uri)
+        document = Document.from_manifest_uri(manifest_uri)
+        # will raise error if digital edition footnote does not exist
+        footnote = document.digital_editions().get(source=source)
+        assert footnote.annotation_set.count() == 1
+        admin_client.delete(annotation.get_absolute_url())
+        # footnote should still exist, but no longer be a digital edition
+        assert Footnote.objects.filter(object_id=document.pk, source=source).exists()
+        assert not document.digital_editions().filter(source=source).exists()
+        footnote.refresh_from_db()
+        assert footnote.annotation_set.count() == 0
+        assert Footnote.DIGITAL_EDITION not in footnote.doc_relation
+
+        # Should not alter footnote doc_relation if there are more annotations on source + document
+        # create two annotations
+        for _ in range(2):
+            admin_client.post(
+                self.anno_list_url,
+                json.dumps(
+                    {
+                        "body": [{"value": "Test annotation"}],
+                        "target": {
+                            "source": {
+                                "partOf": {
+                                    "id": reverse(
+                                        "corpus-uris:document-manifest",
+                                        kwargs={"pk": document.pk},
+                                    )
+                                }
+                            }
+                        },
+                        "dc:source": source.uri,
+                    }
+                ),
+                content_type="application/json",
+            )
+        footnote = document.digital_editions().get(source=source)
+        assert footnote.annotation_set.count() == 2
+        # delete one of the annotations, footnote should still be digital edition
+        admin_client.delete(footnote.annotation_set.first().get_absolute_url())
+        document = Document.from_manifest_uri(manifest_uri)
+        assert Footnote.DIGITAL_EDITION in footnote.doc_relation
+        # document should still have a digital edition
+        assert document.digital_editions().filter(source=source).exists()
 
 
 @pytest.mark.django_db

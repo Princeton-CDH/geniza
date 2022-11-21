@@ -23,10 +23,8 @@ def annotation(db):
             "target": {
                 "source": {
                     "id": "http://ex.co/iiif/canvas/1",
-                    "partOf": {"id": document.manifest_uri},
                 }
             },
-            "dc:source": source.uri,
         },
     )
     return annotation
