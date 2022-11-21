@@ -3,12 +3,14 @@ from collections import defaultdict
 from functools import cached_property
 
 import bleach
+from django.conf import settings
 from django.contrib import admin
 from django.db import models
 from django.urls import reverse
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
+from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 
 
 def annotations_to_list(annotations, uri):
@@ -29,7 +31,7 @@ class AnnotationQuerySet(models.QuerySet):
     def by_target_context(self, uri):
         """filter queryset by the context of the target (i.e, the manifest
         the canvas belongs to)"""
-        return self.filter(content__target__source__partOf__id=uri)
+        return self.filter(footnote__object_id=document_id_from_manifest_uri(uri))
 
     def group_by_canvas(self):
         """Aggregate annotations by canvas id; returns a dictionary of lists,
@@ -110,8 +112,9 @@ class Annotation(TrackChangesModel):
     @cached_property
     def target_source_manifest_id(self):
         """convenience method to access manifest id for target source"""
-        return (
-            self.content.get("target", {}).get("source", {}).get("partOf", {}).get("id")
+        return "%s%s" % (
+            settings.ANNOTATION_MANIFEST_BASE_URL,
+            reverse("corpus-uris:document-manifest", args=[self.footnote.object_id]),
         )
 
     @cached_property
