@@ -1,22 +1,30 @@
 import json
+import logging
+import time
 
 from django.contrib import admin
-from django.contrib.admin.models import DELETION, LogEntry
+from django.contrib.admin.models import ADDITION, DELETION, LogEntry
 from django.contrib.auth.mixins import AccessMixin, PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponse, JsonResponse
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
+from parasolr.django.indexing import ModelIndexable
 
 from geniza.annotations.admin import AnnotationAdmin
 from geniza.annotations.models import Annotation, annotations_to_list
+from geniza.corpus.annotation_utils import document_id_from_manifest_uri
+from geniza.corpus.models import Document
+from geniza.footnotes.models import Footnote, Source
 
 # NOTE: for PGP, anyone with permission to edit documents
 # should also have permission to edit or create transcriptions.
 # So, we only check for change document permission
 # instead of add, change, delete annotation permissions.
 ANNOTATE_PERMISSION = "corpus.change_document"
+
+logger = logging.getLogger(__name__)
 
 
 class ApiAccessMixin(AccessMixin):
@@ -31,6 +39,52 @@ class AnnotationResponse(JsonResponse):
 
     def __init__(self, *args, **kwargs):
         super().__init__(content_type=self.content_type, *args, **kwargs)
+
+
+def parse_annotation_data(request):
+    """
+    For annotation create and update methods, parse json data from request in order
+    to set/update associated footnote. Returns content dict and footnote object.
+    """
+    json_data = json.loads(request.body)
+
+    # get manifest and source URIs and resolve to source and document
+    manifest_uri = json_data["target"]["source"]["partOf"]["id"]
+    source_uri = json_data["dc:source"]
+    source_id = Source.id_from_uri(source_uri)
+    document_id = document_id_from_manifest_uri(manifest_uri)
+    document_contenttype = ContentType.objects.get_for_model(Document)
+
+    # remove references to manifest and source URIs from content before save
+    del json_data["target"]["source"]["partOf"]
+    del json_data["dc:source"]
+
+    # find or create DIGITAL_EDITION footnote for this source and document
+    try:
+        footnote = Footnote.objects.get(
+            doc_relation=[Footnote.DIGITAL_EDITION],
+            source__pk=source_id,
+            content_type=document_contenttype,
+            object_id=document_id,
+        )
+    except Footnote.DoesNotExist:
+        source = Source.objects.get(pk=source_id)
+        footnote = Footnote.objects.create(
+            source=source,
+            doc_relation=[Footnote.DIGITAL_EDITION],
+            object_id=document_id,
+            content_type=document_contenttype,
+        )
+        LogEntry.objects.log_action(
+            user_id=request.user.id,
+            content_type_id=ContentType.objects.get_for_model(Footnote).pk,
+            object_id=footnote.pk,
+            object_repr=str(footnote),
+            action_flag=ADDITION,
+            change_message=f"Footnote automatically created via created annotation.",
+        )
+
+    return {"content": json_data, "footnote": footnote}
 
 
 class AnnotationList(
@@ -104,9 +158,10 @@ class AnnotationList(
         """ "Create a new annotation"""
 
         # parse request content as json
-        json_data = json.loads(request.body)
         anno = Annotation()
-        anno.set_content(json_data)
+        anno_data = parse_annotation_data(request=request)
+        anno.set_content(anno_data["content"])
+        anno.footnote = anno_data["footnote"]
 
         # NOTE: creating log entry first to ensure it is available
         # for backup signal handler fired on annotation save
@@ -199,10 +254,22 @@ class AnnotationDetail(
         """update the annotation on POST"""
         # NOTE: should use etag / if-match
         anno = self.get_object()
-        json_data = json.loads(request.body)
-        anno.set_content(json_data)
-        # only save and create log entry if changed
-        if any(anno.has_changed(f) for f in ["content", "canonical", "via"]):
+        anno_data = parse_annotation_data(request=request)
+        anno.set_content(anno_data["content"])
+        # if changed, save and create log entry, and reindex document
+        if any(
+            anno.has_changed(f)
+            for f in ["content", "canonical", "via"]
+            or anno.footnote.pk != anno_data["footnote"]
+        ):
+            anno.footnote = anno_data["footnote"]
+            start = time.time()
+            document_id = anno_data["footnote"].object_id
+            ModelIndexable.index_items([Document.objects.get(pk=document_id)])
+            logger.debug(
+                "Reindexing document %s (existing annotation updated): %f sec"
+                % (document_id, time.time() - start)
+            )
             # create log entry to document change
             anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
             anno_admin.log_change(request, anno, "Updated via API")
@@ -234,7 +301,16 @@ class AnnotationDetail(
             ),
             action_flag=DELETION,
         )
+        footnote = anno.footnote
 
         # then delete
         anno.delete()
+
+        # update footnote to remove DIGITAL_EDITION type if this is the last annotation associated with it
+        footnote.refresh_from_db()
+        if footnote.annotation_set.count() == 0:
+            footnote.doc_relation.remove(Footnote.DIGITAL_EDITION)
+            footnote.save()
+            footnote.refresh_from_db()
+
         return HttpResponse(status=204)
