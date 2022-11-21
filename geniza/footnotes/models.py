@@ -518,7 +518,10 @@ class Footnote(TrackChangesModel):
     def __str__(self):
         choices = dict(self.DOCUMENT_RELATION_TYPES)
 
-        rel = " and ".join([str(choices[c]) for c in self.doc_relation]) or "Footnote"
+        rel = (
+            " and ".join([str(choices[c]) for c in (self.doc_relation or [])])
+            or "Footnote"
+        )
         return f"{rel} of {self.content_object}"
 
     def display(self):
