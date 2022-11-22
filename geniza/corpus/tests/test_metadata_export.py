@@ -186,7 +186,7 @@ def test_http_export_data_csv(document):
 
 
 @pytest.mark.django_db
-def test_public_vs_admin_exporter(document, fragment):
+def test_public_vs_admin_exporter(document):
     pde = PublicDocumentExporter()
     ade = AdminDocumentExporter()
 
