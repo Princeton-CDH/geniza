@@ -8,6 +8,8 @@ Python/Django web application for a version 4.x of the `Princeton Geniza Project
 
 Python 3.9 / Django 3.2 / Node 16 / Postgresql / Solr 8.6
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.7347726.svg
+   :target: https://doi.org/10.5281/zenodo.7347726
 
 .. image:: https://github.com/Princeton-CDH/geniza/workflows/unit%20tests/badge.svg
     :target: https://github.com/Princeton-CDH/geniza/actions?query=workflow%3Aunit&20tests
