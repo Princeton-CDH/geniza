@@ -12,6 +12,7 @@ Change Log
 - As a content editor, I want scholarship record summary information included in documents metadata so I can quickly see who has published on the document without switching context.
 - As a content admin I would like to see counts and/or be able to export user log entries so that I can quantify how much work a content editor has contributed to the database.
 - As a content editor, I want to view source URLs when I download the sources CSV in order to more easily find/update external sources.
+- bugfix: search results don't always highlight matches in description text
 
 
 4.10.1
