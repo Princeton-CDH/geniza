@@ -13,9 +13,8 @@ identifiers:
     type: doi
     value: 10.5281/zenodo.7347726
 authors:
-- given-names: Rebecca
+- given-names: Rebecca Sutton
   family-names: Koeser
-  name-particle: Sutton
   affiliation: Center for Digital Humanities, Princeton University
   orcid: https://orcid.org/0000-0002-8762-8057
 - given-names: Gissoo
