@@ -6,6 +6,7 @@ from django.contrib import admin
 from django.contrib.admin.models import ADDITION, DELETION, LogEntry
 from django.contrib.auth.mixins import AccessMixin, PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import BadRequest
 from django.http import HttpResponse, JsonResponse
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin
@@ -159,7 +160,10 @@ class AnnotationList(
 
         # parse request content as json
         anno = Annotation()
-        anno_data = parse_annotation_data(request=request)
+        try:
+            anno_data = parse_annotation_data(request=request)
+        except (KeyError, IndexError):
+            raise BadRequest(Annotation.MALFORMED_ERROR)
         anno.set_content(anno_data["content"])
         anno.footnote = anno_data["footnote"]
 
@@ -254,7 +258,10 @@ class AnnotationDetail(
         """update the annotation on POST"""
         # NOTE: should use etag / if-match
         anno = self.get_object()
-        anno_data = parse_annotation_data(request=request)
+        try:
+            anno_data = parse_annotation_data(request=request)
+        except (KeyError, IndexError):
+            raise BadRequest(Annotation.MALFORMED_ERROR)
         anno.set_content(anno_data["content"])
         # if changed, save and create log entry, and reindex document
         if any(

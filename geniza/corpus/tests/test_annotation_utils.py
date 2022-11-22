@@ -15,4 +15,4 @@ class TestIdFromManifestUri:
 
         # should fail on resolvable non-manifest URI
         with pytest.raises(Resolver404):
-            document_id_from_manifest_uri(f"http://bad.com/documents/3/")
+            document_id_from_manifest_uri("http://bad.com/documents/3/")

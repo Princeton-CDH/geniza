@@ -55,11 +55,42 @@ class TestAnnotationList:
         # not logged in, should get permission denied error
         assert response.status_code == 403
 
-    @pytest.mark.skip("disabled until annotation create view handles footnote logic")
-    def test_post_annotation_list_admin(self, admin_client, annotation):
+    def test_post_annotation_list_malformed(
+        self, admin_client, malformed_annotations, annotation_json
+    ):
+        # should raise 400 errors on bad JSON
+        for json_dict in malformed_annotations:
+            response = admin_client.post(
+                self.anno_list_url,
+                json.dumps(json_dict),
+                content_type="application/json",
+            )
+            assert response.status_code == 400
+
+        # for otherwise valid request but bad manifest URI, should raise 404 (Resolver404)
         response = admin_client.post(
             self.anno_list_url,
-            json.dumps({**annotation.content, "foo": "bar"}),
+            json.dumps(
+                {
+                    **annotation_json,
+                    "target": {
+                        "source": {"partOf": {"id": "http://bad.com/documents/3/"}}
+                    },
+                }
+            ),
+            content_type="application/json",
+        )
+        assert response.status_code == 404
+
+    def test_post_annotation_list_admin(self, admin_client, annotation_json):
+        response = admin_client.post(
+            self.anno_list_url,
+            json.dumps(
+                {
+                    **annotation_json,
+                    "foo": "bar",
+                }
+            ),
             content_type="application/json",
         )
 
@@ -86,27 +117,12 @@ class TestAnnotationList:
         assert log_entry.action_flag == ADDITION
         assert log_entry.change_message == "Created via API"
 
-    def test_create_annotation(self, admin_client, document, source):
+    def test_create_annotation(self, admin_client, document, source, annotation_json):
         # should create a DIGITAL_EDITION footnote if one does not exist
         assert not document.digital_editions().filter(source=source).exists()
         admin_client.post(
             self.anno_list_url,
-            json.dumps(
-                {
-                    "body": [{"value": "Test annotation"}],
-                    "target": {
-                        "source": {
-                            "partOf": {
-                                "id": reverse(
-                                    "corpus-uris:document-manifest",
-                                    kwargs={"pk": document.pk},
-                                )
-                            }
-                        }
-                    },
-                    "dc:source": source.uri,
-                }
-            ),
+            json.dumps(annotation_json),
             content_type="application/json",
         )
         # will raise error if digital edition footnote does not exist
@@ -141,6 +157,18 @@ class TestAnnotationDetail:
             content_type="application/json",
         )
         assert response.status_code == 403
+
+    def test_post_annotation_detail_malformed(
+        self, admin_client, malformed_annotations, annotation
+    ):
+        # should raise 400 errors on bad JSON
+        for json_dict in malformed_annotations:
+            response = admin_client.post(
+                annotation.get_absolute_url(),
+                json.dumps(json_dict),
+                content_type="application/json",
+            )
+            assert response.status_code == 400
 
     @patch.object(ModelIndexable, "index_items")
     def test_post_annotation_detail_admin(
@@ -234,7 +262,7 @@ class TestAnnotationDetail:
         assert change_info["manifest_uri"] == annotation.target_source_manifest_id
         assert change_info["target_source_uri"] == annotation.target_source_id
 
-    def test_delete_last_annotation(self, admin_client, annotation):
+    def test_delete_last_annotation(self, admin_client, annotation, annotation_json):
         # Should remove footnote DIGITAL_EDITION relation if deleted annotation
         # is the only annotation on source + document
         manifest_uri = annotation.target_source_manifest_id
@@ -257,22 +285,7 @@ class TestAnnotationDetail:
         for _ in range(2):
             admin_client.post(
                 self.anno_list_url,
-                json.dumps(
-                    {
-                        "body": [{"value": "Test annotation"}],
-                        "target": {
-                            "source": {
-                                "partOf": {
-                                    "id": reverse(
-                                        "corpus-uris:document-manifest",
-                                        kwargs={"pk": document.pk},
-                                    )
-                                }
-                            }
-                        },
-                        "dc:source": source.uri,
-                    }
-                ),
+                json.dumps(annotation_json),
                 content_type="application/json",
             )
         footnote = document.digital_editions().get(source=source)

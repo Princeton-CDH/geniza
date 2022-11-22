@@ -85,6 +85,11 @@ class Annotation(TrackChangesModel):
     ALLOWED_TAGS = ["del", "li", "ol", "p", "span", "sup"]
     ALLOWED_ATTRIBUTES = ["lang"]
 
+    # error message for malformed annotations
+    MALFORMED_ERROR = (
+        "Malformed annotation. Annotation must include manifest and source URIs."
+    )
+
     class Meta:
         # by default, order by creation time
         ordering = ["created"]
