@@ -13,7 +13,10 @@ from geniza.common.utils import Timer, Timerable
 from geniza.corpus.annotation_export import generate_coauthor_commit
 from geniza.corpus.management.lastrun_command import LastRunCommand
 from geniza.corpus.metadata_export import PublicDocumentExporter, PublicFragmentExporter
-from geniza.footnotes.metadata_export import FootnoteExporter, SourceExporter
+from geniza.footnotes.metadata_export import (
+    PublicFootnoteExporter,
+    PublicSourceExporter,
+)
 
 
 class MetadataExportRepo(Timerable):
@@ -32,8 +35,8 @@ class MetadataExportRepo(Timerable):
     exports = {
         "documents": PublicDocumentExporter,
         "fragments": PublicFragmentExporter,
-        "sources": SourceExporter,
-        "footnotes": FootnoteExporter,
+        "sources": PublicSourceExporter,
+        "footnotes": PublicFootnoteExporter,
     }
 
     def __init__(

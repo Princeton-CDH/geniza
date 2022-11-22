@@ -207,9 +207,7 @@ class AdminDocumentExporter(DocumentExporter):
 
 class PublicDocumentExporter(DocumentExporter):
     """
-    Public version of the document exporter. It does not need to subset the list of CSV fields;
-    the csv.DictWriter will use all fields in DocumentExporter.csv_fields that are also in the
-    output dictionary given to the writer.
+    Public version of the document exporter. It can e.g. modify the get_queryset to ensure it deals with public documents.
     """
 
     def get_queryset(self):
@@ -295,10 +293,6 @@ class PublicFragmentExporter(FragmentExporter):
 
     def get_queryset(self):
         return super().get_queryset().filter(documents__status=Document.PUBLIC)
-
-
-# NOTE: may want a public version of fragment exporter
-# that would limit to fragments associated with public / non-suppressed documents
 
 
 class AdminFragmentExporter(FragmentExporter):

@@ -67,6 +67,11 @@ class SourceExporter(Exporter):
 
 
 class PublicSourceExporter(SourceExporter):
+    """
+    Like `geniza.corpus.metadata_export.PublicDocumentExporter` or `geniza.corpus.metadata_export.PublicFragmentExporter`,
+    this class could filter sources in `get_queryset`, but the filter is not necessary.
+    """
+
     pass
 
 
@@ -101,7 +106,6 @@ class FootnoteExporter(Exporter):
         "notes",
         "url",
         "content",
-        "url_admin",
     ]
 
     # queryset filter for content types included in this import
@@ -135,6 +139,11 @@ class FootnoteExporter(Exporter):
 
 
 class PublicFootnoteExporter(FootnoteExporter):
+    """
+    Like `geniza.corpus.metadata_export.PublicDocumentExporter` or `geniza.corpus.metadata_export.PublicFragmentExporter`,
+    this class could filter footnotes in `get_queryset` that deal with public documents, but this filter is not necessary.
+    """
+
     pass
 
 
