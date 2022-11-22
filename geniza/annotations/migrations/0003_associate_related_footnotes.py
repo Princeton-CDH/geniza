@@ -65,7 +65,7 @@ def associate_related_footnotes(apps, schema_editor):
                 object_id=footnote.pk,
                 object_repr=str(footnote),
                 action_flag=ADDITION,
-                change_message=f"Footnote automatically created via annotation migration.",
+                change_message="Footnote automatically created via annotation migration.",
             )
 
         # instantiate the FK relation
