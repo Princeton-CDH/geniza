@@ -18,12 +18,14 @@ class ReassignLogEntries(TestMigrations):
         LogEntry = apps.get_model("admin", "LogEntry")
         Document = apps.get_model("corpus", "Document")
         ContentType = apps.get_model("contenttypes", "ContentType")
+        User = apps.get_model("auth", "User")
         (document_prefetchable_type, _) = ContentType.objects.get_or_create(
             app_label="corpus", model="documentprefetchableproxy"
         )
         d = Document.objects.create()
+        (user, _) = User.objects.get_or_create(username=settings.SCRIPT_USERNAME)
         self.log_entry = LogEntry.objects.log_action(
-            user_id=1,
+            user_id=user.pk,
             content_type_id=document_prefetchable_type.pk,
             object_id=d.pk,
             object_repr=str(d),
