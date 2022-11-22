@@ -1,28 +1,37 @@
 import random
+import time
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db import connection, models
 from django.db.migrations.executor import MigrationExecutor
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory, TestCase, TransactionTestCase, override_settings
 from taggit.models import Tag
 
 from geniza.common.admin import (
     CustomTagAdmin,
+    LocalLogEntryAdmin,
     LocalUserAdmin,
     custom_empty_field_list_filter,
 )
 from geniza.common.fields import NaturalSortField, RangeField, RangeWidget
-from geniza.common.metadata_export import Exporter
+from geniza.common.metadata_export import Exporter, LogEntryExporter
 from geniza.common.middleware import PublicLocaleMiddleware
 from geniza.common.models import UserProfile
-from geniza.common.utils import Echo, absolutize_url, custom_tag_string
+from geniza.common.utils import (
+    Echo,
+    Timer,
+    Timerable,
+    absolutize_url,
+    custom_tag_string,
+)
 from geniza.corpus.models import Document
 
 
@@ -354,16 +363,102 @@ def test_base_exporter():
 
     # serializes correctly?
     sep = exporter.sep_within_cells
+    # should preserve order passed in
     assert exporter.serialize_value([1, 2, 3]) == f"1{sep}2{sep}3"
-    assert exporter.serialize_value([1, 3, 2]) == f"1{sep}2{sep}3"
-    assert exporter.serialize_value({1, 3, 2}) == f"1{sep}2{sep}3"
-    assert exporter.serialize_dict({"key": [1, 3, 2]}) == {"key": f"1{sep}2{sep}3"}
+    assert exporter.serialize_value([1, 3, 2]) == f"1{sep}3{sep}2"
+    assert (
+        exporter.serialize_value({3, 2, 1}) == f"1{sep}2{sep}3"
+    )  # set order not preserved
+    assert exporter.serialize_dict({"key": [1, 3, 2]}) == {"key": f"1{sep}3{sep}2"}
 
     # keys already enforced to be strings by database
-    assert exporter.serialize_dict({"0": [1, 3, 2]}) == {"0": f"1{sep}2{sep}3"}
+    assert exporter.serialize_dict({"0": [1, 3, 2]}) == {"0": f"1{sep}3{sep}2"}
 
     assert exporter.serialize_value(123) == "123"
 
     assert exporter.serialize_value(True) == "Y"
     assert exporter.serialize_value(False) == "N"
     assert exporter.serialize_value(None) == ""
+
+
+fake_printed = ""
+
+
+def fake_printer(x, end="\n"):
+    global fake_printed
+    fake_printed = fake_printed + x + end
+
+
+def test_timer():
+    with Timer(to_print=False) as t:
+        pass
+    assert round(t.elapsed) == 0
+
+    with Timer(to_print=False) as t:
+        time.sleep(1)
+    assert round(t.elapsed) == 1
+
+    with Timer(to_print=False) as t:
+        time.sleep(2)
+    assert round(t.elapsed) == 2
+
+    timer_desc = "My Timer Description"
+    with Timer(print_func=fake_printer, desc=timer_desc, to_print=False) as t:
+        pass
+    assert timer_desc not in fake_printed
+
+    with Timer(print_func=fake_printer, desc=timer_desc, to_print=True) as t:
+        pass
+    assert timer_desc in fake_printed
+    assert "completed in 0.0s" in fake_printed
+
+    class newthing(Timerable):
+        pass
+
+    x = newthing()
+    timer_desc2 = "Totally Different Timer Description"
+    with x.timer(desc=timer_desc2, print_func=fake_printer, to_print=True) as t:
+        pass
+    assert round(t.elapsed) == 0
+    assert timer_desc2 in fake_printed
+
+    timer_desc3 = "A Thrice Different Description!"
+    y = newthing()
+    y.print = fake_printer
+    with y.timer(desc=timer_desc3) as t:
+        pass
+    assert timer_desc3 in fake_printed
+
+
+@pytest.mark.django_db
+def test_logentry_exporter_data(document):
+    logentry_exporter = LogEntryExporter()
+    # document fixture has two log entries; first should be creation/addition
+    logentry = document.log_entries.first()
+    data = logentry_exporter.get_export_data_dict(logentry)
+    assert data["action_time"] == logentry.action_time
+    assert data["user"] == logentry.user
+    assert data["content_type"] == logentry.content_type.name
+    assert data["content_type_app"] == logentry.content_type.app_label
+    assert data["object_id"] == str(document.pk)
+    assert data["change_message"] == logentry.change_message
+    assert data["action"] == "addition"
+
+
+@pytest.mark.django_db
+def test_admin_export_to_csv(document):
+    logentry_admin = LocalLogEntryAdmin(model=LogEntry, admin_site=admin.site)
+    response = logentry_admin.export_to_csv(Mock())
+    assert isinstance(response, StreamingHttpResponse)
+    # consume the binary streaming content and decode to inspect as str
+    content = b"".join([val for val in response.streaming_content]).decode()
+
+    # spot-check that we get expected data
+    # - header row
+    assert "action_time,user,content_type" in content
+    # - some content
+    for log_entry in document.log_entries.all():
+        assert str(log_entry.action_time) in content
+        assert log_entry.user.username in content
+        # action flag converted to text
+        assert LogEntryExporter.action_label[log_entry.action_flag] in content

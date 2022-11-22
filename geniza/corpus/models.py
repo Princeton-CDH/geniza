@@ -490,8 +490,9 @@ class DocumentQuerySet(MultilingualQuerySet):
                     "fragment", "fragment__collection"
                 ),
             ),
-            "footnotes",
         )
+        # NOTE: footnotes likely should be prefetched depending on use case,
+        # but nested prefetching may vary
 
 
 class Document(ModelIndexable, DocumentDateMixin):
@@ -687,8 +688,9 @@ class Document(ModelIndexable, DocumentDateMixin):
         primary language set and it has an ISO code available. Returns
         None if unset or unavailable.
         """
-        if self.languages.count() == 1:
-            return self.languages.first().iso_code or None
+        # avoid using count() and first() so we don't hit the db for indexing
+        if len(self.languages.all()) == 1:
+            return self.languages.all()[0].iso_code or None
 
     @cached_property
     def primary_script(self):
@@ -978,7 +980,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # should always be indexed in English
                 "type_s": str(self.doctype) if self.doctype else "Unknown type",
                 # use english description for now
-                "description_t": strip_tags(self.description_en),
+                "description_en_bigram": strip_tags(self.description_en),
                 "notes_t": self.notes or None,
                 "needs_review_t": self.needs_review or None,
                 # index shelfmark label as a string (combined shelfmark OR shelfmark override)
@@ -1078,7 +1080,6 @@ class Document(ModelIndexable, DocumentDateMixin):
             index_data[
                 "input_date_dt"
             ] = last_log_entry.action_time.isoformat().replace("+00:00", "Z")
-
         return index_data
 
     # define signal handlers to update the index based on changes

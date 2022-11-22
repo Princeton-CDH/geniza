@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from django.db.models.query import EmptyQuerySet
 from django.forms import modelform_factory
 from django.forms.models import model_to_dict
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
@@ -226,24 +226,21 @@ class TestDocumentAdmin:
         assert queryset.count() == Document.objects.all().count()
 
     @pytest.mark.django_db
-    @patch("geniza.corpus.admin.DocumentExporter")
-    def test_export_to_csv(self, mock_documentexporter):
+    def test_export_to_csv(self, document, join):
         doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
-        # if no queryset provided, should use default queryset
-        with patch.object(doc_admin, "get_queryset") as mock_get_queryset:
-            docs = mock_get_queryset.return_value
-            # call export; using a mock for request
-            result = doc_admin.export_to_csv(Mock())
+        response = doc_admin.export_to_csv(Mock())
+        assert isinstance(response, StreamingHttpResponse)
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
 
-            # should be called once to initialize
-            mock_documentexporter.assert_called_with(queryset=docs, progress=False)
-            # exporter instance called to generate http export
-            mock_documentexporter.return_value.http_export_data_csv.assert_called()
-            # export returned as result from method
-            assert (
-                result
-                == mock_documentexporter.return_value.http_export_data_csv.return_value
-            )
+        # spot-check that we get expected data
+        # - header row
+        assert "pgpid,url," in content
+        # - some content
+        assert str(document.id) in content
+        assert document.description in content
+        assert str(join.id) in content
+        assert join.description in content
 
     def test_view_old_pgpids(self):
         doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
@@ -362,6 +359,23 @@ class TestFragmentAdmin:
         frag_admin.save_model(mock_request, mock_obj, Mock(), Mock())
         args, kwargs = mock_super_save_model.call_args
         assert args[1].request == mock_request
+
+    @pytest.mark.django_db
+    def test_export_to_csv(self, document, join):
+        fragment_admin = FragmentAdmin(model=Fragment, admin_site=admin.site)
+        response = fragment_admin.export_to_csv(Mock())
+        assert isinstance(response, StreamingHttpResponse)
+        # consume the binary streaming content and decode to inspect as str
+        content = b"".join([val for val in response.streaming_content]).decode()
+
+        # spot-check that we get expected data
+        # - header row
+        assert "shelfmark,pgpids," in content
+        # - some content
+        assert str(document.id) in content
+        fragment = document.fragments.first()
+        assert fragment.shelfmark in content
+        assert str(fragment.last_modified) in content
 
 
 class TestHasTranscriptionListFilter:

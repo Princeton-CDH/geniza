@@ -1,10 +1,14 @@
+from admin_log_entries.admin import LogEntryAdmin
 from django.contrib import admin
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.db.models import Count
+from django.urls import path
 from taggit.admin import TagAdmin
 from taggit.models import Tag
 
+from geniza.common.metadata_export import LogEntryExporter
 from geniza.common.models import UserProfile
 
 
@@ -86,3 +90,30 @@ class CustomTagAdmin(TagAdmin):
 
 admin.site.unregister(User)
 admin.site.register(User, LocalUserAdmin)
+
+
+class LocalLogEntryAdmin(LogEntryAdmin):
+    @admin.display(description="Export selected log entries to CSV")
+    def export_to_csv(self, request, queryset=None):
+        """Stream tabular data as a CSV file"""
+        queryset = queryset or self.get_queryset(request)
+        exporter = LogEntryExporter(queryset=queryset, progress=False)
+        return exporter.http_export_data_csv()
+
+    def get_urls(self):
+        """Return admin urls; adds a custom URL for exporting all documents
+        as CSV"""
+        urls = [
+            path(
+                "csv/",
+                self.admin_site.admin_view(self.export_to_csv),
+                name="admin_logentry_csv",
+            ),
+        ]
+        return urls + super().get_urls()
+
+    actions = (export_to_csv,)
+
+
+admin.site.unregister(LogEntry)
+admin.site.register(LogEntry, LocalLogEntryAdmin)

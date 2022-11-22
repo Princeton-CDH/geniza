@@ -121,4 +121,7 @@ TRANSCRIPTIONS_JSON_FILE = BASE_DIR.parent / "data" / "transcriptions.json"
 # local path where git repo should be cloned
 # ANNOTATION_BACKUP_PATH = "data/annotations_backup"
 
-
+# URL for the metadata repository
+# METADATA_BACKUP_GITREPO = 'https://github.com/Princeton-CDH/test-geniza-metadata'
+# Local path for metadata repo
+# METADATA_BACKUP_PATH = 'data/metadata_repo'

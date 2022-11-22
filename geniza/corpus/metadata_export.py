@@ -1,10 +1,15 @@
+from django.db.models.query import Prefetch
+
 from geniza.common.metadata_export import Exporter
-from geniza.corpus.models import Document
+from geniza.corpus.models import Document, Fragment
+from geniza.footnotes.models import Footnote
 
 
 class DocumentExporter(Exporter):
     """
-    A subclass of geniza.common.metadata_export.Exporter that exports information relating to Documents. It custom implements only two methods: `get_queryset` and `get_export_data_dict`.
+    A subclass of :class:`geniza.common.metadata_export.Exporter` that
+    exports information relating to :class:`~geniza.corpus.models.Document`.
+    Extends :meth:`get_queryset` and :meth:`get_export_data_dict`.
     """
 
     model = Document
@@ -20,6 +25,7 @@ class DocumentExporter(Exporter):
         "type",
         "tags",
         "description",
+        "scholarship_records",
         "shelfmarks_historic",
         "languages_primary",
         "languages_secondary",
@@ -40,6 +46,21 @@ class DocumentExporter(Exporter):
         "has_translation",
     ]
 
+    # queryset filter for content types included in this import
+    content_type_filter = {
+        "content_type__app_label__in": ["corpus", "footnotes"],
+        "content_type__model__in": [
+            "document",
+            "fragment",
+            "collection",
+            "languagescript",
+            "footnote",
+            "source",
+            "creator",
+            "languages",
+        ],
+    }
+
     def get_queryset(self):
         """
         Applies some prefetching to the base Exporter's get_queryset functionality.
@@ -47,10 +68,30 @@ class DocumentExporter(Exporter):
         :return: Custom-given query set or query set of all documents
         :rtype: QuerySet
         """
-        qset = self.queryset or self.model.objects.all().metadata_prefetch()
-        qset = qset.prefetch_related(
-            "secondary_languages", "log_entries", "log_entries__user"
-        ).order_by("id")
+        qset = self.queryset or self.model.objects.all()
+        # clear existing prefetches and then add the ones we need,
+        # since admin queryset footnote prefetching conflicts
+        qset = (
+            qset.prefetch_related(None)
+            .metadata_prefetch()
+            .prefetch_related(
+                "secondary_languages",
+                "log_entries",
+                "log_entries__user",
+                Prefetch(
+                    "footnotes",
+                    queryset=Footnote.objects.select_related(
+                        "source",
+                        "source__source_type",
+                    ).prefetch_related(
+                        "source__authorship_set__creator",
+                        "source__languages",
+                        "source__authors",
+                    ),
+                ),
+            )
+            .order_by("id")
+        )
         return qset
 
     def get_export_data_dict(self, doc):
@@ -64,41 +105,31 @@ class DocumentExporter(Exporter):
         :rtype: dict
         """
         all_textblocks = doc.textblock_set.all()
+        # if len(all_textblocks)>1:
+        #    print(f'Doc text blocks: {doc.id} -> {[x.id for x in all_textblocks]}')
         all_fragments = [tb.fragment for tb in all_textblocks]
         all_log_entries = doc.log_entries.all()
-        input_users = set(
-            [
-                log_entry.user
-                for log_entry in all_log_entries
-                if log_entry.user.username != self.script_user
-            ]
-        )
+        input_users = {
+            log_entry.user
+            for log_entry in all_log_entries
+            if log_entry.user.username != self.script_user
+        }
         iiif_urls = [fr.iiif_url for fr in all_fragments]
         view_urls = [fr.url for fr in all_fragments]
         multifrag = [tb.multifragment for tb in all_textblocks]
         side = [tb.side for tb in all_textblocks]
         region = [tb.region for tb in all_textblocks]
         old_shelfmarks = [fragment.old_shelfmarks for fragment in all_fragments]
-        libraries = set(
-            [
-                fragment.collection.lib_abbrev or fragment.collection.library
-                if fragment.collection
-                else ""
-                for fragment in all_fragments
-            ]
-        ) - {
-            ""
-        }  # exclude empty string for any fragments with no library
-        collections = set(
-            [
-                fragment.collection.abbrev or fragment.collection.name
-                if fragment.collection
-                else ""
-                for fragment in all_fragments
-            ]
-        ) - {
-            ""
-        }  # exclude empty string for any with no collection
+        libraries = [
+            fragment.collection.lib_abbrev or fragment.collection.library
+            for fragment in all_fragments
+            if fragment.collection
+        ]
+        collections = [
+            str(fragment.collection)
+            for fragment in all_fragments
+            if fragment.collection
+        ]
 
         outd = {}
         outd["pgpid"] = doc.id
@@ -111,24 +142,20 @@ class DocumentExporter(Exporter):
 
         sep_within_cells = self.sep_within_cells
 
-        outd["iiif_urls"] = sep_within_cells.join(iiif_urls) if any(iiif_urls) else ""
-        outd["fragment_urls"] = (
-            sep_within_cells.join(view_urls) if any(view_urls) else ""
-        )
+        outd["iiif_urls"] = iiif_urls
+        outd["fragment_urls"] = view_urls
         outd["shelfmark"] = doc.shelfmark
-        outd["multifragment"] = sep_within_cells.join([s for s in multifrag if s])
-        outd["side"] = sep_within_cells.join(
-            [s for s in side if s]
-        )  # side (recto/verso)
-        outd["region"] = sep_within_cells.join(
-            [r for r in region if r]
-        )  # text block region
+        outd["multifragment"] = [s for s in multifrag if s]
+        outd["side"] = [s for s in side if s]
+        outd["region"] = [r for r in region if r]
         outd["type"] = doc.doctype
         outd["tags"] = doc.all_tags()
         outd["description"] = doc.description
-        outd["shelfmarks_historic"] = sep_within_cells.join(
-            [os for os in old_shelfmarks if os]
-        )
+        # include short display version of scholarship records;
+        # need to use set since some sources have duplicate footnotes
+        # in order to keep track of multiple links / PDFs
+        outd["scholarship_records"] = {fn.display() for fn in doc.footnotes.all()}
+        outd["shelfmarks_historic"] = [os for os in old_shelfmarks if os]
         outd["languages_primary"] = doc.all_languages()
         outd["languages_secondary"] = doc.all_secondary_languages()
         outd["language_note"] = doc.language_note
@@ -145,14 +172,11 @@ class DocumentExporter(Exporter):
 
         outd["last_modified"] = doc.last_modified
 
-        outd["input_by"] = sep_within_cells.join(
-            set([user.get_full_name() or user.username for user in input_users])
-        )
-
-        outd["library"] = sep_within_cells.join(libraries) if any(libraries) else ""
-        outd["collection"] = (
-            sep_within_cells.join(collections) if any(collections) else ""
-        )
+        outd["input_by"] = {
+            user.get_full_name() or user.username for user in input_users
+        }
+        outd["library"] = libraries
+        outd["collection"] = collections
 
         # has transcription and translation?
         outd["has_transcription"] = doc.has_transcription()
@@ -187,3 +211,102 @@ class PublicDocumentExporter(DocumentExporter):
 
     def get_queryset(self):
         return super().get_queryset().filter(status=Document.PUBLIC)
+
+
+class FragmentExporter(Exporter):
+    """
+    A subclass of :class:`geniza.common.metadata_export.Exporter` that
+    exports information relating to :class:`~geniza.corpus.models.Fragment`.
+    """
+
+    model = Fragment
+    csv_fields = [
+        "shelfmark",
+        "pgpids",
+        "old_shelfmarks",
+        "collection",
+        "library",
+        "library_abbrev",
+        "collection_name",
+        "collection_abbrev",
+        "url",
+        "iiif_url",
+        "is_multifragment",
+        "created",
+        "last_modified",
+    ]
+
+    # queryset filter for content types included in this import
+    content_type_filter = {
+        "content_type__app_label__in": ["corpus"],
+        "content_type__model__in": ["document", "fragment", "collection"],
+    }
+
+    def get_queryset(self):
+        """
+        Applies some prefetching to the base Exporter's get_queryset functionality.
+
+        :return: Custom-given query set or query set of all documents
+        :rtype: QuerySet
+        """
+        return (
+            super()
+            .get_queryset()
+            .select_related("collection")
+            .prefetch_related("documents")
+        )
+
+    def get_export_data_dict(self, fragment):
+        data = {
+            "shelfmark": fragment.shelfmark,
+            "pgpids": [doc.pk for doc in fragment.documents.all()],
+            "old_shelfmarks": fragment.old_shelfmarks,
+            "url": fragment.url,
+            "iiif_url": fragment.iiif_url,
+            "is_multifragment": fragment.is_multifragment,
+            "created": fragment.created,
+            "last_modified": fragment.last_modified,
+        }
+        # it's possible (although unlikely) for collection to be unset
+        if fragment.collection:
+            # NOTE: this results in a lot of redundant info;
+            # maybe collection shortname is enough for fragment csv?
+            data.update(
+                {
+                    "collection": fragment.collection,
+                    "library": fragment.collection.library,
+                    "library_abbrev": fragment.collection.lib_abbrev,
+                    "collection_name": fragment.collection.name,
+                    "collection_abbrev": fragment.collection.abbrev,
+                }
+            )
+        return data
+
+
+class PublicFragmentExporter(FragmentExporter):
+    """
+    Public version of the fragment exporter; limits fragments
+    to those associated with public documents. Unassociated fragments
+    or fragments only linked to suppressed documents are not included.
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(documents__status=Document.PUBLIC)
+
+
+# NOTE: may want a public version of fragment exporter
+# that would limit to fragments associated with public / non-suppressed documents
+
+
+class AdminFragmentExporter(FragmentExporter):
+    "Admin fragment export variant; adds notes, review, and admin url fields."
+    csv_fields = FragmentExporter.csv_fields + ["notes", "needs_review", "admin_url"]
+
+    def get_export_data_dict(self, fragment):
+        data = super().get_export_data_dict(fragment)
+        data["notes"] = fragment.notes
+        data["needs_review"] = fragment.needs_review
+        data[
+            "admin_url"
+        ] = f"{self.url_scheme}{self.site_domain}/admin/corpus/fragment/{fragment.id}/change/"
+        return data

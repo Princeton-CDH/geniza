@@ -17,7 +17,7 @@ from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.common.admin import custom_empty_field_list_filter
-from geniza.corpus.metadata_export import DocumentExporter
+from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentExporter
 from geniza.corpus.models import (
     Collection,
     Document,
@@ -316,6 +316,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             super()
             .get_queryset(request)
             .metadata_prefetch()
+            .prefetch_related("footnotes")
             .annotate(shelfmk_all=ArrayAgg("textblock__fragment__shelfmark"))
             .order_by("shelfmk_all")
         )
@@ -398,7 +399,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     def export_to_csv(self, request, queryset=None):
         """Stream tabular data as a CSV file"""
         queryset = queryset or self.get_queryset(request)
-        exporter = DocumentExporter(queryset=queryset, progress=False)
+        exporter = AdminDocumentExporter(queryset=queryset, progress=False)
         return exporter.http_export_data_csv()
 
     def get_urls(self):
@@ -477,3 +478,24 @@ class FragmentAdmin(admin.ModelAdmin):
         # if there is an error loading the IIIF manifest
         obj.request = request
         super().save_model(request, obj, form, change)
+
+    @admin.display(description="Export selected fragments to CSV")
+    def export_to_csv(self, request, queryset=None):
+        """Stream tabular data as a CSV file"""
+        queryset = queryset or self.get_queryset(request)
+        exporter = AdminFragmentExporter(queryset=queryset, progress=False)
+        return exporter.http_export_data_csv()
+
+    def get_urls(self):
+        """Return admin urls; adds a custom URL for exporting all sources
+        as CSV"""
+        urls = [
+            path(
+                "csv/",
+                self.admin_site.admin_view(self.export_to_csv),
+                name="corpus_fragments_csv",
+            )
+        ]
+        return urls + super().get_urls()
+
+    actions = (export_to_csv,)
