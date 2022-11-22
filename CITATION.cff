@@ -1,0 +1,64 @@
+# YAML 1.2
+# Metadata for citation of this software according to the CFF format (https://citation-file-format.github.io/)
+cff-version: 1.0.3
+message: If you use this software, please cite it using these metadata.
+# FIXME title as repository name might not be the best name, please make human readable
+title: 'Princeton-CDH/geniza: v4.11'
+doi: 10.5281/zenodo.7347726
+identifiers:
+  - description: "DOI for all versions of the geniza codebase"
+    type: doi
+    value: 10.5281/zenodo.7347725
+  - description: "DOI for version 4.11 of the geniza codebase"
+    type: doi
+    value: 10.5281/zenodo.7347726
+authors:
+- given-names: Rebecca
+  family-names: Koeser
+  name-particle: Sutton
+  affiliation: Center for Digital Humanities, Princeton University
+  orcid: https://orcid.org/0000-0002-8762-8057
+- given-names: Gissoo
+  family-names: Doroudian
+  affiliation: Center for Digital Humanities, Princeton University
+  orcid: https://orcid.org/0000-0002-6702-6964
+- given-names: Ben
+  family-names: Silverman
+  affiliation: Performant Software
+  orcid: https://orcid.org/0000-0002-4597-439X
+- given-names: Nick
+  family-names: Budak
+  orcid: https://orcid.org/0000-0002-4542-0899
+- given-names: Kevin
+  family-names: McElwee
+  orcid: https://orcid.org/0000-0003-2577-8102
+- given-names: Ryan
+  family-names: Heuser
+  affiliation: Center for Digital Humanities, Princeton University
+  orcid: https://orcid.org/0000-0002-4155-4961
+version: '4.11'
+date-released: 2022-11-22
+repository-code: https://github.com/Princeton-CDH/geniza
+license: Apache-2.0
+references:
+- type: website
+  title: Princeton Geniza Project (v4.x)
+  year: 2022
+  authors:
+  - name: The Center for Digital Humanities at Princeton
+    website: https://cdh.princeton.edu
+  url: https://geniza.princeton.edu/
+- type: dataset
+  title: Princeton Geniza Project metadata
+  year: 2022
+  url: https://github.com/princetongenizalab/pgp-metadata
+- type: dataset
+  title: Princeton Geniza Project text
+  year: 2022
+  url: https://github.com/princetongenizalab/pgp-text
+keywords:
+ - geniza
+ - judaeo-arabic
+ - "digital humanities"
+ - python
+ - django
