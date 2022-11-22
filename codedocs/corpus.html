@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.10.1 documentation</title>
+    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.11.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -900,9 +900,31 @@ with or without accents, and supports local month-name overrides.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="geniza.corpus.metadata_export.AdminFragmentExporter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.metadata_export.</span></span><span class="sig-name descname"><span class="pre">AdminFragmentExporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#AdminFragmentExporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.AdminFragmentExporter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Admin fragment export variant; adds notes, review, and admin url fields.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.metadata_export.AdminFragmentExporter.get_export_data_dict">
+<span class="sig-name descname"><span class="pre">get_export_data_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fragment</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#AdminFragmentExporter.get_export_data_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.AdminFragmentExporter.get_export_data_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>A given Exporter class (DocumentExporter, FootnoteExporter, etc) must implement this function. It ought to return a dictionary of exported information for a given object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><em>object</em></a>) – Model object (document, footnote, etc)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.11)"><strong>NotImplementedError</strong></a> – This method must be implemented by subclasses</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="geniza.corpus.metadata_export.DocumentExporter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.metadata_export.</span></span><span class="sig-name descname"><span class="pre">DocumentExporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#DocumentExporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.DocumentExporter" title="Permalink to this definition">¶</a></dt>
-<dd><p>A subclass of geniza.common.metadata_export.Exporter that exports information relating to Documents. It custom implements only two methods: <cite>get_queryset</cite> and <cite>get_export_data_dict</cite>.</p>
+<dd><p>A subclass of <a class="reference internal" href="common.html#geniza.common.metadata_export.Exporter" title="geniza.common.metadata_export.Exporter"><code class="xref py py-class docutils literal notranslate"><span class="pre">geniza.common.metadata_export.Exporter</span></code></a> that
+exports information relating to <a class="reference internal" href="#geniza.corpus.models.Document" title="geniza.corpus.models.Document"><code class="xref py py-class docutils literal notranslate"><span class="pre">Document</span></code></a>.
+Extends <a class="reference internal" href="#geniza.corpus.metadata_export.DocumentExporter.get_queryset" title="geniza.corpus.metadata_export.DocumentExporter.get_queryset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_queryset()</span></code></a> and <a class="reference internal" href="#geniza.corpus.metadata_export.DocumentExporter.get_export_data_dict" title="geniza.corpus.metadata_export.DocumentExporter.get_export_data_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_export_data_dict()</span></code></a>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.corpus.metadata_export.DocumentExporter.get_export_data_dict">
 <span class="sig-name descname"><span class="pre">get_export_data_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">doc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#DocumentExporter.get_export_data_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.DocumentExporter.get_export_data_dict" title="Permalink to this definition">¶</a></dt>
@@ -943,6 +965,47 @@ with or without accents, and supports local month-name overrides.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="geniza.corpus.metadata_export.FragmentExporter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.metadata_export.</span></span><span class="sig-name descname"><span class="pre">FragmentExporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#FragmentExporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.FragmentExporter" title="Permalink to this definition">¶</a></dt>
+<dd><p>A subclass of <a class="reference internal" href="common.html#geniza.common.metadata_export.Exporter" title="geniza.common.metadata_export.Exporter"><code class="xref py py-class docutils literal notranslate"><span class="pre">geniza.common.metadata_export.Exporter</span></code></a> that
+exports information relating to <a class="reference internal" href="#geniza.corpus.models.Fragment" title="geniza.corpus.models.Fragment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Fragment</span></code></a>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.metadata_export.FragmentExporter.get_export_data_dict">
+<span class="sig-name descname"><span class="pre">get_export_data_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fragment</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#FragmentExporter.get_export_data_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.FragmentExporter.get_export_data_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>A given Exporter class (DocumentExporter, FootnoteExporter, etc) must implement this function. It ought to return a dictionary of exported information for a given object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><em>object</em></a>) – Model object (document, footnote, etc)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.11)"><strong>NotImplementedError</strong></a> – This method must be implemented by subclasses</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.metadata_export.FragmentExporter.get_queryset">
+<span class="sig-name descname"><span class="pre">get_queryset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#FragmentExporter.get_queryset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.FragmentExporter.get_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies some prefetching to the base Exporter’s get_queryset functionality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Custom-given query set or query set of all documents</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>QuerySet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geniza.corpus.metadata_export.FragmentExporter.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#geniza.corpus.metadata_export.FragmentExporter.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#geniza.corpus.models.Fragment" title="geniza.corpus.models.Fragment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Fragment</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="geniza.corpus.metadata_export.PublicDocumentExporter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.metadata_export.</span></span><span class="sig-name descname"><span class="pre">PublicDocumentExporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#PublicDocumentExporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.PublicDocumentExporter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Public version of the document exporter. It does not need to subset the list of CSV fields;
@@ -951,6 +1014,28 @@ output dictionary given to the writer.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.corpus.metadata_export.PublicDocumentExporter.get_queryset">
 <span class="sig-name descname"><span class="pre">get_queryset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#PublicDocumentExporter.get_queryset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.PublicDocumentExporter.get_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies some prefetching to the base Exporter’s get_queryset functionality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Custom-given query set or query set of all documents</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>QuerySet</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.corpus.metadata_export.PublicFragmentExporter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.metadata_export.</span></span><span class="sig-name descname"><span class="pre">PublicFragmentExporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queryset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#PublicFragmentExporter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.PublicFragmentExporter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Public version of the fragment exporter; limits fragments
+to those associated with public documents. Unassociated fragments
+or fragments only linked to suppressed documents are not included.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.metadata_export.PublicFragmentExporter.get_queryset">
+<span class="sig-name descname"><span class="pre">get_queryset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/metadata_export.html#PublicFragmentExporter.get_queryset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.metadata_export.PublicFragmentExporter.get_queryset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies some prefetching to the base Exporter’s get_queryset functionality.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1682,6 +1767,84 @@ this method.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.MetadataExportRepo">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.management.commands.export_metadata.</span></span><span class="sig-name descname"><span class="pre">MetadataExportRepo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#MetadataExportRepo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility class with functionality for generating metadata exports
+and commiting to git.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.MetadataExportRepo.default_commit_msg">
+<span class="sig-name descname"><span class="pre">default_commit_msg</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Automated</span> <span class="pre">metadata</span> <span class="pre">export</span> <span class="pre">from</span> <span class="pre">PGP'</span></em><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.default_commit_msg" title="Permalink to this definition">¶</a></dt>
+<dd><p>default commit message</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.MetadataExportRepo.export_data">
+<span class="sig-name descname"><span class="pre">export_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lastrun</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#MetadataExportRepo.export_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.export_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate all exports</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.MetadataExportRepo.get_commit_message">
+<span class="sig-name descname"><span class="pre">get_commit_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modifying_users</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#MetadataExportRepo.get_commit_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.get_commit_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a commit message. Uses the default commit with
+optional addendum specified by <cite>msg</cite> parameter,
+constructs a co-author commit if there are any modifying users,
+and combines with the base commit message.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.MetadataExportRepo.get_modifying_users">
+<span class="sig-name descname"><span class="pre">get_modifying_users</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_entries</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#MetadataExportRepo.get_modifying_users"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.get_modifying_users" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a <code class="xref py py-class docutils literal notranslate"><span class="pre">LogEentry</span></code> queryset,
+return a <code class="xref py py-class docutils literal notranslate"><span class="pre">User</span></code> queryset
+for the set of users who associated with any of the log entries.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.MetadataExportRepo.get_path_csv">
+<span class="sig-name descname"><span class="pre">get_path_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">docname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#MetadataExportRepo.get_path_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.get_path_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate export path based on export type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_add">
+<span class="sig-name descname"><span class="pre">repo_add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#MetadataExportRepo.repo_add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_add" title="Permalink to this definition">¶</a></dt>
+<dd><p>add modified files to git</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_commit">
+<span class="sig-name descname"><span class="pre">repo_commit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modifying_users</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#MetadataExportRepo.repo_commit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>commit changes to local git repository</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_origin">
+<span class="sig-name descname"><span class="pre">repo_origin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#MetadataExportRepo.repo_origin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_origin" title="Permalink to this definition">¶</a></dt>
+<dd><p>check if git repository has a remote origin</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_pull">
+<span class="sig-name descname"><span class="pre">repo_pull</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#MetadataExportRepo.repo_pull"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_pull" title="Permalink to this definition">¶</a></dt>
+<dd><p>pull changes from remote</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_push">
+<span class="sig-name descname"><span class="pre">repo_push</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#MetadataExportRepo.repo_push"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_push" title="Permalink to this definition">¶</a></dt>
+<dd><p>push changes to remote git repository</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.management.commands.export_metadata.MetadataExportRepo.sync_remote">
+<span class="sig-name descname"><span class="pre">sync_remote</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/management/commands/export_metadata.html#MetadataExportRepo.sync_remote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.sync_remote" title="Permalink to this definition">¶</a></dt>
+<dd><p>synchronize with remote git repository</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -1904,14 +2067,28 @@ this method.</p>
 <li><a class="reference internal" href="#geniza.corpus.metadata_export.AdminDocumentExporter.get_export_data_dict"><code class="docutils literal notranslate"><span class="pre">AdminDocumentExporter.get_export_data_dict()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#geniza.corpus.metadata_export.AdminFragmentExporter"><code class="docutils literal notranslate"><span class="pre">AdminFragmentExporter</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.corpus.metadata_export.AdminFragmentExporter.get_export_data_dict"><code class="docutils literal notranslate"><span class="pre">AdminFragmentExporter.get_export_data_dict()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#geniza.corpus.metadata_export.DocumentExporter"><code class="docutils literal notranslate"><span class="pre">DocumentExporter</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.corpus.metadata_export.DocumentExporter.get_export_data_dict"><code class="docutils literal notranslate"><span class="pre">DocumentExporter.get_export_data_dict()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.metadata_export.DocumentExporter.get_queryset"><code class="docutils literal notranslate"><span class="pre">DocumentExporter.get_queryset()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.metadata_export.DocumentExporter.model"><code class="docutils literal notranslate"><span class="pre">DocumentExporter.model</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#geniza.corpus.metadata_export.FragmentExporter"><code class="docutils literal notranslate"><span class="pre">FragmentExporter</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.corpus.metadata_export.FragmentExporter.get_export_data_dict"><code class="docutils literal notranslate"><span class="pre">FragmentExporter.get_export_data_dict()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.metadata_export.FragmentExporter.get_queryset"><code class="docutils literal notranslate"><span class="pre">FragmentExporter.get_queryset()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.metadata_export.FragmentExporter.model"><code class="docutils literal notranslate"><span class="pre">FragmentExporter.model</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#geniza.corpus.metadata_export.PublicDocumentExporter"><code class="docutils literal notranslate"><span class="pre">PublicDocumentExporter</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.corpus.metadata_export.PublicDocumentExporter.get_queryset"><code class="docutils literal notranslate"><span class="pre">PublicDocumentExporter.get_queryset()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.corpus.metadata_export.PublicFragmentExporter"><code class="docutils literal notranslate"><span class="pre">PublicFragmentExporter</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.corpus.metadata_export.PublicFragmentExporter.get_queryset"><code class="docutils literal notranslate"><span class="pre">PublicFragmentExporter.get_queryset()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -2061,6 +2238,20 @@ this method.</p>
 <li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.Command.add_arguments"><code class="docutils literal notranslate"><span class="pre">Command.add_arguments()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.Command.handle"><code class="docutils literal notranslate"><span class="pre">Command.handle()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.Command.print"><code class="docutils literal notranslate"><span class="pre">Command.print()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo"><code class="docutils literal notranslate"><span class="pre">MetadataExportRepo</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.default_commit_msg"><code class="docutils literal notranslate"><span class="pre">MetadataExportRepo.default_commit_msg</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.export_data"><code class="docutils literal notranslate"><span class="pre">MetadataExportRepo.export_data()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.get_commit_message"><code class="docutils literal notranslate"><span class="pre">MetadataExportRepo.get_commit_message()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.get_modifying_users"><code class="docutils literal notranslate"><span class="pre">MetadataExportRepo.get_modifying_users()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.get_path_csv"><code class="docutils literal notranslate"><span class="pre">MetadataExportRepo.get_path_csv()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_add"><code class="docutils literal notranslate"><span class="pre">MetadataExportRepo.repo_add()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_commit"><code class="docutils literal notranslate"><span class="pre">MetadataExportRepo.repo_commit()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_origin"><code class="docutils literal notranslate"><span class="pre">MetadataExportRepo.repo_origin()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_pull"><code class="docutils literal notranslate"><span class="pre">MetadataExportRepo.repo_pull()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.repo_push"><code class="docutils literal notranslate"><span class="pre">MetadataExportRepo.repo_push()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.management.commands.export_metadata.MetadataExportRepo.sync_remote"><code class="docutils literal notranslate"><span class="pre">MetadataExportRepo.sync_remote()</span></code></a></li>
 </ul>
 </li>
 </ul>

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>Scholarship Records &#8212; Princeton Geniza Project 4.10.1 documentation</title>
+    <title>Scholarship Records &#8212; Princeton Geniza Project 4.11.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -164,7 +164,7 @@ keys are canvas ids, list is html content.</p>
 <dt class="sig sig-object py" id="geniza.footnotes.models.Footnote.display">
 <span class="sig-name descname"><span class="pre">display</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#Footnote.display"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.Footnote.display" title="Permalink to this definition">¶</a></dt>
 <dd><p>format footnote for display; used on document detail page
-and metdata export for old pgp site</p>
+and metadata export for old pgp site</p>
 </dd></dl>
 
 <dl class="py method">
@@ -204,6 +204,12 @@ as a IIIF annotation resource that can be associated with a canvas.</p>
 specified footnotes. Matches are made by comparing content source,
 location, document relation type, and notes.
 Returns the matching object if there was one, or False if not.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.footnotes.models.FootnoteQuerySet.metadata_prefetch">
+<span class="sig-name descname"><span class="pre">metadata_prefetch</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#FootnoteQuerySet.metadata_prefetch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.FootnoteQuerySet.metadata_prefetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>prefetch source, source authors, and content object</p>
 </dd></dl>
 
 </dd></dl>
@@ -316,6 +322,25 @@ in order to filter them by associated source</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="geniza.footnotes.models.SourceQuerySet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.footnotes.models.</span></span><span class="sig-name descname"><span class="pre">SourceQuerySet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#SourceQuerySet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.SourceQuerySet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Custom queryset for <a class="reference internal" href="#geniza.footnotes.models.Source" title="geniza.footnotes.models.Source"><code class="xref py py-class docutils literal notranslate"><span class="pre">Source</span></code></a>, for reusable
+prefetching and count annotation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.footnotes.models.SourceQuerySet.footnote_count">
+<span class="sig-name descname"><span class="pre">footnote_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#SourceQuerySet.footnote_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.SourceQuerySet.footnote_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>annotate with footnote count</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.footnotes.models.SourceQuerySet.metadata_prefetch">
+<span class="sig-name descname"><span class="pre">metadata_prefetch</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#SourceQuerySet.metadata_prefetch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.SourceQuerySet.metadata_prefetch" title="Permalink to this definition">¶</a></dt>
+<dd><p>prefetch source type and authors</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="geniza.footnotes.models.SourceType">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.footnotes.models.</span></span><span class="sig-name descname"><span class="pre">SourceType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/footnotes/models.html#SourceType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.footnotes.models.SourceType" title="Permalink to this definition">¶</a></dt>
 <dd><p>type of source</p>
@@ -420,6 +445,7 @@ in order to filter them by associated source</p>
 <li><a class="reference internal" href="#geniza.footnotes.models.FootnoteQuerySet"><code class="docutils literal notranslate"><span class="pre">FootnoteQuerySet</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.footnotes.models.FootnoteQuerySet.editions"><code class="docutils literal notranslate"><span class="pre">FootnoteQuerySet.editions()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.footnotes.models.FootnoteQuerySet.includes_footnote"><code class="docutils literal notranslate"><span class="pre">FootnoteQuerySet.includes_footnote()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.FootnoteQuerySet.metadata_prefetch"><code class="docutils literal notranslate"><span class="pre">FootnoteQuerySet.metadata_prefetch()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#geniza.footnotes.models.Source"><code class="docutils literal notranslate"><span class="pre">Source</span></code></a><ul>
@@ -440,6 +466,11 @@ in order to filter them by associated source</p>
 <li><a class="reference internal" href="#geniza.footnotes.models.SourceLanguage"><code class="docutils literal notranslate"><span class="pre">SourceLanguage</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.footnotes.models.SourceLanguage.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">SourceLanguage.DoesNotExist</span></code></a></li>
 <li><a class="reference internal" href="#geniza.footnotes.models.SourceLanguage.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">SourceLanguage.MultipleObjectsReturned</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.footnotes.models.SourceQuerySet"><code class="docutils literal notranslate"><span class="pre">SourceQuerySet</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.footnotes.models.SourceQuerySet.footnote_count"><code class="docutils literal notranslate"><span class="pre">SourceQuerySet.footnote_count()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.footnotes.models.SourceQuerySet.metadata_prefetch"><code class="docutils literal notranslate"><span class="pre">SourceQuerySet.metadata_prefetch()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#geniza.footnotes.models.SourceType"><code class="docutils literal notranslate"><span class="pre">SourceType</span></code></a><ul>
