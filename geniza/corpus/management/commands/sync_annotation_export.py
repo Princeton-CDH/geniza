@@ -6,16 +6,17 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib.admin.models import DELETION, LogEntry
 from django.contrib.contenttypes.models import ContentType
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import CommandError
 from django.template.defaultfilters import pluralize
 from django.utils import timezone
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.annotation_export import AnnotationExporter
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
+from geniza.corpus.management.lastrun_command import LastRunCommand
 
 
-class Command(BaseCommand):
+class Command(LastRunCommand):
     """Synchronize annotation backup data with GitHub"""
 
     # filename for last run information (stored in current user's home)
@@ -40,7 +41,7 @@ class Command(BaseCommand):
         self.anno_exporter.setup_repo()
 
         # determine last run
-        lastrun = self.script_lastrun()
+        lastrun = self.script_lastrun(self.anno_exporter.repo)
         # get annotation log entries since the last run
         annotation_ctype = ContentType.objects.get_for_model(Annotation)
         # get all log entries for changes on annotations since the last run
@@ -130,41 +131,3 @@ class Command(BaseCommand):
 
         # update the last run for the next time
         self.update_lastrun_info(new_lastrun)
-
-    def get_lastrun_info(self):
-        # check for information about the last run of this script;
-        # load as json if it is exists
-        if os.path.exists(self.lastrun_filename):
-            with open(self.lastrun_filename) as lastrun:
-                # load and parse as json
-                return json.load(lastrun)
-
-    def update_lastrun_info(self, new_lastrun):
-        # Update or create last run information file
-        lastrun_info = self.get_lastrun_info() or {}
-        lastrun_info.update({self.script_id: new_lastrun.isoformat()})
-        with open(self.lastrun_filename, "w") as lastrun:
-            return json.dump(lastrun_info, lastrun, indent=2)
-
-    def script_lastrun(self):
-        # determine the datetime for the last run of this script
-
-        # load information about the last run of this script
-        lastrun_data = self.get_lastrun_info()
-        # if the file exists, pull out modified value for this scriptdi
-        if lastrun_data and self.script_id in lastrun_data:
-            return datetime.fromisoformat(lastrun_data[self.script_id])
-
-        # if lastrun file is not found, use last git commit on the repository
-        # (potentially unreliable if non-data repo content is updated
-        # and lastrun file does not exist, but should be ok.)
-
-        # get the most recent commit on the head of the current branch
-        last_commit = self.anno_exporter.repo.head.reference.log()[-1]
-        # log ref entry time attribute is a tuple;
-        # first portion is int time, second portion is timezone offset;
-        # according to docs, time.altzone is only in effect during DST;
-        # unclear how to incorporate into datetime object!
-
-        # convert to a datetime object
-        return timezone.make_aware(datetime.fromtimestamp(last_commit.time[0]))

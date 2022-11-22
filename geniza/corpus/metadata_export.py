@@ -1,5 +1,8 @@
+from django.db.models.query import Prefetch
+
 from geniza.common.metadata_export import Exporter
 from geniza.corpus.models import Document, Fragment
+from geniza.footnotes.models import Footnote
 
 
 class DocumentExporter(Exporter):
@@ -22,6 +25,7 @@ class DocumentExporter(Exporter):
         "type",
         "tags",
         "description",
+        "scholarship_records",
         "shelfmarks_historic",
         "languages_primary",
         "languages_secondary",
@@ -42,6 +46,21 @@ class DocumentExporter(Exporter):
         "has_translation",
     ]
 
+    # queryset filter for content types included in this import
+    content_type_filter = {
+        "content_type__app_label__in": ["corpus", "footnotes"],
+        "content_type__model__in": [
+            "document",
+            "fragment",
+            "collection",
+            "languagescript",
+            "footnote",
+            "source",
+            "creator",
+            "languages",
+        ],
+    }
+
     def get_queryset(self):
         """
         Applies some prefetching to the base Exporter's get_queryset functionality.
@@ -49,10 +68,30 @@ class DocumentExporter(Exporter):
         :return: Custom-given query set or query set of all documents
         :rtype: QuerySet
         """
-        qset = self.queryset or self.model.objects.all().metadata_prefetch()
-        qset = qset.prefetch_related(
-            "secondary_languages", "log_entries", "log_entries__user"
-        ).order_by("id")
+        qset = self.queryset or self.model.objects.all()
+        # clear existing prefetches and then add the ones we need,
+        # since admin queryset footnote prefetching conflicts
+        qset = (
+            qset.prefetch_related(None)
+            .metadata_prefetch()
+            .prefetch_related(
+                "secondary_languages",
+                "log_entries",
+                "log_entries__user",
+                Prefetch(
+                    "footnotes",
+                    queryset=Footnote.objects.select_related(
+                        "source",
+                        "source__source_type",
+                    ).prefetch_related(
+                        "source__authorship_set__creator",
+                        "source__languages",
+                        "source__authors",
+                    ),
+                ),
+            )
+            .order_by("id")
+        )
         return qset
 
     def get_export_data_dict(self, doc):
@@ -112,6 +151,10 @@ class DocumentExporter(Exporter):
         outd["type"] = doc.doctype
         outd["tags"] = doc.all_tags()
         outd["description"] = doc.description
+        # include short display version of scholarship records;
+        # need to use set since some sources have duplicate footnotes
+        # in order to keep track of multiple links / PDFs
+        outd["scholarship_records"] = {fn.display() for fn in doc.footnotes.all()}
         outd["shelfmarks_historic"] = [os for os in old_shelfmarks if os]
         outd["languages_primary"] = doc.all_languages()
         outd["languages_secondary"] = doc.all_secondary_languages()
@@ -192,6 +235,12 @@ class FragmentExporter(Exporter):
         "created",
         "last_modified",
     ]
+
+    # queryset filter for content types included in this import
+    content_type_filter = {
+        "content_type__app_label__in": ["corpus"],
+        "content_type__model__in": ["document", "fragment", "collection"],
+    }
 
     def get_queryset(self):
         """

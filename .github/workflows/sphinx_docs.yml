@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # Python version to use is stored in the .python-version file, which is the
       # convention for pyenv: https://github.com/pyenv/pyenv

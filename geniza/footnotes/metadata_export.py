@@ -28,6 +28,17 @@ class SourceExporter(Exporter):
         "num_footnotes",
     ]
 
+    # queryset filter for content types included in this import
+    content_type_filter = {
+        "content_type__app_label__in": ["footnotes"],
+        "content_type__model__in": [
+            "source",
+            "source_type",
+            "creator",
+            "footnote",
+        ],
+    }
+
     def get_queryset(self):
         qset = self.queryset or self.model.objects.all().metadata_prefetch()
         return qset.footnote_count()
@@ -47,7 +58,7 @@ class SourceExporter(Exporter):
             "edition": source.edition,
             "other_info": source.other_info,
             "page_range": source.page_range,
-            "languages": [lang.name for lang in source.languages.all()],
+            "languages": {lang.name for lang in source.languages.all()},
             "url": source.url,
             "notes": source.notes,
             # count via annotated queryset
@@ -73,6 +84,18 @@ class FootnoteExporter(Exporter):
         "content",
         "admin_url",
     ]
+
+    # queryset filter for content types included in this import
+    content_type_filter = {
+        "content_type__app_label__in": ["corpus", "footnotes", "annotations"],
+        "content_type__model__in": [
+            "document",
+            "source",
+            "creator",
+            "footnote",
+            "annotation",
+        ],
+    }
 
     def get_queryset(self):
         return self.queryset or self.model.objects.all().metadata_prefetch()

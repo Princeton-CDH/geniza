@@ -104,10 +104,11 @@ class SourceQuerySet(MultilingualQuerySet):
     def metadata_prefetch(self):
         "prefetch source type and authors"
         return self.select_related("source_type").prefetch_related(
+            "languages",
             Prefetch(
                 "authorship_set",
                 queryset=Authorship.objects.select_related("creator"),
-            )
+            ),
         )
 
     def footnote_count(self):
@@ -246,7 +247,7 @@ class Source(models.Model):
 
         # Add non-English languages as parenthetical
         non_english_langs = 0
-        if self.languages.count():
+        if len(self.languages.all()):
             for lang in self.languages.all():
                 if "English" not in str(lang):
                     non_english_langs += 1
@@ -441,7 +442,7 @@ class FootnoteQuerySet(models.QuerySet):
     def metadata_prefetch(self):
         "prefetch source, source authors, and content object"
         return self.select_related("source").prefetch_related(
-            "content_object", "source__authors"
+            "content_object", "source__authorship_set__creator"
         )
 
 
@@ -526,7 +527,7 @@ class Footnote(TrackChangesModel):
 
     def display(self):
         """format footnote for display; used on document detail page
-        and metdata export for old pgp site"""
+        and metadata export for old pgp site"""
         # source, location. notes.
         # source. notes.
         # source, location.
