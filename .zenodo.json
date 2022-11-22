@@ -1,0 +1,91 @@
+{
+  "contributors": [
+    {
+      "orcid": "0000-0003-4510-2388",
+      "affiliation": "Princeton University",
+      "type": "ProjectLeader",
+      "name": "Rustow, Marina"
+    },
+    {
+      "orcid": "0000-0002-9349-6097",
+      "affiliation": "Princeton University",
+      "type": "ProjectManager",
+      "name": "Ryzhova, Ksenia"
+    },
+    {
+      "affiliation": "Princeton University",
+      "type": "ProjectManager",
+      "name": "Richman, Rachel"
+    },
+    {
+      "type": "Other",
+      "name": "Janco, Andrew"
+    },
+    {
+      "type": "Other",
+      "name": "Duffy-Massey, Owen"
+    }
+  ],
+  "license": "Apache-2.0",
+  "related_identifiers": [
+    {
+      "scheme": "url",
+      "identifier": "https://github.com/Princeton-CDH/geniza/tree/4.11",
+      "relation": "isSupplementTo"
+    },
+    {
+      "scheme": "url",
+      "identifier": "https://geniza.princeton.edu/",
+      "relation": "compiles"
+    },
+    {
+      "scheme": "url",
+      "identifier": "https://github.com/princetongenizalab/pgp-metadata",
+      "relation": "compiles",
+      "resource_type": "dataset"
+    },
+    {
+      "scheme": "url",
+      "identifier": "https://github.com/princetongenizalab/pgp-text",
+      "relation": "compiles",
+      "resource_type": "dataset"
+    },
+    {
+      "scheme": "doi",
+      "identifier": "10.5281/zenodo.7347725",
+      "relation": "isVersionOf"
+    }
+  ],
+  "upload_type": "software",
+  "creators": [
+    {
+      "orcid": "0000-0002-8762-8057",
+      "affiliation": "Center for Digital Humanities, Princeton University",
+      "name": "Koeser, Rebecca Sutton"
+    },
+    {
+      "orcid": "0000-0002-6702-6964",
+      "affiliation": "Center for Digital Humanities, Princeton University",
+      "name": "Doroudian, Gissoo"
+    },
+    {
+      "orcid": "0000-0002-4597-439X",
+      "affiliation": "Performant Software",
+      "name": "Silverman, Ben"
+    },
+    {
+      "orcid": "0000-0002-4542-0899",
+      "name": "Budak, Nick"
+    },
+    {
+      "orcid": "0000-0003-2577-8102",
+      "name": "McElwee, Kevin"
+    },
+    {
+      "orcid": "0000-0002-4155-4961",
+      "affiliation": "Center for Digital Humanities, Princeton University",
+      "name": "Heuser, Ryan"
+    }
+  ],
+  "access_right": "open"
+}
