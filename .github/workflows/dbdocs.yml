@@ -46,7 +46,7 @@ jobs:
 
       # Build and publish dbdocs
       - name: Generate DBML
-        run: python manage.py dbml corpus common footnotes djiffy contenttypes > geniza.dbml
+        run: python manage.py dbml corpus common footnotes djiffy contenttypes admin auth > geniza.dbml
       - name: Push to dbdocs
         env:
           DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}
