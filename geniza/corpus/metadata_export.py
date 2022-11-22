@@ -33,13 +33,9 @@ class DocumentExporter(Exporter):
         "doc_date_original",
         "doc_date_calendar",
         "doc_date_standard",
-        "notes",
-        "needs_review",
-        "url_admin",
         "initial_entry",
         "last_modified",
         "input_by",
-        "status",
         "library",
         "collection",
         "has_transcription",
@@ -186,6 +182,13 @@ class DocumentExporter(Exporter):
 
 
 class AdminDocumentExporter(DocumentExporter):
+    csv_fields = DocumentExporter.csv_fields + [
+        "notes",
+        "needs_review",
+        "status",
+        "url_admin",
+    ]
+
     def get_export_data_dict(self, doc):
         """
         Adding certain fields to DocumentExporter.get_export_data_dict that are admin-only.
@@ -300,13 +303,13 @@ class PublicFragmentExporter(FragmentExporter):
 
 class AdminFragmentExporter(FragmentExporter):
     "Admin fragment export variant; adds notes, review, and admin url fields."
-    csv_fields = FragmentExporter.csv_fields + ["notes", "needs_review", "admin_url"]
+    csv_fields = FragmentExporter.csv_fields + ["notes", "needs_review", "url_admin"]
 
     def get_export_data_dict(self, fragment):
         data = super().get_export_data_dict(fragment)
         data["notes"] = fragment.notes
         data["needs_review"] = fragment.needs_review
         data[
-            "admin_url"
+            "url_admin"
         ] = f"{self.url_scheme}{self.site_domain}/admin/corpus/fragment/{fragment.id}/change/"
         return data

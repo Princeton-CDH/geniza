@@ -66,6 +66,25 @@ class SourceExporter(Exporter):
         }
 
 
+class PublicSourceExporter(SourceExporter):
+    pass
+
+
+class AdminSourceExporter(SourceExporter):
+    """Admin version of :class:`~geniza.footnotes.metadata_export.SourceExporter`;
+    adds admin urls to the output."""
+
+    csv_fields = SourceExporter.csv_fields + ["url_admin"]
+
+    def get_export_data_dict(self, source):
+        data = super().get_export_data_dict(source)
+        # construct directly to avoid extra db calls
+        data[
+            "url_admin"
+        ] = f"{self.url_scheme}{self.site_domain}/admin/footnotes/source/{source.id}/change/"
+        return data
+
+
 class FootnoteExporter(Exporter):
     """
     A subclass of :class:`geniza.common.metadata_export.Exporter` that
@@ -82,7 +101,7 @@ class FootnoteExporter(Exporter):
         "notes",
         "url",
         "content",
-        "admin_url",
+        "url_admin",
     ]
 
     # queryset filter for content types included in this import
@@ -115,30 +134,19 @@ class FootnoteExporter(Exporter):
         }
 
 
-class AdminSourceExporter(SourceExporter):
-    """Admin version of :class:`~geniza.footnotes.metadata_export.SourceExporter`;
-    adds admin urls to the output."""
-
-    csv_fields = SourceExporter.csv_fields + ["admin_url"]
-
-    def get_export_data_dict(self, source):
-        data = super().get_export_data_dict(source)
-        # construct directly to avoid extra db calls
-        data[
-            "admin_url"
-        ] = f"{self.url_scheme}{self.site_domain}/admin/footnotes/source/{source.id}/change/"
-        return data
+class PublicFootnoteExporter(FootnoteExporter):
+    pass
 
 
 class AdminFootnoteExporter(FootnoteExporter):
     """Admin version of :class:`~geniza.footnotes.metadata_export.FootnoteExporter`;
     adds admin urls to the output."""
 
-    csv_fields = FootnoteExporter.csv_fields + ["admin_url"]
+    csv_fields = FootnoteExporter.csv_fields + ["url_admin"]
 
     def get_export_data_dict(self, footnote):
         data = super().get_export_data_dict(footnote)
         data[
-            "admin_url"
+            "url_admin"
         ] = f"{self.url_scheme}{self.site_domain}/admin/footnotes/footnote/{footnote.id}/change/"
         return data
