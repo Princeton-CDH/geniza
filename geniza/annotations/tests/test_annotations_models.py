@@ -102,6 +102,13 @@ class TestAnnotation:
         assert "canonical" not in compiled
         assert "via" not in compiled
 
+        # should set source and manifest URIs based on footnote
+        assert compiled["dc:source"] == annotation.footnote.source.uri
+        assert (
+            compiled["target"]["source"]["partOf"]["id"]
+            == annotation.footnote.content_object.manifest_uri
+        )
+
         # set via and canonical
         annotation.via = "http://example.com/annotations/123"
         annotation.canonical = "urn:uuid:123"
