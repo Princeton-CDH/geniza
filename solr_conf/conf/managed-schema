@@ -225,6 +225,7 @@
                 words="lang/stopwords_en.txt"
             />
         <filter class="solr.LowerCaseFilterFactory"/>
+         <filter class="solr.ICUFoldingFilterFactory"/>        
         <filter class="solr.EnglishPossessiveFilterFactory"/>
         <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
         <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="12"/>
@@ -241,6 +242,7 @@
                 words="lang/stopwords_en.txt"
         />
         <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.ICUFoldingFilterFactory"/>        
         <filter class="solr.EnglishPossessiveFilterFactory"/>
         <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
         <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
