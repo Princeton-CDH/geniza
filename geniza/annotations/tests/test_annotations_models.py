@@ -117,6 +117,10 @@ class TestAnnotation:
         html = '<p>test <span lang="en">en</span></p><ol><li>line 1</li><li>line 2</li></ol>'
         assert Annotation.sanitize_html(html) == html
 
+        # should remove span elements with no attributes after bleaching
+        html = '<p>text <span style="foo:bar">and</span> more text</p>'
+        assert Annotation.sanitize_html(html) == "<p>text and more text</p>"
+
 
 @pytest.mark.django_db
 class TestAnnotationQuerySet:
