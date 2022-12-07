@@ -948,7 +948,12 @@ a.editor-navigation {
     align-self: flex-end;
 
     text-align: right;
-    // direction: rtl; /* search results ae mixed rtl/ltr and include unicode order mark characters */
+    // direction: rtl; /* search results are mixed rtl/ltr and include unicode order mark characters */
+
+    // section labels are LTR
+    h3 {
+        direction: ltr;
+    }
 
     .search-result & p {
         text-align: right;
