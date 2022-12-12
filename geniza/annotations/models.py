@@ -227,8 +227,7 @@ class Annotation(TrackChangesModel):
         # related source/document objects
         if self.footnote:
             anno["dc:source"] = self.footnote.source.uri
-            if "target" not in anno:
-                anno["target"] = {}
+            anno["target"] = self.content["target"] if "target" in self.content else {}
             if "source" not in anno["target"]:
                 anno["target"]["source"] = {}
             anno["target"]["source"]["partOf"] = {
