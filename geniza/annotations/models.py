@@ -207,6 +207,19 @@ class Annotation(TrackChangesModel):
             anno["canonical"] = self.canonical
         if self.via:
             anno["via"] = self.via
+
+        # populate source and manifest uri based on footnote and
+        # related source/document objects
+        if self.footnote:
+            anno["dc:source"] = self.footnote.source.uri
+            if "target" not in anno:
+                anno["target"] = {}
+            if "source" not in anno["target"]:
+                anno["target"]["source"] = {}
+            anno["target"]["source"]["partOf"] = {
+                "id": self.footnote.content_object.manifest_uri
+            }
+
         # make a copy of the base annotation data
         base_anno = anno.copy()
         # update with the rest of the annotation content
