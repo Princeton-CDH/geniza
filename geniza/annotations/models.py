@@ -3,6 +3,7 @@ from collections import defaultdict
 from functools import cached_property
 
 import bleach
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib import admin
 from django.db import models
@@ -174,13 +175,27 @@ class Annotation(TrackChangesModel):
     @classmethod
     def sanitize_html(cls, html):
         """Sanitizes passed HTML according to allowed tags and attributes, stripping out any
-        that are not allowed."""
-        return bleach.clean(
+        that are not allowed, and spans with no attributes."""
+        # strip down to allowed tags and attributes
+        cleaned_html = bleach.clean(
             html,
             tags=cls.ALLOWED_TAGS,
             attributes=cls.ALLOWED_ATTRIBUTES,
             strip=True,
         )
+        # if resulting text has any span elements with no attributes, remove them
+        if "<span>" in cleaned_html:
+            # parse as html to identify spans with no attributes
+            soup = BeautifulSoup(cleaned_html)
+            for span in soup.find_all("span"):
+                # if span has no attributes, unwrap the text and remove the span tag
+                if not span.attrs:
+                    span.unwrap()
+            # serialize back out as html without wrapping html/body tags
+            return "".join(str(el) for el in soup.html.body.children)
+
+        else:
+            return cleaned_html
 
     def compile(self, include_context=True):
         """Combine annotation data and return as a dictionary that

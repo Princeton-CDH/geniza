@@ -299,6 +299,16 @@ class TestFootnote:
     def test_content_text(self, annotation):
         assert annotation.footnote.content_text == strip_tags(annotation.body_content)
 
+    def test_content_text_entities(self, annotation):
+        annotation.content["body"][0]["value"] = "annotation with entities &amp; &gt;"
+        annotation.save()
+        manifest_uri = annotation.content["target"]["source"]["partOf"]["id"]
+        source_uri = annotation.content["dc:source"]
+        source = Source.from_uri(source_uri)
+        document = Document.from_manifest_uri(manifest_uri)
+        digital_edition_fnote = document.digital_editions()[0]
+        assert digital_edition_fnote.content_text == "annotation with entities & >"
+
     def test_content_text_empty(self, source, document):
         edition = Footnote.objects.create(
             source=source, content_object=document, doc_relation=[Footnote.EDITION]

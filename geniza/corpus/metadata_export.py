@@ -33,13 +33,9 @@ class DocumentExporter(Exporter):
         "doc_date_original",
         "doc_date_calendar",
         "doc_date_standard",
-        "notes",
-        "needs_review",
-        "url_admin",
         "initial_entry",
         "last_modified",
         "input_by",
-        "status",
         "library",
         "collection",
         "has_transcription",
@@ -186,6 +182,13 @@ class DocumentExporter(Exporter):
 
 
 class AdminDocumentExporter(DocumentExporter):
+    csv_fields = DocumentExporter.csv_fields + [
+        "notes",
+        "needs_review",
+        "status",
+        "url_admin",
+    ]
+
     def get_export_data_dict(self, doc):
         """
         Adding certain fields to DocumentExporter.get_export_data_dict that are admin-only.
@@ -204,9 +207,7 @@ class AdminDocumentExporter(DocumentExporter):
 
 class PublicDocumentExporter(DocumentExporter):
     """
-    Public version of the document exporter. It does not need to subset the list of CSV fields;
-    the csv.DictWriter will use all fields in DocumentExporter.csv_fields that are also in the
-    output dictionary given to the writer.
+    Public version of the document exporter. It can e.g. modify the get_queryset to ensure it deals with public documents.
     """
 
     def get_queryset(self):
@@ -294,19 +295,15 @@ class PublicFragmentExporter(FragmentExporter):
         return super().get_queryset().filter(documents__status=Document.PUBLIC)
 
 
-# NOTE: may want a public version of fragment exporter
-# that would limit to fragments associated with public / non-suppressed documents
-
-
 class AdminFragmentExporter(FragmentExporter):
     "Admin fragment export variant; adds notes, review, and admin url fields."
-    csv_fields = FragmentExporter.csv_fields + ["notes", "needs_review", "admin_url"]
+    csv_fields = FragmentExporter.csv_fields + ["notes", "needs_review", "url_admin"]
 
     def get_export_data_dict(self, fragment):
         data = super().get_export_data_dict(fragment)
         data["notes"] = fragment.notes
         data["needs_review"] = fragment.needs_review
         data[
-            "admin_url"
+            "url_admin"
         ] = f"{self.url_scheme}{self.site_domain}/admin/corpus/fragment/{fragment.id}/change/"
         return data
