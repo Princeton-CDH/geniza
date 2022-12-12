@@ -964,8 +964,6 @@ class TestDocument:
             footnote=edition,
             content={
                 "body": [{"value": "transcription lines"}],
-                "target": {"source": {"partOf": {"id": document.manifest_uri}}},
-                "dc:source": source.uri,
             },
         )
         # other footnotes

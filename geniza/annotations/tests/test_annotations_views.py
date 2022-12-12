@@ -317,7 +317,6 @@ class TestAnnotationSearch:
                 "target": {
                     "source": {
                         "id": target_uri,
-                        "partOf": {"id": manifest_uri},
                     }
                 },
             },
@@ -329,7 +328,6 @@ class TestAnnotationSearch:
                 "target": {
                     "source": {
                         "id": "http://example.com/target/2",
-                        "partOf": {"id": manifest_uri},
                     }
                 },
             },
@@ -377,9 +375,7 @@ class TestAnnotationSearch:
         anno1 = Annotation.objects.create(footnote=footnote, content={})
         # different document
         footnote2 = Footnote.objects.create(source=source, content_object=join)
-        anno2 = Annotation.objects.create(
-            footnote=footnote2, content={"dc:source": source.uri}
-        )
+        anno2 = Annotation.objects.create(footnote=footnote2, content={})
         response = client.get(self.anno_search_url, {"manifest": document.manifest_uri})
         assert response.status_code == 200
         assert response.headers["content-type"] == "application/json"

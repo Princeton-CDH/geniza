@@ -1185,10 +1185,8 @@ class TestDocumentAnnotationListView:
                 "target": {
                     "source": {
                         "id": source.uri,
-                        "partOf": {"id": document.manifest_uri},
                     }
                 },
-                "dc:source": source.uri,
             },
         )
         response = client.get(reverse(self.view_name, args=[document.pk]))
@@ -1226,10 +1224,8 @@ class TestDocumentAnnotationListView:
                 "target": {
                     "source": {
                         "id": source.uri,
-                        "partOf": {"id": document.manifest_uri},
                     }
                 },
-                "dc:source": source.uri,
             },
         )
         # and another to the join document
@@ -1245,10 +1241,8 @@ class TestDocumentAnnotationListView:
                 "target": {
                     "source": {
                         "id": source.uri,
-                        "partOf": {"id": join.manifest_uri},
                     }
                 },
-                "dc:source": source.uri,
             },
         )
         # request once for document
@@ -1332,10 +1326,8 @@ class TestDocumentTranscriptionText:
                 "target": {
                     "source": {
                         "id": source.uri,
-                        "partOf": {"id": document.manifest_uri},
                     }
                 },
-                "dc:source": source.uri,
             },
         )
         response = client.get(

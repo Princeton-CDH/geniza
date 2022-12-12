@@ -325,8 +325,6 @@ class TestFootnote:
         Annotation.objects.create(
             footnote=digital_edition,
             content={
-                "dc:source": source.uri,
-                "target": {"source": {"partOf": {"id": document.manifest_uri}}},
                 "body": [{"value": "<ol><li>one</li><li>two</li></ol><p>test</p>"}],
             },
         )
@@ -343,8 +341,6 @@ class TestFootnote:
         Annotation.objects.create(
             footnote=digital_edition2,
             content={
-                "dc:source": source.uri,
-                "target": {"source": {"partOf": {"id": doc2.manifest_uri}}},
                 "body": [{"value": '<ol start="5"><li>one</li><li>two</li></ol>'}],
             },
         )
@@ -361,8 +357,6 @@ class TestFootnote:
         Annotation.objects.create(
             footnote=digital_edition3,
             content={
-                "dc:source": source.uri,
-                "target": {"source": {"partOf": {"id": doc3.manifest_uri}}},
                 "body": [{"value": '<ul start="5"><li>one</li><li>two</li></ul>'}],
             },
         )

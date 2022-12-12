@@ -206,7 +206,7 @@ class AnnotationSearch(View, MultipleObjectMixin):
         if target_uri:
             annotations = annotations.filter(content__target__source__id=target_uri)
         source_uri = self.request.GET.get("source")
-        # if a source uri is specified, filter on content__dc:source
+        # if a source uri is specified, filter on source via footnote
         if source_uri:
             source_id = Source.id_from_uri(source_uri)
             annotations = annotations.filter(footnote__source__pk=source_id)

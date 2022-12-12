@@ -185,7 +185,6 @@ class TestAnnotationQuerySet:
                 "target": {
                     "source": {
                         "id": annotation.target_source_id,
-                        "partOf": {"id": annotation.target_source_manifest_id},
                     }
                 },
             },
@@ -200,7 +199,6 @@ class TestAnnotationQuerySet:
                 "target": {
                     "source": {
                         "id": annotation.target_source_id,
-                        "partOf": {"id": join.manifest_uri},
                     }
                 },
             },

@@ -13,21 +13,11 @@ class TestAnnotationAdmin:
         # should escape HTML characters within content
         assert display_content == "<pre>{&#x27;foo&#x27;: &#x27;bar&#x27;}</pre>"
 
-    def test_pgpid(self):
-        anno = Annotation(content={"foo": "bar"})
+    def test_pgpid(self, annotation, document):
         admin_form = AnnotationAdmin(model=Annotation, admin_site=admin.site)
-        # should not error if not present in content
-        assert admin_form.pgpid(anno) is None
 
         # set a geniza manifest and retrieve the id
-        anno.content = {
-            "target": {
-                "source": {
-                    "partOf": {"id": "http://geniza.cdh/documents/123/iiif/manifest/"},
-                }
-            }
-        }
-        assert admin_form.pgpid(anno) == 123
+        assert admin_form.pgpid(annotation) == document.pk
 
     def test_target_id(self):
         anno = Annotation(content={"foo": "bar"})
