@@ -332,11 +332,9 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             sqs = (
                 DocumentSolrQuerySet()
                 .admin_search(search_term)
-                .raw_query_parameters(**{"q.op": "AND"})
                 .only("pgpid")
                 .get_results(rows=100000)
             )
-
             pks = [r["pgpid"] for r in sqs]
             # filter queryset by id if there are results
             if sqs:
