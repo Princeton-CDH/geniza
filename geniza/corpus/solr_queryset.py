@@ -101,8 +101,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         return arabic_or_ja(search_term)
 
     # (adapted from mep)
-    # edismax alias for searching on admin document pseudo-field
-    admin_doc_qf = "{!edismax qf=$admin_doc_qf pf=$admin_doc_pf v=$doc_query}"
+    # edismax alias for searching on admin document pseudo-field;
+    # set minimum match to 100% (= require all search terms)
+    admin_doc_qf = "{!edismax qf=$admin_doc_qf pf=$admin_doc_pf v=$doc_query mm=100%}"
 
     def admin_search(self, search_term):
         # remove " + " from search string to allow searching on shelfmark joins
