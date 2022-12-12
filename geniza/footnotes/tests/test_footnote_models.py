@@ -302,10 +302,8 @@ class TestFootnote:
     def test_content_text_entities(self, annotation):
         annotation.content["body"][0]["value"] = "annotation with entities &amp; &gt;"
         annotation.save()
-        manifest_uri = annotation.content["target"]["source"]["partOf"]["id"]
-        source_uri = annotation.content["dc:source"]
-        source = Source.from_uri(source_uri)
-        document = Document.from_manifest_uri(manifest_uri)
+        source = annotation.footnote.source
+        document = annotation.footnote.content_object
         digital_edition_fnote = document.digital_editions()[0]
         assert digital_edition_fnote.content_text == "annotation with entities & >"
 
