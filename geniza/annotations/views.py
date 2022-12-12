@@ -208,15 +208,15 @@ class AnnotationSearch(View, MultipleObjectMixin):
         source_uri = self.request.GET.get("source")
         # if a source uri is specified, filter on content__dc:source
         if source_uri:
-            annotations = annotations.filter(
-                content__contains={"dc:source": source_uri}
-            )
+            source_id = Source.id_from_uri(source_uri)
+            annotations = annotations.filter(footnote__source__pk=source_id)
 
         manifest_uri = self.request.GET.get("manifest")
-        # if a manifest uri is specified, filter on target source within
+        # if a manifest uri is specified, filter on document via footnote
         if manifest_uri:
+            pgpid = document_id_from_manifest_uri(manifest_uri)
             annotations = annotations.filter(
-                content__target__source__partOf__id=manifest_uri
+                footnote__object_id=pgpid, footnote__content_type__model="document"
             )
 
         # NOTE: if any params are ignored, they should be removed from id for search uri

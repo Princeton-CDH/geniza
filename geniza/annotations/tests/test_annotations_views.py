@@ -346,32 +346,22 @@ class TestAnnotationSearch:
     def test_search_source(
         self, client, annotation, document, source, twoauthor_source
     ):
-        # content__contains={"dc:source": source_uri}
-        manifest_uri = reverse(
-            "corpus-uris:document-manifest", kwargs={"pk": document.pk}
-        )
-        source_uri = source.uri
+        # anno1 associated with source
         footnote = Footnote.objects.create(source=source, content_object=document)
-        anno1 = Annotation.objects.create(
-            footnote=footnote, content={**annotation.content, "dc:source": source_uri}
-        )
+        anno1 = Annotation.objects.create(footnote=footnote, content=annotation.content)
         twoauthor_footnote = Footnote.objects.create(
             source=twoauthor_source, content_object=document
         )
+        # anno2 associated with two-author source
         anno2 = Annotation.objects.create(
-            footnote=twoauthor_footnote,
-            content={**annotation.content, "dc:source": twoauthor_source.uri},
+            footnote=twoauthor_footnote, content=annotation.content
         )
+        # anno3 also associated with two-author source
         anno3 = Annotation.objects.create(
-            footnote=footnote,
-            content={
-                **annotation.content,
-                "target": {
-                    "source": {"id": source_uri, "partOf": {"id": manifest_uri}}
-                },
-            },
+            footnote=twoauthor_footnote,
+            content=annotation.content,
         )
-        response = client.get(self.anno_search_url, {"source": source_uri})
+        response = client.get(self.anno_search_url, {"source": source.uri})
         assert response.status_code == 200
         assert response.headers["content-type"] == "application/json"
         # response should indicate annotation list
@@ -381,17 +371,14 @@ class TestAnnotationSearch:
         assertNotContains(response, anno2.uri())
         assertNotContains(response, anno3.uri())
 
-    def test_search_manifest(self, client, source, document):
-        # content__target__source__partOf__id=manifest_uri
-        # within manifest
+    def test_search_manifest(self, client, source, document, join):
+        # associated with document based on footnote
         footnote = Footnote.objects.create(source=source, content_object=document)
-        anno1 = Annotation.objects.create(
-            footnote=footnote,
-            content={"target": {"source": {"partOf": {"id": document.manifest_uri}}}},
-        )
-        # no manifest
+        anno1 = Annotation.objects.create(footnote=footnote, content={})
+        # different document
+        footnote2 = Footnote.objects.create(source=source, content_object=join)
         anno2 = Annotation.objects.create(
-            footnote=footnote, content={"dc:source": source.uri}
+            footnote=footnote2, content={"dc:source": source.uri}
         )
         response = client.get(self.anno_search_url, {"manifest": document.manifest_uri})
         assert response.status_code == 200
