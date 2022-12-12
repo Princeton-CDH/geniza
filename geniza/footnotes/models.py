@@ -596,7 +596,7 @@ class Footnote(TrackChangesModel):
         # (strips tags and convert entities to plain text equivalent)
         # but only return if we have content (otherwise returns string "None")
         if self.content_html_str:
-            return BeautifulSoup(self.content_html_str).get_text()
+            return BeautifulSoup(self.content_html_str, features="lxml").get_text()
 
     def iiif_annotation_content(self):
         """Return transcription content from this footnote (if any)
