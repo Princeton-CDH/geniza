@@ -65,7 +65,7 @@ export default class extends Controller {
 
         // enable annotorious-tahqiq
         const { config, canvasURL, manifestId, annotationContainer } = settings;
-        const anno = Annotorious(viewer);
+        const anno = Annotorious(viewer, { handleRadius: 10 });
 
         // Initialize the AnnotationServerStorage plugin
         const annotationServerConfig = {
