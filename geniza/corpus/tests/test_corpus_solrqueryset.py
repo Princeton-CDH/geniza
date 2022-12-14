@@ -111,6 +111,14 @@ class TestDocumentSolrQuerySet:
             assert isinstance(result_doc["type"], str)
             assert result_doc["type"] == mock_doc["type"]
 
+    def test_search_term_cleanup__nonbool(self):
+        dqs = DocumentSolrQuerySet()
+        # confirm BL OR is revised to avoid
+        dqs._search_term_cleanup("BL OR 5565") == "BL or 5565"
+        dqs._search_term_cleanup("BL   OR") == "BL or"
+        # when OR doesn't occur alone, it's left as is
+        dqs._search_term_cleanup("BL ORNERRY") == "BL ORNERY"
+
     def test_search_term_cleanup__arabic_to_ja(self):
         dqs = DocumentSolrQuerySet()
         # confirm arabic to judaeo-arabic runs here
