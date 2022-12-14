@@ -79,11 +79,17 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         flags=re.DOTALL,
     )
 
+    # handle shelfmarks that look like booleans
+    re_shelfmark_nonbool = re.compile(r"\bBL\s+OR\b")
+
     def _search_term_cleanup(self, search_term):
         # adjust user search string before sending to solr
 
         # ignore " + " in search strings, so users can search on shelfmark joins
         search_term = search_term.replace(" + ", " ")
+        # convert uppercase OR in BL shelfmark to lowercase
+        # to avoid it being interpreted as a boolean
+        search_term = self.re_shelfmark_nonbool.sub("BL or", search_term)
 
         # convert any field aliases used in search terms to actual solr fields
         # (i.e. "pgpid:950 shelfmark:ena" -> "pgpid_i:950 shelfmark_t:ena")
