@@ -1,5 +1,10 @@
 # Deploy Notes
 
+## 4.11.1
+
+-   Solr configuration has changed. Ensure Solr configset has been updated
+    and then reindex all content: `python manage.py index`
+
 ## 4.11
 
 -   Must configure **METADATA_BACKUP_GITREPO** and **METADATA_BACKUP_PATH** in local settings. These will determine locations for (respectively) the remote metadata repository (e.g. "https://github.com/Princeton-CDH/test-geniza-metadata") and the local files for the metadata exposts and syncing (e.g. "~/github/test-geniza-metadata").
