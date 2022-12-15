@@ -1,6 +1,19 @@
 Change Log
 ==========
 
+4.11.1
+------
+
+
+- bugfix: Admin shelfmark search on "BL OR ..." gives too many and irrelevant results
+- bugfix: Partial search in descriptions sorted by relevance not working well
+- bugfix: Public site search of Latin script descriptions does not ignore diacritics and behaves unpredictably 
+- bugfix: transcription labels in search results are RTL
+- bugfix: transcription html/text export cleanup
+- bugfix: some public metadata exports include empty columns for admin-only fields
+- bugfix: 500 error on wagtail pages for a deleted page model
+
+
 4.11
 ----
 
