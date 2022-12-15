@@ -3,6 +3,7 @@ from functools import cached_property
 from os import path
 from urllib.parse import urljoin
 
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -591,10 +592,11 @@ class Footnote(TrackChangesModel):
     @property
     def content_text(self):
         "content as plain text, if available"
-        # strip tags from content html (as single string), if set
+        # use beautiful soup to parse html content and return as text
+        # (strips tags and convert entities to plain text equivalent)
         # but only return if we have content (otherwise returns string "None")
         if self.content_html_str:
-            return strip_tags(self.content_html_str)
+            return BeautifulSoup(self.content_html_str, features="lxml").get_text()
 
     def iiif_annotation_content(self):
         """Return transcription content from this footnote (if any)

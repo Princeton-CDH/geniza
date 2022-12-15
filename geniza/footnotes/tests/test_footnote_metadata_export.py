@@ -36,7 +36,7 @@ def test_source_export_data(source):
     assert source.languages.first().name in data["languages"]
     # no footnotes in this fixture
     assert data["num_footnotes"] == 0
-    assert "admin_url" not in data
+    assert "url_admin" not in data
 
 
 @pytest.mark.django_db
@@ -46,7 +46,7 @@ def test_admin_source_export_data(source):
     source_obj = admin_src_exporter.get_queryset().get(pk=source.id)
     data = admin_src_exporter.get_export_data_dict(source_obj)
     assert (
-        data["admin_url"]
+        data["url_admin"]
         == f"https://example.com/admin/footnotes/source/{source.id}/change/"
     )
 
@@ -65,7 +65,7 @@ def test_footnote_export_data(source, document):
     assert data["location"] == footnote.location
     assert data["doc_relation"] == footnote.get_doc_relation_list()
     assert data["notes"] == footnote.notes
-    assert "admin_url" not in data
+    assert "url_admin" not in data
     # empty content should not serialize to None
     assert data["content"] == ""
 
@@ -79,6 +79,6 @@ def test_admin_footnote_export_data(source, document):
     admin_fn_exporter = AdminFootnoteExporter()
     data = admin_fn_exporter.get_export_data_dict(footnote)
     assert (
-        data["admin_url"]
+        data["url_admin"]
         == f"https://example.com/admin/footnotes/footnote/{footnote.id}/change/"
     )

@@ -137,6 +137,7 @@
                                     <div class="transcription ed-{{ edition.pk }}"
                                         data-label="{{ edition.source.formatted_display }}"
                                         lang="{{ document.primary_lang_code|default:"" }}"
+                                        dir="rtl"
                                         {% if document.primary_script %}
                                             data-lang-script="{{ document.primary_script|lower }}"{% endif %}
                                     >

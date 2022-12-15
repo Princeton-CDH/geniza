@@ -197,8 +197,26 @@ def test_public_vs_admin_exporter(document):
     ade_keys = set(ade_d.keys())
 
     assert len(pde_keys) < len(ade_keys)
-    assert ade_keys - pde_keys
     assert ade_keys - pde_keys == {"notes", "needs_review", "status", "url_admin"}
+
+    # test in the csvs
+    pde_iter = pde.iter_csv(pseudo_buffer=True)
+    ade_iter = ade.iter_csv(pseudo_buffer=True)
+
+    # skip past encoding char
+    next(pde_iter), next(ade_iter)
+
+    # now get headers from csv
+    pde_header = next(pde_iter)
+    ade_header = next(ade_iter)
+    pde_header_keys = set(pde_header.strip().split(","))
+    ade_header_keys = set(ade_header.strip().split(","))
+    assert ade_header_keys - pde_header_keys == {
+        "notes",
+        "needs_review",
+        "status",
+        "url_admin",
+    }
 
 
 @pytest.mark.django_db

@@ -213,6 +213,10 @@
   <dynamicField name="*_en_bigram" type="text_en_bigram" indexed="true"  stored="true" />
   <fieldType name="text_en_bigram" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
+        <!-- preserve shelfmark abbreviations that look like booleans -->
+       <charFilter class="solr.PatternReplaceCharFilterFactory"
+             pattern="(\bBL)\s+(OR\b)" replacement="$1 or"/>
+
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <!-- in this example, we will only use synonyms at query time
         <filter class="solr.SynonymGraphFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
@@ -225,15 +229,18 @@
                 words="lang/stopwords_en.txt"
             />
         <filter class="solr.LowerCaseFilterFactory"/>
+         <filter class="solr.ICUFoldingFilterFactory"/>        
         <filter class="solr.EnglishPossessiveFilterFactory"/>
         <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
-        <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="12"/>
+        <filter class="solr.EdgeNGramFilterFactory" minGramSize="2" maxGramSize="12"/>
         <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
         <filter class="solr.EnglishMinimalStemFilterFactory"/>
         -->
         <filter class="solr.PorterStemFilterFactory"/>
       </analyzer>
       <analyzer type="query">
+        <charFilter class="solr.PatternReplaceCharFilterFactory"
+             pattern="(\bBL)\s+(OR\b)" replacement="$1 or"/>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
         <filter class="solr.StopFilterFactory"
@@ -241,6 +248,7 @@
                 words="lang/stopwords_en.txt"
         />
         <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.ICUFoldingFilterFactory"/>        
         <filter class="solr.EnglishPossessiveFilterFactory"/>
         <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
         <!-- Optionally you may want to use this less aggressive stemmer instead of PorterStemFilterFactory:
@@ -278,8 +286,6 @@
   
   <copyField source="tags_ss_lower" dest="tags_t" maxChars="30000" />
   <copyField source="type_s" dest="type_t" maxChars="300" />
-  <!-- copy description from general text to english text with stemming -->
-  <copyField source="description_t" dest="description_txt_ens" />
 
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
