@@ -3,6 +3,7 @@
 from django.conf import settings
 from django.contrib.admin.models import ADDITION
 from django.db import migrations
+from django.db.models.functions import Length
 from django.urls import Resolver404
 
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
@@ -42,15 +43,14 @@ def associate_related_footnotes(apps, schema_editor):
             document_id = document_id_from_manifest_uri(manifest_uri)
         except Resolver404:
             continue
-        try:
-            # try to get a DIGITAL_EDITION footnote for this source and document
-            footnote = Footnote.objects.get(
-                doc_relation__contains=DIGITAL_EDITION,
-                source__pk=source_id,
-                content_type=document_contenttype,
-                object_id=document_id,
-            )
-        except Footnote.DoesNotExist:
+        # try to get a DIGITAL_EDITION footnote for this source and document
+        footnotes = Footnote.objects.filter(
+            doc_relation__contains=DIGITAL_EDITION,
+            source__pk=source_id,
+            content_type=document_contenttype,
+            object_id=document_id,
+        )
+        if not footnotes.exists():
             # create the DIGITAL_EDITION footnote
             source = Source.objects.get(pk=source_id)
             footnote = Footnote.objects.create(
@@ -67,6 +67,12 @@ def associate_related_footnotes(apps, schema_editor):
                 action_flag=ADDITION,
                 change_message="Footnote automatically created via annotation migration.",
             )
+        elif footnotes.count() == 1:
+            footnote = footnotes.first()
+        else:
+            # there is more than one digital edition for this footnote
+            # choose the one with the most relation types
+            footnote = footnotes.order_by(Length("doc_relation").desc()).first()
 
         # instantiate the FK relation
         annotation.footnote = footnote
