@@ -11,6 +11,8 @@ from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.annotations.models import Annotation
 from geniza.annotations.views import AnnotationResponse
+from geniza.corpus.models import Document
+from geniza.footnotes.models import Footnote, Source
 
 
 @pytest.mark.django_db
@@ -19,8 +21,12 @@ class TestAnnotationList:
     anno_list_url = reverse("annotations:list")
 
     def test_get_annotation_list(self, client, annotation):
-        anno1 = Annotation.objects.create(content={**annotation.content, "foo": "bar"})
-        anno2 = Annotation.objects.create(content={**annotation.content, "baz": "qux"})
+        anno1 = Annotation.objects.create(
+            footnote=annotation.footnote, content={**annotation.content, "foo": "bar"}
+        )
+        anno2 = Annotation.objects.create(
+            footnote=annotation.footnote, content={**annotation.content, "baz": "qux"}
+        )
 
         response = client.get(self.anno_list_url)
         assert response.status_code == 200
@@ -49,10 +55,42 @@ class TestAnnotationList:
         # not logged in, should get permission denied error
         assert response.status_code == 403
 
-    def test_post_annotation_list_admin(self, admin_client, annotation):
+    def test_post_annotation_list_malformed(
+        self, admin_client, malformed_annotations, annotation_json
+    ):
+        # should raise 400 errors on bad JSON
+        for json_dict in malformed_annotations:
+            response = admin_client.post(
+                self.anno_list_url,
+                json.dumps(json_dict),
+                content_type="application/json",
+            )
+            assert response.status_code == 400
+
+        # for otherwise valid request but bad manifest URI, should raise 404 (Resolver404)
         response = admin_client.post(
             self.anno_list_url,
-            json.dumps({**annotation.content, "foo": "bar"}),
+            json.dumps(
+                {
+                    **annotation_json,
+                    "target": {
+                        "source": {"partOf": {"id": "http://bad.com/documents/3/"}}
+                    },
+                }
+            ),
+            content_type="application/json",
+        )
+        assert response.status_code == 404
+
+    def test_post_annotation_list_admin(self, admin_client, annotation_json):
+        response = admin_client.post(
+            self.anno_list_url,
+            json.dumps(
+                {
+                    **annotation_json,
+                    "foo": "bar",
+                }
+            ),
             content_type="application/json",
         )
 
@@ -79,9 +117,28 @@ class TestAnnotationList:
         assert log_entry.action_flag == ADDITION
         assert log_entry.change_message == "Created via API"
 
+    def test_create_annotation(self, admin_client, document, source, annotation_json):
+        # should create a DIGITAL_EDITION footnote if one does not exist
+        assert not document.digital_editions().filter(source=source).exists()
+        admin_client.post(
+            self.anno_list_url,
+            json.dumps(annotation_json),
+            content_type="application/json",
+        )
+        # will raise error if digital edition footnote does not exist
+        footnote = document.digital_editions().get(source=source)
+
+        # should log action
+        assert LogEntry.objects.filter(
+            object_id=footnote.pk, action_flag=ADDITION
+        ).exists()
+
 
 @pytest.mark.django_db
 class TestAnnotationDetail:
+
+    anno_list_url = reverse("annotations:list")
+
     def test_get_annotation_detail(self, client, annotation):
         response = client.get(annotation.get_absolute_url())
         assert response.status_code == 200
@@ -101,14 +158,38 @@ class TestAnnotationDetail:
         )
         assert response.status_code == 403
 
+    def test_post_annotation_detail_malformed(
+        self, admin_client, malformed_annotations, annotation
+    ):
+        # should raise 400 errors on bad JSON
+        for json_dict in malformed_annotations:
+            response = admin_client.post(
+                annotation.get_absolute_url(),
+                json.dumps(json_dict),
+                content_type="application/json",
+            )
+            assert response.status_code == 400
+
     @patch.object(ModelIndexable, "index_items")
     def test_post_annotation_detail_admin(
         self, mock_indexitems, admin_client, annotation
     ):
         # update annotation with POST request as admin
+        # POST req must include manifest and source URIs
         response = admin_client.post(
             annotation.get_absolute_url(),
-            json.dumps({**annotation.content, "body": [{"value": "new text"}]}),
+            json.dumps(
+                {
+                    "body": [{"value": "new text"}],
+                    "target": {
+                        "source": {
+                            "id": annotation.content["target"]["source"]["id"],
+                            "partOf": {"id": annotation.target_source_manifest_id},
+                        }
+                    },
+                    "dc:source": annotation.footnote.source.uri,
+                }
+            ),
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -121,6 +202,10 @@ class TestAnnotationDetail:
         # updated content should be returned in the response
         assert response.json() == updated_anno.compile()
 
+        # should call index_items on document when annotation updated
+        document = Document.from_manifest_uri(annotation.target_source_manifest_id)
+        mock_indexitems.assert_called_with([document])
+
         # should have log entry for update
         log_entry = LogEntry.objects.get(object_id=annotation.id)
         assert log_entry.action_flag == CHANGE
@@ -128,9 +213,21 @@ class TestAnnotationDetail:
 
     def test_post_annotation_detail_unchanged(self, admin_client, annotation):
         # update annotation unchanged with POST request as admin
+        # POST req must include manifest and source URIs
         response = admin_client.post(
             annotation.get_absolute_url(),
-            json.dumps({**annotation.content}),
+            json.dumps(
+                {
+                    **annotation.content,
+                    "target": {
+                        "source": {
+                            "id": annotation.content["target"]["source"]["id"],
+                            "partOf": {"id": annotation.target_source_manifest_id},
+                        }
+                    },
+                    "dc:source": annotation.footnote.source.uri,
+                }
+            ),
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -165,38 +262,75 @@ class TestAnnotationDetail:
         assert change_info["manifest_uri"] == annotation.target_source_manifest_id
         assert change_info["target_source_uri"] == annotation.target_source_id
 
+    def test_delete_last_annotation(self, admin_client, annotation, annotation_json):
+        # Should remove footnote DIGITAL_EDITION relation if deleted annotation
+        # is the only annotation on source + document
+        manifest_uri = annotation.target_source_manifest_id
+        source_uri = annotation.footnote.source.uri
+        source = Source.from_uri(source_uri)
+        document = Document.from_manifest_uri(manifest_uri)
+        # will raise error if digital edition footnote does not exist
+        footnote = document.digital_editions().get(source=source)
+        assert footnote.annotation_set.count() == 1
+        admin_client.delete(annotation.get_absolute_url())
+        # footnote should still exist, but no longer be a digital edition
+        assert Footnote.objects.filter(object_id=document.pk, source=source).exists()
+        assert not document.digital_editions().filter(source=source).exists()
+        footnote.refresh_from_db()
+        assert footnote.annotation_set.count() == 0
+        assert Footnote.DIGITAL_EDITION not in footnote.doc_relation
+
+        # Should not alter footnote doc_relation if there are more annotations on source + document
+        # create two annotations
+        for _ in range(2):
+            admin_client.post(
+                self.anno_list_url,
+                json.dumps(annotation_json),
+                content_type="application/json",
+            )
+        footnote = document.digital_editions().get(source=source)
+        assert footnote.annotation_set.count() == 2
+        # delete one of the annotations, footnote should still be digital edition
+        admin_client.delete(footnote.annotation_set.first().get_absolute_url())
+        document = Document.from_manifest_uri(manifest_uri)
+        assert Footnote.DIGITAL_EDITION in footnote.doc_relation
+        # document should still have a digital edition
+        assert document.digital_editions().filter(source=source).exists()
+
 
 @pytest.mark.django_db
 class TestAnnotationSearch:
     anno_search_url = reverse("annotations:search")
 
-    def test_search_uri(self, client, document, annotation):
+    def test_search_uri(self, client, document, annotation, source):
         # content__target__source__id=target_uri)
         manifest_uri = reverse(
             "corpus-uris:document-manifest", kwargs={"pk": document.pk}
         )
         target_uri = "http://example.com/target/1"
+
+        footnote = Footnote.objects.create(source=source, content_object=document)
         anno1 = Annotation.objects.create(
+            footnote=footnote,
             content={
                 **annotation.content,
                 "target": {
                     "source": {
                         "id": target_uri,
-                        "partOf": {"id": manifest_uri},
                     }
                 },
-            }
+            },
         )
         anno2 = Annotation.objects.create(
+            footnote=footnote,
             content={
                 **annotation.content,
                 "target": {
                     "source": {
                         "id": "http://example.com/target/2",
-                        "partOf": {"id": manifest_uri},
                     }
                 },
-            }
+            },
         )
         response = client.get(self.anno_search_url, {"uri": target_uri})
         assert response.status_code == 200
@@ -210,26 +344,22 @@ class TestAnnotationSearch:
     def test_search_source(
         self, client, annotation, document, source, twoauthor_source
     ):
-        # content__contains={"dc:source": source_uri}
-        manifest_uri = reverse(
-            "corpus-uris:document-manifest", kwargs={"pk": document.pk}
+        # anno1 associated with source
+        footnote = Footnote.objects.create(source=source, content_object=document)
+        anno1 = Annotation.objects.create(footnote=footnote, content=annotation.content)
+        twoauthor_footnote = Footnote.objects.create(
+            source=twoauthor_source, content_object=document
         )
-        source_uri = source.uri
-        anno1 = Annotation.objects.create(
-            content={**annotation.content, "dc:source": source_uri}
-        )
+        # anno2 associated with two-author source
         anno2 = Annotation.objects.create(
-            content={**annotation.content, "dc:source": twoauthor_source.uri}
+            footnote=twoauthor_footnote, content=annotation.content
         )
+        # anno3 also associated with two-author source
         anno3 = Annotation.objects.create(
-            content={
-                **annotation.content,
-                "target": {
-                    "source": {"id": source_uri, "partOf": {"id": manifest_uri}}
-                },
-            }
+            footnote=twoauthor_footnote,
+            content=annotation.content,
         )
-        response = client.get(self.anno_search_url, {"source": source_uri})
+        response = client.get(self.anno_search_url, {"source": source.uri})
         assert response.status_code == 200
         assert response.headers["content-type"] == "application/json"
         # response should indicate annotation list
@@ -239,14 +369,13 @@ class TestAnnotationSearch:
         assertNotContains(response, anno2.uri())
         assertNotContains(response, anno3.uri())
 
-    def test_search_manifest(self, client, source, document):
-        # content__target__source__partOf__id=manifest_uri
-        # within manifest
-        anno1 = Annotation.objects.create(
-            content={"target": {"source": {"partOf": {"id": document.manifest_uri}}}}
-        )
-        # no manifest
-        anno2 = Annotation.objects.create(content={"dc:source": source.uri})
+    def test_search_manifest(self, client, source, document, join):
+        # associated with document based on footnote
+        footnote = Footnote.objects.create(source=source, content_object=document)
+        anno1 = Annotation.objects.create(footnote=footnote, content={})
+        # different document
+        footnote2 = Footnote.objects.create(source=source, content_object=join)
+        anno2 = Annotation.objects.create(footnote=footnote2, content={})
         response = client.get(self.anno_search_url, {"manifest": document.manifest_uri})
         assert response.status_code == 200
         assert response.headers["content-type"] == "application/json"
@@ -256,23 +385,26 @@ class TestAnnotationSearch:
         assertContains(response, anno1.uri())
         assertNotContains(response, anno2.uri())
 
-    def test_search_sort(self, client):
-        anno3 = Annotation.objects.create(content={})
-        anno10 = Annotation.objects.create(content={})
-        anno1 = Annotation.objects.create(content={})
-        anno2 = Annotation.objects.create(content={})
+    def test_search_sort(self, client, annotation):
+        anno3 = Annotation.objects.create(footnote=annotation.footnote, content={})
+        anno10 = Annotation.objects.create(footnote=annotation.footnote, content={})
+        anno1 = Annotation.objects.create(footnote=annotation.footnote, content={})
+        anno2 = Annotation.objects.create(footnote=annotation.footnote, content={})
 
         # should return json AnnotationList with resources of length 4
         response = client.get(self.anno_search_url)
         assert response.status_code == 200
         results = response.json()
-        assert "resources" in results and len(results["resources"]) == 4
+        print(results)
+        assert "resources" in results
+        assert len(results["resources"]) == 5  # 4 plus fixture
 
         # in absence of schema:position, should order by created
-        assert results["resources"][0]["id"] == anno3.uri()
-        assert results["resources"][1]["id"] == anno10.uri()
-        assert results["resources"][2]["id"] == anno1.uri()
-        assert results["resources"][3]["id"] == anno2.uri()
+        assert results["resources"][0]["id"] == annotation.uri()
+        assert results["resources"][1]["id"] == anno3.uri()
+        assert results["resources"][2]["id"] == anno10.uri()
+        assert results["resources"][3]["id"] == anno1.uri()
+        assert results["resources"][4]["id"] == anno2.uri()
 
         # now set schema:position to reorder
         anno3.set_content({"schema:position": 3})
@@ -283,13 +415,16 @@ class TestAnnotationSearch:
         anno1.save()
         anno2.set_content({"schema:position": 2})
         anno2.save()
+        annotation.set_content({"schema:position": 5})
+        annotation.save()
 
         response = client.get(self.anno_search_url)
         results = response.json()
 
-        # results should respect schema:position order: 1, 2, 3, 10
+        # results should respect schema:position order: 1, 2, 3, 5, 10
         assert results["resources"][0]["id"] == anno1.uri()
         assert results["resources"][1]["id"] == anno2.uri()
         assert results["resources"][2]["id"] == anno3.uri()
-        assert results["resources"][3]["id"] == anno10.uri()
+        assert results["resources"][3]["id"] == annotation.uri()
+        assert results["resources"][4]["id"] == anno10.uri()
         assert results["resources"][-1]["schema:position"] == 10

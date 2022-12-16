@@ -11,6 +11,7 @@ from git import GitCommandError
 
 from geniza.common.models import UserProfile
 from geniza.corpus.annotation_export import AnnotationExporter
+from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 from geniza.corpus.models import Document
 
 
@@ -290,7 +291,7 @@ def test_annotation_export(mock_repo, annotation, tmp_path):
     with override_settings(
         ANNOTATION_BACKUP_PATH=str(tmp_path), ANNOTATION_BACKUP_GITREPO="git:foo"
     ):
-        doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+        doc_id = document_id_from_manifest_uri(annotation.target_source_manifest_id)
 
         anno_ex = AnnotationExporter(pgpids=[doc_id])
         anno_ex.export()
@@ -332,7 +333,7 @@ def test_annotation_export(mock_repo, annotation, tmp_path):
     with override_settings(
         ANNOTATION_BACKUP_PATH=str(tmp_path), ANNOTATION_BACKUP_GITREPO="git:foo"
     ):
-        doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+        doc_id = document_id_from_manifest_uri(annotation.target_source_manifest_id)
 
         anno_ex = AnnotationExporter(pgpids=[doc_id])
         anno_ex.export()
@@ -374,7 +375,7 @@ def test_annotation_export_cleanup(mock_repo, annotation, tmpdir):
     with override_settings(
         ANNOTATION_BACKUP_PATH=str(tmpdir), ANNOTATION_BACKUP_GITREPO="git:foo"
     ):
-        doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+        doc_id = document_id_from_manifest_uri(annotation.target_source_manifest_id)
         anno_ex = AnnotationExporter(pgpids=[doc_id])
         output_dir = anno_ex.document_path(doc_id)
         doc_transcription_dir = tmpdir / output_dir
@@ -395,7 +396,7 @@ def test_annotation_cleanup(mock_repo, annotation, tmpdir):
     with override_settings(
         ANNOTATION_BACKUP_PATH=str(tmpdir), ANNOTATION_BACKUP_GITREPO="git:foo"
     ):
-        doc_id = Document.id_from_manifest_uri(annotation.target_source_manifest_id)
+        doc_id = document_id_from_manifest_uri(annotation.target_source_manifest_id)
         anno_ex = AnnotationExporter(pgpids=[doc_id])
         anno_ex.setup_repo()
 

@@ -20,7 +20,6 @@ from gfklookupwidget.fields import GfkLookupField
 from modeltranslation.manager import MultilingualManager, MultilingualQuerySet
 from multiselectfield import MultiSelectField
 
-from geniza.annotations.models import Annotation
 from geniza.common.fields import NaturalSortField
 from geniza.common.models import TrackChangesModel
 from geniza.footnotes.utils import HTMLLineNumberParser
@@ -475,6 +474,8 @@ class Footnote(TrackChangesModel):
         "Document relation",
         choices=DOCUMENT_RELATION_TYPES,
         help_text="How does the source relate to this document?",
+        null=True,
+        blank=True,
     )
     notes = models.TextField(blank=True)
     content = models.JSONField(
@@ -519,7 +520,10 @@ class Footnote(TrackChangesModel):
     def __str__(self):
         choices = dict(self.DOCUMENT_RELATION_TYPES)
 
-        rel = " and ".join([str(choices[c]) for c in self.doc_relation]) or "Footnote"
+        rel = (
+            " and ".join([str(choices[c]) for c in (self.doc_relation or [])])
+            or "Footnote"
+        )
         return f"{rel} of {self.content_object}"
 
     def display(self):
@@ -547,26 +551,25 @@ class Footnote(TrackChangesModel):
     def content_html(self):
         """content as html, if available; returns a dictionary of lists.
         keys are canvas ids, list is html content."""
-        if self.DIGITAL_EDITION in self.doc_relation:
-            doc = self.content_object
-            # filter annotations by document manifest and source
-            annos = Annotation.objects.filter(
-                content__target__source__partOf__id=doc.manifest_uri,
-                content__contains={"dc:source": self.source.uri},
-            )
-            # NOTE: when we implement translation, filter on motivation here
-            # to distinguish transcription/translation
+        # NOTE: previously only returned if type was digital edition;
+        # now that we're using foreign keys, return content from
+        # any associated annotations, regardless of what doc relation.
 
-            # return a dictionary of lists of annotation html content
-            # keyed on canvas uri
-            # handle multiple annotations on the same canvas
-            html_content = defaultdict(list)
-            for a in annos:
-                if a.label:
-                    html_content[a.target_source_id].append(f"<h3>{a.label}</h3>")
-                html_content[a.target_source_id].append(a.body_content)
-            # cast to a regular dict to avoid weirdness in django templates
-            return dict(html_content)
+        # NOTE: when we implement translation, will need to filter on
+        # motivation here to distinguish transcription/translation;
+        # may need separate methods for transcription content
+        # and translation content, since one source could provide both
+
+        # generate return a dictionary of lists of annotation html content
+        # keyed on canvas uri
+        # handle multiple annotations on the same canvas
+        html_content = defaultdict(list)
+        for a in self.annotation_set.all():
+            if a.label:
+                html_content[a.target_source_id].append(f"<h3>{a.label}</h3>")
+            html_content[a.target_source_id].append(a.body_content)
+        # cast to a regular dict to avoid weirdness in django templates
+        return dict(html_content)
 
     @cached_property
     def content_html_str(self):
@@ -585,9 +588,10 @@ class Footnote(TrackChangesModel):
     @staticmethod
     def explicit_line_numbers(html):
         """add explicit line numbers to passed HTML (in value attributes of ol > li)"""
-        parser = HTMLLineNumberParser()
-        parser.feed(html)
-        return parser.html_str
+        if html:  # don't attempt to parse if html is not set
+            parser = HTMLLineNumberParser()
+            parser.feed(html)
+            return parser.html_str
 
     @property
     def content_text(self):

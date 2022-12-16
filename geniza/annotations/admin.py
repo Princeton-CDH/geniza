@@ -15,8 +15,17 @@ class AnnotationAdmin(admin.ModelAdmin):
         "display_content",
         "canonical",
         "via",
+        "footnote",
     )
-    fields = ["uri", "display_content", "created", "modified", "canonical", "via"]
+    fields = [
+        "uri",
+        "display_content",
+        "created",
+        "modified",
+        "canonical",
+        "via",
+        "footnote",
+    ]
     list_display = ["id", "pgpid", "target_id", "created", "modified"]
     search_fields = ("id", "content")
 
@@ -28,13 +37,8 @@ class AnnotationAdmin(admin.ModelAdmin):
         )
 
     def pgpid(self, obj):
-        """retrieve pgpid from manifest if available; assumes geniza manifest structure"""
-        try:
-            manifest = obj.content["target"]["source"]["partOf"]["id"]
-            return int(manifest.strip("/").split("/")[-3])
-        except (KeyError, TypeError, ValueError):
-            # might not be present, or might not be an integer; ignore errors
-            return
+        """retrieve pgpid from associated footnote"""
+        return obj.footnote.content_object.pk
 
     def target_id(self, obj):
         """retrieve target id from content if available"""
@@ -45,5 +49,3 @@ class AnnotationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Annotation, AnnotationAdmin)
-
-# Register your models here.

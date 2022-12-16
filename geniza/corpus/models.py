@@ -2,7 +2,6 @@ import logging
 from collections import defaultdict
 from functools import cache, cached_property
 from itertools import chain
-from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib import admin, messages
@@ -20,7 +19,7 @@ from django.db.models.query import Prefetch
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.templatetags.static import static
-from django.urls import Resolver404, resolve, reverse
+from django.urls import reverse
 from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
@@ -38,6 +37,7 @@ from urllib3.exceptions import HTTPError, NewConnectionError
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
+from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 from geniza.corpus.dates import DocumentDateMixin
 from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
@@ -615,24 +615,12 @@ class Document(ModelIndexable, DocumentDateMixin):
             models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
         ).first()
 
-    @staticmethod
-    def id_from_manifest_uri(uri):
-        """Given a manifest URI (as used in transcription annotations), return
-        the document id"""
-        # will raise Resolver404 if url does not resolve
-        resolve_match = resolve(urlparse(uri).path)
-        # it could be a valid django url resolve but not be a manifest uri;
-        if resolve_match.view_name != "corpus-uris:document-manifest":
-            # is there a more appropriate exception to raise?
-            raise Resolver404("Not a document manifest URL")
-        return resolve_match.kwargs["pk"]
-
     @classmethod
     def from_manifest_uri(cls, uri):
         """Given a manifest URI (as used in transcription annotations), find a Document matching
         its pgpid"""
         # will raise Resolver404 if url does not resolve
-        return cls.objects.get(pk=Document.id_from_manifest_uri(uri))
+        return cls.objects.get(pk=document_id_from_manifest_uri(uri))
 
     @property
     def shelfmark(self):
@@ -953,6 +941,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "footnotes__source__authorship_set__creator",
                 "footnotes__source__source_type",
                 "footnotes__source__languages",
+                "footnotes__annotation_set",  # for transcription content
                 "log_entries",
                 Prefetch(
                     "textblock_set",
