@@ -16,6 +16,8 @@ class TestAssociateRelatedFootnotes(TestMigrations):
     annotation = None
     anno_no_footnote_match = None
     footnote = None
+    edition = None
+    ambiguous_annotation = None
 
     def setUpBeforeMigration(self, apps):
         Annotation = apps.get_model("annotations", "Annotation")
@@ -56,6 +58,33 @@ class TestAssociateRelatedFootnotes(TestMigrations):
             },
         )
 
+        # add two digital editions and an annotation on the same source/doc pair
+        source_3 = Source.objects.create(source_type=book)
+        self.edition = Footnote.objects.create(
+            source=source_3,
+            doc_relation=["EX"],  # this one also is an Edition
+            object_id=doc.pk,
+            content_type=document_contenttype,
+        )
+        Footnote.objects.create(
+            source=source_3,
+            doc_relation=["X"],
+            object_id=doc.pk,
+            content_type=document_contenttype,
+        )
+        self.ambiguous_annotation = Annotation.objects.create(
+            content={
+                "body": [{"value": "Test annotation 3"}],
+                "target": {
+                    "source": {
+                        "id": "http://ex.co/iiif/canvas/1",
+                        "partOf": {"id": doc.manifest_uri},
+                    }
+                },
+                "dc:source": source_3.uri,
+            },
+        )
+
         # ensure script user exists
         User.objects.get_or_create(username=settings.SCRIPT_USERNAME)
 
@@ -84,3 +113,10 @@ class TestAssociateRelatedFootnotes(TestMigrations):
             change_message="Footnote automatically created via annotation migration.",
             object_id=anno_no_footnote_match.footnote.pk,
         ).exists()
+
+    def test_multiple_digital_editions(self):
+        # if multiple digital edition footnotes, should associate with the one with the most
+        # doc relation types
+        Annotation = self.apps.get_model("annotations", "Annotation")
+        ambiguous_annotation = Annotation.objects.get(pk=self.ambiguous_annotation.pk)
+        assert ambiguous_annotation.footnote.pk == self.edition.pk
