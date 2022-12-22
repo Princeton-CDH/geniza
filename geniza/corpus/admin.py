@@ -137,7 +137,8 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
         "thumbnail",
         "selected_images",
     )
-    extra = 1
+    min_num = 1
+    extra = 0
     formfield_overrides = {
         CharField: {"widget": TextInput(attrs={"size": "10"})},
         ArrayField: {"widget": HiddenInput()},  # hidden input for selected_images
