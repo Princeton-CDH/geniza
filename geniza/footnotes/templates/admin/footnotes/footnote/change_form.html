@@ -1,4 +1,10 @@
 {% extends "admin/change_form.html" %}
+{% load render_bundle_csp  %}
+{% block admin_change_form_document_ready %}
+    {{ block.super }}
+    {% render_bundle_csp "admin" "js" attrs='defer' %}
+{% endblock %}
+
 {% block after_field_sets %}
     {% if "X" in original.doc_relation %}
         <h2>Transcription</h2>
