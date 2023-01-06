@@ -293,6 +293,40 @@ class TestDocumentAdmin:
         assert resp.status_code == 302
         assert resp["location"] == reverse("admin:corpus_document_changelist")
 
+    def test_document_history_view(
+        self, admin_client, document, footnote, annotation, join
+    ):
+        # create a log entry for a footnote and an annotation related to the document
+        script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
+        footnote_log_entry = LogEntry.objects.create(
+            user_id=script_user.id,
+            content_type_id=ContentType.objects.get_for_model(footnote).id,
+            object_id=footnote.id,
+            object_repr="test",
+            action_flag=ADDITION,
+            change_message="test",
+        )
+        annotation_log_entry = LogEntry.objects.create(
+            user_id=script_user.id,
+            content_type_id=ContentType.objects.get_for_model(annotation).id,
+            object_id=annotation.id,
+            object_repr="test",
+            action_flag=ADDITION,
+            change_message="test",
+        )
+
+        # should add those log entries to response context for history view
+        url = reverse("admin:corpus_document_history", args=(document.id,))
+        response = admin_client.get(url)
+        assert footnote_log_entry in response.context["footnote_action_list"]
+        assert annotation_log_entry in response.context["annotation_action_list"]
+
+        # on other document, should NOT add those log entries to response context
+        url = reverse("admin:corpus_document_history", args=(join.id,))
+        response = admin_client.get(url)
+        assert footnote_log_entry not in response.context["footnote_action_list"]
+        assert annotation_log_entry not in response.context["annotation_action_list"]
+
 
 @pytest.mark.django_db
 class TestDocumentForm:
