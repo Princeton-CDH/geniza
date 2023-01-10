@@ -1,0 +1,53 @@
+{
+  "files": [
+    "CONTRIBUTORS.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "mrustow",
+      "name": "mrustow",
+      "avatar_url": "https://avatars.githubusercontent.com/u/73319225?v=4",
+      "profile": "https://nes.princeton.edu/people/marina-rustow",
+      "contributions": [
+        "ideas",
+        "userTesting",
+        "bug",
+        "question"
+      ]
+    },
+    {
+      "login": "rlskoeser",
+      "name": "Rebecca Sutton Koeser",
+      "avatar_url": "https://avatars.githubusercontent.com/u/691231?v=4",
+      "profile": "http://rlskoeser.github.io",
+      "contributions": [
+        "code",
+        "test",
+        "doc",
+        "a11y",
+        "projectManagement",
+        "review"
+      ]
+    },
+     {
+      "login": "gissoo",
+      "name": "gissoo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/44615389?v=4",
+      "profile": "https://github.com/gissoo",
+      "contributions": [
+        "design",
+        "research"
+      ]
+    },
+
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "geniza",
+  "projectOwner": "Princeton-CDH"
+}
