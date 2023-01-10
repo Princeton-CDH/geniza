@@ -1,5 +1,11 @@
 # Deploy Notes
 
+## 4.12
+
+-   Before deploying, ensure that there is only one Digital Edition
+    footnote per document and source combination. Otherwise, the
+    annotation migration will fail.
+
 ## 4.11.1
 
 -   Solr configuration has changed. Ensure Solr configset has been updated
