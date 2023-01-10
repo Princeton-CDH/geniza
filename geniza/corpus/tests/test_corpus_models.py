@@ -961,11 +961,10 @@ class TestDocument:
             doc_relation=[Footnote.DIGITAL_EDITION],
         )
         Annotation.objects.create(
+            footnote=edition,
             content={
                 "body": [{"value": "transcription lines"}],
-                "target": {"source": {"partOf": {"id": document.manifest_uri}}},
-                "dc:source": source.uri,
-            }
+            },
         )
         # other footnotes
         edition2 = Footnote.objects.create(
@@ -1173,18 +1172,6 @@ class TestDocument:
         assert document.manifest_uri.endswith(
             reverse("corpus-uris:document-manifest", args=[document.pk])
         )
-
-    def test_id_from_manifest_uri(self, document):
-        # should resolve correct manifest URI to Document id
-        resolved_doc_id = Document.id_from_manifest_uri(
-            reverse("corpus-uris:document-manifest", kwargs={"pk": document.pk})
-        )
-        assert isinstance(resolved_doc_id, int)
-        assert resolved_doc_id == document.pk
-
-        # should fail on resolvable non-manifest URI
-        with pytest.raises(Resolver404):
-            Document.id_from_manifest_uri(f"http://bad.com/documents/3/")
 
     def test_from_manifest_uri(self, document):
         # should resolve correct manifest URI to Document object

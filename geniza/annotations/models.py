@@ -4,12 +4,14 @@ from functools import cached_property
 
 import bleach
 from bs4 import BeautifulSoup
+from django.conf import settings
 from django.contrib import admin
 from django.db import models
 from django.urls import reverse
 
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
+from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 
 
 def annotations_to_list(annotations, uri):
@@ -30,7 +32,7 @@ class AnnotationQuerySet(models.QuerySet):
     def by_target_context(self, uri):
         """filter queryset by the context of the target (i.e, the manifest
         the canvas belongs to)"""
-        return self.filter(content__target__source__partOf__id=uri)
+        return self.filter(footnote__object_id=document_id_from_manifest_uri(uri))
 
     def group_by_canvas(self):
         """Aggregate annotations by canvas id; returns a dictionary of lists,
@@ -70,6 +72,12 @@ class Annotation(TrackChangesModel):
     canonical = models.CharField(max_length=255, blank=True)
     #: uri of annotation when imported from another copy (optional)
     via = models.URLField(blank=True)
+    #: related scholarship record; used for source and manifest uri in JSON serialization
+    footnote = models.ForeignKey(
+        "footnotes.Footnote",
+        on_delete=models.CASCADE,
+        null=False,
+    )
 
     # use custom manager & queryset
     objects = AnnotationQuerySet.as_manager()
@@ -77,6 +85,11 @@ class Annotation(TrackChangesModel):
     # allowed tags and attributes for annotation body content HTML
     ALLOWED_TAGS = ["del", "li", "ol", "p", "span", "sup"]
     ALLOWED_ATTRIBUTES = ["lang"]
+
+    # error message for malformed annotations
+    MALFORMED_ERROR = (
+        "Malformed annotation. Annotation must include manifest and source URIs."
+    )
 
     class Meta:
         # by default, order by creation time
@@ -105,8 +118,9 @@ class Annotation(TrackChangesModel):
     @cached_property
     def target_source_manifest_id(self):
         """convenience method to access manifest id for target source"""
-        return (
-            self.content.get("target", {}).get("source", {}).get("partOf", {}).get("id")
+        return "%s%s" % (
+            settings.ANNOTATION_MANIFEST_BASE_URL,
+            reverse("corpus-uris:document-manifest", args=[self.footnote.object_id]),
         )
 
     @cached_property
@@ -208,6 +222,18 @@ class Annotation(TrackChangesModel):
             anno["canonical"] = self.canonical
         if self.via:
             anno["via"] = self.via
+
+        # populate source and manifest uri based on footnote and
+        # related source/document objects
+        if self.footnote:
+            anno["dc:source"] = self.footnote.source.uri
+            anno["target"] = self.content["target"] if "target" in self.content else {}
+            if "source" not in anno["target"]:
+                anno["target"]["source"] = {}
+            anno["target"]["source"]["partOf"] = {
+                "id": self.footnote.content_object.manifest_uri
+            }
+
         # make a copy of the base annotation data
         base_anno = anno.copy()
         # update with the rest of the annotation content

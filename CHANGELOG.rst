@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+4.12
+----
+
+- Revise annotation model to link footnotes using foreign keys instead of URIs
+- As a content editor working on transcriptions, I want to be able to move transcriptions from one document to another, so that I can fix a mistake if a transcription was associated incorrectly.
+- bugfix: transcriptions can be orphaned or lost when merging records
+
 4.11.1
 ------
 

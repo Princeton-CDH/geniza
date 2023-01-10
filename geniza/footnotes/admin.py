@@ -3,13 +3,13 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
-from django.contrib.sites.models import Site
+from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.db import models
 from django.db.models.fields import CharField, TextField
 from django.db.models.functions import Concat
+from django.forms import ValidationError
 from django.forms.widgets import Textarea, TextInput
 from django.urls import path, reverse
-from django.utils import timezone
 from django.utils.html import format_html
 from django_admin_inline_paginator.admin import TabularInlinePaginated
 from modeltranslation.admin import TabbedTranslationAdmin
@@ -76,10 +76,36 @@ class SourceFootnoteInline(TabularInlinePaginated):
     show_change_link = True
 
 
+class FootnoteInlineFormSet(BaseGenericInlineFormSet):
+    """
+    Override of the inline formset to prevent deletion of a footnote inline if
+    it has annotations attached.
+    """
+
+    def clean(self):
+        super().clean()
+        for form in self.forms:
+            if not hasattr(form, "cleaned_data"):
+                continue
+
+            data = form.cleaned_data
+
+            if data.get("DELETE") and form.instance.annotation_set.count() > 0:
+                raise ValidationError(
+                    """
+                    The footnote selected for deletion has associated
+                    annotations. If you are sure you want to delete it,
+                    please do so in the Footnotes section of the admin.
+                    """,
+                    code="invalid",
+                )
+
+
 class DocumentFootnoteInline(GenericTabularInline):
     """Footnote inline for the Document admin"""
 
     model = Footnote
+    formset = FootnoteInlineFormSet
     autocomplete_fields = ["source"]
     fields = (
         "source",

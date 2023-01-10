@@ -211,8 +211,8 @@ class Command(sync_transcriptions.Command):
                 # remove all existing annotations associated with this
                 # document and source so we can reimport as needed
                 existing_annos = Annotation.objects.filter(
-                    content__contains={"dc:source": footnote.source.uri},
-                    content__target__source__partOf__id=doc.manifest_uri,
+                    footnote__source=footnote.source,
+                    footnote__content_object=doc,
                     created__lt=script_run_start,
                 )
                 # NOTE: this is problematic for transcriptions currently
@@ -238,16 +238,10 @@ class Command(sync_transcriptions.Command):
                 if i != 0 and tei.label_indicates_new_page(block["label"]):
                     canvas_index += 1
 
+                anno = new_transcription_annotation()
                 # get the canvas uri for this section of text
                 annotation_target = iiif_canvases[canvas_index]
-
-                anno = new_transcription_annotation()
-                # link to digital edition footnote via source URI
-                anno["dc:source"] = footnote.source.uri
-
                 anno.target.source.id = annotation_target
-                anno.target.source.partOf.type = "Manifest"
-                anno.target.source.partOf.id = doc.manifest_uri
 
                 # apply to the full canvas using % notation
                 # (using nearly full canvas to make it easier to edit zones)
@@ -277,6 +271,8 @@ class Command(sync_transcriptions.Command):
                 # create database annotation
                 db_anno = Annotation()
                 db_anno.set_content(dict(anno))
+                # link to digital edition footnote
+                db_anno.footnote = footnote
                 db_anno.save()
                 # log entry to document annotation creation
                 self.log_addition(db_anno, "Migrated from TEI transcription")
