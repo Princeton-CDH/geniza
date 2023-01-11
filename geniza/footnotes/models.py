@@ -473,7 +473,12 @@ class Footnote(TrackChangesModel):
     doc_relation = MultiSelectField(
         "Document relation",
         choices=DOCUMENT_RELATION_TYPES,
-        help_text="How does the source relate to this document?",
+        help_text="How does the source relate to this document? "
+        + 'Please note: "Edition" is a (published or unpublished) '
+        + 'transcription. "Digital edition" is the PGP version of an '
+        + "edition, and the source record should NOT be deleted. Footnotes "
+        + 'for "editions" and "digital editions" should NOT be combined, '
+        + "even if they refer to the same transcription.",
         null=True,
         blank=True,
     )
