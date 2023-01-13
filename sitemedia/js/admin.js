@@ -70,10 +70,15 @@ function toggleDisabled(inputList, input) {
 
 (function ($) {
     // Apply event listeners to all new rows added to Footnote
-    // formset in Document footnote inline
+    // formset in Document or Source footnote inlines
     // (need to use jQuery to listen to event here until Django 4 upgrade)
     $(document).on("formset:added", function (_, $row, formsetName) {
-        if (formsetName == "footnotes-footnote-content_type-object_id") {
+        if (
+            [
+                "footnotes-footnote-content_type-object_id",
+                "footnote_set",
+            ].includes(formsetName)
+        ) {
             const inputList = $row.find("td.field-doc_relation ul").get()[0];
             addDocRelationToggle(inputList);
         }
