@@ -207,6 +207,10 @@ fieldset.transcriptions-field
 .field-doc_relation {
     white-space: nowrap;
 }
+/* allow help text to wrap (in footnote change form) */
+.field-doc_relation div.help {
+    white-space: normal;
+}
 
 /* styling for document attributes in document merge form */
 .transcription-container {

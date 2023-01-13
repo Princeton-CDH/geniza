@@ -25,7 +25,60 @@ window.addEventListener("DOMContentLoaded", () => {
             );
         });
     });
+
+    // for Footnote doc relations, add event listeners to prevent checking both
+    // Digital Edition + Edition checkboxes
+    let existingDocRelations = document.querySelectorAll(
+        // ^='footnote' captures both Document and Source footnote inlines
+        "div[id^='footnote'] td.field-doc_relation ul"
+    );
+    if (!existingDocRelations.length) {
+        // this means we're on the actual Footnote change form and not inline
+        existingDocRelations = document.querySelectorAll("ul#id_doc_relation");
+    }
+    existingDocRelations.forEach((inputList) => {
+        // add toggle disabled on click
+        addDocRelationToggle(inputList);
+        // disable any existing relations that should already be disabled
+        inputList
+            .querySelectorAll("input[type='checkbox']:checked")
+            .forEach((cb) => {
+                toggleDisabled(inputList, cb);
+            });
+    });
 });
+
+function addDocRelationToggle(inputList) {
+    // add click event listener to the list of checkboxes
+    inputList.addEventListener("click", (e) => {
+        toggleDisabled(inputList, e.target);
+    });
+}
+
+function toggleDisabled(inputList, input) {
+    // if this is an Edition or Digital Edition checkbox, toggle the other one
+    // of those two enabled/disabled, based on whether this one is checked
+    if (["E", "X"].includes(input.value)) {
+        const otherRelation = input.value === "X" ? "E" : "X";
+        const toToggle = inputList.querySelector(
+            `input[type='checkbox'][value='${otherRelation}']`
+        );
+        // in case of old data with both checked, don't disable both!
+        toToggle.disabled = input.checked && !input.disabled;
+    }
+}
+
+(function ($) {
+    // Apply event listeners to all new rows added to Footnote
+    // formset in Document footnote inline
+    // (need to use jQuery to listen to event here until Django 4 upgrade)
+    $(document).on("formset:added", function (_, $row, formsetName) {
+        if (formsetName == "footnotes-footnote-content_type-object_id") {
+            const inputList = $row.find("td.field-doc_relation ul").get()[0];
+            addDocRelationToggle(inputList);
+        }
+    });
+})(django.jQuery);
 
 function attachReorderEventListeners(fromDragEvent) {
     // attach event listeners to images for reorder functionality.
@@ -37,7 +90,7 @@ function attachReorderEventListeners(fromDragEvent) {
     const orderImagesDiv = document.querySelector(
         "div.field-admin_thumbnails div.readonly"
     );
-    const orderImages = orderImagesDiv.querySelectorAll("img");
+    const orderImages = orderImagesDiv?.querySelectorAll("img") || [];
     orderImages.forEach((img) => {
         img.draggable = true;
         img.addEventListener("dragstart", startDrag);
