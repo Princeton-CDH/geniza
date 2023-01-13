@@ -8,10 +8,12 @@
             <span>Edit {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% empty %}[unknown]{% endfor %}'s edition</span>
         </a>
     {% endfor %}
-    <a class="editor-navigation" href="{% url 'corpus:document-add-transcription' document.id %}" data-turbo="false">
-        <i class="ph-plus-circle"></i>
-        <span>Add a new transcription</span>
-    </a>
+    {% if document.id %}
+        <a class="editor-navigation" href="{% url 'corpus:document-add-transcription' document.id %}" data-turbo="false">
+            <i class="ph-plus-circle"></i>
+            <span>Add a new transcription</span>
+        </a>
+    {% endif %}
 {% endif %}
 {# only enable ITT panel if transcription or images are present, or we are in edit mode #}
 {% if document.has_transcription or document.iiif_urls or edit_mode %}
