@@ -1,0 +1,23 @@
+{% extends "admin/object_history.html" %}
+{% load static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "css/admin-local.css" %}">
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    {% if footnote_action_list %}
+        <div class="module">
+            <h1>Related footnote(s) change history</h1>
+            {% include "admin/corpus/document/snippets/change_history_table.html" with history=footnote_action_list %}
+        </div>
+    {% endif %}
+    {% if annotation_action_list %}
+        <div>
+            <h1>Related annotation(s) change history</h1>
+            {% include "admin/corpus/document/snippets/change_history_table.html" with history=annotation_action_list %}
+        </div>
+    {% endif %}
+{% endblock %}

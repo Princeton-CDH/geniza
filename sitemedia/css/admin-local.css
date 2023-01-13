@@ -300,3 +300,12 @@ textarea[name$="_he"],
 textarea[name$="_ar"] {
     direction: rtl;
 }
+
+/* Extended document change history table styling */
+table.change-history {
+    width: 100%;
+}
+
+table.change-history tbody th {
+    width: 16em;
+}
