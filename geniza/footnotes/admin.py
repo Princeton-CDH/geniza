@@ -35,30 +35,6 @@ class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
     extra = 1
 
 
-class FootnoteInlineFormSetMixin:
-    """
-    Override of the inline formset clean method to prevent deletion of a
-    footnote inline if it has annotations attached.
-    """
-
-    def clean(self):
-        for form in self.forms:
-            if not hasattr(form, "cleaned_data"):
-                continue
-
-            data = form.cleaned_data
-
-            if data.get("DELETE") and form.instance.annotation_set.count() > 0:
-                raise ValidationError(
-                    """
-                    The footnote selected for deletion has associated
-                    annotations. If you are sure you want to delete it,
-                    please do so in the Footnotes section of the admin.
-                    """,
-                    code="invalid",
-                )
-
-
 # reusable exception for digital edition footnote validation
 DuplicateDigitalEditionsError = ValidationError(
     """
@@ -69,7 +45,7 @@ DuplicateDigitalEditionsError = ValidationError(
 )
 
 
-class SourceFootnoteInlineFormSet(BaseInlineFormSet, FootnoteInlineFormSetMixin):
+class SourceFootnoteInlineFormSet(BaseInlineFormSet):
     """
     Override of the source-footnote inline formset to prevent multiple digital
     ediiton footnotes on the same source and document.
@@ -151,17 +127,38 @@ class SourceFootnoteInline(TabularInlinePaginated):
         return PaginationFormSet
 
 
-class DocumentFootnoteInlineFormSet(
-    BaseGenericInlineFormSet, FootnoteInlineFormSetMixin
-):
+class DocumentFootnoteInlineFormSet(BaseGenericInlineFormSet):
     """
-    Override of the document-footnote inline formset to prevent multiple digital
-    ediiton footnotes on the same source and document.
+    Override of the document-footnote inline formset to override the clean
+    method and raise validation errors.
     """
 
     def clean(self):
+        """
+        Override the clean method to raise validation errors preventing
+        deletion of a footnote inline with annotations attached, or creation of
+        multiple digital edition footnotes on the same source and document,
+        """
         super().clean()
-        cleaned_data = [form.cleaned_data for form in self.forms if form.is_valid()]
+        # raise validation error if deleting footnote with associated annos
+        valid_forms = [form for form in self.forms if form.is_valid()]
+        if any(
+            [
+                form.cleaned_data.get("DELETE")
+                and form.instance.annotation_set.count() > 0
+                for form in valid_forms
+            ]
+        ):
+            raise ValidationError(
+                """
+                The footnote selected for deletion has associated
+                annotations. If you are sure you want to delete it,
+                please do so in the Footnotes section of the admin.
+                """,
+                code="invalid",
+            )
+
+        cleaned_data = [form.cleaned_data for form in valid_forms]
         # get source pk of all digital editions
         if all("source" in fn for fn in cleaned_data):
             sources = [

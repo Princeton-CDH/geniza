@@ -4,10 +4,12 @@ import pytest
 from django.contrib import admin
 from django.contrib.contenttypes.forms import generic_inlineformset_factory
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.forms.models import inlineformset_factory
 from django.test import RequestFactory
 from django.urls import reverse
 
+from geniza.annotations.models import Annotation
 from geniza.corpus.models import Document
 from geniza.footnotes.admin import (
     DocumentFootnoteInlineFormSet,
@@ -257,17 +259,26 @@ class TestSourceFootnoteInlineFormSet:
 
 
 class TestDocumentFootnoteInlineFormSet:
-    def test_clean(self, source):
+    def test_clean(self, source, footnote):
         FormSet = generic_inlineformset_factory(
             Footnote, formset=DocumentFootnoteInlineFormSet
         )
         doc = Document.objects.create()
+
+        # should raise error if trying to delete a footnote with annotations
+        Annotation.objects.create(footnote=footnote, content={})
+        inline_formset = FormSet(
+            data={
+                "footnotes-footnote-content_type-object_id-0-id": [str(footnote.pk)],
+                "footnotes-footnote-content_type-object_id-0-DELETE": ["on"],
+            },
+            instance=doc,
+        )
+        assert not inline_formset.is_valid()
+
         # should raise error if two digital editions on the same source
         inline_formset = FormSet(
             data={
-                "footnotes-footnote-content_type-object_id-INITIAL_FORMS": ["0"],
-                "footnotes-footnote-content_type-object_id-TOTAL_FORMS": ["2"],
-                "footnotes-footnote-content_type-object_id-MAX_NUM_FORMS": ["1000"],
                 "footnotes-footnote-content_type-object_id-0-source": [str(source.pk)],
                 "footnotes-footnote-content_type-object_id-0-doc_relation": [
                     Footnote.DIGITAL_EDITION,
