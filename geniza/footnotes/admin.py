@@ -4,10 +4,12 @@ from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.fields import CharField, TextField
 from django.db.models.functions import Concat
 from django.forms import ValidationError
+from django.forms.models import BaseInlineFormSet
 from django.forms.widgets import Textarea, TextInput
 from django.urls import path, reverse
 from django.utils.html import format_html
@@ -31,6 +33,69 @@ class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
     autocomplete_fields = ["creator"]
     fields = ("creator", "sort_order")
     extra = 1
+
+
+class FootnoteInlineFormSetMixin:
+    """
+    Override of the inline formset clean method to prevent deletion of a
+    footnote inline if it has annotations attached.
+    """
+
+    def clean(self):
+        for form in self.forms:
+            if not hasattr(form, "cleaned_data"):
+                continue
+
+            data = form.cleaned_data
+
+            if data.get("DELETE") and form.instance.annotation_set.count() > 0:
+                raise ValidationError(
+                    """
+                    The footnote selected for deletion has associated
+                    annotations. If you are sure you want to delete it,
+                    please do so in the Footnotes section of the admin.
+                    """,
+                    code="invalid",
+                )
+
+
+# reusable exception for digital edition footnote validation
+DuplicateDigitalEditionsError = ValidationError(
+    """
+    You cannot create multiple Digital Edition footnotes on the
+    same source and document.
+    """,
+    code="invalid",
+)
+
+
+class SourceFootnoteInlineFormSet(BaseInlineFormSet, FootnoteInlineFormSetMixin):
+    """
+    Override of the source-footnote inline formset to prevent multiple digital
+    ediiton footnotes on the same source and document.
+    """
+
+    def clean(self):
+        """
+        Execute inherited clean method, then validate to ensure no document
+        id is repeated across digital edition footnotes.
+        """
+        super().clean()
+        cleaned_data = [form.cleaned_data for form in self.forms if form.is_valid()]
+        # get object_id of all digital editions where object type is Document
+        if all("object_id" in fn for fn in cleaned_data):
+            document_contenttype = ContentType.objects.get(
+                app_label="corpus", model="document"
+            )
+            document_pks = [
+                fn.get("object_id")
+                for fn in cleaned_data
+                if Footnote.DIGITAL_EDITION in fn.get("doc_relation", [])
+                and fn.get("content_type").pk == document_contenttype.pk
+            ]
+            # if there are any duplicate document pks, it's invalid
+            if len(document_pks) > len(set(document_pks)):
+                raise DuplicateDigitalEditionsError
 
 
 class SourceFootnoteInline(TabularInlinePaginated):
@@ -75,37 +140,45 @@ class SourceFootnoteInline(TabularInlinePaginated):
     # enable link from inline to edit footnote
     show_change_link = True
 
+    def get_formset(self, request, obj=None, **kwargs):
+        """Override TabularInlinePaginated.get_formset to include our
+        source-footnote inline formset in the inherited classes"""
+        formset_class = super().get_formset(request, obj, **kwargs)
 
-class FootnoteInlineFormSet(BaseGenericInlineFormSet):
+        class PaginationFormSet(SourceFootnoteInlineFormSet, formset_class):
+            pass
+
+        return PaginationFormSet
+
+
+class DocumentFootnoteInlineFormSet(
+    BaseGenericInlineFormSet, FootnoteInlineFormSetMixin
+):
     """
-    Override of the inline formset to prevent deletion of a footnote inline if
-    it has annotations attached.
+    Override of the document-footnote inline formset to prevent multiple digital
+    ediiton footnotes on the same source and document.
     """
 
     def clean(self):
         super().clean()
-        for form in self.forms:
-            if not hasattr(form, "cleaned_data"):
-                continue
-
-            data = form.cleaned_data
-
-            if data.get("DELETE") and form.instance.annotation_set.count() > 0:
-                raise ValidationError(
-                    """
-                    The footnote selected for deletion has associated
-                    annotations. If you are sure you want to delete it,
-                    please do so in the Footnotes section of the admin.
-                    """,
-                    code="invalid",
-                )
+        cleaned_data = [form.cleaned_data for form in self.forms if form.is_valid()]
+        # get source pk of all digital editions
+        if all("source" in fn for fn in cleaned_data):
+            sources = [
+                fn.get("source").pk
+                for fn in cleaned_data
+                if Footnote.DIGITAL_EDITION in fn.get("doc_relation", [])
+            ]
+            # if there are any duplicate source pks, raise validation error
+            if len(sources) > len(set(sources)):
+                raise DuplicateDigitalEditionsError
 
 
 class DocumentFootnoteInline(GenericTabularInline):
     """Footnote inline for the Document admin"""
 
     model = Footnote
-    formset = FootnoteInlineFormSet
+    formset = DocumentFootnoteInlineFormSet
     autocomplete_fields = ["source"]
     fields = (
         "source",
@@ -251,6 +324,24 @@ class FootnoteForm(forms.ModelForm):
         widgets = {
             "location": TextInput(attrs={"size": "10"}),
         }
+
+    def clean(self):
+        """
+        Raise error on attempted creation of a Digital Edition footnote if one
+        already exists on this document and source
+        """
+        print(self.data)
+        super().clean()
+        if (
+            Footnote.DIGITAL_EDITION in self.cleaned_data.get("doc_relation", [])
+            and Footnote.objects.filter(
+                content_type=self.cleaned_data.get("content_type"),
+                object_id=self.cleaned_data.get("object_id"),
+                source=self.cleaned_data.get("source"),
+                doc_relation__contains=Footnote.DIGITAL_EDITION,
+            ).exists()
+        ):
+            raise DuplicateDigitalEditionsError
 
 
 @admin.register(Footnote)
