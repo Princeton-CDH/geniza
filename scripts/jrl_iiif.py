@@ -7,13 +7,11 @@
 
 
 import argparse
-import csv
 import os.path
 from urllib.parse import urlencode
 
 import pandas as pd
 from iiif_prezi.factory import ManifestFactory
-from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
 from ratelimit import limits
 from rich.progress import Progress
