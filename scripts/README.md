@@ -3,6 +3,8 @@
 This directory contains stand-alone scripts associated with
 Princeton Geniza Project that are not part of the web application proper.
 
+Requirements for these scripts can be found in `requirements/scripts.txt`.
+
 ## IIIF
 
 Scripts for generating and managing static iiif content (manifests and
@@ -11,6 +13,7 @@ iiif image api level 0 images) for import and display in PGP.
 -   bodleian_iiif.py : generate iiif maniests from Bodleian TEI XML
 -   tile_images.py : generate static image tiles; includes extra image sizes needed for PGP application
 -   manifests_to_csv.py: generate a CSV file for importing IIIF urls into PGP
+-   jrl_iiif.py: generate remixed iiif maniests from Manchester JRL manifests
 
 ### Bulk editing
 
