@@ -5,20 +5,20 @@ from django.contrib import admin
 from django.contrib.contenttypes.forms import generic_inlineformset_factory
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.forms.models import inlineformset_factory
 from django.test import RequestFactory
 from django.urls import reverse
+from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.models import Document
 from geniza.footnotes.admin import (
     DocumentFootnoteInlineFormSet,
     DocumentRelationTypesFilter,
+    DuplicateDigitalEditionsError,
     FootnoteAdmin,
     FootnoteForm,
     SourceAdmin,
     SourceFootnoteInline,
-    SourceFootnoteInlineFormSet,
 )
 from geniza.footnotes.metadata_export import FootnoteExporter
 from geniza.footnotes.models import Footnote, Source, SourceType
@@ -233,13 +233,11 @@ class TestSourceFootnoteInline:
 
 
 class TestSourceFootnoteInlineFormSet:
-    def test_clean(self, document, source):
-        FormSet = inlineformset_factory(
-            Source, Footnote, exclude=(), formset=SourceFootnoteInlineFormSet
-        )
+    def test_clean(self, document, source, admin_client):
         doc_contenttype = ContentType.objects.get(app_label="corpus", model="document")
-        # should raise error if two digital editions on the same document
-        inline_formset = FormSet(
+        # should raise validation error if two digital editions on the same document
+        response = admin_client.post(
+            reverse("admin:footnotes_source_change", args=(source.id,)),
             data={
                 "footnote_set-INITIAL_FORMS": ["0"],
                 "footnote_set-TOTAL_FORMS": ["2"],
@@ -253,44 +251,62 @@ class TestSourceFootnoteInlineFormSet:
                 "footnote_set-1-object_id": [str(document.pk)],
                 "footnote_set-1-doc_relation": [Footnote.DIGITAL_EDITION],
             },
-            instance=source,
         )
-        assert not inline_formset.is_valid()
+        assertContains(response, DuplicateDigitalEditionsError.message)
 
 
 class TestDocumentFootnoteInlineFormSet:
-    def test_clean(self, source, footnote):
-        FormSet = generic_inlineformset_factory(
-            Footnote, formset=DocumentFootnoteInlineFormSet
-        )
-        doc = Document.objects.create()
-
+    def test_clean(self, document, source, admin_client):
         # should raise error if trying to delete a footnote with annotations
-        Annotation.objects.create(footnote=footnote, content={})
-        inline_formset = FormSet(
-            data={
-                "footnotes-footnote-content_type-object_id-0-id": [str(footnote.pk)],
-                "footnotes-footnote-content_type-object_id-0-DELETE": ["on"],
-            },
-            instance=doc,
+        doc_contenttype = ContentType.objects.get(app_label="corpus", model="document")
+        fn = Footnote.objects.create(
+            source=source,
+            object_id=document.id,
+            content_type=doc_contenttype,
         )
-        assert not inline_formset.is_valid()
+        Annotation.objects.create(footnote=fn, content={})
+        FootnoteInlineFormSet = generic_inlineformset_factory(
+            Footnote, exclude=[], formset=DocumentFootnoteInlineFormSet
+        )
+        data = {
+            "form-INITIAL_FORMS": 1,
+            "form-TOTAL_FORMS": 1,
+            "form-0-id": fn.id,
+            "form-0-source": source.pk,
+            "form-0-DELETE": True,
+        }
+        formset = FootnoteInlineFormSet(instance=document, prefix="form", data=data)
+        with pytest.raises(ValidationError):
+            formset.clean()
 
         # should raise error if two digital editions on the same source
-        inline_formset = FormSet(
-            data={
-                "footnotes-footnote-content_type-object_id-0-source": [str(source.pk)],
-                "footnotes-footnote-content_type-object_id-0-doc_relation": [
-                    Footnote.DIGITAL_EDITION,
-                ],
-                "footnotes-footnote-content_type-object_id-1-source": [str(source.pk)],
-                "footnotes-footnote-content_type-object_id-1-doc_relation": [
-                    Footnote.DIGITAL_EDITION
-                ],
-            },
-            instance=doc,
+        data = {
+            "footnotes-footnote-content_type-object_id-TOTAL_FORMS": ["2"],
+            "footnotes-footnote-content_type-object_id-0-source": [str(source.pk)],
+            "footnotes-footnote-content_type-object_id-0-doc_relation": [
+                Footnote.DIGITAL_EDITION,
+            ],
+            "footnotes-footnote-content_type-object_id-1-source": [str(source.pk)],
+            "footnotes-footnote-content_type-object_id-1-doc_relation": [
+                Footnote.DIGITAL_EDITION
+            ],
+        }
+        response = admin_client.post(
+            reverse("admin:corpus_document_change", args=(document.id,)), data
         )
-        assert not inline_formset.is_valid()
+        assertContains(response, DuplicateDigitalEditionsError.message)
+
+        # edition should be fine
+        data = {
+            **data,
+            "footnotes-footnote-content_type-object_id-1-doc_relation": [
+                Footnote.EDITION
+            ],
+        }
+        response = admin_client.post(
+            reverse("admin:corpus_document_change", args=(document.id,)), data
+        )
+        assertNotContains(response, DuplicateDigitalEditionsError.message)
 
 
 class TestFootnoteForm:

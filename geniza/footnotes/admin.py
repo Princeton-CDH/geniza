@@ -141,7 +141,7 @@ class DocumentFootnoteInlineFormSet(BaseGenericInlineFormSet):
         """
         super().clean()
         # raise validation error if deleting footnote with associated annos
-        valid_forms = [form for form in self.forms if form.is_valid()]
+        valid_forms = [form for form in self.forms if hasattr(form, "cleaned_data")]
         if any(
             [
                 form.cleaned_data.get("DELETE")
