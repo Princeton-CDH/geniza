@@ -327,7 +327,6 @@ class FootnoteForm(forms.ModelForm):
         Raise error on attempted creation of a Digital Edition footnote if one
         already exists on this document and source
         """
-        print(self.data)
         super().clean()
         if (
             Footnote.DIGITAL_EDITION in self.cleaned_data.get("doc_relation", [])
