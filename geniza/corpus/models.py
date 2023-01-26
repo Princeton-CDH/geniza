@@ -754,7 +754,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                             "label": labels[i],
                             "canvas": canvases[i],
                             "shelfmark": b.fragment.shelfmark,
-                            "excluded": i not in b.selected_images,
+                            "excluded": len(b.selected_images)
+                            and i not in b.selected_images,
                         }
 
         # when requested, include any placeholder canvas URIs referenced by any associated transcriptions
