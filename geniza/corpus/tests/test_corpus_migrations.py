@@ -214,3 +214,41 @@ class TestMergeDuplicateTags(TestMigrations):
             content_type_id=tag_contenttype.pk,
             change_message="Merged example, éxample; removed diacritics",
         ).exists()
+
+
+@pytest.mark.last
+@pytest.mark.django_db
+class TestPopulateEmptySelectedImages(TestMigrations):
+    app = "corpus"
+    migrate_from = "0035_document_image_order_override"
+    migrate_to = "0036_textblock_populate_empty_selected_images"
+    no_images = None
+    two_images = None
+
+    def setUpBeforeMigration(self, apps):
+        Document = apps.get_model("corpus", "Document")
+        Fragment = apps.get_model("corpus", "Fragment")
+        TextBlock = apps.get_model("corpus", "TextBlock")
+        Manifest = apps.get_model("djiffy", "Manifest")
+        Canvas = apps.get_model("djiffy", "Canvas")
+        # create textblock with fragment with no images
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        self.no_images = TextBlock.objects.create(
+            document=doc, fragment=frag, selected_images=[]
+        )
+        # create textblock with fragment with two canvases
+        m = Manifest.objects.create(uri="example_uri", short_id="mani")
+        Canvas.objects.create(manifest=m, label="recto", order=1, short_id="c1")
+        Canvas.objects.create(manifest=m, label="verso", order=2, short_id="c2")
+        frag2 = Fragment.objects.create(shelfmark="test", manifest=m)
+        self.two_images = TextBlock.objects.create(
+            document=doc, fragment=frag2, selected_images=[]
+        )
+
+    def test_selected_images_populated(self):
+        TextBlock = self.apps.get_model("corpus", "TextBlock")
+        no_images = TextBlock.objects.get(pk=self.no_images.pk)
+        two_images = TextBlock.objects.get(pk=self.two_images.pk)
+        assert len(no_images.selected_images) == 0
+        assert len(two_images.selected_images) == 2
