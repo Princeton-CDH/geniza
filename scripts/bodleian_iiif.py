@@ -263,8 +263,7 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
 
             # create the grouping directory if it does not exist
             group_dir = os.path.join(manifest_dir, group)
-            if not os.path.exists(group_dir):
-                os.makedirs(group_dir)
+            os.makedirs(group_dir, exist_ok=True)
             expected_path = os.path.join(group_dir, "%s.json" % manifest_id)
             # skip if already generated in a previous run
             if os.path.exists(expected_path):
