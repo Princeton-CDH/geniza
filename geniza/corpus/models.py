@@ -1330,6 +1330,13 @@ class TextBlock(models.Model):
             return self.RECTO_VERSO
         return ""
 
+    def save(self, *args, **kwargs):
+        """Override the TextBlock save method to select all images by default"""
+        if not self.pk:
+            (images, _, _) = self.fragment.iiif_images()
+            self.selected_images = list(range(len(images)))
+        return super().save(*args, **kwargs)
+
     def thumbnail(self):
         """iiif thumbnails for this TextBlock, with selected images highlighted"""
         return self.fragment.iiif_thumbnails(selected=self.selected_images)
