@@ -1412,6 +1412,35 @@ class TestTextBlock:
         )
         assert both_sides.side == "recto and verso"
 
+    def test_save(self, fragment):
+        # create textblock with fragment with no IIIF,
+        # should still have no selected images
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        no_selected = TextBlock.objects.create(
+            document=doc, fragment=frag, selected_images=[]
+        )
+        no_selected.save()
+        no_selected.refresh_from_db()
+        assert len(no_selected.selected_images) == 0
+        # create textblock with fragment with (mock) IIIF, should have
+        # 2 selected images
+        img1 = Mock()
+        img2 = Mock()
+        img1.info.return_value = "fake info string"
+        img2.info.return_value = img1.info.return_value
+        with patch.object(
+            Fragment,
+            "iiif_images",
+            return_value=([img1, img2], ["1r", "1v"], ["canvas1", "canvas2"]),
+        ):
+            some_selected = TextBlock.objects.create(
+                document=doc, fragment=fragment, selected_images=[]
+            )
+            some_selected.save()
+            some_selected.refresh_from_db()
+            assert len(some_selected.selected_images) == 2
+
 
 @pytest.mark.django_db
 def test_items_to_index(document, footnote):

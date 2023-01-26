@@ -1332,7 +1332,7 @@ class TextBlock(models.Model):
 
     def save(self, *args, **kwargs):
         """Override the TextBlock save method to select all images by default"""
-        if not self.pk:
+        if not self.pk and self.fragment.iiif_images():
             (images, _, _) = self.fragment.iiif_images()
             self.selected_images = list(range(len(images)))
         return super().save(*args, **kwargs)
