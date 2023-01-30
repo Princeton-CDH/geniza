@@ -1,15 +1,17 @@
 from admin_log_entries.admin import LogEntryAdmin
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin.models import LogEntry
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.db.models import Count
-from django.urls import path
+from django.http import HttpResponseRedirect
+from django.urls import path, reverse
 from taggit.admin import TagAdmin
 from taggit.models import Tag
 
 from geniza.common.metadata_export import LogEntryExporter
 from geniza.common.models import UserProfile
+from geniza.corpus.views import TagMerge
 
 
 class UserProfileInline(admin.StackedInline):
@@ -71,6 +73,23 @@ admin.site.unregister(Tag)
 class CustomTagAdmin(TagAdmin):
     list_display = ("name", "slug", "item_count")
 
+    @admin.display(description="Merge selected tags")
+    def merge_tags(self, request, queryset=None):
+        """Admin action to merge selected tags. This action redirects to an intermediate
+        page, which displays a form to review for confirmation and choose the primary tag before merging."""
+        # Adapted from corpus.admin.DocumentAdmin.merge_documents
+
+        # NOTE: using selected ids from form and ignoring queryset
+        # because we can't pass the queryset via redirect
+        selected = request.POST.getlist("_selected_action")
+        if len(selected) < 2:
+            messages.error(request, "You must select at least two tags to merge")
+            return HttpResponseRedirect(reverse("admin:taggit_tag_changelist"))
+        return HttpResponseRedirect(
+            "%s?ids=%s" % (reverse("admin:tag-merge"), ",".join(selected)),
+            status=303,
+        )  # status code 303 means "See Other"
+
     def get_queryset(self, request):
         return (
             super()
@@ -81,11 +100,24 @@ class CustomTagAdmin(TagAdmin):
             )
         )
 
+    def get_urls(self):
+        """Return admin urls; adds a custom URL for tag merge"""
+        urls = [
+            path(
+                "merge/",
+                TagMerge.as_view(),
+                name="tag-merge",
+            ),
+        ]
+        return urls + super().get_urls()
+
     def item_count(self, obj):
         return obj.item_count
 
     item_count.admin_order_field = "item_count"
     item_count.short_description = "count"
+
+    actions = (merge_tags,)
 
 
 admin.site.unregister(User)

@@ -13,6 +13,7 @@ from django.db import connection, models
 from django.db.migrations.executor import MigrationExecutor
 from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.test import RequestFactory, TestCase, TransactionTestCase, override_settings
+from django.urls import reverse
 from taggit.models import Tag
 
 from geniza.common.admin import (
@@ -340,6 +341,24 @@ class TestCustomTagAdmin:
         item_count = tag_admin.item_count(qs.first())
 
         assert item_count == 2
+
+    def test_merge_tags(self):
+        # adapted from test_corpus_admin.TestDocumentAdmin.test_merge_document
+        mockrequest = Mock()
+        test_ids = ["123", "456", "7698"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = CustomTagAdmin(Tag, Mock()).merge_tags(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 303
+        assert resp["location"].startswith(reverse("admin:tag-merge"))
+        assert resp["location"].endswith("?ids=%s" % ",".join(test_ids))
+
+        test_ids = ["123"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = CustomTagAdmin(Tag, Mock()).merge_tags(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 302
+        assert resp["location"] == reverse("admin:taggit_tag_changelist")
 
 
 def test_echo():

@@ -4,7 +4,9 @@ from random import randint
 from dal import autocomplete
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
@@ -22,10 +24,11 @@ from django.views.generic.edit import FormMixin
 from parasolr.django.views import SolrLastModifiedMixin
 from piffle.presentation import IIIFPresentation
 from tabular_export.admin import export_to_csv_response
+from taggit.models import Tag
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus import iiif_utils
-from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm
+from geniza.corpus.forms import DocumentMergeForm, DocumentSearchForm, TagMergeForm
 from geniza.corpus.models import Document, TextBlock
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.templatetags import corpus_extras
@@ -786,6 +789,86 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
             }
         )
         return context_data
+
+
+class TagMerge(PermissionRequiredMixin, FormView):
+    """Class-based view for merging tags, closely adapted from DocumentMerge."""
+
+    permission_required = (
+        "corpus.change_document",
+        "taggit.change_tag",
+        "taggit.delete_tag",
+        "taggit.change_tagged_item",
+        "taggit.add_tagged_item",
+    )
+    form_class = TagMergeForm
+    template_name = "admin/corpus/tag/merge.html"
+
+    def get_success_url(self):
+        return reverse("admin:taggit_tag_change", args=[self.primary_tag.id])
+
+    def get_form_kwargs(self):
+        form_kwargs = super().get_form_kwargs()
+        form_kwargs["tag_ids"] = self.tag_ids
+        return form_kwargs
+
+    def get_initial(self):
+        # Default to first tag selected
+        tag_ids = self.request.GET.get("ids", None)
+        if tag_ids:
+            self.tag_ids = [int(pid) for pid in tag_ids.split(",")]
+            # by default, prefer the first record created
+            return {"primary_tag": sorted(self.tag_ids)[0]}
+        else:
+            self.tag_ids = []
+
+    @staticmethod
+    def merge_tags(primary_tag, secondary_tags, user):
+        """Merge secondary_tags into primary_tag: tag all documents tagged with any of the
+        secondary_tags with the primary_tag, then delete all secondary_tags, and record
+        the change with a LogEntry."""
+        # add primary tag to all secondary tagged docs
+        tagged_docs = Document.objects.filter(tags__in=secondary_tags)
+        for doc in tagged_docs:
+            doc.tags.add(primary_tag)
+        # create a string for the logentry, then delete all secondary tags and log
+        secondary_string = ", ".join([str(tag.name) for tag in secondary_tags])
+        for tag in secondary_tags:
+            tag.delete()
+        LogEntry.objects.log_action(
+            user_id=user.id,
+            content_type_id=ContentType.objects.get_for_model(Tag).pk,
+            object_id=primary_tag.pk,
+            object_repr=str(primary_tag),
+            change_message="merged with %s" % secondary_string,
+            action_flag=CHANGE,
+        )
+
+    def form_valid(self, form):
+        """Merge the selected tags into the primary tag."""
+        primary_tag = form.cleaned_data["primary_tag"]
+        self.primary_tag = primary_tag
+
+        secondary_ids = [tag_id for tag_id in self.tag_ids if tag_id != primary_tag.id]
+        secondary_tags = Tag.objects.filter(id__in=secondary_ids)
+
+        # Get tag strings before they are merged
+        primary_tag_str = primary_tag.name
+        secondary_tag_str = ", ".join([tag.name for tag in secondary_tags])
+
+        # Merge secondary tags into the selected primary tag
+        user = getattr(self.request, "user", None)
+        TagMerge.merge_tags(primary_tag, secondary_tags, user=user)
+
+        # Display info about the merge to the user
+        messages.success(
+            self.request,
+            mark_safe(
+                f"Successfully merged tag(s) {secondary_tag_str} into {primary_tag_str}."
+            ),
+        )
+
+        return super().form_valid(form)
 
 
 # --------------- Publish CSV to sync with old PGP site --------------------- #
