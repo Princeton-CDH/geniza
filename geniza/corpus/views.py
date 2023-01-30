@@ -1,4 +1,5 @@
 from ast import literal_eval
+from copy import deepcopy
 from random import randint
 
 from dal import autocomplete
@@ -752,13 +753,24 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
         except Source.DoesNotExist:
             raise Http404
 
-        # if we have neither IIIF images nor transcription content with placeholder canvases,
-        # pass two placeholder canvases for use in editor
-        if not context_data["images"]:
-            canvas_base_uri = "%siiif/canvas/" % self.get_object().permalink
-            for i in [1, 2]:
-                canvas_uri = "%s%d/" % (canvas_base_uri, i)
-                context_data["images"][canvas_uri] = Document.PLACEHOLDER_CANVAS
+        # per each fragment without images, pass two placeholder canvases for use in editor
+        for b in self.object.textblock_set.all():
+            frag_images = b.fragment.iiif_images()
+            if frag_images is None or not frag_images[0]:
+                canvas_base_uri = "%siiif/" % self.get_object().permalink
+                for i in [1, 2]:
+                    # create a placeholder canvas URI that contains textblock pk and canvas number
+                    canvas_uri = f"{canvas_base_uri}textblock/{b.pk}/canvas/{i}/"
+                    # assign the placeholder image and appropriate labels to this canvas
+                    context_data["images"][canvas_uri] = deepcopy(
+                        Document.PLACEHOLDER_CANVAS
+                    )
+                    context_data["images"][canvas_uri][
+                        "shelfmark"
+                    ] = b.fragment.shelfmark
+                    context_data["images"][canvas_uri]["label"] = (
+                        "recto" if i == 1 else "verso"
+                    )
 
         context_data.update(
             {

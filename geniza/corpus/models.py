@@ -1,5 +1,7 @@
 import logging
+import re
 from collections import defaultdict
+from copy import deepcopy
 from functools import cache, cached_property
 from itertools import chain
 
@@ -764,7 +766,24 @@ class Document(ModelIndexable, DocumentDateMixin):
                 for canvas_uri in ed.content_html.keys():
                     if canvas_uri not in iiif_images:
                         # use placeholder image for each canvas not in iiif_images
-                        iiif_images[canvas_uri] = Document.PLACEHOLDER_CANVAS
+                        iiif_images[canvas_uri] = deepcopy(Document.PLACEHOLDER_CANVAS)
+                        uri_match = re.search(
+                            r"textblock\/(\d+)\/canvas\/(\d)\/", canvas_uri
+                        )
+                        if uri_match:
+                            # if this was created using placeholders in the transcription editor,
+                            # try to ascertain and display the right fragment shelfmark and label
+                            try:
+                                iiif_images[canvas_uri][
+                                    "shelfmark"
+                                ] = TextBlock.objects.get(
+                                    pk=int(uri_match.group(1))
+                                ).fragment.shelfmark
+                            except TextBlock.DoesNotExist:
+                                pass
+                            iiif_images[canvas_uri]["label"] = (
+                                "recto" if int(uri_match.group(2)) == 1 else "verso"
+                            )
 
         # if image_order_override not present, return list, in original order
         if not self.image_order_override:

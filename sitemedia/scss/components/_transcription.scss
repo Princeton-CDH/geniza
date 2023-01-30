@@ -422,8 +422,13 @@
         }
 
         &.placeholder {
-            .img-header {
-                display: none;
+            // hide placeholder zoom controls
+            .img-header *:not(h2) {
+                display: none !important;
+            }
+            // show placeholder label
+            .img-header h2 {
+                display: block;
             }
             // placeholders are completely transparent in viewer
             .deep-zoom-container {
