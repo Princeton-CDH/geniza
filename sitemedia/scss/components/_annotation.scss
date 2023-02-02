@@ -50,10 +50,52 @@ main.annotating {
             margin-bottom: 2rem;
         }
     }
-    // style placeholder images with gray background in editor
-    #itt-panel .img.placeholder .deep-zoom-container {
-        background-color: var(--background-gray);
-        opacity: 1;
+    #itt-panel .img {
+        // style placeholder images with gray background in editor
+        &.placeholder .deep-zoom-container {
+            background-color: var(--background-gray);
+            opacity: 1;
+        }
+        .deep-zoom-container {
+            // popout open and close buttons
+            button.popout-button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                z-index: 2;
+                &::after {
+                    font-family: "Phosphor";
+                    content: "\f058";
+                    margin-left: 5px;
+                    font-weight: normal;
+                }
+            }
+            button.popout-close-button {
+                font-size: 32px;
+                display: none;
+                position: absolute;
+                top: 0;
+                right: 0;
+                z-index: 2;
+            }
+        }
+        // opened "pop out" view of an image
+        .popout-container.open {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 5;
+            width: 50vw;
+            max-width: 50vw;
+            background-color: var(--background-gray);
+        }
+        // add some spacing to the "empty" div when the popout is open
+        &:has(.popout-container.open) {
+            min-height: 100vh !important;
+            display: block;
+            position: relative;
+        }
     }
 }
 
