@@ -117,7 +117,10 @@ class TestAnnotationList:
         assert log_entry.action_flag == ADDITION
         assert log_entry.change_message == "Created via API"
 
-    def test_create_annotation(self, admin_client, document, source, annotation_json):
+    @patch.object(ModelIndexable, "index_items")
+    def test_create_annotation(
+        self, mock_indexitems, admin_client, document, source, annotation_json
+    ):
         # should create a DIGITAL_EDITION footnote if one does not exist
         assert not document.digital_editions().filter(source=source).exists()
         admin_client.post(
@@ -132,6 +135,10 @@ class TestAnnotationList:
         assert LogEntry.objects.filter(
             object_id=footnote.pk, action_flag=ADDITION
         ).exists()
+
+        # should reindex document
+        document = Document.objects.get(pk=footnote.object_id)
+        mock_indexitems.assert_called_with([document])
 
 
 @pytest.mark.django_db
