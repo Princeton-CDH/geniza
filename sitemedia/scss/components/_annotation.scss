@@ -110,3 +110,9 @@ main.addsource
     background-color: var(--background);
     color: var(--on-background);
 }
+
+// rtl tweak for popout container
+html[dir="rtl"] #itt-panel .popout-container.open {
+    left: auto;
+    right: 0;
+}
