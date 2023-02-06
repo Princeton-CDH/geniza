@@ -170,10 +170,7 @@ class TestAnnotationDetail:
             )
             assert response.status_code == 400
 
-    @patch.object(ModelIndexable, "index_items")
-    def test_post_annotation_detail_admin(
-        self, mock_indexitems, admin_client, annotation
-    ):
+    def test_post_annotation_detail_admin(self, admin_client, annotation):
         # update annotation with POST request as admin
         # POST req must include manifest and source URIs
         response = admin_client.post(
@@ -201,10 +198,6 @@ class TestAnnotationDetail:
         assert updated_anno.content["body"] == [{"value": "new text"}]
         # updated content should be returned in the response
         assert response.json() == updated_anno.compile()
-
-        # should call index_items on document when annotation updated
-        document = Document.from_manifest_uri(annotation.target_source_manifest_id)
-        mock_indexitems.assert_called_with([document])
 
         # should have log entry for update
         log_entry = LogEntry.objects.get(object_id=annotation.id)
@@ -372,10 +365,12 @@ class TestAnnotationSearch:
     def test_search_manifest(self, client, source, document, join):
         # associated with document based on footnote
         footnote = Footnote.objects.create(source=source, content_object=document)
-        anno1 = Annotation.objects.create(footnote=footnote, content={})
+        anno1 = Annotation.objects.create(
+            footnote=footnote, content={"body": [{"value": "foo"}]}
+        )
         # different document
         footnote2 = Footnote.objects.create(source=source, content_object=join)
-        anno2 = Annotation.objects.create(footnote=footnote2, content={})
+        anno2 = Annotation.objects.create(footnote=footnote2, content=anno1.content)
         response = client.get(self.anno_search_url, {"manifest": document.manifest_uri})
         assert response.status_code == 200
         assert response.headers["content-type"] == "application/json"
@@ -386,10 +381,18 @@ class TestAnnotationSearch:
         assertNotContains(response, anno2.uri())
 
     def test_search_sort(self, client, annotation):
-        anno3 = Annotation.objects.create(footnote=annotation.footnote, content={})
-        anno10 = Annotation.objects.create(footnote=annotation.footnote, content={})
-        anno1 = Annotation.objects.create(footnote=annotation.footnote, content={})
-        anno2 = Annotation.objects.create(footnote=annotation.footnote, content={})
+        anno3 = Annotation.objects.create(
+            footnote=annotation.footnote, content={"body": [{"value": "foo"}]}
+        )
+        anno10 = Annotation.objects.create(
+            footnote=annotation.footnote, content=anno3.content
+        )
+        anno1 = Annotation.objects.create(
+            footnote=annotation.footnote, content=anno3.content
+        )
+        anno2 = Annotation.objects.create(
+            footnote=annotation.footnote, content=anno3.content
+        )
 
         # should return json AnnotationList with resources of length 4
         response = client.get(self.anno_search_url)
@@ -407,15 +410,15 @@ class TestAnnotationSearch:
         assert results["resources"][4]["id"] == anno2.uri()
 
         # now set schema:position to reorder
-        anno3.set_content({"schema:position": 3})
+        anno3.set_content({**anno3.content, "schema:position": 3})
         anno3.save()
-        anno10.set_content({"schema:position": 10})
+        anno10.set_content({**anno10.content, "schema:position": 10})
         anno10.save()
-        anno1.set_content({"schema:position": 1})
+        anno1.set_content({**anno1.content, "schema:position": 1})
         anno1.save()
-        anno2.set_content({"schema:position": 2})
+        anno2.set_content({**anno2.content, "schema:position": 2})
         anno2.save()
-        annotation.set_content({"schema:position": 5})
+        annotation.set_content({**annotation.content, "schema:position": 5})
         annotation.save()
 
         response = client.get(self.anno_search_url)

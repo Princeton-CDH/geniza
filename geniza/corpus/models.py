@@ -423,6 +423,7 @@ class DocumentSignalHandlers:
         "footnote": "footnotes",
         "source": "footnotes__source",
         "creator": "footnotes__source__authorship__creator",
+        "annotation": "footnotes__annotation",
     }
 
     @staticmethod
@@ -1100,6 +1101,10 @@ class Document(ModelIndexable, DocumentDateMixin):
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
         "footnotes.creator": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
+        "annotations.annotation": {
             "post_save": DocumentSignalHandlers.related_save,
             "pre_delete": DocumentSignalHandlers.related_delete,
         },

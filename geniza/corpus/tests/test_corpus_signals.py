@@ -14,7 +14,7 @@ from geniza.corpus.models import (
 
 @pytest.mark.django_db
 @patch.object(ModelIndexable, "index_items")
-def test_related_save(mock_indexitems, document, join, footnote):
+def test_related_save(mock_indexitems, document, join, footnote, annotation):
     # unsaved fragment should be ignored
     frag = Fragment(shelfmark="T-S 123")
 
@@ -58,6 +58,17 @@ def test_related_save(mock_indexitems, document, join, footnote):
     mock_indexitems.reset_mock()
     DocumentSignalHandlers.related_save(
         DocumentType, document.footnotes.first().source.authorship_set.first().creator
+    )
+    assert mock_indexitems.call_count == 1
+    assert document in mock_indexitems.call_args[0][0]
+
+    # annotation
+    mock_indexitems.reset_mock()
+    DocumentSignalHandlers.related_save(
+        DocumentType,
+        document.footnotes.filter(annotation__isnull=False)
+        .first()
+        .annotation_set.first(),
     )
     assert mock_indexitems.call_count == 1
     assert document in mock_indexitems.call_args[0][0]
