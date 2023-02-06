@@ -240,10 +240,15 @@ class Fragment(TrackChangesModel):
         canvases = []
         # use images from locally cached manifest if possible
         if self.manifest:
-            for canvas in self.manifest.canvases.all():
-                images.append(canvas.image)
-                labels.append(canvas.label)
-                canvases.append(canvas.uri)
+            manifest_canvases = self.manifest.canvases.all()
+            # handle no canvases on manifest; cached QS will not incur extra DB hit
+            if not manifest_canvases.count():
+                return None
+            else:
+                for canvas in manifest_canvases:
+                    images.append(canvas.image)
+                    labels.append(canvas.label)
+                    canvases.append(canvas.uri)
 
         # if not cached, load from remote url
         else:
@@ -257,6 +262,7 @@ class Fragment(TrackChangesModel):
                     canvases.append(canvas.uri)
             except (IIIFException, ConnectionError, HTTPError):
                 logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
+                return None
 
         return images, labels, canvases
 

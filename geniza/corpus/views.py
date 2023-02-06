@@ -756,7 +756,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
         # per each fragment without images, pass two placeholder canvases for use in editor
         for b in self.object.textblock_set.all():
             frag_images = b.fragment.iiif_images()
-            if frag_images is None or not frag_images[0]:
+            if frag_images is None:
                 canvas_base_uri = "%siiif/" % self.get_object().permalink
                 for i in [1, 2]:
                     # create a placeholder canvas URI that contains textblock pk and canvas number
