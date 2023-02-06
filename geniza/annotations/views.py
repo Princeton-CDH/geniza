@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 
 from django.contrib import admin
 from django.contrib.admin.models import ADDITION, DELETION, LogEntry
@@ -11,7 +10,6 @@ from django.http import HttpResponse, JsonResponse
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
-from parasolr.django.indexing import ModelIndexable
 
 from geniza.annotations.admin import AnnotationAdmin
 from geniza.annotations.models import Annotation, annotations_to_list
@@ -173,15 +171,6 @@ class AnnotationList(
 
         anno.save()
 
-        # reindex document
-        start = time.time()
-        document_id = anno_data["footnote"].object_id
-        ModelIndexable.index_items([Document.objects.get(pk=document_id)])
-        logger.debug(
-            "Reindexing document %s (new annotation): %f sec"
-            % (document_id, time.time() - start)
-        )
-
         # create and send response
         resp = AnnotationResponse(anno.compile())
         resp.status_code = 201  # created
@@ -280,18 +269,10 @@ class AnnotationDetail(
             or anno.footnote.pk != anno_data["footnote"]
         ):
             anno.footnote = anno_data["footnote"]
-            start = time.time()
             # create log entry to document change
             anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
             anno_admin.log_change(request, anno, "Updated via API")
             anno.save()
-            # reindex document
-            document_id = anno_data["footnote"].object_id
-            ModelIndexable.index_items([Document.objects.get(pk=document_id)])
-            logger.debug(
-                "Reindexing document %s (existing annotation updated): %f sec"
-                % (document_id, time.time() - start)
-            )
 
         return AnnotationResponse(anno.compile())
 

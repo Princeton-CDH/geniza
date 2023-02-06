@@ -149,6 +149,7 @@ class TestAnnotationQuerySet:
             footnote=annotation.footnote,
             content={
                 "target": {"source": {"id": annotation.target_source_id}},
+                "body": [{"value": "foo"}],
             },
         )
         other_canvas = "http://ex.co/iiif/canvas/3421"
@@ -156,11 +157,12 @@ class TestAnnotationQuerySet:
             footnote=annotation.footnote,
             content={
                 "target": {"source": {"id": other_canvas}},
+                "body": [{"value": "bar"}],
             },
         )
         # should be ignored but not cause an error
         no_target_anno = Annotation.objects.create(
-            footnote=annotation.footnote, content={"body": "foo"}
+            footnote=annotation.footnote, content={"body": [{"value": "foo bar"}]}
         )
 
         annos_by_canvas = Annotation.objects.all().group_by_canvas()
