@@ -390,8 +390,8 @@ class TagMergeForm(forms.Form):
         label="Select primary tag",
         queryset=None,
         help_text=(
-            "Select the primary tag, which the other selected tags will be merged into. "
-            "All tagged items will be combined on the merged tag."
+            "Select the primary tag, which will replace the names of the other selected tags. "
+            "All items tagged with the other selected tags will then only be tagged with the primary tag."
         ),
         empty_label=None,
         widget=forms.RadioSelect,
