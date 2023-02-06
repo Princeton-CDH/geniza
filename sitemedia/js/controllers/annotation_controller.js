@@ -27,6 +27,26 @@ export default class extends Controller {
             // TODO: Better way of determining if we're on mobile?
             const isMobile = window.innerWidth <= 900;
 
+            // allow "pop out" image during editing
+            const popOutButton = this.imageContainerTarget.querySelector(
+                "button.popout-button"
+            );
+            const closeButton = this.imageContainerTarget.querySelector(
+                "button.popout-close-button"
+            );
+            const popOutContainer =
+                this.imageContainerTarget.querySelector(".popout-container");
+            popOutButton.addEventListener("click", (e) => {
+                popOutContainer.classList.add("open");
+                closeButton.style.display = "flex";
+                popOutButton.style.display = "none";
+            });
+            closeButton.addEventListener("click", (e) => {
+                popOutContainer.classList.remove("open");
+                closeButton.style.display = "none";
+                popOutButton.style.display = "flex";
+            });
+
             // initialize transcription editor
             // get sibling outside of controller scope
             const annotationContainer =
