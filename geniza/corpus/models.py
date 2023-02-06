@@ -1,5 +1,7 @@
 import logging
+import re
 from collections import defaultdict
+from copy import deepcopy
 from functools import cache, cached_property
 from itertools import chain
 
@@ -238,10 +240,15 @@ class Fragment(TrackChangesModel):
         canvases = []
         # use images from locally cached manifest if possible
         if self.manifest:
-            for canvas in self.manifest.canvases.all():
-                images.append(canvas.image)
-                labels.append(canvas.label)
-                canvases.append(canvas.uri)
+            manifest_canvases = self.manifest.canvases.all()
+            # handle no canvases on manifest; cached QS will not incur extra DB hit
+            if not manifest_canvases.count():
+                return None
+            else:
+                for canvas in manifest_canvases:
+                    images.append(canvas.image)
+                    labels.append(canvas.label)
+                    canvases.append(canvas.uri)
 
         # if not cached, load from remote url
         else:
@@ -255,6 +262,7 @@ class Fragment(TrackChangesModel):
                     canvases.append(canvas.uri)
             except (IIIFException, ConnectionError, HTTPError):
                 logger.warning("Error loading IIIF manifest: %s" % self.iiif_url)
+                return None
 
         return images, labels, canvases
 
@@ -738,8 +746,9 @@ class Document(ModelIndexable, DocumentDateMixin):
         :param with_placeholders: if there are digital editions with canvases missing images,
             include placeholder images for each additional canvas (default: False)"""
         iiif_images = {}
+        textblocks = self.textblock_set.all()
 
-        for b in self.textblock_set.all():
+        for b in textblocks:
             frag_images = b.fragment.iiif_images()
             if frag_images is not None:
                 images, labels, canvases = frag_images
@@ -765,7 +774,28 @@ class Document(ModelIndexable, DocumentDateMixin):
                 for canvas_uri in ed.content_html.keys():
                     if canvas_uri not in iiif_images:
                         # use placeholder image for each canvas not in iiif_images
-                        iiif_images[canvas_uri] = Document.PLACEHOLDER_CANVAS
+                        iiif_images[canvas_uri] = deepcopy(Document.PLACEHOLDER_CANVAS)
+                        uri_match = re.search(
+                            r"textblock\/(?P<tb_pk>\d+)\/canvas\/(?P<canvas>\d)\/",
+                            canvas_uri,
+                        )
+                        if uri_match:
+                            # if this was created using placeholders in the transcription editor,
+                            # try to ascertain and display the right fragment shelfmark and label
+                            tb_match_shelfmarks = [
+                                tb.fragment.shelfmark
+                                for tb in textblocks
+                                if tb.pk == int(uri_match.group("tb_pk"))
+                            ]
+                            if tb_match_shelfmarks:
+                                iiif_images[canvas_uri][
+                                    "shelfmark"
+                                ] = tb_match_shelfmarks[0]
+                            iiif_images[canvas_uri]["label"] = (
+                                "recto"
+                                if int(uri_match.group("canvas")) == 1
+                                else "verso"
+                            )
 
         # if image_order_override not present, return list, in original order
         if not self.image_order_override:

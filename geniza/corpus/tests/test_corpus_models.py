@@ -772,6 +772,46 @@ class TestDocument:
             # img2 should come first now
             assert list(images.keys()) == ["canvas2", "canvas1"]
 
+    def test_iiif_images_with_placeholders(self, source):
+        # Create a document and fragment and a TextBlock to associate them
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        tb = TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0])
+        # create a digital edition footnote with an associated annotation
+        fn = Footnote.objects.create(
+            source=source,
+            content_object=doc,
+            doc_relation=[Footnote.DIGITAL_EDITION],
+        )
+        # annotation should target the textblock on the document
+        canvas_str = f"{doc.permalink}iiif/textblock/{tb.pk}/canvas/1/"
+        Annotation.objects.create(
+            content={
+                "body": [{"value": "test annotation", "label": "test label"}],
+                "target": {"source": {"id": canvas_str}},
+            },
+            footnote=fn,
+        )
+        images = doc.iiif_images(with_placeholders=True)
+        assert len(images) == 1
+        assert images[canvas_str]["shelfmark"] == frag.shelfmark
+        assert images[canvas_str]["label"] == "recto"
+
+        # should not error if the annotation targets a nonexistant textblock
+        bad_canvas_str = f"{doc.permalink}iiif/textblock/9999/canvas/2/"
+        Annotation.objects.create(
+            content={
+                "body": [{"value": "test annotation", "label": "test label"}],
+                "target": {"source": {"id": bad_canvas_str}},
+            },
+            footnote=fn,
+        )
+        # should still successfully populate with an additional placeholder
+        images = doc.iiif_images(with_placeholders=True)
+        assert len(images) == 2
+        # second image should get verso because of /2/
+        assert images[bad_canvas_str]["label"] == "verso"
+
     def test_admin_thumbnails(self):
         # Create a document and fragment and a TextBlock to associate them
         doc = Document.objects.create()
