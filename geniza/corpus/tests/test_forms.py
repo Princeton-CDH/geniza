@@ -2,6 +2,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 from django import forms
+from django.db.models import Count
+from taggit.models import Tag
 
 from geniza.corpus.forms import (
     CheckboxSelectWithCount,
@@ -10,6 +12,8 @@ from geniza.corpus.forms import (
     DocumentSearchForm,
     FacetChoiceField,
     SelectWithDisabled,
+    TagChoiceField,
+    TagMergeForm,
 )
 from geniza.corpus.models import Document, DocumentType
 
@@ -256,3 +260,47 @@ class TestDocumentMergeForm:
         }
         form.clean()
         assert len(form.errors) == 0
+
+
+@pytest.mark.django_db
+class TestTagChoiceField:
+    def test_label_from_instance(self, document):
+        # create tag, add to document, construct annotated queryset
+        tag = Tag.objects.create(name="example tag")
+        document.tags.add(tag)
+        qs = Tag.objects.filter(pk=tag.pk).annotate(
+            item_count=Count("taggit_taggeditem_items", distinct=True),
+        )
+
+        # Should incldue tag name and count in label
+        tag_choice_field = TagChoiceField(Mock())
+        label = tag_choice_field.label_from_instance(qs.first())
+        assert str(tag.name) in label
+        assert "(1 tagged)" in label
+
+
+class TestTagMergeForm:
+    @pytest.mark.django_db
+    def test_init(self):
+        # no error if tag ids not specified
+        TagMergeForm()
+
+        # create test tag records
+        Tag.objects.create(name="example tag1")
+        Tag.objects.create(name="tag2")
+        Tag.objects.create(name="example3")
+
+        # initialize with ids for all but the last
+        tags = Tag.objects.all().order_by("pk")
+        tag_ids = list(tags.values_list("id", flat=True))
+        mergeform = TagMergeForm(tag_ids=tag_ids[:-1])
+        # total should have all but one tag
+        assert mergeform.fields["primary_tag"].queryset.count() == tags.count() - 1
+        # last tag should not be an available choice
+        assert tags.last() not in mergeform.fields["primary_tag"].queryset
+        # queryset should be annotated with counts
+        assert all(
+            hasattr(record, "item_count")
+            for record in mergeform.fields["primary_tag"].queryset
+        )
+        assert mergeform.fields["primary_tag"].queryset.first().item_count == 0

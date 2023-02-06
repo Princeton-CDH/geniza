@@ -1,7 +1,9 @@
 from django import forms
+from django.db.models import Count
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
+from taggit.models import Tag
 
 from geniza.common.fields import RangeField, RangeForm, RangeWidget
 from geniza.common.utils import simplify_quotes
@@ -374,3 +376,40 @@ class DocumentMergeForm(forms.Form):
         if rationale == "other" and not rationale_notes:
             msg = 'Additional information is required when selecting "Other".'
             self.add_error("rationale", msg)
+
+
+class TagChoiceField(forms.ModelChoiceField):
+    """Add a count of tagged documents to a tag label on a form (used for tag merging)"""
+
+    def label_from_instance(self, tag):
+        return "%s (%s tagged)" % (tag.name, tag.item_count)
+
+
+class TagMergeForm(forms.Form):
+    primary_tag = TagChoiceField(
+        label="Select primary tag",
+        queryset=None,
+        help_text=(
+            "Select the primary tag, which will replace the names of the other selected tags. "
+            "All items tagged with the other selected tags will then only be tagged with the primary tag."
+        ),
+        empty_label=None,
+        widget=forms.RadioSelect,
+    )
+
+    def __init__(self, *args, **kwargs):
+        tag_ids = kwargs.get("tag_ids", [])
+
+        # Remove the added kwarg so that the super method doesn't error
+        try:
+            del kwargs["tag_ids"]
+        except KeyError:
+            pass
+
+        super().__init__(*args, **kwargs)
+        # get queryset and annotate with tagged document count
+        self.fields["primary_tag"].queryset = Tag.objects.filter(
+            id__in=tag_ids
+        ).annotate(
+            item_count=Count("taggit_taggeditem_items", distinct=True),
+        )
