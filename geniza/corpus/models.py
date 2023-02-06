@@ -739,8 +739,9 @@ class Document(ModelIndexable, DocumentDateMixin):
         :param with_placeholders: if there are digital editions with canvases missing images,
             include placeholder images for each additional canvas (default: False)"""
         iiif_images = {}
+        textblocks = self.textblock_set.all()
 
-        for b in self.textblock_set.all():
+        for b in textblocks:
             frag_images = b.fragment.iiif_images()
             if frag_images is not None:
                 images, labels, canvases = frag_images
@@ -768,21 +769,25 @@ class Document(ModelIndexable, DocumentDateMixin):
                         # use placeholder image for each canvas not in iiif_images
                         iiif_images[canvas_uri] = deepcopy(Document.PLACEHOLDER_CANVAS)
                         uri_match = re.search(
-                            r"textblock\/(\d+)\/canvas\/(\d)\/", canvas_uri
+                            r"textblock\/(?P<tb_pk>\d+)\/canvas\/(?P<canvas>\d)\/",
+                            canvas_uri,
                         )
                         if uri_match:
                             # if this was created using placeholders in the transcription editor,
                             # try to ascertain and display the right fragment shelfmark and label
-                            try:
+                            tb_match_shelfmarks = [
+                                tb.fragment.shelfmark
+                                for tb in textblocks
+                                if tb.pk == int(uri_match.group("tb_pk"))
+                            ]
+                            if tb_match_shelfmarks:
                                 iiif_images[canvas_uri][
                                     "shelfmark"
-                                ] = TextBlock.objects.get(
-                                    pk=int(uri_match.group(1))
-                                ).fragment.shelfmark
-                            except TextBlock.DoesNotExist:
-                                pass
+                                ] = tb_match_shelfmarks[0]
                             iiif_images[canvas_uri]["label"] = (
-                                "recto" if int(uri_match.group(2)) == 1 else "verso"
+                                "recto"
+                                if int(uri_match.group("canvas")) == 1
+                                else "verso"
                             )
 
         # if image_order_override not present, return list, in original order
