@@ -1,5 +1,6 @@
 /* styles for transcription and annotation */
 
+@use "../base/breakpoints";
 @use "../base/spacing";
 @use "../base/typography";
 
@@ -59,7 +60,7 @@ main.annotating {
         .deep-zoom-container {
             // popout open and close buttons
             button.popout-button {
-                display: flex;
+                display: none;
                 align-items: center;
                 justify-content: center;
                 position: relative;
@@ -70,13 +71,16 @@ main.annotating {
                     margin-left: 5px;
                     font-weight: normal;
                 }
+                @include breakpoints.for-tablet-landscape-up {
+                    display: flex;
+                }
             }
             button.popout-close-button {
                 font-size: 32px;
                 display: none;
                 position: absolute;
                 top: 0;
-                right: 0;
+                right: -1rem;
                 z-index: 2;
             }
         }
@@ -88,6 +92,8 @@ main.annotating {
             z-index: 5;
             width: 50vw;
             max-width: 50vw;
+            height: 100vh;
+            padding: 1rem;
             background-color: var(--background-gray);
         }
         // add some spacing to the "empty" div when the popout is open
