@@ -253,8 +253,8 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
             # NOTE: this is unlikely to happen since all folio listing formats
             # should be accounted for. only known cases are MS_Heb_c_14_R.xml,
             # MS_Heb_e_58_R.xml, and MS_Heb_e_62.xml.
-            folio_numbers = [int(slugify(shelfmark).rsplit("-", 1)[1])]
-            print("Folio numbers not found in XML for %s" % (shelfmark))
+            folio_numbers = []
+            print("Folio numbers not found in XML for %s; skipping" % (shelfmark))
 
         # create a separate emanifest for each folio number
         for manifest_number in folio_numbers:
