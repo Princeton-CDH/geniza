@@ -242,6 +242,9 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
                     folio_numbers += get_folio_numbers(nested_folio)
         elif part.note and len(parse_note(part.note)):
             folio_numbers = parse_note(part.note)
+        elif "MS. Heb. e. 58 (R)" in shelfmark:
+            # special case for MS. Heb. e. 58 (R); 3 images, 2 folios
+            folio_numbers = [1, 2]
         else:
             # if we can't get any reference to folios from the XML otherwise,
             # then just use the trailing number from the shelfmark.
@@ -303,6 +306,16 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
             # get images based on start/end locus for this shelfmark
             images = []
             for img in tei.image_urls:
+                # special case for MS. Heb. e. 58 (R), which has two fragments in one recto image,
+                # but separate verso images, and the verso images are numbered incorrectly
+                if "MS_HEB_e_58_R" in img:
+                    if (
+                        not any(n in img for n in ["-2", "-3"])
+                        or ("-2" in img and manifest_number == 1)
+                        or ("-3" in img and manifest_number == 2)
+                    ):
+                        images.append(img)
+                    continue
                 # given an image url like MS_HEB_b_1_1a.tif we want just the 1 from "1a"
                 try:
                     img_number = get_number(image_label(img, tei.desc.xml_id))
@@ -327,8 +340,11 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
             for i, img_url in enumerate(images):
                 # generate label from filename
                 label = os.path.splitext(img_url)[0].split("_")[-1]
+                # special case for MS. Heb. e. 58 (R), which is numbered incorrectly
+                if "MS_HEB_e_58_R" in img_url:
+                    label = "verso" if any(n in img for n in ["-2", "-3"]) else "recto"
                 # simple case: a or b only; becomes recto/verso
-                if len(label) == 1 and not label.isdigit():
+                elif len(label) == 1 and not label.isdigit():
                     label = image_labels[label]
                 elif label.isdigit():
                     # special case in MS. Heb. f. 111, folios not split recto/verso
