@@ -344,7 +344,9 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
                 label = os.path.splitext(img_url)[0].split("_")[-1]
                 # special case for MS. Heb. e. 58 (R), which is numbered incorrectly
                 if "MS_HEB_e_58_R" in img_url:
-                    label = "verso" if any(n in img for n in ["-2", "-3"]) else "recto"
+                    label = (
+                        "verso" if any(n in img_url for n in ["-2", "-3"]) else "recto"
+                    )
                 # simple case: a or b only; becomes recto/verso
                 elif len(label) == 1 and not label.isdigit():
                     label = image_labels[label]
