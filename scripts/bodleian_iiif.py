@@ -76,6 +76,8 @@ class Folio(teimap.Tei):
     locus = xmlmap.NodeField("tei:locus", Locus)
     # sometimes there are multiple tei:locus nodes grouped in a tei:locusGrp instead
     locus_group = xmlmap.NodeListField("tei:locusGrp/tei:locus", Locus)
+    # sometimes the locus is nested inside a <p> node
+    p_locus = xmlmap.NodeField("tei:p/tei:locus", Locus)
 
 
 class Shelfmark(teimap.Tei):
@@ -236,7 +238,7 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
         elif part.folios:
             # sometimes multiple folios are nested under an msItem
             for folio in part.folios:
-                folio_numbers += get_folio_numbers(folio.locus)
+                folio_numbers += get_folio_numbers(folio.locus or folio.p_locus)
                 # sometimes they are double nested! (e.g. MS_Heb_b_17-part13-item1-item3)
                 for nested_folio in folio.locus_group:
                     folio_numbers += get_folio_numbers(nested_folio)
