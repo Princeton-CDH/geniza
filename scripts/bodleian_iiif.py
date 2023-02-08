@@ -258,17 +258,16 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
 
         # create a separate emanifest for each folio number
         for manifest_number in folio_numbers:
-            # path is based on manifest identifier, in output dir, with json extension
-            manifest_id = slugify(shelfmark)
             # in case we need to change numbering due to multiple folios in one shelfmark,
-            # revise manifest_id to use current index as number
-            manifest_id = "%s-%d" % (manifest_id.rsplit("-", 1)[0], manifest_number)
-            # revise the shelfmark in the same way
+            # revise shelfmark to use current index as number
             revised_shelfmark = "%s/%d" % (shelfmark.rsplit("/", 1)[0], manifest_number)
-
+            # revise the manifest_id in the same way
+            manifest_id = slugify(revised_shelfmark)
+            manifest_id = "%s-%d" % (manifest_id.rsplit("-", 1)[0], manifest_number)
             # create the grouping directory if it does not exist
             group_dir = os.path.join(manifest_dir, group)
             os.makedirs(group_dir, exist_ok=True)
+            # path is based on manifest identifier, in output dir, with json extension
             expected_path = os.path.join(group_dir, "%s.json" % manifest_id)
             # skip if already generated in a previous run
             if os.path.exists(expected_path):
