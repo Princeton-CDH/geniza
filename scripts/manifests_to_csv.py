@@ -45,16 +45,20 @@ def parse_manifests(source_dir, outfile):
                 )
 
 
-bodl_shelfmark_re = re.compile(r"^MS\. Heb\. ([a-g])\.")
+bodl_shelfmark_re = re.compile(r"^MS\. (?P<group>Heb|Georg|Syr)\. (?P<letter>[a-g])\.")
 
 
 def pgpize_shelfmark(shelfmark):
+    bodl_prefixes = ["MS. Heb.", "MS. Georg.", "MS. Syr."]
     # convert bodleian shelfmark to PGP format
-    if shelfmark.startswith("MS. Heb."):
+    if any([shelfmark.startswith(prefix) for prefix in bodl_prefixes]):
         # in PGP Bodleian shelfmarks have a Bodl. prefix,
         # MS heb portion is slightly different, and we don't use dots
         # after volume/series letter
-        return "Bodl. %s" % bodl_shelfmark_re.sub(r"MS heb. \1", shelfmark)
+        return bodl_shelfmark_re.sub(
+            lambda m: f"Bodl. MS {m.group('group').lower()}. {m.group('letter')}",
+            shelfmark,
+        )
 
     # this JRL manifest series was labeled incorrectly when generated
     if shelfmark.startswith("JRL SERIES Ar. "):
