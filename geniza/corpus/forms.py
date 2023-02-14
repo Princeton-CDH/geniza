@@ -2,7 +2,7 @@ from django import forms
 from django.db.models import Count
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from taggit.models import Tag
 
 from geniza.common.fields import RangeField, RangeForm, RangeWidget
