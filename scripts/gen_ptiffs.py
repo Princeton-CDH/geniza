@@ -8,8 +8,8 @@
 # Script requires a destination directory where tile images should be
 # placed and either a source image directory or a list of source image files.
 #
-#   python scripts/tile_images.py -d iiif-image-dir -s source-image-dir
-#   python scripts/tile_images.py -d iiif-image-dir img1.jpg img2.jpg img2.jpg
+#   python scripts/gen_ptiffs.py -d iiif-image-dir -s source-image-dir
+#   python scripts/gen_ptiffs.py -d iiif-image-dir img1.jpg img2.jpg img2.jpg
 
 
 import argparse

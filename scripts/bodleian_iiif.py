@@ -39,12 +39,10 @@ import argparse
 import os
 import os.path
 import re
-import sys
 
 import requests
 from eulxml import xmlmap
 from eulxml.xmlmap import teimap
-from iiif.static import IIIFStatic, IIIFStaticError
 from iiif_prezi.factory import ManifestFactory
 from slugify import slugify
 
@@ -66,15 +64,34 @@ BASE_IIIF_IMG_URI = "https://puliiif.princeton.edu/iiif/2/"
 # Bodleian XML we care about for generating manifests
 
 
+class Locus(teimap.Tei):
+    # folio range is indicated by locus from/to
+    # <locus from="10a" to="20b"/>
+    folio_start = xmlmap.StringField("@from")
+    folio_end = xmlmap.StringField("@to")
+
+
+class Folio(teimap.Tei):
+    # some msItem will have the entire range of folios in a single tei:locus node
+    locus = xmlmap.NodeField("tei:locus", Locus)
+    # sometimes there are multiple tei:locus nodes grouped in a tei:locusGrp instead
+    locus_group = xmlmap.NodeListField("tei:locusGrp/tei:locus", Locus)
+    # sometimes the locus is nested inside a <p> node
+    p_locus = xmlmap.NodeField("tei:p/tei:locus", Locus)
+
+
 class Shelfmark(teimap.Tei):
     xml_id = xmlmap.StringField("@xml:id")
     shelfmark = xmlmap.StringField("tei:msIdentifier/tei:altIdentifier/tei:idno")
     title = xmlmap.StringField("tei:msContents/tei:msItem/tei:title")
 
-    # image range is indicated by locus from/to
-    # <locus from="10a" to="20b"/>
-    image_start = xmlmap.StringField("tei:msContents/tei:msItem/tei:locus/@from")
-    image_end = xmlmap.StringField("tei:msContents/tei:msItem/tei:locus/@to")
+    # some msPart will have the entire range of folios in a single tei:locus node
+    locus = xmlmap.NodeField("tei:msContents/tei:msItem/tei:locus", Locus)
+    # sometimes, folios are indicated by nested msItem only, and we need to split them
+    # into separate manifests
+    folios = xmlmap.NodeListField("tei:msContents/tei:msItem/tei:msItem", Folio)
+    # in at least one case (MS. Heb. e. 56/2), folio range is only in text in a note!
+    note = xmlmap.StringField("tei:msContents/tei:msItem/tei:note")
 
 
 class BodleianGenizahTei(teimap.Tei):
@@ -83,8 +100,13 @@ class BodleianGenizahTei(teimap.Tei):
 
     # volume id on the TEI element
     volume_id = xmlmap.StringField("@xml:id")
-    # records with shelfmarks are in msPart
+    # records with shelfmarks are usually in msPart
     parts = xmlmap.NodeListField("//tei:msPart", Shelfmark)
+    # sometimes, records are in msDesc instead
+    desc = xmlmap.NodeField("//tei:msDesc", Shelfmark)
+    # in the latter case, parts don't have individual shelfmarks, so we need to generate them
+    # based on the full manuscript shelfmark
+    manuscript = xmlmap.StringField("//tei:msDesc/tei:msIdentifier/tei:idno")
     # images are all listed as graphics under facsimile
     image_urls = xmlmap.StringListField("//tei:facsimile/tei:graphic/@url")
 
@@ -117,9 +139,47 @@ def image_output_path(image_dir, image_filename):
     return os.path.join(image_dir, image_filename.replace(".tif", ".jpg"))
 
 
-def image_label(image_filename):
+def image_label(image_filename, xml_id):
     # given an image url like MS_HEB_b_1_1a.tif we want just the 1a portion
-    return os.path.splitext(image_filename)[0].split("_")[-1]
+    # first remove the file extension
+    stem = os.path.splitext(image_filename)[0].lower()
+    # use xml_id so that we can handle cases like MS_HEB_d_35_63_biss_a.tif
+    # NOTE: in cases like MS_HEB_e_52(R)_1a.tif, image filenames use (P) and (R)
+    # instead of xml:id _P and _R.
+    # and in the tei for MS_Heb_f_98-star, image filenames use "add" instead of "star".
+    to_remove = (
+        xml_id.replace("_P", "(P)")
+        .replace("_R", "(R)")
+        .replace("-star", "_add")
+        .lower()
+    )
+    return stem.replace("%s_" % to_remove, "")
+
+
+def get_number(some_string):
+    # helper method to get a number from a string
+    return int(re.sub("[^0-9]", "", some_string))
+
+
+def get_folio_numbers(locus):
+    # get a list of folio numbers from a tei:locus node
+    if locus and locus.folio_start and locus.folio_end:
+        start_number = get_number(locus.folio_start)
+        end_number = get_number(locus.folio_end)
+        # if folio_start and folio_end contain different numbers (i.e. multiple folios),
+        # then this needs to be multiple manifests, so make sure we include each unique number
+        return list(range(start_number, end_number + 1))
+    return []
+
+
+def parse_note(note):
+    # in at least one case (MS. Heb. e. 56/2) folio number list only exists in a text note
+    if note:
+        # get the first two nubmers in the note, should be folio range
+        number_list = re.findall("(\d+)", note)
+        if len(number_list) >= 2:
+            return list(range(int(number_list[0]), int(number_list[1]) + 1))
+    return []
 
 
 def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=False):
@@ -151,130 +211,195 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
     fac.set_base_image_uri(BASE_IIIF_IMG_URI)
     fac.set_iiif_image_info(2.0, 2)  # Version, ComplianceLevel
 
-    for part in tei.parts:
-        # create a new manifest; save to filename based on shelfmark
+    # handle rare cases where we have a bare msDesc with no msPart
+    parts = tei.parts or [tei.desc]
+
+    for part in parts:
+        # create at least one new manifest per msPart; save to filename based on shelfmark
         # instead of manifest.json
+
+        # when we have only msDesc and no msPart, construct shelfmark from entire manuscript
+        # shelfmark with a /1; the number may be replaced when constructing revised_shelfmark
+        # from folios
+        shelfmark = part.shelfmark or "%s/1" % tei.manuscript
 
         # ident="%s/%s" % (slugify(series), slugify(shelfmark)),
 
         # group manifests, so that the directories will be more manageable.
         # use the first portion of the id (e.g., MS. Heb a.),
-        # slugify, and then remove ms-heb- since all (almost all?) of them have that
-        group = slugify("-".join(part.shelfmark.split(" ")[:3])).replace("ms-heb-", "")
+        # slugify, and then remove ms-heb- since almost all of them have that
+        group = slugify("-".join(shelfmark.split(" ")[:3])).replace("ms-heb-", "")
 
-        # skip if already generated in a previous run
-        # path is based on manifest identifier, in output dir, with json extension
-        manifest_id = slugify(part.shelfmark)
-        expected_path = os.path.join(manifest_dir, "%s/%s.json" % (group, manifest_id))
-        if os.path.exists(expected_path):
-            # update the count, to track progress/estimate
-            continue
+        folio_numbers = []
+        if part.locus:
+            # most common case: msPart has a locus with @from and @to, which contains
+            # the entire range of folio numbers under this shelfmark, in sequence
+            folio_numbers = get_folio_numbers(part.locus)
+        elif part.folios:
+            # sometimes multiple folios are nested under an msItem
+            for folio in part.folios:
+                folio_numbers += get_folio_numbers(folio.locus or folio.p_locus)
+                # sometimes they are double nested! (e.g. MS_Heb_b_17-part13-item1-item3)
+                for nested_folio in folio.locus_group:
+                    folio_numbers += get_folio_numbers(nested_folio)
+        elif part.note and len(parse_note(part.note)):
+            folio_numbers = parse_note(part.note)
+        elif "MS. Heb. e. 58 (R)" in shelfmark:
+            # special case for MS. Heb. e. 58 (R); 3 images, 2 folios
+            folio_numbers = [1, 2]
+        else:
+            # if we can't get any reference to folios from the XML otherwise,
+            # then just use the trailing number from the shelfmark.
+            # NOTE: this is unlikely to happen since all folio listing formats
+            # should be accounted for. only known cases are MS_Heb_c_14_R.xml,
+            # MS_Heb_e_58_R.xml, and MS_Heb_e_62.xml.
+            folio_numbers = []
+            print("Folio numbers not found in XML for %s; skipping" % (shelfmark))
 
-        # update factory for the current set of records
-        fac.set_base_prezi_uri("%s/%s/" % (base_url, group))
-        # Where the resources live on disk
-        fac.set_base_prezi_dir(os.path.join(manifest_dir, group))
+        # create a separate emanifest for each folio number
+        for manifest_number in folio_numbers:
+            # in case we need to change numbering due to multiple folios in one shelfmark,
+            # revise shelfmark to use current index as number
+            revised_shelfmark = "%s/%d" % (shelfmark.rsplit("/", 1)[0], manifest_number)
+            # revise the manifest_id in the same way
+            manifest_id = slugify(revised_shelfmark)
+            manifest_id = "%s-%d" % (manifest_id.rsplit("-", 1)[0], manifest_number)
+            # create the grouping directory if it does not exist
+            group_dir = os.path.join(manifest_dir, group)
+            os.makedirs(group_dir, exist_ok=True)
+            # path is based on manifest identifier, in output dir, with json extension
+            expected_path = os.path.join(group_dir, "%s.json" % manifest_id)
+            # skip if already generated in a previous run
+            if os.path.exists(expected_path):
+                continue
 
-        manifest = fac.manifest(
-            ident=manifest_id,
-            label=str(part.shelfmark),
-        )
-        manifest.viewingHint = "individuals"
-        manifest.attribution = attribution
-        manifest.license = license_uri
-        manifest.set_metadata(common_metadata)
-        # set bodleian logo
-        manifest.logo = bodleian_logo
+            # update factory for the current set of records
+            fac.set_base_prezi_uri("%s/%s/" % (base_url, group))
+            # Where the resources live on disk
+            fac.set_base_prezi_dir(group_dir)
 
-        # use title from xml as manifest description
-        manifest.description = str(part.title)
-
-        # construct link to this item on Bodleian Genizah site
-        view_url = view_url_format % {
-            "volume_id": tei.volume_id,
-            "item_id": part.xml_id,
-        }
-        manifest.rendering = {
-            "@id": view_url,
-            "format": "text/html",
-        }
-
-        # create a sequence and add canvases
-        seq = manifest.sequence()  # unlabeled, anonymous sequence
-        # get images based on start/end locus for this shelfmark
-        images = []
-        started = False
-        for img in tei.image_urls:
-            # given an image url like MS_HEB_b_1_1a.tif we want just the 1a
-            img_label = image_label(img)
-            if img_label == part.image_start:
-                started = True
-            # if we have found the start image, add images to our list
-            if started:
-                images.append(img)
-            # when we get to the end image, stop processing
-            if img_label == part.image_end:
-                break
-
-        # it seems unlikely that this will happen any more...
-        if not images:
-            print(
-                "No images found for %s (%s to %s); skipping"
-                % (part.shelfmark, part.image_start, part.image_end)
+            manifest = fac.manifest(
+                ident=manifest_id,
+                label=str(revised_shelfmark),
             )
-            continue
+            manifest.viewingHint = "individuals"
+            manifest.attribution = attribution
+            manifest.license = license_uri
+            manifest.set_metadata(common_metadata)
+            # set bodleian logo
+            manifest.logo = bodleian_logo
 
-        # download images if necessary; generate labels and add to manifest
-        for i, img_url in enumerate(images):
-            # generate label from filename
-            label = os.path.splitext(img_url)[0].split("_")[-1]
-            # simple case: a or be only; becomes recto/verso
-            if len(label) == 1:
-                label = image_labels[label]
-            elif label.endswith("spread"):
-                # special case in d_73
-                label = "spread"
-            else:
-                # some filenames have additional information, but
-                # still end with a or b; split out and convert a/b to r/v
-                last_digit = label[-1]
-                prefix = label[:-1]
-                side = image_labels[last_digit]
-                label = " ".join([v for v in [prefix, side] if v])
+            # use title from xml as manifest description
+            manifest.description = str(part.title)
 
-            # generate the url where we will download the full size version
-            # images should be downloaded to original images folder
-            output_path = image_output_path(image_dir, img_url)
-            if not os.path.exists(output_path):
-                remote_url = "%s%s" % (BASE_IMG_URL, img_url.replace(".tif", ".jpg"))
-                print(remote_url)
-                resp = requests.get(remote_url)
-                if resp.status_code == requests.codes.ok:
-                    with open(output_path, "wb") as outfile:
-                        outfile.write(resp.content)
-                else:
-                    print("%s error on %s; skipping" % (resp.status_code, img_url))
+            # construct link to this item on Bodleian Genizah site
+            view_url = view_url_format % {
+                "volume_id": tei.volume_id,
+                "item_id": part.xml_id,
+            }
+            manifest.rendering = {
+                "@id": view_url,
+                "format": "text/html",
+            }
+
+            # create a sequence and add canvases
+            seq = manifest.sequence()  # unlabeled, anonymous sequence
+            # get images based on start/end locus for this shelfmark
+            images = []
+            for img in tei.image_urls:
+                # special case for MS. Heb. e. 58 (R), which has two fragments in one recto image,
+                # but separate verso images, and the verso images are numbered incorrectly
+                if "MS_HEB_e_58_R" in img:
+                    if (
+                        not any(n in img for n in ["-2", "-3"])
+                        or ("-2" in img and manifest_number == 1)
+                        or ("-3" in img and manifest_number == 2)
+                    ):
+                        images.append(img)
                     continue
+                # given an image url like MS_HEB_b_1_1a.tif we want just the 1 from "1a"
+                try:
+                    img_number = get_number(image_label(img, tei.desc.xml_id))
+                except ValueError:
+                    # there is one that simply doesn't have a number, MS_HEB_e_56_message.tif,
+                    # so skip it
+                    continue
+                # add images matching this manifest's number to our list (1a, 1b, etc)
+                if img_number == manifest_number:
+                    # skip "extra" (e.g. the ones on MS Heb. e. 110), not part of MS
+                    if "extra" not in img:
+                        images.append(img)
+                    else:
+                        print("Found non-manuscript image %s; skipping" % img)
+
+            # it seems unlikely that this will happen any more...
+            if not images:
+                print("No image found for %s; skipping" % (revised_shelfmark))
+                continue
+
+            # download images if necessary; generate labels and add to manifest
+            for i, img_url in enumerate(images):
+                # generate label from filename
+                label = os.path.splitext(img_url)[0].split("_")[-1]
+                # special case for MS. Heb. e. 58 (R), which is numbered incorrectly
+                if "MS_HEB_e_58_R" in img_url:
+                    label = (
+                        "verso" if any(n in img_url for n in ["-2", "-3"]) else "recto"
+                    )
+                # simple case: a or b only; becomes recto/verso
+                elif len(label) == 1 and not label.isdigit():
+                    label = image_labels[label]
+                elif label.isdigit():
+                    # special case in MS. Heb. f. 111, folios not split recto/verso
+                    label = "recto and verso"
+                elif label.endswith("spread"):
+                    # special case in d_73
+                    label = "spread"
+                else:
+                    # some filenames have additional information, but
+                    # still end with a or b; split out and convert a/b to r/v
+                    last_digit = label[-1]
+                    prefix = label[:-1]
+                    side = image_labels[last_digit]
+                    label = " ".join([v for v in [prefix, side] if v])
+
+                # generate the url where we will download the full size version
+                # images should be downloaded to original images folder
+                output_path = image_output_path(image_dir, img_url)
+                if not os.path.exists(output_path):
+                    remote_url = "%s%s" % (
+                        BASE_IMG_URL,
+                        img_url.replace(".tif", ".jpg"),
+                    )
+                    resp = requests.get(remote_url)
+                    if resp.status_code == requests.codes.ok:
+                        with open(output_path, "wb") as outfile:
+                            outfile.write(resp.content)
+                    else:
+                        print("%s error on %s; skipping" % (resp.status_code, img_url))
+                        continue
+
+                if not download_only:
+                    # add image to canvas
+                    # prezi prefixes ident with canvas/ for us, so don't duplicate
+                    # BUT: must include manifest id to ensure unique
+                    canvas = seq.canvas(
+                        ident="%s/%s" % (manifest_id, (i + 1)), label=label
+                    )
+                    # Create an annotation on the Canvas
+                    # warns if identifier is not set, so let's set one
+                    anno = canvas.annotation(ident="%s/anno1" % canvas.id)
+                    # iiif image id is filename without extension
+                    img_id = os.path.splitext(img_url)[0]
+                    img = anno.image(img_id, iiif=True)
+                    img.set_hw_from_iiif()
+                    # set canvas dimensions to match image
+                    canvas.height = img.height
+                    canvas.width = img.width
 
             if not download_only:
-                # add image to canvas
-                # prezi prefixes ident with canvas/ for us, so don't duplicate
-                # BUT: must include manifest id to ensure unique
-                canvas = seq.canvas(ident="%s/%s" % (manifest_id, (i + 1)), label=label)
-                # Create an annotation on the Canvas
-                # warns if identifier is not set, so let's set one
-                anno = canvas.annotation(ident="%s/anno1" % canvas.id)
-                # iiif image id is filename without extension
-                img_id = os.path.splitext(img_url)[0]
-                img = anno.image(img_id, iiif=True)
-                img.set_hw_from_iiif()
-                # set canvas dimensions to match image
-                canvas.height = img.height
-                canvas.width = img.width
-
-        if not download_only:
-            # save the manifest; keep it human-readable
-            manifest.toFile(compact=False)
+                # save the manifest; keep it human-readable
+                manifest.toFile(compact=False)
 
 
 def check_images(teifiles, image_dir, tiff_dir):
