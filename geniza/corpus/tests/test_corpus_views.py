@@ -903,6 +903,45 @@ class TestDocumentSearchView:
         new_last_modified = response["Last-Modified"]
         assert new_last_modified != init_last_modified
 
+    def test_exact_match(self, empty_solr, document):
+        # integration test for description exact match indexing (description_nostem)
+        doc1 = Document.objects.create(description_en="His son sells seashells")
+        doc2 = Document.objects.create(
+            description_en="Example of something a father sells to his son"
+        )
+        doc3 = Document.objects.create(description_en="sons selling things")
+        SolrClient().update.index(
+            [
+                document.index_data(),
+                doc1.index_data(),
+                doc2.index_data(),
+                doc3.index_data(),
+            ],
+            commit=True,
+        )
+
+        # first search for just the phrase without doublequotes
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        docsearch_view.request.GET = {"q": "sells to his son", "sort": "relevance"}
+        qs = docsearch_view.get_queryset()
+        # should return all four documents
+        assert qs.count() == 4
+        # exact matches should have highest score; shorter description should take precedence
+        assert qs[0]["pgpid"] == doc2.id
+        assert qs[1]["pgpid"] == document.id
+
+        # now search for an exact match
+        docsearch_view.request.GET = {"q": '"sells to his son"', "sort": "relevance"}
+        qs = docsearch_view.get_queryset()
+        # should only return two documents with exact matches
+        # (this won't always be the case, depending on stemming and other processing of the
+        # particular words in the query and description, but exact matches should still
+        # appear first)
+        assert qs.count() == 2
+        assert qs[0]["pgpid"] == doc2.id
+        assert qs[1]["pgpid"] == document.id
+
 
 class TestDocumentScholarshipView:
     def test_page_title(self, document, client, source):
