@@ -91,6 +91,16 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # to avoid it being interpreted as a boolean
         search_term = self.re_shelfmark_nonbool.sub("BL or", search_term)
 
+        # regex to match terms in doublequotes, but not following a colon, at the
+        # beginning of the string or after a space. (non-greedy to prevent matching
+        # the entire string if there are multiple sets of doublequotes)
+        search_term = re.sub(
+            r'\B(?<!:)(".+?")',
+            # include the term twice: once bare, and once scoped to description_nostem
+            lambda m: f"{m.group(0)} description_nostem:{m.group(0)}",
+            search_term,
+        )
+
         # convert any field aliases used in search terms to actual solr fields
         # (i.e. "pgpid:950 shelfmark:ena" -> "pgpid_i:950 shelfmark_t:ena")
         if ":" in search_term:
