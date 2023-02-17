@@ -92,10 +92,11 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         search_term = self.re_shelfmark_nonbool.sub("BL or", search_term)
 
         # regex to match terms in doublequotes, but not following a colon, at the
-        # beginning of the string or after a space. (non-greedy to prevent matching
-        # the entire string if there are multiple sets of doublequotes)
+        # beginning/end of the string or after/before a space, and not followed by a
+        # tilde for fuzzy/proximity search (non-greedy to prevent matching the entire
+        # string if there are multiple sets of doublequotes)
         search_term = re.sub(
-            r'\B(?<!:)(".+?")',
+            r'(?<!:)\B(".+?")\B(?!~)',
             # include the term twice: once bare, and once scoped to content_nostem
             lambda m: f"{m.group(0)} content_nostem:{m.group(0)}",
             search_term,
