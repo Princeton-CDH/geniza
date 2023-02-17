@@ -904,7 +904,7 @@ class TestDocumentSearchView:
         assert new_last_modified != init_last_modified
 
     def test_exact_match(self, empty_solr, document):
-        # integration test for description exact match indexing (description_nostem)
+        # integration test for description exact match indexing (content_nostem)
         doc1 = Document.objects.create(description_en="His son sells seashells")
         doc2 = Document.objects.create(
             description_en="Example of something a father sells to his son"
