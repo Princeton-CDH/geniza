@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from time import sleep
 from unittest.mock import ANY, MagicMock, Mock, patch
@@ -331,6 +332,8 @@ class TestDocumentSearchView:
             docsearch_view = DocumentSearchView()
             docsearch_view.request = Mock()
 
+            mock_queryset_cls.re_exact_match = re.compile(r'(?<!:)\B(".+?")\B(?!~)')
+
             # keyword search param
             docsearch_view.request.GET = {"q": "six apartments"}
             docsearch_view.get_range_stats = Mock(return_value={})
@@ -344,6 +347,17 @@ class TestDocumentSearchView:
             )
             mock_sqs.also.assert_called_with("score")
             mock_sqs.also.return_value.order_by.assert_called_with("-score")
+
+            # exact search
+            docsearch_view.request.GET = {"q": '"six apartments"'}
+            docsearch_view.get_range_stats = Mock(return_value={})
+            qs = docsearch_view.get_queryset()
+            mock_sqs.keyword_search.return_value.raw_query_parameters.assert_any_call(
+                **{
+                    "hl.q": '{!type=edismax qf=$keyword_qf pf=$keyword_pf}"six apartments"',
+                    "hl.qparser": "lucene",
+                }
+            )
 
             # sort search param
             mock_sqs.reset_mock()
