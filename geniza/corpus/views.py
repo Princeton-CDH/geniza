@@ -185,6 +185,20 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                     )
                     .also("score")
                 )  # include relevance score in results
+                # if an exact search was performed using double quotes, add to highlighting
+                exact_queries = DocumentSolrQuerySet.re_exact_match.findall(
+                    search_opts["q"]
+                )
+                if exact_queries:
+                    # NOTE: has to be done with raw_query_parameters hl.q as solr will not otherwise
+                    # highlight fields that were not searched
+                    documents = documents.raw_query_parameters(
+                        **{
+                            "hl.q": "{!type=edismax qf=$keyword_qf pf=$keyword_pf}%s"
+                            % " ".join(exact_queries),
+                            "hl.qparser": "lucene",
+                        }
+                    )
 
             # order by sort option
             documents = documents.order_by(self.get_solr_sort(search_opts["sort"]))

@@ -139,9 +139,9 @@ class TestDocumentSolrQuerySet:
         # double quotes at the beginning of the query or after a space should be scoped (as well
         # as repeated as an unscoped query)
         assert (
-            dqs._search_term_cleanup('"he divorced"')
-            == '"he divorced" content_nostem:"he divorced"'
+            dqs._search_term_cleanup('"he divorced"') == 'content_nostem:"he divorced"'
         )
+
         assert 'content_nostem:"he divorced"' in dqs._search_term_cleanup(
             'shelfmark:"T-S NS" "he divorced"'
         )
