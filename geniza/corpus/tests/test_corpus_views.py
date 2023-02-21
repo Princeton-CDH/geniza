@@ -332,7 +332,7 @@ class TestDocumentSearchView:
             docsearch_view = DocumentSearchView()
             docsearch_view.request = Mock()
 
-            mock_queryset_cls.re_exact_match = re.compile(r'(?<!:)\B(".+?")\B(?!~)')
+            mock_queryset_cls.re_exact_match = DocumentSolrQuerySet.re_exact_match
 
             # keyword search param
             docsearch_view.request.GET = {"q": "six apartments"}
