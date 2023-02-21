@@ -97,8 +97,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # to avoid it being interpreted as a boolean
         search_term = self.re_shelfmark_nonbool.sub("BL or", search_term)
 
+        # scope exact match query to non-stemmed field
         search_term = self.re_exact_match.sub(
-            # include the term twice: once for highlighting, and once scoped to content_nostem
             lambda m: f"content_nostem:{m.group(0)}",
             search_term,
         )
