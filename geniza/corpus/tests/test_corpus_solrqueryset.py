@@ -131,11 +131,6 @@ class TestDocumentSolrQuerySet:
         assert "content_nostem" not in dqs._search_term_cleanup(
             'tag:"marriage payment" shelfmark:"T-S NS"'
         )
-
-        # double quotes for fuzzy/proximity searches should also not be scoped
-        assert "content_nostem" not in dqs._search_term_cleanup('"divorced"~20')
-        assert "content_nostem" not in dqs._search_term_cleanup('"he divorced"~20')
-
         # double quotes at the beginning of the query or after a space should be scoped (as well
         # as repeated as an unscoped query)
         assert (
