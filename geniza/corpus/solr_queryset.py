@@ -96,8 +96,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # the entire string if there are multiple sets of doublequotes)
         search_term = re.sub(
             r'\B(?<!:)(".+?")',
-            # include the term twice: once bare, and once scoped to content_nostem
-            lambda m: f"{m.group(0)} content_nostem:{m.group(0)}",
+            # include the term twice: once bare, and once scoped to description_nostem
+            lambda m: f"{m.group(0)} description_nostem:{m.group(0)}",
             search_term,
         )
 

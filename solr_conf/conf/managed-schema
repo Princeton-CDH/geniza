@@ -300,7 +300,7 @@
   <copyField source="type_s" dest="type_t" maxChars="300" />
 
   <!-- copy description to a nostem field for exact matches -->
-  <copyField source="description_en_bigram" dest="content_nostem" maxChars="30000" />
+  <copyField source="description_en_bigram" dest="description_nostem" maxChars="30000" />
 
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
