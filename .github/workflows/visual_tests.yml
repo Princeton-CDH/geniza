@@ -45,7 +45,7 @@ jobs:
     if: ${{ (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip percy]')) || contains(needs.get_commit_msg.outputs.commit_message, '[run percy]') }}
     services:
       postgres:
-        image: postgres:13
+        image: postgres:12
         env:
           POSTGRES_DB: ${{ env.DB_NAME }}
           POSTGRES_USER: ${{ env.DB_USER }}
