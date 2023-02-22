@@ -82,12 +82,6 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # handle shelfmarks that look like booleans
     re_shelfmark_nonbool = re.compile(r"\bBL\s+OR\b")
 
-    # regex to match terms in doublequotes, but not following a colon, at the
-    # beginning/end of the string or after/before a space, and not followed by a
-    # tilde for fuzzy/proximity search (non-greedy to prevent matching the entire
-    # string if there are multiple sets of doublequotes)
-    re_exact_match = re.compile(r'(?<!:)\B(".+?")\B(?!~)')
-
     def _search_term_cleanup(self, search_term):
         # adjust user search string before sending to solr
 
@@ -97,9 +91,14 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # to avoid it being interpreted as a boolean
         search_term = self.re_shelfmark_nonbool.sub("BL or", search_term)
 
-        search_term = self.re_exact_match.sub(
-            # include the term twice: once for highlighting, and once scoped to content_nostem
-            lambda m: f"content_nostem:{m.group(0)}",
+        # regex to match terms in doublequotes, but not following a colon, at the
+        # beginning/end of the string or after/before a space, and not followed by a
+        # tilde for fuzzy/proximity search (non-greedy to prevent matching the entire
+        # string if there are multiple sets of doublequotes)
+        search_term = re.sub(
+            r'(?<!:)\B(".+?")\B(?!~)',
+            # include the term twice: once bare, and once scoped to content_nostem
+            lambda m: f"{m.group(0)} content_nostem:{m.group(0)}",
             search_term,
         )
 
