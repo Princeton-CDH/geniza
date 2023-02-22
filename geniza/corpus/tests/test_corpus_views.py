@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from time import sleep
 from unittest.mock import ANY, MagicMock, Mock, patch
@@ -332,8 +331,6 @@ class TestDocumentSearchView:
             docsearch_view = DocumentSearchView()
             docsearch_view.request = Mock()
 
-            mock_queryset_cls.re_exact_match = re.compile(r'(?<!:)\B(".+?")\B(?!~)')
-
             # keyword search param
             docsearch_view.request.GET = {"q": "six apartments"}
             docsearch_view.get_range_stats = Mock(return_value={})
@@ -347,17 +344,6 @@ class TestDocumentSearchView:
             )
             mock_sqs.also.assert_called_with("score")
             mock_sqs.also.return_value.order_by.assert_called_with("-score")
-
-            # exact search
-            docsearch_view.request.GET = {"q": '"six apartments"'}
-            docsearch_view.get_range_stats = Mock(return_value={})
-            qs = docsearch_view.get_queryset()
-            mock_sqs.keyword_search.return_value.raw_query_parameters.assert_any_call(
-                **{
-                    "hl.q": '{!type=edismax qf=$keyword_qf pf=$keyword_pf}"six apartments"',
-                    "hl.qparser": "lucene",
-                }
-            )
 
             # sort search param
             mock_sqs.reset_mock()
@@ -916,45 +902,6 @@ class TestDocumentSearchView:
         )
         new_last_modified = response["Last-Modified"]
         assert new_last_modified != init_last_modified
-
-    def test_exact_match(self, empty_solr, document):
-        # integration test for description exact match indexing (content_nostem)
-        doc1 = Document.objects.create(description_en="His son sells seashells")
-        doc2 = Document.objects.create(
-            description_en="Example of something a father sells to his son"
-        )
-        doc3 = Document.objects.create(description_en="sons selling things")
-        SolrClient().update.index(
-            [
-                document.index_data(),
-                doc1.index_data(),
-                doc2.index_data(),
-                doc3.index_data(),
-            ],
-            commit=True,
-        )
-
-        # first search for just the phrase without doublequotes
-        docsearch_view = DocumentSearchView()
-        docsearch_view.request = Mock()
-        docsearch_view.request.GET = {"q": "sells to his son", "sort": "relevance"}
-        qs = docsearch_view.get_queryset()
-        # should return all four documents
-        assert qs.count() == 4
-        # exact matches should have highest score; shorter description should take precedence
-        assert qs[0]["pgpid"] == doc2.id
-        assert qs[1]["pgpid"] == document.id
-
-        # now search for an exact match
-        docsearch_view.request.GET = {"q": '"sells to his son"', "sort": "relevance"}
-        qs = docsearch_view.get_queryset()
-        # should only return two documents with exact matches
-        # (this won't always be the case, depending on stemming and other processing of the
-        # particular words in the query and description, but exact matches should still
-        # appear first)
-        assert qs.count() == 2
-        assert qs[0]["pgpid"] == doc2.id
-        assert qs[1]["pgpid"] == document.id
 
 
 class TestDocumentScholarshipView:

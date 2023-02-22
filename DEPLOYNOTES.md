@@ -1,10 +1,5 @@
 # Deploy Notes
 
-## 4.13
-
--   Solr configuration has changed. Ensure Solr configset has been updated
-    and then reindex all content: `python manage.py index`
-
 ## 4.12
 
 -   Before deploying, ensure that there is only one Digital Edition
