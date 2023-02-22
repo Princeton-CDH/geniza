@@ -88,6 +88,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # string if there are multiple sets of doublequotes)
     re_exact_match = re.compile(r'(?<!:)\B(".+?")\B(?!~)')
 
+    # if there is an exact match, store the query for highlighting here
+    highlight_query = None
+
     def _search_term_cleanup(self, search_term):
         # adjust user search string before sending to solr
 
@@ -97,11 +100,16 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # to avoid it being interpreted as a boolean
         search_term = self.re_shelfmark_nonbool.sub("BL or", search_term)
 
-        # scope exact match query to non-stemmed field
-        search_term = self.re_exact_match.sub(
-            lambda m: f"content_nostem:{m.group(0)}",
-            search_term,
-        )
+        # if an exact search was performed using double quotes, add to highlighting
+        exact_queries = self.re_exact_match.findall(search_term)
+        if exact_queries:
+            # store query before scoping for highlight
+            self.highlight_query = arabic_or_ja(search_term)
+            # scope exact match query to non-stemmed field
+            search_term = self.re_exact_match.sub(
+                lambda m: f"content_nostem:{m.group(0)}",
+                search_term,
+            )
 
         # convert any field aliases used in search terms to actual solr fields
         # (i.e. "pgpid:950 shelfmark:ena" -> "pgpid_i:950 shelfmark_t:ena")
@@ -132,9 +140,20 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     keyword_search_qf = "{!type=edismax qf=$keyword_qf pf=$keyword_pf v=$keyword_query}"
 
     def keyword_search(self, search_term):
-        return self.search(self.keyword_search_qf).raw_query_parameters(
+        search = self.search(self.keyword_search_qf).raw_query_parameters(
             keyword_query=self._search_term_cleanup(search_term)
         )
+        if self.highlight_query:
+            # NOTE: has to be done with raw_query_parameters hl.q as solr will not otherwise
+            # highlight fields that were not searched
+            search = search.raw_query_parameters(
+                **{
+                    "hl.q": "{!type=edismax qf=$keyword_qf pf=$keyword_pf}'%s'"
+                    % self.highlight_query,
+                    "hl.qparser": "lucene",
+                }
+            )
+        return search
 
     def related_to(self, document):
         "Return documents related to the given document (i.e. shares any shelfmarks)"
