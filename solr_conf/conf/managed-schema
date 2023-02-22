@@ -267,7 +267,7 @@
         <!-- ensure hyphenated words are joined together, even if they were separated by whitespace -->
         <filter class="solr.HyphenatedWordsFilterFactory"/>
         <!-- remove all punctuation from the end of tokens -->
-        <filter class="solr.PatternReplaceFilterFactory" pattern="[\p{Punct}\p{IsPunctuation}]$" replacement=""/>
+        <filter class="solr.PatternReplaceFilterFactory" pattern="[,\.!?:;]$" replacement=""/>
       </analyzer>
     </fieldType>
 
