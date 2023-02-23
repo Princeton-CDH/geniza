@@ -88,7 +88,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # string if there are multiple sets of doublequotes)
     re_exact_match = re.compile(r'(?<!:)\B(".+?")\B(?!~)')
 
-    # if there is an exact match, store the query for highlighting here
+    # if keyword search includes an exact phrase, store unmodified query
+    # to use as highlighting query
     highlight_query = None
 
     def _search_term_cleanup(self, search_term):
@@ -100,12 +101,14 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # to avoid it being interpreted as a boolean
         search_term = self.re_shelfmark_nonbool.sub("BL or", search_term)
 
-        # if an exact search was performed using double quotes, add to highlighting
+        search_term = arabic_or_ja(search_term)
+
+        # look for exact search, indicated by double quotes
         exact_queries = self.re_exact_match.findall(search_term)
         if exact_queries:
-            # store query before scoping for highlight
-            self.highlight_query = arabic_or_ja(search_term)
-            # scope exact match query to non-stemmed field
+            # store unmodified query for highlighting
+            self.highlight_query = search_term
+            # limit any exact phrase searches to non-stemmed field
             search_term = self.re_exact_match.sub(
                 lambda m: f"content_nostem:{m.group(0)}",
                 search_term,
@@ -124,7 +127,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
                 "%s:" % self.shelfmark_qf, self.shelfmark_qf
             )
 
-        return arabic_or_ja(search_term)
+        return search_term
 
     # (adapted from mep)
     # edismax alias for searching on admin document pseudo-field;
@@ -143,13 +146,18 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         search = self.search(self.keyword_search_qf).raw_query_parameters(
             keyword_query=self._search_term_cleanup(search_term)
         )
+        # if search term cleanup identifies any exact phrase searches,
+        # pass the unmodified search to Solr as a highlighting query,
+        # since otherwise the highlighted fields (description/transcription)
+        # have no search terms to highlight.
         if self.highlight_query:
-            # NOTE: has to be done with raw_query_parameters hl.q as solr will not otherwise
-            # highlight fields that were not searched
+            # NOTE: setting using raw_query_parameters, since parasolr
+            # doesn't currently support setting highlighting options that are
+            # not field-specific
             search = search.raw_query_parameters(
                 **{
-                    "hl.q": "{!type=edismax qf=$keyword_qf pf=$keyword_pf}'%s'"
-                    % self.highlight_query,
+                    "hl.q": "{!type=edismax qf=$keyword_qf pf=$keyword_pf v=$hl_query}",
+                    "hl_query": self.highlight_query,
                     "hl.qparser": "lucene",
                 }
             )
