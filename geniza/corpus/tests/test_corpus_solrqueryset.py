@@ -51,6 +51,19 @@ class TestDocumentSolrQuerySet:
                 keyword_query="%sena" % dqs.shelfmark_qf
             )
 
+    def test_keyword_search_exact_match(self):
+        dqs = DocumentSolrQuerySet()
+        with patch.object(dqs, "search") as mocksearch:
+            exact_query = '"six apartments" test'
+            dqs.keyword_search(exact_query)
+            mocksearch.return_value.raw_query_parameters.return_value.raw_query_parameters.assert_called_with(
+                **{
+                    "hl.q": "{!type=edismax qf=$keyword_qf pf=$keyword_pf v=$hl_query}",
+                    "hl_query": exact_query,
+                    "hl.qparser": "lucene",
+                }
+            )
+
     def test_get_result_document_images(self):
         dqs = DocumentSolrQuerySet()
         mock_doc = {
