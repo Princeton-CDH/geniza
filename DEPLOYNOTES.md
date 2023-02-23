@@ -1,5 +1,12 @@
 # Deploy Notes
 
+## 4.13
+
+-   The method for generating Bodleian IIIF manifests has changed. Run
+    `python manage.py add_fragment_urls pgp-bodleian-manifests.csv --overwrite`
+    against the latest copy of `pgp-bodleian-manifests.csv` from the
+    `princetongenizalab/iiif` repo, then run `python manage.py import_manifests --update --filter "princetongenizalab.github.io/iiif/bodleian/"` to update cached manifests.
+
 ## 4.12
 
 -   Before deploying, ensure that there is only one Digital Edition
