@@ -68,3 +68,9 @@ sed -i '' 's|http://0.0.0.0:8001/bodleian/|https://princetongenizalab.github.io/
 ```
 
 -   Check that images display on the public site using a shelfmark search, e.g. `shelfmark:"bodl ms heb a"`
+
+#### Handling skipped folios in Bodleian TEI
+
+Sometimes, Bodleian TEI skips folios even though they have images, such as MS Heb. c 13/3. In these cases, you can add them to `skipped_folio_shelfmarks` in `bodleian_iiif.py` and provide the range of folio numbers that should actually be included for a given Bodleian shelfmark.
+
+In the case of MS Heb. c 13/3, that Bodleian shelfmark points to folio 4, but we also need folio 3, so its entry in `skipped_folio_shelfmarks` is `[3, 4]`.
