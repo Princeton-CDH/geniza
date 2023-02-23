@@ -283,8 +283,8 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
             # path is based on manifest identifier, in output dir, with json extension
             expected_path = os.path.join(group_dir, "%s.json" % manifest_id)
             # skip if already generated in a previous run
-            if os.path.exists(expected_path):
-                continue
+            # if os.path.exists(expected_path):
+            #     continue
 
             # update factory for the current set of records
             fac.set_base_prezi_uri("%s/%s/" % (base_url, group))
@@ -373,6 +373,9 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
                     # still end with a or b; split out and convert a/b to r/v
                     last_digit = label[-1]
                     prefix = label[:-1]
+                    # special case: prefix for MS Heb. c 13/6-8 should be 6-8
+                    if "MS. Heb. c. 13/6-8" in revised_shelfmark:
+                        prefix = "6-8"
                     side = image_labels[last_digit]
                     label = " ".join([v for v in [prefix, side] if v])
 
