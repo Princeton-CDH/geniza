@@ -110,14 +110,6 @@ a#needsreview:target {
  * Transcription styles in admin
  *
  */
-@media (min-width: 900px) {
-    .form-row #iiif-viewer {
-        padding: 10px;
-    }
-}
-#iiif-viewer .transcription.no-image {
-    max-width: 100%;
-}
 .form-row .transcription {
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;

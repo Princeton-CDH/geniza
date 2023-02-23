@@ -132,6 +132,11 @@ bodleian_logo = "https://iiif.bodleian.ox.ac.uk/iiif/image/f27e28db-0b08-4f16-9b
 # format string for generating view url
 view_url_format = "https://genizah.bodleian.ox.ac.uk/catalog/%(volume_id)s#%(item_id)s"
 
+# folio ranges by shelfmark for folios that have images, but are skipped in TEI
+skipped_folio_shelfmarks = {
+    "MS. Heb. c. 13/3": [3, 4],
+}
+
 
 def image_output_path(image_dir, image_filename):
     # generate the path where we will save the full size version
@@ -231,7 +236,10 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
         group = slugify("-".join(shelfmark.split(" ")[:3])).replace("ms-heb-", "")
 
         folio_numbers = []
-        if part.locus:
+        if shelfmark in skipped_folio_shelfmarks.keys():
+            # special case: handle folios that have images, but are skipped in TEI
+            folio_numbers = skipped_folio_shelfmarks[shelfmark]
+        elif part.locus:
             # most common case: msPart has a locus with @from and @to, which contains
             # the entire range of folio numbers under this shelfmark, in sequence
             folio_numbers = get_folio_numbers(part.locus)
@@ -261,17 +269,22 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
             # in case we need to change numbering due to multiple folios in one shelfmark,
             # revise shelfmark to use current index as number
             revised_shelfmark = "%s/%d" % (shelfmark.rsplit("/", 1)[0], manifest_number)
+            # special case: MS Heb. c. 6-8 are combined into one recto/verso image pair
+            if revised_shelfmark == "MS. Heb. c. 13/6":
+                revised_shelfmark = "MS. Heb. c. 13/6-8"
             # revise the manifest_id in the same way
             manifest_id = slugify(revised_shelfmark)
-            manifest_id = "%s-%d" % (manifest_id.rsplit("-", 1)[0], manifest_number)
+            # special case: don't renumber MS. Heb. c. 13/6-8 to just 6
+            if revised_shelfmark != "MS. Heb. c. 13/6-8":
+                manifest_id = "%s-%d" % (manifest_id.rsplit("-", 1)[0], manifest_number)
             # create the grouping directory if it does not exist
             group_dir = os.path.join(manifest_dir, group)
             os.makedirs(group_dir, exist_ok=True)
             # path is based on manifest identifier, in output dir, with json extension
             expected_path = os.path.join(group_dir, "%s.json" % manifest_id)
             # skip if already generated in a previous run
-            if os.path.exists(expected_path):
-                continue
+            # if os.path.exists(expected_path):
+            #     continue
 
             # update factory for the current set of records
             fac.set_base_prezi_uri("%s/%s/" % (base_url, group))
@@ -360,6 +373,9 @@ def parse_bodleian_tei(xmlfile, base_dir, base_url, image_dir, download_only=Fal
                     # still end with a or b; split out and convert a/b to r/v
                     last_digit = label[-1]
                     prefix = label[:-1]
+                    # special case: prefix for MS Heb. c 13/6-8 should be 6-8
+                    if "MS. Heb. c. 13/6-8" in revised_shelfmark:
+                        prefix = "6-8"
                     side = image_labels[last_digit]
                     label = " ".join([v for v in [prefix, side] if v])
 
