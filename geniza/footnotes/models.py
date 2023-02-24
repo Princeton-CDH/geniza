@@ -189,7 +189,7 @@ class Source(models.Model):
         specify `extra_fields=False`."""
 
         author = ""
-        if self.authorship_set.exists():
+        if len(self.authorship_set.all()):
             author_lastnames = [
                 a.creator.firstname_lastname() for a in self.authorship_set.all()
             ]
