@@ -1144,7 +1144,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "scholarship_count_i": len(source_relations.keys()),
                 # preliminary scholarship record indexing
                 # (may need splitting out and weighting based on type of scholarship)
-                "scholarship_t": [fn.display() for fn in footnotes.all()],
+                "scholarship_t": [fn.display() for fn in footnotes],
                 # transcription content as html
                 "text_transcription": transcription_texts,
                 "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),
