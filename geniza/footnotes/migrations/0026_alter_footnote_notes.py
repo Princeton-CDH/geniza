@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             name="notes",
             field=models.TextField(
                 blank=True,
-                help_text='Displays publicly. For minor emendations to a transcription, put "with minor emendations by [your name, date]." Do not add a note for typo corrections. For significant alterations to a transcription, create a new source indicating co-authorship.',
+                help_text='Displays publicly. For minor emendations to a transcription, put "with minor emendations by Your Name, Date." Do not add a note for typo corrections. For significant alterations to a transcription, create a new source indicating co-authorship.',
             ),
         ),
     ]
