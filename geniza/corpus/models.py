@@ -427,6 +427,7 @@ class DocumentSignalHandlers:
         "fragment": "fragments",
         "tag": "tags",
         "document type": "doctype",
+        "tagged item": "tagged_items",
         "Related Fragment": "textblock",  # textblock verbose name
         "footnote": "footnotes",
         "source": "footnotes__source",
@@ -1111,6 +1112,10 @@ class Document(ModelIndexable, DocumentDateMixin):
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
         "tags": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
+        "taggit.TaggedItem": {
             "post_save": DocumentSignalHandlers.related_save,
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
