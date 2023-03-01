@@ -1,6 +1,45 @@
 Change Log
 ==========
 
+4.13
+----
+
+- public site
+    - As a public site user, I want to be able to search descriptions for words/phrases in
+      quotations, so that I can find exact matches for my search terms.
+    - bugfix: Styles missing for JTS logo
+
+- admin
+    - As a content editor, I want to add transcriptions to documents without images in the PGP in
+      the admin interface, so that I do not need to keep switching over to the public site to add
+      transcriptions.
+    - As a content editor working in the admin interface, I want a warning/error if I try to save
+      a new document without a shelfmark.
+    - As a content editor, I want a warning or validation to prevent adding more than one digital
+      edition footnote for the same document source to avoid creating duplicates.
+    - Prevent content editors from clicking more than one option for a digital edition, and explain
+      to them the difference between edition and digital edition
+    - As a content editor, I want the log entry to record and differentiate between users who input
+      someone else's transcription versus users who created a new transcription so I can give the
+      appropriate credit where it's due. 
+    - As a content editor, I want to merge similar tags so I can consolidate redundant tags and
+      decrease clutter in the database.
+    - chore: Merge JTS and ENA collections
+    - chore: Add help text to note section of footnote
+
+- transcription editor
+    - As content editor using the transcription editor, I want the image to be sticky so that I can
+      always have the image beside the text as I scroll down.
+    - Include two placeholder images for each fragment without images; give placeholder images
+      unique labels corresponding to each fragment's shelfmark
+    - bugfix: Clicking outside the current annotation zone and/or into another zone in the
+      transcription editor cancels unsaved changes without warning
+    - bugfix: Updated transcriptions failing to populate in search index
+
+- iiif
+    - bugfix: Some Bodleian iiif manifests were generated with incorrect shelfmarks
+    - bugfix: Some JRL manifests say "recto" for the second image of a fragment
+
 4.12
 ----
 
