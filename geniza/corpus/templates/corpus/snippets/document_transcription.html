@@ -8,10 +8,12 @@
             <span>Edit {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% empty %}[unknown]{% endfor %}'s edition</span>
         </a>
     {% endfor %}
-    <a class="editor-navigation" href="{% url 'corpus:document-add-transcription' document.id %}" data-turbo="false">
-        <i class="ph-plus-circle"></i>
-        <span>Add a new transcription</span>
-    </a>
+    {% if document.id %}
+        <a class="editor-navigation" href="{% url 'corpus:document-add-transcription' document.id %}" data-turbo="false">
+            <i class="ph-plus-circle"></i>
+            <span>Add a new transcription</span>
+        </a>
+    {% endif %}
 {% endif %}
 {# only enable ITT panel if transcription or images are present, or we are in edit mode #}
 {% if document.has_transcription or document.iiif_urls or edit_mode %}
@@ -65,25 +67,31 @@
             {% for canvas_uri, image_info in images.items %}
                 {# only images that are part of the current document are zoomable #}
                 <div class="img{% if image_info.excluded %} excluded{% endif %}{% if image_info.placeholder %} placeholder{% endif %}" id="{{ image_info.label }}"{% if not image_info.excluded %} data-controller="iiif {% if edit_mode %}annotation" data-iiif-edit-mode-value="true{% endif %}" data-canvas-url="{{ canvas_uri }}" data-iiif-target="imageContainer" data-annotation-target="imageContainer"{% endif %}>
-                    <div class="img-header" data-iiif-target="imageHeader">
-                        <h2>{{ image_info.shelfmark }} {{ image_info.label }}</h2>
-                        {% if not image_info.excluded %}
-                            <input data-iiif-target="zoomSlider" data-action="iiif#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
-                            <label data-iiif-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
-                            <input data-iiif-target="zoomToggle" data-action="iiif#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
-                            <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
-                            <div id="rotation-{{ forloop.counter0 }}" class="rotation" data-iiif-target="rotation" data-action="input->iiif#handleDeepZoom change->iiif#handleDeepZoom"></div>
-                            <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">0&deg;</label>
-                        {% endif %}
-                    </div>
-                    <div class="deep-zoom-container">
-                        <img class="iiif-image" data-iiif-target="image" data-annotation-target="image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
-                            sizes="(max-width: 650px) 50vw, 94vw"
-                            srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
-                            {{ image_info.image|iiif_image:"size:width=500" }} 500w,
-                            {{ image_info.image|iiif_image:"size:width=640" }} 640w,
-                            {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
-                        <div class="osd" data-iiif-target="osd" data-iiif-url="{{ image_info.image.info }}"></div>
+                    <div class="popout-container">
+                        <div class="img-header" data-iiif-target="imageHeader">
+                            <h2>{{ image_info.shelfmark }} {{ image_info.label }}</h2>
+                            {% if not image_info.excluded %}
+                                <input data-iiif-target="zoomSlider" data-action="iiif#handleDeepZoom" id="zoom-slider-{{ forloop.counter0 }}" type="range" name="zoom-slider" min="1" max="100" value="0" step="0.01" />
+                                <label data-iiif-target="zoomSliderLabel" for="zoom-slider-{{ forloop.counter0 }}">100%</label>
+                                <input data-iiif-target="zoomToggle" data-action="iiif#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
+                                <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
+                                <div id="rotation-{{ forloop.counter0 }}" class="rotation" data-iiif-target="rotation" data-action="input->iiif#handleDeepZoom change->iiif#handleDeepZoom"></div>
+                                <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">0&deg;</label>
+                            {% endif %}
+                        </div>
+                        <div class="deep-zoom-container">
+                            <img class="iiif-image" data-iiif-target="image" data-annotation-target="image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
+                                sizes="(max-width: 650px) 50vw, 94vw"
+                                srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
+                                {{ image_info.image|iiif_image:"size:width=500" }} 500w,
+                                {{ image_info.image|iiif_image:"size:width=640" }} 640w,
+                                {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
+                            <div class="osd" data-iiif-target="osd" data-iiif-url="{{ image_info.image.info }}"></div>
+                            {% if edit_mode %}
+                                <button class="primary popout-close-button" type="button" aria-label="Close"><i class="ph-x"></i></button>
+                                <button class="primary popout-button" type="button">Pop out</button>
+                            {% endif %}
+                        </div>
                     </div>
                     {% if image_info.excluded %}
                         {# if this image isn't actually in this document, link to related documents #}

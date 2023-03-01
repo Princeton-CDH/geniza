@@ -473,11 +473,23 @@ class Footnote(TrackChangesModel):
     doc_relation = MultiSelectField(
         "Document relation",
         choices=DOCUMENT_RELATION_TYPES,
-        help_text="How does the source relate to this document?",
+        help_text="How does the source relate to this document? "
+        + 'Please note: "Edition" is a (published or unpublished) '
+        + 'transcription. "Digital edition" is the PGP version of an '
+        + "edition, and the source record should NOT be deleted. Footnotes "
+        + 'for "editions" and "digital editions" should NOT be combined, '
+        + "even if they refer to the same transcription.",
         null=True,
         blank=True,
     )
-    notes = models.TextField(blank=True)
+    notes = models.TextField(
+        help_text="Displays publicly. For minor emendations to a "
+        + 'transcription, put "with minor emendations by Your Name, Date." '
+        + "Do not add a note for typo corrections. For significant "
+        + "alterations to a transcription, create a new source indicating "
+        + "co-authorship.",
+        blank=True,
+    )
     content = models.JSONField(
         blank=True,
         null=True,
@@ -511,9 +523,9 @@ class Footnote(TrackChangesModel):
         constraints = [
             # only allow one digital edition per source for a document
             models.UniqueConstraint(
-                fields=("source", "object_id", "content_type", "doc_relation"),
+                fields=("source", "object_id", "content_type"),
                 name="one_digital_edition_per_document_and_source",
-                condition=models.Q(doc_relation__contains="X"),  # DIGITAL_EDITION),
+                condition=models.Q(doc_relation__contains="X"),  # X = DIGITAL_EDITION
             )
         ]
 

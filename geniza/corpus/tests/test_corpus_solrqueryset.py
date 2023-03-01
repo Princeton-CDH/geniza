@@ -51,6 +51,19 @@ class TestDocumentSolrQuerySet:
                 keyword_query="%sena" % dqs.shelfmark_qf
             )
 
+    def test_keyword_search_exact_match(self):
+        dqs = DocumentSolrQuerySet()
+        with patch.object(dqs, "search") as mocksearch:
+            exact_query = '"six apartments" test'
+            dqs.keyword_search(exact_query)
+            mocksearch.return_value.raw_query_parameters.return_value.raw_query_parameters.assert_called_with(
+                **{
+                    "hl.q": "{!type=edismax qf=$keyword_qf pf=$keyword_pf v=$hl_query}",
+                    "hl_query": exact_query,
+                    "hl.qparser": "lucene",
+                }
+            )
+
     def test_get_result_document_images(self):
         dqs = DocumentSolrQuerySet()
         mock_doc = {
@@ -123,6 +136,28 @@ class TestDocumentSolrQuerySet:
         dqs = DocumentSolrQuerySet()
         # confirm arabic to judaeo-arabic runs here
         dqs._search_term_cleanup("دينار") == "(دينار|דיהאר)"
+
+    def test_search_term_cleanup__exact_match_regex(self):
+        dqs = DocumentSolrQuerySet()
+        # double quotes scoped to fields should not become scoped to content_nostem field
+        assert "content_nostem" not in dqs._search_term_cleanup('shelfmark:"T-S NS"')
+        assert "content_nostem" not in dqs._search_term_cleanup(
+            'tag:"marriage payment" shelfmark:"T-S NS"'
+        )
+
+        # double quotes for fuzzy/proximity searches should also not be scoped
+        assert "content_nostem" not in dqs._search_term_cleanup('"divorced"~20')
+        assert "content_nostem" not in dqs._search_term_cleanup('"he divorced"~20')
+
+        # double quotes at the beginning of the query or after a space should be scoped (as well
+        # as repeated as an unscoped query)
+        assert (
+            dqs._search_term_cleanup('"he divorced"') == 'content_nostem:"he divorced"'
+        )
+
+        assert 'content_nostem:"he divorced"' in dqs._search_term_cleanup(
+            'shelfmark:"T-S NS" "he divorced"'
+        )
 
     def test_related_to(self, document, join, fragment, empty_solr):
         """should give filtered result: public documents with any shared shelfmarks"""

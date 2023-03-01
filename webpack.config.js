@@ -17,7 +17,7 @@ module.exports = (env, options) => ({
             "./sitemedia/js/main.js",
         ],
         iiif: [
-            "./sitemedia/scss/components/_iiif.scss",
+            "./sitemedia/scss/components/_transcription.scss",
             "./sitemedia/js/iiif.js",
         ],
         annotation: [

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2022-10-14 12:15-0400\n"
-"PO-Revision-Date: 2022-10-14 16:29\n"
+"PO-Revision-Date: 2023-02-14 19:05\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
@@ -398,7 +398,7 @@ msgstr "ראה %(related_doc)s"
 
 #: corpus/templates/corpus/snippets/document_transcription.html:128
 msgid "Transcription"
-msgstr ""
+msgstr "תיעתוק"
 
 #. Translators: label for a link to a resource with no named location
 #: corpus/templates/corpus/snippets/footnote_location.html:9
@@ -562,7 +562,7 @@ msgstr "דרישת ייחוס על פי רישיון ״קריאייטיב קומ
 #. Translators: International Standard Serial Number (ISSN), for footer
 #: templates/footer.html:72
 msgid "ISSN: 2834-4146"
-msgstr ""
+msgstr "ISSN: 2834-4146"
 
 #. Translators: software version, for footer
 #: templates/footer.html:76

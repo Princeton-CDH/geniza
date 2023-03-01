@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from time import sleep
 from unittest.mock import ANY, MagicMock, Mock, patch
@@ -13,6 +14,7 @@ from django.utils.text import Truncator, slugify
 from django.utils.timezone import get_current_timezone, make_aware
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains
+from taggit.models import Tag
 
 from geniza.annotations.models import Annotation
 from geniza.common.utils import absolutize_url
@@ -28,6 +30,7 @@ from geniza.corpus.views import (
     DocumentSearchView,
     DocumentTranscriptionText,
     SourceAutocompleteView,
+    TagMerge,
     old_pgp_edition,
     old_pgp_tabulate_data,
     pgp_metadata_for_old_site,
@@ -328,6 +331,8 @@ class TestDocumentSearchView:
 
             docsearch_view = DocumentSearchView()
             docsearch_view.request = Mock()
+
+            mock_queryset_cls.re_exact_match = DocumentSolrQuerySet.re_exact_match
 
             # keyword search param
             docsearch_view.request.GET = {"q": "six apartments"}
@@ -901,6 +906,45 @@ class TestDocumentSearchView:
         new_last_modified = response["Last-Modified"]
         assert new_last_modified != init_last_modified
 
+    def test_exact_match(self, empty_solr, document):
+        # integration test for description exact match indexing (content_nostem)
+        doc1 = Document.objects.create(description_en="His son sells seashells")
+        doc2 = Document.objects.create(
+            description_en="Example of something a father sells to his son"
+        )
+        doc3 = Document.objects.create(description_en="sons selling things")
+        SolrClient().update.index(
+            [
+                document.index_data(),
+                doc1.index_data(),
+                doc2.index_data(),
+                doc3.index_data(),
+            ],
+            commit=True,
+        )
+
+        # first search for just the phrase without doublequotes
+        docsearch_view = DocumentSearchView()
+        docsearch_view.request = Mock()
+        docsearch_view.request.GET = {"q": "sells to his son", "sort": "relevance"}
+        qs = docsearch_view.get_queryset()
+        # should return all four documents
+        assert qs.count() == 4
+        # exact matches should have highest score; shorter description should take precedence
+        assert qs[0]["pgpid"] == doc2.id
+        assert qs[1]["pgpid"] == document.id
+
+        # now search for an exact match
+        docsearch_view.request.GET = {"q": '"sells to his son"', "sort": "relevance"}
+        qs = docsearch_view.get_queryset()
+        # should only return two documents with exact matches
+        # (this won't always be the case, depending on stemming and other processing of the
+        # particular words in the query and description, but exact matches should still
+        # appear first)
+        assert qs.count() == 2
+        assert qs[0]["pgpid"] == doc2.id
+        assert qs[1]["pgpid"] == document.id
+
 
 class TestDocumentScholarshipView:
     def test_page_title(self, document, client, source):
@@ -1441,6 +1485,90 @@ class TestDocumentMergeView:
             mock_merge_with.assert_called_with(ANY, "test", user=ANY)
 
 
+class TestTagMergeView:
+    # adapted from TestDocumentMergeView
+    @pytest.mark.django_db
+    def test_get_success_url(self):
+        merge_view = TagMerge()
+        tag = Tag.objects.create(name="test tag")
+        merge_view.primary_tag = tag
+
+        resolved_url = resolve(merge_view.get_success_url())
+        assert "admin" in resolved_url.app_names
+        assert resolved_url.url_name == "taggit_tag_change"
+
+    def test_get_initial(self):
+        tmview = TagMerge()
+        tmview.request = Mock(GET={"ids": "12,23,456,7"})
+
+        initial = tmview.get_initial()
+        assert tmview.tag_ids == [12, 23, 456, 7]
+        # lowest id selected as default primary tag
+        assert initial["primary_tag"] == 7
+
+        # Test when no ids are provided (a user shouldn't get here,
+        # but shouldn't raise an error.)
+        tmview.request = Mock(GET={"ids": ""})
+        initial = tmview.get_initial()
+        assert tmview.tag_ids == []
+        tmview.request = Mock(GET={})
+        initial = tmview.get_initial()
+        assert tmview.tag_ids == []
+
+    def test_get_form_kwargs(self):
+        tmview = TagMerge()
+        tmview.request = Mock(GET={"ids": "12,23,456,7"})
+        form_kwargs = tmview.get_form_kwargs()
+        assert form_kwargs["tag_ids"] == tmview.tag_ids
+
+    def test_tag_merge(self, admin_client, client, document, join):
+        # Ensure that the tag merge view is not visible to public
+        response = client.get(reverse("admin:tag-merge"))
+        assert response.status_code == 302
+        assert response.url.startswith("/accounts/login/")
+
+        # create test tag records to merge, tag some documents
+        tag1 = Tag.objects.create(name="16th c")
+        tag2 = Tag.objects.create(name="16th century")
+        document.tags.add(tag1)
+        document.tags.add(tag2)
+        old_doc_tagcount = document.tags.count()
+        join.tags.add(tag2)
+
+        tag_ids = [tag1.id, tag2.id]
+        idstring = ",".join(str(pid) for pid in tag_ids)
+
+        # GET should display choices
+        response = admin_client.get(reverse("admin:tag-merge"), {"ids": idstring})
+        assert response.status_code == 200
+
+        # POST should merge
+        response = admin_client.post(
+            "%s?ids=%s" % (reverse("admin:tag-merge"), idstring),
+            {"primary_tag": tag1.id},
+            follow=True,
+        )
+        TestCase().assertRedirects(
+            response, reverse("admin:taggit_tag_change", args=[tag1.id])
+        )
+        message = list(response.context.get("messages"))[0]
+        assert message.tags == "success"
+        assert "Successfully merged" in message.message
+        assert f"into {tag1.name}" in message.message
+
+        # tag2 should no longer exist
+        assert not Tag.objects.filter(name="16th century").exists()
+        assert document.tags.count() == old_doc_tagcount - 1
+
+        # join should be tagged with tag1
+        assert tag1 in join.tags.all()
+
+        # should create log entry
+        assert LogEntry.objects.filter(
+            object_id=tag1.id, change_message__contains=f"merged with {tag2.name}"
+        ).exists()
+
+
 class TestRelatdDocumentview:
     def test_page_title(self, document, join, client, empty_solr):
         """should use doc title in related documents view meta title"""
@@ -1522,10 +1650,19 @@ class TestDocumentTranscribeView:
         assert response.context["annotation_config"]["source_uri"] == source.uri
         assert response.context["source_label"] == source.all_authors()
 
-        # since no images/transcription present, should append two placeholders for use in editor
+        # since no images/transcription present, and one textblock present,
+        # should append two placeholders for use in editor
         assert len(response.context["images"]) == 2
-        assert f"{document.permalink}iiif/canvas/1/" in response.context["images"]
-        assertContains(response, f"{document.permalink}iiif/canvas/2/")
+        tb = document.textblock_set.first()
+        assert (
+            f"{document.permalink}iiif/textblock/{tb.pk}/canvas/1/"
+            in response.context["images"]
+        )
+        assertContains(
+            response,
+            f"{document.permalink}iiif/textblock/{tb.pk}/canvas/2/",
+        )
+        assertContains(response, tb.fragment.shelfmark)
         assertContains(response, Document.PLACEHOLDER_CANVAS["image"]["info"])
 
         # non-existent source_pk should 404

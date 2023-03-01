@@ -214,3 +214,50 @@ class TestMergeDuplicateTags(TestMigrations):
             content_type_id=tag_contenttype.pk,
             change_message="Merged example, éxample; removed diacritics",
         ).exists()
+
+
+@pytest.mark.last
+@pytest.mark.django_db
+class TestMergeJTSENACollections(TestMigrations):
+    app = "corpus"
+    migrate_from = "0035_document_image_order_override"
+    migrate_to = "0036_collections_merge_jts_ena"
+    jts_collection = None
+    ena_fragment = None
+    jts_fragment = None
+
+    def setUpBeforeMigration(self, apps):
+        Collection = apps.get_model("corpus", "Collection")
+        (self.jts_collection, _) = Collection.objects.get_or_create(
+            library="Jewish Theological Seminary Library",
+            lib_abbrev="JTS",
+            location="New York",
+        )
+        (ena, _) = Collection.objects.get_or_create(
+            library="Jewish Theological Seminary Library",
+            lib_abbrev="JTS",
+            abbrev="ENA",
+            name="Elkan Nathan Adler",
+            location="New York",
+        )
+        # create one ENA and one JTS fragment
+        Fragment = apps.get_model("corpus", "Fragment")
+        self.ena_fragment = Fragment.objects.create(
+            shelfmark="ENA 1",
+            collection=ena,
+        )
+        self.jts_fragment = Fragment.objects.create(
+            shelfmark="JTS 1",
+            collection=self.jts_collection,
+        )
+
+    def test_merged(self):
+        Collection = self.apps.get_model("corpus", "Collection")
+        Fragment = self.apps.get_model("corpus", "Fragment")
+        # there should no longer be an ENA collection
+        assert not Collection.objects.filter(abbrev="ENA").exists()
+        # both fragments' collections should be JTS
+        jts_fragment = Fragment.objects.get(pk=self.jts_fragment.pk)
+        assert jts_fragment.collection.pk == self.jts_collection.pk
+        ena_fragment = Fragment.objects.get(pk=self.ena_fragment.pk)
+        assert ena_fragment.collection.pk == self.jts_collection.pk

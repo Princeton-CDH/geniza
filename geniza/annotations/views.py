@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 
 from django.contrib import admin
 from django.contrib.admin.models import ADDITION, DELETION, LogEntry
@@ -11,7 +10,6 @@ from django.http import HttpResponse, JsonResponse
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
-from parasolr.django.indexing import ModelIndexable
 
 from geniza.annotations.admin import AnnotationAdmin
 from geniza.annotations.models import Annotation, annotations_to_list
@@ -167,12 +165,13 @@ class AnnotationList(
         anno.set_content(anno_data["content"])
         anno.footnote = anno_data["footnote"]
 
-        # NOTE: creating log entry first to ensure it is available
-        # for backup signal handler fired on annotation save
+        # create log entry
         anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
         anno_admin.log_addition(request, anno, "Created via API")
 
         anno.save()
+
+        # create and send response
         resp = AnnotationResponse(anno.compile())
         resp.status_code = 201  # created
         # location header must include annotation's new uri
@@ -270,18 +269,9 @@ class AnnotationDetail(
             or anno.footnote.pk != anno_data["footnote"]
         ):
             anno.footnote = anno_data["footnote"]
-            start = time.time()
-            document_id = anno_data["footnote"].object_id
-            ModelIndexable.index_items([Document.objects.get(pk=document_id)])
-            logger.debug(
-                "Reindexing document %s (existing annotation updated): %f sec"
-                % (document_id, time.time() - start)
-            )
             # create log entry to document change
             anno_admin = AnnotationAdmin(model=Annotation, admin_site=admin.site)
             anno_admin.log_change(request, anno, "Updated via API")
-            # NOTE: creating log entry first to ensure it is available
-            # for backup signal handler fired on annotation save
             anno.save()
 
         return AnnotationResponse(anno.compile())

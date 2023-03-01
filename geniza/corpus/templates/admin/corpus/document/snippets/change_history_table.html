@@ -1,0 +1,20 @@
+<table class="change-history">
+    <thead>
+        <tr>
+            <th scope="col">Date/time</th>
+            <th scope="col">Object</th>
+            <th scope="col">User</th>
+            <th scope="col">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for action in history %}
+            <tr>
+                <th scope="row">{{ action.action_time|date:"DATETIME_FORMAT" }}</th>
+                <td><a href="{{action.get_admin_url}}">{{ action.object_repr }}</a></th>
+                <td>{{ action.user.get_username }}{% if action.user.get_full_name %} ({{ action.user.get_full_name }}){% endif %}</td>
+                <td>{{ action.get_change_message }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

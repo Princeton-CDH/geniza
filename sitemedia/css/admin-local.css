@@ -110,14 +110,6 @@ a#needsreview:target {
  * Transcription styles in admin
  *
  */
-@media (min-width: 900px) {
-    .form-row #iiif-viewer {
-        padding: 10px;
-    }
-}
-#iiif-viewer .transcription.no-image {
-    max-width: 100%;
-}
 .form-row .transcription {
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
@@ -206,6 +198,10 @@ fieldset.transcriptions-field
 /* keep document relationship choices labels in line with checkboxes */
 .field-doc_relation {
     white-space: nowrap;
+}
+/* allow help text to wrap (in footnote change form) */
+.field-doc_relation div.help {
+    white-space: normal;
 }
 
 /* styling for document attributes in document merge form */
@@ -299,4 +295,13 @@ input[name$="_ar"],
 textarea[name$="_he"],
 textarea[name$="_ar"] {
     direction: rtl;
+}
+
+/* Extended document change history table styling */
+table.change-history {
+    width: 100%;
+}
+
+table.change-history tbody th {
+    width: 16em;
 }

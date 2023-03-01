@@ -7,13 +7,11 @@
 
 
 import argparse
-import csv
 import os.path
 from urllib.parse import urlencode
 
 import pandas as pd
 from iiif_prezi.factory import ManifestFactory
-from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFPresentation
 from ratelimit import limits
 from rich.progress import Progress
@@ -116,12 +114,19 @@ def combine_manifests(csvfilepath, output_dir):
                 v.label: v.value for v in manifest.sequences[0].canvases[0].metadata
             }
             reference_number = row.reference_number
+
+            # NOTE: not every record has a folio; use reference number as fallback
+            folio = canvas_metadata.get("Folio", reference_number)
+            # override folio to use "verso" for second image, in case of double recto
+            if row.sequence == "2" and "recto" in folio:
+                folio = folio.replace("recto", "verso")
+
             if current_shelfmark == shelfmark:
                 # add canvas + image from current manifest to the new one
                 add_canvas_to_manifest(
                     manifest,
                     seq,
-                    canvas_metadata.get("Folio", reference_number),
+                    folio,
                     reference_number,
                 )
 
@@ -175,13 +180,10 @@ def combine_manifests(csvfilepath, output_dir):
                 # add canvas + image from current manifest to the new one;
                 # use folio information from metadata (when available),
                 # since it provides additional information
-
-                # NOTE: not every record has a folio;
-                # use reference number as fallback
                 add_canvas_to_manifest(
                     manifest,
                     seq,
-                    canvas_metadata.get("Folio", reference_number),
+                    folio,
                     reference_number,
                 )
 

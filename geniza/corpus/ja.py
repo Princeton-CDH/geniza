@@ -81,7 +81,9 @@ def arabic_to_ja(text):
 
 
 # regex to find arabic word or exact phrase with only arabic + whitepace
-re_AR_WORD_OR_PHRASE = re.compile(r'"[\s\u0600-\u06FF]+"|[\u0600-\u06FF]+')
+re_AR_WORD_OR_PHRASE = re.compile(
+    r'"[\u0600-\u06FF]+[\s\u0600-\u06FF]*"|[\u0600-\u06FF]+'
+)
 
 
 def arabic_or_ja(text, boost=True):

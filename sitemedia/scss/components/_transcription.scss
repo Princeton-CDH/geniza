@@ -7,7 +7,7 @@
 @use "../components/searchform";
 
 #itt-panel {
-    z-index: 3;
+    z-index: 6;
     max-width: none;
     width: 100%;
     display: flex;
@@ -422,8 +422,13 @@
         }
 
         &.placeholder {
-            .img-header {
-                display: none;
+            // hide placeholder zoom controls
+            .img-header *:not(h2) {
+                display: none !important;
+            }
+            // show placeholder label
+            .img-header h2 {
+                display: block;
             }
             // placeholders are completely transparent in viewer
             .deep-zoom-container {
@@ -901,6 +906,11 @@
 
             li + li {
                 margin-left: spacing.$spacing-xs;
+            }
+            li svg#jts {
+                width: 8rem;
+                height: 4rem;
+                fill: var(--jts-logo);
             }
         }
         // spacing tweaks for desktop

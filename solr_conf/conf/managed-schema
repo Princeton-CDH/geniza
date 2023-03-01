@@ -258,6 +258,18 @@
       </analyzer>
     </fieldType>
 
+    <!-- Simple text field with no stemming, used to find exact matches. -->
+    <fieldType name="text_nostem" class="solr.TextField">
+      <analyzer>
+        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.ICUFoldingFilterFactory"/>
+        <!-- ensure hyphenated words are joined together, even if they were separated by whitespace -->
+        <filter class="solr.HyphenatedWordsFilterFactory"/>
+        <!-- remove all punctuation from the end of tokens -->
+        <filter class="solr.PatternReplaceFilterFactory" pattern="[\p{Punct}\p{IsPunctuation}]$" replacement=""/>
+      </analyzer>
+    </fieldType>
 
   <fieldType name="tfloat" class="solr.TrieFloatField" positionIncrementGap="0" docValues="true" precisionStep="8"/>
   <fieldType name="tfloats" class="solr.TrieFloatField" positionIncrementGap="0" docValues="true" multiValued="true" precisionStep="8"/>
@@ -286,6 +298,10 @@
   
   <copyField source="tags_ss_lower" dest="tags_t" maxChars="30000" />
   <copyField source="type_s" dest="type_t" maxChars="300" />
+
+  <!-- copy description and transcription to a nostem field for exact matches -->
+  <copyField source="description_en_bigram" dest="content_nostem" maxChars="30000" />
+  <copyField source="text_transcription" dest="content_nostem" maxChars="30000" />
 
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
@@ -341,5 +357,6 @@
   <dynamicField name="*_d" type="double" indexed="true" stored="true"/>
   <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
   <dynamicField name="*_natsort" type="natural_sort" indexed="true" stored="true" sortMissingLast="true"/>
+  <dynamicField name="*_nostem" type="text_nostem" indexed="true" stored="false" multiValued="true"/>
 
 </schema>

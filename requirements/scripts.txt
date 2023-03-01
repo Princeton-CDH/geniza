@@ -1,0 +1,6 @@
+# requirements for the scripts in the scripts directory
+
+iiif
+pandas
+python-slugify
+ratelimit

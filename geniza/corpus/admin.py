@@ -2,6 +2,9 @@ from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
+from django.contrib.admin.models import LogEntry
+from django.contrib.admin.utils import unquote
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.sites.models import Site
@@ -16,6 +19,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 
+from geniza.annotations.models import Annotation
 from geniza.common.admin import custom_empty_field_list_filter
 from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentExporter
 from geniza.corpus.models import (
@@ -137,7 +141,8 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
         "thumbnail",
         "selected_images",
     )
-    extra = 1
+    min_num = 1
+    extra = 0
     formfield_overrides = {
         CharField: {"widget": TextInput(attrs={"size": "10"})},
         ArrayField: {"widget": HiddenInput()},  # hidden input for selected_images
@@ -368,13 +373,54 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     def change_view(self, request, object_id, form_url="", extra_context=None):
         """Customize this model's change_view to add IIIF images to context for
         transcription viewer, then execute existing change_view"""
-        document = self.get_object(request, object_id)
-        images = document.iiif_images(with_placeholders=True)
         extra_ctx = extra_context or {}
-        extra_ctx.update({"images": images})
+        document = self.get_object(request, object_id)
+        if document:
+            images = document.iiif_images(with_placeholders=True)
+            extra_ctx.update({"images": images})
         return super().change_view(
             request, object_id, form_url, extra_context=extra_ctx
         )
+
+    def history_view(self, request, object_id, extra_context=None):
+        """Customize this model's history_view to add histories for all the
+        footnotes and annotations related to this document to context, then
+        execute existing history_view"""
+        document = self.get_object(request, unquote(object_id))
+        # get related footnote log entries
+        footnote_pks = document.footnotes.all().values_list("pk", flat=True)
+        footnote_action_list = (
+            LogEntry.objects.filter(
+                object_id__in=[str(pk) for pk in footnote_pks],
+                content_type=ContentType.objects.get(
+                    app_label="footnotes", model="footnote"
+                ),
+            )
+            .select_related()
+            .order_by("action_time")
+        )
+        # get related annotation log entries
+        annotations = Annotation.objects.filter(footnote__pk__in=footnote_pks)
+        annotation_action_list = (
+            LogEntry.objects.filter(
+                object_id__in=[
+                    str(pk) for pk in annotations.values_list("pk", flat=True)
+                ],
+                content_type=ContentType.objects.get(
+                    app_label="annotations", model="annotation"
+                ),
+            )
+            .select_related()
+            .order_by("action_time")
+        )
+        extra_ctx = extra_context or {}
+        extra_ctx.update(
+            {
+                "footnote_action_list": footnote_action_list,
+                "annotation_action_list": annotation_action_list,
+            }
+        )
+        return super().history_view(request, object_id, extra_context=extra_ctx)
 
     @admin.display(description="Merge selected documents")
     def merge_documents(self, request, queryset=None):
