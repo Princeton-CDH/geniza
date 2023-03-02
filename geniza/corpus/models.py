@@ -11,9 +11,9 @@ from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Lower
@@ -1369,3 +1369,32 @@ class TextBlock(models.Model):
     def thumbnail(self):
         """iiif thumbnails for this TextBlock, with selected images highlighted"""
         return self.fragment.iiif_thumbnails(selected=self.selected_images)
+
+
+class Dating(models.Model):
+    """An inferred date for a document."""
+
+    class Meta:
+        verbose_name_plural = "Inferred datings (not written on the document)"
+
+    document = models.ForeignKey(
+        Document, on_delete=models.CASCADE, null=False, blank=False
+    )
+    display_date = models.CharField(
+        "Display date",
+        help_text='The dating as it should appear in the public site, such as "Late 12th century"',
+        max_length=255,
+        blank=True,  # use standard date for display if this is blank
+    )
+    standard_date = models.CharField(
+        "Standardized date",
+        help_text=DocumentDateMixin.standard_date_helptext,
+        blank=False,
+        null=False,
+        max_length=255,
+        validators=[RegexValidator(DocumentDateMixin.re_date_format)],
+    )
+    notes = models.TextField(
+        help_text="An explanation for how this date was inferred, and/or by whom",
+        blank=False,
+    )
