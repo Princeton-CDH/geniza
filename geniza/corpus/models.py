@@ -903,6 +903,7 @@ class Document(ModelIndexable, DocumentDateMixin):
     def digital_editions(self):
         """All footnotes for this document where the document relation includes
         digital edition."""
+
         return self.footnotes.filter(
             doc_relation__contains=Footnote.DIGITAL_EDITION
         ).order_by("source")
@@ -916,7 +917,9 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     def sources(self):
         """All unique sources attached to footnotes on this document."""
-        return Source.objects.filter(footnote__document=self).distinct()
+        # use set and local references to avoid an extra db call
+        return set([fn.source for fn in self.footnotes.all()])
+        # return Source.objects.filter(footnote__document=self).distinct()
 
     def attribution(self):
         """Generate a tuple of three attribution components for use in IIIF manifests
@@ -962,28 +965,59 @@ class Document(ModelIndexable, DocumentDateMixin):
     def items_to_index(cls):
         """Custom logic for finding items to be indexed when indexing in
         bulk."""
-        # NOTE: some overlap with prefetching used for django admin
-        return (
-            Document.objects.select_related("doctype")
-            .prefetch_related(
-                "tags",
-                "languages",
+        return Document.objects.prefetch_related(
+            "tags",
+            "languages",
+            "secondary_languages",
+            "log_entries",
+            Prefetch(
+                "textblock_set",
+                queryset=TextBlock.objects.select_related(
+                    "fragment", "fragment__collection", "fragment__manifest"
+                ).prefetch_related("fragment__manifest__canvases"),
+            ),
+            Prefetch(
                 "footnotes",
-                "footnotes__source",
-                "footnotes__source__authorship_set__creator",
-                "footnotes__source__source_type",
-                "footnotes__source__languages",
-                "footnotes__annotation_set",  # for transcription content
-                "log_entries",
-                Prefetch(
-                    "textblock_set",
-                    queryset=TextBlock.objects.select_related(
-                        "fragment", "fragment__collection"
-                    ),
+                queryset=Footnote.objects.select_related(
+                    "source", "source__source_type"
+                ).prefetch_related(
+                    "source__authorship_set",
+                    "source__authorship_set__creator",
+                    "source__languages",
+                    "annotation_set",
                 ),
-            )
-            .distinct()
+            ),
         )
+
+    @classmethod
+    def prep_index_chunk(cls, chunk):
+        """Prefetch related information when indexing in chunks
+        (modifies queryset chunk in place)"""
+        models.prefetch_related_objects(
+            chunk,
+            "doctype",
+            "tags",
+            "languages",
+            "log_entries",
+            Prefetch(
+                "textblock_set",
+                queryset=TextBlock.objects.select_related(
+                    "fragment", "fragment__collection", "fragment__manifest"
+                ).prefetch_related("fragment__manifest__canvases"),
+            ),
+            Prefetch(
+                "footnotes",
+                queryset=Footnote.objects.select_related(
+                    "source", "source__source_type"
+                ).prefetch_related(
+                    "source__authorship_set",
+                    "source__authorship_set__creator",
+                    "source__languages",
+                    "annotation_set",
+                ),
+            ),
+        )
+        return chunk
 
     def index_data(self):
         """data for indexing in Solr"""
@@ -1052,12 +1086,11 @@ class Document(ModelIndexable, DocumentDateMixin):
         source_relations = defaultdict(set)
 
         for fn in footnotes:
-            # if this is an edition/transcription, try to get plain text for indexing
+            # if this is an edition/transcription, get html version for indexing
             if Footnote.DIGITAL_EDITION in fn.doc_relation:
-                if fn.content_html_str:
-                    transcription_texts.append(
-                        Footnote.explicit_line_numbers(fn.content_html_str)
-                    )
+                content = fn.content_html_str
+                if content:
+                    transcription_texts.append(Footnote.explicit_line_numbers(content))
             # add any doc relations to this footnote's source's set in source_relations
             source_relations[fn.source] = source_relations[fn.source].union(
                 fn.doc_relation
@@ -1080,10 +1113,10 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "num_translations_i": counts[Footnote.TRANSLATION],
                 "num_discussions_i": counts[Footnote.DISCUSSION],
                 # count each unique source as one scholarship record
-                "scholarship_count_i": self.sources().count(),
+                "scholarship_count_i": len(source_relations.keys()),
                 # preliminary scholarship record indexing
                 # (may need splitting out and weighting based on type of scholarship)
-                "scholarship_t": [fn.display() for fn in self.footnotes.all()],
+                "scholarship_t": [fn.display() for fn in footnotes],
                 # transcription content as html
                 "text_transcription": transcription_texts,
                 "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),
@@ -1091,7 +1124,15 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "has_discussion_b": bool(counts[Footnote.DISCUSSION]),
             }
         )
-        last_log_entry = self.log_entries.last()
+
+        # convert to list so we can do negative indexing, instead of calling last()
+        # which incurs a database call
+        try:
+            last_log_entry = list(self.log_entries.all())[-1]
+        except IndexError:
+            # should only occur in unit tests, not real data
+            last_log_entry = None
+
         if last_log_entry:
             index_data["input_year_i"] = last_log_entry.action_time.year
             # TODO: would be nice to use full date to display year
