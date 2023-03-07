@@ -305,3 +305,15 @@ table.change-history {
 table.change-history tbody th {
     width: 16em;
 }
+
+/* fixing spacing of help text in document admin, dates section */
+div.form-row.field-doc_date_original {
+    display: grid;
+    gap: 1rem;
+}
+@media (min-width: 1358px) {
+    /* on smaller viewports, two columns looks bad, but at this size it's fine */
+    div.form-row.field-doc_date_original {
+        grid-template-columns: 1fr 1fr;
+    }
+}
