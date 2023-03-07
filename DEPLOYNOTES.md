@@ -2,6 +2,8 @@
 
 ## 4.13
 
+-   Solr configuration has changed. Ensure Solr configset has been updated
+    and then reindex all content: `python manage.py index`
 -   The method for generating Bodleian IIIF manifests has changed. Run
     `python manage.py add_fragment_urls pgp-bodleian-manifests.csv --overwrite`
     against the latest copy of `pgp-bodleian-manifests.csv` from the

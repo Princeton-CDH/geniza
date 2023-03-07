@@ -65,3 +65,9 @@ def test_arabic_or_ja_exact_phrase():
 
     # make sure non-arabic field query is left unchanged
     assert arabic_or_ja('shelfmark:"jrl series a"') == 'shelfmark:"jrl series a"'
+
+    # two phrases with whitespace between quotes; should be ignored
+    assert (
+        arabic_or_ja('shelfmark:"T-S NS" "he divorced"', boost=False)
+        == 'shelfmark:"T-S NS" "he divorced"'
+    )

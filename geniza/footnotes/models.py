@@ -482,7 +482,14 @@ class Footnote(TrackChangesModel):
         null=True,
         blank=True,
     )
-    notes = models.TextField(blank=True)
+    notes = models.TextField(
+        help_text="Displays publicly. For minor emendations to a "
+        + 'transcription, put "with minor emendations by Your Name, Date." '
+        + "Do not add a note for typo corrections. For significant "
+        + "alterations to a transcription, create a new source indicating "
+        + "co-authorship.",
+        blank=True,
+    )
     content = models.JSONField(
         blank=True,
         null=True,
