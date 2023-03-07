@@ -71,8 +71,15 @@ admin.site.unregister(Tag)
 
 
 class TagForm(ModelForm):
-    """Extends the default tag admin form to validate uniqueness, case-insensitive,
-    on tag names."""
+    """
+    Extends the default tag admin form to validate uniqueness, case-insensitive,
+    on tag names.
+
+    NOTE: This is needed because the Tag model does not have a DB-level case-insensitive uniqueness
+    constraint applied out of the box, and adding such a constraint is not trivial at the moment.
+    TODO: Once Django is updated past 4.0, a "functional unique constraint" may be added to a custom
+    Tag model to solve this problem; then, this form override will no longer be needed.
+    """
 
     class Meta:
         model = Tag
