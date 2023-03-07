@@ -975,30 +975,9 @@ class Document(ModelIndexable, DocumentDateMixin):
                 queryset=TextBlock.objects.select_related(
                     "fragment", "fragment__collection", "fragment__manifest"
                 ).prefetch_related("fragment__manifest__canvases"),
-                # "footnotes",
-                # "footnotes__source",
-                # "footnotes__source__authorship_set__creator",
-                # "footnotes__source__source_type",
-                # "footnotes__source__languages",
-                # "footnotes__annotation_set",  # for transcription content
-                # queryset=Footnote.objects.select_related(
-                #     "source", "source__source_type"
-                # ).prefetch_related(
-                #     "source__authorship_set__creator", "source__languages"
-                # ),
             ),
             Prefetch(
                 "footnotes",
-                # "footnotes__source",
-                # "footnotes__source__source_type",
-                # "footnotes__source__authorship_set__creator",
-                # "footnotes__source__languages",
-                # "footnotes__annotation_set",  # for transcription content
-                # queryset=Footnote.objects.select_related(
-                #     "source", "source__source_type"
-                # ).prefetch_related(
-                #     "source__authorship_set__creator", "source__languages"
-                # ),
                 queryset=Footnote.objects.select_related(
                     "source", "source__source_type"
                 ).prefetch_related(
@@ -1012,20 +991,13 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     @classmethod
     def prep_index_chunk(cls, chunk):
-        # prefetch collections when indexing in chunks
-        # (method modifies queryset in place)
+        """Prefetch related information when indexing in chunks
+        (modifies queryset chunk in place)"""
         models.prefetch_related_objects(
             chunk,
             "doctype",
             "tags",
             "languages",
-            # "footnotes",
-            # "footnotes__source",
-            # "footnotes__source__authorship_set",
-            # "footnotes__source__authorship_set__creator",
-            # "footnotes__source__source_type",
-            # "footnotes__source__languages",
-            # "footnotes__annotation_set",  # for transcription content
             "log_entries",
             Prefetch(
                 "textblock_set",
