@@ -4,6 +4,7 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.db.models import Count
+from django.forms import ModelForm, ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from taggit.admin import TagAdmin
@@ -69,9 +70,42 @@ def custom_empty_field_list_filter(title, non_empty_label=None, empty_label=None
 admin.site.unregister(Tag)
 
 
+class TagForm(ModelForm):
+    """
+    Extends the default tag admin form to validate uniqueness, case-insensitive,
+    on tag names.
+
+    NOTE: This is needed because the Tag model does not have a DB-level case-insensitive uniqueness
+    constraint applied out of the box, and adding such a constraint is not trivial at the moment.
+    TODO: Once Django is updated past 4.0, a "functional unique constraint" may be added to a custom
+    Tag model to solve this problem; then, this form override will no longer be needed.
+    """
+
+    class Meta:
+        model = Tag
+        exclude = ()
+
+    def clean(self):
+        # super().clean() will handle slug validation
+        super().clean()
+        # check if this is a duplicate (case-insensitive)
+        name = self.cleaned_data.get("name")
+        tags_name = Tag.objects.filter(name__iexact=name)
+        if self.instance:
+            # exclude self from search if this record exists
+            tags_name = tags_name.exclude(pk=self.instance.pk)
+        if tags_name.exists():
+            # if there are any identical tags, validation error
+            self.add_error(
+                "name", ValidationError(f'Tag with the name "{name}" already exists.')
+            )
+        return self.cleaned_data
+
+
 @admin.register(Tag)
 class CustomTagAdmin(TagAdmin):
     list_display = ("name", "slug", "item_count")
+    form = TagForm
 
     @admin.display(description="Merge selected tags")
     def merge_tags(self, request, queryset=None):
