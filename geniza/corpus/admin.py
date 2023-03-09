@@ -1,17 +1,14 @@
 from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
 from django import forms
-from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.utils import unquote
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
-from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.db.models import CharField, Count, F
 from django.db.models.functions import Concat
-from django.db.models.query import Prefetch
 from django.forms.widgets import HiddenInput, Textarea, TextInput
 from django.http import HttpResponseRedirect
 from django.urls import path, resolve, reverse
@@ -24,6 +21,7 @@ from geniza.common.admin import custom_empty_field_list_filter
 from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentExporter
 from geniza.corpus.models import (
     Collection,
+    Dating,
     Document,
     DocumentType,
     Fragment,
@@ -194,6 +192,19 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
             )
 
 
+class DocumentDatingInline(admin.TabularInline):
+    """Inline for inferred dates on a document"""
+
+    model = Dating
+    fields = (
+        "display_date",
+        "standard_date",
+        "notes",
+    )
+    min_num = 0
+    extra = 1
+
+
 @admin.register(Document)
 class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     form = DocumentForm
@@ -281,7 +292,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     )
     autocomplete_fields = ["languages", "secondary_languages"]
     # NOTE: autocomplete does not honor limit_choices_to in model
-    inlines = [DocumentTextBlockInline, DocumentFootnoteInline]
+    inlines = [DocumentTextBlockInline, DocumentFootnoteInline, DocumentDatingInline]
 
     class Media:
         css = {"all": ("css/admin-local.css",)}

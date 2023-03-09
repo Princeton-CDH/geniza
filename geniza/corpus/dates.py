@@ -155,11 +155,15 @@ class DocumentDateMixin(TrackChangesModel):
         r"^\d{3,4}(-[01]\d(-[0-3]\d)?)?(/\d{3,4}(-[01]\d(-[0-3]\d)?)?)?$"
     )
 
+    standard_date_helptext = str(
+        "CE date (convert to Julian before 1582, Gregorian after 1582). "
+        + "\nUse YYYY, YYYY-MM, YYYY-MM-DD format or YYYY-MM-DD/YYYY-MM-DD for date ranges.",
+    )
+
     doc_date_standard = models.CharField(
         "Document date (standardized)",
-        help_text="CE date (convert to Julian before 1582, Gregorian after 1582). "
-        + "\nUse YYYY, YYYY-MM, YYYY-MM-DD format or YYYY-MM-DD/YYYY-MM-DD for date ranges. "
-        + "\nLeave blank or clear out to automatically calculate standardized date for supported calendars.",
+        help_text=f"{standard_date_helptext} \nLeave blank or clear out to automatically "
+        + "calculate standardized date for supported calendars.",
         blank=True,
         max_length=255,
         validators=[RegexValidator(re_date_format)],
