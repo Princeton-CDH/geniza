@@ -129,8 +129,8 @@ class DocumentDateMixin(TrackChangesModel):
     and related logic for displaying, converting,a nd validating dates."""
 
     doc_date_original = models.CharField(
-        "Date on document (original)",
-        help_text="explicit date on the document, in original format",
+        "Date on document",
+        help_text="Explicit date on the document, in original format",
         blank=True,
         max_length=255,
     )
@@ -156,12 +156,12 @@ class DocumentDateMixin(TrackChangesModel):
     )
 
     standard_date_helptext = str(
-        "CE date (convert to Julian before 1582, Gregorian after 1582). "
+        "Convert to Julian before 1582, Gregorian after 1582. "
         + "\nUse YYYY, YYYY-MM, YYYY-MM-DD format or YYYY-MM-DD/YYYY-MM-DD for date ranges.",
     )
 
     doc_date_standard = models.CharField(
-        "Document date (standardized)",
+        "CE date",
         help_text=f"{standard_date_helptext} \nLeave blank or clear out to automatically "
         + "calculate standardized date for supported calendars.",
         blank=True,
