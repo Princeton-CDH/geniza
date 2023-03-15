@@ -1428,7 +1428,7 @@ class Dating(models.Model):
         blank=True,  # use standard date for display if this is blank
     )
     standard_date = models.CharField(
-        "Standardized date",
+        "CE date",
         help_text=DocumentDateMixin.standard_date_helptext,
         blank=False,
         null=False,
