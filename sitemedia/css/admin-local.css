@@ -311,6 +311,10 @@ div.form-row.field-doc_date_original {
     display: grid;
     gap: 1rem;
 }
+/* prevent inline formset from causing problems with grid */
+div.form-row.field-doc_date_original .inline-group {
+    grid-column: 1 / -1;
+}
 @media (min-width: 1358px) {
     /* on smaller viewports, two columns looks bad, but at this size it's fine */
     div.form-row.field-doc_date_original {
