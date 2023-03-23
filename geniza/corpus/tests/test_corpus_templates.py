@@ -2,14 +2,16 @@ import html
 from unittest.mock import Mock, patch
 
 import pytest
+from bs4 import BeautifulSoup
 from django.core.paginator import Paginator
 from django.http.request import HttpRequest, QueryDict
 from django.template.defaultfilters import linebreaks
 from django.template.loader import get_template
 from django.urls import reverse
 from parasolr.django import SolrClient
-from pytest_django.asserts import assertContains, assertNotContains
+from pytest_django.asserts import assertContains, assertNotContains, assertTemplateUsed
 
+from geniza.corpus.admin import DocumentDatingInline
 from geniza.corpus.models import Document, LanguageScript
 from geniza.corpus.templatetags.corpus_extras import shelfmark_wrap
 from geniza.footnotes.models import Footnote
@@ -656,3 +658,42 @@ class TestRelatedDocumentsTemplate:
 
         # "join" fixture should be in list
         assertContains(response, f"<dd>{join.id}</dd>")
+
+
+class TestFieldsetSnippet:
+    """Unit tests for the override of django admin/includes/fieldset.html, which allows
+    inclusion of inline formsets between model form fields"""
+
+    template = "admin/corpus/document/snippets/fieldset.html"
+
+    def test_inlines_included(self, admin_client, document):
+        # the snippet should be included on the admin document change page
+        response = admin_client.get(
+            reverse("admin:corpus_document_change", args=(document.id,))
+        )
+        assertTemplateUsed(response, template_name=self.template)
+
+        # should include Dating inline
+        assertTemplateUsed(response, template_name=DocumentDatingInline.template)
+        assertContains(
+            response,
+            'div class="js-inline-admin-formset inline-group" id="dating_set-group"',
+        )
+
+        # Dating inline should be immediately after standard_date field (which is the value of
+        # DocumentDatingInline.insert_after)
+        soup = BeautifulSoup(response.content)
+        standard_date_field = soup.find(
+            "div", class_=f"fieldBox field-{DocumentDatingInline.insert_after}"
+        )
+        assert standard_date_field.find_next_sibling("div")["id"] == "dating_set-group"
+        dating_inline = soup.find("div", id="dating_set-group")
+        assert dating_inline.find_parent("fieldset") is not None
+
+        # should include other inlines outside of form fieldsets
+        assertContains(
+            response,
+            'div class="inline-group sortable" id="textblock_set-group"',
+        )
+        textblock_set_inline = soup.find("div", id="textblock_set-group")
+        assert not textblock_set_inline.find_parent("fieldset")
