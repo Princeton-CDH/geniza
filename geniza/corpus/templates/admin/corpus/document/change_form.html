@@ -14,6 +14,21 @@
 {% endblock %}
 
 
+{% block field_sets %}
+    {% for fieldset in adminform %}
+        {% include "admin/corpus/document/snippets/fieldset.html" with inline_admin_formsets=inline_admin_formsets %}
+    {% endfor %}
+{% endblock %}
+
+{% block inline_field_sets %}
+    {% for inline_admin_formset in inline_admin_formsets %}
+        {# don't repeat inline formsets that were inserted earlier #}
+        {% if not inline_admin_formset.opts.insert_after %}
+            {% include inline_admin_formset.opts.template %}
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
 {% block after_field_sets %}
     {% if original.pk %} {# don't display record history when adding new document #}
         <fieldset class="module aligned">

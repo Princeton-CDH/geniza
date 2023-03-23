@@ -203,6 +203,7 @@ class DocumentDatingInline(admin.TabularInline):
     )
     min_num = 0
     extra = 1
+    insert_after = "standard_date"
 
 
 @admin.register(Document)
