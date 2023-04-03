@@ -463,11 +463,13 @@ class Footnote(TrackChangesModel):
     TRANSLATION = "T"
     DISCUSSION = "D"
     DIGITAL_EDITION = "X"
+    DIGITAL_TRANSLATION = "Y"
     DOCUMENT_RELATION_TYPES = (
         (EDITION, _("Edition")),
         (TRANSLATION, _("Translation")),
         (DISCUSSION, _("Discussion")),
         (DIGITAL_EDITION, _("Digital Edition")),
+        (DIGITAL_TRANSLATION, _("Digital Translation")),
     )
 
     doc_relation = MultiSelectField(
@@ -526,7 +528,15 @@ class Footnote(TrackChangesModel):
                 fields=("source", "object_id", "content_type"),
                 name="one_digital_edition_per_document_and_source",
                 condition=models.Q(doc_relation__contains="X"),  # X = DIGITAL_EDITION
-            )
+            ),
+            # only allow one digital translation per source for a document
+            models.UniqueConstraint(
+                fields=("source", "object_id", "content_type"),
+                name="one_digital_translation_per_document_and_source",
+                condition=models.Q(
+                    doc_relation__contains="Y"
+                ),  # Y = DIGITAL_TRANSLATION
+            ),
         ]
 
     def __str__(self):
