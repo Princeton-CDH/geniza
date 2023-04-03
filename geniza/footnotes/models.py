@@ -183,6 +183,14 @@ class Source(models.Model):
         """semi-colon delimited list of authors in order"""
         return "; ".join([str(c.creator) for c in self.authorship_set.all()])
 
+    def all_languages(self):
+        """comma-delimited list of languages, in parentheses, used for the translation selector"""
+        if len(self.languages.all()):
+            return "(in %s)" % ", ".join(
+                [str(lang) for lang in self.languages.all().order_by("name")]
+            )
+        return ""
+
     def formatted_display(self, extra_fields=True):
         """Format source for display; used on document scholarship page.
         To omit publisher, place_published, and page_range fields,

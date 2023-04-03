@@ -118,6 +118,14 @@ class TestSource:
             author2.creator,
         )
 
+    def test_all_languages(self, article, twoauthor_source):
+        # should comma-separate multiple languages
+        article.languages.add(SourceLanguage.objects.get(name="English"))
+        article.languages.add(SourceLanguage.objects.get(name="Hebrew"))
+        assert article.all_languages() == "(in English, Hebrew)"
+        # should be an empty string if no languages attached
+        assert twoauthor_source.all_languages() == ""
+
     def test_str_unpublished_vol(self, unpublished_editions):
         # displays with volume
         assert str(unpublished_editions) == "S. D. Goitein, unpublished editions. (CUL)"
