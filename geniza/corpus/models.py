@@ -915,6 +915,14 @@ class Document(ModelIndexable, DocumentDateMixin):
             source__footnote__document=self,
         ).distinct()
 
+    def digital_translations(self):
+        """All footnotes for this document where the document relation includes
+        digital translation."""
+
+        return self.footnotes.filter(
+            doc_relation__contains=Footnote.DIGITAL_TRANSLATION
+        ).order_by("source")
+
     def sources(self):
         """All unique sources attached to footnotes on this document."""
         # use set and local references to avoid an extra db call
