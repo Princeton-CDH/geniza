@@ -768,9 +768,13 @@ class Document(ModelIndexable, DocumentDateMixin):
                             and i not in b.selected_images,
                         }
 
-        # when requested, include any placeholder canvas URIs referenced by any associated transcriptions
+        # when requested, include any placeholder canvas URIs referenced by any associated
+        # transcriptions or translations
         if with_placeholders:
-            for ed in self.digital_editions().all():
+            for ed in [
+                *self.digital_editions().all(),
+                *self.digital_translations().all(),
+            ]:
                 for canvas_uri in ed.content_html.keys():
                     if canvas_uri not in iiif_images:
                         # use placeholder image for each canvas not in iiif_images
