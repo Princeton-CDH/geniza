@@ -94,7 +94,8 @@
             &:checked + label {
                 max-width: 100vw;
                 flex: 1 0 auto;
-                &[for="transcription-on"] {
+                &[for="transcription-on"],
+                &[for="translation-on"] {
                     // transcription is 50% minus the 87px for the translation toggle minus ~2xgutter
                     flex: 1 0 calc(50vw - 87px - 18px);
 
@@ -163,10 +164,12 @@
     }
 
     // multiple transcription pseudo-select element
-    details.transcription-select {
+    details.itt-select {
         position: relative;
         width: 100%;
+        height: 100%;
         summary {
+            height: 100%;
             display: flex;
             flex-flow: row;
             cursor: pointer;
@@ -293,7 +296,7 @@
         overflow: hidden;
 
         // default column layout is two columns at a time
-        grid-template-columns: 1fr 1fr; /* 1fr;*/
+        grid-template-columns: 1fr 1fr 0px;
 
         /* hide panel containers by default */
         & > div {
@@ -313,8 +316,8 @@
 
     /* images only */
     #images-on:checked ~ .panel-container {
-        /* image column full width; transcription column collapsed */
-        grid-template-columns: 100% 0px;
+        /* image column full width; transcription, translation columns collapsed */
+        grid-template-columns: 100% 0px 0px;
         padding-bottom: 30px;
 
         // image panel spacing
@@ -339,8 +342,7 @@
 
     #transcription-on:checked ~ .panel-container {
         /* image column collapsed; transcription column full width */
-        grid-template-columns: 0px 100%;
-        padding-bottom: 30px;
+        grid-template-columns: 0px 100% 0px;
 
         // transcription panel spacing
         div.transcription-panel {
@@ -356,7 +358,36 @@
                 overflow: visible;
             }
         }
+    }
 
+    /* image column collapsed; translation column full width */
+    #translation-on:checked ~ .panel-container {
+        grid-template-columns: 0px 0px 100%;
+
+        // transcription panel spacing
+        div.translation-panel {
+            width: 100%;
+            max-width: 604px;
+            margin: auto;
+
+            /* adjust label padding for transcription only view */
+            &.label-row {
+                padding-left: 0;
+                width: 100%;
+                max-width: none;
+                overflow: visible;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-left: $toggle-default-width;
+                    padding-left: 6px;
+                }
+            }
+        }
+    }
+
+    /* common styles between the above two */
+    #translation-on:checked ~ .panel-container,
+    #transcription-on:checked ~ .panel-container {
+        padding-bottom: 30px;
         // Attribution and license text
         details.permissions {
             display: none;
@@ -369,12 +400,7 @@
         grid-template-columns: 100%;
         justify-items: stretch;
         @include breakpoints.for-tablet-landscape-up {
-            grid-template-columns: 50% 50%;
-        }
-
-        // image panel spacing
-        div.img {
-            margin: 0 auto;
+            grid-template-columns: 50% 50% 0px;
         }
 
         // transcription panel spacing
@@ -389,7 +415,41 @@
                 }
             }
         }
+    }
 
+    /* both image & translation checked */
+    #images-on:checked ~ #translation-on:checked ~ .panel-container {
+        /* for mobile, set to full-width; content will stack in order */
+        grid-template-columns: 100%;
+        justify-items: stretch;
+        @include breakpoints.for-tablet-landscape-up {
+            grid-template-columns: 50% 0px 50%;
+        }
+
+        // translation panel spacing
+        div.translation-panel {
+            width: 100%;
+            max-width: none;
+            @include breakpoints.for-tablet-landscape-up {
+                padding-left: calc(87px + 6px);
+
+                &.label-row {
+                    padding-left: 6px; /* adjust padding to match toggle */
+                }
+                &:not(.label-row) {
+                    margin-right: $toggle-default-width;
+                }
+            }
+        }
+    }
+
+    /* common styles between the above two */
+    #images-on:checked ~ #transcription-on:checked ~ .panel-container,
+    #images-on:checked ~ #translation-on:checked ~ .panel-container {
+        // image panel spacing
+        div.img {
+            margin: 0 auto;
+        }
         // Attribution and license text
         details.permissions {
             display: block;
@@ -406,9 +466,24 @@
         }
     }
 
+    /* both transcription & translation checked */
+    #transcription-on:checked ~ #translation-on:checked ~ .panel-container {
+        /* for mobile, set to full-width; content will stack in order */
+        grid-template-columns: 100%;
+        justify-items: stretch;
+        @include breakpoints.for-tablet-landscape-up {
+            grid-template-columns: 0px 1fr 1fr;
+            padding-right: 0;
+            div.translation-panel.label-row {
+                margin: auto;
+            }
+        }
+    }
+
     /* content panels should have normal height when enabled */
     #images-on:checked ~ .panel-container .img,
-    #transcription-on:checked ~ .panel-container .transcription-panel {
+    #transcription-on:checked ~ .panel-container .transcription-panel,
+    #translation-on:checked ~ .panel-container .translation-panel {
         height: 100%;
     }
 
@@ -735,64 +810,6 @@
     }
     // transcription panel styles
     .panel-container div.transcription-panel {
-        width: 100%;
-        * {
-            max-width: none;
-        }
-        padding: 20px 10px 0;
-        // transcription label / switcher
-        &.label-row {
-            padding-right: 0;
-            padding-top: 0;
-            @include breakpoints.for-tablet-landscape-up {
-                padding-top: 0.1px; /* show panel background slightly as a top border */
-            }
-        }
-        // "Transcription" header
-        & > h2 {
-            margin: 30px 0 12px;
-        }
-        // transcription citation
-        h2 + span.current-transcription {
-            display: block;
-            @include typography.meta;
-            color: var(--input-date-text);
-            &.multiple {
-                min-height: calc(1rem * 1.5 * 2);
-            }
-        }
-
-        @include breakpoints.for-tablet-landscape-up {
-            padding: 0 0 0;
-            // "Transcription" header
-            & > h2 {
-                @include typography.body-bold;
-                margin: 27px 0 0;
-            }
-            h2 + span.current-transcription.multiple {
-                min-height: calc(1.125rem * 1.5 * 2);
-            }
-            // Label headers within transcription
-            h3 {
-                margin-top: 12px;
-                margin-bottom: 12px;
-            }
-        }
-
-        // edition indicator/switcher
-        &.label-row {
-            margin-top: 1px; /* show a line between space and dropdown */
-            max-width: none;
-
-            @include breakpoints.for-tablet-landscape-up {
-                padding-left: 6px; /* adjust padding to match toggle */
-            }
-
-            & span {
-                width: 100%;
-            }
-        }
-
         // "carousel" for switching between multiple transcriptions
         div.editions {
             display: flex;
@@ -803,6 +820,70 @@
             & > div {
                 flex: 1 0 100%;
                 align-self: flex-start;
+            }
+        }
+    }
+
+    .panel-container div.transcription-panel,
+    .panel-container div.translation-panel {
+        width: 100%;
+        * {
+            max-width: none;
+        }
+        padding: 20px 10px 0;
+        // label / switcher
+        &.label-row {
+            padding-right: 0;
+            padding-top: 0;
+            @include breakpoints.for-tablet-landscape-up {
+                padding-top: 0.1px; /* show panel background slightly as a top border */
+            }
+        }
+        // "Transcription"/"Translation" header
+        & > h2 {
+            margin: 30px 0 12px;
+        }
+        // edition indicator/switcher
+        &.label-row {
+            margin-top: 1px; /* show a line between space and dropdown */
+            max-width: none;
+            @include breakpoints.for-tablet-landscape-up {
+                padding-left: 6px; /* adjust padding to match toggle */
+            }
+            & span {
+                width: 100%;
+            }
+        }
+
+        // citation
+        h2 + span.current-transcription,
+        h2 + span.current-translation {
+            display: block;
+            @include typography.meta;
+            color: var(--input-date-text);
+            &.multiple {
+                min-height: calc(1rem * 1.5 * 2);
+            }
+        }
+
+        @include breakpoints.for-tablet-landscape-up {
+            h2 + span.current-transcription.multiple,
+            h2 + span.current-translation.multiple {
+                min-height: calc(1.125rem * 1.5 * 2);
+            }
+        }
+
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0 0 0;
+            // "Transcription"/"Translation" header
+            & > h2 {
+                @include typography.body-bold;
+                margin: 27px 0 0;
+            }
+            // Label headers within transcription/translation
+            h3 {
+                margin-top: 12px;
+                margin-bottom: 12px;
             }
         }
     }
@@ -943,38 +1024,18 @@ a.editor-navigation {
     margin: -1rem 0 2rem;
 }
 
-// general transcription styles
+// general transcription/translation styles
 // appear in ITT viewer and in search results
-.transcription {
-    @include typography.transcription;
-
-    // arabic script
-    &[lang="ar"],
-    &[data-lang-script="arabic"],
-    span[lang="ar"] {
-        @include typography.arabic-transcription;
-    }
-
-    align-self: flex-end;
-
-    text-align: right;
-    // direction: rtl; /* search results are mixed rtl/ltr and include unicode order mark characters */
-
-    // section labels are LTR
+.transcription,
+.translation {
+    // section labels are always LTR
     h3 {
         direction: ltr;
     }
 
     .search-result & p {
-        text-align: right;
         // disable site default max character width for reading
         max-width: none;
-    }
-
-    p {
-        // match alignment of list items
-        margin-right: 1em;
-        padding-right: 1.5em;
     }
 
     sup {
@@ -983,18 +1044,6 @@ a.editor-navigation {
         position: relative;
         vertical-align: baseline;
         top: -0.5em;
-    }
-
-    li {
-        margin-right: 1.5em;
-        padding-right: 1em; /* shift to make space for line numbers */
-        direction: rtl;
-    }
-
-    li > p {
-        // if inside a list item, don't pad <p>
-        margin-right: 0;
-        padding-right: 0;
     }
 
     ol,
@@ -1021,28 +1070,104 @@ a.editor-navigation {
         color: var(--background-light);
         /* uncomment to debug positioning */
         // color: yellow;
-
-        /* make font larger than list number font to cover completely;
-           shrink line height to adjust placement */
-        right: -35.75px;
-        font-size: 37px;
-        line-height: 22px;
-
-        @include breakpoints.for-tablet-landscape-up {
-            font-size: 38px;
-            line-height: 26px;
-            right: -37px;
-        }
     }
 
     // NOTE: Broken in stable Safari for now, but fixed in Safari preview release.
     li::marker {
         @include typography.transcription-numerals;
-        text-align: right;
-        float: right;
         font-size: typography.$text-size-md;
         @include breakpoints.for-tablet-landscape-up {
             font-size: typography.$text-size-xl;
+        }
+    }
+
+    // RTL content (all transcriptions, some translations)
+    &[dir="rtl"] {
+        align-self: flex-end;
+
+        text-align: right;
+        // direction: rtl; /* search results are mixed rtl/ltr and include unicode order mark characters */
+
+        .search-result & p {
+            text-align: right;
+        }
+
+        li {
+            margin-right: 1.5em;
+            padding-right: 1em; /* shift to make space for line numbers */
+            direction: rtl;
+        }
+
+        p {
+            // match alignment of list items
+            margin-right: 1em;
+            padding-right: 1.5em;
+        }
+
+        li > p {
+            // if inside a list item, don't pad <p>
+            margin-right: 0;
+            padding-right: 0;
+        }
+
+        ol li:not([value])::before {
+            /* make font larger than list number font to cover completely;
+            shrink line height to adjust placement */
+            right: -35.75px;
+            font-size: 37px;
+            line-height: 22px;
+
+            @include breakpoints.for-tablet-landscape-up {
+                font-size: 38px;
+                line-height: 26px;
+                right: -37px;
+            }
+        }
+
+        // NOTE: Broken in stable Safari for now, but fixed in Safari preview release.
+        li::marker {
+            text-align: right;
+            float: right;
+        }
+    }
+}
+.transcription {
+    @include typography.transcription;
+
+    // arabic script
+    &[lang="ar"],
+    &[data-lang-script="arabic"],
+    span[lang="ar"] {
+        @include typography.arabic-transcription;
+    }
+}
+.translation {
+    // need to differentiate RTL/LTR by language
+    li {
+        margin-left: 1.5em;
+        padding-left: 1em; /* shift to make space for line numbers */
+    }
+    p {
+        // match alignment of list items
+        margin-left: 1em;
+        padding-left: 1.5em;
+    }
+    li > p {
+        // if inside a list item, don't pad <p>
+        margin-left: 0;
+        padding-left: 0;
+    }
+    ol li:not([value])::before {
+        /* make font larger than list number font to cover completely;
+           shrink line height to adjust placement */
+        font-size: 37px;
+        line-height: 18px;
+        left: -9.5px;
+
+        @include breakpoints.for-tablet-landscape-up {
+            font-size: 38px;
+            line-height: 21px;
+            left: -10.75px;
         }
     }
 }
