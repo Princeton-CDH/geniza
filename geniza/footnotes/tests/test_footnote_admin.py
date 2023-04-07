@@ -41,7 +41,7 @@ class TestDocumentRelationTypesFilter:
         )
         options_list = dr_filter.lookups(request, footnote_admin)
 
-        assert len(options_list) == 4
+        assert len(options_list) == 5
         assert all([len(opt) == 2 for opt in options_list])
         assert options_list[0][0] == "E"
 
