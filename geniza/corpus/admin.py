@@ -192,6 +192,29 @@ class HasTranscriptionListFilter(admin.SimpleListFilter):
             )
 
 
+class HasTranslationListFilter(admin.SimpleListFilter):
+    """Custom list filter for documents with associated translation content"""
+
+    title = "Translation"
+    parameter_name = "translation"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", "Has translation"),
+            ("no", "No translation"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "yes":
+            return queryset.filter(
+                footnotes__doc_relation__contains=Footnote.DIGITAL_TRANSLATION
+            )
+        if self.value() == "no":
+            return queryset.exclude(
+                footnotes__doc_relation__contains=Footnote.DIGITAL_TRANSLATION
+            )
+
+
 class DocumentDatingInline(admin.TabularInline):
     """Inline for inferred dates on a document"""
 
@@ -257,6 +280,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     list_filter = (
         "doctype",
         HasTranscriptionListFilter,
+        HasTranslationListFilter,
         (
             "textblock__fragment__iiif_url",
             custom_empty_field_list_filter("IIIF image", "Has image", "No image"),

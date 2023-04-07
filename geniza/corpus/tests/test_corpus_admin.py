@@ -25,6 +25,7 @@ from geniza.corpus.admin import (
     FragmentAdmin,
     FragmentTextBlockInline,
     HasTranscriptionListFilter,
+    HasTranslationListFilter,
     LanguageScriptAdmin,
 )
 from geniza.corpus.models import (
@@ -449,5 +450,48 @@ class TestHasTranscriptionListFilter:
         with patch.object(filter, "value", return_value="no"):
             assert filter.queryset(Mock(), all_docs).count() == 1
         # has transcription: one document should be returned
+        with patch.object(filter, "value", return_value="yes"):
+            assert filter.queryset(Mock(), all_docs).count() == 1
+
+
+class TestHasTranslationListFilter:
+    # cribbed entirely from the above TestHasTranscriptionListFilter
+
+    def init_filter(self):
+        # request, params, model, admin_site
+        return HasTranslationListFilter(Mock(), {}, Document, DocumentAdmin)
+
+    def test_lookups(self):
+        assert self.init_filter().lookups(Mock(), Mock()) == (
+            ("yes", "Has translation"),
+            ("no", "No translation"),
+        )
+
+    @pytest.mark.django_db
+    def test_queryset(self, document, join, unpublished_editions):
+        filter = self.init_filter()
+
+        # no translation: all documents should be returned
+        all_docs = Document.objects.all()
+        # no translation: all documents should be returned
+        with patch.object(filter, "value", return_value="no"):
+            assert filter.queryset(Mock(), all_docs).count() == 2
+        # has translation: no documents should be returned
+        with patch.object(filter, "value", return_value="yes"):
+            assert filter.queryset(Mock(), all_docs).count() == 0
+
+        # add a digital translation
+        Footnote.objects.create(
+            doc_relation=[Footnote.DIGITAL_TRANSLATION],
+            source=unpublished_editions,
+            content_type_id=ContentType.objects.get(
+                app_label="corpus", model="document"
+            ).id,
+            object_id=document.id,
+        )
+        # no translation: one document should be returned
+        with patch.object(filter, "value", return_value="no"):
+            assert filter.queryset(Mock(), all_docs).count() == 1
+        # has translation: one document should be returned
         with patch.object(filter, "value", return_value="yes"):
             assert filter.queryset(Mock(), all_docs).count() == 1
