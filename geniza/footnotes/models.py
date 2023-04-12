@@ -185,7 +185,7 @@ class Source(models.Model):
 
     def all_languages(self):
         """comma-delimited list of languages, in parentheses, used for the translation selector"""
-        if len(self.languages.all()):
+        if self.languages.exists():
             return "(in %s)" % ", ".join(
                 [str(lang) for lang in self.languages.all().order_by("name")]
             )
@@ -256,7 +256,7 @@ class Source(models.Model):
 
         # Add non-English languages as parenthetical
         non_english_langs = 0
-        if len(self.languages.all()):
+        if self.languages.exists():
             for lang in self.languages.all():
                 if "English" not in str(lang):
                     non_english_langs += 1
