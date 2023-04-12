@@ -118,9 +118,9 @@ class TestDocumentDetailTemplate:
             },
         )
         response = client.get(document.get_absolute_url())
-        print(response.content)
         # should contain rtl and language code, since this is a translation to hebrew
-        # NOTE: had to use BeautifulSoup here due to inexplicable failures with assertContains
+        # NOTE: had to use BeautifulSoup here due to inexplicable failures with assertContains,
+        # possibly Unicode-related.
         soup = BeautifulSoup(response.content)
         translation_div = soup.find("div", class_=f"translation tr-{translation.pk}")
         assert translation_div["lang"] == hebrew.code
