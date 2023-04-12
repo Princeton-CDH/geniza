@@ -777,6 +777,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 Annotation.objects.filter(
                     footnote__content_type=ContentType.objects.get_for_model(Document),
                     footnote__object_id=self.pk,
+                    content__target__source__id__isnull=False,
                 )
                 .order_by()
                 .values_list("content__target__source__id", flat=True)
