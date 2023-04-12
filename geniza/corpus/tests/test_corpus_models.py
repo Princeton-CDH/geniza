@@ -921,6 +921,29 @@ class TestDocument:
         fragment.save()
         assert not document.has_image()
 
+    def test_has_digital_content(self, fragment, source):
+        # document with no IIIF or footnotes should not have digital content
+        frag = Fragment.objects.create()
+        doc = Document.objects.create()
+        TextBlock.objects.create(document=doc, fragment=frag, order=1)
+        assert not doc.has_digital_content()
+        # document from fragment should have IIIF url = digital content
+        doc = Document.objects.create()
+        TextBlock.objects.create(document=doc, fragment=fragment, order=1)
+        assert doc.has_digital_content()
+        # document with digital edition = digital content
+        doc = Document.objects.create()
+        Footnote.objects.create(
+            content_object=doc, source=source, doc_relation=Footnote.DIGITAL_EDITION
+        )
+        assert doc.has_digital_content()
+        # document with digital translation = digital content
+        doc = Document.objects.create()
+        Footnote.objects.create(
+            content_object=doc, source=source, doc_relation=Footnote.DIGITAL_TRANSLATION
+        )
+        assert doc.has_digital_content()
+
     def test_index_data(self, document):
         index_data = document.index_data()
         assert index_data["id"] == document.index_id()

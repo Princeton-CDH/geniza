@@ -898,6 +898,22 @@ class Document(ModelIndexable, DocumentDateMixin):
     has_image.boolean = True
     has_image.admin_order_field = "textblock__fragment__iiif_url"
 
+    def has_digital_content(self):
+        """Helper method for the ITT viewer on the public front-end to determine whether a document
+        has any images, digital editions, or digital translations."""
+        return any(
+            [
+                self.has_image(),
+                any(
+                    [
+                        Footnote.DIGITAL_EDITION in note.doc_relation
+                        or Footnote.DIGITAL_TRANSLATION in note.doc_relation
+                        for note in self.footnotes.all()
+                    ]
+                ),
+            ]
+        )
+
     @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
