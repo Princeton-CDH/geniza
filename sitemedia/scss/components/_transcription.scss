@@ -808,22 +808,7 @@
             }
         }
     }
-    // transcription panel styles
-    .panel-container div.transcription-panel {
-        // "carousel" for switching between multiple transcriptions
-        div.editions {
-            display: flex;
-            overflow-x: hidden;
-            overflow-y: clip; // prevent overflow-y scrollbar
-            // NOTE: setting different properties for overflow-x and y does not work in Safari.
-            // carousel still works, but overflow-y scrollbar may remain.
-            & > div {
-                flex: 1 0 100%;
-                align-self: flex-start;
-            }
-        }
-    }
-
+    // transcription/translation panel styles
     .panel-container div.transcription-panel,
     .panel-container div.translation-panel {
         width: 100%;
@@ -852,6 +837,20 @@
             }
             & span {
                 width: 100%;
+            }
+        }
+
+        // "carousel" for switching between multiple transcriptions/translations
+        div.editions,
+        div.translations {
+            display: flex;
+            overflow-x: hidden;
+            overflow-y: clip; // prevent overflow-y scrollbar
+            // NOTE: setting different properties for overflow-x and y does not work in Safari.
+            // carousel still works, but overflow-y scrollbar may remain.
+            & > div {
+                flex: 1 0 100%;
+                align-self: flex-start;
             }
         }
 

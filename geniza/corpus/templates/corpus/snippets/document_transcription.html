@@ -44,15 +44,15 @@
                     </details>
                 {% else %}
                     {# dropdown is disabled by default; enable if javascript is active #}
-                    <details class="itt-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-edition-count="{{ document.digital_editions.count }}" disabled="true">
+                    <details class="itt-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-relation="transcription" data-count="{{ document.digital_editions.count }}" disabled="true">
                         <summary data-action="keydown->transcription#shiftTabCloseDropdown">
-                            <span data-transcription-target="editionShortLabel">Edition: {{ document.digital_editions.0.source.all_authors }}</span>
+                            <span data-transcription-target="transcriptionShortLabel">Edition: {{ document.digital_editions.0.source.all_authors }}</span>
                         </summary>
                         <ul>
                             {% for ed in document.digital_editions.all %}
                                 <li>
-                                    <label for="edition-{{ forloop.counter }}">
-                                        <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="edition-{{ forloop.counter }}" data-edition="ed-{{ ed.pk }}" />
+                                    <label for="transcription-{{ forloop.counter }}">
+                                        <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown keydown->transcription#keyboardCloseDropdown" id="transcription-{{ forloop.counter }}" data-transcription="ed-{{ ed.pk }}" />
                                         <span>Edition: {{ ed.source.all_authors }}</span>
                                     </label>
                                 </li>
@@ -63,7 +63,7 @@
             </div>
             <div class="translation-panel label-row">
                 {# dropdown is disabled by default; enable if javascript is active #}
-                <details class="itt-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-translation-count="{{ document.digital_translations.count }}" disabled="true">
+                <details class="itt-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-relation="translation" data-count="{{ document.digital_translations.count }}" disabled="true">
                     <summary data-action="keydown->transcription#shiftTabCloseDropdown">
                         <span data-transcription-target="translationShortLabel">Translation: {{ document.digital_translations.0.source.all_authors }} {{ document.digital_translations.0.source.all_languages }}</span>
                     </summary>
@@ -71,7 +71,7 @@
                         {% for tr in document.digital_translations.all %}
                             <li>
                                 <label for="translation-{{ forloop.counter }}">
-                                    <input type="radio" name="translation" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeTranscription keydown->transcription#keyboardCloseDropdown" id="translation-{{ forloop.counter }}" data-translation="tr-{{ tr.pk }}" />
+                                    <input type="radio" name="translation" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown keydown->transcription#keyboardCloseDropdown" id="translation-{{ forloop.counter }}" data-translation="tr-{{ tr.pk }}" />
                                     <span>Translation: {{ tr.source.all_authors }} {{ tr.source.all_languages }}</span>
                                 </label>
                             </li>
@@ -151,7 +151,7 @@
                     {% else %}
                         {% if forloop.first %}
                             <h2>{% translate 'Transcription' %}</h2>
-                            <span data-transcription-target="editionFullLabel" class="current-transcription{% if document.digital_editions.count > 1 %} multiple{% endif %}">
+                            <span data-transcription-target="transcriptionFullLabel" class="current-transcription{% if document.digital_editions.count > 1 %} multiple{% endif %}">
                                 {{ document.digital_editions.0.source.formatted_display|safe }}
                             </span>
                         {% endif %}
@@ -178,13 +178,13 @@
                 <div class="translation-panel">
                     {% if forloop.first %}
                         <h2>{% translate 'Translation' %}</h2>
-                        <span data-transcription-target="editionFullLabel" class="current-translation{% if document.digital_editions.count > 1 %} multiple{% endif %}">
+                        <span data-transcription-target="translationFullLabel" class="current-translation{% if document.digital_editions.count > 1 %} multiple{% endif %}">
                             {{ document.digital_translations.0.source.formatted_display|safe }}
                         </span>
                     {% endif %}
                     {% if not image_info.excluded %}
                         <div class="translations">
-                            {# display transcription in chunks by index #}
+                            {# display translation in chunks by index #}
                             {% for translation in document.digital_translations.all %}
                                 <div class="translation tr-{{ translation.pk }}" data-label="{{ translation.source.formatted_display }}" {% if translation.source.languages.all|length %}lang="{{ translation.source.languages.all.0.code }}" dir="{% if translation.source.languages.all.0.name == 'Hebrew' or translation.source.languages.all.0.name == 'Arabic' %}rtl{% else %}ltr{% endif %}"{% else %}dir="ltr"{% endif %}>
                                     {% for html_section in translation.content_html|dict_item:canvas_uri %}
