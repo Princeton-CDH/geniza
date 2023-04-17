@@ -9,6 +9,9 @@ export default class extends Controller {
         // when all three toggles are opened, automatically close one, depending on which you
         // attempted to open
         if (this.toggleTargets.every((target) => target.checked)) {
+            // NOTE: Logic for which should close and which should remain open was determined via
+            // consultation with researchers. The primary finding was that most often, researchers
+            // are not looking directly at an image while editing/working on translations.
             switch (evt.target.id) {
                 // close translation if you opened images
                 case "images-on":
