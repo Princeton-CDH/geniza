@@ -37,6 +37,7 @@ from taggit_selectize.managers import TaggableManager
 from unidecode import unidecode
 from urllib3.exceptions import HTTPError, NewConnectionError
 
+from geniza.annotations.models import Annotation
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
@@ -768,34 +769,44 @@ class Document(ModelIndexable, DocumentDateMixin):
                             and i not in b.selected_images,
                         }
 
-        # when requested, include any placeholder canvas URIs referenced by any associated transcriptions
+        # when requested, include any placeholder canvas URIs referenced by any associated
+        # transcriptions or translations
         if with_placeholders:
-            for ed in self.digital_editions().all():
-                for canvas_uri in ed.content_html.keys():
-                    if canvas_uri not in iiif_images:
-                        # use placeholder image for each canvas not in iiif_images
-                        iiif_images[canvas_uri] = deepcopy(Document.PLACEHOLDER_CANVAS)
-                        uri_match = re.search(
-                            r"textblock\/(?P<tb_pk>\d+)\/canvas\/(?P<canvas>\d)\/",
-                            canvas_uri,
-                        )
-                        if uri_match:
-                            # if this was created using placeholders in the transcription editor,
-                            # try to ascertain and display the right fragment shelfmark and label
-                            tb_match_shelfmarks = [
-                                tb.fragment.shelfmark
-                                for tb in textblocks
-                                if tb.pk == int(uri_match.group("tb_pk"))
+            # get all distinct canvas URIs across all annotations on this document
+            distinct_canvases = (
+                Annotation.objects.filter(
+                    footnote__content_type=ContentType.objects.get_for_model(Document),
+                    footnote__object_id=self.pk,
+                    content__target__source__id__isnull=False,
+                )
+                .order_by()
+                .values_list("content__target__source__id", flat=True)
+                .distinct()
+            )
+            # loop through each canvas in case we need to add any placeholders
+            for canvas_uri in distinct_canvases:
+                if canvas_uri not in iiif_images:
+                    # use placeholder image for each canvas not in iiif_images
+                    iiif_images[canvas_uri] = deepcopy(Document.PLACEHOLDER_CANVAS)
+                    uri_match = re.search(
+                        r"textblock\/(?P<tb_pk>\d+)\/canvas\/(?P<canvas>\d)\/",
+                        canvas_uri,
+                    )
+                    if uri_match:
+                        # if this was created using placeholders in the transcription editor,
+                        # try to ascertain and display the right fragment shelfmark and label
+                        tb_match_shelfmarks = [
+                            tb.fragment.shelfmark
+                            for tb in textblocks
+                            if tb.pk == int(uri_match.group("tb_pk"))
+                        ]
+                        if tb_match_shelfmarks:
+                            iiif_images[canvas_uri]["shelfmark"] = tb_match_shelfmarks[
+                                0
                             ]
-                            if tb_match_shelfmarks:
-                                iiif_images[canvas_uri][
-                                    "shelfmark"
-                                ] = tb_match_shelfmarks[0]
-                            iiif_images[canvas_uri]["label"] = (
-                                "recto"
-                                if int(uri_match.group("canvas")) == 1
-                                else "verso"
-                            )
+                        iiif_images[canvas_uri]["label"] = (
+                            "recto" if int(uri_match.group("canvas")) == 1 else "verso"
+                        )
 
         # if image_order_override not present, return list, in original order
         if not self.image_order_override:
@@ -888,6 +899,22 @@ class Document(ModelIndexable, DocumentDateMixin):
     has_image.boolean = True
     has_image.admin_order_field = "textblock__fragment__iiif_url"
 
+    def has_digital_content(self):
+        """Helper method for the ITT viewer on the public front-end to determine whether a document
+        has any images, digital editions, or digital translations."""
+        return any(
+            [
+                self.has_image(),
+                any(
+                    [
+                        Footnote.DIGITAL_EDITION in note.doc_relation
+                        or Footnote.DIGITAL_TRANSLATION in note.doc_relation
+                        for note in self.footnotes.all()
+                    ]
+                ),
+            ]
+        )
+
     @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
@@ -914,6 +941,14 @@ class Document(ModelIndexable, DocumentDateMixin):
             source__footnote__doc_relation__contains=Footnote.DIGITAL_EDITION,
             source__footnote__document=self,
         ).distinct()
+
+    def digital_translations(self):
+        """All footnotes for this document where the document relation includes
+        digital translation."""
+
+        return self.footnotes.filter(
+            doc_relation__contains=Footnote.DIGITAL_TRANSLATION
+        ).order_by("source")
 
     def sources(self):
         """All unique sources attached to footnotes on this document."""

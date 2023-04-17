@@ -11,10 +11,11 @@ from django.urls import reverse
 from parasolr.django import SolrClient
 from pytest_django.asserts import assertContains, assertNotContains, assertTemplateUsed
 
+from geniza.annotations.models import Annotation
 from geniza.corpus.admin import DocumentDatingInline
 from geniza.corpus.models import Document, LanguageScript
 from geniza.corpus.templatetags.corpus_extras import shelfmark_wrap
-from geniza.footnotes.models import Footnote
+from geniza.footnotes.models import Footnote, SourceLanguage
 
 
 @patch("geniza.corpus.models.GenizaManifestImporter", Mock())
@@ -56,7 +57,7 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertContains(
             response,
-            '<section id="itt-panel" data-controller="transcription" data-action="click@document->transcription#clickCloseDropdown">',
+            '<section id="itt-panel" data-controller="ittpanel transcription" data-action="click@document->transcription#clickCloseDropdown">',
         )
 
     def test_viewer_annotations(self, client, document, unpublished_editions):
@@ -65,7 +66,7 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertNotContains(
             response,
-            '<input type="checkbox" class="toggle" id="transcription-on" checked="true" aria-label="show transcription">',
+            '<input type="checkbox" class="toggle" id="transcription-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle"  checked="true" aria-label="show transcription">',
             html=True,
         )
 
@@ -78,9 +79,52 @@ class TestDocumentDetailTemplate:
         response = client.get(document.get_absolute_url())
         assertContains(
             response,
-            '<input type="checkbox" class="toggle" id="transcription-on" checked="true" aria-label="show transcription">',
+            '<input type="checkbox" class="toggle" id="transcription-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" checked="true" aria-label="show transcription">',
             html=True,
         )
+
+        # add a footnote with a digital translation
+        hebrew = SourceLanguage.objects.get(name="Hebrew")
+        unpublished_editions.languages.add(hebrew)
+        translation = Footnote.objects.create(
+            content_object=document,
+            source=unpublished_editions,
+            doc_relation=[Footnote.DIGITAL_TRANSLATION],
+        )
+        response = client.get(document.get_absolute_url())
+        # should contain header label for this translation
+        assertContains(
+            response,
+            f'<span data-transcription-target="translationShortLabel">Translation: {unpublished_editions.all_authors()} {unpublished_editions.all_languages()}</span>',
+            html=True,
+        )
+
+        # add an annotation to the translation so we can show the next part of the template
+        # (looping over canvases to display translation content)
+        Annotation.objects.create(
+            footnote=translation,
+            content={
+                "body": [
+                    {
+                        "value": "test",
+                    },
+                ],
+                "target": {
+                    "source": {
+                        "id": "fake_canvas",
+                    },
+                },
+                "motivation": ["sc:supplementing", "translating"],
+            },
+        )
+        response = client.get(document.get_absolute_url())
+        # should contain rtl and language code, since this is a translation to hebrew
+        # NOTE: had to use BeautifulSoup here due to inexplicable failures with assertContains,
+        # possibly Unicode-related.
+        soup = BeautifulSoup(response.content)
+        translation_div = soup.find("div", class_=f"translation tr-{translation.pk}")
+        assert translation_div["lang"] == hebrew.code
+        assert translation_div["dir"] == "rtl"
 
     def test_no_viewer(self, client, document):
         """Document with no IIIF shouldn't include viewer in template"""

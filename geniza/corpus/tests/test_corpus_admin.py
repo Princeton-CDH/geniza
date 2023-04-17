@@ -25,6 +25,7 @@ from geniza.corpus.admin import (
     FragmentAdmin,
     FragmentTextBlockInline,
     HasTranscriptionListFilter,
+    HasTranslationListFilter,
     LanguageScriptAdmin,
 )
 from geniza.corpus.models import (
@@ -413,14 +414,18 @@ class TestFragmentAdmin:
 
 
 class TestHasTranscriptionListFilter:
+    doc_relation = Footnote.DIGITAL_EDITION
+    model = HasTranscriptionListFilter
+    name = "transcription"
+
     def init_filter(self):
         # request, params, model, admin_site
-        return HasTranscriptionListFilter(Mock(), {}, Document, DocumentAdmin)
+        return self.model(Mock(), {}, Document, DocumentAdmin)
 
     def test_lookups(self):
         assert self.init_filter().lookups(Mock(), Mock()) == (
-            ("yes", "Has transcription"),
-            ("no", "No transcription"),
+            ("yes", f"Has {self.name}"),
+            ("no", f"No {self.name}"),
         )
 
     @pytest.mark.django_db
@@ -438,7 +443,7 @@ class TestHasTranscriptionListFilter:
 
         # add a digital edition
         Footnote.objects.create(
-            doc_relation=[Footnote.DIGITAL_EDITION],
+            doc_relation=[self.doc_relation],
             source=unpublished_editions,
             content_type_id=ContentType.objects.get(
                 app_label="corpus", model="document"
@@ -451,3 +456,10 @@ class TestHasTranscriptionListFilter:
         # has transcription: one document should be returned
         with patch.object(filter, "value", return_value="yes"):
             assert filter.queryset(Mock(), all_docs).count() == 1
+
+
+class TestHasTranslationListFilter(TestHasTranscriptionListFilter):
+    # inherit tests from above transcription list filter tests
+    doc_relation = Footnote.DIGITAL_TRANSLATION
+    model = HasTranslationListFilter
+    name = "translation"

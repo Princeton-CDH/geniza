@@ -5,7 +5,7 @@ const application = Application.start();
 const context = require.context(
     "./controllers",
     true,
-    // only require iiif and transcription controllers
-    /(iiif|transcription)_controller\.js$/
+    // only require iiif, transcription, ittpanel controllers
+    /(iiif|transcription|ittpanel)_controller\.js$/
 );
 application.load(definitionsFromContext(context));

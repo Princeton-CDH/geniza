@@ -110,36 +110,51 @@ a#needsreview:target {
  * Transcription styles in admin
  *
  */
-.form-row .transcription {
+.form-row .transcription,
+.form-row .translation {
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
 }
 /* need to apply these manually for overriding purposes */
 .form-row .transcription p,
 .form-row .transcription li {
-    font-size: 22px;
+    font-family: "FrankRuhl 1924 MF Medium", "Amiri", "Times New Roman", serif;
 }
-/* headers */
-.form-row .transcription h3 {
-    font-family: "Greta Sans Regular Bold", "Greta Sans Hebrew Bold",
-        "HassanLTBold", "arial-bold", sans-serif;
-    font-size: 20px;
+.form-row .translation p,
+.form-row .translation li {
+    font-family: "Greta Sans Regular", "arial-regular", sans-serif;
 }
 .form-row .transcription p,
-.form-row .transcription li {
-    font-family: "FrankRuhl 1924 MF Medium", "Amiri", "Times New Roman", serif;
+.form-row .transcription li,
+.form-row .translation[dir="rtl"] p,
+.form-row .translation[dir="rtl"] li {
+    font-size: 22px;
     line-height: 32px;
+}
+.form-row .translation[dir="ltr"] p,
+.form-row .translation[dir="ltr"] li {
+    font-size: 20px;
+    line-height: 30px;
 }
 .form-row .transcription[lang="ar"] p,
 .form-row .transcription[lang="ar"] li,
 .form-row .transcription[data-lang-script="arabic"] p,
-.form-row .transcription[data-lang-script="arabic"] li {
+.form-row .transcription[data-lang-script="arabic"] li,
+.form-row .translation[lang="ar"] p,
+.form-row .translation[lang="ar"] li {
     line-height: 34px;
 }
-.form-row .transcription-select ul {
+.form-row .itt-select ul {
     margin-left: 0;
 }
-
+/* headers */
+.form-row .transcription h3,
+.form-row .translation h3 {
+    font-family: "Greta Sans Regular Bold", "Greta Sans Hebrew Bold",
+        "HassanLTBold", "arial-bold", sans-serif;
+    font-size: 20px;
+    line-height: 30px;
+}
 /* remove overlays for non-document images in admin */
 fieldset.transcriptions-field
     #itt-panel
