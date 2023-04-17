@@ -21,7 +21,7 @@ class Command(BaseCommand):
         options.add_argument("--disable-extensions")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-setuid-sandbox")
-        options.add_argument("--headless")
+        options.add_argument("--headless=new")
         return webdriver.Chrome(options=options)
 
     def take_snapshots(self, browser, dark_mode=False):
