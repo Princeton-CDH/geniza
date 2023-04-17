@@ -477,6 +477,18 @@
             div.translation-panel.label-row {
                 margin: auto;
             }
+            // adjust line heights to align transcription with translation when both visible
+            // TODO: Handle this more gracefully with javascript to include 3+ line <li>s
+            div.editions ol li,
+            div.translations ol li {
+                // li, height of two lines (line height = 34px)
+                min-height: 68px;
+            }
+            h2 + span.current-transcription,
+            h2 + span.current-translation {
+                // citation, height of two lines (line height = 27px)
+                min-height: 54px;
+            }
         }
     }
 
