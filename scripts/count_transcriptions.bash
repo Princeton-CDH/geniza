@@ -29,7 +29,7 @@ count_pgpids() {
 git log --pretty="%H %cd" --date=short | while read COMMIT DATE
 do
     # skip commits made on the same day
-    [ "$PREV_DATE" == "$DATE" ] && continue
+    [ "$PREV_DATE" = "$DATE" ] && continue
     PREV_DATE="$DATE"
 
     # count files
