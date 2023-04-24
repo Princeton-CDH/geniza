@@ -47,11 +47,13 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "transcription": "text_transcription",
         "language_code": "language_code_s",
         "language_script": "language_script_s",
+        "translation": "text_translation",
+        "translation_language_code": "translation_language_code_s",
         "iiif_images": "iiif_images_ss",
         "iiif_labels": "iiif_labels_ss",
         "has_image": "has_image_b",
         "has_digital_edition": "has_digital_edition_b",
-        "has_translation": "has_translation_b",
+        "has_digital_translation": "has_digital_translation_b",
         "has_discussion": "has_discussion_b",
     }
 
@@ -201,12 +203,16 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         return doc
 
     def get_highlighting(self):
-        """highlight snippets within transcription html may result in invalid tags
-        that will render strangely; clean up the html before returning"""
+        """highlight snippets within transcription/translation html may result in
+        invalid tags that will render strangely; clean up the html before returning"""
         highlights = super().get_highlighting()
         for doc in highlights.keys():
             if "transcription" in highlights[doc]:
                 highlights[doc]["transcription"] = [
                     clean_html(s) for s in highlights[doc]["transcription"]
+                ]
+            if "translation" in highlights[doc]:
+                highlights[doc]["translation"] = [
+                    clean_html(s) for s in highlights[doc]["translation"]
                 ]
         return highlights
