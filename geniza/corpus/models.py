@@ -882,14 +882,20 @@ class Document(ModelIndexable, DocumentDateMixin):
     has_transcription.boolean = True
 
     def has_translation(self):
-        """Helper method to determine if document has translation (accessible via its footnotes).
+        """Helper method to determine if document has a translation.
 
         :return: Whether document has translation
         :rtype: bool
         """
         return any(
-            [Footnote.TRANSLATION in note.doc_relation for note in self.footnotes.all()]
+            [
+                Footnote.DIGITAL_TRANSLATION in note.doc_relation
+                for note in self.footnotes.all()
+            ]
         )
+
+    has_translation.short_description = "Translation"
+    has_translation.boolean = True
 
     def has_image(self):
         """Admin display field indicating if document has a IIIF image."""
@@ -1115,7 +1121,11 @@ class Document(ModelIndexable, DocumentDateMixin):
         # count scholarship records by type
         footnotes = self.footnotes.all()
         counts = defaultdict(int)
+        # collect transcription and translation texts for indexing
         transcription_texts = []
+        translation_texts = []
+        # keep track of translation language for RTL/LTR display
+        translation_langcode = ""
 
         # dict of sets of relations; keys are each source attached to any footnote on this document
         source_relations = defaultdict(set)
@@ -1126,6 +1136,16 @@ class Document(ModelIndexable, DocumentDateMixin):
                 content = fn.content_html_str
                 if content:
                     transcription_texts.append(Footnote.explicit_line_numbers(content))
+            elif Footnote.DIGITAL_TRANSLATION in fn.doc_relation:
+                content = fn.content_html_str
+                if content:
+                    translation_texts.append(Footnote.explicit_line_numbers(content))
+                    # TODO: How to handle multiple translations in different languages?
+                    translation_langcode = (
+                        fn.source.languages.first().code
+                        if fn.source.languages.exists()
+                        else ""
+                    )
             # add any doc relations to this footnote's source's set in source_relations
             source_relations[fn.source] = source_relations[fn.source].union(
                 fn.doc_relation
@@ -1154,8 +1174,11 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "scholarship_t": [fn.display() for fn in footnotes],
                 # transcription content as html
                 "text_transcription": transcription_texts,
+                "translation_language_code_s": translation_langcode,
+                # translation content as html
+                "text_translation": translation_texts,
                 "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),
-                "has_translation_b": bool(counts[Footnote.TRANSLATION]),
+                "has_digital_translation_b": bool(counts[Footnote.DIGITAL_TRANSLATION]),
                 "has_discussion_b": bool(counts[Footnote.DISCUSSION]),
             }
         )
