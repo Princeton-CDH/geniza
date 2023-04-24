@@ -900,15 +900,20 @@ class TestDocument:
         assert document.has_transcription()
 
     def test_has_translation(self, document, source):
-        # doc with no footnotes doesn't have transcription
+        # doc with no footnotes doesn't have translation
         assert not document.has_translation()
 
-        # doc with empty footnote doesn't have transcription
+        # doc with empty footnote doesn't have translation
         fn = Footnote.objects.create(content_object=document, source=source)
         assert not document.has_translation()
 
-        # doc with digital edition footnote does have a transcription
+        # doc with regular translation footnote doesn't have translation
         fn.doc_relation = [Footnote.TRANSLATION]
+        fn.save()
+        assert not document.has_translation()
+
+        # doc with digital translation footnote does have a translation
+        fn.doc_relation = [Footnote.DIGITAL_TRANSLATION]
         fn.save()
         assert document.has_translation()
 
