@@ -1034,6 +1034,18 @@ class TestDocument:
                 "body": [{"value": "transcription lines"}],
             },
         )
+        # digital translation footnote
+        digital_translation = Footnote.objects.create(
+            content_object=document,
+            source=source,  # English language source
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        Annotation.objects.create(
+            footnote=digital_translation,
+            content={
+                "body": [{"value": "translation lines"}],
+            },
+        )
         # other footnotes
         edition2 = Footnote.objects.create(
             content_object=document,
@@ -1049,10 +1061,13 @@ class TestDocument:
         assert index_data["num_editions_i"] == 2  # edition + digital edition
         assert index_data["has_digital_edition_b"] == True
         assert index_data["num_translations_i"] == 2
+        assert index_data["has_digital_translation_b"] == True
         assert index_data["scholarship_count_i"] == 3  # unique sources
         assert index_data["text_transcription"] == ["transcription lines"]
+        assert index_data["text_translation"] == ["translation lines"]
+        assert index_data["translation_language_code_s"] == "en"
 
-        for note in [edition, edition2, translation]:
+        for note in [edition, edition2, translation, digital_translation]:
             assert note.display() in index_data["scholarship_t"]
 
     def test_index_data_document_date(self):
