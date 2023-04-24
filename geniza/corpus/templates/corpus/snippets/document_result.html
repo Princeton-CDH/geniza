@@ -68,6 +68,22 @@
                     {% endif %}
                 {% endwith %}
 
+                {# translation: keywords in context if any, or excerpt #}
+                {% with document_highlights=highlighting|dict_item:document.id lang=document.translation_language_code %}
+                    <!-- indicate language when possible, or at least change of language (if unknown) for screen readers -->
+                    {% if document_highlights.translation or document.translation %}
+                        <div class="translation" lang="{{ lang }}" dir="ltr">
+                            {% if document_highlights.translation %}
+                                {% for snippet in document_highlights.translation %}{{ snippet.strip|safe }}{% endfor %}
+                            {% elif document.translation %}
+                                {# otherwise, display truncated transcription #}
+                                {# NOTE: might be nice to display N lines instead of using truncatechars #}
+                                {{ document.translation.0|safe|truncatechars_html:150 }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
                 {# scholarship records #}
                 <p class="scholarship">
                     {% if document.scholarship_count %}
