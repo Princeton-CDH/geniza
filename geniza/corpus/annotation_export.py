@@ -3,17 +3,16 @@ import json
 import logging
 import math
 import os
-from collections import defaultdict
 from urllib.parse import urlencode, urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.management.base import BaseCommand, CommandError
+from django.db.models import Q
 from django.template.defaultfilters import pluralize
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.text import slugify
-from git import GitCommandError, InvalidGitRepositoryError, Repo
+from git import GitCommandError, Repo
 
 from geniza.annotations.models import Annotation, annotations_to_list
 from geniza.common.utils import absolutize_url
@@ -116,10 +115,11 @@ class AnnotationExporter:
             # to support cleaning up old files on transcription delete
             docs = Document.objects.filter(pk__in=self.pgpids)
 
-        # otherwise, get all documents with digital editions
+        # otherwise, get all documents with digital editions/translations
         else:
             docs = Document.objects.filter(
-                footnotes__doc_relation__contains=Footnote.DIGITAL_EDITION
+                Q(footnotes__doc_relation__contains=Footnote.DIGITAL_EDITION)
+                | Q(footnotes__doc_relation__contains=Footnote.DIGITAL_TRANSLATION)
             ).distinct()
 
         self.output_info(
@@ -133,7 +133,10 @@ class AnnotationExporter:
         remove_filenames = []
 
         # load django template for rendering html export
-        html_template = get_template("corpus/transcription_export.html")
+        html_template = {
+            "transcription": get_template("corpus/transcription_export.html"),
+            "translation": get_template("corpus/translation_export.html"),
+        }
         # search uri will be the basis for our annotation list uris
         anno_search_uri = absolutize_url(reverse("annotations:search"))
 
@@ -198,12 +201,17 @@ class AnnotationExporter:
 
             # for convenience and more readable versioning, also generate
             # text and html transcription files
-            for edition in document.digital_editions():
-                self.debug("%s %s" % (edition, edition.source))
+            for footnote in document.digital_footnotes():
+                self.debug("%s %s" % (footnote, footnote.source))
                 # filename based on pgpid and source authors;
-                # explicitly label as transcription for context
-                base_filename = AnnotationExporter.transcription_filename(
-                    document, edition.source
+                # explicitly label as transcription/translation for context
+                fn_type = (
+                    "transcription"
+                    if Footnote.DIGITAL_EDITION in footnote.doc_relation
+                    else "translation"
+                )
+                base_filename = AnnotationExporter.filename(
+                    document, footnote.source, fn_type
                 )
                 for output_format in ["txt", "html"]:
                     # put in the directory for this document;
@@ -215,14 +223,14 @@ class AnnotationExporter:
                     doc_updated_files.append(outfile_path)
                     with open(outfile_path, "w") as outfile:
                         if output_format == "html":
-                            content = html_template.render(
-                                {"document": document, "edition": edition}
+                            content = html_template[fn_type].render(
+                                {"document": document, "edition": footnote}
                             )
                             outfile.write(content)
                         else:
                             # text version is meant for corpus analytics,
                             # so should be minimal and content only
-                            outfile.write(edition.content_text)
+                            outfile.write(footnote.content_text)
 
             # add all updated files for this document to the updated list
             updated_filenames.extend(doc_updated_files)
@@ -365,17 +373,18 @@ class AnnotationExporter:
         return "_".join([prefix, path])
 
     @staticmethod
-    def transcription_filename(document, source):
+    def filename(document, source, fn_type):
         # filename based on pgpid and source authors;
-        # explicitly label as transcription for context
+        # explicitly label as transcription/translation for context
         authors = [a.creator.last_name for a in source.authorship_set.all()] or [
             "unknown author"
         ]
 
-        return "PGPID%s_s%d_%s_transcription" % (
+        return "PGPID%s_s%d_%s_%s" % (
             document.id,
             source.id,
             slugify(" ".join(authors)),
+            fn_type,
         )
 
     # map log level to django manage command verbosity
