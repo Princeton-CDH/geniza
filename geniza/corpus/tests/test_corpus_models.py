@@ -1196,6 +1196,31 @@ class TestDocument:
         # Translation 2 should be alphabetically first based on its source
         assert digital_translation.pk == digital_translation_pks[0]
 
+    def test_digital_footnotes(self, document, source):
+        # no digital edition or digital translation, count should be 0
+        regular_translation = Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.TRANSLATION
+        )
+        assert document.digital_footnotes().count() == 0
+        # digital edition, count should be 1
+        digital_edition = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        assert document.digital_footnotes().count() == 1
+        # add digital translation, count should be 2 and both should be included
+        digital_translation = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        assert document.digital_footnotes().count() == 2
+        digital_footnote_pks = [ed.pk for ed in document.digital_footnotes()]
+        assert digital_translation.pk in digital_footnote_pks
+        assert digital_edition.pk in digital_footnote_pks
+        assert regular_translation.pk not in digital_footnote_pks
+
     def test_total_to_index(self, join, document):
         assert Document.total_to_index() == 2
 
