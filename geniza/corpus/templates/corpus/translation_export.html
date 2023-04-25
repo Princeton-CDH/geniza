@@ -1,10 +1,10 @@
 {# minimal html page for transcription export #}
 <html>
     <head>
-        <title>Translation of {{ document.title }}</title>
+        <title>{% if edition.source.languages.exists %}{{ edition.source.languages.all.0.name|title }} {% endif %}Translation of {{ document.title }}</title>
     </head>
     <body style="max-width: 860px; margin: auto">
-        <h1>Translation of {{ document.title }}</h1>
+        <h1>{% if edition.source.languages.exists %}{{ edition.source.languages.all.0.name|title }} {% endif %}Translation of {{ document.title }}</h1>
 
         <p>{{ edition.source.formatted_display|safe }}</p>
 
