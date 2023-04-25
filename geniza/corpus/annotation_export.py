@@ -123,7 +123,7 @@ class AnnotationExporter:
             ).distinct()
 
         self.output_info(
-            "Backing up annotations for %d document%s with digital edition"
+            "Backing up annotations for %d document%s with digital edition or translation"
             % (docs.count(), pluralize(docs)),
         )
 
