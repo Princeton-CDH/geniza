@@ -13,8 +13,29 @@
 
 OUTPUT=transcription_stats.csv
 
+# while getopts u:a:f: flag
+# do
+#     case "${flag}" in
+#         q) quiet=${OPTARG};;
+#     esac
+# done
+
+# Quiet option; false by default
+OPT_QUIET=0
+
+# Process all options supplied on the command line 
+while getopts hqo:D: flag
+do
+    case "$flag" in
+    (h) help; exit 0;;
+    (q) OPT_QUIET=1;;
+    (o) out="$OPTARG";;
+    (*) usage;;
+    esac
+done
+
 # create output file with a CSV header
-echo "date;transcription files;documents" > $OUTPUT
+echo "date;transcription_count;transcribed_document_count" > $OUTPUT
 
 # function that counts files matching the specified regex
 count() {
@@ -32,15 +53,17 @@ do
     [ "$PREV_DATE" = "$DATE" ] && continue
     PREV_DATE="$DATE"
 
-    # count files
-    TXT_FILES=$(count ".*\.txt$")
-    # count unique pgpids
-    DOCS=$(count_pgpids "PGPID")
+    # count transcription files
+    TXT_FILES=$(count ".*\_transcription.txt$")
+    # count unique pgpids for transcriptions
+    DOCS=$(count_pgpids "PGPID.*transcription.txt$")
 
-    # print to console
-    echo $DATE
-    echo " $TXT_FILES	transcriptions"
-    echo " $DOCS documents"
+    # print to console unless quiet mode
+    [ $OPT_QUIET == 1 ] || {
+        echo $DATE
+        echo " $TXT_FILES	transcriptions"
+        echo " $DOCS documents"
+    }
 
     # append to CSV file
     echo "$DATE,$TXT_FILES,$DOCS" >> $OUTPUT 
