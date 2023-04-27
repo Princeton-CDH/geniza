@@ -1,4 +1,20 @@
 #!/bin/bash
+## Usage: bash count_transcriptions.bash [options] 
+##
+## Expects to be run in a local copy of a the git repository 
+## for PGP transcriptions.
+##
+## Options:
+##   -h, --help    Display this message.
+##   -q            Quiet mode; don't output totals to console
+##
+
+usage() {
+  [ "$*" ] && echo "$0: $*"
+  sed -n '/^##/,/^$/s/^## \{0,1\}//p' "$0"
+  exit 2
+} 2>/dev/null
+
 
 # script for counting the number of transcriptions and uinque pgpids
 # over time in the pgp-text git repository. 
@@ -27,7 +43,7 @@ OPT_QUIET=0
 while getopts hqo:D: flag
 do
     case "$flag" in
-    (h) help; exit 0;;
+    (h) usage; exit 0;;
     (q) OPT_QUIET=1;;
     (o) out="$OPTARG";;
     (*) usage;;
