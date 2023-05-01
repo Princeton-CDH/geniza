@@ -7,7 +7,7 @@ def set_rtl_langs(apps, schema_editor):
     # set known existing RTL languages' direction to RTL
     SourceLanguage = apps.get_model("footnotes", "SourceLanguage")
     # Arabic, Hebrew, Judaeo-Arabic, and Ottoman Turkish are all RTL
-    rtl_langs = SourceLanguage.objects.filter(code__in=["ar", "he", "ISO 639-2", "ota"])
+    rtl_langs = SourceLanguage.objects.filter(code__in=["ar", "he", "jrb", "ota"])
     for lang in rtl_langs:
         lang.direction = "rtl"
     SourceLanguage.objects.bulk_update(rtl_langs, ["direction"])
