@@ -149,7 +149,10 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
             DocumentSolrQuerySet()
             .filter(status=Document.PUBLIC_LABEL)
             .facet(
-                "has_image", "has_digital_edition", "has_translation", "has_discussion"
+                "has_image",
+                "has_digital_edition",
+                "has_digital_translation",
+                "has_discussion",
             )
             .facet_field("type", exclude="type", sort="value")
         )
@@ -175,12 +178,18 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                         method="unified",
                         requireFieldMatch=True,
                     )
-                    # return smaller chunk of highlighted text for transcriptions
+                    # return smaller chunk of highlighted text for transcriptions/translations
                     # since the lines are often shorter, resulting in longer text
                     .highlight(
                         "transcription",
                         method="unified",
                         fragsize=150,  # try including more context
+                        requireFieldMatch=True,
+                    )
+                    .highlight(
+                        "translation",
+                        method="unified",
+                        fragsize=150,
                         requireFieldMatch=True,
                     )
                     .also("score")
@@ -205,7 +214,7 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
             if search_opts["has_discussion"] == True:
                 documents = documents.filter(has_discussion=True)
             if search_opts["has_translation"] == True:
-                documents = documents.filter(has_translation=True)
+                documents = documents.filter(has_digital_translation=True)
             if search_opts["docdate"]:
                 # date range filter; returns tuple of value or None for open-ended range
                 start, end = search_opts["docdate"]

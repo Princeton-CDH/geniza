@@ -39,6 +39,10 @@ class SourceLanguage(models.Model):
 
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, help_text="ISO language code")
+    LTR = "ltr"
+    RTL = "rtl"
+    DIRECTION_CHOICES = ((LTR, "Left to right"), (RTL, "Right to left"))
+    direction = models.CharField(max_length=3, default=LTR, choices=DIRECTION_CHOICES)
 
     def __str__(self):
         return self.name
