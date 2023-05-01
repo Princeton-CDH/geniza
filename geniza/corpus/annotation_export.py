@@ -380,12 +380,12 @@ class AnnotationExporter:
             "unknown author"
         ]
 
-        return "PGPID%s_s%d_%s_%s" % (
-            document.id,
-            source.id,
-            slugify(" ".join(authors)),
-            fn_type,
-        )
+        return "PGPID%(pgpid)s_s%(source_id)d_%(authors)s_%(text_type)s" % {
+            "pgpid": document.id,
+            "source_id": source.id,
+            "authors": slugify(" ".join(authors)),
+            "text_type": fn_type,
+        }
 
     # map log level to django manage command verbosity
     log_level_to_verbosity = {
