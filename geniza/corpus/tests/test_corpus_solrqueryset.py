@@ -209,3 +209,12 @@ class TestDocumentSolrQuerySet:
             assert cleaned_highlight["doc.1"]["transcription"] == [
                 clean_html("<li>foo")
             ]
+
+            # translation highlight
+            test_highlight = {"doc.1": {"translation": ["<li>bar baz"]}}
+            mock_get_highlighting.return_value = test_highlight
+            # translation html should be cleaned
+            cleaned_highlight = dqs.get_highlighting()
+            assert cleaned_highlight["doc.1"]["translation"] == [
+                clean_html("<li>bar baz")
+            ]

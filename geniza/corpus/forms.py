@@ -239,7 +239,7 @@ class DocumentSearchForm(RangeForm):
     solr_facet_fields = {
         "type": "doctype",
         "has_digital_edition": "has_transcription",
-        "has_translation": "has_translation",
+        "has_digital_translation": "has_translation",
         "has_discussion": "has_discussion",
     }
 

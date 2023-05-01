@@ -900,15 +900,20 @@ class TestDocument:
         assert document.has_transcription()
 
     def test_has_translation(self, document, source):
-        # doc with no footnotes doesn't have transcription
+        # doc with no footnotes doesn't have translation
         assert not document.has_translation()
 
-        # doc with empty footnote doesn't have transcription
+        # doc with empty footnote doesn't have translation
         fn = Footnote.objects.create(content_object=document, source=source)
         assert not document.has_translation()
 
-        # doc with digital edition footnote does have a transcription
+        # doc with regular translation footnote doesn't have translation
         fn.doc_relation = [Footnote.TRANSLATION]
+        fn.save()
+        assert not document.has_translation()
+
+        # doc with digital translation footnote does have a translation
+        fn.doc_relation = [Footnote.DIGITAL_TRANSLATION]
         fn.save()
         assert document.has_translation()
 
@@ -1029,6 +1034,18 @@ class TestDocument:
                 "body": [{"value": "transcription lines"}],
             },
         )
+        # digital translation footnote
+        digital_translation = Footnote.objects.create(
+            content_object=document,
+            source=source,  # English language source
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        Annotation.objects.create(
+            footnote=digital_translation,
+            content={
+                "body": [{"value": "translation lines"}],
+            },
+        )
         # other footnotes
         edition2 = Footnote.objects.create(
             content_object=document,
@@ -1044,10 +1061,14 @@ class TestDocument:
         assert index_data["num_editions_i"] == 2  # edition + digital edition
         assert index_data["has_digital_edition_b"] == True
         assert index_data["num_translations_i"] == 2
+        assert index_data["has_digital_translation_b"] == True
         assert index_data["scholarship_count_i"] == 3  # unique sources
         assert index_data["text_transcription"] == ["transcription lines"]
+        assert index_data["text_translation"] == ["translation lines"]
+        assert index_data["translation_language_code_s"] == "en"
+        assert index_data["translation_language_direction_s"] == "ltr"
 
-        for note in [edition, edition2, translation]:
+        for note in [edition, edition2, translation, digital_translation]:
             assert note.display() in index_data["scholarship_t"]
 
     def test_index_data_document_date(self):

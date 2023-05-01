@@ -186,7 +186,7 @@
                         <div class="translations">
                             {# display translation in chunks by index #}
                             {% for translation in document.digital_translations.all %}
-                                <div class="translation tr-{{ translation.pk }}" data-label="{{ translation.source.formatted_display }}" {% if translation.source.languages.all|length %}lang="{{ translation.source.languages.all.0.code }}" dir="{% if translation.source.languages.all.0.name == 'Hebrew' or translation.source.languages.all.0.name == 'Arabic' %}rtl{% else %}ltr{% endif %}"{% else %}dir="ltr"{% endif %}>
+                                <div class="translation tr-{{ translation.pk }}" data-label="{{ translation.source.formatted_display }}" {% if translation.source.languages.exists %}lang="{{ translation.source.languages.all.0.code }}" dir="{{ translation.source.languages.all.0.direction }}"{% else %}dir="ltr"{% endif %}>
                                     {% for html_section in translation.content_html|dict_item:canvas_uri %}
                                         {{ html_section|safe }}
                                     {% endfor %}
