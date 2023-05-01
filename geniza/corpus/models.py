@@ -1126,6 +1126,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         translation_texts = []
         # keep track of translation language for RTL/LTR display
         translation_langcode = ""
+        translation_langdir = "ltr"
 
         # dict of sets of relations; keys are each source attached to any footnote on this document
         source_relations = defaultdict(set)
@@ -1140,12 +1141,11 @@ class Document(ModelIndexable, DocumentDateMixin):
                 content = fn.content_html_str
                 if content:
                     translation_texts.append(Footnote.explicit_line_numbers(content))
-                    # TODO: How to handle multiple translations in different languages?
-                    translation_langcode = (
-                        fn.source.languages.first().code
-                        if fn.source.languages.exists()
-                        else ""
-                    )
+                    # TODO: Index translations in different languages separately
+                    if fn.source.languages.exists():
+                        lang = fn.source.languages.first()
+                        translation_langcode = lang.code
+                        translation_langdir = lang.direction
             # add any doc relations to this footnote's source's set in source_relations
             source_relations[fn.source] = source_relations[fn.source].union(
                 fn.doc_relation
@@ -1175,6 +1175,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # transcription content as html
                 "text_transcription": transcription_texts,
                 "translation_language_code_s": translation_langcode,
+                "translation_language_direction_s": translation_langdir,
                 # translation content as html
                 "text_translation": translation_texts,
                 "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),

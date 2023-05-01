@@ -1066,6 +1066,7 @@ class TestDocument:
         assert index_data["text_transcription"] == ["transcription lines"]
         assert index_data["text_translation"] == ["translation lines"]
         assert index_data["translation_language_code_s"] == "en"
+        assert index_data["translation_language_direction_s"] == "ltr"
 
         for note in [edition, edition2, translation, digital_translation]:
             assert note.display() in index_data["scholarship_t"]
