@@ -48,11 +48,14 @@ export default class extends Controller {
             });
 
             // initialize transcription editor
-            // get sibling outside of controller scope
-            const annotationContainer =
-                this.imageContainerTarget.nextElementSibling.querySelector(
-                    ".annotate"
-                );
+            // get sibling outside of controller scope:
+            // - next sibling for transcription
+            // - sibling after next for translation
+            const sibling = config.secondary_motivation.includes("transcribing")
+                ? this.imageContainerTarget.nextElementSibling
+                : this.imageContainerTarget.nextElementSibling
+                      .nextElementSibling;
+            const annotationContainer = sibling.querySelector(".annotate");
 
             // grab iiif URL and manifest for tahqiq
             const canvasURL = this.imageContainerTarget.dataset.canvasUrl;
@@ -93,6 +96,7 @@ export default class extends Controller {
             target: canvasURL,
             manifest: config.manifest_base_url + manifestId,
             csrf_token: config.csrf_token,
+            directionality: config.source_dir,
         };
         if (config.source_uri) {
             annotationServerConfig["sourceUri"] = config.source_uri;
