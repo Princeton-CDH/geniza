@@ -812,8 +812,6 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     ),
                     "csrf_token": csrf_token(self.request),
                     "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
-                    # TODO: when translations implemented, make this a data property or something
-                    # on the template; the editor will have both transcribing and translating
                     "secondary_motivation": "transcribing"
                     if self.doc_relation == "transcription"
                     else "translating",
