@@ -27,7 +27,6 @@
 {% endif %}
 {# only enable ITT panel if images/transcription/translation are present, or we are in edit mode #}
 {% if document.has_digital_content or edit_mode %}
-    {{ edit_mode }}
     <section id="itt-panel" data-controller="ittpanel{% if not edit_mode %} transcription" data-action="click@document->transcription#clickCloseDropdown{% endif %}">
         {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
         {# images displayed by default; disable if no images are available #}
