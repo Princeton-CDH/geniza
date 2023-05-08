@@ -173,21 +173,20 @@ class TestAnnotationDetail:
     def test_post_annotation_detail_admin(self, admin_client, annotation):
         # update annotation with POST request as admin
         # POST req must include manifest and source URIs
+        anno_dict = {
+            "body": [{"value": "new text"}],
+            "target": {
+                "source": {
+                    "id": annotation.content["target"]["source"]["id"],
+                    "partOf": {"id": annotation.target_source_manifest_id},
+                }
+            },
+            "dc:source": annotation.footnote.source.uri,
+            "motivation": "transcribing",
+        }
         response = admin_client.post(
             annotation.get_absolute_url(),
-            json.dumps(
-                {
-                    "body": [{"value": "new text"}],
-                    "target": {
-                        "source": {
-                            "id": annotation.content["target"]["source"]["id"],
-                            "partOf": {"id": annotation.target_source_manifest_id},
-                        }
-                    },
-                    "dc:source": annotation.footnote.source.uri,
-                    "motivation": "transcribing",
-                }
-            ),
+            json.dumps(anno_dict),
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -208,6 +207,20 @@ class TestAnnotationDetail:
         log_entry = LogEntry.objects.get(object_id=annotation.id)
         assert log_entry.action_flag == CHANGE
         assert log_entry.change_message == "Updated via API"
+
+        # should match "translating" motivation to DIGITAL_TRANSLATION footnote
+        response = admin_client.post(
+            annotation.get_absolute_url(),
+            json.dumps(
+                {
+                    **anno_dict,
+                    "motivation": "translating",
+                }
+            ),
+            content_type="application/json",
+        )
+        updated_anno = Annotation.objects.get(pk=annotation.pk)
+        assert Footnote.DIGITAL_TRANSLATION in updated_anno.footnote.doc_relation
 
     def test_post_annotation_detail_unchanged(self, admin_client, annotation):
         # update annotation unchanged with POST request as admin
