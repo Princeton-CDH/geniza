@@ -226,7 +226,6 @@ class DocumentDatingInline(admin.TabularInline):
     )
     min_num = 0
     extra = 1
-    insert_after = "standard_date"
 
 
 @admin.register(Document)
@@ -295,29 +294,52 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         ("secondary_languages", admin.RelatedOnlyFieldListFilter),
     )
 
-    fields = (
-        ("shelfmark", "id", "view_old_pgpids"),
-        "shelfmark_override",
-        "doctype",
-        ("languages", "secondary_languages"),
-        "language_note",
-        "description",
+    # organize into fieldsets so that we can insert inlines mid-form
+    fieldsets = (
         (
-            "doc_date_original",
-            "doc_date_calendar",
-            "doc_date_standard",
-            "standard_date",
+            None,
+            {
+                "fields": (
+                    ("shelfmark", "id", "view_old_pgpids"),
+                    "shelfmark_override",
+                    "doctype",
+                    ("languages", "secondary_languages"),
+                    "language_note",
+                    "description",
+                )
+            },
         ),
-        "tags",
-        "status",
-        ("needs_review", "notes"),
-        "image_order_override",
-        "admin_thumbnails",
+        (
+            None,
+            {
+                "fields": (
+                    (
+                        "doc_date_original",
+                        "doc_date_calendar",
+                        "doc_date_standard",
+                        "standard_date",
+                    ),
+                ),
+            },
+        ),
+        (
+            None,
+            {
+                "fields": (
+                    "tags",
+                    "status",
+                    ("needs_review", "notes"),
+                    "image_order_override",
+                    "admin_thumbnails",
+                )
+            },
+        ),
         # edition, translation
     )
     autocomplete_fields = ["languages", "secondary_languages"]
     # NOTE: autocomplete does not honor limit_choices_to in model
-    inlines = [DocumentTextBlockInline, DocumentFootnoteInline, DocumentDatingInline]
+    inlines = [DocumentDatingInline, DocumentTextBlockInline, DocumentFootnoteInline]
+    fieldsets_and_inlines_order = ("f", "f", "i", "f", "i", "i")
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
