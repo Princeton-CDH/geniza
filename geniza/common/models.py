@@ -1,6 +1,17 @@
+from functools import cache
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.safestring import mark_safe
+from modeltranslation.utils import fallbacks
+
+
+def cached_class_property(f):
+    """
+    Reusable decorator to cache a class property, as opposed to an instance property.
+    from https://stackoverflow.com/a/71887897
+    """
+    return classmethod(property(cache(f)))
 
 
 # Create your models here.
@@ -60,3 +71,30 @@ class UserProfile(models.Model):
     def __str__(self):
         # needed for display label in admin
         return "User profile for %s" % (self.user)
+
+
+class DisplayLabelMixin:
+    """Mixin for models with translatable display labels that may differ from full names."""
+
+    def __str__(self):
+        # temporarily turn off model translate fallbacks;
+        # if display label for current language is not defined,
+        # we want name for the current language rather than the
+        # fallback value for display label
+        with fallbacks(False):
+            current_lang_label = self.display_label or self.name
+
+        return current_lang_label or self.display_label or self.name
+
+    def natural_key(self):
+        """Natural key, name"""
+        return (self.name,)
+
+    @cached_class_property
+    def objects_by_label(cls):
+        """A dict of object instances keyed on English display label"""
+        return {
+            # lookup on display_label_en/name_en since solr should always index in English
+            (obj.display_label_en or obj.name_en): obj
+            for obj in cls.objects.all()
+        }
