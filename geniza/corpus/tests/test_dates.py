@@ -222,10 +222,16 @@ def test_convert_seleucid_date():
     # month/year
     seleucid_year = 1458
     converted_date = convert_seleucid_date(f"Tishri {seleucid_year}")
-    converted_date_am = convert_hebrew_date(f"Tishrei {seleucid_year + 3449}")
+    converted_date_am = convert_hebrew_date(
+        f"Tishrei {seleucid_year + Calendar.SELEUCID_OFFSET}"
+    )
     # the converted date range for Tishri Sel. should be the same as that for Tishri AM - 3449 years.
     assert converted_date[0] == converted_date_am[0]
     assert converted_date[1] == converted_date_am[1]
+
+    # leap day (Feb 29, 2020) should convert properly
+    converted_date = convert_seleucid_date("4 Adar 2331")
+    assert converted_date[1] == date(2020, 2, 29)
 
 
 # test islamic date conversion

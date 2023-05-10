@@ -30,6 +30,9 @@ class Calendar:
     #: calendars that can be converted to Julian/Gregorian
     can_convert = [ANNO_MUNDI, HIJRI, SELEUCID]
 
+    #: offset for Seleucid calendar: Anno Mundi - 3449
+    SELEUCID_OFFSET = 3449
+
 
 class PartialDate:
     """Simple partial date object to handle parsing and display of
@@ -398,9 +401,8 @@ def standardize_date(historic_date, calendar):
     if match:
         date_info = match.groupdict()
         year = int(date_info["year"])
-        # Seleucid is Anno Mundi - 3449
         if calendar == Calendar.SELEUCID:
-            year = year + 3449
+            year = year + Calendar.SELEUCID_OFFSET
         month = date_info["month"]
 
         if month:
