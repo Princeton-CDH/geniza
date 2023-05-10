@@ -12,7 +12,7 @@ from geniza.corpus.models import Document
 
 
 class Command(BaseCommand):
-    """Report on historical date conversions for current data"""
+    """Report on or update historical date conversions for current data"""
 
     report_fields = [
         "pgpid",
@@ -31,10 +31,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        # NOTE: for now, this script only reports on date conversion
-        # in future, will add an update mode to clean up and standardize
-        # existing dates in the databse
-
         # find all documents with original dates set;
         # limit to calendars that we support converting
         dated_docs = (
