@@ -28,7 +28,7 @@ class Calendar:
     ANNO_MUNDI = "am"
 
     #: calendars that can be converted to Julian/Gregorian
-    can_convert = [ANNO_MUNDI, HIJRI]
+    can_convert = [ANNO_MUNDI, HIJRI, SELEUCID]
 
 
 class PartialDate:
@@ -365,6 +365,11 @@ def convert_hebrew_date(historic_date):
     return standardize_date(historic_date, Calendar.ANNO_MUNDI)
 
 
+def convert_seleucid_date(historic_date):
+    """Convert a date in the Greek Seleucid calendar to the Julian or Gregorian calendar"""
+    return standardize_date(historic_date, Calendar.SELEUCID)
+
+
 def convert_islamic_date(historic_date):
     """Convert a date in the Islamic Hijri calendar to the Julian or Gregorian calendar"""
     return standardize_date(historic_date, Calendar.HIJRI)
@@ -374,6 +379,7 @@ def convert_islamic_date(historic_date):
 calendar_converter = {
     Calendar.ANNO_MUNDI: convertdate.hebrew,
     Calendar.HIJRI: convertdate.islamic,
+    Calendar.SELEUCID: convertdate.hebrew,
 }
 
 
@@ -392,6 +398,9 @@ def standardize_date(historic_date, calendar):
     if match:
         date_info = match.groupdict()
         year = int(date_info["year"])
+        # Seleucid is Anno Mundi - 3449
+        if calendar == Calendar.SELEUCID:
+            year = year + 3449
         month = date_info["month"]
 
         if month:

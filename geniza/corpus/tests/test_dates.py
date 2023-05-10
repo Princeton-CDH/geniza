@@ -9,6 +9,7 @@ from geniza.corpus.dates import (
     PartialDate,
     convert_hebrew_date,
     convert_islamic_date,
+    convert_seleucid_date,
     get_hebrew_month,
     get_islamic_month,
 )
@@ -202,6 +203,29 @@ def test_convert_hebrew_date():
     # should be the same as year only
     assert converted_date[0] == date(1871, 9, 16)
     assert converted_date[1] == date(1872, 10, 2)
+
+
+# test seleucid date conversion
+def test_convert_seleucid_date():
+    converted_date = convert_seleucid_date("29 Elul 1311")
+    # start/end should be the same
+    assert converted_date[0] == converted_date[1]
+    # expected converted date
+    assert converted_date[1] == date(1000, 9, 1)
+
+    converted_date = convert_seleucid_date("23 Adar I 1475")
+    # start/end should be the same
+    assert converted_date[0] == converted_date[1]
+    # expected converted date
+    assert converted_date[1] == date(1164, 2, 18)
+
+    # month/year
+    seleucid_year = 1458
+    converted_date = convert_seleucid_date(f"Tishri {seleucid_year}")
+    converted_date_am = convert_hebrew_date(f"Tishrei {seleucid_year + 3449}")
+    # the converted date range for Tishri Sel. should be the same as that for Tishri AM - 3449 years.
+    assert converted_date[0] == converted_date_am[0]
+    assert converted_date[1] == converted_date_am[1]
 
 
 # test islamic date conversion
