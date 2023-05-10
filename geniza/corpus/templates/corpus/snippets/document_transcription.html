@@ -130,7 +130,7 @@
                                 {{ image_info.image|iiif_image:"size:width=640" }} 640w,
                                 {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
                             <div class="osd" data-iiif-target="osd" data-iiif-url="{{ image_info.image.info }}"></div>
-                            {% if edit_mode %}
+                            {% if edit_mode and not image_info.excluded %}
                                 <button class="primary popout-close-button" type="button" aria-label="Close"><i class="ph-x"></i></button>
                                 <button class="primary popout-button" type="button">Pop out</button>
                             {% endif %}
