@@ -382,6 +382,8 @@ def convert_islamic_date(historic_date):
 calendar_converter = {
     Calendar.ANNO_MUNDI: convertdate.hebrew,
     Calendar.HIJRI: convertdate.islamic,
+    # NOTE: Seleucid years cannot be passed directly into convertdate.hebrew; instead,
+    # convert them to AM using the Seleucid offset first, in order to handle leap years
     Calendar.SELEUCID: convertdate.hebrew,
 }
 

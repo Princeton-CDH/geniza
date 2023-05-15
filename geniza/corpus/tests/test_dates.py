@@ -233,6 +233,17 @@ def test_convert_seleucid_date():
     converted_date = convert_seleucid_date("4 Adar 2331")
     assert converted_date[1] == date(2020, 2, 29)
 
+    # leap year (4826 AM = 1377 Seleucid) should convert properly
+    seleucid_year = 1377
+    converted_date = convert_seleucid_date(f"21 Adar II {seleucid_year}")
+    converted_date_am = convert_hebrew_date(
+        f"21 Adar II {seleucid_year + Calendar.SELEUCID_OFFSET}"
+    )
+    assert converted_date[0] == converted_date_am[0]
+    assert converted_date[1] == converted_date_am[1]
+    # and it should be converted to 1066-03-21 CE
+    assert converted_date[1] == date(1066, 3, 21)
+
 
 # test islamic date conversion
 def test_get_islamic_month():
