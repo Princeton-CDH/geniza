@@ -58,10 +58,16 @@ def parse_annotation_data(request):
     del json_data["target"]["source"]["partOf"]
     del json_data["dc:source"]
 
+    # determine if this is a transcription or translation
+    if "motivation" in json_data and "translating" in json_data["motivation"]:
+        doc_relation = Footnote.DIGITAL_TRANSLATION
+    else:
+        doc_relation = Footnote.DIGITAL_EDITION
+
     # find or create DIGITAL_EDITION footnote for this source and document
     try:
         footnote = Footnote.objects.get(
-            doc_relation=[Footnote.DIGITAL_EDITION],
+            doc_relation=[doc_relation],
             source__pk=source_id,
             content_type=document_contenttype,
             object_id=document_id,
@@ -70,7 +76,7 @@ def parse_annotation_data(request):
         source = Source.objects.get(pk=source_id)
         footnote = Footnote.objects.create(
             source=source,
-            doc_relation=[Footnote.DIGITAL_EDITION],
+            doc_relation=[doc_relation],
             object_id=document_id,
             content_type=document_contenttype,
         )
@@ -216,6 +222,15 @@ class AnnotationSearch(View, MultipleObjectMixin):
             pgpid = document_id_from_manifest_uri(manifest_uri)
             annotations = annotations.filter(
                 footnote__object_id=pgpid, footnote__content_type__model="document"
+            )
+
+        motivation = self.request.GET.get("motivation")
+        # if a motivation is specified, filter on doc relation
+        if motivation:
+            annotations = annotations.filter(
+                footnote__doc_relation=Footnote.DIGITAL_TRANSLATION
+                if motivation == "translating"
+                else Footnote.DIGITAL_EDITION
             )
 
         # NOTE: if any params are ignored, they should be removed from id for search uri

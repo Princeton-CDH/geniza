@@ -1141,6 +1141,36 @@ a.editor-navigation {
             float: right;
         }
     }
+
+    &[dir="ltr"] {
+        li {
+            margin-left: 1.5em;
+            padding-left: 1em; /* shift to make space for line numbers */
+        }
+        p {
+            // match alignment of list items
+            margin-left: 1em;
+            padding-left: 1.5em;
+        }
+        li > p {
+            // if inside a list item, don't pad <p>
+            margin-left: 0;
+            padding-left: 0;
+        }
+        ol li:not([value])::before {
+            /* make font larger than list number font to cover completely;
+                   shrink line height to adjust placement */
+            font-size: 37px;
+            line-height: 18px;
+            left: -9.5px;
+
+            @include breakpoints.for-tablet-landscape-up {
+                font-size: 38px;
+                line-height: 21px;
+                left: -10.75px;
+            }
+        }
+    }
 }
 .transcription {
     @include typography.transcription;
@@ -1150,36 +1180,6 @@ a.editor-navigation {
     &[data-lang-script="arabic"],
     span[lang="ar"] {
         @include typography.arabic-transcription;
-    }
-}
-.translation {
-    // need to differentiate RTL/LTR by language
-    li {
-        margin-left: 1.5em;
-        padding-left: 1em; /* shift to make space for line numbers */
-    }
-    p {
-        // match alignment of list items
-        margin-left: 1em;
-        padding-left: 1.5em;
-    }
-    li > p {
-        // if inside a list item, don't pad <p>
-        margin-left: 0;
-        padding-left: 0;
-    }
-    ol li:not([value])::before {
-        /* make font larger than list number font to cover completely;
-           shrink line height to adjust placement */
-        font-size: 37px;
-        line-height: 18px;
-        left: -9.5px;
-
-        @include breakpoints.for-tablet-landscape-up {
-            font-size: 38px;
-            line-height: 21px;
-            left: -10.75px;
-        }
     }
 }
 
