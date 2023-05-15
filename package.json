@@ -38,7 +38,7 @@
     "@recogito/annotorious-openseadragon": "^2.7.6",
     "@recogito/annotorious-toolbar": "^1.1.0",
     "angle-input": "^0.0.1",
-    "annotorious-tahqiq": "github:Princeton-CDH/annotorious-tahqiq#b252908e73ef09e131a4142a9308adce2fa7f1c5",
+    "annotorious-tahqiq": "github:Princeton-CDH/annotorious-tahqiq#943cad7294039a941c1b90fd1f6fb3e9ecd810cd",
     "openseadragon": "^3.0.0",
     "stimulus-use": "^0.50.0-2"
   }

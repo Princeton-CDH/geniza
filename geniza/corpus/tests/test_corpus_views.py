@@ -1687,7 +1687,7 @@ class TestDocumentTranscribeView:
             response.context["annotation_config"]["secondary_motivation"]
             == "translating"
         )
-        # should include directionality
+        # should include text direction
         assert (
             response.context["annotation_config"]["source_dir"]
             == source.languages.first().direction
