@@ -1,5 +1,10 @@
 # Deploy Notes
 
+## 4.14
+
+-   Seleucid calendar conversion is now implemented, so automatic conversion should be applied
+    to all existing dates by using `python manage.py convert_dates update`.
+
 ## 4.13
 
 -   Solr configuration has changed. Ensure Solr configset has been updated
