@@ -125,3 +125,11 @@ TRANSCRIPTIONS_JSON_FILE = BASE_DIR.parent / "data" / "transcriptions.json"
 # METADATA_BACKUP_GITREPO = 'https://github.com/Princeton-CDH/test-geniza-metadata'
 # Local path for metadata repo
 # METADATA_BACKUP_PATH = 'data/metadata_repo'
+
+# google drive ID for the shared drive containing translation documents, for translation ingest
+# GOOGLE_DRIVE_ID = 'ididididididididid'
+
+# google drive paths (secrets file must already exist, but not necessarily token.
+# token just needs to be writeable)
+# GOOGLE_API_SECRETS_FILE = 'data/credentials.json'
+# GOOGLE_API_TOKEN_FILE = 'data/token.json'

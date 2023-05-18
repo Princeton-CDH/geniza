@@ -28,7 +28,6 @@ from parasolr.django.signals import IndexableSignalHandler
 from rich.progress import MofNCompleteColumn, Progress
 
 from geniza.annotations.models import Annotation
-from geniza.annotations.signals import disconnect_signal_handlers
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_export import AnnotationExporter
 from geniza.corpus.management.commands import sync_transcriptions
@@ -64,8 +63,6 @@ class Command(sync_transcriptions.Command):
 
         # disconnect solr indexing signals
         IndexableSignalHandler.disconnect()
-        # disconnect annotation signal handlers
-        disconnect_signal_handlers()
 
         # make sure we have latest tei content from git repository
         # (inherited from sync transcriptions command)
