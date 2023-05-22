@@ -99,7 +99,7 @@ class Command(tei_to_annotation.Command):
                 response = (
                     self.service.files()
                     .list(
-                        q=f"'{self.folder_id}' in parents",
+                        q=f"'{self.folder_id}' in parents and trashed=false",
                         driveId=self.drive_id,
                         includeItemsFromAllDrives=True,
                         corpora="drive",
