@@ -7,6 +7,7 @@ Adapted from tei_to_annotation management command.
 
 import io
 import os.path
+import re
 import unicodedata
 from collections import defaultdict
 
@@ -126,7 +127,7 @@ class Command(tei_to_annotation.Command):
                     print(f"Processing {file.get('name')}")
                 self.stats["files"] += 1
                 html_file = self.download_as_html(file.get("id"))
-                self.process_file(html_file)
+                self.process_file(file.get("name"), html_file)
                 progress.update(process_task, advance=1, update=True)
 
         except HttpError as error:
@@ -227,7 +228,7 @@ class Command(tei_to_annotation.Command):
 
         return anno
 
-    def process_file(self, html_file):
+    def process_file(self, name, html_file):
         soup = BeautifulSoup(html_file, "html.parser")
         # first table is metadata, second table is translation
         tables = soup.find_all("table")
@@ -235,12 +236,17 @@ class Command(tei_to_annotation.Command):
         metadata = tables[0].find_all("td")
         # handle earlier and later template revisions
         if len(metadata) == 6:
-            # missing notes field; was labeled "Notes" but used for location
+            # rev. 1: missing notes field; was labeled "Notes" but used for location
             notes = None
             (pgpid, source_id, location) = (td.get_text() for td in metadata[3:])
         elif len(metadata) == 8:
-            # includes both Location and Notes fields
+            # rev. 2: includes both Location and Notes fields
             (pgpid, source_id, location, notes) = (td.get_text() for td in metadata[4:])
+
+        # check if doc name mismatched with pgpid in metadata table; use doc name if so
+        pgpid_match = re.search("PGPID (?P<pgpid>\d+)", name)
+        if pgpid_match and pgpid_match.group("pgpid") != pgpid:
+            pgpid = pgpid_match.group("pgpid")
 
         # get the document
         try:
