@@ -480,7 +480,9 @@
             // adjust line heights to align transcription with translation when both visible
             // TODO: Handle this more gracefully with javascript to include 3+ line <li>s
             div.editions ol li,
-            div.translations ol li {
+            div.translations ol li,
+            .annotate.translation ol li,
+            .annotate.transcription ol li {
                 // li, height of two lines (line height = 34px)
                 min-height: 68px;
             }
