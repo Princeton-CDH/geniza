@@ -52,7 +52,15 @@ class Command(tei_to_annotation.Command):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "folder_id",
+            "-d",
+            "--drive_id",
+            required=True,
+            help="The ID of the shared Google Drive for the PGP.",
+        )
+        parser.add_argument(
+            "-f",
+            "--folder_id",
+            required=True,
             help="The ID of the Google Drive folder containing translation documents.",
         )
 
@@ -66,10 +74,8 @@ class Command(tei_to_annotation.Command):
         # get script user for log entries
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
-        # get drive id from settings
-        self.drive_id = settings.GOOGLE_DRIVE_ID
-
-        # get folder id from provided args
+        # get drive and folder id from provided args
+        self.drive_id = options["drive_id"]
         self.folder_id = options["folder_id"]
 
         # disconnect solr indexing signals
