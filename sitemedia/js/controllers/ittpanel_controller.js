@@ -116,16 +116,13 @@ export default class extends Controller {
         for (let i = 0; i < minLines; i++) {
             if (edLines[i] && trLines[i]) {
                 // calculate number of lines based on line height
-                const edLineCount = this.getLineCount(edLines[i]);
-                const trLineCount = this.getLineCount(trLines[i]);
+                const maxLineCount = Math.max(
+                    this.getLineCount(edLines[i]),
+                    this.getLineCount(trLines[i])
+                );
                 // set data-lines attribute on each li according to which is longer
-                if (edLineCount > trLineCount) {
-                    edLines[i].setAttribute("data-lines", edLineCount);
-                    trLines[i].setAttribute("data-lines", edLineCount);
-                } else {
-                    edLines[i].setAttribute("data-lines", trLineCount);
-                    trLines[i].setAttribute("data-lines", trLineCount);
-                }
+                edLines[i].setAttribute("data-lines", maxLineCount);
+                trLines[i].setAttribute("data-lines", maxLineCount);
             }
         }
     }
