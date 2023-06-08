@@ -52,15 +52,22 @@ export default class extends Controller {
                 // when transcription and translation are both opened, align their contents line-by-line
                 this.alignLines();
             } else {
-                // when one of those two toggles is closed, remove inline styles from lines (alignment no longer needed)
+                // when one of those two toggles is closed, remove data-lines from each line (alignment no longer needed)
                 this.transcriptionTarget
                     .querySelectorAll("li")
                     .forEach((li) => {
-                        li.removeAttribute("style");
+                        li.removeAttribute("data-lines");
                     });
                 this.translationTarget.querySelectorAll("li").forEach((li) => {
-                    li.removeAttribute("style");
+                    li.removeAttribute("data-lines");
                 });
+                // also remove padding-top alignment of the two lists
+                this.transcriptionTarget
+                    .querySelector("ol")
+                    .removeAttribute("style");
+                this.translationTarget
+                    .querySelector("ol")
+                    .removeAttribute("style");
             }
         }
     }
@@ -74,26 +81,50 @@ export default class extends Controller {
         );
     }
 
+    getLineCount(el) {
+        // determine the number of lines by dividing element's rendered height
+        // by its computed line height from CSS, and applying a floor function
+        return Math.floor(
+            el.getBoundingClientRect().height /
+                parseInt(getComputedStyle(el).getPropertyValue("line-height"))
+        );
+    }
+
     alignLines() {
-        // align each line of transcription to translation
+        // first, align tops of lists (using inline styles)
+        const edTop = this.transcriptionTarget
+            .querySelector("ol")
+            .getBoundingClientRect().top;
+        const trTop = this.translationTarget
+            .querySelector("ol")
+            .getBoundingClientRect().top;
+        if (edTop < trTop) {
+            this.transcriptionTarget.querySelector("ol").style.paddingTop = `${
+                trTop - edTop
+            }px`;
+        } else if (trTop < edTop) {
+            this.translationTarget.querySelector("ol").style.paddingTop = `${
+                edTop - trTop
+            }px`;
+        }
+
+        // then, align each line of transcription to translation
         const edLines = this.transcriptionTarget.querySelectorAll("li");
         const trLines = this.translationTarget.querySelectorAll("li");
         // only align as many lines as we need to
         const minLines = Math.min(edLines.length, trLines.length);
         for (let i = 0; i < minLines; i++) {
             if (edLines[i] && trLines[i]) {
-                // compare top of lines by position in list
-                const edLiPos = edLines[i].getBoundingClientRect();
-                const trLiPos = trLines[i].getBoundingClientRect();
-                // add padding-top to the elements that need it
-                if (edLiPos.top < trLiPos.top) {
-                    edLines[i].style.paddingTop = `${
-                        trLiPos.top - edLiPos.top
-                    }px`;
-                } else if (edLiPos.top > trLiPos.top) {
-                    trLines[i].style.paddingTop = `${
-                        edLiPos.top - trLiPos.top
-                    }px`;
+                // calculate number of lines based on line height
+                const edLineCount = this.getLineCount(edLines[i]);
+                const trLineCount = this.getLineCount(trLines[i]);
+                // set data-lines attribute on each li according to which is longer
+                if (edLineCount > trLineCount) {
+                    edLines[i].setAttribute("data-lines", edLineCount);
+                    trLines[i].setAttribute("data-lines", edLineCount);
+                } else {
+                    edLines[i].setAttribute("data-lines", trLineCount);
+                    trLines[i].setAttribute("data-lines", trLineCount);
                 }
             }
         }
@@ -101,7 +132,6 @@ export default class extends Controller {
 
     handleSaveAnnotation(e) {
         // on save, re-align transcription and translation lines
-        // TODO: handle cancel?
         if (this.isDesktop()) {
             const { message } = e.detail;
             if (

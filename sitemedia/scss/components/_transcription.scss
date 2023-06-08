@@ -478,13 +478,21 @@
                 margin: auto;
             }
             // adjust line heights to align transcription with translation when both visible
-            // TODO: Handle this more gracefully with javascript to include 3+ line <li>s
-            div.editions ol li,
-            div.translations ol li,
-            .annotate.translation ol li,
-            .annotate.transcription ol li {
+            li[data-lines="2"] {
                 // li, height of two lines (line height = 34px)
                 min-height: 68px;
+            }
+            li[data-lines="3"] {
+                min-height: 102px;
+            }
+            li[data-lines="4"] {
+                min-height: 136px;
+            }
+            li[data-lines="5"] {
+                min-height: 170px;
+            }
+            li[data-lines="6"] {
+                min-height: 204px;
             }
             h2 + span.current-transcription,
             h2 + span.current-translation {
