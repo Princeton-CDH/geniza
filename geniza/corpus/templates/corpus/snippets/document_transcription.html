@@ -163,8 +163,7 @@
                             dir="rtl"
                             data-manifest="{% url 'corpus-uris:document-manifest' document.pk %}"
                             data-ittpanel-target="transcription"
-                            data-action="mousedown->ittpanel#clickAnnotation"
-                            >
+                        >
                             {% if forloop.first %}
                                 {% include "corpus/snippets/transcription_instructions.html" %}
                             {% endif %}
@@ -201,10 +200,9 @@
                     {% if edit_mode == "translating" %}
                         <div class="annotate translation"
                             data-ittpanel-target="translation"
-                            data-action="mousedown->ittpanel#clickAnnotation"
                             dir="{{ annotation_config.source_dir|default:"ltr" }}"
                             data-manifest="{% url 'corpus-uris:document-manifest' document.pk %}"
-                            >
+                        >
                             {% if forloop.first %}
                                 {% include "corpus/snippets/transcription_instructions.html" %}
                             {% endif %}

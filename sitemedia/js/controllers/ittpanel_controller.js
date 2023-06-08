@@ -99,23 +99,8 @@ export default class extends Controller {
         }
     }
 
-    clickAnnotation(e) {
-        // on mousedown to edit content, clear any style that was added to li elements.
-        // otherwise, modified HTML will be loaded inside the editor, and saved with the annotation!
-        if (this.isDesktop() && e.target.tagName === "ANNOTATION-BLOCK") {
-            const lines = this.transcriptionTarget.querySelector(
-                "annotation-block"
-            )
-                ? this.transcriptionTarget.querySelectorAll("li")
-                : this.translationTarget.querySelectorAll("li");
-            lines.forEach((li) => {
-                li.removeAttribute("style");
-            });
-        }
-    }
-
     handleSaveAnnotation(e) {
-        // reverse of clickAnnotation; on save, re-align transcription and translation lines
+        // on save, re-align transcription and translation lines
         // TODO: handle cancel?
         if (this.isDesktop()) {
             const { message } = e.detail;
