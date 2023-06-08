@@ -129,7 +129,7 @@ class Command(tei_to_annotation.Command):
             % self.stats
         )
 
-        # push all changes from migration to github
+        # push all changes from import to github
         self.anno_exporter.sync_github()
 
         # report on missing sources
@@ -294,7 +294,7 @@ class Command(tei_to_annotation.Command):
         )
 
         # get or create a digital translation footnote
-        (footnote, created) = Footnote.objects.get_or_create(
+        footnote = Footnote.objects.create(
             object_id=doc.pk,
             content_type=self.get_content_type(doc),
             source=source,
@@ -303,31 +303,10 @@ class Command(tei_to_annotation.Command):
         footnote.location = location
         footnote.save()
         # log creation
-        if created:
-            self.log_addition(
-                footnote,
-                "Created new footnote for migrated Google Docs digital translation",
-            )
-        else:
-            # remove all existing annotations associated with this
-            # document and footnote so we can reimport as needed
-            existing_annos = Annotation.objects.filter(
-                footnote=footnote,
-                created__lt=self.script_run_start,
-            )
-            if existing_annos:
-                print(
-                    "Removing %s pre-existing annotation%s for %s on %s "
-                    % (
-                        len(existing_annos),
-                        pluralize(existing_annos),
-                        footnote.source,
-                        doc.pk,
-                    )
-                )
-                # not creating log entries for deletion, but
-                # this should probably only come up in dev runs
-                existing_annos.delete()
+        self.log_addition(
+            footnote,
+            "Created new footnote for imported Google Docs digital translation",
+        )
 
         # extract, process, and create annotations from the translation blocks
         translation = tables[1]
@@ -393,7 +372,7 @@ class Command(tei_to_annotation.Command):
             db_anno.footnote = footnote
             db_anno.save()
             # log entry to document annotation creation
-            self.log_addition(db_anno, "Migrated from Google Doc translation")
+            self.log_addition(db_anno, "Imported from Google Doc translation")
 
             self.stats["created"] += 1
 
