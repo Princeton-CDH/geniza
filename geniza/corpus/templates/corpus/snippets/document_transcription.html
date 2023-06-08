@@ -159,7 +159,11 @@
                 </div>
                 <div class="transcription-panel">
                     {% if edit_mode == "transcribing" %}
-                        <div class="annotate transcription" dir="rtl" data-manifest="{% url 'corpus-uris:document-manifest' document.pk %}">
+                        <div class="annotate transcription"
+                            dir="rtl"
+                            data-manifest="{% url 'corpus-uris:document-manifest' document.pk %}"
+                            data-ittpanel-target="transcription"
+                        >
                             {% if forloop.first %}
                                 {% include "corpus/snippets/transcription_instructions.html" %}
                             {% endif %}
@@ -176,6 +180,7 @@
                                 {# display transcription in chunks by index #}
                                 {% for edition in document.digital_editions.all %}
                                     <div class="transcription ed-{{ edition.pk }}"
+                                        data-ittpanel-target="transcription"
                                         data-label="{{ edition.source.formatted_display }}"
                                         lang="{{ document.primary_lang_code|default:"" }}"
                                         dir="rtl"
@@ -193,7 +198,11 @@
                 </div>
                 <div class="translation-panel">
                     {% if edit_mode == "translating" %}
-                        <div class="annotate transcription" dir="{{ annotation_config.source_dir|default:"ltr" }}" data-manifest="{% url 'corpus-uris:document-manifest' document.pk %}">
+                        <div class="annotate translation"
+                            data-ittpanel-target="translation"
+                            dir="{{ annotation_config.source_dir|default:"ltr" }}"
+                            data-manifest="{% url 'corpus-uris:document-manifest' document.pk %}"
+                        >
                             {% if forloop.first %}
                                 {% include "corpus/snippets/transcription_instructions.html" %}
                             {% endif %}
@@ -209,7 +218,11 @@
                             <div class="translations">
                                 {# display translation in chunks by index #}
                                 {% for translation in document.digital_translations.all %}
-                                    <div class="translation tr-{{ translation.pk }}" data-label="{{ translation.source.formatted_display }}" {% if translation.source.languages.exists %}lang="{{ translation.source.languages.all.0.code }}" dir="{{ translation.source.languages.all.0.direction }}"{% else %}dir="ltr"{% endif %}>
+                                    <div class="translation tr-{{ translation.pk }}"
+                                        data-ittpanel-target="translation"
+                                        data-label="{{ translation.source.formatted_display }}"
+                                        {% if translation.source.languages.exists %}lang="{{ translation.source.languages.all.0.code }}" dir="{{ translation.source.languages.all.0.direction }}"{% else %}dir="ltr"{% endif %}
+                                    >
                                         {% for html_section in translation.content_html|dict_item:canvas_uri %}
                                             {{ html_section|safe }}
                                         {% endfor %}
