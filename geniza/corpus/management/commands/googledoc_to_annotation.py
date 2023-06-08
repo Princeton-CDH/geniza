@@ -80,8 +80,6 @@ class Command(tei_to_annotation.Command):
             stdout=self.stdout,
             verbosity=options["verbosity"],
             push_changes=False,
-            # this will be overwritten
-            commit_msg="PGP translation export from Google Docs migration",
         )
         self.anno_exporter.setup_repo()
 
