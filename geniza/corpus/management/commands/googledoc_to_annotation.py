@@ -19,6 +19,7 @@ from addict import Dict
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.management.base import CommandError
 from django.template.defaultfilters import pluralize
 from django.utils import timezone
 from google.auth.transport.requests import Request
@@ -182,6 +183,12 @@ class Command(tei_to_annotation.Command):
                 print("\t%s" % doc)
 
     def get_credentials(self):
+        # check for required settings
+        if not settings.GOOGLE_API_SECRETS_FILE or not settings.GOOGLE_API_TOKEN_FILE:
+            return CommandError(
+                """GOOGLE_API_SECRETS_FILE and GOOGLE_API_TOKEN_FILE settings are required.
+                Please add these to settings/local_settings.py."""
+            )
         SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
         creds = None
         # The token json file stores the user's access and refresh tokens, and is
