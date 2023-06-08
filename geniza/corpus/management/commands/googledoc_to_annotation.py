@@ -1,6 +1,10 @@
 """
 Script to convert translation content from Google Docs template
-to IIIF annotations in the configured annotation server.
+to IIIF annotations in the configured annotation server. This is
+a one-time script intended to import Lieberman translations.
+
+Intended to be run manually from the shell as follows:
+./manage.py googledoc_to_annotation GOOGLE_DRIVE_FOLDER_ID
 
 Adapted from tei_to_annotation management command.
 """
@@ -90,21 +94,24 @@ class Command(tei_to_annotation.Command):
         files = []
 
         try:
-            # create drive api client
+            # create drive api client (https://developers.google.com/drive/api/quickstart/python)
             self.service = build("drive", "v3", credentials=self.get_credentials())
             page_token = None
             # loop through all pages until there are no more new pages
+            # adapted from https://developers.google.com/drive/api/guides/search-files
             while True:
                 # find all files in the folder folder_id and drive drive_id
                 response = (
+                    # see https://developers.google.com/drive/api/reference/rest/v3/files/list
                     self.service.files()
                     .list(
+                        # limit to files within this subfolder and not in the trash
                         q=f"'{self.folder_id}' in parents and trashed=false",
                         driveId=self.drive_id,
-                        includeItemsFromAllDrives=True,
-                        corpora="drive",
-                        supportsAllDrives=True,
-                        pageToken=page_token,
+                        includeItemsFromAllDrives=True,  # required for shared drives
+                        corpora="drive",  # include all files in drive, not just current user's
+                        supportsAllDrives=True,  # required for files.list
+                        pageToken=page_token,  # current page
                     )
                     .execute()
                 )
@@ -234,14 +241,7 @@ class Command(tei_to_annotation.Command):
         tables = soup.find_all("table")
         # extract the footnote metadata
         metadata = tables[0].find_all("td")
-        # handle earlier and later template revisions
-        if len(metadata) == 6:
-            # rev. 1: missing notes field; was labeled "Notes" but used for location
-            notes = None
-            (pgpid, source_id, location) = (td.get_text() for td in metadata[3:])
-        elif len(metadata) == 8:
-            # rev. 2: includes both Location and Notes fields
-            (pgpid, source_id, location, notes) = (td.get_text() for td in metadata[4:])
+        (pgpid, source_id, location) = (td.get_text() for td in metadata[3:])
 
         # check if doc name mismatched with pgpid in metadata table; use doc name if so
         pgpid_match = re.search("PGPID (?P<pgpid>\d+)", name)
@@ -285,7 +285,6 @@ class Command(tei_to_annotation.Command):
             doc_relation=Footnote.DIGITAL_TRANSLATION,
         )
         footnote.location = location
-        footnote.notes = notes or ""
         footnote.save()
         # log creation
         if created:
@@ -385,5 +384,5 @@ class Command(tei_to_annotation.Command):
         # export html/txt translation files to github backup
         self.anno_exporter.export(
             pgpids=[doc.pk],
-            commit_msg="Translation migrated from Google Doc - PGPID %d" % doc.pk,
+            commit_msg="Translation imported from Google Doc - PGPID %d" % doc.pk,
         )
