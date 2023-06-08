@@ -96,37 +96,13 @@ class Command(tei_to_annotation.Command):
         )
         progress.start()
         fetch_task = progress.add_task("Fetching list of files...", total=None)
-        files = []
 
         try:
             # create drive api client (https://developers.google.com/drive/api/quickstart/python)
             self.service = build("drive", "v3", credentials=self.get_credentials())
-            page_token = None
-            # loop through all pages until there are no more new pages
-            # adapted from https://developers.google.com/drive/api/guides/search-files
-            while True:
-                # find all files in the folder folder_id and drive drive_id
-                response = (
-                    # see https://developers.google.com/drive/api/reference/rest/v3/files/list
-                    self.service.files()
-                    .list(
-                        # limit to files within this subfolder and not in the trash
-                        q=f"'{self.folder_id}' in parents and trashed=false",
-                        driveId=self.drive_id,
-                        includeItemsFromAllDrives=True,  # required for shared drives
-                        corpora="drive",  # include all files in drive, not just current user's
-                        supportsAllDrives=True,  # required for files.list
-                        pageToken=page_token,  # current page
-                    )
-                    .execute()
-                )
-                # add files to list
-                files += response.get("files", [])
-                # go to the next page if there's a next page token, otherwise end the loop
-                page_token = response.get("nextPageToken", None)
-                if page_token is None:
-                    break
 
+            # get list of all files
+            files = self.list_all_files()
             n = len(files)
             progress.update(
                 fetch_task, completed=n, total=n, description=f"Found {n} files."
@@ -134,7 +110,7 @@ class Command(tei_to_annotation.Command):
 
             # loop through each file, and process it
             process_task = progress.add_task(f"Processing...", total=n)
-            for file in response.get("files", []):
+            for file in files:
                 if self.verbosity > self.v_normal:
                     print(f"Processing {file.get('name')}")
                 self.stats["files"] += 1
@@ -211,6 +187,35 @@ class Command(tei_to_annotation.Command):
             with open(settings.GOOGLE_API_TOKEN_FILE, "w") as token:
                 token.write(creds.to_json())
         return creds
+
+    def list_all_files(self):
+        # adapted from https://developers.google.com/drive/api/guides/search-files
+        files = []
+        page_token = None
+        # loop through all pages until there are no more new pages
+        while True:
+            # find all files in the folder folder_id and drive drive_id
+            response = (
+                # see https://developers.google.com/drive/api/reference/rest/v3/files/list
+                self.service.files()
+                .list(
+                    # limit to files within this subfolder and not in the trash
+                    q=f"'{self.folder_id}' in parents and trashed=false",
+                    driveId=self.drive_id,
+                    includeItemsFromAllDrives=True,  # required for shared drives
+                    corpora="drive",  # include all files in drive, not just current user's
+                    supportsAllDrives=True,  # required for files.list
+                    pageToken=page_token,  # current page
+                )
+                .execute()
+            )
+            # add files to list
+            files += response.get("files", [])
+            # go to the next page if there's a next page token, otherwise end the loop
+            page_token = response.get("nextPageToken", None)
+            if page_token is None:
+                break
+        return files
 
     def download_as_html(self, file_id):
         # export file to HTML
