@@ -79,25 +79,24 @@ export default class extends Controller {
         const edLines = this.transcriptionTarget.querySelectorAll("li");
         const trLines = this.translationTarget.querySelectorAll("li");
         // only align as many lines as we need to
-        const [lessLines, moreLines] =
-            edLines.length < trLines.length
-                ? [trLines, edLines]
-                : [edLines, trLines];
-        lessLines.forEach((li, i) => {
-            if (li && moreLines[i]) {
+        const minLines = Math.min(edLines.length, trLines.length);
+        for (let i = 0; i < minLines; i++) {
+            if (edLines[i] && trLines[i]) {
                 // compare top of lines by position in list
-                const thisLiPos = li.getBoundingClientRect();
-                const thatLiPos = moreLines[i].getBoundingClientRect();
+                const edLiPos = edLines[i].getBoundingClientRect();
+                const trLiPos = trLines[i].getBoundingClientRect();
                 // add padding-top to the elements that need it
-                if (thisLiPos.top < thatLiPos.top) {
-                    li.style.paddingTop = `${thatLiPos.top - thisLiPos.top}px`;
-                } else if (thisLiPos.top > thatLiPos.top) {
-                    moreLines[i].style.paddingTop = `${
-                        thisLiPos.top - thatLiPos.top
+                if (edLiPos.top < trLiPos.top) {
+                    edLines[i].style.paddingTop = `${
+                        trLiPos.top - edLiPos.top
+                    }px`;
+                } else if (edLiPos.top > trLiPos.top) {
+                    trLines[i].style.paddingTop = `${
+                        edLiPos.top - trLiPos.top
                     }px`;
                 }
             }
-        });
+        }
     }
 
     clickAnnotation(e) {
