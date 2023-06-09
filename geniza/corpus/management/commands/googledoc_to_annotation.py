@@ -20,6 +20,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management.base import CommandError
+from django.db import IntegrityError
 from django.template.defaultfilters import pluralize
 from django.utils import timezone
 from google.auth.transport.requests import Request
@@ -44,10 +45,10 @@ class Command(tei_to_annotation.Command):
     v_normal = 1  # default verbosity
 
     normalized_unicode = set()
-
     document_not_found = []
-
     source_not_found = []
+    bad_file = []
+    footnote_exists = []
 
     REMOVE_ATTRIBUTES = ["style", "class"]  # attributes to strip from html elements
 
@@ -150,6 +151,7 @@ class Command(tei_to_annotation.Command):
             for doc in self.normalized_unicode:
                 print("\t%s" % doc)
 
+        # report on documents not found
         if self.document_not_found:
             print(
                 "Document not found for %s PGPID%s:"
@@ -158,10 +160,26 @@ class Command(tei_to_annotation.Command):
             for doc in self.document_not_found:
                 print("\t%s" % doc)
 
+        if self.bad_file:
+            print(
+                "Bad formatting for %s file%s (skipped):"
+                % (len(self.bad_file), pluralize(self.bad_file))
+            )
+            for doc in self.bad_file:
+                print("\t%s" % doc)
+
+        if self.footnote_exists:
+            print(
+                "Footnote already exists for %s file%s (skipped):"
+                % (len(self.footnote_exists), pluralize(self.footnote_exists))
+            )
+            for doc in self.footnote_exists:
+                print("\t%s" % doc)
+
     def get_credentials(self):
         # check for required settings
         if not settings.GOOGLE_API_SECRETS_FILE or not settings.GOOGLE_API_TOKEN_FILE:
-            return CommandError(
+            raise CommandError(
                 """GOOGLE_API_SECRETS_FILE and GOOGLE_API_TOKEN_FILE settings are required.
                 Please add these to settings/local_settings.py."""
             )
@@ -255,6 +273,14 @@ class Command(tei_to_annotation.Command):
         soup = BeautifulSoup(html_file, "html.parser")
         # first table is metadata, second table is translation
         tables = soup.find_all("table")
+        if not tables or len(tables) != 2 or not tables[0].find("td"):
+            print(
+                self.style.WARNING(
+                    f"The file {name} does not match the expected format; skipping"
+                )
+            )
+            self.bad_file.append(name)
+            return
         # extract the footnote metadata
         metadata = tables[0].find_all("td")
         (pgpid, source_id, location) = (td.get_text() for td in metadata[3:])
@@ -294,12 +320,19 @@ class Command(tei_to_annotation.Command):
         )
 
         # get or create a digital translation footnote
-        footnote = Footnote.objects.create(
-            object_id=doc.pk,
-            content_type=self.get_content_type(doc),
-            source=source,
-            doc_relation=Footnote.DIGITAL_TRANSLATION,
-        )
+        try:
+            footnote = Footnote.objects.create(
+                object_id=doc.pk,
+                content_type=self.get_content_type(doc),
+                source=source,
+                doc_relation=Footnote.DIGITAL_TRANSLATION,
+            )
+        except IntegrityError:
+            print(
+                self.style.WARNING(f"The footnote for {name} already exists; skipping")
+            )
+            self.footnote_exists.append(name)
+            return
         footnote.location = location
         footnote.save()
         # log creation
