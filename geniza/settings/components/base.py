@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "geniza.footnotes.apps.FootnotesConfig",
     "geniza.pages.apps.PagesConfig",
     "geniza.annotations",
+    "geniza.entities",
 ]
 
 MIDDLEWARE = [
