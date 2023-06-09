@@ -4,7 +4,7 @@ to IIIF annotations in the configured annotation server. This is
 a one-time script intended to import Lieberman translations.
 
 Intended to be run manually from the shell as follows:
-./manage.py googledoc_to_annotation GOOGLE_DRIVE_FOLDER_ID
+./manage.py googledoc_to_annotation -d GOOGLE_DRIVE_DRIVE_ID -f GOOGLE_DRIVE_FOLDER_ID
 
 Adapted from tei_to_annotation management command.
 """
