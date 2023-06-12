@@ -168,7 +168,10 @@ class PersonDocumentRelation(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     type = models.ForeignKey(
-        PersonDocumentRelationType, on_delete=models.SET_NULL, null=True
+        PersonDocumentRelationType,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="Relation",
     )
     notes = models.TextField(blank=True)
 
@@ -180,6 +183,9 @@ class PersonDocumentRelation(models.Model):
                 name="unique_person_document_relation_by_type",
             ),
         ]
+
+    def __str__(self):
+        return f"{self.type} relation: {self.person} and {self.document}"
 
 
 class PersonPersonRelationTypeManager(models.Manager):
@@ -226,10 +232,16 @@ class PersonPersonRelation(models.Model):
         Person, on_delete=models.CASCADE, related_name="to_person"
     )
     to_person = models.ForeignKey(
-        Person, on_delete=models.CASCADE, related_name="from_person"
+        Person,
+        on_delete=models.CASCADE,
+        related_name="from_person",
+        verbose_name="Person",
     )
     type = models.ForeignKey(
-        PersonPersonRelationType, on_delete=models.SET_NULL, null=True
+        PersonPersonRelationType,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="Relation",
     )
     notes = models.TextField(blank=True)
 
@@ -246,3 +258,6 @@ class PersonPersonRelation(models.Model):
                 check=~models.Q(from_user=models.F("to_user")),
             ),
         ]
+
+    def __str__(self):
+        return f"{self.type} relation: {self.from_person} and {self.to_person}"
