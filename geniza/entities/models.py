@@ -255,7 +255,7 @@ class PersonPersonRelation(models.Model):
             # do not allow from_person and to_person to be the same person
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_prevent_self_relationship",
-                check=~models.Q(from_user=models.F("to_user")),
+                check=~models.Q(from_person=models.F("to_person")),
             ),
         ]
 
