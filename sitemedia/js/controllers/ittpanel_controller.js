@@ -8,14 +8,17 @@ export default class extends Controller {
     initialize() {
         // bind "this" so we can access other methods in this controller from within event handler
         this.boundAlertHandler = this.handleSaveAnnotation.bind(this);
+        this.boundCancelHandler = this.handleCancelAnnotation.bind(this);
     }
 
     connect() {
         document.addEventListener("tahqiq-alert", this.boundAlertHandler);
+        document.addEventListener("tahqiq-cancel", this.boundCancelHandler);
     }
 
     disconnect() {
         document.removeEventListener("tahqiq-alert", this.boundAlertHandler);
+        document.removeEventListener("tahqiq-cancel", this.boundCancelHandler);
     }
 
     isDesktop() {
@@ -137,6 +140,16 @@ export default class extends Controller {
             ) {
                 this.alignLines();
             }
+        }
+    }
+
+    handleCancelAnnotation() {
+        // on cancel, re-align transcription and translation lines.
+        // odd quirk of the reload: we have to wait 1ms for the queryselector to work.
+        if (this.isDesktop() && this.transcriptionAndTranslationOpen()) {
+            setTimeout(() => {
+                this.alignLines();
+            }, 1);
         }
     }
 }
