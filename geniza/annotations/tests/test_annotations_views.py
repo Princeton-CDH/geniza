@@ -308,6 +308,23 @@ class TestAnnotationDetail:
         # document should still have a digital edition
         assert document.digital_editions().filter(source=source).exists()
 
+    def test_delete_last_translation_anno(self, admin_client, translation_annotation):
+        # Should remove footnote DIGITAL_TRANSLATION relation if deleted annotation
+        # is the only annotation on source + document
+        manifest_uri = translation_annotation.target_source_manifest_id
+        source_uri = translation_annotation.footnote.source.uri
+        source = Source.from_uri(source_uri)
+        document = Document.from_manifest_uri(manifest_uri)
+        # will raise error if digital translation footnote does not exist
+        footnote = document.digital_translations().get(source=source)
+        admin_client.delete(translation_annotation.get_absolute_url())
+        # footnote should still exist, but no longer be a digital translation
+        assert Footnote.objects.filter(object_id=document.pk, source=source).exists()
+        assert not document.digital_translations().filter(source=source).exists()
+        footnote.refresh_from_db()
+        assert footnote.annotation_set.count() == 0
+        assert Footnote.DIGITAL_TRANSLATION not in footnote.doc_relation
+
 
 @pytest.mark.django_db
 class TestAnnotationSearch:
