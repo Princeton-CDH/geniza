@@ -478,6 +478,18 @@
                 margin: auto;
             }
             // adjust line heights to align transcription with translation when both visible
+            // give li a standard line height (using largest among transcription/translation styles)
+            li {
+                line-height: calc(34 / 22);
+            }
+            // remove margin/padding that could interrupt alignment
+            li p {
+                margin: 0;
+                padding: 0;
+            }
+            li[data-lines="1"] {
+                min-height: calc(1 * 34 / 22 * 1.375rem);
+            }
             li[data-lines="2"] {
                 // li, height of two lines (line height = 34 / 22, font size = 1.375rem)
                 min-height: calc(2 * 34 / 22 * 1.375rem);
@@ -1139,9 +1151,9 @@ a.editor-navigation {
             line-height: 22px;
 
             @include breakpoints.for-tablet-landscape-up {
-                font-size: 38px;
-                line-height: 26px;
-                right: -37px;
+                font-size: 45px;
+                line-height: 25px;
+                right: -36px;
             }
         }
 
