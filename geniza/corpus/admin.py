@@ -8,6 +8,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db.models import CharField, Count, F
+from django.db.models.fields import TextField
 from django.db.models.functions import Concat
 from django.forms.widgets import HiddenInput, Textarea, TextInput
 from django.http import HttpResponseRedirect
@@ -30,6 +31,7 @@ from geniza.corpus.models import (
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
+from geniza.entities.models import PersonDocumentRelation
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.footnotes.models import Footnote
 
@@ -228,6 +230,31 @@ class DocumentDatingInline(admin.TabularInline):
     extra = 1
 
 
+class DocumentPersonInline(admin.TabularInline):
+    """Inline for people related to a document"""
+
+    model = PersonDocumentRelation
+    verbose_name = "Related Person"
+    verbose_name_plural = "Related People"
+    autocomplete_fields = ["person", "type"]
+    fields = (
+        "person",
+        "person_link",
+        "type",
+        "notes",
+    )
+    readonly_fields = ("person_link",)
+    formfield_overrides = {
+        TextField: {"widget": Textarea(attrs={"rows": 4})},
+    }
+    extra = 1
+
+    def person_link(self, obj):
+        """Get the link to a related person"""
+        person_path = reverse("admin:entities_person_change", args=[obj.person.id])
+        return format_html(f'<a href="{person_path}">{str(obj.person)}</a>')
+
+
 @admin.register(Document)
 class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     form = DocumentForm
@@ -338,8 +365,13 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     )
     autocomplete_fields = ["languages", "secondary_languages"]
     # NOTE: autocomplete does not honor limit_choices_to in model
-    inlines = [DocumentDatingInline, DocumentTextBlockInline, DocumentFootnoteInline]
-    fieldsets_and_inlines_order = ("f", "f", "i", "f", "i", "i")
+    inlines = [
+        DocumentDatingInline,
+        DocumentTextBlockInline,
+        DocumentFootnoteInline,
+        DocumentPersonInline,
+    ]
+    fieldsets_and_inlines_order = ("f", "f", "i", "f", "i", "i", "i")
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
