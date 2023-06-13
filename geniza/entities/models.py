@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.translation import gettext as _
 from gfklookupwidget.fields import GfkLookupField
 
+from geniza.common.models import cached_class_property
 from geniza.corpus.models import DisplayLabelMixin, Document, LanguageScript
 from geniza.footnotes.models import Footnote
 
@@ -75,6 +76,10 @@ class PersonRole(DisplayLabelMixin, models.Model):
         help_text="Optional label for display on the public site",
     )
     objects = PersonRoleManager()
+
+    @cached_class_property
+    def objects_by_label(cls):
+        return super().objects_by_label()
 
     class Meta:
         verbose_name = "Person social role"

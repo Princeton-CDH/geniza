@@ -90,7 +90,7 @@ class DisplayLabelMixin:
         """Natural key, name"""
         return (self.name,)
 
-    @cached_class_property
+    @classmethod
     def objects_by_label(cls):
         """A dict of object instances keyed on English display label"""
         return {

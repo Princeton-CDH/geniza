@@ -37,7 +37,11 @@ from unidecode import unidecode
 from urllib3.exceptions import HTTPError, NewConnectionError
 
 from geniza.annotations.models import Annotation
-from geniza.common.models import DisplayLabelMixin, TrackChangesModel
+from geniza.common.models import (
+    DisplayLabelMixin,
+    TrackChangesModel,
+    cached_class_property,
+)
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 from geniza.corpus.dates import DocumentDateMixin
@@ -383,6 +387,10 @@ class DocumentType(DisplayLabelMixin, models.Model):
         help_text="Optional label for display on the public site",
     )
     objects = DocumentTypeManager()
+
+    @cached_class_property
+    def objects_by_label(cls):
+        return super().objects_by_label()
 
 
 class DocumentSignalHandlers:
