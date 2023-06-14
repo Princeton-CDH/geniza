@@ -4,6 +4,8 @@
 
 -   Seleucid calendar conversion is now implemented, so automatic conversion should be applied
     to all existing dates by using `python manage.py convert_dates update`.
+-   Translation content is now indexed in search, so solr configuration has changed. Ensure Solr
+    configset has been updated and then reindex all content: `python manage.py index`
 
 ## 4.13
 
