@@ -4,72 +4,83 @@ import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
     static targets = [
-        "editionShortLabel",
-        "editionFullLabel",
+        "transcriptionShortLabel",
+        "transcriptionFullLabel",
+        "translationShortLabel",
+        "translationFullLabel",
         "dropdownDetails",
     ];
 
     dropdownDetailsTargetConnected() {
-        // edition switcher is disabled by default; enable if more than one edition
-        if (this.dropdownDetailsTarget.dataset.editionCount > 1) {
-            this.dropdownDetailsTarget.removeAttribute("disabled");
+        // switcher is disabled by default; enable if more than one transcription/translation
+        this.dropdownDetailsTargets.forEach((target) => {
+            if (target.dataset.count > 1) {
+                target.removeAttribute("disabled");
+                const { relation } = target.dataset;
 
-            // if multiple transcriptions, adjust offset when transcription panel resizes
-            this.transcriptionResizeObserver = new ResizeObserver((entries) => {
-                this.resizeTranscriptionPanel();
-            });
-            this.transcriptionResizeObserver.observe(
-                document.querySelector("div.transcription-panel")
-            );
-        }
+                // if multiple transcriptions/translations, adjust offset when panel resizes
+                this[`${relation}ResizeObserver`] = new ResizeObserver(() => {
+                    this.resizePanel(relation);
+                });
+                this[`${relation}ResizeObserver`].observe(
+                    document.querySelector(`div.${relation}-panel`)
+                );
+            }
+        });
     }
 
-    // Change transcription dropdown: pseudo-<select> element with radio buttons to allow styling
-    // dropdown menu options list
-
-    changeTranscription(evt) {
+    // Change transcription/translation dropdown: pseudo-<select> element with radio buttons to
+    // allow styling dropdown menu options list
+    changeDropdown(evt) {
         /*
          * Event listener to handle changes to the visible transcription content, and to
          * mimic <select> menu "header" functionality in a details/summary with radio
          * button inputs.
          */
-        const edition = evt.currentTarget.dataset.edition;
-        const chunks = document.querySelectorAll(`.${edition}`);
+        const relation = evt.currentTarget.name;
+        const className = evt.currentTarget.dataset[relation];
+        const chunks = document.querySelectorAll(`.${className}`);
         this.scrollChunksIntoView(chunks);
 
-        // Set subheader to show full label for edition
-        this.editionFullLabelTarget.innerHTML = chunks[0].dataset.label;
+        // Set subheader to show full label for transcription
+        this[`${relation}FullLabelTarget`].innerHTML = chunks[0].dataset.label;
 
-        // Mimic "header" functionality by copying the shortened edition metadata from option to summary
-        this.editionShortLabelTarget.innerHTML =
+        // Mimic "header" functionality by copying the shortened transcription metadata from option to summary
+        this[`${relation}ShortLabelTarget`].innerHTML =
             evt.currentTarget.parentElement.textContent;
     }
 
     keyboardCloseDropdown(e) {
         // exit the list and submit on enter/space
-        if (
-            this.dropdownDetailsTarget.open &&
-            (e.code === "Enter" ||
-                e.code === "Space" ||
-                (!e.shiftKey && e.code === "Tab")) // Tab out of a radio button = exiting the list
-        ) {
-            this.dropdownDetailsTarget.removeAttribute("open");
-        }
+        this.dropdownDetailsTargets.forEach((target) => {
+            if (
+                target.open &&
+                (e.code === "Enter" ||
+                    e.code === "Space" ||
+                    (!e.shiftKey && e.code === "Tab")) // Tab out of a radio button = exiting the list
+            ) {
+                target.removeAttribute("open");
+            }
+        });
     }
 
     shiftTabCloseDropdown(e) {
         // Shift-tab out of the summary = exiting the list
-        if (this.dropdownDetailsTarget.open && e.shiftKey && e.code === "Tab") {
-            this.dropdownDetailsTarget.removeAttribute("open");
-        }
+        this.dropdownDetailsTargets.forEach((target) => {
+            if (target.open && e.shiftKey && e.code === "Tab") {
+                target.removeAttribute("open");
+            }
+        });
     }
 
     clickCloseDropdown(e) {
         // Event listener to close the dropdown <details> element when a click is registered outside
         // of it. This needs to be on the whole document because the click could be from anywhere!
-        if (this.dropdownDetailsTarget.open) {
-            this.dropdownDetailsTarget.removeAttribute("open");
-        }
+        this.dropdownDetailsTargets.forEach((target) => {
+            if (target.open) {
+                target.removeAttribute("open");
+            }
+        });
     }
 
     scrollChunksIntoView(chunks) {
@@ -80,15 +91,15 @@ export default class extends Controller {
         });
     }
 
-    resizeTranscriptionPanel() {
-        // When transcription panel changes width, recalculate offsets
-        // to make sure the selected transcription is displaying correctly
-        const selectedEditionInput = document.querySelector(
-            'input:checked[type="radio"][name="transcription"]'
+    resizePanel(relation) {
+        // When panel changes width, recalculate offsets to make sure
+        // the selected transcription/translation is displaying correctly
+        const selectedInput = document.querySelector(
+            `input:checked[type="radio"][name="${relation}"]`
         );
-        if (selectedEditionInput) {
-            const edition = selectedEditionInput.dataset.edition;
-            const chunks = document.querySelectorAll(`.${edition}`);
+        if (selectedInput) {
+            const className = selectedInput.dataset[relation];
+            const chunks = document.querySelectorAll(`.${className}`);
             this.scrollChunksIntoView(chunks);
         }
     }

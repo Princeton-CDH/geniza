@@ -122,12 +122,11 @@ class TestDocumentDetailView:
 
     def test_placeholder_images(self, client, document):
         # mock digital_editions() to return mocked footnote with mocked content_html
-        with patch.object(Document, "digital_editions") as mock_de:
-            mock_footnote = Mock()
-            mock_de.return_value.all = Mock()
-            mock_de.return_value.all.return_value = [mock_footnote]
-            mock_footnote.content_html.keys = Mock()
-            mock_footnote.content_html.keys.return_value = ["canvas_1", "canvas_2"]
+        with patch.object(Annotation, "objects") as annotation_qs:
+            annotation_qs.filter.return_value.order_by.return_value.values_list.return_value.distinct.return_value = [
+                "canvas_1",
+                "canvas_2",
+            ]
             response = client.get(reverse("corpus:document", args=(document.pk,)))
             placeholders = response.context["images"]
             # should create a dict with canvases as keys and placeholder in values
@@ -1633,6 +1632,13 @@ class TestDocumentTranscribeView:
         assert (
             response.context["page_title"] == f"Edit transcription for {document.title}"
         )
+        # should use "translation" for translate view
+        response = admin_client.get(
+            reverse("corpus:document-translate", args=(document.id, source.pk))
+        )
+        assert (
+            response.context["page_title"] == f"Edit translation for {document.title}"
+        )
 
     def test_permissions(self, document, source, client):
         """should redirect to login if user does not have change document permissions"""
@@ -1670,6 +1676,22 @@ class TestDocumentTranscribeView:
             reverse("corpus:document-transcribe", args=(document.id, 123456789))
         )
         assert response.status_code == 404
+
+        # should include languages for source label in context on translations
+        response = admin_client.get(
+            reverse("corpus:document-translate", args=(document.id, source.pk))
+        )
+        assert source.all_languages() in response.context["source_label"]
+        # should include translating motivation
+        assert (
+            response.context["annotation_config"]["secondary_motivation"]
+            == "translating"
+        )
+        # should include text direction
+        assert (
+            response.context["annotation_config"]["source_dir"]
+            == source.languages.first().direction
+        )
 
 
 class TestSourceAutocompleteView:
@@ -1709,6 +1731,14 @@ class TestDocumentAddTranscriptionView:
             response.context["page_title"]
             == f"Add a new transcription for {document.title}"
         )
+        # should use translation for that view
+        response = admin_client.get(
+            reverse("corpus:document-add-translation", args=(document.id,))
+        )
+        assert (
+            response.context["page_title"]
+            == f"Add a new translation for {document.title}"
+        )
 
     def test_post(self, document, source, admin_client):
         # should redirect to transcription edit view
@@ -1720,6 +1750,15 @@ class TestDocumentAddTranscriptionView:
         assert response.url == reverse(
             "corpus:document-transcribe", args=(document.id, source.pk)
         )
+        # should redirect to translation edit view in add translation view
+        response = admin_client.post(
+            reverse("corpus:document-add-translation", args=(document.id,)),
+            {"source": source.pk},
+        )
+        assert response.status_code == 302
+        assert response.url == reverse(
+            "corpus:document-translate", args=(document.id, source.pk)
+        )
 
     def test_get_context_data(self, document, admin_client):
         # should include SourceChoiceForm
@@ -1730,3 +1769,6 @@ class TestDocumentAddTranscriptionView:
 
         # should have page_type "addsource"
         assert response.context["page_type"] == "addsource"
+
+        # should include doc relation in context
+        assert response.context["doc_relation"] == "transcription"

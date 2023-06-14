@@ -20,6 +20,29 @@ def annotation(db, document, source):
                     "id": "http://ex.co/iiif/canvas/1",
                 }
             },
+            "motivation": ["sc:supplementing", "transcribing"],
+        },
+    )
+    return annotation
+
+
+@pytest.fixture
+def translation_annotation(db, document, source):
+    footnote = Footnote.objects.create(
+        source=source,
+        content_object=document,
+        doc_relation=Footnote.DIGITAL_TRANSLATION,
+    )
+    annotation = Annotation.objects.create(
+        footnote=footnote,
+        content={
+            "body": [{"value": "Test annotation"}],
+            "target": {
+                "source": {
+                    "id": "http://ex.co/iiif/canvas/1",
+                }
+            },
+            "motivation": ["sc:supplementing", "translating"],
         },
     )
     return annotation

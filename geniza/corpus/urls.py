@@ -29,6 +29,11 @@ urlpatterns = [
         name="document-add-transcription",
     ),
     path(
+        "documents/<int:pk>/translate/",
+        corpus_views.DocumentAddTranscriptionView.as_view(doc_relation="translation"),
+        name="document-add-translation",
+    ),
+    path(
         "source-autocomplete/",
         corpus_views.SourceAutocompleteView.as_view(),
         name="source-autocomplete",
@@ -37,6 +42,11 @@ urlpatterns = [
         "documents/<int:pk>/transcribe/<int:source_pk>/",
         corpus_views.DocumentTranscribeView.as_view(),
         name="document-transcribe",
+    ),
+    path(
+        "documents/<int:pk>/translate/<int:source_pk>/",
+        corpus_views.DocumentTranscribeView.as_view(doc_relation="translation"),
+        name="document-translate",
     ),
     path(
         "documents/<int:pk>/transcription/<int:transcription_pk>/",

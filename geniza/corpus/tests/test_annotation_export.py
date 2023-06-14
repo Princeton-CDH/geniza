@@ -15,19 +15,20 @@ from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 from geniza.corpus.models import Document
 
 
-def test_transcription_filename(document, footnote):
-    filename = AnnotationExporter.transcription_filename(document, footnote.source)
+def test_filename(document, footnote):
+    filename = AnnotationExporter.filename(document, footnote.source, "transcription")
     # starts with pgpid id
     assert filename.startswith("PGPID%s" % document.pk)
     # includes source id
     assert "_s%d" % footnote.source.pk in filename
     # includes author last name slug
     assert "_%s_" % footnote.source.authors.first().last_name.lower() in filename
+    # includes fn_type
     assert filename.endswith("transcription")
 
     # test with no author
     footnote.source.authors.clear()
-    filename = AnnotationExporter.transcription_filename(document, footnote.source)
+    filename = AnnotationExporter.filename(document, footnote.source, "transcription")
     assert "_unknown-author_" in filename
 
 

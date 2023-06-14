@@ -12,7 +12,9 @@ nav#site-nav {
     flex-flow: row wrap;
     z-index: 5;
     // ensure nav has highest z-index on page when it contains targeted menu (i.e. mobile menu)
-    &:has(ul:target) {
+    &:has(ul:target),
+    // or hovered menu (i.e. desktop menu)
+    &:has(*:hover) {
         z-index: 10;
     }
     @include breakpoints.for-tablet-landscape-up {

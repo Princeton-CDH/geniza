@@ -11,9 +11,9 @@ from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.functions import Concat
 from django.db.models.functions.text import Lower
@@ -37,6 +37,7 @@ from taggit_selectize.managers import TaggableManager
 from unidecode import unidecode
 from urllib3.exceptions import HTTPError, NewConnectionError
 
+from geniza.annotations.models import Annotation
 from geniza.common.models import TrackChangesModel
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
@@ -768,34 +769,44 @@ class Document(ModelIndexable, DocumentDateMixin):
                             and i not in b.selected_images,
                         }
 
-        # when requested, include any placeholder canvas URIs referenced by any associated transcriptions
+        # when requested, include any placeholder canvas URIs referenced by any associated
+        # transcriptions or translations
         if with_placeholders:
-            for ed in self.digital_editions().all():
-                for canvas_uri in ed.content_html.keys():
-                    if canvas_uri not in iiif_images:
-                        # use placeholder image for each canvas not in iiif_images
-                        iiif_images[canvas_uri] = deepcopy(Document.PLACEHOLDER_CANVAS)
-                        uri_match = re.search(
-                            r"textblock\/(?P<tb_pk>\d+)\/canvas\/(?P<canvas>\d)\/",
-                            canvas_uri,
-                        )
-                        if uri_match:
-                            # if this was created using placeholders in the transcription editor,
-                            # try to ascertain and display the right fragment shelfmark and label
-                            tb_match_shelfmarks = [
-                                tb.fragment.shelfmark
-                                for tb in textblocks
-                                if tb.pk == int(uri_match.group("tb_pk"))
+            # get all distinct canvas URIs across all annotations on this document
+            distinct_canvases = (
+                Annotation.objects.filter(
+                    footnote__content_type=ContentType.objects.get_for_model(Document),
+                    footnote__object_id=self.pk,
+                    content__target__source__id__isnull=False,
+                )
+                .order_by()
+                .values_list("content__target__source__id", flat=True)
+                .distinct()
+            )
+            # loop through each canvas in case we need to add any placeholders
+            for canvas_uri in distinct_canvases:
+                if canvas_uri not in iiif_images:
+                    # use placeholder image for each canvas not in iiif_images
+                    iiif_images[canvas_uri] = deepcopy(Document.PLACEHOLDER_CANVAS)
+                    uri_match = re.search(
+                        r"textblock\/(?P<tb_pk>\d+)\/canvas\/(?P<canvas>\d)\/",
+                        canvas_uri,
+                    )
+                    if uri_match:
+                        # if this was created using placeholders in the transcription editor,
+                        # try to ascertain and display the right fragment shelfmark and label
+                        tb_match_shelfmarks = [
+                            tb.fragment.shelfmark
+                            for tb in textblocks
+                            if tb.pk == int(uri_match.group("tb_pk"))
+                        ]
+                        if tb_match_shelfmarks:
+                            iiif_images[canvas_uri]["shelfmark"] = tb_match_shelfmarks[
+                                0
                             ]
-                            if tb_match_shelfmarks:
-                                iiif_images[canvas_uri][
-                                    "shelfmark"
-                                ] = tb_match_shelfmarks[0]
-                            iiif_images[canvas_uri]["label"] = (
-                                "recto"
-                                if int(uri_match.group("canvas")) == 1
-                                else "verso"
-                            )
+                        iiif_images[canvas_uri]["label"] = (
+                            "recto" if int(uri_match.group("canvas")) == 1 else "verso"
+                        )
 
         # if image_order_override not present, return list, in original order
         if not self.image_order_override:
@@ -871,14 +882,20 @@ class Document(ModelIndexable, DocumentDateMixin):
     has_transcription.boolean = True
 
     def has_translation(self):
-        """Helper method to determine if document has translation (accessible via its footnotes).
+        """Helper method to determine if document has a translation.
 
         :return: Whether document has translation
         :rtype: bool
         """
         return any(
-            [Footnote.TRANSLATION in note.doc_relation for note in self.footnotes.all()]
+            [
+                Footnote.DIGITAL_TRANSLATION in note.doc_relation
+                for note in self.footnotes.all()
+            ]
         )
+
+    has_translation.short_description = "Translation"
+    has_translation.boolean = True
 
     def has_image(self):
         """Admin display field indicating if document has a IIIF image."""
@@ -887,6 +904,22 @@ class Document(ModelIndexable, DocumentDateMixin):
     has_image.short_description = "Image"
     has_image.boolean = True
     has_image.admin_order_field = "textblock__fragment__iiif_url"
+
+    def has_digital_content(self):
+        """Helper method for the ITT viewer on the public front-end to determine whether a document
+        has any images, digital editions, or digital translations."""
+        return any(
+            [
+                self.has_image(),
+                any(
+                    [
+                        Footnote.DIGITAL_EDITION in note.doc_relation
+                        or Footnote.DIGITAL_TRANSLATION in note.doc_relation
+                        for note in self.footnotes.all()
+                    ]
+                ),
+            ]
+        )
 
     @property
     def title(self):
@@ -903,6 +936,7 @@ class Document(ModelIndexable, DocumentDateMixin):
     def digital_editions(self):
         """All footnotes for this document where the document relation includes
         digital edition."""
+
         return self.footnotes.filter(
             doc_relation__contains=Footnote.DIGITAL_EDITION
         ).order_by("source")
@@ -914,9 +948,28 @@ class Document(ModelIndexable, DocumentDateMixin):
             source__footnote__document=self,
         ).distinct()
 
+    def digital_translations(self):
+        """All footnotes for this document where the document relation includes
+        digital translation."""
+
+        return self.footnotes.filter(
+            doc_relation__contains=Footnote.DIGITAL_TRANSLATION
+        ).order_by("source")
+
+    def digital_footnotes(self):
+        """All footnotes for this document where the document relation includes
+        digital edition or digital translation."""
+
+        return self.footnotes.filter(
+            models.Q(doc_relation__contains=Footnote.DIGITAL_EDITION)
+            | models.Q(doc_relation__contains=Footnote.DIGITAL_TRANSLATION)
+        ).distinct()
+
     def sources(self):
         """All unique sources attached to footnotes on this document."""
-        return Source.objects.filter(footnote__document=self).distinct()
+        # use set and local references to avoid an extra db call
+        return set([fn.source for fn in self.footnotes.all()])
+        # return Source.objects.filter(footnote__document=self).distinct()
 
     def attribution(self):
         """Generate a tuple of three attribution components for use in IIIF manifests
@@ -962,28 +1015,59 @@ class Document(ModelIndexable, DocumentDateMixin):
     def items_to_index(cls):
         """Custom logic for finding items to be indexed when indexing in
         bulk."""
-        # NOTE: some overlap with prefetching used for django admin
-        return (
-            Document.objects.select_related("doctype")
-            .prefetch_related(
-                "tags",
-                "languages",
+        return Document.objects.prefetch_related(
+            "tags",
+            "languages",
+            "secondary_languages",
+            "log_entries",
+            Prefetch(
+                "textblock_set",
+                queryset=TextBlock.objects.select_related(
+                    "fragment", "fragment__collection", "fragment__manifest"
+                ).prefetch_related("fragment__manifest__canvases"),
+            ),
+            Prefetch(
                 "footnotes",
-                "footnotes__source",
-                "footnotes__source__authorship_set__creator",
-                "footnotes__source__source_type",
-                "footnotes__source__languages",
-                "footnotes__annotation_set",  # for transcription content
-                "log_entries",
-                Prefetch(
-                    "textblock_set",
-                    queryset=TextBlock.objects.select_related(
-                        "fragment", "fragment__collection"
-                    ),
+                queryset=Footnote.objects.select_related(
+                    "source", "source__source_type"
+                ).prefetch_related(
+                    "source__authorship_set",
+                    "source__authorship_set__creator",
+                    "source__languages",
+                    "annotation_set",
                 ),
-            )
-            .distinct()
+            ),
         )
+
+    @classmethod
+    def prep_index_chunk(cls, chunk):
+        """Prefetch related information when indexing in chunks
+        (modifies queryset chunk in place)"""
+        models.prefetch_related_objects(
+            chunk,
+            "doctype",
+            "tags",
+            "languages",
+            "log_entries",
+            Prefetch(
+                "textblock_set",
+                queryset=TextBlock.objects.select_related(
+                    "fragment", "fragment__collection", "fragment__manifest"
+                ).prefetch_related("fragment__manifest__canvases"),
+            ),
+            Prefetch(
+                "footnotes",
+                queryset=Footnote.objects.select_related(
+                    "source", "source__source_type"
+                ).prefetch_related(
+                    "source__authorship_set",
+                    "source__authorship_set__creator",
+                    "source__languages",
+                    "annotation_set",
+                ),
+            ),
+        )
+        return chunk
 
     def index_data(self):
         """data for indexing in Solr"""
@@ -1046,18 +1130,31 @@ class Document(ModelIndexable, DocumentDateMixin):
         # count scholarship records by type
         footnotes = self.footnotes.all()
         counts = defaultdict(int)
+        # collect transcription and translation texts for indexing
         transcription_texts = []
+        translation_texts = []
+        # keep track of translation language for RTL/LTR display
+        translation_langcode = ""
+        translation_langdir = "ltr"
 
         # dict of sets of relations; keys are each source attached to any footnote on this document
         source_relations = defaultdict(set)
 
         for fn in footnotes:
-            # if this is an edition/transcription, try to get plain text for indexing
+            # if this is an edition/transcription, get html version for indexing
             if Footnote.DIGITAL_EDITION in fn.doc_relation:
-                if fn.content_html_str:
-                    transcription_texts.append(
-                        Footnote.explicit_line_numbers(fn.content_html_str)
-                    )
+                content = fn.content_html_str
+                if content:
+                    transcription_texts.append(Footnote.explicit_line_numbers(content))
+            elif Footnote.DIGITAL_TRANSLATION in fn.doc_relation:
+                content = fn.content_html_str
+                if content:
+                    translation_texts.append(Footnote.explicit_line_numbers(content))
+                    # TODO: Index translations in different languages separately
+                    if fn.source.languages.exists():
+                        lang = fn.source.languages.first()
+                        translation_langcode = lang.code
+                        translation_langdir = lang.direction
             # add any doc relations to this footnote's source's set in source_relations
             source_relations[fn.source] = source_relations[fn.source].union(
                 fn.doc_relation
@@ -1080,18 +1177,30 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "num_translations_i": counts[Footnote.TRANSLATION],
                 "num_discussions_i": counts[Footnote.DISCUSSION],
                 # count each unique source as one scholarship record
-                "scholarship_count_i": self.sources().count(),
+                "scholarship_count_i": len(source_relations.keys()),
                 # preliminary scholarship record indexing
                 # (may need splitting out and weighting based on type of scholarship)
-                "scholarship_t": [fn.display() for fn in self.footnotes.all()],
+                "scholarship_t": [fn.display() for fn in footnotes],
                 # transcription content as html
                 "text_transcription": transcription_texts,
+                "translation_language_code_s": translation_langcode,
+                "translation_language_direction_s": translation_langdir,
+                # translation content as html
+                "text_translation": translation_texts,
                 "has_digital_edition_b": bool(counts[Footnote.DIGITAL_EDITION]),
-                "has_translation_b": bool(counts[Footnote.TRANSLATION]),
+                "has_digital_translation_b": bool(counts[Footnote.DIGITAL_TRANSLATION]),
                 "has_discussion_b": bool(counts[Footnote.DISCUSSION]),
             }
         )
-        last_log_entry = self.log_entries.last()
+
+        # convert to list so we can do negative indexing, instead of calling last()
+        # which incurs a database call
+        try:
+            last_log_entry = list(self.log_entries.all())[-1]
+        except IndexError:
+            # should only occur in unit tests, not real data
+            last_log_entry = None
+
         if last_log_entry:
             index_data["input_year_i"] = last_log_entry.action_time.year
             # TODO: would be nice to use full date to display year
@@ -1369,3 +1478,32 @@ class TextBlock(models.Model):
     def thumbnail(self):
         """iiif thumbnails for this TextBlock, with selected images highlighted"""
         return self.fragment.iiif_thumbnails(selected=self.selected_images)
+
+
+class Dating(models.Model):
+    """An inferred date for a document."""
+
+    class Meta:
+        verbose_name_plural = "Inferred datings (not written on the document)"
+
+    document = models.ForeignKey(
+        Document, on_delete=models.CASCADE, null=False, blank=False
+    )
+    display_date = models.CharField(
+        "Display date",
+        help_text='The dating as it should appear in the public site, such as "Late 12th century"',
+        max_length=255,
+        blank=True,  # use standard date for display if this is blank
+    )
+    standard_date = models.CharField(
+        "CE date",
+        help_text=DocumentDateMixin.standard_date_helptext,
+        blank=False,
+        null=False,
+        max_length=255,
+        validators=[RegexValidator(DocumentDateMixin.re_date_format)],
+    )
+    notes = models.TextField(
+        help_text="An explanation for how this date was inferred, and/or by whom",
+        blank=False,
+    )

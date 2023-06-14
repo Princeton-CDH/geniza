@@ -1,6 +1,33 @@
 Change Log
 ==========
 
+4.14
+----
+
+- public site
+    - As a front end user, I want a translation module added to the image/transcription viewer so
+      I can see translations of documents into my native language.
+    - As a front-end user, I want to be able to search on the content of translations, so that I
+      can find documents relating to terms that only appear within translations.
+    - As a front-end user, I want transcription lines always aligned with translation lines when I
+      view both, so that I can compare the two texts line-by-line.
+    - bugfix: Dropdown header menu partially hidden behind search filters (z-index)
+
+- admin
+    - As a content editor, I want a way to track inferred dates for documents in a structured way
+      so that it can be used for filtering, sorting, and display.
+    - As a content editor, I want to filter the document list view to include translation (Y/N) in
+      order to find translations
+    - As a content editor, I want Seleucid dates automatically converted to standard dates when
+      possible, so that dates can be compared and used for filtering and sorting
+    - As a content editor, I want a translation module added to the transcription editor so I can
+      add and edit translations to Geniza documents using the same interface as transcriptions.
+    - As a content admin, I want translation backups to populate automatically in GitHub, alongside
+      but differentiated from transcriptions, so that I can track changes in versioned translation
+      content.
+    - bugfix: Tags may be saved with identical names, case-insensitive
+    - bugfix: Content Admins do not have correct permissions to merge tags
+
 4.13
 ----
 

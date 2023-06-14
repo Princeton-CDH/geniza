@@ -173,20 +173,20 @@ class TestAnnotationDetail:
     def test_post_annotation_detail_admin(self, admin_client, annotation):
         # update annotation with POST request as admin
         # POST req must include manifest and source URIs
+        anno_dict = {
+            "body": [{"value": "new text"}],
+            "target": {
+                "source": {
+                    "id": annotation.content["target"]["source"]["id"],
+                    "partOf": {"id": annotation.target_source_manifest_id},
+                }
+            },
+            "dc:source": annotation.footnote.source.uri,
+            "motivation": "transcribing",
+        }
         response = admin_client.post(
             annotation.get_absolute_url(),
-            json.dumps(
-                {
-                    "body": [{"value": "new text"}],
-                    "target": {
-                        "source": {
-                            "id": annotation.content["target"]["source"]["id"],
-                            "partOf": {"id": annotation.target_source_manifest_id},
-                        }
-                    },
-                    "dc:source": annotation.footnote.source.uri,
-                }
-            ),
+            json.dumps(anno_dict),
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -199,10 +199,28 @@ class TestAnnotationDetail:
         # updated content should be returned in the response
         assert response.json() == updated_anno.compile()
 
+        # motivation should be matched to, or set on, associated Footnote as doc relation
+        assert Footnote.DIGITAL_EDITION in updated_anno.footnote.doc_relation
+        assert Footnote.DIGITAL_TRANSLATION not in updated_anno.footnote.doc_relation
+
         # should have log entry for update
         log_entry = LogEntry.objects.get(object_id=annotation.id)
         assert log_entry.action_flag == CHANGE
         assert log_entry.change_message == "Updated via API"
+
+        # should match "translating" motivation to DIGITAL_TRANSLATION footnote
+        response = admin_client.post(
+            annotation.get_absolute_url(),
+            json.dumps(
+                {
+                    **anno_dict,
+                    "motivation": "translating",
+                }
+            ),
+            content_type="application/json",
+        )
+        updated_anno = Annotation.objects.get(pk=annotation.pk)
+        assert Footnote.DIGITAL_TRANSLATION in updated_anno.footnote.doc_relation
 
     def test_post_annotation_detail_unchanged(self, admin_client, annotation):
         # update annotation unchanged with POST request as admin
@@ -289,6 +307,23 @@ class TestAnnotationDetail:
         assert Footnote.DIGITAL_EDITION in footnote.doc_relation
         # document should still have a digital edition
         assert document.digital_editions().filter(source=source).exists()
+
+    def test_delete_last_translation_anno(self, admin_client, translation_annotation):
+        # Should remove footnote DIGITAL_TRANSLATION relation if deleted annotation
+        # is the only annotation on source + document
+        manifest_uri = translation_annotation.target_source_manifest_id
+        source_uri = translation_annotation.footnote.source.uri
+        source = Source.from_uri(source_uri)
+        document = Document.from_manifest_uri(manifest_uri)
+        # will raise error if digital translation footnote does not exist
+        footnote = document.digital_translations().get(source=source)
+        admin_client.delete(translation_annotation.get_absolute_url())
+        # footnote should still exist, but no longer be a digital translation
+        assert Footnote.objects.filter(object_id=document.pk, source=source).exists()
+        assert not document.digital_translations().filter(source=source).exists()
+        footnote.refresh_from_db()
+        assert footnote.annotation_set.count() == 0
+        assert Footnote.DIGITAL_TRANSLATION not in footnote.doc_relation
 
 
 @pytest.mark.django_db
@@ -398,7 +433,6 @@ class TestAnnotationSearch:
         response = client.get(self.anno_search_url)
         assert response.status_code == 200
         results = response.json()
-        print(results)
         assert "resources" in results
         assert len(results["resources"]) == 5  # 4 plus fixture
 
@@ -431,3 +465,20 @@ class TestAnnotationSearch:
         assert results["resources"][3]["id"] == annotation.uri()
         assert results["resources"][4]["id"] == anno10.uri()
         assert results["resources"][-1]["schema:position"] == 10
+
+    def test_search_motivation(self, client, annotation, translation_annotation):
+        # motivation = transcribing
+        response = client.get(
+            self.anno_search_url,
+            {"uri": annotation.target_source_id, "motivation": "transcribing"},
+        )
+        results = response.json()
+        assert results["resources"][0]["id"] == annotation.uri()
+
+        # motivation = translating
+        response = client.get(
+            self.anno_search_url,
+            {"uri": annotation.target_source_id, "motivation": "translating"},
+        )
+        results = response.json()
+        assert results["resources"][0]["id"] == translation_annotation.uri()

@@ -149,7 +149,10 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
             DocumentSolrQuerySet()
             .filter(status=Document.PUBLIC_LABEL)
             .facet(
-                "has_image", "has_digital_edition", "has_translation", "has_discussion"
+                "has_image",
+                "has_digital_edition",
+                "has_digital_translation",
+                "has_discussion",
             )
             .facet_field("type", exclude="type", sort="value")
         )
@@ -175,12 +178,18 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                         method="unified",
                         requireFieldMatch=True,
                     )
-                    # return smaller chunk of highlighted text for transcriptions
+                    # return smaller chunk of highlighted text for transcriptions/translations
                     # since the lines are often shorter, resulting in longer text
                     .highlight(
                         "transcription",
                         method="unified",
                         fragsize=150,  # try including more context
+                        requireFieldMatch=True,
+                    )
+                    .highlight(
+                        "translation",
+                        method="unified",
+                        fragsize=150,
                         requireFieldMatch=True,
                     )
                     .also("score")
@@ -205,7 +214,7 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
             if search_opts["has_discussion"] == True:
                 documents = documents.filter(has_discussion=True)
             if search_opts["has_translation"] == True:
-                documents = documents.filter(has_translation=True)
+                documents = documents.filter(has_digital_translation=True)
             if search_opts["docdate"]:
                 # date range filter; returns tuple of value or None for open-ended range
                 start, end = search_opts["docdate"]
@@ -705,16 +714,22 @@ class DocumentAddTranscriptionView(PermissionRequiredMixin, DetailView):
     template_name = "corpus/add_transcription_source.html"
     viewname = "corpus:document-add-transcription"
     model = Document
+    doc_relation = "transcription"
 
     def page_title(self):
-        """Title of add transcription page"""
-        return "Add a new transcription for %(doc)s" % {"doc": self.get_object().title}
+        """Title of add transcription/translation page"""
+        return "Add a new %(doc_relation)s for %(doc)s" % {
+            "doc_relation": self.doc_relation,
+            "doc": self.get_object().title,
+        }
 
     def post(self, request, *args, **kwargs):
-        """Create footnote linking source to document, then redirect to edit transcription view"""
+        """Create footnote linking source to document, then redirect to edit transcription/translation view"""
         return redirect(
             reverse(
-                "corpus:document-transcribe",
+                "corpus:document-transcribe"
+                if self.doc_relation == "transcription"
+                else "corpus:document-translate",
                 args=(self.get_object().id, int(request.POST["source"])),
             )
         )
@@ -727,22 +742,26 @@ class DocumentAddTranscriptionView(PermissionRequiredMixin, DetailView):
                 "form": SourceChoiceForm,
                 "page_title": self.page_title(),
                 "page_type": "addsource",
+                "doc_relation": self.doc_relation,
             }
         )
         return context_data
 
 
 class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
-    """View for the Transcription Editor page that uses annotorious-tahqiq"""
+    """View for the Transcription/Translation Editor page that uses annotorious-tahqiq"""
 
     permission_required = "corpus.change_document"
-
     template_name = "corpus/document_transcribe.html"
     viewname = "corpus:document-transcribe"
+    doc_relation = "transcription"
 
     def page_title(self):
-        """Title of transcription editor page"""
-        return "Edit transcription for %(doc)s" % {"doc": self.get_object().title}
+        """Title of transcription/translation editor page"""
+        return "Edit %(doc_relation)s for %(doc)s" % {
+            "doc_relation": self.doc_relation,
+            "doc": self.get_object().title,
+        }
 
     def get_context_data(self, **kwargs):
         """Pass annotation configuration and TinyMCE API key to page context"""
@@ -753,6 +772,11 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
         # would have matched
         try:
             source = Source.objects.get(pk=self.kwargs["source_pk"])
+            source_label = (
+                source.all_authors()
+                if self.doc_relation == "transcription"
+                else f"{source.all_authors()} {source.all_languages()}"
+            )
         except Source.DoesNotExist:
             raise Http404
 
@@ -788,15 +812,18 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     ),
                     "csrf_token": csrf_token(self.request),
                     "tiny_api_key": getattr(settings, "TINY_API_KEY", ""),
-                    # TODO: when translations implemented, make this a data property or something
-                    # on the template; the editor will have both transcribing and translating
-                    "secondary_motivation": "transcribing",
+                    "secondary_motivation": "transcribing"
+                    if self.doc_relation == "transcription"
+                    else "translating",
+                    "source_dir": source.languages.first().direction
+                    if source and source.languages.exists()
+                    else "",
                 },
                 # TODO: Add Footnote notes to the following display, if present
                 "source_detail": mark_safe(source.formatted_display())
                 if source
                 else "",
-                "source_label": source.all_authors() if source else "",
+                "source_label": source_label if source_label else "",
                 "page_type": "document annotating",
             }
         )
