@@ -837,8 +837,8 @@ class TagMerge(PermissionRequiredMixin, FormView):
         "corpus.change_document",
         "taggit.change_tag",
         "taggit.delete_tag",
-        "taggit.change_tagged_item",
-        "taggit.add_tagged_item",
+        "taggit.change_taggeditem",
+        "taggit.add_taggeditem",
     )
     form_class = TagMergeForm
     template_name = "admin/corpus/tag/merge.html"
