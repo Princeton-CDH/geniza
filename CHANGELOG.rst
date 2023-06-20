@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+4.14.1
+------
+
+- bugfix: fix typo in permissions for tag merge
+
 4.14
 ----
 
