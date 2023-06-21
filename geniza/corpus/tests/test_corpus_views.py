@@ -1671,6 +1671,9 @@ class TestDocumentTranscribeView:
         assertContains(response, tb.fragment.shelfmark)
         assertContains(response, Document.PLACEHOLDER_CANVAS["image"]["info"])
 
+        # should include text direction
+        assert response.context["annotation_config"]["text_direction"] == "rtl"
+
         # non-existent source_pk should 404
         response = admin_client.get(
             reverse("corpus:document-transcribe", args=(document.id, 123456789))
@@ -1689,7 +1692,7 @@ class TestDocumentTranscribeView:
         )
         # should include text direction
         assert (
-            response.context["annotation_config"]["source_dir"]
+            response.context["annotation_config"]["text_direction"]
             == source.languages.first().direction
         )
 
