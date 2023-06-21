@@ -200,7 +200,7 @@
                     {% if edit_mode == "translating" %}
                         <div class="annotate translation"
                             data-ittpanel-target="translation"
-                            dir="{{ annotation_config.source_dir|default:"ltr" }}"
+                            dir="{{ annotation_config.text_direction|default:"ltr" }}"
                             data-manifest="{% url 'corpus-uris:document-manifest' document.pk %}"
                         >
                             {% if forloop.first %}
