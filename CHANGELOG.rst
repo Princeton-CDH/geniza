@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+4.14.2
+------
+
+- bugfix: fix tinyMCE text direction and API key instantiation
+
 4.14.1
 ------
 
