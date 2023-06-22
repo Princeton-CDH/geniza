@@ -33,12 +33,12 @@
         {# translators: label for checkbox toggle to show the images panel for a document #}
         <input type="checkbox" class="toggle" id="images-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show images' %}" {% if document.has_image or edit_mode %}checked="true" {% else %}disabled="true" {% endif %}/>
         <label for="images-on"></label>
-        {# transcription displayed by default; disable if no content is available #}
         {# translators: label for checkbox toggle to show the transcription panel for a document #}
-        <input type="checkbox" class="toggle" id="transcription-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show transcription' %}" {% if not document.digital_editions and edit_mode != "transcribing" %}disabled="true" {% elif edit_mode == "transcribing" or not edit_mode %}checked="true" {% endif %}/>
+        <input type="checkbox" class="toggle" id="transcription-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show transcription' %}" {% if not document.digital_editions and edit_mode != "transcribing" %}disabled="true" {% elif edit_mode == "transcribing" or not document.has_image %}checked="true" {% elif not edit_mode and not document.digital_translations %}checked="true" {% endif %}/>
         <label for="transcription-on"><svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg></label>
+        {# translation displayed by default; disable if no content is available #}
         {# translators: label for checkbox toggle to show the translation panel for a document #}
-        <input type="checkbox" class="toggle" id="translation-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show translation' %}" {% if not document.digital_translations and edit_mode != "translating" %}disabled="true" {% elif edit_mode == "translating" %}checked="true" {% endif %}/>
+        <input type="checkbox" class="toggle" id="translation-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show translation' %}" {% if not document.digital_translations and edit_mode != "translating" %}disabled="true" {% elif edit_mode == "translating" or not document.has_image %}checked="true" {% elif not edit_mode %}checked="true" {% endif %}/>
         <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
 
         {% comment %}
