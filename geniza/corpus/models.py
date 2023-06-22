@@ -1503,7 +1503,31 @@ class Dating(models.Model):
         max_length=255,
         validators=[RegexValidator(DocumentDateMixin.re_date_format)],
     )
-    notes = models.TextField(
-        help_text="An explanation for how this date was inferred, and/or by whom",
+    PALEOGRAPHY = "PA"
+    PALEOGRAPHY_LABEL = "Paleography"
+    PERSON = "PE"
+    PERSON_LABEL = "Person mentioned"
+    EVENT = "E"
+    EVENT_LABEL = "Event mentioned"
+    COINAGE = "C"
+    COINAGE_LABEL = "Coinage"
+    OTHER = "O"
+    OTHER_LABEL = "Other (please specify)"
+    RATIONALE_CHOICES = (
+        (PALEOGRAPHY, PALEOGRAPHY_LABEL),
+        (PERSON, PERSON_LABEL),
+        (EVENT, EVENT_LABEL),
+        (COINAGE, COINAGE_LABEL),
+        (OTHER, OTHER_LABEL),
+    )
+    rationale = models.CharField(
+        max_length=2,
+        choices=RATIONALE_CHOICES,
+        default=OTHER,
+        help_text="An explanation for how this date was inferred",
         blank=False,
+        null=False,
+    )
+    notes = models.TextField(
+        help_text="Optional further details about the rationale",
     )
