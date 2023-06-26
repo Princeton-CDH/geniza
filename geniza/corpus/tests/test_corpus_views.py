@@ -944,6 +944,24 @@ class TestDocumentSearchView:
         assert qs[0]["pgpid"] == doc2.id
         assert qs[1]["pgpid"] == document.id
 
+    @pytest.mark.django_db
+    def test_ngram_highlighting(self, empty_solr):
+        # integration test for solr n-gram size of 2, preserveOriginal (EdgeNGramFilterFactory)
+        doc = Document.objects.create(description_en="Abū l-Munā")
+        SolrClient().update.index([doc.index_data()], commit=True)
+        docsearch_view = DocumentSearchView(kwargs={})
+        docsearch_view.request = Mock()
+        docsearch_view.request.GET = {"q": "abu l-muna", "sort": "relevance"}
+        qs = docsearch_view.get_queryset()
+        docsearch_view.object_list = qs
+        context_data = docsearch_view.get_context_data()
+        # should include the "l" in highlighting
+        assert (
+            # it will still break elements on whitespace and dash separators
+            "<em>Abū</em> <em>l</em>-<em>Munā</em>"
+            in context_data["highlighting"]["document.%d" % doc.id]["description"]
+        )
+
 
 class TestDocumentScholarshipView:
     def test_page_title(self, document, client, source):
