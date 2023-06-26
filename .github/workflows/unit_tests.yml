@@ -43,7 +43,7 @@ jobs:
           docker cp solr_conf ${{ job.services.solr.id }}:/opt/solr/server/solr/configsets/geniza
           docker exec --user root ${{ job.services.solr.id }} /bin/bash -c "chown -R solr:solr /opt/solr/server/solr/configsets/geniza"
 
-      - name: Copy solr configsets to solr home directory (Solr 8 specific)
+      - name: Copy solr configsets to solr home directory
         run: "docker exec -d ${{ job.services.solr.id }} cp -r /opt/solr/server/solr/configsets /var/solr/data"
 
       # Python version to use is stored in the .python-version file, which is the
