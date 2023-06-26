@@ -439,7 +439,12 @@ class FootnoteQuerySet(models.QuerySet):
 
         for fn in self.all():
             if (
-                all(getattr(fn, val) == getattr(other, val) for val in compare_fields)
+                # if either of the footnotes have annotations, do not treat as a match
+                not (fn.annotation_set.exists() or other.annotation_set.exists())
+                # compare all ohter fields
+                and all(
+                    getattr(fn, val) == getattr(other, val) for val in compare_fields
+                )
                 # NOTE: fn.doc_relation seems to be different on queryset footnote
                 # than newly created object; check by display value to avoid problems
                 and fn.get_doc_relation_display() == other.get_doc_relation_display()

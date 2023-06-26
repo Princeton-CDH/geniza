@@ -418,6 +418,13 @@ class TestFootnoteQuerySet:
             == footnote1
         )
 
+        # footnote with annotations should never be considered a match, as the content
+        # may differ
+        Annotation.objects.create(footnote=footnote2, content={})
+        assert not Footnote.objects.filter(pk=footnote1.pk).includes_footnote(footnote2)
+        footnote2.annotation_set.all().delete()
+        assert Footnote.objects.filter(pk=footnote1.pk).includes_footnote(footnote2)
+
         # different notes
         footnote2.notes = "some extra info"
         footnote2.save()

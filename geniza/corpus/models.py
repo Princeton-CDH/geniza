@@ -1362,9 +1362,38 @@ class Document(ModelIndexable, DocumentDateMixin):
     def _merge_footnotes(self, doc):
         # combine footnotes; footnote logic for merge_with
         for footnote in doc.footnotes.all():
-            # check for match; add new footnote if not a match
+            # check for match
             equiv_fn = self.footnotes.includes_footnote(footnote)
-            if not equiv_fn:
+            if footnote.annotation_set.exists():
+                # if the footnote has annotations, reassign them to matching/created footnote
+                (self_fn, _) = self.footnotes.get_or_create(
+                    # for multiselect field list, need to cast to list to compare
+                    doc_relation__in=list(footnote.doc_relation),
+                    source_id=footnote.source.pk,
+                    # TODO: What to do if found, but location or notes don't match? Discard?
+                    defaults={
+                        "notes": footnote.notes,
+                        "location": footnote.location,
+                        "url": footnote.url,
+                    },
+                )
+                # reassign each annotation's footnote to the footnote on the merge result doc
+                for annotation in footnote.annotation_set.all():
+                    annotation.footnote = self_fn
+                    annotation.save()
+            elif not equiv_fn:
+                # if there is otherwise not a match, add the footnote to the merge result document
+
+                # first remove any digital doc relations to avoid unique constraint violation;
+                # footnote should not have such a relation anyway if there are 0 annotations
+                if Footnote.DIGITAL_EDITION in footnote.doc_relation:
+                    footnote.doc_relation.remove(Footnote.DIGITAL_EDITION)
+                    footnote.save()
+                if Footnote.DIGITAL_TRANSLATION in footnote.doc_relation:
+                    footnote.doc_relation.remove(Footnote.DIGITAL_TRANSLATION)
+                    footnote.save()
+
+                # then add to the merge result document
                 self.footnotes.add(footnote)
 
     def _merge_logentries(self, doc):
