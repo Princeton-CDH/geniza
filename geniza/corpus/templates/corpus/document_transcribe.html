@@ -35,5 +35,5 @@
     <div id="alerts" data-controller="alert"></div>
 
     {# viewer #}
-    {% include "corpus/snippets/document_transcription.html" with edit_mode=True %}
+    {% include "corpus/snippets/document_transcription.html" with edit_mode=annotation_config.secondary_motivation %}
 {% endblock main %}

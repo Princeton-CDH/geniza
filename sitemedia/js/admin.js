@@ -56,15 +56,40 @@ function addDocRelationToggle(inputList) {
 }
 
 function toggleDisabled(inputList, input) {
-    // if this is an Edition or Digital Edition checkbox, toggle the other one
-    // of those two enabled/disabled, based on whether this one is checked
-    if (["E", "X"].includes(input.value)) {
-        const otherRelation = input.value === "X" ? "E" : "X";
-        const toToggle = inputList.querySelector(
-            `input[type='checkbox'][value='${otherRelation}']`
+    // if this is a Digital Edition or Digital Translation checkbox, toggle everything
+    // else enabled/disabled, based on whether this one is checked
+    const digitalRelations = ["X", "Y"];
+    const printRelations = ["E", "T", "D"];
+    if (digitalRelations.includes(input.value)) {
+        const toToggle = inputList.querySelectorAll(
+            `input[type='checkbox']:not([value='${input.value}'])`
         );
-        // in case of old data with both checked, don't disable both!
-        toToggle.disabled = input.checked && !input.disabled;
+        toToggle.forEach((toggle) => {
+            toggle.disabled = input.checked && !input.disabled;
+        });
+    }
+    // otherwise, if we clicked on a print relation, toggle the digital relations enabled/disabled
+    else if (input.value) {
+        // handle special case where multiple print relations are checked and we uncheck
+        // just one; in that case, do nothing.
+        if (
+            !input.checked &&
+            printRelations.some(
+                (relation) =>
+                    inputList.querySelector(
+                        `input[type='checkbox'][value='${relation}']`
+                    ).checked
+            )
+        ) {
+            return;
+        }
+        // otherwise, toggle the digital relation checkboxes appropriately
+        digitalRelations.forEach((relation) => {
+            const toToggle = inputList.querySelector(
+                `input[type='checkbox'][value='${relation}']`
+            );
+            toToggle.disabled = input.checked && !input.disabled;
+        });
     }
 }
 

@@ -100,7 +100,7 @@
     </analyzer>
   </fieldType>
 
-   <!-- custom text field for transcriptions; html stripping, bigram, etc -->
+   <!-- custom text field for transcriptions/translations; html stripping, bigram, etc -->
     <fieldType name="transcription_text" class="solr.TextField" positionIncrementGap="100" multiValued="true">
     <analyzer type="index">
       <charFilter class="solr.HTMLStripCharFilterFactory"/>
@@ -352,6 +352,7 @@
   <dynamicField name="*_t" type="text_general" indexed="true" stored="true"/>
   <dynamicField name="*_ht" type="html_text_general" indexed="true" stored="true"/>  
   <dynamicField name="*_transcription" type="transcription_text" indexed="true" stored="true"/>  
+  <dynamicField name="*_translation" type="transcription_text" indexed="true" stored="true"/>  
   <dynamicField name="*_b" type="boolean" indexed="true" stored="true"/>
   <dynamicField name="*_f" type="float" indexed="true" stored="true"/>
   <dynamicField name="*_d" type="double" indexed="true" stored="true"/>

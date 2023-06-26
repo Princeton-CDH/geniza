@@ -900,15 +900,20 @@ class TestDocument:
         assert document.has_transcription()
 
     def test_has_translation(self, document, source):
-        # doc with no footnotes doesn't have transcription
+        # doc with no footnotes doesn't have translation
         assert not document.has_translation()
 
-        # doc with empty footnote doesn't have transcription
+        # doc with empty footnote doesn't have translation
         fn = Footnote.objects.create(content_object=document, source=source)
         assert not document.has_translation()
 
-        # doc with digital edition footnote does have a transcription
+        # doc with regular translation footnote doesn't have translation
         fn.doc_relation = [Footnote.TRANSLATION]
+        fn.save()
+        assert not document.has_translation()
+
+        # doc with digital translation footnote does have a translation
+        fn.doc_relation = [Footnote.DIGITAL_TRANSLATION]
         fn.save()
         assert document.has_translation()
 
@@ -920,6 +925,29 @@ class TestDocument:
         fragment.iiif_url = ""
         fragment.save()
         assert not document.has_image()
+
+    def test_has_digital_content(self, fragment, source):
+        # document with no IIIF or footnotes should not have digital content
+        frag = Fragment.objects.create()
+        doc = Document.objects.create()
+        TextBlock.objects.create(document=doc, fragment=frag, order=1)
+        assert not doc.has_digital_content()
+        # document from fragment should have IIIF url = digital content
+        doc = Document.objects.create()
+        TextBlock.objects.create(document=doc, fragment=fragment, order=1)
+        assert doc.has_digital_content()
+        # document with digital edition = digital content
+        doc = Document.objects.create()
+        Footnote.objects.create(
+            content_object=doc, source=source, doc_relation=Footnote.DIGITAL_EDITION
+        )
+        assert doc.has_digital_content()
+        # document with digital translation = digital content
+        doc = Document.objects.create()
+        Footnote.objects.create(
+            content_object=doc, source=source, doc_relation=Footnote.DIGITAL_TRANSLATION
+        )
+        assert doc.has_digital_content()
 
     def test_index_data(self, document):
         index_data = document.index_data()
@@ -1006,6 +1034,18 @@ class TestDocument:
                 "body": [{"value": "transcription lines"}],
             },
         )
+        # digital translation footnote
+        digital_translation = Footnote.objects.create(
+            content_object=document,
+            source=source,  # English language source
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        Annotation.objects.create(
+            footnote=digital_translation,
+            content={
+                "body": [{"value": "translation lines"}],
+            },
+        )
         # other footnotes
         edition2 = Footnote.objects.create(
             content_object=document,
@@ -1021,10 +1061,14 @@ class TestDocument:
         assert index_data["num_editions_i"] == 2  # edition + digital edition
         assert index_data["has_digital_edition_b"] == True
         assert index_data["num_translations_i"] == 2
+        assert index_data["has_digital_translation_b"] == True
         assert index_data["scholarship_count_i"] == 3  # unique sources
         assert index_data["text_transcription"] == ["transcription lines"]
+        assert index_data["text_translation"] == ["translation lines"]
+        assert index_data["translation_language_code_s"] == "en"
+        assert index_data["translation_language_direction_s"] == "ltr"
 
-        for note in [edition, edition2, translation]:
+        for note in [edition, edition2, translation, digital_translation]:
             assert note.display() in index_data["scholarship_t"]
 
     def test_index_data_document_date(self):
@@ -1145,6 +1189,58 @@ class TestDocument:
         assert twoauthor_source.authors.first().pk in [
             editor.pk for editor in document.editors().all()
         ]
+
+    def test_digital_translations(self, document, source, twoauthor_source):
+        # translation footnote
+        translation = Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.TRANSLATION
+        )
+        # digital translation
+        digital_translation = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        # footnote with different source
+        digital_translation2 = Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        digital_translation_pks = [ed.pk for ed in document.digital_translations()]
+
+        # EDITION, should not appear in digital editions
+        assert translation.pk not in digital_translation_pks
+        # DIGITAL_EDITION, should appear in digital editions
+        assert digital_translation.pk in digital_translation_pks
+        assert digital_translation2.pk in digital_translation_pks
+        # Translation 2 should be alphabetically first based on its source
+        assert digital_translation.pk == digital_translation_pks[0]
+
+    def test_digital_footnotes(self, document, source):
+        # no digital edition or digital translation, count should be 0
+        regular_translation = Footnote.objects.create(
+            content_object=document, source=source, doc_relation=Footnote.TRANSLATION
+        )
+        assert document.digital_footnotes().count() == 0
+        # digital edition, count should be 1
+        digital_edition = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        assert document.digital_footnotes().count() == 1
+        # add digital translation, count should be 2 and both should be included
+        digital_translation = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        assert document.digital_footnotes().count() == 2
+        digital_footnote_pks = [ed.pk for ed in document.digital_footnotes()]
+        assert digital_translation.pk in digital_footnote_pks
+        assert digital_edition.pk in digital_footnote_pks
+        assert regular_translation.pk not in digital_footnote_pks
 
     def test_total_to_index(self, join, document):
         assert Document.total_to_index() == 2
