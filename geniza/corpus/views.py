@@ -798,6 +798,17 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     context_data["images"][canvas_uri]["label"] = (
                         "recto" if i == 1 else "verso"
                     )
+        # setup text direction for TinyMCE editor
+        if self.doc_relation == "translation":
+            # translation should use source language if possible, fallback ltr
+            text_direction = (
+                source.languages.first().direction
+                if source and source.languages.exists()
+                else "ltr"
+            )
+        else:
+            # transcription always rtl
+            text_direction = "rtl"
 
         context_data.update(
             {
@@ -815,9 +826,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     "secondary_motivation": "transcribing"
                     if self.doc_relation == "transcription"
                     else "translating",
-                    "source_dir": source.languages.first().direction
-                    if source and source.languages.exists()
-                    else "",
+                    "text_direction": text_direction,
                 },
                 # TODO: Add Footnote notes to the following display, if present
                 "source_detail": mark_safe(source.formatted_display())
@@ -837,8 +846,8 @@ class TagMerge(PermissionRequiredMixin, FormView):
         "corpus.change_document",
         "taggit.change_tag",
         "taggit.delete_tag",
-        "taggit.change_tagged_item",
-        "taggit.add_tagged_item",
+        "taggit.change_taggeditem",
+        "taggit.add_taggeditem",
     )
     form_class = TagMergeForm
     template_name = "admin/corpus/tag/merge.html"

@@ -321,7 +321,10 @@ class AnnotationDetail(
         # update footnote to remove DIGITAL_EDITION type if this is the last annotation associated with it
         footnote.refresh_from_db()
         if footnote.annotation_set.count() == 0:
-            footnote.doc_relation.remove(Footnote.DIGITAL_EDITION)
+            if Footnote.DIGITAL_EDITION in footnote.doc_relation:
+                footnote.doc_relation.remove(Footnote.DIGITAL_EDITION)
+            if Footnote.DIGITAL_TRANSLATION in footnote.doc_relation:
+                footnote.doc_relation.remove(Footnote.DIGITAL_TRANSLATION)
             footnote.save()
             footnote.refresh_from_db()
 
