@@ -371,6 +371,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         DocumentFootnoteInline,
         DocumentPersonInline,
     ]
+    # mixed fieldsets and inlines: /admin/corpus/document/snippets/mixed_inlines_fieldsets.html
     fieldsets_and_inlines_order = ("f", "f", "i", "f", "i", "i", "i")
 
     class Media:
@@ -515,7 +516,8 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     @admin.display(description="Merge selected documents")
     def merge_documents(self, request, queryset=None):
         """Admin action to merge selected documents. This action redirects to an intermediate
-        page, which displays a form to review for confirmation and choose the primary document before merging."""
+        page, which displays a form to review for confirmation and choose the primary document before merging.
+        """
         # Functionality drawn from https://github.com/Princeton-CDH/mep-django/blob/main/mep/people/admin.py
 
         # NOTE: using selected ids from form and ignoring queryset

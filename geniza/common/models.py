@@ -74,7 +74,17 @@ class UserProfile(models.Model):
 
 
 class DisplayLabelMixin:
-    """Mixin for models with translatable display labels that may differ from full names."""
+    """
+    Mixin for models with translatable display labels that may differ from names, in
+    order to override fallback behavior when a label for the current language is not defined.
+    Used for search response handling and display on the public frontend.
+
+    Example: DocumentType with name 'Legal' has a display label in English, 'Legal document'.
+    In Hebrew, it only has a name 'מסמך משפטי' and no display label. In English, we want to show
+    DocumentType.display_label_en. In Hebrew, we want to show DocumentType.name_he because
+    display_label_he is not defined. We also need to ensure that the document type
+    מסמך משפטי can be looked up by display_label_en, as that is what gets indexed in solr.
+    """
 
     def __str__(self):
         # temporarily turn off model translate fallbacks;
@@ -92,7 +102,9 @@ class DisplayLabelMixin:
 
     @classmethod
     def objects_by_label(cls):
-        """A dict of object instances keyed on English display label"""
+        """A dict of object instances keyed on English display label, used for search form
+        and search results, which should be based on Solr facet and query responses (indexed in
+        English)."""
         return {
             # lookup on display_label_en/name_en since solr should always index in English
             (obj.display_label_en or obj.name_en): obj

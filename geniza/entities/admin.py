@@ -124,6 +124,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         PersonDocumentInline,
         PersonPersonInline,
     )
+    # mixed fieldsets and inlines: /admin/corpus/document/snippets/mixed_inlines_fieldsets.html
     fieldsets_and_inlines_order = ("i", "f", "i", "i", "i")
     own_pk = None
 
