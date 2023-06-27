@@ -4,13 +4,16 @@ to IIIF annotations in the configured annotation server. This is
 a one-time script intended to import Lieberman translations.
 
 Intended to be run manually from the shell as follows:
-./manage.py googledoc_to_annotation -d GOOGLE_DRIVE_DRIVE_ID -f GOOGLE_DRIVE_FOLDER_ID
+./manage.py googledoc_to_annotation
+    -d GOOGLE_DRIVE_DRIVE_ID
+    -f GOOGLE_DRIVE_FOLDER_ID
+    -i GOOGLE_DRIVE_CLIENT_ID
+    -s GOOGLE_DRIVE_CLIENT_SECRET
 
 Adapted from tei_to_annotation management command.
 """
 
 import io
-import os.path
 import re
 import unicodedata
 from collections import defaultdict
@@ -19,12 +22,9 @@ from addict import Dict
 from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.management.base import CommandError
 from django.db import IntegrityError
 from django.template.defaultfilters import pluralize
 from django.utils import timezone
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -65,6 +65,18 @@ class Command(tei_to_annotation.Command):
             required=True,
             help="The ID of the Google Drive folder containing translation documents.",
         )
+        parser.add_argument(
+            "-i",
+            "--client_id",
+            required=True,
+            help="The Google Drive API client ID with the permission to see and download documents.",
+        )
+        parser.add_argument(
+            "-s",
+            "--client_secret",
+            required=True,
+            help="The Google Drive API client secret matching the ID.",
+        )
 
     def handle(self, *args, **options):
         self.verbosity = options["verbosity"]
@@ -100,7 +112,14 @@ class Command(tei_to_annotation.Command):
 
         try:
             # create drive api client (https://developers.google.com/drive/api/quickstart/python)
-            self.service = build("drive", "v3", credentials=self.get_credentials())
+            self.service = build(
+                "drive",
+                "v3",
+                credentials=self.get_credentials(
+                    client_id=options["client_id"],
+                    client_secret=options["client_secret"],
+                ),
+            )
 
             # get list of all files
             files = self.list_all_files()
@@ -176,34 +195,25 @@ class Command(tei_to_annotation.Command):
             for doc in self.footnote_exists:
                 print("\t%s" % doc)
 
-    def get_credentials(self):
-        # check for required settings
-        if not settings.GOOGLE_API_SECRETS_FILE or not settings.GOOGLE_API_TOKEN_FILE:
-            raise CommandError(
-                """GOOGLE_API_SECRETS_FILE and GOOGLE_API_TOKEN_FILE settings are required.
-                Please add these to settings/local_settings.py."""
-            )
+    def get_credentials(self, client_id, client_secret):
         SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
-        creds = None
-        # The token json file stores the user's access and refresh tokens, and is
-        # created automatically when the authorization flow completes for the first
-        # time.
-        if os.path.exists(settings.GOOGLE_API_TOKEN_FILE):
-            creds = Credentials.from_authorized_user_file(
-                settings.GOOGLE_API_TOKEN_FILE, SCOPES
-            )
-        # If there are no (valid) credentials available, let the user log in.
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    settings.GOOGLE_API_SECRETS_FILE, SCOPES
-                )
-                creds = flow.run_local_server(port=0)
-            # Save the credentials for the next run
-            with open(settings.GOOGLE_API_TOKEN_FILE, "w") as token:
-                token.write(creds.to_json())
+        # Start the authorization flow based on the API ID and secret, which will prompt the user
+        # to log in. Once the auth flow is completed, return the generated credentials.
+        flow = InstalledAppFlow.from_client_config(
+            {
+                "installed": {
+                    "client_id": client_id,
+                    "project_id": "geniza-ingest",
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                    "client_secret": client_secret,
+                    "redirect_uris": ["http://localhost"],
+                }
+            },
+            SCOPES,
+        )
+        creds = flow.run_local_server(port=0)
         return creds
 
     def list_all_files(self):
