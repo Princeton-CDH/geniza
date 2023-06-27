@@ -705,10 +705,10 @@ class TestRelatedDocumentsTemplate:
 
 
 class TestFieldsetSnippet:
-    """Unit tests for the override of django admin/includes/fieldset.html, which allows
+    """Unit tests for the override of django admin/includes/mixed_inlines_fieldsets.html, which allows
     inclusion of inline formsets between model form fields"""
 
-    template = "admin/corpus/document/snippets/fieldset.html"
+    template = "admin/corpus/document/snippets/mixed_inlines_fieldsets.html"
 
     def test_inlines_included(self, admin_client, document):
         # the snippet should be included on the admin document change page
@@ -724,15 +724,14 @@ class TestFieldsetSnippet:
             'div class="js-inline-admin-formset inline-group" id="dating_set-group"',
         )
 
-        # Dating inline should be immediately after standard_date field (which is the value of
-        # DocumentDatingInline.insert_after)
+        # Dating inline should be immediately after fieldset containing standard_date
         soup = BeautifulSoup(response.content)
-        standard_date_field = soup.find(
-            "div", class_=f"fieldBox field-{DocumentDatingInline.insert_after}"
+        date_fieldset = soup.find("div", class_="field-standard_date").find_parent(
+            "fieldset"
         )
-        assert standard_date_field.find_next_sibling("div")["id"] == "dating_set-group"
+        assert date_fieldset.find_next_sibling("div")["id"] == "dating_set-group"
         dating_inline = soup.find("div", id="dating_set-group")
-        assert dating_inline.find_parent("fieldset") is not None
+        assert not dating_inline.find_parent("fieldset")
 
         # should include other inlines outside of form fieldsets
         assertContains(

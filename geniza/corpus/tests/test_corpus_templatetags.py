@@ -1,11 +1,11 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from django.http.request import HttpRequest, QueryDict
 from piffle.iiif import IIIFImageClient
 
 from geniza.common.utils import absolutize_url
-from geniza.corpus.templatetags import corpus_extras
+from geniza.corpus.templatetags import admin_extras, corpus_extras
 
 
 class TestCorpusExtrasTemplateTags:
@@ -171,3 +171,40 @@ def test_translate_url(document):
     # if a Hebrew version cannot be determined, should return the original URL
     ctx["request"].path = "https://example.com"
     assert corpus_extras.translate_url(ctx, "he") == "https://example.com"
+
+
+class TestAdminExtrasTemplateTags:
+    def test_get_fieldsets_and_inlines(self):
+        # mock admin form with fieldsets
+        adminform = MagicMock()
+        adminform.__iter__.return_value = ("fieldset1", "fieldset2")
+        # mock inlines
+        inlines = ("inline1", "inline2")
+
+        # mock fieldsets_and_inlines_order
+        adminform.model_admin.fieldsets_and_inlines_order = ("f", "i", "f")
+
+        # should return the first fieldset, then inline, then second fieldset
+        fieldsets_and_inlines = admin_extras.get_fieldsets_and_inlines(
+            {"adminform": adminform, "inline_admin_formsets": inlines}
+        )
+        assert fieldsets_and_inlines[0] == ("f", "fieldset1")
+        assert fieldsets_and_inlines[1] == ("i", "inline1")
+        assert fieldsets_and_inlines[2] == ("f", "fieldset2")
+
+        # should append the remaining inline at the end
+        assert fieldsets_and_inlines[3] == ("i", "inline2")
+
+        # should throw indexerror if you supply too many fieldsets or inlines
+        adminform.model_admin.fieldsets_and_inlines_order = ("f", "i", "f", "f")
+        with pytest.raises(IndexError) as errorinfo:
+            admin_extras.get_fieldsets_and_inlines(
+                {"adminform": adminform, "inline_admin_formsets": inlines}
+            )
+        assert "Too many values" in str(errorinfo.value)
+        adminform.model_admin.fieldsets_and_inlines_order = ("f", "i", "i", "i")
+        with pytest.raises(IndexError) as errorinfo:
+            admin_extras.get_fieldsets_and_inlines(
+                {"adminform": adminform, "inline_admin_formsets": inlines}
+            )
+        assert "Too many values" in str(errorinfo.value)
