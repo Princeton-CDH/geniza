@@ -1,0 +1,24 @@
+{# minimal html page for transcription export #}
+<html>
+    <head>
+        <title>{% if edition.source.languages.exists %}{{ edition.source.languages.all.0.name|title }} {% endif %}Translation of {{ document.title }}</title>
+    </head>
+    <body style="max-width: 860px; margin: auto">
+        <h1>{% if edition.source.languages.exists %}{{ edition.source.languages.all.0.name|title }} {% endif %}Translation of {{ document.title }}</h1>
+
+        <p>{{ edition.source.formatted_display|safe }}</p>
+
+        {# include language code, and rtl/ltr, when possible #}
+        <section {% if edition.source.languages.exists %}lang="{{ edition.source.languages.all.0.code }}" dir="{% if edition.source.languages.all.0.name == 'Hebrew' or edition.source.languages.all.0.name == 'Arabic' %}rtl{% else %}ltr{% endif %}"{% else %}dir="ltr"{% endif %}>
+            {% for canvas, html_section in edition.content_html.items %}
+                <div data-canvas="{{ canvas }}">
+                    {# FIXME: why is this lines instead of a block ? #}
+                    {# html_section|safe #}
+                    {% for line in html_section %}
+                        {{ line|safe }}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </section>
+    </body>
+</html>

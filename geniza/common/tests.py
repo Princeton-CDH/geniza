@@ -20,6 +20,7 @@ from geniza.common.admin import (
     CustomTagAdmin,
     LocalLogEntryAdmin,
     LocalUserAdmin,
+    TagForm,
     custom_empty_field_list_filter,
 )
 from geniza.common.fields import NaturalSortField, RangeField, RangeWidget
@@ -359,6 +360,18 @@ class TestCustomTagAdmin:
         assert isinstance(resp, HttpResponseRedirect)
         assert resp.status_code == 302
         assert resp["location"] == reverse("admin:taggit_tag_changelist")
+
+
+@pytest.mark.django_db
+class TestTagForm:
+    def test_form_clean(self):
+        Tag.objects.create(name="test name", slug="test-name")
+        # should raise a validation error on the "name" field if a tag with
+        # the same name exists, case-insensitive
+        form = TagForm()
+        form.cleaned_data = {"name": "Test Name", "slug": "test-name-2"}
+        form.clean()
+        assert "name" in form.errors
 
 
 def test_echo():

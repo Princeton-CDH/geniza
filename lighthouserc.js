@@ -19,6 +19,7 @@ module.exports = {
             startServerCommand:
                 "PYTHONUNBUFFERED=1 python manage.py runserver --insecure",
             startServerReadyPattern: "Quit the server",
+            settings: { chromeFlags: "--headless=new" },
         },
         upload: {
             target: "temporary-public-storage",
@@ -47,6 +48,9 @@ module.exports = {
                 "offscreen-images": ["error", { maxLength: 1 }],
                 // allow larger byte weight for multilingual and transcription fonts
                 "total-byte-weight": ["error", { minScore: 0.7 }],
+                // ignore error about back/forward cache, bug with using headless mode.
+                // see https://github.com/GoogleChrome/lighthouse/issues/14784
+                "bf-cache": "off",
             },
         },
     },

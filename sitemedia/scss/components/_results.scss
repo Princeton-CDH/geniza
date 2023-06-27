@@ -121,9 +121,10 @@ section#document-list {
             column-gap: 1rem;
         }
 
-        // document description, transcription
+        // document description, transcription, translation margins/highlighting
         .description,
-        .transcription {
+        .transcription,
+        .translation {
             margin: spacing.$spacing-md 0;
 
             // keywords in context
@@ -228,22 +229,35 @@ section#document-list {
     }
 
     /* use pseudo marker to get transcription line numbers from snippets */
-    .transcription li {
-        direction: rtl;
+    .transcription li,
+    .translation li {
         list-style-type: none; /* hide automatic ol numbering */
         &::before {
             @include typography.transcription-numerals;
             content: attr(value);
+            height: 100%;
+        }
+    }
+    .transcription[dir="ltr"] li::before,
+    .translation[dir="ltr"] li::before {
+        margin-left: -2rem;
+        text-align: left;
+        float: left;
+    }
+    .transcription[dir="rtl"] li,
+    .translation[dir="rtl"] li {
+        direction: rtl;
+        &::before {
             margin-right: -2rem; /* shift outside text margin */
             text-align: right;
             float: right;
-            height: 100%;
         }
     }
 
     /* raise tags & text over clickable pseudo content to allow selection */
     .description,
     .transcription,
+    .translation,
     dl.metadata-list dd,
     .tags {
         position: relative;
@@ -402,8 +416,13 @@ html[dir="rtl"] .search-result {
             right: 0;
         }
     }
-    .transcription {
+    .transcription[dir="rtl"],
+    .translation[dir="rtl"] {
         align-self: flex-start;
+    }
+    .transcription[dir="ltr"],
+    .translation[dir="ltr"] {
+        align-self: flex-end;
     }
 }
 

@@ -28,7 +28,10 @@ class Calendar:
     ANNO_MUNDI = "am"
 
     #: calendars that can be converted to Julian/Gregorian
-    can_convert = [ANNO_MUNDI, HIJRI]
+    can_convert = [ANNO_MUNDI, HIJRI, SELEUCID]
+
+    #: offset for Seleucid calendar: Anno Mundi - 3449
+    SELEUCID_OFFSET = 3449
 
 
 class PartialDate:
@@ -129,8 +132,8 @@ class DocumentDateMixin(TrackChangesModel):
     and related logic for displaying, converting,a nd validating dates."""
 
     doc_date_original = models.CharField(
-        "Date on document (original)",
-        help_text="explicit date on the document, in original format",
+        "Date on document",
+        help_text="Explicit date on the document, in original format",
         blank=True,
         max_length=255,
     )
@@ -155,11 +158,15 @@ class DocumentDateMixin(TrackChangesModel):
         r"^\d{3,4}(-[01]\d(-[0-3]\d)?)?(/\d{3,4}(-[01]\d(-[0-3]\d)?)?)?$"
     )
 
+    standard_date_helptext = str(
+        "Convert to Julian before 1582, Gregorian after 1582. "
+        + "\nUse YYYY, YYYY-MM, YYYY-MM-DD format or YYYY-MM-DD/YYYY-MM-DD for date ranges.",
+    )
+
     doc_date_standard = models.CharField(
-        "Document date (standardized)",
-        help_text="CE date (convert to Julian before 1582, Gregorian after 1582). "
-        + "\nUse YYYY, YYYY-MM, YYYY-MM-DD format or YYYY-MM-DD/YYYY-MM-DD for date ranges. "
-        + "\nLeave blank or clear out to automatically calculate standardized date for supported calendars.",
+        "CE date",
+        help_text=f"{standard_date_helptext} \nLeave blank or clear out to automatically "
+        + "calculate standardized date for supported calendars.",
         blank=True,
         max_length=255,
         validators=[RegexValidator(re_date_format)],
@@ -361,6 +368,11 @@ def convert_hebrew_date(historic_date):
     return standardize_date(historic_date, Calendar.ANNO_MUNDI)
 
 
+def convert_seleucid_date(historic_date):
+    """Convert a date in the Greek Seleucid calendar to the Julian or Gregorian calendar"""
+    return standardize_date(historic_date, Calendar.SELEUCID)
+
+
 def convert_islamic_date(historic_date):
     """Convert a date in the Islamic Hijri calendar to the Julian or Gregorian calendar"""
     return standardize_date(historic_date, Calendar.HIJRI)
@@ -370,6 +382,9 @@ def convert_islamic_date(historic_date):
 calendar_converter = {
     Calendar.ANNO_MUNDI: convertdate.hebrew,
     Calendar.HIJRI: convertdate.islamic,
+    # NOTE: Seleucid years cannot be passed directly into convertdate.hebrew; instead,
+    # convert them to AM using the Seleucid offset first, in order to handle leap years
+    Calendar.SELEUCID: convertdate.hebrew,
 }
 
 
@@ -388,6 +403,8 @@ def standardize_date(historic_date, calendar):
     if match:
         date_info = match.groupdict()
         year = int(date_info["year"])
+        if calendar == Calendar.SELEUCID:
+            year = year + Calendar.SELEUCID_OFFSET
         month = date_info["month"]
 
         if month:

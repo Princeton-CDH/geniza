@@ -39,6 +39,10 @@ class SourceLanguage(models.Model):
 
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, help_text="ISO language code")
+    LTR = "ltr"
+    RTL = "rtl"
+    DIRECTION_CHOICES = ((LTR, "Left to right"), (RTL, "Right to left"))
+    direction = models.CharField(max_length=3, default=LTR, choices=DIRECTION_CHOICES)
 
     def __str__(self):
         return self.name
@@ -183,13 +187,21 @@ class Source(models.Model):
         """semi-colon delimited list of authors in order"""
         return "; ".join([str(c.creator) for c in self.authorship_set.all()])
 
+    def all_languages(self):
+        """comma-delimited list of languages, in parentheses, used for the translation selector"""
+        if self.languages.exists():
+            return "(in %s)" % ", ".join(
+                [str(lang) for lang in self.languages.all().order_by("name")]
+            )
+        return ""
+
     def formatted_display(self, extra_fields=True):
         """Format source for display; used on document scholarship page.
         To omit publisher, place_published, and page_range fields,
         specify `extra_fields=False`."""
 
         author = ""
-        if self.authorship_set.exists():
+        if len(self.authorship_set.all()):
             author_lastnames = [
                 a.creator.firstname_lastname() for a in self.authorship_set.all()
             ]
@@ -248,7 +260,7 @@ class Source(models.Model):
 
         # Add non-English languages as parenthetical
         non_english_langs = 0
-        if len(self.languages.all()):
+        if self.languages.exists():
             for lang in self.languages.all():
                 if "English" not in str(lang):
                     non_english_langs += 1
@@ -463,11 +475,13 @@ class Footnote(TrackChangesModel):
     TRANSLATION = "T"
     DISCUSSION = "D"
     DIGITAL_EDITION = "X"
+    DIGITAL_TRANSLATION = "Y"
     DOCUMENT_RELATION_TYPES = (
         (EDITION, _("Edition")),
         (TRANSLATION, _("Translation")),
         (DISCUSSION, _("Discussion")),
-        (DIGITAL_EDITION, _("Digital Edition")),
+        (DIGITAL_EDITION, "Digital Edition"),
+        (DIGITAL_TRANSLATION, "Digital Translation"),
     )
 
     doc_relation = MultiSelectField(
@@ -484,7 +498,7 @@ class Footnote(TrackChangesModel):
     )
     notes = models.TextField(
         help_text="Displays publicly. For minor emendations to a "
-        + 'transcription, put "with minor emendations by [your name, date]." '
+        + 'transcription, put "with minor emendations by Your Name, Date." '
         + "Do not add a note for typo corrections. For significant "
         + "alterations to a transcription, create a new source indicating "
         + "co-authorship.",
@@ -526,7 +540,15 @@ class Footnote(TrackChangesModel):
                 fields=("source", "object_id", "content_type"),
                 name="one_digital_edition_per_document_and_source",
                 condition=models.Q(doc_relation__contains="X"),  # X = DIGITAL_EDITION
-            )
+            ),
+            # only allow one digital translation per source for a document
+            models.UniqueConstraint(
+                fields=("source", "object_id", "content_type"),
+                name="one_digital_translation_per_document_and_source",
+                condition=models.Q(
+                    doc_relation__contains="Y"
+                ),  # Y = DIGITAL_TRANSLATION
+            ),
         ]
 
     def __str__(self):
