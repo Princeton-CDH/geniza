@@ -478,16 +478,38 @@
                 margin: auto;
             }
             // adjust line heights to align transcription with translation when both visible
-            // TODO: Handle this more gracefully with javascript to include 3+ line <li>s
-            div.editions ol li,
-            div.translations ol li {
-                // li, height of two lines (line height = 34px)
-                min-height: 68px;
+            // give li a standard line height (using largest among transcription/translation styles)
+            li {
+                line-height: calc(34 / 22);
+            }
+            // remove margin/padding that could interrupt alignment
+            li p {
+                margin: 0;
+                padding: 0;
+            }
+            li[data-lines="1"] {
+                min-height: calc(1 * 34 / 22 * 1.375rem);
+            }
+            li[data-lines="2"] {
+                // li, height of two lines (line height = 34 / 22, font size = 1.375rem)
+                min-height: calc(2 * 34 / 22 * 1.375rem);
+            }
+            li[data-lines="3"] {
+                min-height: calc(3 * 34 / 22 * 1.375rem);
+            }
+            li[data-lines="4"] {
+                min-height: calc(4 * 34 / 22 * 1.375rem);
+            }
+            li[data-lines="5"] {
+                min-height: calc(5 * 34 / 22 * 1.375rem);
+            }
+            li[data-lines="6"] {
+                min-height: calc(6 * 34 / 22 * 1.375rem);
             }
             h2 + span.current-transcription,
             h2 + span.current-translation {
-                // citation, height of two lines (line height = 27px)
-                min-height: 54px;
+                // citation, height of two lines (line height = 1.5, font size = 1.125rem)
+                min-height: calc(2 * 1.5 * 1.125rem);
             }
         }
     }
@@ -1129,9 +1151,9 @@ a.editor-navigation {
             line-height: 22px;
 
             @include breakpoints.for-tablet-landscape-up {
-                font-size: 38px;
-                line-height: 26px;
-                right: -37px;
+                font-size: 45px;
+                line-height: 25px;
+                right: -36px;
             }
         }
 
@@ -1139,6 +1161,36 @@ a.editor-navigation {
         li::marker {
             text-align: right;
             float: right;
+        }
+    }
+
+    &[dir="ltr"] {
+        li {
+            margin-left: 1.5em;
+            padding-left: 1em; /* shift to make space for line numbers */
+        }
+        p {
+            // match alignment of list items
+            margin-left: 1em;
+            padding-left: 1.5em;
+        }
+        li > p {
+            // if inside a list item, don't pad <p>
+            margin-left: 0;
+            padding-left: 0;
+        }
+        ol li:not([value])::before {
+            /* make font larger than list number font to cover completely;
+                   shrink line height to adjust placement */
+            font-size: 37px;
+            line-height: 18px;
+            left: -9.5px;
+
+            @include breakpoints.for-tablet-landscape-up {
+                font-size: 38px;
+                line-height: 21px;
+                left: -10.75px;
+            }
         }
     }
 }
@@ -1150,36 +1202,6 @@ a.editor-navigation {
     &[data-lang-script="arabic"],
     span[lang="ar"] {
         @include typography.arabic-transcription;
-    }
-}
-.translation {
-    // need to differentiate RTL/LTR by language
-    li {
-        margin-left: 1.5em;
-        padding-left: 1em; /* shift to make space for line numbers */
-    }
-    p {
-        // match alignment of list items
-        margin-left: 1em;
-        padding-left: 1.5em;
-    }
-    li > p {
-        // if inside a list item, don't pad <p>
-        margin-left: 0;
-        padding-left: 0;
-    }
-    ol li:not([value])::before {
-        /* make font larger than list number font to cover completely;
-           shrink line height to adjust placement */
-        font-size: 37px;
-        line-height: 18px;
-        left: -9.5px;
-
-        @include breakpoints.for-tablet-landscape-up {
-            font-size: 38px;
-            line-height: 21px;
-            left: -10.75px;
-        }
     }
 }
 

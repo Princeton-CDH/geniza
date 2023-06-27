@@ -220,17 +220,19 @@ class AnnotationExporter:
                         doc_transcription_dir,
                         "%s.%s" % (base_filename, output_format),
                     )
-                    doc_updated_files.append(outfile_path)
                     with open(outfile_path, "w") as outfile:
                         if output_format == "html":
                             content = html_template[fn_type].render(
                                 {"document": document, "edition": footnote}
                             )
-                            outfile.write(content)
                         else:
                             # text version is meant for corpus analytics,
                             # so should be minimal and content only
-                            outfile.write(footnote.content_text)
+                            content = footnote.content_text
+                        if content:
+                            # don't write/add to updated if no content
+                            outfile.write(content)
+                            doc_updated_files.append(outfile_path)
 
             # add all updated files for this document to the updated list
             updated_filenames.extend(doc_updated_files)
