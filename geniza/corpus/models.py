@@ -1352,11 +1352,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         self.needs_review = "\n".join(needs_review)
 
         # save current document with changes; delete merged documents
-        print("saving")
         self.save()
-        print("saved")
-        print(self.pk)
-        print(self.old_pgpids)
         merged_ids = ", ".join([str(doc.id) for doc in merge_docs])
         for doc in merge_docs:
             doc.delete()
