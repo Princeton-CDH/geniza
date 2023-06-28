@@ -1268,9 +1268,6 @@ class Document(ModelIndexable, DocumentDateMixin):
         metadata into this document, adds the merged documents into
         list of old PGP IDs, and creates a log entry documenting
         the merge, including the rationale."""
-        # initialize old pgpid list if previously unset
-        if self.old_pgpids is None:
-            self.old_pgpids = []
 
         # if user is not specified, log entry will be associated with
         # script and document will be flagged for review
@@ -1293,10 +1290,15 @@ class Document(ModelIndexable, DocumentDateMixin):
         needs_review = [self.needs_review] if self.needs_review else []
 
         for doc in merge_docs:
+            # add any tags from merge document tags to primary doc
+            # NOTE: This must be done before any other changes to self because it will fire
+            # m2m_changed signal which calls self.refresh_from_db()
+            self.tags.add(*doc.tags.names())
+            # initialize old pgpid list if previously unset
+            if self.old_pgpids is None:
+                self.old_pgpids = []
             # add merge id to old pgpid list
             self.old_pgpids.append(doc.id)
-            # add any tags from merge document tags to primary doc
-            self.tags.add(*doc.tags.names())
             # add description if set and not duplicated
             # for all supported languages
             for lang_code in language_codes:
@@ -1350,7 +1352,11 @@ class Document(ModelIndexable, DocumentDateMixin):
         self.needs_review = "\n".join(needs_review)
 
         # save current document with changes; delete merged documents
+        print("saving")
         self.save()
+        print("saved")
+        print(self.pk)
+        print(self.old_pgpids)
         merged_ids = ", ".join([str(doc.id) for doc in merge_docs])
         for doc in merge_docs:
             doc.delete()
