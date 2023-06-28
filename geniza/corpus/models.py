@@ -488,6 +488,8 @@ class TagSignalHandlers:
 
     @staticmethod
     def tagged_item_change(sender, instance, action, **kwargs):
+        """Ensure document is indexed after the tags m2m relationship is saved and the list
+        of tags is refreshed from the database, on any tag change."""
         if action in ["post_add", "post_remove", "post_clear"]:
             logger.debug("taggit.TaggedItem %s, reindexing related document", action)
             instance.refresh_from_db()
