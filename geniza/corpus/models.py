@@ -486,6 +486,13 @@ class TagSignalHandlers:
         """Convert saved tags to ascii, stripping diacritics."""
         instance.name = unidecode(instance.name)
 
+    @staticmethod
+    def tagged_item_change(sender, instance, action, **kwargs):
+        if action in ["post_add", "post_remove", "post_clear"]:
+            logger.debug("taggit.TaggedItem %s, reindexing related document", action)
+            instance.refresh_from_db()
+            ModelIndexable.index_items([instance])
+
 
 class DocumentQuerySet(MultilingualQuerySet):
     def metadata_prefetch(self):
@@ -1217,14 +1224,6 @@ class Document(ModelIndexable, DocumentDateMixin):
     # to other models
     index_depends_on = {
         "fragments": {
-            "post_save": DocumentSignalHandlers.related_save,
-            "pre_delete": DocumentSignalHandlers.related_delete,
-        },
-        "tags": {
-            "post_save": DocumentSignalHandlers.related_save,
-            "pre_delete": DocumentSignalHandlers.related_delete,
-        },
-        "taggit.TaggedItem": {
             "post_save": DocumentSignalHandlers.related_save,
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
