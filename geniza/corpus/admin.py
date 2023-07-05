@@ -372,7 +372,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         DocumentPersonInline,
     ]
     # mixed fieldsets and inlines: /admin/corpus/document/snippets/mixed_inlines_fieldsets.html
-    fieldsets_and_inlines_order = ("f", "f", "i", "f", "i", "i", "i")
+    fieldsets_and_inlines_order = ("f", "f", "i", "f", "itt", "i", "i", "i")
 
     class Media:
         css = {"all": ("css/admin-local.css",)}

@@ -22,6 +22,9 @@ def get_fieldsets_and_inlines(context):
                 fieldsets_and_inlines.append(("f", next(adminform)))
             elif choice == "i":
                 fieldsets_and_inlines.append(("i", next(inlines)))
+            elif choice == "itt":
+                # special case for itt panel on document
+                fieldsets_and_inlines.append(("itt", None))
         except StopIteration:
             raise IndexError(
                 """Too many values provided to fieldsets_and_inlines_order.
