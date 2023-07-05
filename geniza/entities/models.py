@@ -15,9 +15,15 @@ class Name(models.Model):
     name = models.CharField(max_length=255)
     primary = models.BooleanField(
         default=False,
-        help_text="True if this is the primary name that should be displayed on the site.",
+        help_text="Check box if this is the primary name that should be displayed on the site.",
+        verbose_name="Display name",
     )
-    language = models.ForeignKey(LanguageScript, on_delete=models.SET_NULL, null=True)
+    language = models.ForeignKey(
+        LanguageScript,
+        on_delete=models.SET_NULL,
+        null=True,
+        help_text="Please indicate the language of most components of the name as written here.",
+    )
     notes = models.TextField(blank=True)
 
     # Generic relationship with named entities
@@ -90,10 +96,14 @@ class Person(models.Model):
     """A person entity that appears within the PGP corpus."""
 
     names = GenericRelation(Name, related_query_name="person")
-    description = models.TextField(blank=True)
+    description = models.TextField(
+        blank=True,
+        help_text="A description that will appear on the public Person page if 'Person page' box is checked.",
+    )
     has_page = models.BooleanField(
-        help_text="True if this person should have a dedicated, public Person page on the PGP",
+        help_text="Check box if this person should have a dedicated, public Person page on the PGP. If checked, please draft a public description below.",
         default=False,
+        verbose_name="Person page",
     )
     documents = models.ManyToManyField(
         Document,
