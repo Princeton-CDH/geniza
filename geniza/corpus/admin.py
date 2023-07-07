@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
-from django.db.models import CharField, Count, F
+from django.db.models import CharField, Count, F, Q
 from django.db.models.fields import TextField
 from django.db.models.functions import Concat
 from django.forms.widgets import HiddenInput, Textarea, TextInput
@@ -19,6 +19,7 @@ from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.annotations.models import Annotation
 from geniza.common.admin import custom_empty_field_list_filter
+from geniza.corpus.dates import DocumentDateMixin
 from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentExporter
 from geniza.corpus.models import (
     Collection,
@@ -217,6 +218,80 @@ class HasTranslationListFilter(admin.SimpleListFilter):
             )
 
 
+class TextInputListFilter(admin.SimpleListFilter):
+    """
+    Custom list filter class for text input, adapted from this solution by Haki Benita:
+    https://hakibenita.com/how-to-add-a-text-filter-to-django-admin
+    """
+
+    template = "admin/corpus/text_input_filter.html"
+
+    def lookups(self, request, model_admin):
+        # Dummy, required to show the filter.
+        return ((),)
+
+    def choices(self, changelist):
+        # Grab only the "all" option.
+        all_choice = next(super().choices(changelist))
+        all_choice["query_parts"] = (
+            (k, v)
+            for k, v in changelist.get_filters_params().items()
+            if k != self.parameter_name
+        )
+        yield all_choice
+
+
+class DateListFilter(TextInputListFilter):
+    """Admin date range filter for documents, using Solr queryset"""
+
+    def queryset(self, request, queryset):
+        """Get the filtered queryset based on date range filter input"""
+        if self.value() is not None:
+            date = self.value()
+
+            # exclude any results that don't have a date or dating
+            queryset = queryset.exclude(
+                Q(dating__isnull=True) & Q(doc_date_standard="")
+            )
+
+            # get all before "to date" if we're using DateBeforeListFilter,
+            # otherwise get all after "from date"
+            date_filter = (
+                ("[* TO %s]" % date)
+                if self.parameter_name == "date__lte"
+                else ("[%s TO *]" % date)
+            )
+
+            # use Solr to take advantage of processed date range fields
+            sqs = (
+                DocumentSolrQuerySet()
+                .filter(document_date_dr=date_filter)
+                .only("pgpid")
+                .get_results(rows=100000)
+            )
+            # filter queryset by id if there are results
+            pks = [r["pgpid"] for r in sqs]
+            if sqs:
+                queryset = queryset.filter(pk__in=pks)
+            else:
+                queryset = queryset.none()
+            if not (DocumentDateMixin.re_date_format.match(date)):
+                messages.error(
+                    request, "Dates must be in the format YYYY-MM-DD or YYYY."
+                )
+            return queryset
+
+
+class DateAfterListFilter(DateListFilter):
+    parameter_name = "date__gte"
+    title = "Date from (CE)"
+
+
+class DateBeforeListFilter(DateListFilter):
+    parameter_name = "date__lte"
+    title = "Date to (CE)"
+
+
 class DocumentDatingInline(admin.TabularInline):
     """Inline for inferred dates on a document"""
 
@@ -316,6 +391,8 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             custom_empty_field_list_filter("review status", "Needs review", "OK"),
         ),
         "status",
+        DateAfterListFilter,
+        DateBeforeListFilter,
         ("textblock__fragment__collection", admin.RelatedOnlyFieldListFilter),
         ("languages", admin.RelatedOnlyFieldListFilter),
         ("secondary_languages", admin.RelatedOnlyFieldListFilter),
