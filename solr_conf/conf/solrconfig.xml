@@ -79,8 +79,6 @@
 
   <lib dir="${solr.install.dir:../../../..}/modules/langid/lib/" regex=".*\.jar" />
 
-  <lib dir="${solr.install.dir:../../../..}/modules/velocity/lib" regex=".*\.jar" />
-
   <lib dir="${solr.install.dir:../../../..}/modules/analysis-extras/lib/" regex="solr-analysis-extras-\d.*\.jar" />
   <lib dir="${solr.install.dir:../../../..}/modules/analysis-extras/lib/" regex="lucene-analysis-icu-\d.*\.jar" />
   <lib dir="${solr.install.dir:../../../..}/modules/analysis-extras/lib/" regex="icu4j-\d.*\.jar" />
@@ -876,7 +874,7 @@
        (SearchHandler) can be registered multiple times with different
        names (and different init parameters)
     -->
-  <requestHandler name="/browse" class="solr.SearchHandler" useParams="query,facets,velocity,browse">
+  <requestHandler name="/browse" class="solr.SearchHandler" useParams="query,facets,browse">
     <lst name="defaults">
       <str name="echoParams">explicit</str>
     </lst>
@@ -1397,11 +1395,6 @@
   <!--
      Custom response writers can be declared as needed...
     -->
-  <queryResponseWriter name="velocity" class="solr.VelocityResponseWriter" startup="lazy">
-    <str name="template.base.dir">${velocity.template.base.dir:}</str>
-    <str name="solr.resource.loader.enabled">${velocity.solr.resource.loader.enabled:true}</str>
-    <str name="params.resource.loader.enabled">${velocity.params.resource.loader.enabled:false}</str>
-  </queryResponseWriter>
 
   <!-- XSLT response writer transforms the XML output by any xslt file found
        in Solr's conf/xslt directory.  Changes to xslt files are checked for
