@@ -132,22 +132,22 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
         return search_term
 
-    # (adapted from mep)
-    # edismax alias for searching on admin document pseudo-field;
-    # set minimum match to 100% (= require all search terms)
-    admin_doc_qf = "{!edismax qf=$admin_doc_qf pf=$admin_doc_pf v=$doc_query mm=100%}"
-
     def admin_search(self, search_term):
+        # (adapted from mep)
+        # searching on admin document pseudo-field
         # remove " + " from search string to allow searching on shelfmark joins
-        return self.search(self.admin_doc_qf).raw_query_parameters(
-            doc_query=self._search_term_cleanup(search_term)
+        return self.search(self._search_term_cleanup(search_term)).raw_query_parameters(
+            qf="type_s shelfmark_bigram shelfmark_s fragment_shelfmark_ss shelfmark_textnum tags_t tags_ss_lower description_en_bigram notes_t needs_review_t pgpid_i old_pgpids_is scholarship_t text_transcription text_translation fragment_old_shelfmark_ss old_shelfmark_t old_shelfmark_textnum old_shelfmark_bigram document_date_t",
+            pf="type_s shelfmark_bigram shelfmark_textnum tags_t description_en_bigram notes_t needs_review_t scholarship_t text_transcription text_translation old_shelfmark_t old_shelfmark_textnum old_shelfmark_bigram document_date_t",
+            mm="100%",  # set minimum match to 100% (= require all search terms)
         )
 
-    keyword_search_qf = "{!type=edismax qf=$keyword_qf pf=$keyword_pf v=$keyword_query}"
-
     def keyword_search(self, search_term):
-        search = self.search(self.keyword_search_qf).raw_query_parameters(
-            keyword_query=self._search_term_cleanup(search_term)
+        search = self.search(
+            self._search_term_cleanup(search_term)
+        ).raw_query_parameters(
+            qf="shelfmark_bigram^200 shelfmark_s^150 shelfmark_textnum^140 content_nostem^130 description_en_bigram^50 pgpid_i type_s type_t collection_ss fragment_shelfmark_ss^50 fragment_old_shelfmark_ss old_shelfmark_t old_shelfmark_textnum old_shelfmark_bigram tags_t tags_ss_lower scholarship_t old_pgpids_is text_transcription^30 text_translation^30 document_date_t",
+            pf="shelfmark_bigram^9500 shelfmark_textnum^9500 description_en_bigram^3500 content_nostem^3500 old_shelfmark_t old_shelfmark_textnum old_shelfmark_bigram^100 tags_t scholarship_t^80 text_transcription^2500 text_translation^2500 document_date_t^550",
         )
         # if search term cleanup identifies any exact phrase searches,
         # pass the unmodified search to Solr as a highlighting query,

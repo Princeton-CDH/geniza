@@ -12,44 +12,35 @@ class TestDocumentSolrQuerySet:
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             dqs.admin_search("deed of sale")
-            mocksearch.assert_called_with(dqs.admin_doc_qf)
-            mocksearch.return_value.raw_query_parameters.assert_called_with(
-                doc_query="deed of sale"
-            )
+            mocksearch.assert_called_with("deed of sale")
 
     def test_admin_search_shelfmark(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             # ignore + when searching on joins
             dqs.admin_search("CUL Or.1080 3.41 + T-S 13J16.20 + T-S 13J8.14")
-            mocksearch.return_value.raw_query_parameters.assert_called_with(
-                doc_query="CUL Or.1080 3.41 T-S 13J16.20 T-S 13J8.14"
-            )
+            mocksearch.assert_called_with("CUL Or.1080 3.41 T-S 13J16.20 T-S 13J8.14")
 
     def test_keyword_search_shelfmark(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             # ignore + when searching on joins
             dqs.keyword_search("CUL Or.1080 3.41 + T-S 13J16.20 + T-S 13J8.14")
-            mocksearch.return_value.raw_query_parameters.assert_called_with(
-                keyword_query="CUL Or.1080 3.41 T-S 13J16.20 T-S 13J8.14"
-            )
+            mocksearch.assert_called_with("CUL Or.1080 3.41 T-S 13J16.20 T-S 13J8.14")
 
     def test_keyword_search_field_aliases(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             dqs.keyword_search("pgpid:950 old_pgpid:931 tag:state")
-            mocksearch.return_value.raw_query_parameters.assert_called_with(
-                keyword_query="pgpid_i:950 old_pgpids_is:931 tags_ss_lower:state"
+            mocksearch.assert_called_with(
+                "pgpid_i:950 old_pgpids_is:931 tags_ss_lower:state"
             )
 
     def test_keyword_search_field_alias_shelfmark(self):
         dqs = DocumentSolrQuerySet()
         with patch.object(dqs, "search") as mocksearch:
             dqs.keyword_search("shelfmark:ena")
-            mocksearch.return_value.raw_query_parameters.assert_called_with(
-                keyword_query="%sena" % dqs.shelfmark_qf
-            )
+            mocksearch.assert_called_with("%sena" % dqs.shelfmark_qf)
 
     def test_keyword_search_exact_match(self):
         dqs = DocumentSolrQuerySet()
