@@ -14,3 +14,5 @@ pytest-ordering
 git+https://github.com/KJagiela/django-fixture-magic
 # django-fixture-magic
 future
+google-api-python-client
+google_auth_oauthlib

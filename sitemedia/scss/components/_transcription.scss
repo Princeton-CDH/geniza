@@ -49,7 +49,9 @@
                 height: 65px;
                 transform: scale(calc(40 / 65));
                 outline: 1.5px solid black;
+                outline-offset: -1px;
                 transition: transform 200ms ease;
+                will-change: transform;
             }
 
             // left and right margins on first and last toggles
@@ -480,7 +482,7 @@
             // adjust line heights to align transcription with translation when both visible
             // give li a standard line height (using largest among transcription/translation styles)
             li {
-                line-height: calc(34 / 22);
+                line-height: calc(34 / 22 * 1.375rem);
             }
             // remove margin/padding that could interrupt alignment
             li p {
