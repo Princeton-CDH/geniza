@@ -5,8 +5,19 @@ from django.contrib import admin
 from django.test import RequestFactory
 
 from geniza.corpus.models import Document
-from geniza.entities.admin import PersonAdmin, PersonDocumentInline, PersonPersonInline
-from geniza.entities.models import Person, PersonDocumentRelation, PersonPersonRelation
+from geniza.entities.admin import (
+    PersonAdmin,
+    PersonDocumentInline,
+    PersonPersonInline,
+    PersonPlaceInline,
+)
+from geniza.entities.models import (
+    Person,
+    PersonDocumentRelation,
+    PersonPersonRelation,
+    PersonPlaceRelation,
+    Place,
+)
 
 
 @pytest.mark.django_db
@@ -45,6 +56,19 @@ class TestPersonPersonInline:
         person_link = inline.person_link(relation)
         assert str(rustow.id) in person_link
         assert str(rustow) in person_link
+
+
+@pytest.mark.django_db
+class TestPersonPlaceInline:
+    def test_place_link(self):
+        goitein = Person.objects.create()
+        place = Place.objects.create()
+        relation = PersonPlaceRelation.objects.create(person=goitein, place=place)
+        inline = PersonPlaceInline(Person, admin_site=admin.site)
+        # should link to Place object
+        place_link = inline.place_link(relation)
+        assert str(place.id) in place_link
+        assert str(place) in place_link
 
 
 @pytest.mark.django_db
