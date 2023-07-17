@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from attrdict import AttrDict
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
@@ -151,10 +152,14 @@ class TestFragment(TestCase):
             label in placeholder_thumbnails
             for label in ['title="recto"', 'title="verso"']
         )
-        # test with recto side selected: should add class to recto img, but not verso img
-        thumbnails_recto_selected = frag.iiif_thumbnails(selected=[0])
-        assert 'title="recto" class="selected"' in thumbnails_recto_selected
-        assert 'title="verso" class="selected"' not in thumbnails_recto_selected
+        # test with recto side selected: should add class to recto div, but not verso div
+        thumbnails_recto_selected = BeautifulSoup(
+            frag.iiif_thumbnails(selected=[0])
+        ).find_all("div", {"class": "selected"})
+
+        assert len(thumbnails_recto_selected) == 1
+        assert 'title="recto"' in str(thumbnails_recto_selected[0])
+        assert 'title="verso"' not in str(thumbnails_recto_selected[0])
 
         frag.iiif_url = "http://example.co/iiif/ts-1"
         # return simplified part of the manifest we need for this
@@ -204,10 +209,14 @@ class TestFragment(TestCase):
         assert 'title="1v"' in thumbnails
         assert isinstance(thumbnails, SafeString)
 
-        # test with verso side selected: should add class to 1v img, but not 1r img
-        thumbnails_verso_selected = frag.iiif_thumbnails(selected=[1])
-        assert 'title="1v" class="selected"' in thumbnails_verso_selected
-        assert 'title="1r" class="selected"' not in thumbnails_verso_selected
+        # test with verso side selected: should add class to 1v div, but not 1r div
+        thumbnails_recto_selected = BeautifulSoup(
+            frag.iiif_thumbnails(selected=[1])
+        ).find_all("div", {"class": "selected"})
+
+        assert len(thumbnails_recto_selected) == 1
+        assert 'title="1v"' in str(thumbnails_recto_selected[0])
+        assert 'title="1r"' not in str(thumbnails_recto_selected[0])
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
@@ -819,9 +828,9 @@ class TestDocument:
         TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0])
         # Mock two IIIF images, mock their size functions
         img1 = Mock()
-        img1.size.return_value = "/img1.jpg"
+        img1.size.return_value.rotation.return_value = "/img1.jpg"
         img2 = Mock()
-        img2.size.return_value = "/img2.jpg"
+        img2.size.return_value.rotation.return_value = "/img2.jpg"
         # Mock Fragment.iiif_images() to return those two images and two fake labels
         with patch.object(
             Fragment,

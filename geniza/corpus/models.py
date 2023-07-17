@@ -270,12 +270,12 @@ class Fragment(TrackChangesModel):
             " ".join(
                 # include label as title for now; include canvas as data attribute for reordering
                 # on Document
-                '<img src="%s" loading="lazy" height="200" title="%s" %s%s>'
+                '<div class="admin-thumbnail%s" %s><img src="%s" loading="lazy" height="200" title="%s" /></div>'
                 % (
+                    " selected" if i in selected else "",
+                    f'data-canvas="{list(canvases)[i]}"' if canvases else "",
                     img,
                     labels[i],
-                    f'data-canvas="{list(canvases)[i]}" ' if canvases else "",
-                    'class="selected" /' if i in selected else "/",
                 )
                 for i, img in enumerate(images)
             )
@@ -743,6 +743,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                             "label": labels[i],
                             "canvas": canvases[i],
                             "shelfmark": b.fragment.shelfmark,
+                            "rotation": 0,  # rotation to 0 by default; will change if overridden
                             "excluded": len(b.selected_images)
                             and i not in b.selected_images,
                         }
@@ -786,20 +787,26 @@ class Document(ModelIndexable, DocumentDateMixin):
                             "recto" if int(uri_match.group("canvas")) == 1 else "verso"
                         )
 
-        # if image_order_override not present, return list, in original order
-        if not self.image_order_override:
-            return iiif_images
+        # if image_order_override present, order returned images according to override
+        if self.image_order_override:
+            ordered_images = {
+                canvas: iiif_images.pop(canvas)
+                for canvas in self.image_order_override
+                if canvas in iiif_images
+            } or {}  # if condition is never met, instantiate empty dict (instead of set!)
+            ordered_images.update(
+                iiif_images  # add any remaining images after ordered ones
+            )
+            # reassign to original variable so we can add rotation if necessary
+            iiif_images = ordered_images
 
-        # otherwise, order returned images according to override
-        ordered_images = {
-            canvas: iiif_images.pop(canvas)
-            for canvas in self.image_order_override
-            if canvas in iiif_images
-        } or {}  # if condition is never met, instantiate empty dict (instead of set!)
-        ordered_images.update(
-            iiif_images  # add any remaining images after ordered ones
-        )
-        return ordered_images
+        # add any rotations from the rotation override to each dict entry, in order
+        for i, degrees in enumerate(self.image_rotation_override or []):
+            # ensure no errors if too many entries in the override array
+            if len(iiif_images.keys()) > i:
+                iiif_images[list(iiif_images.keys())[i]]["rotation"] = int(degrees)
+
+        return iiif_images
 
     def admin_thumbnails(self):
         """generate html for thumbnails of all iiif images, for image reordering UI in admin"""
@@ -807,7 +814,10 @@ class Document(ModelIndexable, DocumentDateMixin):
         if not iiif_images:
             return ""
         return Fragment.admin_thumbnails(
-            images=[img["image"].size(height=200) for img in iiif_images.values()],
+            images=[
+                img["image"].size(height=200).rotation(degrees=img["rotation"])
+                for img in iiif_images.values()
+            ],
             labels=[img["label"] for img in iiif_images.values()],
             canvases=iiif_images.keys(),
         )
