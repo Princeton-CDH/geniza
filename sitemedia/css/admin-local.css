@@ -299,11 +299,34 @@ div.field-admin_thumbnails img {
     cursor: pointer;
 }
 /* selected side thumbnail for fragment admin, drop target for document admin */
-#textblock_set-group td.field-thumbnail img.selected,
-div.field-admin_thumbnails img.selected {
+#textblock_set-group td.field-thumbnail .admin-thumbnail.selected,
+div.field-admin_thumbnails .admin-thumbnail.selected {
     border: 5px solid var(--accent);
 }
-
+.admin-thumbnail {
+    display: inline-flex;
+    flex-flow: column;
+}
+div.field-admin_thumbnails .admin-thumbnail {
+    margin-right: 1rem;
+}
+.admin-thumbnail .rotation-controls {
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+}
+.admin-thumbnail .rotation-controls button {
+    font-size: 1.5rem;
+}
+.admin-thumbnail.rotate-90 img {
+    rotate: 90deg;
+}
+.admin-thumbnail.rotate-180 img {
+    rotate: 180deg;
+}
+.admin-thumbnail.rotate-270 img {
+    rotate: 270deg;
+}
 /* configure text inputs for Hebrew and Arabic model translate content to be RTL */
 input[name$="_he"],
 input[name$="_ar"],

@@ -30,6 +30,13 @@ export default class extends Controller {
             step: 1, // [min, min+step, ..., max]
             name: this.rotationTarget.id, // used for <input name>
         });
+        if (this.osdTarget.dataset.rotation !== "0") {
+            // subtract angle from 360 as angle rotation input tracks counterclockwise
+            // rotation, whereas our number tracks clockwise rotation
+            this.updateRotationUI(
+                360 - parseInt(this.osdTarget.dataset.rotation)
+            );
+        }
     }
     osdTargetDisconnected() {
         // remove OSD on target disconnect (i.e. leaving page)
@@ -81,7 +88,11 @@ export default class extends Controller {
         this.osdTarget.classList.remove("visible");
         this.osdTarget.classList.add("hidden-img");
         this.rotationTarget.classList.remove("active");
-        this.updateRotationUI(0);
+        if (this.osdTarget.dataset.rotation !== "0") {
+            this.updateRotationUI(
+                360 - parseInt(this.osdTarget.dataset.rotation)
+            );
+        }
         const OSD = this.osdTarget.querySelector(".openseadragon-container");
         OSD.style.transition = "opacity 300ms ease, visibility 0s ease 300ms";
         OSD.style.visibility = "hidden";
@@ -110,6 +121,7 @@ export default class extends Controller {
             sequenceMode: false,
             autoHideControls: true,
             showHomeControl: false,
+            degrees: 360 - parseInt(this.osdTarget.dataset.rotation),
             // Enable touch rotation on tactile devices
             gestureSettingsTouch: {
                 pinchRotate: true,
@@ -270,6 +282,9 @@ export default class extends Controller {
             bounds.height
         );
         viewer.viewport.fitBounds(newBounds, true);
-        viewer.viewport.setRotation(0, true);
+        viewer.viewport.setRotation(
+            parseInt(this.osdTarget.dataset.rotation),
+            true
+        );
     }
 }
