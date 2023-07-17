@@ -158,6 +158,7 @@ class DocumentForm(forms.ModelForm):
             "needs_review": Textarea(attrs={"rows": 3}),
             "notes": Textarea(attrs={"rows": 3}),
             "image_order_override": HiddenInput(),
+            "image_rotation_override": HiddenInput(),
         }
 
     def clean(self):
@@ -357,6 +358,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
                     "status",
                     ("needs_review", "notes"),
                     "image_order_override",
+                    "image_rotation_override",
                     "admin_thumbnails",
                 )
             },
@@ -380,7 +382,9 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     def get_form(self, request, obj=None, **kwargs):
         # Override to inject help text into display field
         help_texts = {
-            "admin_thumbnails": "Drag image thumbnails to customize order when necessary (i.e. image sequence does not follow fragment/shelfmark sequence)"
+            "admin_thumbnails": """Drag image thumbnails to customize order when necessary (i.e.
+            image sequence does not follow fragment/shelfmark sequence). Click rotation buttons to
+            rotate images. Changes will be applied on save."""
         }
         kwargs.update({"help_texts": help_texts})
         return super().get_form(request, obj, **kwargs)

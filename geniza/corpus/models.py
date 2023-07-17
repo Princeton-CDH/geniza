@@ -492,6 +492,9 @@ class Document(ModelIndexable, DocumentDateMixin):
     image_order_override = ArrayField(
         models.URLField(), null=True, verbose_name="Image Order", blank=True
     )
+    image_rotation_override = ArrayField(
+        models.IntegerField(), null=True, verbose_name="Image Rotation", blank=True
+    )
     shelfmark_override = models.CharField(
         "Shelfmark Override",
         blank=True,
