@@ -1,11 +1,11 @@
 import pytest
 
 from geniza.common.tests import TestMigrations
+from geniza.corpus.models import Document
 
 
 @pytest.mark.last
 class MergeIndiaBookSources(TestMigrations):
-
     app = "footnotes"
     migrate_from = "0011_split_goitein_typedtexts"
     migrate_to = "0012_merge_indiabook_sources"
@@ -39,7 +39,6 @@ class MergeIndiaBookSources(TestMigrations):
 
 @pytest.mark.last
 class AlterSourceEdition(TestMigrations):
-
     app = "footnotes"
     migrate_from = "0013_add_fields_to_source"
     migrate_to = "0014_alter_source_edition"
@@ -73,7 +72,6 @@ class AlterSourceEdition(TestMigrations):
 
 @pytest.mark.last
 class AlterSourceEditionReverse(TestMigrations):
-
     app = "footnotes"
     migrate_from = "0014_alter_source_edition"
     migrate_to = "0013_add_fields_to_source"
@@ -101,7 +99,6 @@ class AlterSourceEditionReverse(TestMigrations):
 
 @pytest.mark.last
 class TestFootnoteLocationPpMigration(TestMigrations):
-
     app = "footnotes"
     migrate_from = "0014_alter_source_edition"
     migrate_to = "0015_add_footnote_location_pp"
@@ -157,7 +154,6 @@ class TestFootnoteLocationPpMigration(TestMigrations):
 
 @pytest.mark.last
 class TestRenameTypedTextsMigration(TestMigrations):
-
     app = "footnotes"
     migrate_from = "0015_add_footnote_location_pp"
     migrate_to = "0016_rename_typed_texts"
@@ -199,3 +195,72 @@ class TestRenameTypedTextsMigration(TestMigrations):
             ).count()
             == 0
         )
+
+
+@pytest.mark.last
+@pytest.mark.django_db
+class TestDigitalFootnoteLocation(TestMigrations):
+    app = "footnotes"
+    migrate_from = "0028_sourcelanguage_direction"
+    migrate_to = "0029_digital_footnote_location"
+    digital_edition = None
+    digital_translation = None
+
+    def setUpBeforeMigration(self, apps):
+        Footnote = apps.get_model("footnotes", "Footnote")
+        Source = apps.get_model("footnotes", "Source")
+        SourceType = apps.get_model("footnotes", "SourceType")
+        ContentType = apps.get_model("contenttypes", "ContentType")
+
+        book = SourceType.objects.create(type="Book")
+        source = Source.objects.create(source_type=book)
+        source_2 = Source.objects.create(source_type=book)
+        doc = Document.objects.create()
+        document_contenttype = ContentType.objects.get_for_model(Document)
+
+        # example where there is 1 corresponding footnote with location
+        Footnote.objects.create(
+            source=source,
+            doc_relation=["E"],  # Footnote.EDITION
+            object_id=doc.pk,
+            content_type=document_contenttype,
+            location="doc. 123",
+        )
+        self.digital_edition = Footnote.objects.create(
+            source=source,
+            doc_relation=["X"],  # Footnote.DIGITAL_EDITION
+            object_id=doc.pk,
+            content_type=document_contenttype,
+        )
+
+        # example where there are 2 corresponding footnotes with location
+        Footnote.objects.create(
+            source=source_2,
+            doc_relation=["T"],  # Footnote.TRANSLATION
+            object_id=doc.pk,
+            content_type=document_contenttype,
+            location="doc. 1234",
+        )
+        Footnote.objects.create(
+            source=source_2,
+            doc_relation=["T"],  # Footnote.TRANSLATION
+            object_id=doc.pk,
+            content_type=document_contenttype,
+            location="doc. 12345",
+        )
+        self.digital_translation = Footnote.objects.create(
+            source=source,
+            doc_relation=["Y"],  # Footnote.DIGITAL_TRANSLATION
+            object_id=doc.pk,
+            content_type=document_contenttype,
+        )
+
+    def test_migrate_footnote_locations(self):
+        # should have copied the edition's location to the digital edition
+        self.digital_edition.refresh_from_db()
+        assert self.digital_edition.location == "doc. 123"
+
+        # should NOT have copied the translation's location becasue there are multiple
+        # corresponding translation footnotes
+        self.digital_translation.refresh_from_db()
+        assert self.digital_translation.location == ""
