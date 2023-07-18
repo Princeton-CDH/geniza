@@ -158,9 +158,17 @@ class Source(models.Model):
     other_info = models.TextField(
         blank=True, help_text="Additional citation information, if any"
     )
-    source_type = models.ForeignKey(SourceType, on_delete=models.CASCADE)
+    source_type = models.ForeignKey(
+        SourceType,
+        on_delete=models.CASCADE,
+        help_text="""The form of the source's publication. Note: for unpublished sources, be sure
+        to create separate Source records for unpublished transcriptions and unpublished
+        translations, even if they reside on the same digital document.""",
+    )
     languages = models.ManyToManyField(
-        SourceLanguage, help_text="The language(s) the source is written in"
+        SourceLanguage,
+        help_text="""The language(s) the source is written in. Note: Sources should never include
+        transcription language unless the entire source consists of a transcription.""",
     )
     url = models.URLField(blank=True, max_length=300, verbose_name="URL")
     # preliminary place to store transcription text; should not be editable
