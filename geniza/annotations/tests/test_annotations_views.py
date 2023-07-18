@@ -1,23 +1,20 @@
-import ast
 import json
 import uuid
-from unittest.mock import patch
 
 import pytest
 from django.contrib.admin.models import ADDITION, CHANGE, DELETION, LogEntry
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
-from parasolr.django.indexing import ModelIndexable
 from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.annotations.models import Annotation
 from geniza.annotations.views import AnnotationResponse
 from geniza.corpus.models import Document
-from geniza.footnotes.models import Footnote, Source
+from geniza.footnotes.models import Footnote, Source, SourceType
 
 
 @pytest.mark.django_db
 class TestAnnotationList:
-
     anno_list_url = reverse("annotations:list")
 
     def test_get_annotation_list(self, client, annotation):
@@ -136,7 +133,6 @@ class TestAnnotationList:
 
 @pytest.mark.django_db
 class TestAnnotationDetail:
-
     anno_list_url = reverse("annotations:list")
 
     def test_get_annotation_detail(self, client, annotation):
@@ -324,6 +320,44 @@ class TestAnnotationDetail:
         footnote.refresh_from_db()
         assert footnote.annotation_set.count() == 0
         assert Footnote.DIGITAL_TRANSLATION not in footnote.doc_relation
+
+    def test_corresponding_footnote_location(self, admin_client, document):
+        document_contenttype = ContentType.objects.get_for_model(Document)
+        # create an Edition footnote on the document and source
+        book = SourceType.objects.create(type="Book")
+        source = Source.objects.create(source_type=book)
+        Footnote.objects.create(
+            doc_relation=[Footnote.EDITION],
+            object_id=document.pk,
+            content_type=document_contenttype,
+            source=source,
+            location="doc. 123",
+        )
+        # POST JSON to create a new annotation on the document and source
+        anno_dict = {
+            "body": [{"value": "new text"}],
+            "target": {
+                "source": {
+                    "partOf": {"id": document.manifest_uri},
+                }
+            },
+            "dc:source": source.uri,
+            "motivation": "transcribing",
+        }
+        admin_client.post(
+            self.anno_list_url,
+            json.dumps(anno_dict),
+            content_type="application/json",
+        )
+        # should not raise error because digital edition created by request
+        created_digital_edition = Footnote.objects.get(
+            doc_relation=[Footnote.DIGITAL_EDITION],
+            source__pk=source.pk,
+            content_type=document_contenttype,
+            object_id=document.pk,
+        )
+        # should have its location copied from the existing Edition footnote
+        assert created_digital_edition.location == "doc. 123"
 
 
 @pytest.mark.django_db

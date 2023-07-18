@@ -61,8 +61,10 @@ def parse_annotation_data(request):
     # determine if this is a transcription or translation
     if "motivation" in json_data and "translating" in json_data["motivation"]:
         doc_relation = Footnote.DIGITAL_TRANSLATION
+        corresponding_relation = Footnote.TRANSLATION
     else:
         doc_relation = Footnote.DIGITAL_EDITION
+        corresponding_relation = Footnote.EDITION
 
     # find or create DIGITAL_EDITION footnote for this source and document
     try:
@@ -74,11 +76,23 @@ def parse_annotation_data(request):
         )
     except Footnote.DoesNotExist:
         source = Source.objects.get(pk=source_id)
+        # try to find a corresponding non-digital footnote
+        # (i.e. Translation for Digital Translation, Edition for Digital Edition)
+        corresponding_footnote = Footnote.objects.filter(
+            doc_relation__contains=corresponding_relation,
+            source__pk=source_id,
+            content_type=document_contenttype,
+            object_id=document_id,
+        )
         footnote = Footnote.objects.create(
             source=source,
             doc_relation=[doc_relation],
             object_id=document_id,
             content_type=document_contenttype,
+            # use location value from the corresponding footnote if it exists
+            location=corresponding_footnote.first().location
+            if corresponding_footnote.exists()
+            else "",
         )
         LogEntry.objects.log_action(
             user_id=request.user.id,
