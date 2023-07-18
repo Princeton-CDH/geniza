@@ -84,6 +84,7 @@ def parse_annotation_data(request):
             content_type=document_contenttype,
             object_id=document_id,
         )
+        # create a new digital footnote
         footnote = Footnote.objects.create(
             source=source,
             doc_relation=[doc_relation],
@@ -91,8 +92,8 @@ def parse_annotation_data(request):
             content_type=document_contenttype,
             # use location value from the corresponding footnote if it exists
             location=corresponding_footnote.first().location
-            if corresponding_footnote.exists()
-            else "",
+            # ensure there is only one corresponding; otherwise ambiguous which location to use
+            if corresponding_footnote.count() == 1 else "",
         )
         LogEntry.objects.log_action(
             user_id=request.user.id,
