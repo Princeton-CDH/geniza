@@ -821,6 +821,39 @@ class TestDocument:
         # second image should get verso because of /2/
         assert images[bad_canvas_str]["label"] == "verso"
 
+    def test_iiif_images_with_rotation(self, source):
+        # Create a document and fragment and a TextBlock to associate them
+        # set rotation overrides to 90 and 180
+        doc = Document.objects.create(image_rotation_override=[90, 180])
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0, 1])
+        # Mock two IIIF images
+        img1 = Mock()
+        img2 = Mock()
+        # Mock Fragment.iiif_images() to return those two images and two fake labels
+        with patch.object(
+            Fragment,
+            "iiif_images",
+            return_value=([img1, img2], ["1r", "1v"], ["canvas1", "canvas2"]),
+        ):
+            images = doc.iiif_images()
+            # should set rotation by canvas, in order, according to rotation override
+            assert images["canvas1"]["rotation"] == 90
+            assert images["canvas2"]["rotation"] == 180
+
+        # try a document with too many entries in rotation override
+        doc.image_rotation_override = [90, 180, 270]
+        doc.save()
+        with patch.object(
+            Fragment,
+            "iiif_images",
+            return_value=([img1, img2], ["1r", "1v"], ["canvas1", "canvas2"]),
+        ):
+            # should not raise an error
+            images = doc.iiif_images()
+            # should still populate the first two overrides correctly
+            assert images["canvas2"]["rotation"] == 180
+
     def test_admin_thumbnails(self):
         # Create a document and fragment and a TextBlock to associate them
         doc = Document.objects.create()
