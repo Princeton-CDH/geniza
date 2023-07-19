@@ -441,7 +441,7 @@ class FootnoteQuerySet(models.QuerySet):
             if (
                 # if either of the footnotes have annotations, do not treat as a match
                 not (fn.annotation_set.exists() or other.annotation_set.exists())
-                # compare all ohter fields
+                # compare all other fields
                 and all(
                     getattr(fn, val) == getattr(other, val) for val in compare_fields
                 )
