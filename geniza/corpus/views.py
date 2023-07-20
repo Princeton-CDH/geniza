@@ -831,11 +831,11 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
 
         # extended show default/disabled logic from document detail view
         if self.doc_relation == "transcription":
-            disabled = [d for d in context_data["disabled"] if d is not "transcription"]
             default_shown = ["images", "transcription"]
+            disabled = [d for d in context_data["disabled"] if d not in default_shown]
         elif self.doc_relation == "translation":
-            disabled = [d for d in context_data["disabled"] if d is not "translation"]
             default_shown = ["images", "translation"]
+            disabled = [d for d in context_data["disabled"] if d not in default_shown]
 
         context_data.update(
             {
