@@ -31,14 +31,14 @@
         {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
         {# images displayed by default; disable if no images are available #}
         {# translators: label for checkbox toggle to show the images panel for a document #}
-        <input type="checkbox" class="toggle" id="images-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show images' %}" {% if document.has_image or edit_mode %}checked="true" {% else %}disabled="true" {% endif %}/>
+        <input type="checkbox" class="toggle" id="images-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show images' %}" {% if "images" in default_shown %}checked="true" {% elif "images" in disabled %}disabled="true" {% endif %}/>
         <label for="images-on"></label>
         {# translators: label for checkbox toggle to show the transcription panel for a document #}
-        <input type="checkbox" class="toggle" id="transcription-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show transcription' %}" {% if not document.digital_editions and edit_mode != "transcribing" %}disabled="true" {% elif edit_mode == "transcribing" or not document.has_image %}checked="true" {% elif not edit_mode and not document.digital_translations %}checked="true" {% endif %}/>
+        <input type="checkbox" class="toggle" id="transcription-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show transcription' %}" {% if "transcription" in default_shown %}checked="true" {% elif "transcription" in disabled %}disabled="true" {% endif %}/>
         <label for="transcription-on"><svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg></label>
         {# translation displayed by default; disable if no content is available #}
         {# translators: label for checkbox toggle to show the translation panel for a document #}
-        <input type="checkbox" class="toggle" id="translation-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show translation' %}" {% if not document.digital_translations and edit_mode != "translating" %}disabled="true" {% elif edit_mode == "translating" or not document.has_image %}checked="true" {% elif not edit_mode %}checked="true" {% endif %}/>
+        <input type="checkbox" class="toggle" id="translation-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show translation' %}" {% if "translation" in default_shown %}checked="true" {% elif "translation" in disabled %}disabled="true" {% endif %}/>
         <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
 
         {% comment %}
@@ -124,11 +124,11 @@
                         </div>
                         <div class="deep-zoom-container">
                             <img class="iiif-image" data-iiif-target="image" data-annotation-target="image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
-                                sizes="(max-width: 650px) 50vw, 94vw"
-                                srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
-                                {{ image_info.image|iiif_image:"size:width=500" }} 500w,
-                                {{ image_info.image|iiif_image:"size:width=640" }} 640w,
-                                {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
+                                 sizes="(max-width: 650px) 50vw, 94vw"
+                                 srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
+                                         {{ image_info.image|iiif_image:"size:width=500" }} 500w,
+                                         {{ image_info.image|iiif_image:"size:width=640" }} 640w,
+                                         {{ image_info.image|iiif_image:"size:width=1000" }} 1000w">
                             <div class="osd" data-iiif-target="osd" data-iiif-url="{{ image_info.image.info }}"></div>
                             {% if edit_mode and not image_info.excluded %}
                                 <button class="primary popout-close-button" type="button" aria-label="Close"><i class="ph-x"></i></button>
@@ -160,9 +160,9 @@
                 <div class="transcription-panel">
                     {% if edit_mode == "transcribing" %}
                         <div class="annotate transcription"
-                            dir="rtl"
-                            data-manifest="{% url 'corpus-uris:document-manifest' document.pk %}"
-                            data-ittpanel-target="transcription"
+                             dir="rtl"
+                             data-manifest="{% url 'corpus-uris:document-manifest' document.pk %}"
+                             data-ittpanel-target="transcription"
                         >
                             {% if forloop.first %}
                                 {% include "corpus/snippets/transcription_instructions.html" %}
@@ -180,12 +180,12 @@
                                 {# display transcription in chunks by index #}
                                 {% for edition in document.digital_editions.all %}
                                     <div class="transcription ed-{{ edition.pk }}"
-                                        data-ittpanel-target="transcription"
-                                        data-label="{{ edition.source.formatted_display }}"
-                                        lang="{{ document.primary_lang_code|default:"" }}"
-                                        dir="rtl"
-                                        {% if document.primary_script %}
-                                            data-lang-script="{{ document.primary_script|lower }}"{% endif %}
+                                         data-ittpanel-target="transcription"
+                                         data-label="{{ edition.source.formatted_display }}"
+                                         lang="{{ document.primary_lang_code|default:"" }}"
+                                         dir="rtl"
+                                         {% if document.primary_script %}
+                                             data-lang-script="{{ document.primary_script|lower }}"{% endif %}
                                     >
                                         {% for html_section in edition.content_html|dict_item:canvas_uri %}
                                             {{ html_section|safe }}
@@ -199,9 +199,9 @@
                 <div class="translation-panel">
                     {% if edit_mode == "translating" %}
                         <div class="annotate translation"
-                            data-ittpanel-target="translation"
-                            dir="{{ annotation_config.text_direction|default:"ltr" }}"
-                            data-manifest="{% url 'corpus-uris:document-manifest' document.pk %}"
+                             data-ittpanel-target="translation"
+                             dir="{{ annotation_config.text_direction|default:"ltr" }}"
+                             data-manifest="{% url 'corpus-uris:document-manifest' document.pk %}"
                         >
                             {% if forloop.first %}
                                 {% include "corpus/snippets/transcription_instructions.html" %}
@@ -219,9 +219,9 @@
                                 {# display translation in chunks by index #}
                                 {% for translation in document.digital_translations.all %}
                                     <div class="translation tr-{{ translation.pk }}"
-                                        data-ittpanel-target="translation"
-                                        data-label="{{ translation.source.formatted_display }}"
-                                        {% if translation.source.languages.exists %}lang="{{ translation.source.languages.all.0.code }}" dir="{{ translation.source.languages.all.0.direction }}"{% else %}dir="ltr"{% endif %}
+                                         data-ittpanel-target="translation"
+                                         data-label="{{ translation.source.formatted_display }}"
+                                         {% if translation.source.languages.exists %}lang="{{ translation.source.languages.all.0.code }}" dir="{{ translation.source.languages.all.0.direction }}"{% else %}dir="ltr"{% endif %}
                                     >
                                         {% for html_section in translation.content_html|dict_item:canvas_uri %}
                                             {{ html_section|safe }}

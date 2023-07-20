@@ -318,6 +318,23 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
         """extend context data to add page metadata"""
         context_data = super().get_context_data(**kwargs)
         images = self.object.iiif_images(with_placeholders=True)
+
+        # logic for which panels to show or disable by default: images always shown if available,
+        # then priority is translations over transcriptions. show both of the latter two if no imgs
+        default_shown = [
+            "images" if self.object.has_image() else None,
+            "translation" if self.object.has_translation() else None,
+            "transcription"
+            if self.object.has_transcription()
+            and (not self.object.has_translation() or not self.object.has_image())
+            else None,
+        ]
+        disabled = [
+            "images" if not self.object.has_image() else None,
+            "translation" if not self.object.has_translation() else None,
+            "transcription" if not self.object.has_transcription() else None,
+        ]
+
         context_data.update(
             {
                 "page_title": self.page_title(),
@@ -342,6 +359,8 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "images": images,
                 # first image for twitter/opengraph meta tags
                 "meta_image": list(images.values())[0]["image"] if images else None,
+                "default_shown": [ds for ds in default_shown if ds],
+                "disabled": [d for d in disabled if d],
             }
         )
         return context_data
@@ -810,6 +829,14 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
             # transcription always rtl
             text_direction = "rtl"
 
+        # extended show default/disabled logic from document detail view
+        if self.doc_relation == "transcription":
+            disabled = [d for d in context_data["disabled"] if d is not "transcription"]
+            default_shown = ["images", "transcription"]
+        elif self.doc_relation == "translation":
+            disabled = [d for d in context_data["disabled"] if d is not "translation"]
+            default_shown = ["images", "translation"]
+
         context_data.update(
             {
                 "annotation_config": {
@@ -834,6 +861,8 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                 else "",
                 "source_label": source_label if source_label else "",
                 "page_type": "document annotating",
+                "disabled": disabled,
+                "default_shown": default_shown,
             }
         )
         return context_data
