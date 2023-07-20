@@ -1,0 +1,10 @@
+{% extends "admin/change_form.html" %}
+
+{# Render mixed normal and inline fieldsets #}
+{% block field_sets %}
+    {% include "admin/corpus/document/snippets/mixed_inlines_fieldsets.html" %}
+{% endblock %}
+
+{# Remove standard inline rendering #}
+{% block inline_field_sets %}
+{% endblock %}

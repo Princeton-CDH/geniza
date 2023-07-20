@@ -2,7 +2,7 @@ import logging
 import re
 from collections import defaultdict
 from copy import deepcopy
-from functools import cache, cached_property
+from functools import cached_property
 from itertools import chain
 
 from django.conf import settings
@@ -28,7 +28,6 @@ from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from djiffy.models import Manifest
 from modeltranslation.manager import MultilingualQuerySet
-from modeltranslation.utils import fallbacks
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
@@ -38,23 +37,19 @@ from unidecode import unidecode
 from urllib3.exceptions import HTTPError, NewConnectionError
 
 from geniza.annotations.models import Annotation
-from geniza.common.models import TrackChangesModel
+from geniza.common.models import (
+    DisplayLabelMixin,
+    TrackChangesModel,
+    cached_class_property,
+)
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 from geniza.corpus.dates import DocumentDateMixin
 from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
-from geniza.footnotes.models import Creator, Footnote, Source
+from geniza.footnotes.models import Creator, Footnote
 
 logger = logging.getLogger(__name__)
-
-
-def cached_class_property(f):
-    """
-    Reusable decorator to cache a class property, as opposed to an instance property.
-    from https://stackoverflow.com/a/71887897
-    """
-    return classmethod(property(cache(f)))
 
 
 class CollectionManager(models.Manager):
@@ -382,7 +377,7 @@ class DocumentTypeManager(models.Manager):
         return self.get(name_en=name)
 
 
-class DocumentType(models.Model):
+class DocumentType(DisplayLabelMixin, models.Model):
     """Controlled vocabulary of document types."""
 
     name = models.CharField(max_length=255, unique=True)
@@ -391,31 +386,11 @@ class DocumentType(models.Model):
         blank=True,
         help_text="Optional label for display on the public site",
     )
-
     objects = DocumentTypeManager()
-
-    def __str__(self):
-        # temporarily turn off model translate fallbacks;
-        # if display label for current language is not defined,
-        # we want name for the current language rather than the
-        # fallback value for display label
-        with fallbacks(False):
-            current_lang_label = self.display_label or self.name
-
-        return current_lang_label or self.display_label or self.name
-
-    def natural_key(self):
-        """Natural key, name"""
-        return (self.name,)
 
     @cached_class_property
     def objects_by_label(cls):
-        """A dict of DocumentType object instances keyed on English display label"""
-        return {
-            # lookup on display_label_en/name_en since solr should always index in English
-            (doctype.display_label_en or doctype.name_en): doctype
-            for doctype in cls.objects.all()
-        }
+        return super().objects_by_label()
 
 
 class DocumentSignalHandlers:

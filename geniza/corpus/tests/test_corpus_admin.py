@@ -22,6 +22,7 @@ from pytest_django.asserts import assertContains, assertNotContains
 from geniza.corpus.admin import (
     DocumentAdmin,
     DocumentForm,
+    DocumentPersonInline,
     FragmentAdmin,
     FragmentTextBlockInline,
     HasTranscriptionListFilter,
@@ -36,6 +37,7 @@ from geniza.corpus.models import (
     LanguageScript,
     TextBlock,
 )
+from geniza.entities.models import Person, PersonDocumentRelation
 from geniza.footnotes.models import Creator, Footnote, Source, SourceType
 
 
@@ -463,3 +465,16 @@ class TestHasTranslationListFilter(TestHasTranscriptionListFilter):
     doc_relation = Footnote.DIGITAL_TRANSLATION
     model = HasTranslationListFilter
     name = "translation"
+
+
+@pytest.mark.django_db
+class TestDocumentPersonInline:
+    def test_person_link(self):
+        goitein = Person.objects.create()
+        doc = Document.objects.create()
+        relation = PersonDocumentRelation.objects.create(person=goitein, document=doc)
+        inline = DocumentPersonInline(Document, admin_site=admin.site)
+        # should link to to_person Person object
+        person_link = inline.person_link(relation)
+        assert str(goitein.id) in person_link
+        assert str(goitein) in person_link
