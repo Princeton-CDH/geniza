@@ -492,7 +492,7 @@ class TagSignalHandlers:
         list of tags is pulled from the database, on any tag change."""
         if action in ["post_add", "post_remove", "post_clear"]:
             logger.debug("taggit.TaggedItem %s, reindexing related document", action)
-            ModelIndexable.index_items([Document.objects.get(pk=instance.pk)])
+            ModelIndexable.index_items(Document.objects.filter(pk=instance.pk))
 
 
 class DocumentQuerySet(MultilingualQuerySet):
