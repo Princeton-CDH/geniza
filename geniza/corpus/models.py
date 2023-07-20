@@ -964,10 +964,7 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         translations = self.digital_translations()
         in_language = translations.filter(source__languages__code=get_language())
-        if in_language.exists():
-            return in_language.first()
-        else:
-            return translations.first()
+        return in_language.first() or translations.first()
 
     def digital_footnotes(self):
         """All footnotes for this document where the document relation includes
