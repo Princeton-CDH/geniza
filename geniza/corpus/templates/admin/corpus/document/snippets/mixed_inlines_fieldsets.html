@@ -1,0 +1,20 @@
+{% load admin_extras %}
+
+{% comment %}
+workaround to reposition inlines by Bertrand Bordage:
+https://github.com/dezede/dezede/commit/ed13cc
+{% endcomment %}
+
+{# Render mixed normal and inline fieldsets #}
+{% get_fieldsets_and_inlines as fieldsets_and_inlines %}
+{% for type, fieldset_or_inline in fieldsets_and_inlines %}
+    {% if type == "f" %}
+        {% with fieldset=fieldset_or_inline %}
+            {% include "admin/includes/fieldset.html" %}
+        {% endwith %}
+    {% elif type == "i" %}
+        {% with inline_admin_formset=fieldset_or_inline %}
+            {% include inline_admin_formset.opts.template %}
+        {% endwith %}
+    {% endif %}
+{% endfor %}

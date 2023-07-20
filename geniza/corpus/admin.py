@@ -8,6 +8,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db.models import CharField, Count, F
+from django.db.models.fields import TextField
 from django.db.models.functions import Concat
 from django.forms.widgets import HiddenInput, Textarea, TextInput
 from django.http import HttpResponseRedirect
@@ -30,6 +31,7 @@ from geniza.corpus.models import (
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
+from geniza.entities.models import PersonDocumentRelation
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.footnotes.models import Footnote
 
@@ -226,7 +228,31 @@ class DocumentDatingInline(admin.TabularInline):
     )
     min_num = 0
     extra = 1
-    insert_after = "standard_date"
+
+
+class DocumentPersonInline(admin.TabularInline):
+    """Inline for people related to a document"""
+
+    model = PersonDocumentRelation
+    verbose_name = "Related Person"
+    verbose_name_plural = "Related People"
+    autocomplete_fields = ["person", "type"]
+    fields = (
+        "person",
+        "person_link",
+        "type",
+        "notes",
+    )
+    readonly_fields = ("person_link",)
+    formfield_overrides = {
+        TextField: {"widget": Textarea(attrs={"rows": 4})},
+    }
+    extra = 1
+
+    def person_link(self, obj):
+        """Get the link to a related person"""
+        person_path = reverse("admin:entities_person_change", args=[obj.person.id])
+        return format_html(f'<a href="{person_path}">{str(obj.person)}</a>')
 
 
 @admin.register(Document)
@@ -295,29 +321,58 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         ("secondary_languages", admin.RelatedOnlyFieldListFilter),
     )
 
-    fields = (
-        ("shelfmark", "id", "view_old_pgpids"),
-        "shelfmark_override",
-        "doctype",
-        ("languages", "secondary_languages"),
-        "language_note",
-        "description",
+    # organize into fieldsets so that we can insert inlines mid-form
+    fieldsets = (
         (
-            "doc_date_original",
-            "doc_date_calendar",
-            "doc_date_standard",
-            "standard_date",
+            None,
+            {
+                "fields": (
+                    ("shelfmark", "id", "view_old_pgpids"),
+                    "shelfmark_override",
+                    "doctype",
+                    ("languages", "secondary_languages"),
+                    "language_note",
+                    "description",
+                )
+            },
         ),
-        "tags",
-        "status",
-        ("needs_review", "notes"),
-        "image_order_override",
-        "admin_thumbnails",
+        (
+            None,
+            {
+                "fields": (
+                    (
+                        "doc_date_original",
+                        "doc_date_calendar",
+                        "doc_date_standard",
+                        "standard_date",
+                    ),
+                ),
+            },
+        ),
+        (
+            None,
+            {
+                "fields": (
+                    "tags",
+                    "status",
+                    ("needs_review", "notes"),
+                    "image_order_override",
+                    "admin_thumbnails",
+                )
+            },
+        ),
         # edition, translation
     )
     autocomplete_fields = ["languages", "secondary_languages"]
     # NOTE: autocomplete does not honor limit_choices_to in model
-    inlines = [DocumentTextBlockInline, DocumentFootnoteInline, DocumentDatingInline]
+    inlines = [
+        DocumentDatingInline,
+        DocumentTextBlockInline,
+        DocumentFootnoteInline,
+        DocumentPersonInline,
+    ]
+    # mixed fieldsets and inlines: /admin/corpus/document/snippets/mixed_inlines_fieldsets.html
+    fieldsets_and_inlines_order = ("f", "f", "i", "f", "i", "i", "i")
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
@@ -461,7 +516,8 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     @admin.display(description="Merge selected documents")
     def merge_documents(self, request, queryset=None):
         """Admin action to merge selected documents. This action redirects to an intermediate
-        page, which displays a form to review for confirmation and choose the primary document before merging."""
+        page, which displays a form to review for confirmation and choose the primary document before merging.
+        """
         # Functionality drawn from https://github.com/Princeton-CDH/mep-django/blob/main/mep/people/admin.py
 
         # NOTE: using selected ids from form and ignoring queryset
