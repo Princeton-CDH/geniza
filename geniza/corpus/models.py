@@ -488,12 +488,11 @@ class TagSignalHandlers:
 
     @staticmethod
     def tagged_item_change(sender, instance, action, **kwargs):
-        """Ensure document is indexed after the tags m2m relationship is saved and the list
-        of tags is refreshed from the database, on any tag change."""
+        """Ensure document (=instance) is indexed after the tags m2m relationship is saved and the
+        list of tags is pulled from the database, on any tag change."""
         if action in ["post_add", "post_remove", "post_clear"]:
             logger.debug("taggit.TaggedItem %s, reindexing related document", action)
-            instance.refresh_from_db()
-            ModelIndexable.index_items([instance])
+            ModelIndexable.index_items([Document.objects.get(pk=instance.pk)])
 
 
 class DocumentQuerySet(MultilingualQuerySet):
@@ -1229,6 +1228,10 @@ class Document(ModelIndexable, DocumentDateMixin):
             "post_save": DocumentSignalHandlers.related_save,
             "pre_delete": DocumentSignalHandlers.related_delete,
         },
+        "tags": {
+            "post_save": DocumentSignalHandlers.related_save,
+            "pre_delete": DocumentSignalHandlers.related_delete,
+        },
         "doctype": {
             "post_save": DocumentSignalHandlers.related_save,
             "pre_delete": DocumentSignalHandlers.related_delete,
@@ -1291,8 +1294,6 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         for doc in merge_docs:
             # add any tags from merge document tags to primary doc
-            # NOTE: This must be done before any other changes to self because it will fire
-            # m2m_changed signal which calls self.refresh_from_db()
             self.tags.add(*doc.tags.names())
             # initialize old pgpid list if previously unset
             if self.old_pgpids is None:
