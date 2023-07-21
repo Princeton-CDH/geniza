@@ -403,6 +403,7 @@ class DocumentSignalHandlers:
         "fragment": "fragments",
         "tag": "tags",
         "document type": "doctype",
+        "tagged item": "tagged_items",
         "Related Fragment": "textblock",  # textblock verbose name
         "footnote": "footnotes",
         "source": "footnotes__source",
@@ -459,6 +460,14 @@ class TagSignalHandlers:
     def unidecode_tag(sender, instance, **kwargs):
         """Convert saved tags to ascii, stripping diacritics."""
         instance.name = unidecode(instance.name)
+
+    @staticmethod
+    def tagged_item_change(sender, instance, action, **kwargs):
+        """Ensure document (=instance) is indexed after the tags m2m relationship is saved and the
+        list of tags is pulled from the database, on any tag change."""
+        if action in ["post_add", "post_remove", "post_clear"]:
+            logger.debug("taggit.TaggedItem %s, reindexing related document", action)
+            ModelIndexable.index_items(Document.objects.filter(pk=instance.pk))
 
 
 class DocumentQuerySet(MultilingualQuerySet):
@@ -1237,9 +1246,6 @@ class Document(ModelIndexable, DocumentDateMixin):
         metadata into this document, adds the merged documents into
         list of old PGP IDs, and creates a log entry documenting
         the merge, including the rationale."""
-        # initialize old pgpid list if previously unset
-        if self.old_pgpids is None:
-            self.old_pgpids = []
 
         # if user is not specified, log entry will be associated with
         # script and document will be flagged for review
@@ -1262,10 +1268,13 @@ class Document(ModelIndexable, DocumentDateMixin):
         needs_review = [self.needs_review] if self.needs_review else []
 
         for doc in merge_docs:
-            # add merge id to old pgpid list
-            self.old_pgpids.append(doc.id)
             # add any tags from merge document tags to primary doc
             self.tags.add(*doc.tags.names())
+            # initialize old pgpid list if previously unset
+            if self.old_pgpids is None:
+                self.old_pgpids = []
+            # add merge id to old pgpid list
+            self.old_pgpids.append(doc.id)
             # add description if set and not duplicated
             # for all supported languages
             for lang_code in language_codes:

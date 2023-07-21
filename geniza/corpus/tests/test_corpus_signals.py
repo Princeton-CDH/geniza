@@ -103,3 +103,19 @@ def test_unidecode_tags():
     # pre_save signal should strip diacritics from tag and convert to ASCII
     tag = Tag.objects.create(name="mu'ālim", slug="mualim")
     assert tag.name == "mu'alim"
+
+
+@pytest.mark.django_db
+@patch.object(ModelIndexable, "index_items")
+def test_tagged_item_change(mock_indexitems, document):
+    tag_count = document.tags.count()
+    tag = Tag.objects.create(name="mu'ālim", slug="mualim")
+    tag2 = Tag.objects.create(name="tag2", slug="tag2")
+    # should reindex document with the updated set of tags on save
+    document.tags.add(tag)
+    document.tags.add(tag2)
+    document.save()
+    # should be called at least once for the document post-save & once for the tags M2M change
+    assert mock_indexitems.call_count >= 2
+    # most recent call should have the full updated set of tags
+    assert mock_indexitems.call_args.args[0][0].tags.count() == tag_count + 2

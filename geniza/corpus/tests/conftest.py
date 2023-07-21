@@ -57,8 +57,8 @@ def make_document(fragment):
          (Information from Mediterranean Society, IV, p. 281)""",
         doctype=DocumentType.objects.get_or_create(name_en="Legal")[0],
     )
-    TextBlock.objects.create(document=doc, fragment=fragment)
     doc.tags.add("bill of sale", "real estate")
+    TextBlock.objects.create(document=doc, fragment=fragment)
     dctype = ContentType.objects.get_for_model(Document)
     script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
     team_user = User.objects.get(username=settings.TEAM_USERNAME)
