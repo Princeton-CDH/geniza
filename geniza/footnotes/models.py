@@ -439,7 +439,7 @@ class Source(models.Model):
 class FootnoteQuerySet(models.QuerySet):
     def includes_footnote(self, other):
         """Check if the current queryset includes a match for the
-        specified footnotes. Matches are made by comparing content source,
+        specified footnote. Matches are made by comparing content source,
         location, document relation type, and notes.
         Returns the matching object if there was one, or False if not."""
 

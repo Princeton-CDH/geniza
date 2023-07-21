@@ -68,7 +68,6 @@ class TestSource:
 
     @pytest.mark.django_db
     def test_str_article(self, article):
-
         # article with title, journal title, volume, year
         assert str(article) == '%s, "%s," %s %s, no. %d (%s).' % (
             article.authors.first().firstname_lastname(),

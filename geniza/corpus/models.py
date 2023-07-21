@@ -1337,9 +1337,50 @@ class Document(ModelIndexable, DocumentDateMixin):
     def _merge_footnotes(self, doc):
         # combine footnotes; footnote logic for merge_with
         for footnote in doc.footnotes.all():
-            # check for match; add new footnote if not a match
-            equiv_fn = self.footnotes.includes_footnote(footnote)
-            if not equiv_fn:
+            # check for match. for each pair of footnotes, there are two possible cases for
+            # non-equivalence:
+            # - the footnote to be merged in has annotations
+            # - there are fields on the footnotes that don't match
+            # in the former case, merge the two by migrating the annotations from the footnote to
+            # be merged in to an otherwise matching footnote if there is one; else, add it to doc.
+            # in the latter case, simply add the footnote to this document.
+
+            if footnote.annotation_set.exists():
+                try:
+                    # if the footnote to be merged in has annotations, try to reassign them to an
+                    # otherwise matching footnote to avoid unique constraint violation
+                    self_fn = self.footnotes.get(
+                        # for multiselect field list, need to cast to list to compare
+                        doc_relation__in=list(footnote.doc_relation),
+                        source_id=footnote.source.pk,
+                    )
+                    # copy over notes, location, url if missing from self_fn
+                    for attr in ["notes", "location", "url"]:
+                        if not getattr(self_fn, attr) and getattr(footnote, attr):
+                            setattr(self_fn, attr, getattr(footnote, attr))
+                    self_fn.save()
+                    # reassign each annotation's footnote to the footnote on this doc
+                    for annotation in footnote.annotation_set.all():
+                        annotation.footnote = self_fn
+                        annotation.save()
+                except Footnote.DoesNotExist:
+                    # if there is no match, we are clear of any unique constaint violation and can
+                    # simply add the footnote to this document
+                    self.footnotes.add(footnote)
+            elif not self.footnotes.includes_footnote(footnote):
+                # if there is otherwise not a match, add the footnote to this document
+
+                # first remove any digital doc relations to avoid unique constraint violation;
+                # footnote should not have such a relation anyway if there are 0 annotations, so
+                # this would be a data error.
+                if Footnote.DIGITAL_EDITION in footnote.doc_relation:
+                    footnote.doc_relation.remove(Footnote.DIGITAL_EDITION)
+                    footnote.save()
+                if Footnote.DIGITAL_TRANSLATION in footnote.doc_relation:
+                    footnote.doc_relation.remove(Footnote.DIGITAL_TRANSLATION)
+                    footnote.save()
+
+                # then add to this document
                 self.footnotes.add(footnote)
 
     def _merge_logentries(self, doc):
