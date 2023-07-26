@@ -306,6 +306,10 @@
             overflow: hidden;
             max-width: 100%;
         }
+        /* hide enlarge button on mobile */
+        button.enlarge-button {
+            display: none;
+        }
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 $toggle-default-width 0;
         }
@@ -325,6 +329,42 @@
         // image panel spacing
         div.img {
             margin: 0 auto;
+            /* enlarge button and enlarge functionality */
+            @include breakpoints.for-tablet-landscape-up {
+                transition: max-width 0.3s ease-in-out;
+                img {
+                    transition: width 0.3s ease-in-out;
+                }
+                &.enlarged {
+                    max-width: 100%;
+                    img {
+                        width: 100%;
+                    }
+                }
+                button.enlarge-button {
+                    display: flex;
+                    cursor: pointer;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                    border: none;
+                    background: transparent;
+                    padding: 0;
+                    margin: 0;
+                    z-index: 2;
+                    &::after {
+                        color: var(--on-background);
+                        content: "\f118";
+                        @include typography.icon-button-lg;
+                    }
+                    &:active::after {
+                        color: var(--primary);
+                    }
+                    &.active::after {
+                        content: "\f117";
+                    }
+                }
+            }
         }
 
         // Attribution and license text
@@ -465,6 +505,10 @@
                     justify-content: flex-start;
                 }
             }
+        }
+        // image enlarge button
+        button.enlarge-button {
+            display: none;
         }
     }
 
