@@ -558,6 +558,7 @@
             @include breakpoints.for-tablet-landscape-up {
                 flex-flow: row;
                 margin-bottom: 12px;
+                justify-content: space-between;
             }
             h2 {
                 @include typography.body-bold;
@@ -567,7 +568,18 @@
                 flex: 1 0 100%;
                 @include breakpoints.for-tablet-landscape-up {
                     margin: 12px 0;
-                    flex: 1 0 auto;
+                    flex: 0 1 auto;
+                }
+            }
+            // collect image controls in a div
+            div.img-controls {
+                display: flex;
+                flex-flow: row;
+                align-items: center;
+                justify-content: flex-end;
+                flex: 1 0 auto;
+                @include breakpoints.for-tablet-landscape-up {
+                    flex: 0 1 auto;
                 }
             }
             // zoom control (desktop)
@@ -614,6 +626,14 @@
                     }
                 }
             }
+            label[for^="zoom-slider"] {
+                min-width: 60px;
+                max-width: 60px;
+            }
+            label[for^="rotation"] {
+                min-width: 40px;
+                max-width: 40px;
+            }
             label[for^="zoom-slider"],
             label[for^="rotation"] {
                 display: none;
@@ -636,6 +656,7 @@
                 border-radius: 50%;
                 height: 40px;
                 width: 40px;
+                min-width: 40px;
                 background-color: var(--background-gray);
                 border: 4px solid var(--on-background-light-alt);
                 cursor: pointer;
