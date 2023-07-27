@@ -182,7 +182,7 @@ class TestAdminExtrasTemplateTags:
         inlines = ("inline1", "inline2")
 
         # mock fieldsets_and_inlines_order
-        adminform.model_admin.fieldsets_and_inlines_order = ("f", "i", "f")
+        adminform.model_admin.fieldsets_and_inlines_order = ("f", "i", "f", "itt")
 
         # should return the first fieldset, then inline, then second fieldset
         fieldsets_and_inlines = admin_extras.get_fieldsets_and_inlines(
@@ -192,8 +192,11 @@ class TestAdminExtrasTemplateTags:
         assert fieldsets_and_inlines[1] == ("i", "inline1")
         assert fieldsets_and_inlines[2] == ("f", "fieldset2")
 
+        # should include itt panel entry with None as its second value
+        assert fieldsets_and_inlines[3] == ("itt", None)
+
         # should append the remaining inline at the end
-        assert fieldsets_and_inlines[3] == ("i", "inline2")
+        assert fieldsets_and_inlines[4] == ("i", "inline2")
 
         # should throw indexerror if you supply too many fieldsets or inlines
         adminform.model_admin.fieldsets_and_inlines_order = ("f", "i", "f", "f")

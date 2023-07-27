@@ -57,31 +57,40 @@ main.annotating {
             background-color: var(--background-gray);
             opacity: 1;
         }
-        .deep-zoom-container {
-            // popout open and close buttons
-            button.popout-button {
-                display: none;
-                align-items: center;
-                justify-content: center;
-                position: relative;
-                z-index: 2;
-                &::after {
-                    font-family: "Phosphor";
-                    content: "\f058";
-                    margin-left: 5px;
-                    font-weight: normal;
-                }
-                @include breakpoints.for-tablet-landscape-up {
-                    display: flex;
-                }
+        // popout open and close buttons
+        button.popout-button {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: none;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            z-index: 2;
+            svg {
+                fill: var(--on-background);
+                width: 34px;
+                height: 34px;
             }
-            button.popout-close-button {
-                font-size: 32px;
-                display: none;
-                position: absolute;
-                top: 0;
-                right: -1rem;
-                z-index: 2;
+            &.active svg,
+            &:active svg {
+                fill: var(--primary);
+            }
+            @include breakpoints.for-tablet-landscape-up {
+                display: flex;
+                cursor: pointer;
+            }
+        }
+        button.popout-close-button {
+            font-size: 32px;
+            display: none;
+            position: absolute;
+            top: 5rem;
+            right: 0;
+            z-index: 2;
+            &.visible {
+                display: flex;
             }
         }
         // opened "pop out" view of an image
