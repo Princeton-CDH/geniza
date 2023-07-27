@@ -62,11 +62,4 @@
             </section>
         {% endif %}
     {% endwith %}
-
-    <fieldset class="module aligned transcriptions-field">
-        <div class="form-row">
-            <label>Transcription{{ original.digital_editions.count|pluralize }}/image{{ original.iiif_images|length|pluralize }}</label>
-            {% include "corpus/snippets/document_transcription.html" with document=original %}
-        </div>
-    </fieldset>
 {% endblock %}

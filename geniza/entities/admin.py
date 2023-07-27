@@ -151,6 +151,7 @@ class RoleAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
     fields = ("name", "display_label")
     search_fields = ("name", "display_label")
+    ordering = ("display_label", "name")
 
 
 @admin.register(PersonDocumentRelationType)
@@ -159,6 +160,7 @@ class PersonDocumentRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
     fields = ("name",)
     search_fields = ("name",)
+    ordering = ("name",)
 
 
 @admin.register(PersonPersonRelationType)
@@ -167,3 +169,4 @@ class PersonPersonRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 
     fields = ("name", "category")
     search_fields = ("name",)
+    ordering = ("name",)
