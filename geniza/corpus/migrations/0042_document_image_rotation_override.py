@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("corpus", "0040_tag_merge_permissions"),
+        ("corpus", "0041_dating_rationale"),
     ]
 
     operations = [
