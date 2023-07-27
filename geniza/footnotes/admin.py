@@ -38,8 +38,8 @@ class AuthorshipInline(SortableInlineAdminMixin, admin.TabularInline):
 # reusable exception for digital edition footnote validation
 DuplicateDigitalEditionsError = ValidationError(
     """
-    You cannot create multiple Digital Edition footnotes on the
-    same source and document.
+    You cannot create multiple Digital Edition footnotes, or multiple
+    Digital Translation footnotes, on the same source and document.
     """,
     code="invalid",
 )
@@ -63,15 +63,19 @@ class SourceFootnoteInlineFormSet(BaseInlineFormSet):
             document_contenttype = ContentType.objects.get(
                 app_label="corpus", model="document"
             )
-            document_pks = [
-                fn.get("object_id")
-                for fn in cleaned_data
-                if Footnote.DIGITAL_EDITION in fn.get("doc_relation", [])
-                and fn.get("content_type").pk == document_contenttype.pk
-            ]
-            # if there are any duplicate document pks, it's invalid
-            if len(document_pks) > len(set(document_pks)):
-                raise DuplicateDigitalEditionsError
+            for digital_relation in [
+                Footnote.DIGITAL_EDITION,
+                Footnote.DIGITAL_TRANSLATION,
+            ]:
+                document_pks = [
+                    fn.get("object_id")
+                    for fn in cleaned_data
+                    if digital_relation in fn.get("doc_relation", [])
+                    and fn.get("content_type").pk == document_contenttype.pk
+                ]
+                # if there are any duplicate document pks, it's invalid
+                if len(document_pks) > len(set(document_pks)):
+                    raise DuplicateDigitalEditionsError
 
 
 class SourceFootnoteInline(TabularInlinePaginated):
@@ -161,14 +165,18 @@ class DocumentFootnoteInlineFormSet(BaseGenericInlineFormSet):
         cleaned_data = [form.cleaned_data for form in valid_forms]
         # get source pk of all digital editions
         if all("source" in fn for fn in cleaned_data):
-            sources = [
-                fn.get("source").pk
-                for fn in cleaned_data
-                if Footnote.DIGITAL_EDITION in fn.get("doc_relation", [])
-            ]
-            # if there are any duplicate source pks, raise validation error
-            if len(sources) > len(set(sources)):
-                raise DuplicateDigitalEditionsError
+            for digital_relation in [
+                Footnote.DIGITAL_EDITION,
+                Footnote.DIGITAL_TRANSLATION,
+            ]:
+                sources = [
+                    fn.get("source").pk
+                    for fn in cleaned_data
+                    if digital_relation in fn.get("doc_relation", [])
+                ]
+                # if there are any duplicate source pks, raise validation error
+                if len(sources) > len(set(sources)):
+                    raise DuplicateDigitalEditionsError
 
 
 class DocumentFootnoteInline(GenericTabularInline):
@@ -328,16 +336,22 @@ class FootnoteForm(forms.ModelForm):
         already exists on this document and source
         """
         super().clean()
-        if (
-            Footnote.DIGITAL_EDITION in self.cleaned_data.get("doc_relation", [])
-            and Footnote.objects.filter(
-                content_type=self.cleaned_data.get("content_type"),
-                object_id=self.cleaned_data.get("object_id"),
-                source=self.cleaned_data.get("source"),
-                doc_relation__contains=Footnote.DIGITAL_EDITION,
-            ).exists()
-        ):
-            raise DuplicateDigitalEditionsError
+        for digital_relation in [
+            Footnote.DIGITAL_EDITION,
+            Footnote.DIGITAL_TRANSLATION,
+        ]:
+            if (
+                digital_relation in self.cleaned_data.get("doc_relation", [])
+                and Footnote.objects.filter(
+                    content_type=self.cleaned_data.get("content_type"),
+                    object_id=self.cleaned_data.get("object_id"),
+                    source=self.cleaned_data.get("source"),
+                    doc_relation__contains=digital_relation,
+                )
+                .exclude(pk=self.instance.pk)  # exclude self!
+                .exists()
+            ):
+                raise DuplicateDigitalEditionsError
 
 
 @admin.register(Footnote)

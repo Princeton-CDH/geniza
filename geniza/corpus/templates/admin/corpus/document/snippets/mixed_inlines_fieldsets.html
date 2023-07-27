@@ -16,5 +16,13 @@ https://github.com/dezede/dezede/commit/ed13cc
         {% with inline_admin_formset=fieldset_or_inline %}
             {% include inline_admin_formset.opts.template %}
         {% endwith %}
+    {# special case for itt panel #}
+    {% elif type == "itt" %}
+        <fieldset class="module aligned transcriptions-field">
+            <div class="form-row">
+                <label>Transcription{{ original.digital_editions.count|pluralize }}/image{{ original.iiif_images|length|pluralize }}</label>
+                {% include "corpus/snippets/document_transcription.html" with document=original %}
+            </div>
+        </fieldset>
     {% endif %}
 {% endfor %}

@@ -403,6 +403,7 @@ class DocumentSignalHandlers:
         "fragment": "fragments",
         "tag": "tags",
         "document type": "doctype",
+        "tagged item": "tagged_items",
         "Related Fragment": "textblock",  # textblock verbose name
         "footnote": "footnotes",
         "source": "footnotes__source",
@@ -459,6 +460,14 @@ class TagSignalHandlers:
     def unidecode_tag(sender, instance, **kwargs):
         """Convert saved tags to ascii, stripping diacritics."""
         instance.name = unidecode(instance.name)
+
+    @staticmethod
+    def tagged_item_change(sender, instance, action, **kwargs):
+        """Ensure document (=instance) is indexed after the tags m2m relationship is saved and the
+        list of tags is pulled from the database, on any tag change."""
+        if action in ["post_add", "post_remove", "post_clear"]:
+            logger.debug("taggit.TaggedItem %s, reindexing related document", action)
+            ModelIndexable.index_items(Document.objects.filter(pk=instance.pk))
 
 
 class DocumentQuerySet(MultilingualQuerySet):
@@ -1247,9 +1256,6 @@ class Document(ModelIndexable, DocumentDateMixin):
         metadata into this document, adds the merged documents into
         list of old PGP IDs, and creates a log entry documenting
         the merge, including the rationale."""
-        # initialize old pgpid list if previously unset
-        if self.old_pgpids is None:
-            self.old_pgpids = []
 
         # if user is not specified, log entry will be associated with
         # script and document will be flagged for review
@@ -1272,10 +1278,13 @@ class Document(ModelIndexable, DocumentDateMixin):
         needs_review = [self.needs_review] if self.needs_review else []
 
         for doc in merge_docs:
-            # add merge id to old pgpid list
-            self.old_pgpids.append(doc.id)
             # add any tags from merge document tags to primary doc
             self.tags.add(*doc.tags.names())
+            # initialize old pgpid list if previously unset
+            if self.old_pgpids is None:
+                self.old_pgpids = []
+            # add merge id to old pgpid list
+            self.old_pgpids.append(doc.id)
             # add description if set and not duplicated
             # for all supported languages
             for lang_code in language_codes:
@@ -1347,9 +1356,50 @@ class Document(ModelIndexable, DocumentDateMixin):
     def _merge_footnotes(self, doc):
         # combine footnotes; footnote logic for merge_with
         for footnote in doc.footnotes.all():
-            # check for match; add new footnote if not a match
-            equiv_fn = self.footnotes.includes_footnote(footnote)
-            if not equiv_fn:
+            # check for match. for each pair of footnotes, there are two possible cases for
+            # non-equivalence:
+            # - the footnote to be merged in has annotations
+            # - there are fields on the footnotes that don't match
+            # in the former case, merge the two by migrating the annotations from the footnote to
+            # be merged in to an otherwise matching footnote if there is one; else, add it to doc.
+            # in the latter case, simply add the footnote to this document.
+
+            if footnote.annotation_set.exists():
+                try:
+                    # if the footnote to be merged in has annotations, try to reassign them to an
+                    # otherwise matching footnote to avoid unique constraint violation
+                    self_fn = self.footnotes.get(
+                        # for multiselect field list, need to cast to list to compare
+                        doc_relation__in=list(footnote.doc_relation),
+                        source_id=footnote.source.pk,
+                    )
+                    # copy over notes, location, url if missing from self_fn
+                    for attr in ["notes", "location", "url"]:
+                        if not getattr(self_fn, attr) and getattr(footnote, attr):
+                            setattr(self_fn, attr, getattr(footnote, attr))
+                    self_fn.save()
+                    # reassign each annotation's footnote to the footnote on this doc
+                    for annotation in footnote.annotation_set.all():
+                        annotation.footnote = self_fn
+                        annotation.save()
+                except Footnote.DoesNotExist:
+                    # if there is no match, we are clear of any unique constaint violation and can
+                    # simply add the footnote to this document
+                    self.footnotes.add(footnote)
+            elif not self.footnotes.includes_footnote(footnote):
+                # if there is otherwise not a match, add the footnote to this document
+
+                # first remove any digital doc relations to avoid unique constraint violation;
+                # footnote should not have such a relation anyway if there are 0 annotations, so
+                # this would be a data error.
+                if Footnote.DIGITAL_EDITION in footnote.doc_relation:
+                    footnote.doc_relation.remove(Footnote.DIGITAL_EDITION)
+                    footnote.save()
+                if Footnote.DIGITAL_TRANSLATION in footnote.doc_relation:
+                    footnote.doc_relation.remove(Footnote.DIGITAL_TRANSLATION)
+                    footnote.save()
+
+                # then add to this document
                 self.footnotes.add(footnote)
 
     def _merge_logentries(self, doc):
@@ -1488,7 +1538,31 @@ class Dating(models.Model):
         max_length=255,
         validators=[RegexValidator(DocumentDateMixin.re_date_format)],
     )
-    notes = models.TextField(
-        help_text="An explanation for how this date was inferred, and/or by whom",
+    PALEOGRAPHY = "PA"
+    PALEOGRAPHY_LABEL = "Paleography"
+    PERSON = "PE"
+    PERSON_LABEL = "Person mentioned"
+    EVENT = "E"
+    EVENT_LABEL = "Event mentioned"
+    COINAGE = "C"
+    COINAGE_LABEL = "Coinage"
+    OTHER = "O"
+    OTHER_LABEL = "Other (please specify)"
+    RATIONALE_CHOICES = (
+        (PALEOGRAPHY, PALEOGRAPHY_LABEL),
+        (PERSON, PERSON_LABEL),
+        (EVENT, EVENT_LABEL),
+        (COINAGE, COINAGE_LABEL),
+        (OTHER, OTHER_LABEL),
+    )
+    rationale = models.CharField(
+        max_length=2,
+        choices=RATIONALE_CHOICES,
+        default=OTHER,
+        help_text="An explanation for how this date was inferred",
         blank=False,
+        null=False,
+    )
+    notes = models.TextField(
+        help_text="Optional further details about the rationale",
     )
