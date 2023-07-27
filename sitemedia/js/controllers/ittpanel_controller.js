@@ -56,21 +56,29 @@ export default class extends Controller {
                 this.alignLines();
             } else {
                 // when one of those two toggles is closed, remove data-lines from each line (alignment no longer needed)
-                this.transcriptionTarget
-                    .querySelectorAll("li")
-                    .forEach((li) => {
-                        li.removeAttribute("data-lines");
-                    });
-                this.translationTarget.querySelectorAll("li").forEach((li) => {
-                    li.removeAttribute("data-lines");
-                });
+                if (this.hasTranscriptionTarget) {
+                    this.transcriptionTarget
+                        .querySelectorAll("li")
+                        .forEach((li) => {
+                            if (li) li.removeAttribute("data-lines");
+                        });
+                }
+                if (this.hasTranslationTarget) {
+                    this.translationTarget
+                        .querySelectorAll("li")
+                        .forEach((li) => {
+                            if (li) li.removeAttribute("data-lines");
+                        });
+                }
                 // also remove padding-top alignment of the two lists
-                this.transcriptionTarget
-                    .querySelector("ol")
-                    .removeAttribute("style");
-                this.translationTarget
-                    .querySelector("ol")
-                    .removeAttribute("style");
+                if (this.hasTranscriptionTarget) {
+                    const edOL = this.transcriptionTarget.querySelector("ol");
+                    if (edOL) edOL.removeAttribute("style");
+                }
+                if (this.hasTranslationTarget) {
+                    const trOL = this.translationTarget.querySelector("ol");
+                    if (trOL) trOL.removeAttribute("style");
+                }
             }
         }
     }
