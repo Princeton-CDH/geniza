@@ -96,17 +96,30 @@ class PersonSignalHandlers:
     """Signal handlers for :class:`taggit.Person` records."""
 
     @staticmethod
-    def person_document_relation_changed(sender, instance, action, **kwargs):
+    def person_document_relation_changed(
+        sender, instance, action, reverse, pk_set, **kwargs
+    ):
         """After saving a person-document relation (sender), ensure the Person
-        (instance) has a page if its associated docs count meets the predefined
+        sied has a page if its associated docs count meets the predefined
         threshold."""
-        if (
-            action == "post_add"
-            and not instance.has_page
-            and instance.documents.count() >= Person.DOCUMENT_THRESHOLD
-        ):
-            instance.has_page = True
-            instance.save()
+
+        # NOTE: this is only required for programmatic use of .add(), saving
+        # using the form will call PersonDocumentRelation.save()
+
+        if action == "post_add":
+            if reverse:
+                # reverse=True means document.people.add()
+                people = Person.objects.filter(pk__in=pk_set)
+            else:
+                # reverse=False means person.documents.add()
+                people = [instance]
+            for person in people:
+                if (
+                    not person.has_page
+                    and person.documents.count() >= Person.DOCUMENT_THRESHOLD
+                ):
+                    person.has_page = True
+                    person.save()
 
 
 class Person(models.Model):

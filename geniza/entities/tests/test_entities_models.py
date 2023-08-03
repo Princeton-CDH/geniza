@@ -92,19 +92,26 @@ class TestPersonDocumentRelation:
 @pytest.mark.django_db
 class TestPersonSignalHandlers:
     def test_person_document_relation_changed(self):
-        # create a person with has_page = false
+        # create two people with has_page = false
         goitein = Person.objects.create()
-        assert not goitein.has_page
+        rustow = Person.objects.create()
 
         # associate with a bunch of documents
         for _ in range(Person.DOCUMENT_THRESHOLD - 1):
             doc = Document.objects.create()
             goitein.documents.add(doc)
+            rustow.documents.add(doc)
 
         # still one less than threshold, so has_page should still be false
         assert not goitein.has_page
+        assert not rustow.has_page
 
         # create and add one more, thus meeting the threshold
         doc = Document.objects.create()
         goitein.documents.add(doc)
         assert goitein.has_page
+
+        # should work in the reverse as well (but will require db refresh)
+        doc.people.add(rustow)
+        rustow.refresh_from_db()
+        assert rustow.has_page
