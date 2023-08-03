@@ -92,6 +92,23 @@ class PersonRole(DisplayLabelMixin, models.Model):
         verbose_name_plural = "Person social roles"
 
 
+class PersonSignalHandlers:
+    """Signal handlers for :class:`taggit.Person` records."""
+
+    @staticmethod
+    def person_document_relation_changed(sender, instance, action, **kwargs):
+        """After saving a person-document relation (sender), ensure the Person
+        (instance) has a page if its associated docs count meets the predefined
+        threshold."""
+        if (
+            action == "post_add"
+            and not instance.has_page
+            and instance.documents.count() >= Person.DOCUMENT_THRESHOLD
+        ):
+            instance.has_page = True
+            instance.save()
+
+
 class Person(models.Model):
     """A person entity that appears within the PGP corpus."""
 
@@ -140,6 +157,9 @@ class Person(models.Model):
         (UNKNOWN, _("Unknown")),
     )
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+
+    # minimum number of documents that necessitates "has page" = true
+    DOCUMENT_THRESHOLD = 10
 
     class Meta:
         verbose_name_plural = "People"
