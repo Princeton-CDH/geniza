@@ -92,36 +92,6 @@ class PersonRole(DisplayLabelMixin, models.Model):
         verbose_name_plural = "Person social roles"
 
 
-class PersonSignalHandlers:
-    """Signal handlers for :class:`taggit.Person` records."""
-
-    @staticmethod
-    def person_document_relation_changed(
-        sender, instance, action, reverse, pk_set, **kwargs
-    ):
-        """After saving a person-document relation (sender), ensure the Person
-        sied has a page if its associated docs count meets the predefined
-        threshold."""
-
-        # NOTE: this is only required for programmatic use of .add(), saving
-        # using the form will call PersonDocumentRelation.save()
-
-        if action == "post_add":
-            if reverse:
-                # reverse=True means document.people.add()
-                people = Person.objects.filter(pk__in=pk_set)
-            else:
-                # reverse=False means person.documents.add()
-                people = [instance]
-            for person in people:
-                if (
-                    not person.has_page
-                    and person.documents.count() >= Person.DOCUMENT_THRESHOLD
-                ):
-                    person.has_page = True
-                    person.save()
-
-
 class Person(models.Model):
     """A person entity that appears within the PGP corpus."""
 
@@ -234,6 +204,22 @@ class PersonDocumentRelation(models.Model):
 
     def __str__(self):
         return f"{self.type} relation: {self.person} and {self.document}"
+
+    def save(self, *args, **kwargs):
+        """When saving a person-document relation, ensure the Person
+        sied has a page if its associated docs count meets the predefined
+        threshold."""
+
+        # NOTE: Required as the m2m_changed signal handler does not fire on
+        # form inline save.
+
+        super().save(*args, **kwargs)
+        if (
+            not self.person.has_page
+            and self.person.documents.count() >= Person.DOCUMENT_THRESHOLD
+        ):
+            self.person.has_page = True
+            self.person.save()
 
 
 class PersonPersonRelationTypeManager(models.Manager):
