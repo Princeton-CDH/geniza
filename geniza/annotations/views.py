@@ -76,24 +76,32 @@ def parse_annotation_data(request):
         )
     except Footnote.DoesNotExist:
         source = Source.objects.get(pk=source_id)
-        # try to find a corresponding non-digital footnote
+
+        # try to find a corresponding non-digital footnote for location field
         # (i.e. Translation for Digital Translation, Edition for Digital Edition)
-        corresponding_footnote = Footnote.objects.filter(
-            doc_relation__contains=corresponding_relation,
-            source__pk=source_id,
-            content_type=document_contenttype,
-            object_id=document_id,
-        )
+        # NOTE: assumes that if there is exactly one non-digital footnote for this source, then
+        # the digital content is coming from the same location
+        try:
+            # use .get to ensure there is exactly one corresponding;
+            # otherwise ambiguous which location to use
+            corresponding_footnote = Footnote.objects.exclude(location="").get(
+                doc_relation__contains=corresponding_relation,
+                source__pk=source_id,
+                content_type=document_contenttype,
+                object_id=document_id,
+            )
+            location = corresponding_footnote.location
+        except (Footnote.DoesNotExist, Footnote.MultipleObjectsReturned):
+            # if there are 0 or > 1 footnotes, location should be blank
+            location = ""
+
         # create a new digital footnote
         footnote = Footnote.objects.create(
             source=source,
             doc_relation=[doc_relation],
             object_id=document_id,
             content_type=document_contenttype,
-            # use location value from the corresponding footnote if it exists
-            location=corresponding_footnote.first().location
-            # ensure there is only one corresponding; otherwise ambiguous which location to use
-            if corresponding_footnote.count() == 1 else "",
+            location=location,
         )
         LogEntry.objects.log_action(
             user_id=request.user.id,

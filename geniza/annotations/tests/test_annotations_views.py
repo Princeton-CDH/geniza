@@ -124,6 +124,9 @@ class TestAnnotationList:
         )
         # will raise error if digital edition footnote does not exist
         footnote = document.digital_editions().get(source=source)
+        # since there was no corresponding Edition footnote with a Location, the
+        # resulting digital footnote should not get a location
+        assert not footnote.location
 
         # should log action
         assert LogEntry.objects.filter(
