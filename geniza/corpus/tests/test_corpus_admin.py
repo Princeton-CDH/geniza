@@ -32,13 +32,12 @@ from geniza.corpus.admin import (
 from geniza.corpus.models import (
     Collection,
     Document,
-    DocumentType,
     Fragment,
     LanguageScript,
     TextBlock,
 )
 from geniza.entities.models import Person, PersonDocumentRelation
-from geniza.footnotes.models import Creator, Footnote, Source, SourceType
+from geniza.footnotes.models import Footnote, Source, SourceLanguage, SourceType
 
 
 @pytest.mark.django_db
@@ -465,6 +464,51 @@ class TestHasTranslationListFilter(TestHasTranscriptionListFilter):
     doc_relation = Footnote.DIGITAL_TRANSLATION
     model = HasTranslationListFilter
     name = "translation"
+
+    def test_queryset_by_language(self, document):
+        filter = self.init_filter()
+        all_docs = Document.objects.all()
+
+        # create an english translation
+        english = SourceLanguage.objects.get(name="English")
+        book = SourceType.objects.get(type="Book")
+        source_en = Source.objects.create(source_type=book)
+        source_en.languages.add(english)
+        Footnote.objects.create(
+            source=source_en,
+            content_object=document,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        # document should show up in queryset for "Has English translation"
+        with patch.object(filter, "value", return_value="yes_en"):
+            assert filter.queryset(Mock(), all_docs).filter(pk=document.pk).exists()
+        # document should NOT show up in queryset for "Has Hebrew translation"
+        with patch.object(filter, "value", return_value="yes_he"):
+            assert not filter.queryset(Mock(), all_docs).filter(pk=document.pk).exists()
+
+        # create a hebrew translation
+        hebrew = SourceLanguage.objects.get(name="Hebrew")
+        source_he = Source.objects.create(source_type=book)
+        source_he.languages.add(hebrew)
+        Footnote.objects.create(
+            source=source_he,
+            content_object=document,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        # document should still show up in queryset for "Has English translation"
+        with patch.object(filter, "value", return_value="yes_en"):
+            assert filter.queryset(Mock(), all_docs).filter(pk=document.pk).exists()
+        # document should now also show up in queryset for "Has Hebrew translation"
+        with patch.object(filter, "value", return_value="yes_he"):
+            assert filter.queryset(Mock(), all_docs).filter(pk=document.pk).exists()
+
+    def test_lookups(self):
+        assert self.init_filter().lookups(Mock(), Mock()) == (
+            ("yes", f"Has {self.name}"),
+            ("yes_en", f"Has English {self.name}"),
+            ("yes_he", f"Has Hebrew {self.name}"),
+            ("no", f"No {self.name}"),
+        )
 
 
 @pytest.mark.django_db

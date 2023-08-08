@@ -134,6 +134,48 @@ class TestDocumentDetailView:
             assert list(placeholders.keys()) == ["canvas_1", "canvas_2"]
             assert placeholders["canvas_1"] == Document.PLACEHOLDER_CANVAS
 
+    def test_get_context_data(self, client, document, source):
+        # test default shown/disabled behavior in context data
+        response = client.get(reverse("corpus:document", args=(document.pk,)))
+
+        # document has image (via fragment.iiif_url) but no transcription or translation
+        assert response.context["default_shown"] == ["images"]
+        assert "images" not in response.context["disabled"]
+        assert "transcription" in response.context["disabled"]
+        assert "translation" in response.context["disabled"]
+
+        # add a transcription
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        response = client.get(reverse("corpus:document", args=(document.pk,)))
+        # document has image (via fragment.iiif_url) and transcription, so should show those
+        assert "transcription" in response.context["default_shown"]
+        assert "images" in response.context["default_shown"]
+        assert "transcription" not in response.context["disabled"]
+        assert "images" not in response.context["disabled"]
+        # should not show translation
+        assert "translation" not in response.context["default_shown"]
+        assert "translation" in response.context["disabled"]
+
+        # add a translation
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        response = client.get(reverse("corpus:document", args=(document.pk,)))
+        # document has image (via fragment.iiif_url) and translation, so should show those
+        assert "translation" in response.context["default_shown"]
+        assert "images" in response.context["default_shown"]
+        assert "translation" not in response.context["disabled"]
+        assert "images" not in response.context["disabled"]
+        # should not show OR disable transcription
+        assert "transcription" not in response.context["default_shown"]
+        assert "transcription" not in response.context["disabled"]
+
 
 @pytest.mark.django_db
 def test_old_pgp_tabulate_data():
@@ -1675,6 +1717,13 @@ class TestDocumentTranscribeView:
         # should include text direction
         assert response.context["annotation_config"]["text_direction"] == "rtl"
 
+        # should show transcription and images by default
+        assert "transcription" in response.context["default_shown"]
+        assert "images" in response.context["default_shown"]
+        assert "transcription" not in response.context["disabled"]
+        # make sure placeholder can be seen!
+        assert "images" not in response.context["disabled"]
+
         # non-existent source_pk should 404
         response = admin_client.get(
             reverse("corpus:document-transcribe", args=(document.id, 123456789))
@@ -1696,6 +1745,11 @@ class TestDocumentTranscribeView:
             response.context["annotation_config"]["text_direction"]
             == source.languages.first().direction
         )
+        # should show translation and images by default
+        assert "translation" in response.context["default_shown"]
+        assert "images" in response.context["default_shown"]
+        assert "translation" not in response.context["disabled"]
+        assert "images" not in response.context["disabled"]
 
 
 class TestSourceAutocompleteView:

@@ -31,14 +31,14 @@
         {# NOTE: inputs must be kept as SIBLINGS of panel-container for CSS selection/controls #}
         {# images displayed by default; disable if no images are available #}
         {# translators: label for checkbox toggle to show the images panel for a document #}
-        <input type="checkbox" class="toggle" id="images-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show images' %}" {% if document.has_image or edit_mode %}checked="true" {% else %}disabled="true" {% endif %}/>
+        <input type="checkbox" class="toggle" id="images-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show images' %}" {% if "images" in default_shown %}checked="true" {% elif "images" in disabled %}disabled="true" {% endif %}/>
         <label for="images-on"></label>
-        {# transcription displayed by default; disable if no content is available #}
         {# translators: label for checkbox toggle to show the transcription panel for a document #}
-        <input type="checkbox" class="toggle" id="transcription-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show transcription' %}" {% if not document.digital_editions and edit_mode != "transcribing" %}disabled="true" {% elif edit_mode == "transcribing" or not edit_mode %}checked="true" {% endif %}/>
+        <input type="checkbox" class="toggle" id="transcription-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show transcription' %}" {% if "transcription" in default_shown %}checked="true" {% elif "transcription" in disabled %}disabled="true" {% endif %}/>
         <label for="transcription-on"><svg><use xlink:href="{% static 'img/ui/all/all/transcription-toggle.svg' %}#transcription-toggle" /></svg></label>
+        {# translation displayed by default; disable if no content is available #}
         {# translators: label for checkbox toggle to show the translation panel for a document #}
-        <input type="checkbox" class="toggle" id="translation-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show translation' %}" {% if not document.digital_translations and edit_mode != "translating" %}disabled="true" {% elif edit_mode == "translating" %}checked="true" {% endif %}/>
+        <input type="checkbox" class="toggle" id="translation-on" data-ittpanel-target="toggle" data-action="ittpanel#clickToggle" aria-label="{% translate 'show translation' %}" {% if "translation" in default_shown %}checked="true" {% elif "translation" in disabled %}disabled="true" {% endif %}/>
         <label for="translation-on"><svg><use xlink:href="{% static 'img/ui/all/all/translation-toggle.svg' %}#translation-toggle" /></svg></label>
 
         {% comment %}
@@ -90,13 +90,13 @@
                     {# dropdown is disabled by default; enable if javascript is active #}
                     <details class="itt-select" aria-expanded="false" data-transcription-target="dropdownDetails" data-relation="translation" data-count="{{ document.digital_translations.count }}" disabled="true">
                         <summary data-action="keydown->transcription#shiftTabCloseDropdown">
-                            <span data-transcription-target="translationShortLabel">Translation: {{ document.digital_translations.0.source.all_authors }} {{ document.digital_translations.0.source.all_languages }}</span>
+                            <span data-transcription-target="translationShortLabel">Translation: {{ document.default_translation.source.all_authors }} {{ document.default_translation.source.all_languages }}</span>
                         </summary>
                         <ul>
                             {% for tr in document.digital_translations.all %}
                                 <li>
                                     <label for="translation-{{ forloop.counter }}">
-                                        <input type="radio" name="translation" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown keydown->transcription#keyboardCloseDropdown" id="translation-{{ forloop.counter }}" data-translation="tr-{{ tr.pk }}" />
+                                        <input type="radio" name="translation" {% if tr.pk == document.default_translation.pk %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown keydown->transcription#keyboardCloseDropdown" id="translation-{{ forloop.counter }}" data-translation="tr-{{ tr.pk }}" />
                                         <span>Translation: {{ tr.source.all_authors }} {{ tr.source.all_languages }}</span>
                                     </label>
                                 </li>
@@ -228,7 +228,7 @@
                         {% if forloop.first %}
                             <h2>{% translate 'Translation' %}</h2>
                             <span data-transcription-target="translationFullLabel" class="current-translation{% if document.digital_editions.count > 1 %} multiple{% endif %}">
-                                {{ document.digital_translations.0.source.formatted_display|safe }}
+                                {{ document.default_translation.source.formatted_display|safe }}
                             </span>
                         {% endif %}
                         {% if not image_info.excluded %}
