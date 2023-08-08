@@ -6,6 +6,9 @@
 @use "../base/typography";
 @use "../components/searchform";
 
+$toggle-default-width: 87px; /* only applies on tablet up */
+$toggle-default-neg: -82px; /* only applies on tablet up */
+
 #itt-panel {
     z-index: 6;
     max-width: none;
@@ -13,8 +16,6 @@
     display: flex;
     flex-flow: row wrap;
     background-color: var(--background);
-
-    $toggle-default-width: 87px; /* only applies on tablet up */
 
     // toggle switches for panels
     input[type="checkbox"].toggle {
@@ -230,12 +231,14 @@
                         background-color: var(--background-gray);
                         color: var(--on-background-gray);
                     }
-                    &:hover input[name="transcription"]:focus + span {
+                    &:hover input[name="transcription"]:focus + span,
+                    &:hover input[name="translation"]:focus + span {
                         background-color: var(--tertiary);
                         color: var(--on-tertiary);
                     }
                     // Checkboxes only visible to screen readers
-                    input[name="transcription"] {
+                    input[name="transcription"],
+                    input[name="translation"] {
                         @include a11y.sr-only;
                         // Selected option
                         &:checked + span {
@@ -1327,6 +1330,22 @@ html[dir="rtl"] #itt-panel {
                 margin-right: 8px;
                 margin-left: 0;
             }
+        }
+    }
+    #images-on:checked
+        ~ #translation-on:checked
+        ~ .panel-container
+        div.translation-panel.label-row,
+    #transcription-on:checked
+        ~ #translation-on:checked
+        ~ .panel-container
+        div.transcription-panel.label-row,
+    #transcription-on:checked
+        ~ #translation-on:checked
+        ~ .panel-container
+        div.translation-panel.label-row {
+        @include breakpoints.for-tablet-landscape-up {
+            margin-left: $toggle-default-neg;
         }
     }
 }

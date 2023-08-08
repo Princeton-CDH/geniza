@@ -31,7 +31,7 @@ from geniza.corpus.models import (
     LanguageScript,
     TextBlock,
 )
-from geniza.footnotes.models import Footnote
+from geniza.footnotes.models import Footnote, Source, SourceLanguage, SourceType
 
 
 class TestCollection:
@@ -1214,8 +1214,60 @@ class TestDocument:
         # DIGITAL_EDITION, should appear in digital editions
         assert digital_translation.pk in digital_translation_pks
         assert digital_translation2.pk in digital_translation_pks
-        # Translation 2 should be alphabetically first based on its source
+        # Translation 1 should be alphabetically first based on its source title
         assert digital_translation.pk == digital_translation_pks[0]
+
+    def test_default_translation(self, document, source, twoauthor_source):
+        book = SourceType.objects.create(type="Book")
+        hebrew = SourceLanguage.objects.get(name="Hebrew")
+        hebrew_source = Source.objects.create(
+            title_en="Some Translations", source_type=book
+        )
+        hebrew_source.languages.add(hebrew)
+        h = Footnote.objects.create(
+            content_object=document,
+            source=hebrew_source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        eng1 = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        eng2 = Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+
+        current_lang = get_language()
+        activate("he")
+        # should choose the first translation in the user's selected language
+        assert document.default_translation.pk == h.pk
+        # should be ordered alphabetically, by source title
+        activate("en")
+        assert document.default_translation.pk == eng1.pk
+
+        # if there are none in the selected language, should choose first of all translations
+        # alphabetically, by source title
+        doc2 = Document.objects.create()
+        h1 = Footnote.objects.create(
+            content_object=doc2,
+            source=hebrew_source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        hebrew_source_2 = Source.objects.create(
+            title_en="All Translations", source_type=book
+        )
+        hebrew_source_2.languages.add(hebrew)
+        h2 = Footnote.objects.create(
+            content_object=doc2,
+            source=hebrew_source_2,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        assert doc2.default_translation.pk == h2.pk
+
+        activate(current_lang)
 
     def test_digital_footnotes(self, document, source):
         # no digital edition or digital translation, count should be 0

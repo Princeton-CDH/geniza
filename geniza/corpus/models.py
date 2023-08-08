@@ -940,6 +940,16 @@ class Document(ModelIndexable, DocumentDateMixin):
             doc_relation__contains=Footnote.DIGITAL_TRANSLATION
         ).order_by("source")
 
+    @property
+    def default_translation(self):
+        """The first translation footnote that is in the current language, or the first
+        translation footnote ordered alphabetically by source if one is not available
+        in the current language."""
+
+        translations = self.digital_translations()
+        in_language = translations.filter(source__languages__code=get_language())
+        return in_language.first() or translations.first()
+
     def digital_footnotes(self):
         """All footnotes for this document where the document relation includes
         digital edition or digital translation."""
