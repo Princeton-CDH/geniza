@@ -31,7 +31,7 @@ from geniza.corpus.models import (
     LanguageScript,
     TextBlock,
 )
-from geniza.footnotes.models import Footnote
+from geniza.footnotes.models import Footnote, Source, SourceLanguage, SourceType
 
 
 class TestCollection:
@@ -1214,8 +1214,60 @@ class TestDocument:
         # DIGITAL_EDITION, should appear in digital editions
         assert digital_translation.pk in digital_translation_pks
         assert digital_translation2.pk in digital_translation_pks
-        # Translation 2 should be alphabetically first based on its source
+        # Translation 1 should be alphabetically first based on its source title
         assert digital_translation.pk == digital_translation_pks[0]
+
+    def test_default_translation(self, document, source, twoauthor_source):
+        book = SourceType.objects.create(type="Book")
+        hebrew = SourceLanguage.objects.get(name="Hebrew")
+        hebrew_source = Source.objects.create(
+            title_en="Some Translations", source_type=book
+        )
+        hebrew_source.languages.add(hebrew)
+        h = Footnote.objects.create(
+            content_object=document,
+            source=hebrew_source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        eng1 = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        eng2 = Footnote.objects.create(
+            content_object=document,
+            source=twoauthor_source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+
+        current_lang = get_language()
+        activate("he")
+        # should choose the first translation in the user's selected language
+        assert document.default_translation.pk == h.pk
+        # should be ordered alphabetically, by source title
+        activate("en")
+        assert document.default_translation.pk == eng1.pk
+
+        # if there are none in the selected language, should choose first of all translations
+        # alphabetically, by source title
+        doc2 = Document.objects.create()
+        h1 = Footnote.objects.create(
+            content_object=doc2,
+            source=hebrew_source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        hebrew_source_2 = Source.objects.create(
+            title_en="All Translations", source_type=book
+        )
+        hebrew_source_2.languages.add(hebrew)
+        h2 = Footnote.objects.create(
+            content_object=doc2,
+            source=hebrew_source_2,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        assert doc2.default_translation.pk == h2.pk
+
+        activate(current_lang)
 
     def test_digital_footnotes(self, document, source):
         # no digital edition or digital translation, count should be 0
@@ -1420,6 +1472,114 @@ def test_document_merge_with_footnotes(document, join, source):
     document.merge_with([join], "combine footnotes")
     # should only have two footnotes after the merge, because two of them are equal
     assert document.footnotes.count() == 2
+
+
+@pytest.mark.django_db
+def test_document_merge_with_annotations(document, join, source):
+    # create two footnotes, one with annotations and one without, on the same source
+    Footnote.objects.create(
+        content_object=document,
+        source=source,
+        location="p. 3",
+        doc_relation=Footnote.DIGITAL_EDITION,
+    )
+    join_fn = Footnote.objects.create(
+        content_object=join,
+        source=source,
+        location="p. 3",
+        notes="with emendations",
+        doc_relation=Footnote.DIGITAL_EDITION,
+    )
+    anno = Annotation.objects.create(
+        footnote=join_fn, content={"body": [{"value": "foo bar baz"}]}
+    )
+
+    assert document.footnotes.count() == 1
+    assert document.footnotes.first().annotation_set.count() == 0
+    assert join.footnotes.count() == 1
+    assert join.footnotes.first().annotation_set.count() == 1
+    document.merge_with([join], "combine footnotes/annotations")
+    # should still only have one footnote after merge, but now with an annotation
+    assert document.footnotes.count() == 1
+    assert document.footnotes.first().annotation_set.count() == 1
+    # it should be the above annotation but reassigned
+    anno.refresh_from_db()
+    assert anno.footnote.object_id == document.pk
+    # should have copied the notes over from the join fn
+    assert document.footnotes.first().notes == "with emendations"
+
+
+@pytest.mark.django_db
+def test_document_merge_with_annotations_no_match(document, join, source):
+    # create two footnotes, one digital edition and one digital translation, on the same source
+    Footnote.objects.create(
+        content_object=document,
+        source=source,
+        location="p. 3",
+        doc_relation=Footnote.DIGITAL_EDITION,
+    )
+    join_fn = Footnote.objects.create(
+        content_object=join,
+        source=source,
+        location="p. 3",
+        notes="with emendations",
+        doc_relation=Footnote.DIGITAL_TRANSLATION,
+    )
+    anno = Annotation.objects.create(
+        footnote=join_fn, content={"body": [{"value": "foo bar baz"}]}
+    )
+
+    assert document.footnotes.count() == 1
+    assert document.footnotes.first().annotation_set.count() == 0
+    assert join.footnotes.count() == 1
+    assert join.footnotes.first().annotation_set.count() == 1
+    document.merge_with([join], "combine footnotes/annotations")
+    # should now have two footnotes after merge
+    assert document.footnotes.count() == 2
+    # the above annotation should be reassigned
+    anno.refresh_from_db()
+    assert anno.footnote.object_id == document.pk
+
+
+def test_document_merge_with_empty_digital_footnote(document, join, source):
+    # create two digital edition footnotes on the same doc/source without annotations
+    Footnote.objects.create(
+        content_object=document,
+        source=source,
+        location="p. 3",
+        doc_relation=Footnote.DIGITAL_EDITION,
+    )
+    new_footnote = Footnote.objects.create(
+        content_object=join,
+        source=source,
+        location="new",
+        doc_relation=Footnote.DIGITAL_EDITION,
+    )
+
+    assert document.footnotes.count() == 1
+    assert document.digital_editions().count() == 1
+    assert join.footnotes.count() == 1
+    document.merge_with([join], "combine footnotes")
+    # should have two footnotes after the merge, since location differs
+    assert document.footnotes.count() == 2
+    # added footnote should not be a digital edition, to prevent unique violation
+    assert document.digital_editions().count() == 1
+
+    # same should be true for a digital translation
+    new_footnote.refresh_from_db()
+    new_footnote.doc_relation = [Footnote.DIGITAL_TRANSLATION]
+    new_footnote.save()
+    assert document.digital_translations().count() == 1
+    other_doc = Document.objects.create()
+    Footnote.objects.create(
+        content_object=other_doc,
+        source=source,
+        location="example",
+        doc_relation=Footnote.DIGITAL_TRANSLATION,
+    )
+    document.merge_with([other_doc], "combine translations")
+    # added footnote should not be a digital translation, to prevent unique violation
+    assert document.digital_translations().count() == 1
 
 
 def test_document_merge_with_log_entries(document, join):

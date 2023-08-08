@@ -1,5 +1,10 @@
 # Deploy Notes
 
+## 4.15
+
+-   The minimum required Solr version has been bumped to 9.2. Please upgrade to this version,
+    update Solr configset, and then reindex all content with `python manage.py index`.
+
 ## 4.14
 
 -   Seleucid calendar conversion is now implemented, so automatic conversion should be applied

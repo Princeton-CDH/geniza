@@ -7,8 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
-from django.db.models import CharField, Count, F
-from django.db.models.fields import TextField
+from django.db.models import CharField, Count, F, TextField
 from django.db.models.functions import Concat
 from django.forms.widgets import HiddenInput, Textarea, TextInput
 from django.http import HttpResponseRedirect
@@ -224,10 +223,14 @@ class DocumentDatingInline(admin.TabularInline):
     fields = (
         "display_date",
         "standard_date",
+        "rationale",
         "notes",
     )
     min_num = 0
     extra = 1
+    formfield_overrides = {
+        TextField: {"widget": Textarea(attrs={"rows": 4})},
+    }
 
 
 class DocumentPersonInline(admin.TabularInline):
@@ -372,7 +375,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         DocumentPersonInline,
     ]
     # mixed fieldsets and inlines: /admin/corpus/document/snippets/mixed_inlines_fieldsets.html
-    fieldsets_and_inlines_order = ("f", "f", "i", "f", "i", "i", "i")
+    fieldsets_and_inlines_order = ("f", "f", "i", "f", "itt", "i", "i", "i")
 
     class Media:
         css = {"all": ("css/admin-local.css",)}

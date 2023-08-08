@@ -37,6 +37,7 @@ from geniza.corpus.metadata_export import (
 )
 from geniza.corpus.models import (
     Collection,
+    Dating,
     Document,
     DocumentType,
     Fragment,
@@ -158,6 +159,38 @@ def test_iter_dicts(document):
                 "expect input date (%s) to be earlier than last modified (%s) [PGPID %s]"
                 % (input_date, last_modified, doc.id)
             )
+
+
+@pytest.mark.django_db
+def test_dating(document):
+    # should include dating info in export
+    Dating.objects.create(
+        document=document,
+        display_date="1000 CE example",
+        standard_date="1000",
+        rationale=Dating.PALEOGRAPHY,
+        notes="a note",
+    )
+    doc_qs = Document.objects.all().order_by("id")
+    exporter = AdminDocumentExporter(queryset=doc_qs)
+    data_dict = exporter.get_export_data_dict(document)
+    assert "1000 CE example" in data_dict["doc_dating_display"]
+    assert "1000" in data_dict["doc_dating_standard"]
+    assert "a note" in data_dict["doc_dating_notes"]
+
+    # should handle multiple values properly, with separators
+    Dating.objects.create(
+        document=document,
+        display_date="1005-1010",
+        standard_date="1005/1010",
+        rationale=Dating.PERSON,
+        notes="othernote",
+    )
+    doc_qs = Document.objects.all().order_by("id")
+    data_dict = exporter.get_export_data_dict(document)
+    assert exporter.sep_within_cells.join(
+        [Dating.PALEOGRAPHY_LABEL, Dating.PERSON_LABEL]
+    ) in exporter.serialize_value(data_dict["doc_dating_rationale"])
 
 
 @pytest.mark.django_db

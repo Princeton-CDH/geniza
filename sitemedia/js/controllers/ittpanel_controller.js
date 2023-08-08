@@ -14,6 +14,10 @@ export default class extends Controller {
     connect() {
         document.addEventListener("tahqiq-alert", this.boundAlertHandler);
         document.addEventListener("tahqiq-cancel", this.boundCancelHandler);
+        if (this.isDesktop() && this.transcriptionAndTranslationOpen()) {
+            // if transcription + translation both open, align their contents line-by-line
+            this.alignLines();
+        }
     }
 
     disconnect() {
@@ -34,10 +38,10 @@ export default class extends Controller {
             // consultation with researchers. The primary finding was that most often, researchers
             // are not looking directly at an image while editing/working on translations.
             switch (evt.target.id) {
-                // close translation if you opened images
+                // close transcription if you opened images
                 case "images-on":
                     this.toggleTargets.find(
-                        (target) => target.id === "translation-on"
+                        (target) => target.id === "transcription-on"
                     ).checked = false;
                     break;
                 // close images if you opened either of the other two
@@ -56,21 +60,29 @@ export default class extends Controller {
                 this.alignLines();
             } else {
                 // when one of those two toggles is closed, remove data-lines from each line (alignment no longer needed)
-                this.transcriptionTarget
-                    .querySelectorAll("li")
-                    .forEach((li) => {
-                        li.removeAttribute("data-lines");
-                    });
-                this.translationTarget.querySelectorAll("li").forEach((li) => {
-                    li.removeAttribute("data-lines");
-                });
+                if (this.hasTranscriptionTarget) {
+                    this.transcriptionTarget
+                        .querySelectorAll("li")
+                        .forEach((li) => {
+                            if (li) li.removeAttribute("data-lines");
+                        });
+                }
+                if (this.hasTranslationTarget) {
+                    this.translationTarget
+                        .querySelectorAll("li")
+                        .forEach((li) => {
+                            if (li) li.removeAttribute("data-lines");
+                        });
+                }
                 // also remove padding-top alignment of the two lists
-                this.transcriptionTarget
-                    .querySelector("ol")
-                    .removeAttribute("style");
-                this.translationTarget
-                    .querySelector("ol")
-                    .removeAttribute("style");
+                if (this.hasTranscriptionTarget) {
+                    const edOL = this.transcriptionTarget.querySelector("ol");
+                    if (edOL) edOL.removeAttribute("style");
+                }
+                if (this.hasTranslationTarget) {
+                    const trOL = this.translationTarget.querySelector("ol");
+                    if (trOL) trOL.removeAttribute("style");
+                }
             }
         }
     }
