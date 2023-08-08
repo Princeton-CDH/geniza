@@ -327,7 +327,6 @@ class TestDocumentSearchView:
                 DocumentSolrQuerySet, extra_methods=["admin_search", "keyword_search"]
             ),
         ) as mock_queryset_cls:
-
             docsearch_view = DocumentSearchView()
             docsearch_view.request = Mock()
 
@@ -469,7 +468,6 @@ class TestDocumentSearchView:
                 DocumentSolrQuerySet, extra_methods=["admin_search", "keyword_search"]
             ),
         ) as mock_queryset_cls:
-
             mock_qs = mock_queryset_cls.return_value
             mock_qs.count.return_value = 22
             mock_qs.get_facets.return_value.facet_fields = {}
@@ -829,7 +827,6 @@ class TestDocumentSearchView:
         docsearch_view.request = Mock()
 
         for shelfmark in [document.shelfmark_override, orig_shelfmark]:
-
             # keyword search should work
             docsearch_view.request.GET = {"q": shelfmark}
             qs = docsearch_view.get_queryset()
@@ -1117,7 +1114,11 @@ class TestDocumentManifestView:
         mock_manifest.sequences = [Mock(canvases=mock_canvases)]
         # add image order override to a document
         document = Document.objects.create(
-            image_order_override=["urn:m1/c2", "urn:m1/c3", "urn:m1/c1"]
+            image_overrides={
+                "urn:m1/c2": {"order": 0},
+                "urn:m1/c3": {"order": 1},
+                "urn:m1/c1": {"order": 2},
+            }
         )
         TextBlock.objects.create(document=document, fragment=fragment)
         response = client.get(reverse(self.view_name, args=[document.pk]))

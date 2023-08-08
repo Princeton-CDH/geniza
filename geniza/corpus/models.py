@@ -498,11 +498,8 @@ class Document(ModelIndexable, DocumentDateMixin):
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
     )
-    image_order_override = ArrayField(
-        models.URLField(), null=True, verbose_name="Image Order", blank=True
-    )
-    image_rotation_override = ArrayField(
-        models.IntegerField(), null=True, verbose_name="Image Rotation", blank=True
+    image_overrides = models.JSONField(
+        null=False, blank=True, default=dict, verbose_name="Image Order/Rotation"
     )
     shelfmark_override = models.CharField(
         "Shelfmark Override",

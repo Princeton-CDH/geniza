@@ -156,8 +156,7 @@ class DocumentForm(forms.ModelForm):
             "language_note": Textarea(attrs={"rows": 1}),
             "needs_review": Textarea(attrs={"rows": 3}),
             "notes": Textarea(attrs={"rows": 3}),
-            "image_order_override": HiddenInput(),
-            "image_rotation_override": HiddenInput(),
+            "image_overrides": HiddenInput(),
         }
 
     def clean(self):
@@ -360,8 +359,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
                     "tags",
                     "status",
                     ("needs_review", "notes"),
-                    "image_order_override",
-                    "image_rotation_override",
+                    "image_overrides",
                     "admin_thumbnails",
                 )
             },
