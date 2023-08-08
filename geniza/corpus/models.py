@@ -906,6 +906,21 @@ class Document(ModelIndexable, DocumentDateMixin):
         )
 
     @property
+    def available_digital_content(self):
+        """Helper method for the ITT viewer to collect all available panels into a list"""
+
+        # NOTE: this is ordered by priority, with images first, then translations over
+        # transcriptions.
+        available_panels = []
+        if self.has_image():
+            available_panels.append("images")
+        if self.has_translation():
+            available_panels.append("translation")
+        if self.has_transcription():
+            available_panels.append("transcription")
+        return available_panels
+
+    @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
         return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"

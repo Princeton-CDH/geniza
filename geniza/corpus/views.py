@@ -319,15 +319,8 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
         context_data = super().get_context_data(**kwargs)
         images = self.object.iiif_images(with_placeholders=True)
 
-        # logic for which panels to show or disable by default: images always shown if available,
-        # then priority is translations over transcriptions. show both of the latter two if no imgs
-        available_panels = []
-        if self.object.has_image():
-            available_panels.append("images")
-        if self.object.has_translation():
-            available_panels.append("translation")
-        if self.object.has_transcription():
-            available_panels.append("transcription")
+        # collect available panels
+        available_panels = self.object.available_digital_content
 
         context_data.update(
             {

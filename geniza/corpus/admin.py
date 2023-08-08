@@ -484,13 +484,29 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         super().save_model(request, obj, form, change)
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
-        """Customize this model's change_view to add IIIF images to context for
-        transcription viewer, then execute existing change_view"""
+        """Customize this model's change_view to add IIIF images and default/disabled panels
+        to context for transcription/translation viewer, then execute existing change_view
+        """
         extra_ctx = extra_context or {}
         document = self.get_object(request, object_id)
         if document:
+            # get images
             images = document.iiif_images(with_placeholders=True)
-            extra_ctx.update({"images": images})
+            # get available digital content panels
+            available_panels = document.available_digital_content
+            extra_ctx.update(
+                {
+                    "images": images,
+                    # show first two panels by default
+                    "default_shown": available_panels[:2],
+                    # disable any unavailable panels
+                    "disabled": [
+                        panel
+                        for panel in ["images", "translation", "transcription"]
+                        if panel not in available_panels
+                    ],
+                }
+            )
         return super().change_view(
             request, object_id, form_url, extra_context=extra_ctx
         )
