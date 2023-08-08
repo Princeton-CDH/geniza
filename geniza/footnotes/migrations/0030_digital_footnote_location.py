@@ -46,7 +46,7 @@ def migrate_footnote_locations(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("footnotes", "0028_sourcelanguage_direction"),
+        ("footnotes", "0029_source_help_text"),
     ]
 
     operations = [
