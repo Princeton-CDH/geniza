@@ -202,6 +202,8 @@ class HasTranslationListFilter(admin.SimpleListFilter):
     def lookups(self, request, model_admin):
         return (
             ("yes", "Has translation"),
+            ("yes_en", "Has English translation"),
+            ("yes_he", "Has Hebrew translation"),
             ("no", "No translation"),
         )
 
@@ -209,6 +211,23 @@ class HasTranslationListFilter(admin.SimpleListFilter):
         if self.value() == "yes":
             return queryset.filter(
                 footnotes__doc_relation__contains=Footnote.DIGITAL_TRANSLATION
+            )
+        # Filters for English and Hebrew translations:
+        # In order to find documents with footnotes that satisfy both conditions, we need to make
+        # a second query within the first, per Django docs ("Spanning multi-valued relationships")
+        if self.value() == "yes_en":
+            return queryset.filter(
+                footnotes__in=Footnote.objects.filter(
+                    doc_relation__contains=Footnote.DIGITAL_TRANSLATION,
+                    source__languages__name="English",
+                ),
+            )
+        if self.value() == "yes_he":
+            return queryset.filter(
+                footnotes__in=Footnote.objects.filter(
+                    doc_relation__contains=Footnote.DIGITAL_TRANSLATION,
+                    source__languages__name="Hebrew",
+                ),
             )
         if self.value() == "no":
             return queryset.exclude(
