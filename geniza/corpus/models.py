@@ -793,26 +793,31 @@ class Document(ModelIndexable, DocumentDateMixin):
                             "recto" if int(uri_match.group("canvas")) == 1 else "verso"
                         )
 
-        # if image_order_override present, order returned images according to override
-        if self.image_order_override:
-            ordered_images = {
-                canvas: iiif_images.pop(canvas)
-                for canvas in self.image_order_override
-                if canvas in iiif_images
-            } or {}  # if condition is never met, instantiate empty dict (instead of set!)
-            ordered_images.update(
-                iiif_images  # add any remaining images after ordered ones
-            )
-            # reassign to original variable so we can add rotation if necessary
-            iiif_images = ordered_images
+        # if image_overrides not present, return list, in original order
+        if not self.image_overrides:
+            return iiif_images
 
-        # add any rotations from the rotation override to each dict entry, in order
-        for i, degrees in enumerate(self.image_rotation_override or []):
-            # ensure no errors if too many entries in the override array
-            if len(iiif_images.keys()) > i:
-                iiif_images[list(iiif_images.keys())[i]]["rotation"] = int(degrees)
-
-        return iiif_images
+        # order returned images according to override: first, sort overrides by "order"
+        sorted_overrides = sorted(
+            self.image_overrides.items(),
+            # get order if present; use ∞ as fallback to sort unordered to end of list
+            key=lambda item: item[1].get("order", float("inf")),
+        )
+        # then, reorder dict by pulling canvas URI keys in odrer from sorted overrides
+        ordered_images = {
+            canvas: {
+                # unpack existing dict values
+                **iiif_images.pop(canvas),
+                # include rotation: overridden value or 0 degrees
+                "rotation": int(override.get("rotation", 0)),
+            }
+            for canvas, override in sorted_overrides
+            if canvas in iiif_images
+        } or {}  # if condition is never met, instantiate empty dict (instead of set!)
+        ordered_images.update(
+            iiif_images  # add any remaining images after ordered ones
+        )
+        return ordered_images
 
     def admin_thumbnails(self):
         """generate html for thumbnails of all iiif images, for image reordering UI in admin"""
@@ -828,7 +833,7 @@ class Document(ModelIndexable, DocumentDateMixin):
             canvases=iiif_images.keys(),
         )
 
-    admin_thumbnails.short_description = "Image order override"
+    admin_thumbnails.short_description = "Image order/rotation overrides"
 
     def fragment_urls(self):
         """List of external URLs to view the Document's Fragments."""
