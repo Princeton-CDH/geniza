@@ -201,8 +201,8 @@ class TestRenameTypedTextsMigration(TestMigrations):
 @pytest.mark.django_db
 class TestDigitalFootnoteLocation(TestMigrations):
     app = "footnotes"
-    migrate_from = "0028_sourcelanguage_direction"
-    migrate_to = "0029_digital_footnote_location"
+    migrate_from = "0029_source_help_text"
+    migrate_to = "0030_digital_footnote_location"
     digital_edition = None
     digital_translation = None
 
