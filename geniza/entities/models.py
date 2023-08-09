@@ -141,6 +141,8 @@ class Person(models.Model):
         """
         try:
             return str(self.names.get(primary=True))
+        except Name.MultipleObjectsReturned:
+            return str(self.names.filter(primary=True).first())
         except Name.DoesNotExist:
             return str(self.names.first() or super().__str__())
 
@@ -294,6 +296,8 @@ class Place(models.Model):
         """
         try:
             return str(self.names.get(primary=True))
+        except Name.MultipleObjectsReturned:
+            return str(self.names.filter(primary=True).first())
         except Name.DoesNotExist:
             return str(self.names.first() or super().__str__())
 
