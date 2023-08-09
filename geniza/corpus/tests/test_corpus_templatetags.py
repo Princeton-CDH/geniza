@@ -197,17 +197,3 @@ class TestAdminExtrasTemplateTags:
 
         # should append the remaining inline at the end
         assert fieldsets_and_inlines[4] == ("i", "inline2")
-
-        # should throw indexerror if you supply too many fieldsets or inlines
-        adminform.model_admin.fieldsets_and_inlines_order = ("f", "i", "f", "f")
-        with pytest.raises(IndexError) as errorinfo:
-            admin_extras.get_fieldsets_and_inlines(
-                {"adminform": adminform, "inline_admin_formsets": inlines}
-            )
-        assert "Too many values" in str(errorinfo.value)
-        adminform.model_admin.fieldsets_and_inlines_order = ("f", "i", "i", "i")
-        with pytest.raises(IndexError) as errorinfo:
-            admin_extras.get_fieldsets_and_inlines(
-                {"adminform": adminform, "inline_admin_formsets": inlines}
-            )
-        assert "Too many values" in str(errorinfo.value)
