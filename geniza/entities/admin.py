@@ -211,7 +211,13 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         PersonPlaceInline,
     )
     # mixed fieldsets and inlines: /admin/corpus/document/snippets/mixed_inlines_fieldsets.html
-    fieldsets_and_inlines_order = ("i", "f", "i", "i", "i")
+    fieldsets_and_inlines_order = (
+        "i",  # NameInline
+        "f",  # all Person fields
+        "i",  # PersonDocumentInline
+        "i",  # PersonPersonInline
+        "i",  # PersonPlaceInline
+    )
     own_pk = None
 
     def get_form(self, request, obj=None, **kwargs):
@@ -295,4 +301,10 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
     search_fields = ("names__name",)
     fields = ("latitude", "longitude")
     inlines = (NameInline, DocumentPlaceInline, PlacePersonInline, FootnoteInline)
-    fieldsets_and_inlines_order = ("i", "f", "i")
+    fieldsets_and_inlines_order = (
+        "i",  # NameInline
+        "f",  # lat/long fieldset
+        "i",  # DocumentPlaceInline
+        "i",  # PlacePersonInline
+        "i",  # FootnoteInline
+    )

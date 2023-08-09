@@ -364,7 +364,17 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         DocumentPlaceInline,
     ]
     # mixed fieldsets and inlines: /admin/corpus/document/snippets/mixed_inlines_fieldsets.html
-    fieldsets_and_inlines_order = ("f", "f", "i", "f", "itt", "i", "i", "i", "i")
+    fieldsets_and_inlines_order = (
+        "f",  # shelfmark, languages, description fieldset
+        "f",  # date on document fieldset
+        "i",  # DocumentDatingInline
+        "f",  # tags, status, order override fieldset
+        "itt",  # images/transcription/translation panel
+        "i",  # DocumentTextBlockInline
+        "i",  # DocumentFootnoteInline
+        "i",  # DocumentPersonInline
+        "i",  # DocumentPlaceInline
+    )
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
