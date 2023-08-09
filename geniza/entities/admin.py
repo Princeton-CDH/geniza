@@ -1,7 +1,9 @@
 from adminsortable2.admin import SortableAdminBase
 from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
+from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.db.models.fields import CharField, TextField
+from django.forms import ValidationError
 from django.forms.widgets import Textarea, TextInput
 from django.urls import reverse
 from django.utils.html import format_html
@@ -24,10 +26,28 @@ from geniza.entities.models import (
 from geniza.footnotes.models import Footnote
 
 
+class NameInlineFormSet(BaseGenericInlineFormSet):
+    """Override of the Name inline formset to require exactly one primary name."""
+
+    DISPLAY_NAME_ERROR = "This entity must have exactly one display name."
+
+    def clean(self):
+        """Execute inherited clean method, then validate to ensure exactly one primary name."""
+        super().clean()
+        cleaned_data = [form.cleaned_data for form in self.forms if form.is_valid()]
+        if cleaned_data:
+            primary_names_count = len(
+                [name for name in cleaned_data if name.get("primary") == True]
+            )
+            if primary_names_count == 0 or primary_names_count > 1:
+                raise ValidationError(self.DISPLAY_NAME_ERROR, code="invalid")
+
+
 class NameInline(GenericTabularInline):
     """Name inline for the Person and Place admins"""
 
     model = Name
+    formset = NameInlineFormSet
     autocomplete_fields = ["language"]
     fields = (
         "name",
@@ -254,25 +274,6 @@ class DocumentPlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     fields = ("name",)
     search_fields = ("name",)
     ordering = ("name",)
-
-
-class PlaceNameInline(GenericTabularInline):
-    """Name inline for the Place admin"""
-
-    model = Name
-    autocomplete_fields = ["language"]
-    fields = (
-        "name",
-        "primary",
-        "language",
-        "notes",
-        "transliteration_style",
-    )
-    min_num = 1
-    extra = 0
-    formfield_overrides = {
-        TextField: {"widget": Textarea(attrs={"rows": 4})},
-    }
 
 
 class DocumentPlaceInline(DocumentInline):

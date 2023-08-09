@@ -3,15 +3,19 @@ from unittest.mock import Mock
 import pytest
 from django.contrib import admin
 from django.test import RequestFactory
+from django.urls import reverse
+from pytest_django.asserts import assertContains, assertNotContains
 
-from geniza.corpus.models import Document
+from geniza.corpus.models import Document, LanguageScript
 from geniza.entities.admin import (
+    NameInlineFormSet,
     PersonAdmin,
     PersonDocumentInline,
     PersonPersonInline,
     PersonPlaceInline,
 )
 from geniza.entities.models import (
+    Name,
     Person,
     PersonDocumentRelation,
     PersonPersonRelation,
@@ -104,3 +108,62 @@ class TestPersonAdmin:
         # should exclude Person with pk=own_pk
         assert qs.count() == 2
         assert not qs.filter(pk=goitein.pk).exists()
+
+
+@pytest.mark.django_db
+class TestNameInlineFormSet:
+    def test_clean(self, admin_client):
+        english = LanguageScript.objects.create(language="English", script="Latin")
+        # should raise validation error if zero primary names
+        response = admin_client.post(
+            reverse("admin:entities_person_add"),
+            data={
+                "entities-name-content_type-object_id-INITIAL_FORMS": ["0"],
+                "entities-name-content_type-object_id-TOTAL_FORMS": ["2"],
+                "entities-name-content_type-object_id-MAX_NUM_FORMS": ["1000"],
+                "entities-name-content_type-object_id-0-name": "Marina Rustow",
+                "entities-name-content_type-object_id-0-language": str(english.pk),
+                "entities-name-content_type-object_id-0-transliteration_style": Name.NONE,
+                "entities-name-content_type-object_id-1-name": "S.D. Goitein",
+                "entities-name-content_type-object_id-1-language": str(english.pk),
+                "entities-name-content_type-object_id-1-transliteration_style": Name.NONE,
+            },
+        )
+        assertContains(response, NameInlineFormSet.DISPLAY_NAME_ERROR)
+
+        # should raise validation error if two primary names
+        response = admin_client.post(
+            reverse("admin:entities_person_add"),
+            data={
+                "entities-name-content_type-object_id-INITIAL_FORMS": ["0"],
+                "entities-name-content_type-object_id-TOTAL_FORMS": ["2"],
+                "entities-name-content_type-object_id-MAX_NUM_FORMS": ["1000"],
+                "entities-name-content_type-object_id-0-name": "Marina Rustow",
+                "entities-name-content_type-object_id-0-primary": "on",
+                "entities-name-content_type-object_id-0-language": str(english.pk),
+                "entities-name-content_type-object_id-0-transliteration_style": Name.NONE,
+                "entities-name-content_type-object_id-1-name": "S.D. Goitein",
+                "entities-name-content_type-object_id-1-primary": "on",
+                "entities-name-content_type-object_id-1-language": str(english.pk),
+                "entities-name-content_type-object_id-1-transliteration_style": Name.NONE,
+            },
+        )
+        assertContains(response, NameInlineFormSet.DISPLAY_NAME_ERROR)
+
+        # should NOT raise validation error if exactly one primary name
+        response = admin_client.post(
+            reverse("admin:entities_person_add"),
+            data={
+                "entities-name-content_type-object_id-INITIAL_FORMS": ["0"],
+                "entities-name-content_type-object_id-TOTAL_FORMS": ["2"],
+                "entities-name-content_type-object_id-MAX_NUM_FORMS": ["1000"],
+                "entities-name-content_type-object_id-0-name": "Marina Rustow",
+                "entities-name-content_type-object_id-0-primary": "on",
+                "entities-name-content_type-object_id-0-language": str(english.pk),
+                "entities-name-content_type-object_id-0-transliteration_style": Name.NONE,
+                "entities-name-content_type-object_id-1-name": "S.D. Goitein",
+                "entities-name-content_type-object_id-1-language": str(english.pk),
+                "entities-name-content_type-object_id-1-transliteration_style": Name.NONE,
+            },
+        )
+        assertNotContains(response, NameInlineFormSet.DISPLAY_NAME_ERROR)

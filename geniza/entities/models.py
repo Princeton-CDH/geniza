@@ -50,16 +50,6 @@ class Name(models.Model):
         default=NONE,
     )
 
-    class Meta:
-        constraints = [
-            # only allow one primary name per named entity
-            models.UniqueConstraint(
-                fields=("content_type", "object_id"),
-                name="one_primary_name_per_entity",
-                condition=models.Q(primary=True),
-            ),
-        ]
-
     def __str__(self):
         return self.name
 
