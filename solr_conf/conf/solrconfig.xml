@@ -36,7 +36,7 @@
        affect both how text is indexed and queried.
   -->
   <!-- TODO: test this change.... -->
-  <luceneMatchVersion>9.2.0</luceneMatchVersion>
+  <luceneMatchVersion>7.0.0</luceneMatchVersion>
 
   <!-- <lib/> directives can be used to instruct Solr to load any Jars
        identified and use them to resolve any "plugins" specified in
@@ -73,17 +73,20 @@
        The examples below can be used to load some solr-contribs along
        with their external dependencies.
     -->
-  <lib dir="${solr.install.dir:../../../..}/modules/extraction/lib" regex=".*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/contrib/extraction/lib" regex=".*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-cell-\d.*\.jar" />
 
-  <lib dir="${solr.install.dir:../../../..}/modules/clustering/lib/" regex=".*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/contrib/clustering/lib/" regex=".*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-clustering-\d.*\.jar" />
 
-  <lib dir="${solr.install.dir:../../../..}/modules/langid/lib/" regex=".*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/contrib/langid/lib/" regex=".*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-langid-\d.*\.jar" />
 
-  <lib dir="${solr.install.dir:../../../..}/modules/analysis-extras/lib/" regex="solr-analysis-extras-\d.*\.jar" />
-  <lib dir="${solr.install.dir:../../../..}/modules/analysis-extras/lib/" regex="lucene-analysis-icu-\d.*\.jar" />
-  <lib dir="${solr.install.dir:../../../..}/modules/analysis-extras/lib/" regex="icu4j-\d.*\.jar" />
-
-  <lib dir="${solr.install.dir:../../../..}/modules/scripting/lib" regex=".*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/contrib/velocity/lib" regex=".*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-velocity-\d.*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-analysis-extras-\d.*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/contrib/analysis-extras/lucene-libs/" regex="lucene-analyzers-icu-\d.*\.jar" />
+  <lib dir="${solr.install.dir:../../../..}/contrib/analysis-extras/lib/" regex="icu4j-\d.*\.jar" />
   <!-- an exact 'path' can be used instead of a 'dir' to specify a
        specific jar file.  This will cause a serious error to be logged
        if it can't be loaded.
@@ -384,7 +387,17 @@
     <maxBooleanClauses>1024</maxBooleanClauses>
 
 
-    <!-- Solr Internal Query Caches -->
+    <!-- Solr Internal Query Caches
+
+         There are two implementations of cache available for Solr,
+         LRUCache, based on a synchronized LinkedHashMap, and
+         FastLRUCache, based on a ConcurrentHashMap.
+
+         FastLRUCache has faster gets and slower puts in single
+         threaded operation and thus is generally faster than LRUCache
+         when the hit ratio of the cache is high (> 75%), and may be
+         faster under other scenarios on multi-cpu systems.
+    -->
 
     <!-- Filter Cache
 
@@ -392,10 +405,13 @@
          unordered sets of *all* documents that match a query.  When a
          new searcher is opened, its caches may be prepopulated or
          "autowarmed" using data from caches in the old searcher.
-         autowarmCount is the number of items to prepopulate.
+         autowarmCount is the number of items to prepopulate.  For
+         LRUCache, the autowarmed items will be the most recently
+         accessed items.
 
          Parameters:
-           class - the SolrCache implementation (CaffeineCache)
+           class - the SolrCache implementation LRUCache or
+               (LRUCache or FastLRUCache)
            size - the maximum number of entries in the cache
            initialSize - the initial capacity (number of entries) of
                the cache.  (see java.util.HashMap)
@@ -405,7 +421,7 @@
                       to occupy. Note that when this option is specified, the size
                       and initialSize parameters are ignored.
       -->
-    <filterCache class="solr.CaffeineCache"
+    <filterCache class="solr.FastLRUCache"
                  size="512"
                  initialSize="512"
                  autowarmCount="0"/>
@@ -414,8 +430,11 @@
 
          Caches results of searches - ordered lists of document ids
          (DocList) based on a query, a sort, and the range of documents requested.
+         Additional supported parameter by LRUCache:
+            maxRamMB - the maximum amount of RAM (in MB) that this cache is allowed
+                       to occupy
       -->
-    <queryResultCache class="solr.CaffeineCache"
+    <queryResultCache class="solr.LRUCache"
                       size="512"
                       initialSize="512"
                       autowarmCount="0"/>
@@ -426,14 +445,14 @@
          document).  Since Lucene internal document ids are transient,
          this cache will not be autowarmed.
       -->
-    <documentCache class="solr.CaffeineCache"
+    <documentCache class="solr.LRUCache"
                    size="512"
                    initialSize="512"
                    autowarmCount="0"/>
 
     <!-- custom cache currently used by block join -->
     <cache name="perSegFilter"
-           class="solr.search.CaffeineCache"
+           class="solr.search.LRUCache"
            size="10"
            initialSize="0"
            autowarmCount="10"
@@ -463,7 +482,7 @@
       -->
     <!--
        <cache name="myUserCache"
-              class="solr.CaffeineCache"
+              class="solr.LRUCache"
               size="4096"
               initialSize="1024"
               autowarmCount="1024"
@@ -710,7 +729,7 @@
     <lst name="defaults">
       <str name="echoParams">explicit</str>
       <int name="rows">10</int>
-      <str name="defType">lucene</str>
+      <str name="defType">edismax</str>
       <!-- <str name="df">text</str> -->
 
       <!-- keyword search field for geniza prototype -->
@@ -874,7 +893,7 @@
        (SearchHandler) can be registered multiple times with different
        names (and different init parameters)
     -->
-  <requestHandler name="/browse" class="solr.SearchHandler" useParams="query,facets,browse">
+  <requestHandler name="/browse" class="solr.SearchHandler" useParams="query,facets,velocity,browse">
     <lst name="defaults">
       <str name="echoParams">explicit</str>
     </lst>
@@ -1395,12 +1414,17 @@
   <!--
      Custom response writers can be declared as needed...
     -->
+  <queryResponseWriter name="velocity" class="solr.VelocityResponseWriter" startup="lazy">
+    <str name="template.base.dir">${velocity.template.base.dir:}</str>
+    <str name="solr.resource.loader.enabled">${velocity.solr.resource.loader.enabled:true}</str>
+    <str name="params.resource.loader.enabled">${velocity.params.resource.loader.enabled:false}</str>
+  </queryResponseWriter>
 
   <!-- XSLT response writer transforms the XML output by any xslt file found
        in Solr's conf/xslt directory.  Changes to xslt files are checked for
        every xsltCacheLifetimeSeconds.
     -->
-  <queryResponseWriter name="xslt" class="solr.scripting.xslt.XSLTResponseWriter">
+  <queryResponseWriter name="xslt" class="solr.XSLTResponseWriter">
     <int name="xsltCacheLifetimeSeconds">5</int>
   </queryResponseWriter>
 

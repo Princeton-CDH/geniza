@@ -13,9 +13,7 @@ django-modeltranslation==0.17.5
 django-admin-sortable2
 python-dateutil>=2.8
 django-tabular-export
-# NOTE: Once parasolr 0.10 is released, stop pulling it from git
-git+https://github.com/Princeton-CDH/parasolr@develop
-# parasolr>=0.9
+parasolr>=0.9
 django-gfklookupwidget
 django-adminlogentries
 django-autocomplete-light>=3.9.4
