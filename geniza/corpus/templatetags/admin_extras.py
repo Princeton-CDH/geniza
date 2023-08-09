@@ -12,24 +12,20 @@ def get_fieldsets_and_inlines(context):
     """
     adminform = context["adminform"]
     model_admin = adminform.model_admin
-    adminform = iter(adminform)
-    inlines = iter(context["inline_admin_formsets"])
+    adminform = list(adminform)
+    inlines = list(context["inline_admin_formsets"])
 
     fieldsets_and_inlines = []
-    for choice in model_admin.fieldsets_and_inlines_order:
-        try:
-            if choice == "f":
-                fieldsets_and_inlines.append(("f", next(adminform)))
-            elif choice == "i":
-                fieldsets_and_inlines.append(("i", next(inlines)))
-            elif choice == "itt":
-                # special case for itt panel on document
-                fieldsets_and_inlines.append(("itt", None))
-        except StopIteration:
-            raise IndexError(
-                """Too many values provided to fieldsets_and_inlines_order.
-                Ensure there is a fieldset (not just a field) for every 'f' provided."""
-            )
+    for choice in getattr(model_admin, "fieldsets_and_inlines_order", ()):
+        if choice == "f":
+            if adminform:
+                fieldsets_and_inlines.append(("f", adminform.pop(0)))
+        elif choice == "i":
+            if inlines:
+                fieldsets_and_inlines.append(("i", inlines.pop(0)))
+        elif choice == "itt":
+            # special case for itt panel on document
+            fieldsets_and_inlines.append(("itt", None))
 
     # render any remaining ones in the normal order: fieldsets, then inlines
     for fieldset in adminform:
