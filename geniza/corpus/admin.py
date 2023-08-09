@@ -363,7 +363,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         DocumentPersonInline,
         DocumentPlaceInline,
     ]
-    # mixed fieldsets and inlines: /admin/corpus/document/snippets/mixed_inlines_fieldsets.html
+    # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
     fieldsets_and_inlines_order = (
         "f",  # shelfmark, languages, description fieldset
         "f",  # date on document fieldset

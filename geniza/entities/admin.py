@@ -210,7 +210,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         PersonPersonInline,
         PersonPlaceInline,
     )
-    # mixed fieldsets and inlines: /admin/corpus/document/snippets/mixed_inlines_fieldsets.html
+    # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
     fieldsets_and_inlines_order = (
         "i",  # NameInline
         "f",  # all Person fields
