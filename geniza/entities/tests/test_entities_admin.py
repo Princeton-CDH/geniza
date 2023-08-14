@@ -57,6 +57,10 @@ class TestPersonAdmin:
         person_admin.get_form(mockrequest, obj=goitein)
         assert person_admin.own_pk == goitein.pk
 
+        # create new person, should be reset to None
+        person_admin.get_form(mockrequest, obj=None)
+        assert person_admin.own_pk == None
+
     def test_get_queryset(self):
         goitein = Person.objects.create()
         Person.objects.create()

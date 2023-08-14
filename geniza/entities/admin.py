@@ -132,6 +132,9 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         """For Person-Person autocomplete on the PersonAdmin form, keep track of own pk"""
         if obj:
             self.own_pk = obj.pk
+        else:
+            # reset own_pk to None if we are creating a new person
+            self.own_pk = None
         return super().get_form(request, obj, **kwargs)
 
     def get_queryset(self, request):
