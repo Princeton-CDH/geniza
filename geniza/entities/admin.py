@@ -172,13 +172,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         """For Person-Person autocomplete on the PersonAdmin form, keep track of own pk"""
         if obj:
             self.own_pk = obj.pk
-
-        # remove add/change/delete buttons from "role" widget
-        form = super().get_form(request, obj, **kwargs)
-        form.base_fields["role"].widget.can_add_related = False
-        form.base_fields["role"].widget.can_change_related = False
-        form.base_fields["role"].widget.can_delete_related = False
-        return form
+        return super().get_form(request, obj, **kwargs)
 
     def get_queryset(self, request):
         """For autocomplete ONLY, remove self from queryset, so that Person-Person autocomplete
