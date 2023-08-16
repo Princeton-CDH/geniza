@@ -5,8 +5,18 @@ from django.contrib import admin
 from django.test import RequestFactory
 
 from geniza.corpus.models import Document
-from geniza.entities.admin import PersonAdmin, PersonDocumentInline, PersonPersonInline
-from geniza.entities.models import Person, PersonDocumentRelation, PersonPersonRelation
+from geniza.entities.admin import (
+    PersonAdmin,
+    PersonDocumentInline,
+    PersonPersonInline,
+    PersonPersonRelationTypeChoiceField,
+)
+from geniza.entities.models import (
+    Person,
+    PersonDocumentRelation,
+    PersonPersonRelation,
+    PersonPersonRelationType,
+)
 
 
 @pytest.mark.django_db
@@ -46,6 +56,14 @@ class TestPersonPersonInline:
         assert str(rustow.id) in person_link
         assert str(rustow) in person_link
 
+    def test_get_formset(self):
+        # should set "type" field to PersonPersonRelationTypeChoiceField
+        inline = PersonPersonInline(Person, admin_site=admin.site)
+        formset = inline.get_formset(request=Mock())
+        assert isinstance(
+            formset.form.base_fields["type"], PersonPersonRelationTypeChoiceField
+        )
+
 
 @pytest.mark.django_db
 class TestPersonAdmin:
@@ -84,3 +102,40 @@ class TestPersonAdmin:
         # should exclude Person with pk=own_pk
         assert qs.count() == 2
         assert not qs.filter(pk=goitein.pk).exists()
+
+
+@pytest.mark.django_db
+class TestPersonPersonRelationTypeChoiceIterator:
+    def test_iter(self):
+        # create three types, one in one category and two in another
+        type_a = PersonPersonRelationType.objects.create(
+            category=PersonPersonRelationType.IMMEDIATE_FAMILY,
+            name="Some family member",
+        )
+        type_b = PersonPersonRelationType.objects.create(
+            category=PersonPersonRelationType.EXTENDED_FAMILY,
+            name="Distant cousin",
+        )
+        type_c = PersonPersonRelationType.objects.create(
+            category=PersonPersonRelationType.EXTENDED_FAMILY,
+            name="Same category",
+        )
+        field = PersonPersonRelationTypeChoiceField(
+            queryset=PersonPersonRelationType.objects.filter(
+                pk__in=[type_a.pk, type_b.pk, type_c.pk],
+            )
+        )
+        # field choice categories should use the full names, so grab those from model
+        immediate_family = dict(PersonPersonRelationType.CATEGORY_CHOICES)[
+            PersonPersonRelationType.IMMEDIATE_FAMILY
+        ]
+        extended_family = dict(PersonPersonRelationType.CATEGORY_CHOICES)[
+            PersonPersonRelationType.EXTENDED_FAMILY
+        ]
+        # convert tuple to dict to make this easier to traverse
+        choices = dict(field.choices)
+        # choices should be grouped into their correct categories, as lists
+        assert len(choices[immediate_family]) == 1
+        assert len(choices[extended_family]) == 2
+        assert (type_a.pk, type_a.name) in choices[immediate_family]
+        assert (type_a.pk, type_a.name) not in choices[extended_family]
