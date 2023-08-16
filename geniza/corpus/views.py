@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
@@ -691,7 +692,14 @@ class DocumentMerge(PermissionRequiredMixin, FormView):
 
         # Merge secondary documents into the selected primary document
         user = getattr(self.request, "user", None)
-        primary_doc.merge_with(secondary_docs, rationale, user=user)
+
+        try:
+            primary_doc.merge_with(secondary_docs, rationale, user=user)
+        except ValidationError as err:
+            # in case the merge resulted in an error, display error to user
+            messages.error(self.request, err.message)
+            # redirect to this form page instead of one of the documents
+            return HttpResponseRedirect(self.request.get_full_path())
 
         # Display info about the merge to the user
         new_doc_link = reverse("admin:corpus_document_change", args=[primary_doc.id])
