@@ -906,6 +906,21 @@ class Document(ModelIndexable, DocumentDateMixin):
         )
 
     @property
+    def available_digital_content(self):
+        """Helper method for the ITT viewer to collect all available panels into a list"""
+
+        # NOTE: this is ordered by priority, with images first, then translations over
+        # transcriptions.
+        available_panels = []
+        if self.has_image():
+            available_panels.append("images")
+        if self.has_translation():
+            available_panels.append("translation")
+        if self.has_transcription():
+            available_panels.append("transcription")
+        return available_panels
+
+    @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
         return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"
@@ -939,6 +954,16 @@ class Document(ModelIndexable, DocumentDateMixin):
         return self.footnotes.filter(
             doc_relation__contains=Footnote.DIGITAL_TRANSLATION
         ).order_by("source")
+
+    @property
+    def default_translation(self):
+        """The first translation footnote that is in the current language, or the first
+        translation footnote ordered alphabetically by source if one is not available
+        in the current language."""
+
+        translations = self.digital_translations()
+        in_language = translations.filter(source__languages__code=get_language())
+        return in_language.first() or translations.first()
 
     def digital_footnotes(self):
         """All footnotes for this document where the document relation includes

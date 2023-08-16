@@ -1,9 +1,12 @@
+from itertools import groupby
+
 from adminsortable2.admin import SortableAdminBase
 from django.contrib import admin
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.db.models.fields import CharField, TextField
-from django.forms import ValidationError
+from django.forms import ModelChoiceField, ValidationError
+from django.forms.models import ModelChoiceIterator
 from django.forms.widgets import Textarea, TextInput
 from django.urls import reverse
 from django.utils.html import format_html
@@ -171,13 +174,40 @@ class PersonPlaceInline(PlaceInline):
     model = PersonPlaceRelation
 
 
+class PersonPersonRelationTypeChoiceIterator(ModelChoiceIterator):
+    """Override ModelChoiceIterator in order to group Person-Person
+    relationship types by category"""
+
+    def __iter__(self):
+        """Override the iterator to group type by category"""
+        # first, display empty label if applicable
+        if self.field.empty_label is not None:
+            yield ("", self.field.empty_label)
+        # then group the queryset (ordered by category, then name) by category
+        groups = groupby(
+            self.queryset.order_by("category", "name"), key=lambda x: x.category
+        )
+        # map category keys to their full names for display
+        category_names = dict(PersonPersonRelationType.CATEGORY_CHOICES)
+        # return the groups in the format expected by ModelChoiceField
+        for category, types in groups:
+            yield (category_names[category], [(type.id, type.name) for type in types])
+
+
+class PersonPersonRelationTypeChoiceField(ModelChoiceField):
+    """Override ModelChoiceField's iterator property to use our ModelChoiceIterator
+    override"""
+
+    iterator = PersonPersonRelationTypeChoiceIterator
+
+
 class PersonPersonInline(admin.TabularInline):
     """Person-Person relationships inline for the Person admin"""
 
     model = PersonPersonRelation
     verbose_name = "Related Person"
     verbose_name_plural = "Related People"
-    autocomplete_fields = ["to_person", "type"]
+    autocomplete_fields = ("to_person",)
     fields = (
         "to_person",
         "person_link",
@@ -195,6 +225,15 @@ class PersonPersonInline(admin.TabularInline):
         """Get the link to a related person"""
         person_path = reverse("admin:entities_person_change", args=[obj.to_person.id])
         return format_html(f'<a href="{person_path}">{str(obj.to_person)}</a>')
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Override 'type' field for PersonPersonRelation, change ModelChoiceField
+        to our new PersonPersonRelationTypeChoiceField"""
+        formset = super().get_formset(request, obj=None, **kwargs)
+        formset.form.base_fields["type"] = PersonPersonRelationTypeChoiceField(
+            queryset=PersonPersonRelationType.objects.all()
+        )
+        return formset
 
 
 @admin.register(Person)
@@ -224,6 +263,9 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         """For Person-Person autocomplete on the PersonAdmin form, keep track of own pk"""
         if obj:
             self.own_pk = obj.pk
+        else:
+            # reset own_pk to None if we are creating a new person
+            self.own_pk = None
         return super().get_form(request, obj, **kwargs)
 
     def get_queryset(self, request):

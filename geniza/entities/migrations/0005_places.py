@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ("footnotes", "0028_sourcelanguage_direction"),
         ("corpus", "0040_tag_merge_permissions"),
-        ("entities", "0003_help_text_and_verbose_names"),
+        ("entities", "0004_entities_permissions"),
     ]
 
     operations = [

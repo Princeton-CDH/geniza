@@ -11,6 +11,12 @@
       "facet": "on",
       "facet.mincount": "1",
       "": { "v": 0 }
+    },
+    "velocity": {
+      "wt": "velocity",
+      "v.template": "browse",
+      "v.layout": "layout",
+      "": { "v": 0 }
     }
   }
 }

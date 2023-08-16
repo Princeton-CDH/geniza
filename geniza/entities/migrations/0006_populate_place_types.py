@@ -26,7 +26,7 @@ def populate_place_types(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("entities", "0004_places"),
+        ("entities", "0005_places"),
     ]
 
     operations = [

@@ -11,7 +11,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("entities", "0005_populate_place_types"),
+        ("entities", "0006_populate_place_types"),
     ]
 
     operations = [
