@@ -9,6 +9,7 @@ export default class extends Controller {
         // bind "this" so we can access other methods in this controller from within event handler
         this.boundAlertHandler = this.handleSaveAnnotation.bind(this);
         this.boundCancelHandler = this.handleCancelAnnotation.bind(this);
+        this.boundResizeHandler = this.handleResizeAlign.bind(this);
     }
 
     connect() {
@@ -18,6 +19,8 @@ export default class extends Controller {
             // if transcription + translation both open, align their contents line-by-line
             this.alignLines();
         }
+        // on resize, retrigger alignment
+        window.addEventListener("resize", this.boundResizeHandler);
     }
 
     disconnect() {
@@ -59,35 +62,8 @@ export default class extends Controller {
                 // when transcription and translation are both opened, align their contents line-by-line
                 this.alignLines();
             } else {
-                // when one of those two toggles is closed, remove data-lines from each line
-                // (alignment no longer needed)
-                if (this.hasTranscriptionTarget) {
-                    this.transcriptionTargets.forEach((target) => {
-                        target.querySelectorAll("li").forEach((li) => {
-                            if (li) li.removeAttribute("data-lines");
-                        });
-                    });
-                }
-                if (this.hasTranslationTarget) {
-                    this.translationTargets.forEach((target) => {
-                        target.querySelectorAll("li").forEach((li) => {
-                            if (li) li.removeAttribute("data-lines");
-                        });
-                    });
-                }
-                // also remove padding-top alignment of the two lists
-                if (this.hasTranscriptionTarget) {
-                    this.transcriptionTargets.forEach((target) => {
-                        const edOL = target.querySelector("ol");
-                        if (edOL) edOL.removeAttribute("style");
-                    });
-                }
-                if (this.hasTranslationTarget) {
-                    this.translationTargets.forEach((target) => {
-                        const trOL = target.querySelector("ol");
-                        if (trOL) trOL.removeAttribute("style");
-                    });
-                }
+                // when one of those two toggles is closed, alignment no longer needed
+                this.removeAlignment();
             }
         }
     }
@@ -151,6 +127,46 @@ export default class extends Controller {
                     }
                 }
             }
+        }
+    }
+
+    removeAlignment() {
+        // remove alignment
+        // first remove data-lines from each line
+        if (this.hasTranscriptionTarget) {
+            this.transcriptionTargets.forEach((target) => {
+                target.querySelectorAll("li").forEach((li) => {
+                    if (li) li.removeAttribute("data-lines");
+                });
+            });
+        }
+        if (this.hasTranslationTarget) {
+            this.translationTargets.forEach((target) => {
+                target.querySelectorAll("li").forEach((li) => {
+                    if (li) li.removeAttribute("data-lines");
+                });
+            });
+        }
+        // then remove padding-top alignment of the two lists
+        if (this.hasTranscriptionTarget) {
+            this.transcriptionTargets.forEach((target) => {
+                const edOL = target.querySelector("ol");
+                if (edOL) edOL.removeAttribute("style");
+            });
+        }
+        if (this.hasTranslationTarget) {
+            this.translationTargets.forEach((target) => {
+                const trOL = target.querySelector("ol");
+                if (trOL) trOL.removeAttribute("style");
+            });
+        }
+    }
+
+    handleResizeAlign() {
+        // on resize, remove alignment and realign using new heights
+        if (this.isDesktop() && this.transcriptionAndTranslationOpen()) {
+            this.removeAlignment();
+            this.alignLines();
         }
     }
 
