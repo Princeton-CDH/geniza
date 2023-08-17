@@ -105,3 +105,6 @@ coverage_ignore_pyobjects = [
     "get_.*_display",  # django auto-generated method for choice fields
     "get_doc_relation_list",  # multiselectfield auto method
 ]
+
+# Disable Sphinx 7.2+ coverage statistics, as this breaks CI
+coverage_statistics_to_report = coverage_statistics_to_stdout = False
