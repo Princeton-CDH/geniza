@@ -115,10 +115,16 @@ a#needsreview:target {
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-smoothing: antialiased;
 }
+.form-row .transcription ol,
+.form-row .translation ol {
+    margin: 0;
+    padding: 0;
+}
 /* need to apply these manually for overriding purposes */
 .form-row .transcription p,
 .form-row .transcription li {
     font-family: "FrankRuhl 1924 MF Medium", "Amiri", "Times New Roman", serif;
+    box-sizing: border-box;
 }
 .form-row .translation p,
 .form-row .translation li {
@@ -134,7 +140,7 @@ a#needsreview:target {
 .form-row .translation[dir="ltr"] p,
 .form-row .translation[dir="ltr"] li {
     font-size: 20px;
-    line-height: 30px;
+    line-height: 34px;
 }
 .form-row .transcription[lang="ar"] p,
 .form-row .transcription[lang="ar"] li,
@@ -146,6 +152,9 @@ a#needsreview:target {
 }
 .form-row .itt-select ul {
     margin-left: 0;
+}
+.form-row .translation[dir="ltr"] ol li:not([value])::before {
+    line-height: 20px;
 }
 /* headers */
 .form-row .transcription h3,
