@@ -26,19 +26,19 @@
                             <dt class="relation">
                                 {# Translators: label for included document relations for a single footnote #}
                                 {% translate "includes" as includes_text %}
-                                {% if source.list|length > 1 or source.list.0.location or source.list.0.url %}
+                                {% if source.list|has_location_or_url %}
                                     {# Translators: label for document relations in list of footnotes #}
-                                    {% blocktranslate with relation=source.list.0.doc_relation|lower trimmed %}
+                                    {% blocktranslate with relation=source.list|all_doc_relations|lower trimmed %}
                                         for {{ relation }} see
                                     {% endblocktranslate%}
                                 {% else %}
                                     {# Translators: label for document relations for one footnote with no location or URL #}
-                                    {% blocktranslate with relation=source.list.0.doc_relation|lower trimmed %}
+                                    {% blocktranslate with relation=source.list|all_doc_relations|lower trimmed %}
                                         includes {{ relation }}
                                     {% endblocktranslate%}
                                 {% endif %}
                             </dt>
-                            {% if source.list|length > 1 or source.list.0.location or source.list.0.url %}
+                            {% if source.list|has_location_or_url %}
                                 <dd class="relation">
                                     <ul>
                                         {% for fn in source.list %}
