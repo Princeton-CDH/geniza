@@ -63,6 +63,18 @@ class TestCorpusExtrasTemplateTags:
             corpus_extras.all_doc_relations(list(document.footnotes.all()))
             == "Edition, Digital Edition"
         )
+        # should not repeat doc relations even if multiple of the same type appear
+        Footnote.objects.create(
+            object_id=document.pk,
+            content_type=footnote.content_type,
+            source=footnote.source,
+            doc_relation=Footnote.EDITION,
+            location="other place",
+        )
+        assert (
+            corpus_extras.all_doc_relations(list(document.footnotes.all()))
+            == "Edition, Digital Edition"
+        )
 
 
 def test_dict_item():
