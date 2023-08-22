@@ -167,8 +167,9 @@ class Source(models.Model):
     )
     languages = models.ManyToManyField(
         SourceLanguage,
-        help_text="""The language(s) the source is written in. Note: Sources should never include
-        transcription language unless the entire source consists of a transcription.""",
+        help_text="""The language(s) the source is written in. Note: The Unspecified language
+        option should only ever be used for unpublished transcriptions, as the language of the
+        transcription is already marked on the document.""",
     )
     url = models.URLField(blank=True, max_length=300, verbose_name="URL")
     # preliminary place to store transcription text; should not be editable
