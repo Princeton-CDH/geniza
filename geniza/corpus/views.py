@@ -699,7 +699,10 @@ class DocumentMerge(PermissionRequiredMixin, FormView):
             # in case the merge resulted in an error, display error to user
             messages.error(self.request, err.message)
             # redirect to this form page instead of one of the documents
-            return HttpResponseRedirect(self.request.get_full_path())
+            return HttpResponseRedirect(
+                "%s?ids=%s"
+                % (reverse("admin:document-merge"), self.request.GET.get("ids", "")),
+            )
 
         # Display info about the merge to the user
         new_doc_link = reverse("admin:corpus_document_change", args=[primary_doc.id])
