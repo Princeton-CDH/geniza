@@ -606,6 +606,7 @@ class Footnote(TrackChangesModel):
         # keyed on canvas uri
         # handle multiple annotations on the same canvas
         html_content = defaultdict(list)
+        # order by optional position property (set by manual reorder in editor), then date
         for a in self.annotation_set.all().order_by(
             "content__schema:position", "created"
         ):
