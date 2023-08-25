@@ -538,22 +538,28 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
             }
             li[data-lines="1"] {
                 min-height: calc(1 * 34 / 22 * 1.375rem);
+                max-height: calc(1 * 34 / 22 * 1.375rem);
             }
             li[data-lines="2"] {
                 // li, height of two lines (line height = 34 / 22, font size = 1.375rem)
                 min-height: calc(2 * 34 / 22 * 1.375rem);
+                max-height: calc(2 * 34 / 22 * 1.375rem);
             }
             li[data-lines="3"] {
                 min-height: calc(3 * 34 / 22 * 1.375rem);
+                max-height: calc(3 * 34 / 22 * 1.375rem);
             }
             li[data-lines="4"] {
                 min-height: calc(4 * 34 / 22 * 1.375rem);
+                max-height: calc(4 * 34 / 22 * 1.375rem);
             }
             li[data-lines="5"] {
                 min-height: calc(5 * 34 / 22 * 1.375rem);
+                max-height: calc(5 * 34 / 22 * 1.375rem);
             }
             li[data-lines="6"] {
                 min-height: calc(6 * 34 / 22 * 1.375rem);
+                max-height: calc(6 * 34 / 22 * 1.375rem);
             }
             h2 + span.current-transcription,
             h2 + span.current-translation {
@@ -1257,9 +1263,9 @@ a.editor-navigation {
             left: -9.5px;
 
             @include breakpoints.for-tablet-landscape-up {
-                font-size: 38px;
-                line-height: 21px;
-                left: -10.75px;
+                font-size: 50px;
+                line-height: 16px;
+                left: -12px;
             }
         }
     }
