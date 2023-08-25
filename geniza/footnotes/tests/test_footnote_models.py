@@ -274,7 +274,7 @@ class TestFootnote:
         canvas_uri = annotation.content["target"]["source"]["id"]
         digital_edition = annotation.footnote
         # create a second annotation
-        Annotation.objects.create(
+        second_annotation = Annotation.objects.create(
             footnote=digital_edition,
             content={
                 **annotation.content,
@@ -289,6 +289,20 @@ class TestFootnote:
             "<h3>A label</h3>",
             "Second annotation!",
         ]
+
+        # should respect reordering
+        second_annotation.content["schema:position"] = 1
+        second_annotation.save()
+        annotation.content["schema:position"] = 2
+        annotation.save()
+        # invalidate cache
+        del digital_edition.content_html
+        assert digital_edition.content_html[canvas_uri] == [
+            "<h3>A label</h3>",
+            "Second annotation!",
+            "Test annotation",
+        ]
+
         # should return None if there are no associated annotations
         edition = Footnote.objects.create(
             source=digital_edition.source,

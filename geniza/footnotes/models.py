@@ -606,7 +606,10 @@ class Footnote(TrackChangesModel):
         # keyed on canvas uri
         # handle multiple annotations on the same canvas
         html_content = defaultdict(list)
-        for a in self.annotation_set.all():
+        # order by optional position property (set by manual reorder in editor), then date
+        for a in self.annotation_set.all().order_by(
+            "content__schema:position", "created"
+        ):
             if a.label:
                 html_content[a.target_source_id].append(f"<h3>{a.label}</h3>")
             html_content[a.target_source_id].append(a.body_content)
