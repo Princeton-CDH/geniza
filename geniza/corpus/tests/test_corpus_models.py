@@ -1106,6 +1106,15 @@ class TestDocument:
         all_old_shelfmarks.append(fragment2.old_shelfmarks)
         assert index_data["fragment_old_shelfmark_ss"] == all_old_shelfmarks
 
+    def test_index_data_input_date(self):
+        doc = Document.objects.create()
+        # when no logentry exists, should still get the year from created attr
+        assert not LogEntry.objects.filter(
+            object_id=doc.pk,
+            content_type_id=ContentType.objects.get_for_model(doc).id,
+        ).exists()
+        assert doc.index_data()["input_year_i"] == doc.created.year
+
     def test_editions(self, document, source):
         # create multiple footnotes to test filtering and sorting
 
