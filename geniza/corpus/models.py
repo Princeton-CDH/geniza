@@ -1311,7 +1311,7 @@ class Document(ModelIndexable, DocumentDateMixin):
             # add any tags from merge document tags to primary doc
             self.tags.add(*doc.tags.names())
 
-            # if not in conflict, migrate dates to result document
+            # if not in conflict (i.e. missing or exact duplicate), copy dates to result document
             if doc.doc_date_standard:
                 self.doc_date_standard = doc.doc_date_standard
             if doc.doc_date_original:

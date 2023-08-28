@@ -1657,8 +1657,8 @@ def test_document_merge_with_dates(document, join):
     join_clone_2.save()
 
     # create some datings; doesn't matter that they are identical, as cleaning
-    # up post-merge dupes is a data cleanup task. unit test will make sure that
-    # doesn't cause errors!
+    # up post-merge dupes is a manual data cleanup task. unit test will make
+    # sure that doesn't cause errors!
     dating_1 = Dating.objects.create(
         document=document,
         display_date="1000 CE",
