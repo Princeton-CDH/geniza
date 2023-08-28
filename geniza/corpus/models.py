@@ -1296,13 +1296,30 @@ class Document(ModelIndexable, DocumentDateMixin):
             # handle document dates validation before making any changes;
             # mismatch should result in exception (caught by DocumentMerge.form_valid)
             if (
-                doc.doc_date_standard
-                and self.doc_date_standard
-                and self.doc_date_standard != doc.doc_date_standard
-            ) or (
-                doc.doc_date_original
-                and self.doc_date_original
-                and self.doc_date_original != doc.doc_date_original
+                (
+                    # both documents have standard dates, and they don't match
+                    doc.doc_date_standard
+                    and self.doc_date_standard
+                    and self.doc_date_standard != doc.doc_date_standard
+                )
+                or (
+                    # both documents have original dates, and they don't match
+                    doc.doc_date_original
+                    and self.doc_date_original
+                    and self.doc_date_original != doc.doc_date_original
+                )
+                or (
+                    # other document has original, this doc has standard, and they don't match
+                    doc.doc_date_original
+                    and self.doc_date_standard
+                    and doc.standardize_date() != self.doc_date_standard
+                )
+                or (
+                    # other document has standard, this doc has original, and they don't match
+                    doc.doc_date_standard
+                    and self.doc_date_original
+                    and self.standardize_date() != doc.doc_date_standard
+                )
             ):
                 raise ValidationError(
                     "Merged documents must not contain conflicting dates; resolve before merge"
@@ -1316,6 +1333,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 self.doc_date_standard = doc.doc_date_standard
             if doc.doc_date_original:
                 self.doc_date_original = doc.doc_date_original
+                self.doc_date_calendar = doc.doc_date_calendar
 
             # add inferred datings (conflicts or duplicates are post-merge
             # data cleanup tasks)

@@ -1648,13 +1648,13 @@ def test_document_merge_with_log_entries(document, join):
 def test_document_merge_with_dates(document, join):
     editor = User.objects.get_or_create(username="editor")[0]
 
-    # clone join twice for additional merges
-    join_clone = Document.objects.get(pk=join.pk)
-    join_clone.pk = None
-    join_clone.save()
-    join_clone_2 = Document.objects.get(pk=join.pk)
-    join_clone_2.pk = None
-    join_clone_2.save()
+    # clone join for additional merges
+    join_clones = []
+    for _ in range(4):
+        join_clone = Document.objects.get(pk=join.pk)
+        join_clone.pk = None
+        join_clone.save()
+        join_clones.append(join_clone)
 
     # create some datings; doesn't matter that they are identical, as cleaning
     # up post-merge dupes is a manual data cleanup task. unit test will make
@@ -1675,28 +1675,68 @@ def test_document_merge_with_dates(document, join):
     )
 
     # should raise ValidationError on conflicting dates
-    document.doc_date_standard = "1230"
-    join.doc_date_standard = "1234"
+    document.doc_date_standard = "1230-01-01"
+    join.doc_date_standard = "1234-01-01"
     with pytest.raises(ValidationError):
         document.merge_with([join], "test", editor)
 
     # should use any existing dates if one of the merged documents has one
     join.doc_date_standard = ""
     document.merge_with([join], "test", editor)
-    assert document.doc_date_standard == "1230"
+    assert document.doc_date_standard == "1230-01-01"
 
-    join_clone.doc_date_original = "1234 CE"
-    document.merge_with([join_clone], "test", editor)
-    assert document.doc_date_original == "1234 CE"
+    document.doc_date_standard = ""
+    document.doc_date_original = ""
+    document.doc_date_calendar = ""
+    join_clones[0].doc_date_original = "15 Tevet 4990"
+    join_clones[0].doc_date_calendar = Calendar.ANNO_MUNDI
+    document.merge_with([join_clones[0]], "test", editor)
+    assert document.doc_date_original == "15 Tevet 4990"
+    assert document.doc_date_calendar == Calendar.ANNO_MUNDI
+
+    # should raise error if one document's standard date conflicts with other document's
+    # original date
+    document.doc_date_original = ""
+    document.doc_date_standard = "1230-01-01"
+    join_clones[1].doc_date_original = "1 Tevet 5000"
+    join_clones[1].doc_date_calendar = Calendar.ANNO_MUNDI
+    with pytest.raises(ValidationError):
+        document.merge_with([join_clones[1]], "test", editor)
+
+    document.doc_date_standard = ""
+    document.doc_date_original = "1 Tevet 5000"
+    document.doc_date_calendar = Calendar.ANNO_MUNDI
+    join_clones[1].doc_date_original = ""
+    join_clones[1].doc_date_standard = "1230-01-01"
+    with pytest.raises(ValidationError):
+        document.merge_with([join_clones[1]], "test", editor)
 
     # should not raise error on identical dates
-    join_clone_2.doc_date_standard = "1230"
-    join_clone_2.doc_date_original = "1234 CE"
-    print(document.doc_date_standard)
-    print(join_clone_2.doc_date_standard)
-    print(document.doc_date_original)
-    print(join_clone_2.doc_date_original)
-    document.merge_with([join_clone_2], "test", editor)
+    document.doc_date_standard = "1230-01-01"
+    document.doc_date_original = "15 Tevet 4990"
+    document.doc_date_calendar = Calendar.ANNO_MUNDI
+    join_clones[1].doc_date_standard = "1230-01-01"
+    join_clones[1].doc_date_original = "15 Tevet 4990"
+    join_clones[1].doc_date_calendar = Calendar.ANNO_MUNDI
+    document.merge_with([join_clones[1]], "test", editor)
+
+    # should consider identical if one doc's standardized original date = other doc's standard date
+    document.doc_date_standard = "1230-01-01"
+    document.doc_date_original = ""
+    document.doc_date_calendar = ""
+    join_clones[2].doc_date_standard = ""
+    join_clones[2].doc_date_original = "15 Tevet 4990"
+    join_clones[2].doc_date_calendar = Calendar.ANNO_MUNDI
+    document.merge_with([join_clones[2]], "test", editor)
+    assert document.doc_date_original == "15 Tevet 4990"
+    assert document.doc_date_calendar == Calendar.ANNO_MUNDI
+
+    document.doc_date_standard = ""
+    join_clones[3].doc_date_standard = "1230-01-01"
+    join_clones[3].doc_date_original = ""
+    join_clones[3].doc_date_calendar = ""
+    document.merge_with([join_clones[3]], "test", editor)
+    assert document.doc_date_standard == "1230-01-01"
 
     # should carry over all inferred datings without error, even if they are identical
     assert document.dating_set.count() == 2
