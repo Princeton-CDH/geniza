@@ -797,16 +797,16 @@ class Document(ModelIndexable, DocumentDateMixin):
         if not self.image_overrides:
             return iiif_images
 
-        # order returned images according to override: first, sort overrides by "order"
+        # sort canvases by "order" value
         sorted_overrides = sorted(
-            self.image_overrides.items(),
+            self.image_overrides.items(),  # this will produce (canvas, overrides) tuples
             # get order if present; use ∞ as fallback to sort unordered to end of list
             key=lambda item: item[1].get("order", float("inf")),
         )
-        # then, reorder dict by pulling canvas URI keys in odrer from sorted overrides
+        # use that recreate dict keyed on canvas, but now in the overriden order
         ordered_images = {
             canvas: {
-                # unpack existing dict values
+                # get values from original unordered dict
                 **iiif_images.pop(canvas),
                 # include rotation: overridden value or 0 degrees
                 "rotation": int(override.get("rotation", 0)),
