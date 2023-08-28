@@ -6,6 +6,7 @@ from piffle.iiif import IIIFImageClient
 
 from geniza.common.utils import absolutize_url
 from geniza.corpus.templatetags import admin_extras, corpus_extras
+from geniza.footnotes.models import Footnote
 
 
 class TestCorpusExtrasTemplateTags:
@@ -37,6 +38,43 @@ class TestCorpusExtrasTemplateTags:
         lst = []
         alphabetized = corpus_extras.alphabetize(lst)
         assert alphabetized == []
+
+    def test_has_location_or_url(self, document, footnote):
+        # footnote has a location
+        assert corpus_extras.has_location_or_url([footnote]) == True
+        footnote_2 = Footnote.objects.create(
+            object_id=document.pk,
+            content_type=footnote.content_type,
+            source=footnote.source,
+        )
+        # footnote has no location or url
+        assert corpus_extras.has_location_or_url([footnote_2]) == False
+        # one of the document's footnotes has a location
+        assert corpus_extras.has_location_or_url(list(document.footnotes.all())) == True
+
+    def test_all_doc_relations(self, document, footnote):
+        Footnote.objects.create(
+            object_id=document.pk,
+            content_type=footnote.content_type,
+            source=footnote.source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        assert (
+            corpus_extras.all_doc_relations(list(document.footnotes.all()))
+            == "Edition, Digital Edition"
+        )
+        # should not repeat doc relations even if multiple of the same type appear
+        Footnote.objects.create(
+            object_id=document.pk,
+            content_type=footnote.content_type,
+            source=footnote.source,
+            doc_relation=Footnote.EDITION,
+            location="other place",
+        )
+        assert (
+            corpus_extras.all_doc_relations(list(document.footnotes.all()))
+            == "Edition, Digital Edition"
+        )
 
 
 def test_dict_item():
