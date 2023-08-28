@@ -61,7 +61,7 @@ class TestCorpusExtrasTemplateTags:
         )
         assert (
             corpus_extras.all_doc_relations(list(document.footnotes.all()))
-            == "Edition, Digital Edition"
+            == "Digital Edition, Edition"
         )
         # should not repeat doc relations even if multiple of the same type appear
         Footnote.objects.create(
@@ -73,7 +73,7 @@ class TestCorpusExtrasTemplateTags:
         )
         assert (
             corpus_extras.all_doc_relations(list(document.footnotes.all()))
-            == "Edition, Digital Edition"
+            == "Digital Edition, Edition"
         )
 
 

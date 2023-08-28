@@ -171,4 +171,4 @@ def has_location_or_url(footnotes):
 def all_doc_relations(footnotes):
     """For scholarship records list: join doc relations for all footnotes
     by a comma."""
-    return ", ".join(set([str(fn.doc_relation) for fn in footnotes]))
+    return ", ".join(sorted(set([str(fn.doc_relation) for fn in footnotes])))
