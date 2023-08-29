@@ -1118,6 +1118,7 @@ class Document(ModelIndexable, DocumentDateMixin):
             "tags",
             "languages",
             "log_entries",
+            "dating_set",
             Prefetch(
                 "textblock_set",
                 queryset=TextBlock.objects.select_related(
