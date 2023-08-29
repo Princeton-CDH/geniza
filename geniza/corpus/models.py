@@ -44,7 +44,7 @@ from geniza.common.models import (
 )
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
-from geniza.corpus.dates import DocumentDateMixin
+from geniza.corpus.dates import DocumentDateMixin, PartialDate
 from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote
@@ -928,15 +928,13 @@ class Document(ModelIndexable, DocumentDateMixin):
     @property
     def dating_range(self):
         """
-        Return the start and end of the document's possible date range, in numeric format,
+        Return the start and end of the document's possible date range, as PartialDate objects,
         including standardized document dates and inferred Datings, if any exist.
         """
         # it is unlikely, but technically possible, that a document could have both on-document
         # dates and inferred datings, so find the min and max out of all of them.
-        start_date = (
-            self.start_date.numeric_format(mode="min") if self.start_date else None
-        )
-        end_date = self.end_date.numeric_format(mode="max") if self.end_date else None
+        start_date = self.start_date if self.start_date else None
+        end_date = self.end_date if self.end_date else None
         dating_range = [start_date, end_date]
 
         # bail out if we don't have any inferred datings
@@ -946,18 +944,22 @@ class Document(ModelIndexable, DocumentDateMixin):
         # loop through inferred datings to find min and max
         for dating in self.dating_set.all():
             # get start from standardized date range (formatted as "date1/date2" or "date")
-            split_date = dating.standard_date.split("/")
+            split_date = [PartialDate(d) for d in dating.standard_date.split("/")]
             start = split_date[0]
             # use numeric format to compare to current min, replace if smaller
-            start_numeric = PartialDate(start).numeric_format(mode="min")
-            if dating_range[0] is None or start_numeric < dating_range[0]:
-                dating_range[0] = start_numeric
+            start_numeric = start.numeric_format(mode="min")
+            if dating_range[0] is None or start_numeric < dating_range[
+                0
+            ].numeric_format(mode="min"):
+                dating_range[0] = start
             # get end from standardized date range
             end = split_date[1] if len(split_date) > 1 else split_date[0]
             # use numeric format to compare to current max, replace if larger
-            end_numeric = PartialDate(end).numeric_format(mode="max")
-            if dating_range[1] is None or end_numeric > dating_range[1]:
-                dating_range[1] = end_numeric
+            end_numeric = end.numeric_format(mode="max")
+            if dating_range[1] is None or end_numeric > dating_range[1].numeric_format(
+                mode="max"
+            ):
+                dating_range[1] = end
 
         return dating_range
 
