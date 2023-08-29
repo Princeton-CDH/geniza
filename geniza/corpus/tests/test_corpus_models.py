@@ -1386,6 +1386,67 @@ class TestDocument:
                 f"http://bad.com/example/not/{document.pk}/a/manifest/"
             )
 
+    def test_dating_range(self, document, join):
+        # document with no dates or datings should return [None, None]
+        assert document.dating_range == [None, None]
+
+        # document with single date should return numeric format min and max
+        document.doc_date_standard = "1000"
+        assert document.dating_range == [
+            PartialDate("1000").numeric_format(),
+            PartialDate("1000").numeric_format(mode="max"),
+        ]
+
+        # document with date range should return numeric format min and max
+        document.doc_date_standard = "1000/1010"
+        assert document.dating_range == [
+            PartialDate("1000").numeric_format(),
+            PartialDate("1010").numeric_format(mode="max"),
+        ]
+
+        # document with inferred dating: should include in range
+        dating = Dating.objects.create(
+            document=document,
+            display_date="",
+            standard_date="980",
+        )
+        assert document.dating_range == [
+            PartialDate("980").numeric_format(),
+            PartialDate("1010").numeric_format(mode="max"),
+        ]
+        dating.standard_date = "980/1005"
+        dating.save()
+        assert document.dating_range == [
+            PartialDate("980").numeric_format(),
+            PartialDate("1010").numeric_format(mode="max"),
+        ]
+        dating.standard_date = "980/1020"
+        dating.save()
+        assert document.dating_range == [
+            PartialDate("980").numeric_format(),
+            PartialDate("1020").numeric_format(mode="max"),
+        ]
+
+        # document with multiple inferred datings: should include all in range
+        dating2 = Dating.objects.create(
+            document=document,
+            display_date="",
+            standard_date="960/1000",
+        )
+        assert document.dating_range == [
+            PartialDate("960").numeric_format(),
+            PartialDate("1020").numeric_format(mode="max"),
+        ]
+
+        # document with no document date: should still work using only Datings
+        dating.standard_date = "980/1005"
+        dating.save()
+        join.dating_set.add(dating, dating2)
+        assert join.dating_range == [
+            PartialDate("960").numeric_format(),
+            PartialDate("1005").numeric_format(mode="max"),
+        ]
+
 
 def test_document_merge_with(document, join):
     doc_id = document.id

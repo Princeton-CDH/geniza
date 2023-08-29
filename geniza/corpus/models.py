@@ -925,6 +925,42 @@ class Document(ModelIndexable, DocumentDateMixin):
         """Short title for identifying the document, e.g. via search."""
         return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"
 
+    @property
+    def dating_range(self):
+        """
+        Return the start and end of the document's possible date range, in numeric format,
+        including standardized document dates and inferred Datings, if any exist.
+        """
+        # it is unlikely, but technically possible, that a document could have both on-document
+        # dates and inferred datings, so find the min and max out of all of them.
+        start_date = (
+            self.start_date.numeric_format(mode="min") if self.start_date else None
+        )
+        end_date = self.end_date.numeric_format(mode="max") if self.end_date else None
+        dating_range = [start_date, end_date]
+
+        # bail out if we don't have any inferred datings
+        if not self.dating_set.exists():
+            return dating_range
+
+        # loop through inferred datings to find min and max
+        for dating in self.dating_set.all():
+            # get start from standardized date range (formatted as "date1/date2" or "date")
+            split_date = dating.standard_date.split("/")
+            start = split_date[0]
+            # use numeric format to compare to current min, replace if smaller
+            start_numeric = PartialDate(start).numeric_format(mode="min")
+            if dating_range[0] is None or start_numeric < dating_range[0]:
+                dating_range[0] = start_numeric
+            # get end from standardized date range
+            end = split_date[1] if len(split_date) > 1 else split_date[0]
+            # use numeric format to compare to current max, replace if larger
+            end_numeric = PartialDate(end).numeric_format(mode="max")
+            if dating_range[1] is None or end_numeric > dating_range[1]:
+                dating_range[1] = end_numeric
+
+        return dating_range
+
     def editions(self):
         """All footnotes for this document where the document relation includes
         edition."""
