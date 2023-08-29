@@ -1427,6 +1427,39 @@ class TestDocument:
         join.dating_set.add(dating, dating2)
         assert join.dating_range == [PartialDate("960"), PartialDate("1005")]
 
+    def test_solr_dating_range(self, document, join):
+        # no date or dating, should return none
+        assert document.solr_dating_range == None
+
+        # standard date only, should return same as solr_date_range
+        document.doc_date_standard = "1000"
+        assert document.solr_dating_range == "1000"
+        assert document.solr_dating_range == document.solr_date_range()
+        document.doc_date_standard = "1000/1010"
+        assert document.solr_dating_range == "[1000 TO 1010]"
+        assert document.solr_dating_range == document.solr_date_range()
+
+        # with a dating and standard date, should include in range
+        dating = Dating.objects.create(
+            document=document,
+            display_date="",
+            standard_date="980",
+        )
+        # sometimes these ranges will have leading 0s, solr will accept
+        assert document.solr_dating_range == "[0980 TO 1010]"
+        assert document.solr_dating_range != document.solr_date_range()
+
+        # only datings, range should be entirely from min and max among these
+        dating.standard_date = "980/1005"
+        dating.save()
+        join.dating_set.add(dating)
+        Dating.objects.create(
+            document=join,
+            display_date="",
+            standard_date="960/990",
+        )
+        assert join.solr_dating_range == "[0960 TO 1005]"
+
 
 def test_document_merge_with(document, join):
     doc_id = document.id

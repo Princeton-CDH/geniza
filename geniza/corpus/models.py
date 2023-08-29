@@ -963,6 +963,28 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         return dating_range
 
+    @property
+    def solr_dating_range(self):
+        """Return the document's dating range, including inferred, as a Solr date range."""
+        solr_dating_range = []
+        if self.dating_range[0] is not None:
+            # min from self.dating_range, formatted YYYY-MM-DD or YYYY-MM or YYYY
+            solr_dating_range.append(self.dating_range[0].isoformat())
+        # if there's a max date in the range, ensure it's not the same as the min
+        if (
+            self.dating_range[1] is not None
+            and self.dating_range[1].isoformat(mode="max") != solr_dating_range[0]
+        ):
+            # max from self.dating_range, formatted YYYY-MM-DD or YYYY-MM or YYYY
+            solr_dating_range.append(self.dating_range[1].isoformat(mode="max"))
+        if not solr_dating_range:
+            return None
+        # if a single date instead of a range, start and end are the same
+        if len(solr_dating_range) == 1:
+            return solr_dating_range[0]
+        # if there's more than one date, return as a range
+        return "[%s TO %s]" % tuple(solr_dating_range)
+
     def editions(self):
         """All footnotes for this document where the document relation includes
         edition."""
@@ -1149,6 +1171,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "document_date_t": strip_tags(self.document_date) or None,
                 # date range for filtering
                 "document_date_dr": self.solr_date_range(),
+                # date range for filtering, but including inferred datings if any exist
+                "document_dating_dr": self.solr_dating_range,
                 # historic date, for searching
                 # start/end of document date or date range
                 "start_date_i": self.start_date.numeric_format()
