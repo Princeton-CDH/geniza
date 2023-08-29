@@ -1207,7 +1207,8 @@ class Document(ModelIndexable, DocumentDateMixin):
         try:
             last_log_entry = list(self.log_entries.all())[-1]
         except IndexError:
-            # should only occur in unit tests, not real data
+            # occurs in unit tests, and sometimes when new documents are indexed before
+            # log entry is populated
             last_log_entry = None
 
         if last_log_entry:
@@ -1219,6 +1220,14 @@ class Document(ModelIndexable, DocumentDateMixin):
             index_data[
                 "input_date_dt"
             ] = last_log_entry.action_time.isoformat().replace("+00:00", "Z")
+        elif self.created:
+            # when log entry not available, use created date on document object
+            # (will always exist except in some unit tests)
+            index_data["input_year_i"] = self.created.year
+            index_data["input_date_dt"] = self.created.isoformat().replace(
+                "+00:00", "Z"
+            )
+
         return index_data
 
     # define signal handlers to update the index based on changes
