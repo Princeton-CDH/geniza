@@ -1389,15 +1389,15 @@ class TestDocument:
 
     def test_dating_range(self, document, join):
         # document with no dates or datings should return [None, None]
-        assert document.dating_range == [None, None]
+        assert document.dating_range() == (None, None)
 
         # document with single date should return numeric format min and max
         document.doc_date_standard = "1000"
-        assert document.dating_range == [PartialDate("1000"), PartialDate("1000")]
+        assert document.dating_range() == (PartialDate("1000"), PartialDate("1000"))
 
         # document with date range should return numeric format min and max
         document.doc_date_standard = "1000/1010"
-        assert document.dating_range == [PartialDate("1000"), PartialDate("1010")]
+        assert document.dating_range() == (PartialDate("1000"), PartialDate("1010"))
 
         # document with inferred dating: should include in range
         dating = Dating.objects.create(
@@ -1405,13 +1405,13 @@ class TestDocument:
             display_date="",
             standard_date="980",
         )
-        assert document.dating_range == [PartialDate("980"), PartialDate("1010")]
+        assert document.dating_range() == (PartialDate("980"), PartialDate("1010"))
         dating.standard_date = "980/1005"
         dating.save()
-        assert document.dating_range == [PartialDate("980"), PartialDate("1010")]
+        assert document.dating_range() == (PartialDate("980"), PartialDate("1010"))
         dating.standard_date = "980/1020"
         dating.save()
-        assert document.dating_range == [PartialDate("980"), PartialDate("1020")]
+        assert document.dating_range() == (PartialDate("980"), PartialDate("1020"))
 
         # document with multiple inferred datings: should include all in range
         dating2 = Dating.objects.create(
@@ -1419,25 +1419,25 @@ class TestDocument:
             display_date="",
             standard_date="960/1000",
         )
-        assert document.dating_range == [PartialDate("960"), PartialDate("1020")]
+        assert document.dating_range() == (PartialDate("960"), PartialDate("1020"))
 
         # document with no document date: should still work using only Datings
         dating.standard_date = "980/1005"
         dating.save()
         join.dating_set.add(dating, dating2)
-        assert join.dating_range == [PartialDate("960"), PartialDate("1005")]
+        assert join.dating_range() == (PartialDate("960"), PartialDate("1005"))
 
     def test_solr_dating_range(self, document, join):
         # no date or dating, should return none
-        assert document.solr_dating_range == None
+        assert document.solr_dating_range() == None
 
         # standard date only, should return same as solr_date_range
         document.doc_date_standard = "1000"
-        assert document.solr_dating_range == "1000"
-        assert document.solr_dating_range == document.solr_date_range()
+        assert document.solr_dating_range() == "1000"
+        assert document.solr_dating_range() == document.solr_date_range()
         document.doc_date_standard = "1000/1010"
-        assert document.solr_dating_range == "[1000 TO 1010]"
-        assert document.solr_dating_range == document.solr_date_range()
+        assert document.solr_dating_range() == "[1000 TO 1010]"
+        assert document.solr_dating_range() == document.solr_date_range()
 
         # with a dating and standard date, should include in range
         dating = Dating.objects.create(
@@ -1446,8 +1446,8 @@ class TestDocument:
             standard_date="980",
         )
         # sometimes these ranges will have leading 0s, solr will accept
-        assert document.solr_dating_range == "[0980 TO 1010]"
-        assert document.solr_dating_range != document.solr_date_range()
+        assert document.solr_dating_range() == "[0980 TO 1010]"
+        assert document.solr_dating_range() != document.solr_date_range()
 
         # only datings, range should be entirely from min and max among these
         dating.standard_date = "980/1005"
@@ -1458,7 +1458,7 @@ class TestDocument:
             display_date="",
             standard_date="960/990",
         )
-        assert join.solr_dating_range == "[0960 TO 1005]"
+        assert join.solr_dating_range() == "[0960 TO 1005]"
 
 
 def test_document_merge_with(document, join):

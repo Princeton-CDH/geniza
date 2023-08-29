@@ -925,7 +925,6 @@ class Document(ModelIndexable, DocumentDateMixin):
         """Short title for identifying the document, e.g. via search."""
         return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"
 
-    @property
     def dating_range(self):
         """
         Return the start and end of the document's possible date range, as PartialDate objects,
@@ -939,7 +938,7 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         # bail out if we don't have any inferred datings
         if not self.dating_set.exists():
-            return dating_range
+            return tuple(dating_range)
 
         # loop through inferred datings to find min and max
         for dating in self.dating_set.all():
@@ -961,22 +960,22 @@ class Document(ModelIndexable, DocumentDateMixin):
             ):
                 dating_range[1] = end
 
-        return dating_range
+        return tuple(dating_range)
 
-    @property
     def solr_dating_range(self):
         """Return the document's dating range, including inferred, as a Solr date range."""
+        dating_range = self.dating_range()
         solr_dating_range = []
-        if self.dating_range[0] is not None:
-            # min from self.dating_range, formatted YYYY-MM-DD or YYYY-MM or YYYY
-            solr_dating_range.append(self.dating_range[0].isoformat())
+        if dating_range[0] is not None:
+            # min from dating_range, formatted YYYY-MM-DD or YYYY-MM or YYYY
+            solr_dating_range.append(dating_range[0].isoformat())
         # if there's a max date in the range, ensure it's not the same as the min
         if (
-            self.dating_range[1] is not None
-            and self.dating_range[1].isoformat(mode="max") != solr_dating_range[0]
+            dating_range[1] is not None
+            and dating_range[1].isoformat(mode="max") != solr_dating_range[0]
         ):
-            # max from self.dating_range, formatted YYYY-MM-DD or YYYY-MM or YYYY
-            solr_dating_range.append(self.dating_range[1].isoformat(mode="max"))
+            # max from dating_range, formatted YYYY-MM-DD or YYYY-MM or YYYY
+            solr_dating_range.append(dating_range[1].isoformat(mode="max"))
         if not solr_dating_range:
             return None
         # if a single date instead of a range, start and end are the same
@@ -1173,7 +1172,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # date range for filtering
                 "document_date_dr": self.solr_date_range(),
                 # date range for filtering, but including inferred datings if any exist
-                "document_dating_dr": self.solr_dating_range,
+                "document_dating_dr": self.solr_dating_range(),
                 # historic date, for searching
                 # start/end of document date or date range
                 "start_date_i": self.start_date.numeric_format()
