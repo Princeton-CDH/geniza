@@ -128,7 +128,6 @@ def test_iter_dicts(document):
     exporter = AdminDocumentExporter(queryset=doc_qs)
 
     for doc, doc_data in zip(doc_qs, exporter.iter_dicts()):
-
         # test some properties
         assert doc.id == doc_data.get("pgpid")
         assert doc.shelfmark == doc_data.get("shelfmark")
@@ -174,9 +173,9 @@ def test_dating(document):
     doc_qs = Document.objects.all().order_by("id")
     exporter = AdminDocumentExporter(queryset=doc_qs)
     data_dict = exporter.get_export_data_dict(document)
-    assert "1000 CE example" in data_dict["doc_dating_display"]
-    assert "1000" in data_dict["doc_dating_standard"]
-    assert "a note" in data_dict["doc_dating_notes"]
+    assert "1000 CE example" in data_dict["inferred_date_display"]
+    assert "1000" in data_dict["inferred_date_standard"]
+    assert "a note" in data_dict["inferred_date_notes"]
 
     # should handle multiple values properly, with separators
     Dating.objects.create(
@@ -190,7 +189,7 @@ def test_dating(document):
     data_dict = exporter.get_export_data_dict(document)
     assert exporter.sep_within_cells.join(
         [Dating.PALEOGRAPHY_LABEL, Dating.PERSON_LABEL]
-    ) in exporter.serialize_value(data_dict["doc_dating_rationale"])
+    ) in exporter.serialize_value(data_dict["inferred_date_rationale"])
 
 
 @pytest.mark.django_db
