@@ -50,16 +50,6 @@ class Name(models.Model):
         default=NONE,
     )
 
-    class Meta:
-        constraints = [
-            # only allow one primary name per named entity
-            models.UniqueConstraint(
-                fields=("content_type", "object_id"),
-                name="one_primary_name_per_entity",
-                condition=models.Q(primary=True),
-            ),
-        ]
-
     def __str__(self):
         return self.name
 
@@ -151,6 +141,8 @@ class Person(models.Model):
         """
         try:
             return str(self.names.get(primary=True))
+        except Name.MultipleObjectsReturned:
+            return str(self.names.filter(primary=True).first())
         except Name.DoesNotExist:
             return str(self.names.first() or super().__str__())
 
@@ -276,3 +268,113 @@ class PersonPersonRelation(models.Model):
 
     def __str__(self):
         return f"{self.type} relation: {self.from_person} and {self.to_person}"
+
+
+class Place(models.Model):
+    """A named geographical location, which may be associated with documents or people."""
+
+    names = GenericRelation(Name, related_query_name="place")
+    latitude = models.DecimalField(
+        max_digits=6,
+        decimal_places=4,
+        blank=True,
+        null=True,
+    )
+    longitude = models.DecimalField(
+        max_digits=7,
+        decimal_places=4,
+        blank=True,
+        null=True,
+    )
+    # sources for the information gathered here
+    footnotes = models.ManyToManyField(Footnote, blank=True, related_name="places")
+
+    def __str__(self):
+        """
+        Display the place using its display name, if one is designated,
+        otherwise display the first name.
+        """
+        try:
+            return str(self.names.get(primary=True))
+        except Name.MultipleObjectsReturned:
+            return str(self.names.filter(primary=True).first())
+        except Name.DoesNotExist:
+            return str(self.names.first() or super().__str__())
+
+
+class PersonPlaceRelationTypeManager(models.Manager):
+    """Custom manager for :class:`PersonPlaceRelationType` with natural key lookup"""
+
+    def get_by_natural_key(self, name):
+        "natural key lookup, based on name"
+        return self.get(name_en=name)
+
+
+class PersonPlaceRelationType(models.Model):
+    """Controlled vocabulary of people's relationships to places."""
+
+    name = models.CharField(max_length=255, unique=True)
+    objects = PersonPlaceRelationTypeManager()
+
+    class Meta:
+        verbose_name = "Person-Place relationship"
+        verbose_name_plural = "Person-Place relationships"
+
+    def __str__(self):
+        return self.name
+
+
+class PersonPlaceRelation(models.Model):
+    """A relationship between a person and a place."""
+
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    place = models.ForeignKey(Place, on_delete=models.CASCADE)
+    type = models.ForeignKey(
+        PersonPlaceRelationType,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="Relation",
+    )
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.type} relation: {self.person} and {self.place}"
+
+
+class DocumentPlaceRelationTypeManager(models.Manager):
+    """Custom manager for :class:`DocumentPlaceRelationType` with natural key lookup"""
+
+    def get_by_natural_key(self, name):
+        "natural key lookup, based on name"
+        return self.get(name_en=name)
+
+
+class DocumentPlaceRelationType(models.Model):
+    """Controlled vocabulary of documents' relationships to places."""
+
+    name = models.CharField(max_length=255, unique=True)
+    objects = DocumentPlaceRelationTypeManager()
+
+    class Meta:
+        verbose_name = "Document-Place relationship"
+        verbose_name_plural = "Document-Place relationships"
+
+    def __str__(self):
+        return self.name
+
+
+class DocumentPlaceRelation(models.Model):
+    """A relationship between a document and a place."""
+
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    place = models.ForeignKey(Place, on_delete=models.CASCADE)
+    type = models.ForeignKey(
+        DocumentPlaceRelationType,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="Relation",
+    )
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.type} relation: {self.document} and {self.place}"

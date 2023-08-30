@@ -469,7 +469,6 @@ class TestDocumentTabsSnippet:
 
 
 class TestDocumentResult:
-
     template = get_template("corpus/snippets/document_result.html")
     page_obj = Paginator([1], 1).page(1)
 
@@ -637,7 +636,6 @@ class TestDocumentResult:
 
 
 class TestSearchPagination:
-
     template = get_template("corpus/snippets/pagination.html")
 
     def test_one_page(self):
@@ -708,7 +706,7 @@ class TestFieldsetSnippet:
     """Unit tests for the override of django admin/includes/mixed_inlines_fieldsets.html, which allows
     inclusion of inline formsets between model form fields"""
 
-    template = "admin/corpus/document/snippets/mixed_inlines_fieldsets.html"
+    template = "admin/snippets/mixed_inlines_fieldsets.html"
 
     def test_inlines_included(self, admin_client, document):
         # the snippet should be included on the admin document change page

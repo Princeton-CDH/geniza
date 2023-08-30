@@ -31,7 +31,8 @@ from geniza.corpus.models import (
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
-from geniza.entities.models import PersonDocumentRelation
+from geniza.entities.admin import PersonInline, PlaceInline
+from geniza.entities.models import DocumentPlaceRelation, PersonDocumentRelation
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.footnotes.models import Footnote
 
@@ -327,29 +328,16 @@ class DocumentDatingInline(admin.TabularInline):
     }
 
 
-class DocumentPersonInline(admin.TabularInline):
+class DocumentPersonInline(PersonInline):
     """Inline for people related to a document"""
 
     model = PersonDocumentRelation
-    verbose_name = "Related Person"
-    verbose_name_plural = "Related People"
-    autocomplete_fields = ["person", "type"]
-    fields = (
-        "person",
-        "person_link",
-        "type",
-        "notes",
-    )
-    readonly_fields = ("person_link",)
-    formfield_overrides = {
-        TextField: {"widget": Textarea(attrs={"rows": 4})},
-    }
-    extra = 1
 
-    def person_link(self, obj):
-        """Get the link to a related person"""
-        person_path = reverse("admin:entities_person_change", args=[obj.person.id])
-        return format_html(f'<a href="{person_path}">{str(obj.person)}</a>')
+
+class DocumentPlaceInline(PlaceInline):
+    """Inline for places related to a document"""
+
+    model = DocumentPlaceRelation
 
 
 @admin.register(Document)
@@ -469,9 +457,20 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         DocumentTextBlockInline,
         DocumentFootnoteInline,
         DocumentPersonInline,
+        DocumentPlaceInline,
     ]
-    # mixed fieldsets and inlines: /admin/corpus/document/snippets/mixed_inlines_fieldsets.html
-    fieldsets_and_inlines_order = ("f", "f", "i", "f", "itt", "i", "i", "i")
+    # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
+    fieldsets_and_inlines_order = (
+        "f",  # shelfmark, languages, description fieldset
+        "f",  # date on document fieldset
+        "i",  # DocumentDatingInline
+        "f",  # tags, status, order override fieldset
+        "itt",  # images/transcription/translation panel
+        "i",  # DocumentTextBlockInline
+        "i",  # DocumentFootnoteInline
+        "i",  # DocumentPersonInline
+        "i",  # DocumentPlaceInline
+    )
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
