@@ -17,8 +17,11 @@ def populate_place_types(apps, schema_editor):
         PersonPlaceRelationType.objects.create(name=relation, name_en=relation)
 
     document_place_relations = [
-        "Letter origin",
-        "Letter destination",
+        "Origin",
+        "Destination",
+        "Mentioned",
+        "Possibly mentioned",
+        "Formerly believed to be mentioned",
     ]
     for relation in document_place_relations:
         DocumentPlaceRelationType.objects.create(name=relation, name_en=relation)
