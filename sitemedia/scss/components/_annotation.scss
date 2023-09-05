@@ -111,6 +111,34 @@ main.annotating {
             display: block;
             position: relative;
         }
+        // tools
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            .rect-tool,
+            .polygon-tool {
+                cursor: pointer;
+                color: var(--on-background);
+                &.active-tool {
+                    color: var(--primary);
+                }
+                input {
+                    display: none;
+                }
+                &::before {
+                    display: block;
+                    font-family: "Phosphor" !important;
+                    font-size: typography.$text-size-5xl;
+                }
+            }
+            .rect-tool::before {
+                content: "\f099";
+            }
+            .polygon-tool::before {
+                content: "\f283";
+            }
+        }
     }
 }
 
