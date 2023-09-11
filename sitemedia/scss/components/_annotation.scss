@@ -1,5 +1,6 @@
 /* styles for transcription and annotation */
 
+@use "../base/a11y";
 @use "../base/breakpoints";
 @use "../base/spacing";
 @use "../base/typography";
@@ -112,12 +113,12 @@ main.annotating {
             position: relative;
         }
         // tools
-        .toolbar {
+        fieldset.tahqiq-toolbar {
             display: flex;
             align-items: center;
+            margin-left: 0.5rem;
             gap: 0.5rem;
-            .rect-tool,
-            .polygon-tool {
+            label.tahqiq-tool {
                 cursor: pointer;
                 color: var(--on-background);
                 &.active-tool {
@@ -131,11 +132,15 @@ main.annotating {
                     font-family: "Phosphor" !important;
                     font-size: typography.$text-size-5xl;
                 }
+                // tools are icon-only, so make labels sr-only
+                span {
+                    @include a11y.sr-only;
+                }
             }
-            .rect-tool::before {
+            label.rectangle-tool::before {
                 content: "\f099";
             }
-            .polygon-tool::before {
+            label.polygon-tool::before {
                 content: "\f283";
             }
         }

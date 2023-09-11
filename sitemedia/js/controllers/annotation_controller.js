@@ -91,25 +91,8 @@ export default class extends Controller {
         const { config, canvasURL, manifestId, annotationContainer } = settings;
         const anno = Annotorious(viewer, { disableDeleteKey: true });
 
-        // initialize toolbar tools
-        const rectangleTool = this.element.querySelector(".rect-tool input");
-        rectangleTool.addEventListener("change", (e) => {
-            if (e.target.checked) {
-                anno.setDrawingTool("rect");
-                polygonTool.checked = false;
-                polygonTool.parentElement.classList.remove("active-tool");
-                rectangleTool.parentElement.classList.add("active-tool");
-            }
-        });
-        const polygonTool = this.element.querySelector(".polygon-tool input");
-        polygonTool.addEventListener("change", (e) => {
-            if (e.target.checked) {
-                anno.setDrawingTool("polygon");
-                rectangleTool.checked = false;
-                polygonTool.parentElement.classList.add("active-tool");
-                rectangleTool.parentElement.classList.remove("active-tool");
-            }
-        });
+        // get toolbar element
+        const toolbarContainer = this.element.querySelector(".tahqiq-toolbar");
 
         // Initialize the AnnotationServerStorage plugin
         const annotationServerConfig = {
@@ -134,6 +117,7 @@ export default class extends Controller {
             anno,
             storagePlugin,
             annotationContainer,
+            toolbarContainer,
             config.text_direction,
             config.tiny_api_key
         );

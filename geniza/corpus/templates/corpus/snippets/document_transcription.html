@@ -123,18 +123,8 @@
                                         </svg>
                                         <span class="sr-only">Pop out</span>
                                     </button>
-                                    <fieldset class="toolbar">
-                                        {# rectangle tool #}
-                                        <label class="rect-tool active-tool">
-                                            <input type="radio" checked />
-                                            <span class="sr-only">Rectangle tool</span>
-                                        </label>
-                                        {# polygon tool #}
-                                        <label class="polygon-tool">
-                                            <input type="radio" />
-                                            <span class="sr-only">Polygon tool</span>
-                                        </label>
-                                    </fieldset>
+                                    {# tahqiq toolbar for switching annotation tools #}
+                                    <fieldset class="tahqiq-toolbar"></fieldset>
                                 {% else %}
                                     {# enlarge button #}
                                     <button class="enlarge-button" type="button"><span class="sr-only">Enlarge image</span></button>
