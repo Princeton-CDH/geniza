@@ -167,8 +167,9 @@ class Source(models.Model):
     )
     languages = models.ManyToManyField(
         SourceLanguage,
-        help_text="""The language(s) the source is written in. Note: Sources should never include
-        transcription language unless the entire source consists of a transcription.""",
+        help_text="""The language(s) the source is written in. Note: The Unspecified language
+        option should only ever be used for unpublished transcriptions, as the language of the
+        transcription is already marked on the document.""",
     )
     url = models.URLField(blank=True, max_length=300, verbose_name="URL")
     # preliminary place to store transcription text; should not be editable
@@ -267,11 +268,12 @@ class Source(models.Model):
                 parts.append(edition_str)
 
         # Add non-English languages as parenthetical
-        non_english_langs = 0
+        included_langs = 0
         if self.languages.exists():
             for lang in self.languages.all():
-                if "English" not in str(lang):
-                    non_english_langs += 1
+                # Also prevent Unspecified from showing up in source citations
+                if "English" not in str(lang) and "Unspecified" not in str(lang):
+                    included_langs += 1
                     parts.append("(in %s)" % lang)
 
         # Handling presence of book/journal title
@@ -282,7 +284,7 @@ class Source(models.Model):
             #   NOT "Title" (in Hebrew) --> "Title," (in Hebrew)
             if self.title and (
                 self.source_type.type in doublequoted_types
-                and not non_english_langs  # put comma after language even when doublequotes present
+                and not included_langs  # put comma after language even when doublequotes present
             ):
                 # find rightmost doublequote
                 formatted_title = parts[-1]
@@ -386,7 +388,7 @@ class Source(models.Model):
         use_comma = (
             extra_fields
             or self.title
-            or (self.journal and not non_english_langs)
+            or (self.journal and not included_langs)
             or self.source_type.type == "Unpublished"
         )
         delimiter = ", " if use_comma else " "
