@@ -1302,8 +1302,53 @@ class Document(ModelIndexable, DocumentDateMixin):
         needs_review = [self.needs_review] if self.needs_review else []
 
         for doc in merge_docs:
+            # handle document dates validation before making any changes;
+            # mismatch should result in exception (caught by DocumentMerge.form_valid)
+            if (
+                (
+                    # both documents have standard dates, and they don't match
+                    doc.doc_date_standard
+                    and self.doc_date_standard
+                    and self.doc_date_standard != doc.doc_date_standard
+                )
+                or (
+                    # both documents have original dates, and they don't match
+                    doc.doc_date_original
+                    and self.doc_date_original
+                    and self.doc_date_original != doc.doc_date_original
+                )
+                or (
+                    # other document has original, this doc has standard, and they don't match
+                    doc.doc_date_original
+                    and self.doc_date_standard
+                    and doc.standardize_date() != self.doc_date_standard
+                )
+                or (
+                    # other document has standard, this doc has original, and they don't match
+                    doc.doc_date_standard
+                    and self.doc_date_original
+                    and self.standardize_date() != doc.doc_date_standard
+                )
+            ):
+                raise ValidationError(
+                    "Merged documents must not contain conflicting dates; resolve before merge"
+                )
+
             # add any tags from merge document tags to primary doc
             self.tags.add(*doc.tags.names())
+
+            # if not in conflict (i.e. missing or exact duplicate), copy dates to result document
+            if doc.doc_date_standard:
+                self.doc_date_standard = doc.doc_date_standard
+            if doc.doc_date_original:
+                self.doc_date_original = doc.doc_date_original
+                self.doc_date_calendar = doc.doc_date_calendar
+
+            # add inferred datings (conflicts or duplicates are post-merge
+            # data cleanup tasks)
+            for dating in doc.dating_set.all():
+                self.dating_set.add(dating)
+
             # initialize old pgpid list if previously unset
             if self.old_pgpids is None:
                 self.old_pgpids = []
