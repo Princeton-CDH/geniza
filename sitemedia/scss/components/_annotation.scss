@@ -1,5 +1,6 @@
 /* styles for transcription and annotation */
 
+@use "../base/a11y";
 @use "../base/breakpoints";
 @use "../base/spacing";
 @use "../base/typography";
@@ -110,6 +111,38 @@ main.annotating {
             min-height: 100vh !important;
             display: block;
             position: relative;
+        }
+        // tools
+        fieldset.tahqiq-toolbar {
+            display: flex;
+            align-items: center;
+            margin-left: 0.5rem;
+            gap: 0.5rem;
+            label.tahqiq-tool {
+                cursor: pointer;
+                color: var(--on-background);
+                &.active-tool {
+                    color: var(--primary);
+                }
+                input {
+                    display: none;
+                }
+                &::before {
+                    display: block;
+                    font-family: "Phosphor" !important;
+                    font-size: typography.$text-size-5xl;
+                }
+                // tools are icon-only, so make labels sr-only
+                span {
+                    @include a11y.sr-only;
+                }
+            }
+            label.rectangle-tool::before {
+                content: "\f099";
+            }
+            label.polygon-tool::before {
+                content: "\f283";
+            }
         }
     }
 }
