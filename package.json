@@ -36,7 +36,6 @@
     "@hotwired/turbo": "^7.1.0",
     "@recogito/annotorious": "^2.7.12",
     "@recogito/annotorious-openseadragon": "^2.7.12",
-    "@recogito/annotorious-toolbar": "^1.2.0",
     "angle-input": "^0.0.1",
     "annotorious-tahqiq": "github:Princeton-CDH/annotorious-tahqiq#47ced4f580fb50fe8b553c2dfa4e1c40350d7831",
     "openseadragon": "^3.0.0",
