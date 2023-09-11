@@ -91,9 +91,6 @@ export default class extends Controller {
         const { config, canvasURL, manifestId, annotationContainer } = settings;
         const anno = Annotorious(viewer, { disableDeleteKey: true });
 
-        // get toolbar element
-        const toolbarContainer = this.element.querySelector(".tahqiq-toolbar");
-
         // Initialize the AnnotationServerStorage plugin
         const annotationServerConfig = {
             annotationEndpoint: config.server_url,
@@ -117,7 +114,7 @@ export default class extends Controller {
             anno,
             storagePlugin,
             annotationContainer,
-            toolbarContainer,
+            this.element.querySelector(".tahqiq-toolbar"), // toolbar container fieldset
             config.text_direction,
             config.tiny_api_key
         );
