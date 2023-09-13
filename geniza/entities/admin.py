@@ -206,25 +206,18 @@ class PersonPersonInline(admin.TabularInline):
 
     model = PersonPersonRelation
     verbose_name = "Related Person"
-    verbose_name_plural = "Related People"
+    verbose_name_plural = "Related People (input manually)"
     autocomplete_fields = ("to_person",)
     fields = (
         "to_person",
-        "person_link",
         "type",
         "notes",
     )
     fk_name = "from_person"
-    readonly_fields = ("person_link",)
     formfield_overrides = {
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
     extra = 1
-
-    def person_link(self, obj):
-        """Get the link to a related person"""
-        person_path = reverse("admin:entities_person_change", args=[obj.to_person.id])
-        return format_html(f'<a href="{person_path}">{str(obj.to_person)}</a>')
 
     def get_formset(self, request, obj=None, **kwargs):
         """Override 'type' field for PersonPersonRelation, change ModelChoiceField
@@ -234,6 +227,27 @@ class PersonPersonInline(admin.TabularInline):
             queryset=PersonPersonRelationType.objects.all()
         )
         return formset
+
+
+class PersonPersonReverseInline(admin.TabularInline):
+    """Person-Person reverse relationships inline for the Person admin"""
+
+    model = PersonPersonRelation
+    verbose_name = "Related Person"
+    verbose_name_plural = "Related People (automatically populated)"
+    fields = (
+        "from_person",
+        "relation",
+        "notes",
+    )
+    fk_name = "to_person"
+    readonly_fields = ("from_person", "relation", "notes")
+    extra = 0
+    max_num = 0
+
+    def relation(self, obj=None):
+        """Get the relationship type's converse name, if it exists, or else the type name"""
+        return (obj.type.converse_name or str(obj.type)) if obj else None
 
 
 @admin.register(Person)
@@ -247,6 +261,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         FootnoteInline,
         PersonDocumentInline,
         PersonPersonInline,
+        PersonPersonReverseInline,
         PersonPlaceInline,
     )
     # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
@@ -255,6 +270,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         "f",  # all Person fields
         "i",  # PersonDocumentInline
         "i",  # PersonPersonInline
+        "i",  # PersonPersonReverseInline
         "i",  # PersonPlaceInline
     )
     own_pk = None
@@ -301,7 +317,7 @@ class PersonDocumentRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 class PersonPersonRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     """Admin for managing the controlled vocabulary of people's relationships to other people"""
 
-    fields = ("name", "category")
+    fields = ("name", "converse_name", "category")
     search_fields = ("name",)
     ordering = ("name",)
 

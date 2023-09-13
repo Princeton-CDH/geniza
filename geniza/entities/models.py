@@ -206,7 +206,16 @@ class PersonPersonRelationTypeManager(models.Manager):
 class PersonPersonRelationType(models.Model):
     """Controlled vocabulary of people's relationships to other people."""
 
+    # name of the relationship
     name = models.CharField(max_length=255, unique=True)
+    # converse_name is the relationship in the reverse direction (the semantic converse)
+    # (example: name = "Child", converse_name = "Parent")
+    converse_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="""The converse of the relationship, for example, 'Child' when Name is 'Parent'.
+        May leave blank if the converse is identical (for example, 'Spouse' and 'Spouse').""",
+    )
     # categories for interpersonal relations:
     IMMEDIATE_FAMILY = "I"
     EXTENDED_FAMILY = "E"
@@ -267,7 +276,12 @@ class PersonPersonRelation(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.type} relation: {self.from_person} and {self.to_person}"
+        relation_type = (
+            f"{self.type}-{self.type.converse_name}"
+            if self.type.converse_name
+            else self.type
+        )
+        return f"{relation_type} relation: {self.to_person} and {self.from_person}"
 
 
 class Place(models.Model):

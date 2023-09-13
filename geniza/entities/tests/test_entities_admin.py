@@ -13,6 +13,7 @@ from geniza.entities.admin import (
     PersonDocumentInline,
     PersonPersonInline,
     PersonPersonRelationTypeChoiceField,
+    PersonPersonReverseInline,
     PersonPlaceInline,
 )
 from geniza.entities.models import (
@@ -51,18 +52,6 @@ class TestPersonDocumentInline:
 
 @pytest.mark.django_db
 class TestPersonPersonInline:
-    def test_person_link(self):
-        goitein = Person.objects.create()
-        rustow = Person.objects.create()
-        relation = PersonPersonRelation.objects.create(
-            from_person=goitein, to_person=rustow
-        )
-        inline = PersonPersonInline(Person, admin_site=admin.site)
-        # should link to to_person Person object
-        person_link = inline.person_link(relation)
-        assert str(rustow.id) in person_link
-        assert str(rustow) in person_link
-
     def test_get_formset(self):
         # should set "type" field to PersonPersonRelationTypeChoiceField
         inline = PersonPersonInline(Person, admin_site=admin.site)
@@ -70,6 +59,39 @@ class TestPersonPersonInline:
         assert isinstance(
             formset.form.base_fields["type"], PersonPersonRelationTypeChoiceField
         )
+
+
+@pytest.mark.django_db
+class TestPersonPersonReverseInline:
+    def test_relation(self):
+        # should show converse relationship type when available
+        (parent, _) = PersonPersonRelationType.objects.get_or_create(
+            name="Parent",
+            converse_name="Child",
+            category=PersonPersonRelationType.IMMEDIATE_FAMILY,
+        )
+        ayala_gordon = Person.objects.create()
+        sd_goitein = Person.objects.create()
+        goitein_ayala = PersonPersonRelation.objects.create(
+            from_person=ayala_gordon,
+            to_person=sd_goitein,
+            type=parent,
+        )
+        reverse_inline = PersonPersonReverseInline(Person, admin_site=admin.site)
+        assert reverse_inline.relation(goitein_ayala) == "Child"
+
+        # otherwise should just show relationship type
+        (sibilng, _) = PersonPersonRelationType.objects.get_or_create(
+            name="Sibling",
+            category=PersonPersonRelationType.IMMEDIATE_FAMILY,
+        )
+        elon_goitein = Person.objects.create()
+        goitein_siblings = PersonPersonRelation.objects.create(
+            from_person=ayala_gordon,
+            to_person=elon_goitein,
+            type=sibilng,
+        )
+        assert reverse_inline.relation(goitein_siblings) == "Sibling"
 
 
 @pytest.mark.django_db
