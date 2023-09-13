@@ -74,20 +74,13 @@ class PersonInline(admin.TabularInline):
     autocomplete_fields = ["person", "type"]
     fields = (
         "person",
-        "person_link",
         "type",
         "notes",
     )
-    readonly_fields = ("person_link",)
     formfield_overrides = {
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
     extra = 1
-
-    def person_link(self, obj):
-        """Get the link to a related person"""
-        person_path = reverse("admin:entities_person_change", args=[obj.person.id])
-        return format_html(f'<a href="{person_path}">{str(obj.person)}</a>')
 
 
 class FootnoteInline(GenericTabularInline):
@@ -126,7 +119,8 @@ class DocumentInline(admin.TabularInline):
     formfield_overrides = {
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
-    extra = 1
+    extra = 0
+    max_num = 0
 
     def document_link(self, obj):
         document_path = reverse("admin:corpus_document_change", args=[obj.document.id])
