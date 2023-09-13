@@ -221,11 +221,13 @@ class PersonPersonRelationType(models.Model):
     EXTENDED_FAMILY = "E"
     BY_MARRIAGE = "M"
     BUSINESS = "B"
+    AMBIGUITY = "A"
     CATEGORY_CHOICES = (
         (IMMEDIATE_FAMILY, _("Immediate family relations")),
         (EXTENDED_FAMILY, _("Extended family")),
         (BY_MARRIAGE, _("Relatives by marriage")),
         (BUSINESS, _("Business and property relationships")),
+        (AMBIGUITY, _("Ambiguity")),
     )
     category = models.CharField(
         max_length=1,
