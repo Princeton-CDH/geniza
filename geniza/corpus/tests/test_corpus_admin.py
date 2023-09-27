@@ -514,19 +514,6 @@ class TestHasTranslationListFilter(TestHasTranscriptionListFilter):
 
 
 @pytest.mark.django_db
-class TestDocumentPersonInline:
-    def test_person_link(self):
-        goitein = Person.objects.create()
-        doc = Document.objects.create()
-        relation = PersonDocumentRelation.objects.create(person=goitein, document=doc)
-        inline = DocumentPersonInline(Document, admin_site=admin.site)
-        # should link to to_person Person object
-        person_link = inline.person_link(relation)
-        assert str(goitein.id) in person_link
-        assert str(goitein) in person_link
-
-
-@pytest.mark.django_db
 class TestDateListFilter:
     def test_choices(self):
         # choices() should always just return "All" option

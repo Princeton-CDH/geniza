@@ -76,7 +76,22 @@ class TestPersonPersonRelation:
             to_person=rustow,
             type=friendship_type,
         )
-        assert str(friendship) == f"{friendship_type} relation: {goitein} and {rustow}"
+        assert str(friendship) == f"{friendship_type} relation: {rustow} and {goitein}"
+
+        # with converse_name
+        ayala = Person.objects.create()
+        Name.objects.create(name="Ayala Gordon", content_object=ayala)
+        (parent_child, _) = PersonPersonRelationType.objects.get_or_create(
+            name="Parent",
+            converse_name="Child",
+            category=PersonPersonRelationType.IMMEDIATE_FAMILY,
+        )
+        goitein_ayala = PersonPersonRelation.objects.create(
+            from_person=ayala,
+            to_person=goitein,
+            type=parent_child,
+        )
+        assert str(goitein_ayala) == f"Parent-Child relation: {goitein} and {ayala}"
 
 
 @pytest.mark.django_db

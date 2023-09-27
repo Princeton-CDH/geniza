@@ -24,7 +24,7 @@ class PersonDocumentRelationTypeOption(TranslationOptions):
 
 @register(PersonPersonRelationType)
 class PersonPersonRelationTypeOption(TranslationOptions):
-    fields = ("name",)
+    fields = ("name", "converse_name")
     required_languages = ()
 
 
