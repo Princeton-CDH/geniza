@@ -69,14 +69,25 @@ main.annotating {
             padding: 0;
             margin: 0;
             z-index: 2;
+            width: 40px;
+            min-width: 40px;
+            height: 40px;
             svg {
                 fill: var(--on-background);
-                width: 34px;
-                height: 34px;
+                width: 20px;
+                height: 20px;
             }
+            &:hover svg,
             &.active svg,
             &:active svg {
-                fill: var(--primary);
+                fill: var(--on-primary);
+            }
+            &.active,
+            &:active {
+                background-color: var(--secondary);
+            }
+            &:hover:not(:active) {
+                background-color: var(--primary);
             }
             @include breakpoints.for-tablet-landscape-up {
                 display: flex;
@@ -116,13 +127,29 @@ main.annotating {
         fieldset.tahqiq-toolbar {
             display: flex;
             align-items: center;
-            margin-left: 0.5rem;
+            margin: 0 0.5rem;
+            padding-left: 0.5rem;
+            border-left: 2px solid var(--input-date-text);
             gap: 0.5rem;
             label.tahqiq-tool {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
                 cursor: pointer;
                 color: var(--on-background);
-                &.active-tool {
-                    color: var(--primary);
+                &.active-tool,
+                &:hover,
+                &:active {
+                    color: var(--on-primary);
+                }
+                &.active-tool,
+                &:active {
+                    background-color: var(--secondary);
+                }
+                &:hover:not(:active) {
+                    background-color: var(--primary);
                 }
                 input {
                     display: none;
@@ -130,7 +157,7 @@ main.annotating {
                 &::before {
                     display: block;
                     font-family: "Phosphor" !important;
-                    font-size: typography.$text-size-5xl;
+                    font-size: typography.$text-size-2xl;
                 }
                 // tools are icon-only, so make labels sr-only
                 span {
