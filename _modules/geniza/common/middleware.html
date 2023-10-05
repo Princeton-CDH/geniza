@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.common.middleware &#8212; Princeton Geniza Project 4.14.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/sphinx_highlight.js"></script>
+    <title>geniza.common.middleware &#8212; Princeton Geniza Project 4.15.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <script src="../../../_static/documentation_options.js?v=5b769c8d"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -39,7 +39,9 @@
 <span class="kn">from</span> <span class="nn">rest_framework.authtoken.models</span> <span class="kn">import</span> <span class="n">Token</span>
 
 
-<div class="viewcode-block" id="PublicLocaleMiddleware"><a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.middleware.PublicLocaleMiddleware">[docs]</a><span class="k">class</span> <span class="nc">PublicLocaleMiddleware</span><span class="p">:</span>
+<div class="viewcode-block" id="PublicLocaleMiddleware">
+<a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.middleware.PublicLocaleMiddleware">[docs]</a>
+<span class="k">class</span> <span class="nc">PublicLocaleMiddleware</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Middleware to redirect anonymous users attempting to access locales that are not in</span>
 <span class="sd">    the list of public site languages.&quot;&quot;&quot;</span>
 
@@ -66,7 +68,10 @@
         <span class="k">return</span> <span class="n">response</span></div>
 
 
-<div class="viewcode-block" id="LocaleMiddleware"><a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.middleware.LocaleMiddleware">[docs]</a><span class="k">class</span> <span class="nc">LocaleMiddleware</span><span class="p">(</span><span class="n">DjangoLocaleMiddleware</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LocaleMiddleware">
+<a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.middleware.LocaleMiddleware">[docs]</a>
+<span class="k">class</span> <span class="nc">LocaleMiddleware</span><span class="p">(</span><span class="n">DjangoLocaleMiddleware</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; &quot;Customize django&#39;s default locale middleware to exempt some urls from redirects&quot;&quot;&quot;</span>
 
     <span class="c1"># adapted from https://code.djangoproject.com/ticket/17734</span>
@@ -74,7 +79,9 @@
     <span class="c1">#: base paths for urls to exempt from locale redirects</span>
     <span class="n">redirect_exempt_paths</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="s2">&quot;annotations&quot;</span><span class="p">,</span> <span class="s2">&quot;accounts&quot;</span><span class="p">]</span>
 
-<div class="viewcode-block" id="LocaleMiddleware.process_response"><a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.middleware.LocaleMiddleware.process_response">[docs]</a>    <span class="k">def</span> <span class="nf">process_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+<div class="viewcode-block" id="LocaleMiddleware.process_response">
+<a class="viewcode-back" href="../../../codedocs/common.html#geniza.common.middleware.LocaleMiddleware.process_response">[docs]</a>
+    <span class="k">def</span> <span class="nf">process_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;exempt untranslated paths from locale redirects&quot;&quot;&quot;</span>
 
         <span class="n">path_parts</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">path_info</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
@@ -89,7 +96,9 @@
             <span class="c1"># so that we get the expected 404 instead of a 302 redirect.</span>
             <span class="k">return</span> <span class="n">response</span>
 
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">process_response</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">process_response</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span></div>
+</div>
+
 </pre></div>
 
           </div>
@@ -162,7 +171,7 @@
       &copy;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
     </div>

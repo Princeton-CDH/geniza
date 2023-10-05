@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Developer Instructions &#8212; Princeton Geniza Project 4.14.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <title>Developer Instructions &#8212; Princeton Geniza Project 4.15.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
+    <script src="_static/documentation_options.js?v=5b769c8d"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Change Log" href="changelog.html" />
@@ -32,9 +32,9 @@
           <div class="body" role="main">
             
   <section id="developer-instructions">
-<h1>Developer Instructions<a class="headerlink" href="#developer-instructions" title="Permalink to this heading">¶</a></h1>
+<h1>Developer Instructions<a class="headerlink" href="#developer-instructions" title="Link to this heading">¶</a></h1>
 <section id="setup-and-installation">
-<h2>Setup and installation<a class="headerlink" href="#setup-and-installation" title="Permalink to this heading">¶</a></h2>
+<h2>Setup and installation<a class="headerlink" href="#setup-and-installation" title="Link to this heading">¶</a></h2>
 <p>Initial setup and installation:</p>
 <ul>
 <li><p>Recommended: create and activate a python 3.8 virtualenv</p></li>
@@ -93,7 +93,7 @@ current versions of Solr it creates a new core with a <em>copy</em> of the confi
 </li>
 </ul>
 <section id="install-pre-commmit-hooks">
-<h3>Install pre-commmit hooks<a class="headerlink" href="#install-pre-commmit-hooks" title="Permalink to this heading">¶</a></h3>
+<h3>Install pre-commmit hooks<a class="headerlink" href="#install-pre-commmit-hooks" title="Link to this heading">¶</a></h3>
 <p>We use <a class="reference external" href="https://pre-commit.com/">pre-commit</a> to install and manage commit hooks to ensure that code is consistently formatted. To install, run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">install</span>
 </pre></div>
@@ -109,7 +109,7 @@ current versions of Solr it creates a new core with a <em>copy</em> of the confi
 </div>
 </section>
 <section id="fonts">
-<h3>Fonts<a class="headerlink" href="#fonts" title="Permalink to this heading">¶</a></h3>
+<h3>Fonts<a class="headerlink" href="#fonts" title="Link to this heading">¶</a></h3>
 <p>Fonts are stored in <code class="docutils literal notranslate"><span class="pre">sitemedia/fonts/</span></code>. Since this project uses paid licensed fonts, this directory is ignored by git and not checked into version control.</p>
 <p>Instead, licnsed fonts are stored in an AES-256 encrypted <code class="docutils literal notranslate"><span class="pre">.zip</span></code> archive, and this file is checked into the repo. The encryption key is stored as a GitHub Secret, used by Percy (visual regression testing service) and Lighthouse (accessibility testing serivce) to decrypt and use the fonts in GitHub Actions.</p>
 <p>To install fonts locally:</p>
@@ -139,7 +139,7 @@ current versions of Solr it creates a new core with a <em>copy</em> of the confi
 <p>When prompted after entering the <code class="docutils literal notranslate"><span class="pre">gpg</span></code> command, you must use the same passphrase that was previously used to encrypt the file, or store the new passphrase in GitHub Secrets in a variable called <code class="docutils literal notranslate"><span class="pre">GPG_PASSPHRASE</span></code>.</p>
 </section>
 <section id="static-files">
-<h3>Static Files<a class="headerlink" href="#static-files" title="Permalink to this heading">¶</a></h3>
+<h3>Static Files<a class="headerlink" href="#static-files" title="Link to this heading">¶</a></h3>
 <p>Static files are stored in <code class="docutils literal notranslate"><span class="pre">sitemedia/</span></code> and bundled by Webpack. The <code class="docutils literal notranslate"><span class="pre">webpack-bundle-tracker</span></code> plugin generates a JSON manifest file listing the name and location of bundled files. This file, <code class="docutils literal notranslate"><span class="pre">webpack-stats.json</span></code>, is read by Django using <code class="docutils literal notranslate"><span class="pre">django-webpack-loader</span></code> so that the relevant files can be included in the template’s <code class="docutils literal notranslate"><span class="pre">&lt;head&gt;</span></code>.</p>
 <p>Bundled files will be output into the <code class="docutils literal notranslate"><span class="pre">sitemedia/bundles</span></code> directory and picked up by Django’s <code class="docutils literal notranslate"><span class="pre">collectstatic</span></code> command. To recompile bundles after making changes:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">npm</span> <span class="n">run</span> <span class="n">build</span>
@@ -155,7 +155,7 @@ current versions of Solr it creates a new core with a <em>copy</em> of the confi
 <p>See the <code class="docutils literal notranslate"><span class="pre">.browserslistrc</span></code> file for more information about browser versions officially supported by this application. This file controls the automatic insertion of vendor prefixes for CSS and polyfills for JavaScript so that bundled styles and scripts will be supported on all target browsers.</p>
 </section>
 <section id="internationalization-translation">
-<h3>Internationalization &amp; Translation<a class="headerlink" href="#internationalization-translation" title="Permalink to this heading">¶</a></h3>
+<h3>Internationalization &amp; Translation<a class="headerlink" href="#internationalization-translation" title="Link to this heading">¶</a></h3>
 <p>This application has internationalization and translation enabled.</p>
 <ul>
 <li><p>If you create any new translatable content, you should run <a class="reference external" href="https://docs.djangoproject.com/en/3.1/ref/django-admin/#makemessages">makemessages</a> to create or update message files. We use a customized version of this command, available in <code class="docutils literal notranslate"><span class="pre">/geniza/common/management/commands/makemessages.py</span></code>.</p>
@@ -172,18 +172,18 @@ current versions of Solr it creates a new core with a <em>copy</em> of the confi
 </section>
 </section>
 <section id="unit-tests">
-<h2>Unit Tests<a class="headerlink" href="#unit-tests" title="Permalink to this heading">¶</a></h2>
+<h2>Unit Tests<a class="headerlink" href="#unit-tests" title="Link to this heading">¶</a></h2>
 <p>Python unit tests are written with <a class="reference external" href="http://doc.pytest.org/">py.test</a>
 and should be run with <code class="docutils literal notranslate"><span class="pre">pytest</span></code>.</p>
 </section>
 <section id="end-to-end-tests">
-<h2>End-to-end Tests<a class="headerlink" href="#end-to-end-tests" title="Permalink to this heading">¶</a></h2>
+<h2>End-to-end Tests<a class="headerlink" href="#end-to-end-tests" title="Link to this heading">¶</a></h2>
 <p>Performance, accessibility, SEO and more are audited via <a class="reference external" href="https://developers.google.com/web/tools/lighthouse">Lighthouse</a>. The tool runs in a GitHub actions workflow (<code class="docutils literal notranslate"><span class="pre">lighthouse.yml</span></code>).</p>
 <p>Lighthouse runs several checks by visiting a list of URLs and averaging the results. If new pages are adding to the site, a corresponding URL should be added to the configuration file <code class="docutils literal notranslate"><span class="pre">lighthouserc.js</span></code>.</p>
 <p>If the Lighthouse build is generating errors that need to be temporarily or permanently ignored, the corresponding error code can be set to “off” or “warn” in <code class="docutils literal notranslate"><span class="pre">lighthouserc.js</span></code>.</p>
 </section>
 <section id="visual-tests">
-<h2>Visual Tests<a class="headerlink" href="#visual-tests" title="Permalink to this heading">¶</a></h2>
+<h2>Visual Tests<a class="headerlink" href="#visual-tests" title="Link to this heading">¶</a></h2>
 <p>Visual regressions are monitored with <a class="reference external" href="https://percy.io/">Percy</a>. Percy takes screenshots of the web application with different browsers and compares them to a set of base screenshots to find changes.</p>
 <p>In this repository, a GitHub Action is configured to take a set of Percy screenshots when one of the following conditions is met:</p>
 <ol class="arabic simple">
@@ -284,7 +284,7 @@ and should be run with <code class="docutils literal notranslate"><span class="p
       &copy;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
       |

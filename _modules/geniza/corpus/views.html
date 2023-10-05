@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.views &#8212; Princeton Geniza Project 4.14.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
-    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/sphinx_highlight.js"></script>
+    <title>geniza.corpus.views &#8212; Princeton Geniza Project 4.15.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
+    <script src="../../../_static/documentation_options.js?v=5b769c8d"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
    
@@ -39,6 +39,7 @@
 <span class="kn">from</span> <span class="nn">django.contrib.admin.models</span> <span class="kn">import</span> <span class="n">CHANGE</span><span class="p">,</span> <span class="n">LogEntry</span>
 <span class="kn">from</span> <span class="nn">django.contrib.auth.mixins</span> <span class="kn">import</span> <span class="n">PermissionRequiredMixin</span>
 <span class="kn">from</span> <span class="nn">django.contrib.contenttypes.models</span> <span class="kn">import</span> <span class="n">ContentType</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="kn">import</span> <span class="n">ValidationError</span>
 <span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">Q</span>
 <span class="kn">from</span> <span class="nn">django.db.models.query</span> <span class="kn">import</span> <span class="n">Prefetch</span>
 <span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">Http404</span><span class="p">,</span> <span class="n">HttpResponse</span><span class="p">,</span> <span class="n">JsonResponse</span>
@@ -68,7 +69,9 @@
 <span class="kn">from</span> <span class="nn">geniza.footnotes.models</span> <span class="kn">import</span> <span class="n">Footnote</span><span class="p">,</span> <span class="n">Source</span>
 
 
-<div class="viewcode-block" id="DocumentSearchView"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView">[docs]</a><span class="k">class</span> <span class="nc">DocumentSearchView</span><span class="p">(</span><span class="n">ListView</span><span class="p">,</span> <span class="n">FormMixin</span><span class="p">,</span> <span class="n">SolrLastModifiedMixin</span><span class="p">):</span>
+<div class="viewcode-block" id="DocumentSearchView">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView">[docs]</a>
+<span class="k">class</span> <span class="nc">DocumentSearchView</span><span class="p">(</span><span class="n">ListView</span><span class="p">,</span> <span class="n">FormMixin</span><span class="p">,</span> <span class="n">SolrLastModifiedMixin</span><span class="p">):</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">Document</span>
     <span class="n">form_class</span> <span class="o">=</span> <span class="n">DocumentSearchForm</span>
     <span class="n">context_object_name</span> <span class="o">=</span> <span class="s2">&quot;documents&quot;</span>
@@ -94,7 +97,9 @@
         <span class="s2">&quot;docdate_desc&quot;</span><span class="p">:</span> <span class="s2">&quot;-end_date_i&quot;</span><span class="p">,</span>
     <span class="p">}</span>
 
-<div class="viewcode-block" id="DocumentSearchView.dispatch"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.dispatch">[docs]</a>    <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="DocumentSearchView.dispatch">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.dispatch">[docs]</a>
+    <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># special case: for random sort we only show the first page of results</span>
         <span class="c1"># if any other page is requested, redirect to first page</span>
         <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sort&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;random&quot;</span> <span class="ow">and</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;page&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="s2">&quot;1&quot;</span><span class="p">:</span>
@@ -105,14 +110,20 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DocumentSearchView.last_modified"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.last_modified">[docs]</a>    <span class="k">def</span> <span class="nf">last_modified</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentSearchView.last_modified">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.last_modified">[docs]</a>
+    <span class="k">def</span> <span class="nf">last_modified</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;override last modified from solr mixin to not return a value when</span>
 <span class="sd">        sorting by random&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sort&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;random&quot;</span><span class="p">]:</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">last_modified</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="DocumentSearchView.get_solr_sort"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_solr_sort">[docs]</a>    <span class="k">def</span> <span class="nf">get_solr_sort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sort_option</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentSearchView.get_solr_sort">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_solr_sort">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_solr_sort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sort_option</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return solr sort field for user-seleted sort option;</span>
 <span class="sd">        generates random sort field using solr random dynamic field;</span>
 <span class="sd">        otherwise uses solr sort field from :attr:`solr_sort`&quot;&quot;&quot;</span>
@@ -121,8 +132,11 @@
             <span class="k">return</span> <span class="s2">&quot;random_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">randint</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">9999</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">solr_sort</span><span class="p">[</span><span class="n">sort_option</span><span class="p">]</span></div>
 
+
     <span class="c1"># NOTE: should cache this, shouldn&#39;t really change that frequently</span>
-<div class="viewcode-block" id="DocumentSearchView.get_range_stats"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_range_stats">[docs]</a>    <span class="k">def</span> <span class="nf">get_range_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DocumentSearchView.get_range_stats">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_range_stats">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_range_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the min and max for range fields based on Solr stats.</span>
 
 <span class="sd">        :returns: Dictionary keyed on form field name with a tuple of</span>
@@ -145,7 +159,10 @@
 
         <span class="k">return</span> <span class="p">{}</span></div>
 
-<div class="viewcode-block" id="DocumentSearchView.get_form_kwargs"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_form_kwargs">[docs]</a>    <span class="k">def</span> <span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentSearchView.get_form_kwargs">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_form_kwargs">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;get form arguments from request and configured defaults&quot;&quot;&quot;</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_form_kwargs</span><span class="p">()</span>
         <span class="c1"># use GET instead of default POST/PUT for form data</span>
@@ -172,7 +189,10 @@
 
         <span class="k">return</span> <span class="n">kwargs</span></div>
 
-<div class="viewcode-block" id="DocumentSearchView.get_queryset"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_queryset">[docs]</a>    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentSearchView.get_queryset">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_queryset">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform requested search and return solr queryset&quot;&quot;&quot;</span>
         <span class="c1"># limit to documents with published status (i.e., no suppressed documents);</span>
         <span class="c1"># get counts of facets, excluding type filter</span>
@@ -257,7 +277,10 @@
 
         <span class="k">return</span> <span class="n">documents</span></div>
 
-<div class="viewcode-block" id="DocumentSearchView.get_paginate_by"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_paginate_by">[docs]</a>    <span class="k">def</span> <span class="nf">get_paginate_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentSearchView.get_paginate_by">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_paginate_by">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_paginate_by</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Try to get pagination from GET request query,</span>
 <span class="sd">        if there is none fallback to the original.&quot;&quot;&quot;</span>
         <span class="n">paginate_by</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_paginate_by</span><span class="p">(</span><span class="n">queryset</span><span class="p">)</span>
@@ -273,7 +296,10 @@
                 <span class="k">pass</span>
         <span class="k">return</span> <span class="n">paginate_by</span></div>
 
-<div class="viewcode-block" id="DocumentSearchView.get_context_data"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentSearchView.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentSearchView.get_context_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;extend context data to add page metadata, highlighting,</span>
 <span class="sd">        and update form with facets&quot;&quot;&quot;</span>
         <span class="n">context_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -294,16 +320,22 @@
             <span class="p">}</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">context_data</span></div></div>
+        <span class="k">return</span> <span class="n">context_data</span></div>
+</div>
 
 
-<div class="viewcode-block" id="DocumentDetailBase"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailBase">[docs]</a><span class="k">class</span> <span class="nc">DocumentDetailBase</span><span class="p">(</span><span class="n">SolrLastModifiedMixin</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentDetailBase">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailBase">[docs]</a>
+<span class="k">class</span> <span class="nc">DocumentDetailBase</span><span class="p">(</span><span class="n">SolrLastModifiedMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;View mixin to handle lastmodified and redirects for documents with old PGPIDs.</span>
 <span class="sd">    Overrides get request in the case of a 404, looking for any records</span>
 <span class="sd">    with passed PGPID in old_pgpids, and if found, redirects to that document</span>
 <span class="sd">    with current PGPID.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="DocumentDetailBase.get"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailBase.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="DocumentDetailBase.get">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailBase.get">[docs]</a>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;extend GET to check for old pgpid and redirect on 404&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -319,12 +351,19 @@
             <span class="c1"># otherwise, continue raising the 404</span>
             <span class="k">raise</span></div>
 
-<div class="viewcode-block" id="DocumentDetailBase.get_solr_lastmodified_filters"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailBase.get_solr_lastmodified_filters">[docs]</a>    <span class="k">def</span> <span class="nf">get_solr_lastmodified_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentDetailBase.get_solr_lastmodified_filters">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailBase.get_solr_lastmodified_filters">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_solr_lastmodified_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter solr last modified query by pgpid&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;pgpid_i&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pk&quot;</span><span class="p">],</span> <span class="s2">&quot;item_type_s&quot;</span><span class="p">:</span> <span class="s2">&quot;document&quot;</span><span class="p">}</span></div></div>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;pgpid_i&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pk&quot;</span><span class="p">],</span> <span class="s2">&quot;item_type_s&quot;</span><span class="p">:</span> <span class="s2">&quot;document&quot;</span><span class="p">}</span></div>
+</div>
 
 
-<div class="viewcode-block" id="DocumentDetailView"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailView">[docs]</a><span class="k">class</span> <span class="nc">DocumentDetailView</span><span class="p">(</span><span class="n">DocumentDetailBase</span><span class="p">,</span> <span class="n">DetailView</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentDetailView">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailView">[docs]</a>
+<span class="k">class</span> <span class="nc">DocumentDetailView</span><span class="p">(</span><span class="n">DocumentDetailBase</span><span class="p">,</span> <span class="n">DetailView</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;public display of a single :class:`~geniza.corpus.models.Document`&quot;&quot;&quot;</span>
 
     <span class="n">model</span> <span class="o">=</span> <span class="n">Document</span>
@@ -332,23 +371,38 @@
     <span class="c1">#: bound name of this view, for use in generating absolute url for redirect</span>
     <span class="n">viewname</span> <span class="o">=</span> <span class="s2">&quot;corpus:document&quot;</span>
 
-<div class="viewcode-block" id="DocumentDetailView.page_title"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.page_title">[docs]</a>    <span class="k">def</span> <span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DocumentDetailView.page_title">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.page_title">[docs]</a>
+    <span class="k">def</span> <span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;page title, for metadata; uses document title&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span><span class="o">.</span><span class="n">title</span></div>
 
-<div class="viewcode-block" id="DocumentDetailView.page_description"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.page_description">[docs]</a>    <span class="k">def</span> <span class="nf">page_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentDetailView.page_description">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.page_description">[docs]</a>
+    <span class="k">def</span> <span class="nf">page_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;page description, for metadata; uses truncated document description&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">Truncator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span><span class="o">.</span><span class="n">description</span><span class="p">)</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DocumentDetailView.get_queryset"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.get_queryset">[docs]</a>    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentDetailView.get_queryset">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.get_queryset">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Don&#39;t show document if it isn&#39;t public&quot;&quot;&quot;</span>
         <span class="n">queryset</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_queryset</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">queryset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="n">Document</span><span class="o">.</span><span class="n">PUBLIC</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DocumentDetailView.get_context_data"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentDetailView.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.get_context_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;extend context data to add page metadata&quot;&quot;&quot;</span>
         <span class="n">context_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">images</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">iiif_images</span><span class="p">(</span><span class="n">with_placeholders</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># collect available panels</span>
+        <span class="n">available_panels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">available_digital_content</span>
+
         <span class="n">context_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">&quot;page_title&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">page_title</span><span class="p">(),</span>
@@ -373,27 +427,47 @@
                 <span class="s2">&quot;images&quot;</span><span class="p">:</span> <span class="n">images</span><span class="p">,</span>
                 <span class="c1"># first image for twitter/opengraph meta tags</span>
                 <span class="s2">&quot;meta_image&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">images</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;image&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">images</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="c1"># show the first two available panels by default (in order of priority)</span>
+                <span class="s2">&quot;default_shown&quot;</span><span class="p">:</span> <span class="n">available_panels</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span>
+                <span class="c1"># disable any fully unavailable panels</span>
+                <span class="s2">&quot;disabled&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="n">panel</span>
+                    <span class="k">for</span> <span class="n">panel</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;images&quot;</span><span class="p">,</span> <span class="s2">&quot;translation&quot;</span><span class="p">,</span> <span class="s2">&quot;transcription&quot;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">panel</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">available_panels</span>
+                <span class="p">],</span>
             <span class="p">}</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">context_data</span></div>
 
-<div class="viewcode-block" id="DocumentDetailView.get_absolute_url"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.get_absolute_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentDetailView.get_absolute_url">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentDetailView.get_absolute_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the permalink to this page.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">absolutize_url</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewname</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pk&quot;</span><span class="p">]]))</span></div></div>
+        <span class="k">return</span> <span class="n">absolutize_url</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewname</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pk&quot;</span><span class="p">]]))</span></div>
+</div>
 
 
-<div class="viewcode-block" id="DocumentScholarshipView"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView">[docs]</a><span class="k">class</span> <span class="nc">DocumentScholarshipView</span><span class="p">(</span><span class="n">DocumentDetailView</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentScholarshipView">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView">[docs]</a>
+<span class="k">class</span> <span class="nc">DocumentScholarshipView</span><span class="p">(</span><span class="n">DocumentDetailView</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;List of :class:`~geniza.footnotes.models.Footnote`</span>
 <span class="sd">    references for a single :class:`~geniza.corpus.models.Document`&quot;&quot;&quot;</span>
 
     <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;corpus/document_scholarship.html&quot;</span>
     <span class="n">viewname</span> <span class="o">=</span> <span class="s2">&quot;corpus:document-scholarship&quot;</span>
 
-<div class="viewcode-block" id="DocumentScholarshipView.page_title"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView.page_title">[docs]</a>    <span class="k">def</span> <span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DocumentScholarshipView.page_title">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView.page_title">[docs]</a>
+    <span class="k">def</span> <span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Translators: title of document scholarship page</span>
         <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Scholarship on </span><span class="si">%(doc)s</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;doc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span><span class="o">.</span><span class="n">title</span><span class="p">}</span></div>
 
-<div class="viewcode-block" id="DocumentScholarshipView.page_description"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView.page_description">[docs]</a>    <span class="k">def</span> <span class="nf">page_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentScholarshipView.page_description">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView.page_description">[docs]</a>
+    <span class="k">def</span> <span class="nf">page_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
         <span class="n">count</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">footnotes</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
         <span class="c1"># Translators: description of document scholarship page, for search engines</span>
@@ -405,7 +479,10 @@
             <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span>
         <span class="p">}</span></div>
 
-<div class="viewcode-block" id="DocumentScholarshipView.get_queryset"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView.get_queryset">[docs]</a>    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentScholarshipView.get_queryset">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView.get_queryset">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Prefetch footnotes, and don&#39;t show the page if there are none.&quot;&quot;&quot;</span>
         <span class="c1"># prefetch footnotes since we&#39;ll render all of them in the template</span>
         <span class="n">queryset</span> <span class="o">=</span> <span class="p">(</span>
@@ -417,7 +494,10 @@
 
         <span class="k">return</span> <span class="n">queryset</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">footnotes__isnull</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DocumentScholarshipView.get_context_data"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentScholarshipView.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentScholarshipView.get_context_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">context_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">context_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
@@ -426,10 +506,14 @@
                 <span class="s2">&quot;page_includes_transcriptions&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">context_data</span></div></div>
+        <span class="k">return</span> <span class="n">context_data</span></div>
+</div>
 
 
-<div class="viewcode-block" id="RelatedDocumentView"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView">[docs]</a><span class="k">class</span> <span class="nc">RelatedDocumentView</span><span class="p">(</span><span class="n">DocumentDetailView</span><span class="p">):</span>
+
+<div class="viewcode-block" id="RelatedDocumentView">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView">[docs]</a>
+<span class="k">class</span> <span class="nc">RelatedDocumentView</span><span class="p">(</span><span class="n">DocumentDetailView</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;List of :class:`~geniza.corpus.models.Document`</span>
 <span class="sd">    objects that are related to specific :class:`~geniza.corpus.models.Document`</span>
 <span class="sd">    (e.g., by occuring on the same shelfmark).&quot;&quot;&quot;</span>
@@ -437,11 +521,16 @@
     <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;corpus/related_documents.html&quot;</span>
     <span class="n">viewname</span> <span class="o">=</span> <span class="s2">&quot;corpus:related-documents&quot;</span>
 
-<div class="viewcode-block" id="RelatedDocumentView.page_title"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView.page_title">[docs]</a>    <span class="k">def</span> <span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="RelatedDocumentView.page_title">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView.page_title">[docs]</a>
+    <span class="k">def</span> <span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Translators: title of related documents page</span>
         <span class="k">return</span> <span class="n">_</span><span class="p">(</span><span class="s2">&quot;Related documents for </span><span class="si">%(doc)s</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">{</span><span class="s2">&quot;doc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span><span class="o">.</span><span class="n">title</span><span class="p">}</span></div>
 
-<div class="viewcode-block" id="RelatedDocumentView.page_description"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView.page_description">[docs]</a>    <span class="k">def</span> <span class="nf">page_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="RelatedDocumentView.page_description">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView.page_description">[docs]</a>
+    <span class="k">def</span> <span class="nf">page_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
         <span class="n">count</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">related_documents</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
         <span class="c1"># Translators: description of related documents page, for search engines</span>
@@ -453,20 +542,29 @@
             <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span>
         <span class="p">}</span></div>
 
-<div class="viewcode-block" id="RelatedDocumentView.get_context_data"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="RelatedDocumentView.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.RelatedDocumentView.get_context_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
         <span class="c1"># if there are no related documents, don&#39;t serve out this page</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">doc</span><span class="o">.</span><span class="n">related_documents</span><span class="o">.</span><span class="n">count</span><span class="p">():</span>
             <span class="k">raise</span> <span class="n">Http404</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="DocumentTranscriptionText"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentTranscriptionText">[docs]</a><span class="k">class</span> <span class="nc">DocumentTranscriptionText</span><span class="p">(</span><span class="n">DocumentDetailView</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentTranscriptionText">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentTranscriptionText">[docs]</a>
+<span class="k">class</span> <span class="nc">DocumentTranscriptionText</span><span class="p">(</span><span class="n">DocumentDetailView</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return transcription as plain text for download&quot;&quot;&quot;</span>
 
     <span class="n">viewname</span> <span class="o">=</span> <span class="s2">&quot;corpus:document-transcription-text&quot;</span>
 
-<div class="viewcode-block" id="DocumentTranscriptionText.get"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentTranscriptionText.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="DocumentTranscriptionText.get">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentTranscriptionText.get">[docs]</a>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">edition</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">digital_editions</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
@@ -486,17 +584,23 @@
             <span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="n">Footnote</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
             <span class="c1"># if there is no footnote, or no plain text content, return 404</span>
-            <span class="k">raise</span> <span class="n">Http404</span></div></div>
+            <span class="k">raise</span> <span class="n">Http404</span></div>
+</div>
 
 
-<div class="viewcode-block" id="DocumentManifestView"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentManifestView">[docs]</a><span class="k">class</span> <span class="nc">DocumentManifestView</span><span class="p">(</span><span class="n">DocumentDetailView</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentManifestView">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentManifestView">[docs]</a>
+<span class="k">class</span> <span class="nc">DocumentManifestView</span><span class="p">(</span><span class="n">DocumentDetailView</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a IIIF Presentation manifest for a document,</span>
 <span class="sd">    incorporating available canvases and attaching transcription</span>
 <span class="sd">    content via annotation.&quot;&quot;&quot;</span>
 
     <span class="n">viewname</span> <span class="o">=</span> <span class="s2">&quot;corpus-uris:document-manifest&quot;</span>
 
-<div class="viewcode-block" id="DocumentManifestView.get"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentManifestView.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="DocumentManifestView.get">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentManifestView.get">[docs]</a>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
         <span class="c1"># should 404 if no images or no transcription</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">document</span><span class="o">.</span><span class="n">has_transcription</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">document</span><span class="o">.</span><span class="n">has_image</span><span class="p">():</span>
@@ -592,16 +696,22 @@
             <span class="c1"># attach annotation list</span>
             <span class="n">first_canvas</span><span class="p">[</span><span class="s2">&quot;otherContent&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">other_content</span>
 
-        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">manifest</span><span class="p">),</span> <span class="n">encoder</span><span class="o">=</span><span class="n">iiif_utils</span><span class="o">.</span><span class="n">AttrDictEncoder</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">manifest</span><span class="p">),</span> <span class="n">encoder</span><span class="o">=</span><span class="n">iiif_utils</span><span class="o">.</span><span class="n">AttrDictEncoder</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="DocumentAnnotationListView"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentAnnotationListView">[docs]</a><span class="k">class</span> <span class="nc">DocumentAnnotationListView</span><span class="p">(</span><span class="n">DocumentDetailView</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentAnnotationListView">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentAnnotationListView">[docs]</a>
+<span class="k">class</span> <span class="nc">DocumentAnnotationListView</span><span class="p">(</span><span class="n">DocumentDetailView</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a IIIF Annotation List for a document to make transcription</span>
 <span class="sd">    content available for inclusion in local IIIF manifest.&quot;&quot;&quot;</span>
 
     <span class="n">viewname</span> <span class="o">=</span> <span class="s2">&quot;corpus-uris:document-annotations&quot;</span>
 
-<div class="viewcode-block" id="DocumentAnnotationListView.get"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentAnnotationListView.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="DocumentAnnotationListView.get">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentAnnotationListView.get">[docs]</a>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;handle GET request: construct and return JSON annotation list&quot;&quot;&quot;</span>
         <span class="n">document</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span>
         <span class="n">digital_editions</span> <span class="o">=</span> <span class="n">document</span><span class="o">.</span><span class="n">digital_editions</span><span class="p">()</span>
@@ -656,23 +766,35 @@
 
         <span class="n">annotation_list</span><span class="p">[</span><span class="s2">&quot;resources&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">resources</span>
 
-        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">annotation_list</span><span class="p">),</span> <span class="n">encoder</span><span class="o">=</span><span class="n">iiif_utils</span><span class="o">.</span><span class="n">AttrDictEncoder</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="n">JsonResponse</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">annotation_list</span><span class="p">),</span> <span class="n">encoder</span><span class="o">=</span><span class="n">iiif_utils</span><span class="o">.</span><span class="n">AttrDictEncoder</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="DocumentMerge"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentMerge">[docs]</a><span class="k">class</span> <span class="nc">DocumentMerge</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">FormView</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentMerge">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentMerge">[docs]</a>
+<span class="k">class</span> <span class="nc">DocumentMerge</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">FormView</span><span class="p">):</span>
     <span class="n">permission_required</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;corpus.change_document&quot;</span><span class="p">,</span> <span class="s2">&quot;corpus.delete_document&quot;</span><span class="p">)</span>
     <span class="n">form_class</span> <span class="o">=</span> <span class="n">DocumentMergeForm</span>
     <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;admin/corpus/document/merge.html&quot;</span>
 
-<div class="viewcode-block" id="DocumentMerge.get_success_url"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentMerge.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DocumentMerge.get_success_url">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentMerge.get_success_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;admin:corpus_document_change&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_document</span><span class="o">.</span><span class="n">id</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="DocumentMerge.get_form_kwargs"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentMerge.get_form_kwargs">[docs]</a>    <span class="k">def</span> <span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentMerge.get_form_kwargs">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentMerge.get_form_kwargs">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">form_kwargs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">DocumentMerge</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_form_kwargs</span><span class="p">()</span>
         <span class="n">form_kwargs</span><span class="p">[</span><span class="s2">&quot;document_ids&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">document_ids</span>
         <span class="k">return</span> <span class="n">form_kwargs</span></div>
 
-<div class="viewcode-block" id="DocumentMerge.get_initial"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentMerge.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentMerge.get_initial">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentMerge.get_initial">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Default to first document selected</span>
         <span class="n">document_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ids&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">document_ids</span><span class="p">:</span>
@@ -682,7 +804,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">document_ids</span> <span class="o">=</span> <span class="p">[]</span></div>
 
-<div class="viewcode-block" id="DocumentMerge.form_valid"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentMerge.form_valid">[docs]</a>    <span class="k">def</span> <span class="nf">form_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentMerge.form_valid">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentMerge.form_valid">[docs]</a>
+    <span class="k">def</span> <span class="nf">form_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge the selected documents into the primary document.&quot;&quot;&quot;</span>
         <span class="n">primary_doc</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s2">&quot;primary_document&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">primary_document</span> <span class="o">=</span> <span class="n">primary_doc</span>
@@ -710,7 +835,17 @@
 
         <span class="c1"># Merge secondary documents into the selected primary document</span>
         <span class="n">user</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">primary_doc</span><span class="o">.</span><span class="n">merge_with</span><span class="p">(</span><span class="n">secondary_docs</span><span class="p">,</span> <span class="n">rationale</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">primary_doc</span><span class="o">.</span><span class="n">merge_with</span><span class="p">(</span><span class="n">secondary_docs</span><span class="p">,</span> <span class="n">rationale</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="c1"># in case the merge resulted in an error, display error to user</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+            <span class="c1"># redirect to this form page instead of one of the documents</span>
+            <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">?ids=</span><span class="si">%s</span><span class="s2">&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;admin:document-merge&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ids&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)),</span>
+            <span class="p">)</span>
 
         <span class="c1"># Display info about the merge to the user</span>
         <span class="n">new_doc_link</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;admin:corpus_document_change&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">primary_doc</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
@@ -721,13 +856,19 @@
             <span class="p">),</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">DocumentMerge</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">form_valid</span><span class="p">(</span><span class="n">form</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">DocumentMerge</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">form_valid</span><span class="p">(</span><span class="n">form</span><span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="SourceAutocompleteView"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.SourceAutocompleteView">[docs]</a><span class="k">class</span> <span class="nc">SourceAutocompleteView</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">autocomplete</span><span class="o">.</span><span class="n">Select2QuerySetView</span><span class="p">):</span>
+
+<div class="viewcode-block" id="SourceAutocompleteView">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.SourceAutocompleteView">[docs]</a>
+<span class="k">class</span> <span class="nc">SourceAutocompleteView</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">autocomplete</span><span class="o">.</span><span class="n">Select2QuerySetView</span><span class="p">):</span>
     <span class="n">permission_required</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;corpus.change_document&quot;</span><span class="p">,)</span>
 
-<div class="viewcode-block" id="SourceAutocompleteView.get_queryset"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.SourceAutocompleteView.get_queryset">[docs]</a>    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SourceAutocompleteView.get_queryset">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.SourceAutocompleteView.get_queryset">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;sources filtered by entered query, or all sources, ordered by author last name&quot;&quot;&quot;</span>
         <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">qs</span> <span class="o">=</span> <span class="n">Source</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s2">&quot;authors__last_name&quot;</span><span class="p">)</span>
@@ -737,24 +878,33 @@
                 <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">authors__first_name__istartswith</span><span class="o">=</span><span class="n">q</span><span class="p">)</span>
                 <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">authors__last_name__istartswith</span><span class="o">=</span><span class="n">q</span><span class="p">)</span>
             <span class="p">)</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">qs</span></div></div>
+        <span class="k">return</span> <span class="n">qs</span></div>
+</div>
 
 
-<div class="viewcode-block" id="DocumentAddTranscriptionView"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentAddTranscriptionView">[docs]</a><span class="k">class</span> <span class="nc">DocumentAddTranscriptionView</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">DetailView</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentAddTranscriptionView">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentAddTranscriptionView">[docs]</a>
+<span class="k">class</span> <span class="nc">DocumentAddTranscriptionView</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">DetailView</span><span class="p">):</span>
     <span class="n">permission_required</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;corpus.change_document&quot;</span><span class="p">,)</span>
     <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;corpus/add_transcription_source.html&quot;</span>
     <span class="n">viewname</span> <span class="o">=</span> <span class="s2">&quot;corpus:document-add-transcription&quot;</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">Document</span>
     <span class="n">doc_relation</span> <span class="o">=</span> <span class="s2">&quot;transcription&quot;</span>
 
-<div class="viewcode-block" id="DocumentAddTranscriptionView.page_title"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentAddTranscriptionView.page_title">[docs]</a>    <span class="k">def</span> <span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DocumentAddTranscriptionView.page_title">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentAddTranscriptionView.page_title">[docs]</a>
+    <span class="k">def</span> <span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Title of add transcription/translation page&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;Add a new </span><span class="si">%(doc_relation)s</span><span class="s2"> for </span><span class="si">%(doc)s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">{</span>
             <span class="s2">&quot;doc_relation&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_relation</span><span class="p">,</span>
             <span class="s2">&quot;doc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
         <span class="p">}</span></div>
 
-<div class="viewcode-block" id="DocumentAddTranscriptionView.post"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentAddTranscriptionView.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentAddTranscriptionView.post">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentAddTranscriptionView.post">[docs]</a>
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create footnote linking source to document, then redirect to edit transcription/translation view&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span>
             <span class="n">reverse</span><span class="p">(</span>
@@ -765,7 +915,10 @@
             <span class="p">)</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DocumentAddTranscriptionView.get_context_data"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentAddTranscriptionView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentAddTranscriptionView.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentAddTranscriptionView.get_context_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Pass form with autocomplete to context&quot;&quot;&quot;</span>
         <span class="n">context_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">context_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
@@ -776,10 +929,14 @@
                 <span class="s2">&quot;doc_relation&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_relation</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">context_data</span></div></div>
+        <span class="k">return</span> <span class="n">context_data</span></div>
+</div>
 
 
-<div class="viewcode-block" id="DocumentTranscribeView"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentTranscribeView">[docs]</a><span class="k">class</span> <span class="nc">DocumentTranscribeView</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">DocumentDetailView</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentTranscribeView">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentTranscribeView">[docs]</a>
+<span class="k">class</span> <span class="nc">DocumentTranscribeView</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">DocumentDetailView</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;View for the Transcription/Translation Editor page that uses annotorious-tahqiq&quot;&quot;&quot;</span>
 
     <span class="n">permission_required</span> <span class="o">=</span> <span class="s2">&quot;corpus.change_document&quot;</span>
@@ -787,14 +944,19 @@
     <span class="n">viewname</span> <span class="o">=</span> <span class="s2">&quot;corpus:document-transcribe&quot;</span>
     <span class="n">doc_relation</span> <span class="o">=</span> <span class="s2">&quot;transcription&quot;</span>
 
-<div class="viewcode-block" id="DocumentTranscribeView.page_title"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentTranscribeView.page_title">[docs]</a>    <span class="k">def</span> <span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DocumentTranscribeView.page_title">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentTranscribeView.page_title">[docs]</a>
+    <span class="k">def</span> <span class="nf">page_title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Title of transcription/translation editor page&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;Edit </span><span class="si">%(doc_relation)s</span><span class="s2"> for </span><span class="si">%(doc)s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">{</span>
             <span class="s2">&quot;doc_relation&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_relation</span><span class="p">,</span>
             <span class="s2">&quot;doc&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_object</span><span class="p">()</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
         <span class="p">}</span></div>
 
-<div class="viewcode-block" id="DocumentTranscribeView.get_context_data"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentTranscribeView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DocumentTranscribeView.get_context_data">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.DocumentTranscribeView.get_context_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Pass annotation configuration and TinyMCE API key to page context&quot;&quot;&quot;</span>
         <span class="n">context_data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -841,6 +1003,12 @@
             <span class="c1"># transcription always rtl</span>
             <span class="n">text_direction</span> <span class="o">=</span> <span class="s2">&quot;rtl&quot;</span>
 
+        <span class="c1"># override show default/disabled logic from document detail view.</span>
+        <span class="c1"># always show images and the panel we are editing, even if unavailable</span>
+        <span class="n">default_shown</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;images&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_relation</span><span class="p">]</span>
+        <span class="c1"># the third panel can still be disabled (e.g. transcription when editing translation)</span>
+        <span class="n">disabled</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">context_data</span><span class="p">[</span><span class="s2">&quot;disabled&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">default_shown</span><span class="p">]</span>
+
         <span class="n">context_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">&quot;annotation_config&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -865,12 +1033,18 @@
                 <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;source_label&quot;</span><span class="p">:</span> <span class="n">source_label</span> <span class="k">if</span> <span class="n">source_label</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;page_type&quot;</span><span class="p">:</span> <span class="s2">&quot;document annotating&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;disabled&quot;</span><span class="p">:</span> <span class="n">disabled</span><span class="p">,</span>
+                <span class="s2">&quot;default_shown&quot;</span><span class="p">:</span> <span class="n">default_shown</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">context_data</span></div></div>
+        <span class="k">return</span> <span class="n">context_data</span></div>
+</div>
 
 
-<div class="viewcode-block" id="TagMerge"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.TagMerge">[docs]</a><span class="k">class</span> <span class="nc">TagMerge</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">FormView</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TagMerge">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.TagMerge">[docs]</a>
+<span class="k">class</span> <span class="nc">TagMerge</span><span class="p">(</span><span class="n">PermissionRequiredMixin</span><span class="p">,</span> <span class="n">FormView</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class-based view for merging tags, closely adapted from DocumentMerge.&quot;&quot;&quot;</span>
 
     <span class="n">permission_required</span> <span class="o">=</span> <span class="p">(</span>
@@ -883,15 +1057,23 @@
     <span class="n">form_class</span> <span class="o">=</span> <span class="n">TagMergeForm</span>
     <span class="n">template_name</span> <span class="o">=</span> <span class="s2">&quot;admin/corpus/tag/merge.html&quot;</span>
 
-<div class="viewcode-block" id="TagMerge.get_success_url"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.TagMerge.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="TagMerge.get_success_url">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.TagMerge.get_success_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s2">&quot;admin:taggit_tag_change&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">primary_tag</span><span class="o">.</span><span class="n">id</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="TagMerge.get_form_kwargs"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.TagMerge.get_form_kwargs">[docs]</a>    <span class="k">def</span> <span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TagMerge.get_form_kwargs">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.TagMerge.get_form_kwargs">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">form_kwargs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_form_kwargs</span><span class="p">()</span>
         <span class="n">form_kwargs</span><span class="p">[</span><span class="s2">&quot;tag_ids&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_ids</span>
         <span class="k">return</span> <span class="n">form_kwargs</span></div>
 
-<div class="viewcode-block" id="TagMerge.get_initial"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.TagMerge.get_initial">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TagMerge.get_initial">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.TagMerge.get_initial">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Default to first tag selected</span>
         <span class="n">tag_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ids&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">tag_ids</span><span class="p">:</span>
@@ -901,7 +1083,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">tag_ids</span> <span class="o">=</span> <span class="p">[]</span></div>
 
-<div class="viewcode-block" id="TagMerge.merge_tags"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.TagMerge.merge_tags">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="TagMerge.merge_tags">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.TagMerge.merge_tags">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">merge_tags</span><span class="p">(</span><span class="n">primary_tag</span><span class="p">,</span> <span class="n">secondary_tags</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge secondary_tags into primary_tag: tag all documents tagged with any of the</span>
 <span class="sd">        secondary_tags with the primary_tag, then delete all secondary_tags, and record</span>
@@ -923,7 +1108,10 @@
             <span class="n">action_flag</span><span class="o">=</span><span class="n">CHANGE</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="TagMerge.form_valid"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.TagMerge.form_valid">[docs]</a>    <span class="k">def</span> <span class="nf">form_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TagMerge.form_valid">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.TagMerge.form_valid">[docs]</a>
+    <span class="k">def</span> <span class="nf">form_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Merge the selected tags into the primary tag.&quot;&quot;&quot;</span>
         <span class="n">primary_tag</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s2">&quot;primary_tag&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">primary_tag</span> <span class="o">=</span> <span class="n">primary_tag</span>
@@ -947,13 +1135,17 @@
             <span class="p">),</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">form_valid</span><span class="p">(</span><span class="n">form</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">form_valid</span><span class="p">(</span><span class="n">form</span><span class="p">)</span></div>
+</div>
+
 
 
 <span class="c1"># --------------- Publish CSV to sync with old PGP site --------------------- #</span>
 
 
-<div class="viewcode-block" id="old_pgp_edition"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.old_pgp_edition">[docs]</a><span class="k">def</span> <span class="nf">old_pgp_edition</span><span class="p">(</span><span class="n">editions</span><span class="p">):</span>
+<div class="viewcode-block" id="old_pgp_edition">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.old_pgp_edition">[docs]</a>
+<span class="k">def</span> <span class="nf">old_pgp_edition</span><span class="p">(</span><span class="n">editions</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;output footnote and source information in a format similar to</span>
 <span class="sd">    old pgp metadata editor/editions.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">editions</span><span class="p">:</span>
@@ -974,7 +1166,10 @@
     <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="old_pgp_tabulate_data"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.old_pgp_tabulate_data">[docs]</a><span class="k">def</span> <span class="nf">old_pgp_tabulate_data</span><span class="p">(</span><span class="n">queryset</span><span class="p">):</span>
+
+<div class="viewcode-block" id="old_pgp_tabulate_data">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.old_pgp_tabulate_data">[docs]</a>
+<span class="k">def</span> <span class="nf">old_pgp_tabulate_data</span><span class="p">(</span><span class="n">queryset</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Takes a :class:`~geniza.corpus.models.Document` queryset and</span>
 <span class="sd">    yields rows of data for serialization as csv in :meth:`pgp_metadata_for_old_site`&quot;&quot;&quot;</span>
     <span class="c1"># NOTE: This logic assumes that documents will always have a fragment</span>
@@ -1005,7 +1200,10 @@
         <span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="pgp_metadata_for_old_site"><a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.pgp_metadata_for_old_site">[docs]</a><span class="k">def</span> <span class="nf">pgp_metadata_for_old_site</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+
+<div class="viewcode-block" id="pgp_metadata_for_old_site">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.views.pgp_metadata_for_old_site">[docs]</a>
+<span class="k">def</span> <span class="nf">pgp_metadata_for_old_site</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stream metadata in CSV format for index and display in the old PGP site.&quot;&quot;&quot;</span>
 
     <span class="c1"># limit to documents with associated fragments, since the output</span>
@@ -1045,6 +1243,7 @@
         <span class="p">],</span>
         <span class="n">old_pgp_tabulate_data</span><span class="p">(</span><span class="n">queryset</span><span class="p">),</span>
     <span class="p">)</span></div>
+
 
 
 <span class="c1"># --------------------------------------------------------------------------- #</span>
@@ -1120,7 +1319,7 @@
       &copy;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
     </div>
