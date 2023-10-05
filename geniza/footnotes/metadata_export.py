@@ -58,7 +58,9 @@ class SourceExporter(Exporter):
             "edition": source.edition,
             "other_info": source.other_info,
             "page_range": source.page_range,
-            "languages": {lang.name for lang in source.languages.all()},
+            "languages": {
+                lang.name for lang in source.languages.all() if lang.code != "zxx"
+            },
             "url": source.url,
             "notes": source.notes,
             # count via annotated queryset

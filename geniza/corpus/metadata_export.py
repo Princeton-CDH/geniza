@@ -33,6 +33,10 @@ class DocumentExporter(Exporter):
         "doc_date_original",
         "doc_date_calendar",
         "doc_date_standard",
+        "inferred_date_display",
+        "inferred_date_standard",
+        "inferred_date_rationale",
+        "inferred_date_notes",
         "initial_entry",
         "last_modified",
         "input_by",
@@ -74,6 +78,7 @@ class DocumentExporter(Exporter):
                 "secondary_languages",
                 "log_entries",
                 "log_entries__user",
+                "dating_set",
                 Prefetch(
                     "footnotes",
                     queryset=Footnote.objects.select_related(
@@ -126,6 +131,7 @@ class DocumentExporter(Exporter):
             for fragment in all_fragments
             if fragment.collection
         ]
+        datings = doc.dating_set.all()
 
         outd = {}
         outd["pgpid"] = doc.id
@@ -158,6 +164,18 @@ class DocumentExporter(Exporter):
         outd["doc_date_original"] = doc.doc_date_original
         outd["doc_date_calendar"] = doc.get_doc_date_calendar_display()
         outd["doc_date_standard"] = doc.doc_date_standard
+        outd["inferred_date_display"] = [
+            dating.display_date for dating in datings if dating.display_date
+        ]
+        outd["inferred_date_standard"] = [
+            dating.standard_date for dating in datings if dating.standard_date
+        ]
+        outd["inferred_date_rationale"] = [
+            dating.get_rationale_display() for dating in datings if dating.notes
+        ]
+        outd["inferred_date_notes"] = [
+            dating.notes for dating in datings if dating.notes
+        ]
 
         # default sort is most recent first, so initial input is last
         # convert to list so we can do negative indexing, instead of calling last()

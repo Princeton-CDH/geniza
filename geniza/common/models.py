@@ -1,6 +1,17 @@
+from functools import cache
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.safestring import mark_safe
+from modeltranslation.utils import fallbacks
+
+
+def cached_class_property(f):
+    """
+    Reusable decorator to cache a class property, as opposed to an instance property.
+    from https://stackoverflow.com/a/71887897
+    """
+    return classmethod(property(cache(f)))
 
 
 # Create your models here.
@@ -60,3 +71,42 @@ class UserProfile(models.Model):
     def __str__(self):
         # needed for display label in admin
         return "User profile for %s" % (self.user)
+
+
+class DisplayLabelMixin:
+    """
+    Mixin for models with translatable display labels that may differ from names, in
+    order to override fallback behavior when a label for the current language is not defined.
+    Used for search response handling and display on the public frontend.
+
+    Example: DocumentType with name 'Legal' has a display label in English, 'Legal document'.
+    In Hebrew, it only has a name 'מסמך משפטי' and no display label. In English, we want to show
+    DocumentType.display_label_en. In Hebrew, we want to show DocumentType.name_he because
+    display_label_he is not defined. We also need to ensure that the document type
+    מסמך משפטי can be looked up by display_label_en, as that is what gets indexed in solr.
+    """
+
+    def __str__(self):
+        # temporarily turn off model translate fallbacks;
+        # if display label for current language is not defined,
+        # we want name for the current language rather than the
+        # fallback value for display label
+        with fallbacks(False):
+            current_lang_label = self.display_label or self.name
+
+        return current_lang_label or self.display_label or self.name
+
+    def natural_key(self):
+        """Natural key, name"""
+        return (self.name,)
+
+    @classmethod
+    def objects_by_label(cls):
+        """A dict of object instances keyed on English display label, used for search form
+        and search results, which should be based on Solr facet and query responses (indexed in
+        English)."""
+        return {
+            # lookup on display_label_en/name_en since solr should always index in English
+            (obj.display_label_en or obj.name_en): obj
+            for obj in cls.objects.all()
+        }

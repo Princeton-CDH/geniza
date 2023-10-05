@@ -158,9 +158,18 @@ class Source(models.Model):
     other_info = models.TextField(
         blank=True, help_text="Additional citation information, if any"
     )
-    source_type = models.ForeignKey(SourceType, on_delete=models.CASCADE)
+    source_type = models.ForeignKey(
+        SourceType,
+        on_delete=models.CASCADE,
+        help_text="""The form of the source's publication. Note: for unpublished sources, be sure
+        to create separate Source records for unpublished transcriptions and unpublished
+        translations, even if they reside on the same digital document.""",
+    )
     languages = models.ManyToManyField(
-        SourceLanguage, help_text="The language(s) the source is written in"
+        SourceLanguage,
+        help_text="""The language(s) the source is written in. Note: The Unspecified language
+        option should only ever be used for unpublished transcriptions, as the language of the
+        transcription is already marked on the document.""",
     )
     url = models.URLField(blank=True, max_length=300, verbose_name="URL")
     # preliminary place to store transcription text; should not be editable
@@ -259,11 +268,12 @@ class Source(models.Model):
                 parts.append(edition_str)
 
         # Add non-English languages as parenthetical
-        non_english_langs = 0
+        included_langs = 0
         if self.languages.exists():
             for lang in self.languages.all():
-                if "English" not in str(lang):
-                    non_english_langs += 1
+                # Also prevent Unspecified from showing up in source citations
+                if "English" not in str(lang) and "Unspecified" not in str(lang):
+                    included_langs += 1
                     parts.append("(in %s)" % lang)
 
         # Handling presence of book/journal title
@@ -274,7 +284,7 @@ class Source(models.Model):
             #   NOT "Title" (in Hebrew) --> "Title," (in Hebrew)
             if self.title and (
                 self.source_type.type in doublequoted_types
-                and not non_english_langs  # put comma after language even when doublequotes present
+                and not included_langs  # put comma after language even when doublequotes present
             ):
                 # find rightmost doublequote
                 formatted_title = parts[-1]
@@ -378,7 +388,7 @@ class Source(models.Model):
         use_comma = (
             extra_fields
             or self.title
-            or (self.journal and not non_english_langs)
+            or (self.journal and not included_langs)
             or self.source_type.type == "Unpublished"
         )
         delimiter = ", " if use_comma else " "
@@ -431,7 +441,7 @@ class Source(models.Model):
 class FootnoteQuerySet(models.QuerySet):
     def includes_footnote(self, other):
         """Check if the current queryset includes a match for the
-        specified footnotes. Matches are made by comparing content source,
+        specified footnote. Matches are made by comparing content source,
         location, document relation type, and notes.
         Returns the matching object if there was one, or False if not."""
 
@@ -598,7 +608,10 @@ class Footnote(TrackChangesModel):
         # keyed on canvas uri
         # handle multiple annotations on the same canvas
         html_content = defaultdict(list)
-        for a in self.annotation_set.all():
+        # order by optional position property (set by manual reorder in editor), then date
+        for a in self.annotation_set.all().order_by(
+            "content__schema:position", "created"
+        ):
             if a.label:
                 html_content[a.target_source_id].append(f"<h3>{a.label}</h3>")
             html_content[a.target_source_id].append(a.body_content)

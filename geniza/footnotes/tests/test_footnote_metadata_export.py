@@ -6,7 +6,7 @@ from geniza.footnotes.metadata_export import (
     FootnoteExporter,
     SourceExporter,
 )
-from geniza.footnotes.models import Footnote
+from geniza.footnotes.models import Footnote, SourceLanguage
 
 
 @pytest.mark.django_db
@@ -37,6 +37,13 @@ def test_source_export_data(source):
     # no footnotes in this fixture
     assert data["num_footnotes"] == 0
     assert "url_admin" not in data
+
+    # should not include Unspecified language
+    source.languages.clear()
+    source.languages.add(SourceLanguage.objects.get(code="zxx"))
+    source_obj = src_exporter.get_queryset().get(pk=source.id)
+    data = src_exporter.get_export_data_dict(source_obj)
+    assert not data["languages"]
 
 
 @pytest.mark.django_db

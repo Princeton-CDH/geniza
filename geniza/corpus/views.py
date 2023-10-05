@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.db.models.query import Prefetch
 from django.http import Http404, HttpResponse, JsonResponse
@@ -318,6 +319,10 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
         """extend context data to add page metadata"""
         context_data = super().get_context_data(**kwargs)
         images = self.object.iiif_images(with_placeholders=True)
+
+        # collect available panels
+        available_panels = self.object.available_digital_content
+
         context_data.update(
             {
                 "page_title": self.page_title(),
@@ -342,6 +347,14 @@ class DocumentDetailView(DocumentDetailBase, DetailView):
                 "images": images,
                 # first image for twitter/opengraph meta tags
                 "meta_image": list(images.values())[0]["image"] if images else None,
+                # show the first two available panels by default (in order of priority)
+                "default_shown": available_panels[:2],
+                # disable any fully unavailable panels
+                "disabled": [
+                    panel
+                    for panel in ["images", "translation", "transcription"]
+                    if panel not in available_panels
+                ],
             }
         )
         return context_data
@@ -679,7 +692,17 @@ class DocumentMerge(PermissionRequiredMixin, FormView):
 
         # Merge secondary documents into the selected primary document
         user = getattr(self.request, "user", None)
-        primary_doc.merge_with(secondary_docs, rationale, user=user)
+
+        try:
+            primary_doc.merge_with(secondary_docs, rationale, user=user)
+        except ValidationError as err:
+            # in case the merge resulted in an error, display error to user
+            messages.error(self.request, err.message)
+            # redirect to this form page instead of one of the documents
+            return HttpResponseRedirect(
+                "%s?ids=%s"
+                % (reverse("admin:document-merge"), self.request.GET.get("ids", "")),
+            )
 
         # Display info about the merge to the user
         new_doc_link = reverse("admin:corpus_document_change", args=[primary_doc.id])
@@ -810,6 +833,12 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
             # transcription always rtl
             text_direction = "rtl"
 
+        # override show default/disabled logic from document detail view.
+        # always show images and the panel we are editing, even if unavailable
+        default_shown = ["images", self.doc_relation]
+        # the third panel can still be disabled (e.g. transcription when editing translation)
+        disabled = [p for p in context_data["disabled"] if p not in default_shown]
+
         context_data.update(
             {
                 "annotation_config": {
@@ -834,6 +863,8 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                 else "",
                 "source_label": source_label if source_label else "",
                 "page_type": "document annotating",
+                "disabled": disabled,
+                "default_shown": default_shown,
             }
         )
         return context_data
