@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+4.15.1
+------
+
+- bugfix: pin python dependency piffle==0.4 due to breaking change
+
 4.15
 ----
 
