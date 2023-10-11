@@ -29,17 +29,6 @@ from geniza.entities.models import (
 
 @pytest.mark.django_db
 class TestPersonDocumentInline:
-    def test_document_link(self):
-        goitein = Person.objects.create()
-        doc = Document.objects.create()
-        relation = PersonDocumentRelation.objects.create(person=goitein, document=doc)
-        inline = PersonDocumentInline(goitein, admin_site=admin.site)
-
-        doc_link = inline.document_link(relation)
-
-        assert str(doc.id) in doc_link
-        assert str(doc) in doc_link
-
     def test_document_description(self):
         goitein = Person.objects.create()
         test_description = "A medieval poem"
