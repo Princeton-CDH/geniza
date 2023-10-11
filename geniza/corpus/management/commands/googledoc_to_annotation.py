@@ -213,7 +213,7 @@ class Command(tei_to_annotation.Command):
             },
             SCOPES,
         )
-        creds = flow.run_local_server(port=0)
+        creds = flow.run_local_server(port=0, open_browser=False)
         return creds
 
     def list_all_files(self):

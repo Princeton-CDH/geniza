@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+4.15.2
+------
+
+- bugfix: do not require browser in Google Docs ingest script
+
 4.15.1
 ------
 
