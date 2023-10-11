@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Change Log &#8212; Princeton Geniza Project 4.15.1 documentation</title>
+    <title>Change Log &#8212; Princeton Geniza Project 4.15.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
-    <script src="_static/documentation_options.js?v=5b769c8d"></script>
+    <script src="_static/documentation_options.js?v=6c8e16e7"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -33,61 +33,87 @@
   <section id="change-log">
 <h1>Change Log<a class="headerlink" href="#change-log" title="Link to this heading">¶</a></h1>
 <section id="id1">
-<h2>4.15.1<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<h2>4.15.2<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>bugfix: do not require browser in Google Docs ingest script</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>4.15.1<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: pin python dependency piffle==0.4 due to breaking change</p></li>
 </ul>
 </section>
-<section id="id2">
-<h2>4.15<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<section id="id3">
+<h2>4.15<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>public site
-- bugfix: On tag change, document indexing is one revision behind
-- bugfix: Input date not always populating
-- bugfix: Digital translation footnote in scholarship records behaving incorrectly, excluding other footnotes on source</p></li>
-<li><p>image, transcription, translation viewer/editor
-- As a front end desktop user, I would like to see a bigger version of the document image in order to read the document (especially when no transcription exists).
-- As a public site viewer, I would like to see translation alongside the document image by default if both are present, so that I can read the document in my native language.
-- As a content editor, I want the “pop out” button in the transcription editor up higher, so it’s immediately accessible.
-- As a content editor, I want the ability to add polygon annotation boxes using the transcription editor, so I can draw accurate bounding boxes around text.
-- As a content editor, I want the location field for digital edition/translations to automatically populate from an existing edition/translation on the same source, so that I can save time manually re-entering it.
-- bugfix: Editing/deleting parts of annotation box titles results in unexpected behavior (no change or deleting entire annotation box)
-- bugfix: In Safari, ITT panel toggles leave trails
-- bugfix: Annotations on the document detail page do not respect reordering
-- bugfix: Transcription and translation may become misaligned when resizing window
-- bugfix: Alignment between Arabic transcriptions and English translations is slightly off</p></li>
-<li><p>admin
-- As a content admin, I would like filters in the document admin to search by English and Hebrew language of translation, so that I can collect those documents for CSV export for use in teaching.
-- As a content admin, I would like to include a rationale for the inferred date field from a list of options, so that I can enter data more efficiently and consistently.
-- As a content admin, I want inferred date and accompanying notes in the csv exports of documents, so that I can keep track of this information in my own research.
-- As a content editor, I want a “no language” option when entering source languages (with help text) for unpublished transcriptions because the language will automatically be determined by the document languages already present on the doc detail pages.
-- As a content editor, I want clear help text when adding a source to explain how to select the source language, so that it is done consistently for translations and transcriptions.
-- As a content admin, I want both dates on document and inferred dates to merge when I merge duplicate PGPIDS so no data is lost when cleaning up duplicates. If there are two different dates on documents for the same PGPID, I want there to be an error message drawing my attention to the issue so I can choose the correct date or otherwise record the discrepancy.
-- As a content editor, I want a way to filter documents by date in the admin for enhanced csv exports
-- bugfix: Mixed inlines/formsets breaks on lack of permissions
-- bugfix: Merging two documents with digital content footnotes for the same source results in unique constraint violation</p></li>
-<li><p>people and places
-- As a content editor, I want a separate field to record people’s names and roles in each document, so that I can build a structured dataset of all people across the PGP.
-- As a content editor, I want a separate field in the document detail page so that I can record place information mentioned in the document.
-- As a content editor, I want Person-Person relationship types visually sorted into their categories in the admin form, so that I can select them at a glance.
-- As a content admin, when adding people-to-people relationships in person pages, I want an added “ambiguity” category to the drop down so I can clarify when people are similar/not the same.
-- As a content admin, when viewing people-to-people relationships in person pages, I want reverse relationships to be visible, so that I don’t inadvertently add a relationship twice.</p></li>
+<li><dl class="simple">
+<dt>public site</dt><dd><ul>
+<li><p>bugfix: On tag change, document indexing is one revision behind</p></li>
+<li><p>bugfix: Input date not always populating</p></li>
+<li><p>bugfix: Digital translation footnote in scholarship records behaving incorrectly, excluding other footnotes on source</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>image, transcription, translation viewer/editor</dt><dd><ul>
+<li><p>As a front end desktop user, I would like to see a bigger version of the document image in order to read the document (especially when no transcription exists).</p></li>
+<li><p>As a public site viewer, I would like to see translation alongside the document image by default if both are present, so that I can read the document in my native language.</p></li>
+<li><p>As a content editor, I want the “pop out” button in the transcription editor up higher, so it’s immediately accessible.</p></li>
+<li><p>As a content editor, I want the ability to add polygon annotation boxes using the transcription editor, so I can draw accurate bounding boxes around text.</p></li>
+<li><p>As a content editor, I want the location field for digital edition/translations to automatically populate from an existing edition/translation on the same source, so that I can save time manually re-entering it.</p></li>
+<li><p>bugfix: Editing/deleting parts of annotation box titles results in unexpected behavior (no change or deleting entire annotation box)</p></li>
+<li><p>bugfix: In Safari, ITT panel toggles leave trails</p></li>
+<li><p>bugfix: Annotations on the document detail page do not respect reordering</p></li>
+<li><p>bugfix: Transcription and translation may become misaligned when resizing window</p></li>
+<li><p>bugfix: Alignment between Arabic transcriptions and English translations is slightly off</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>admin</dt><dd><ul>
+<li><p>As a content admin, I would like filters in the document admin to search by English and Hebrew language of translation, so that I can collect those documents for CSV export for use in teaching.</p></li>
+<li><p>As a content admin, I would like to include a rationale for the inferred date field from a list of options, so that I can enter data more efficiently and consistently.</p></li>
+<li><p>As a content admin, I want inferred date and accompanying notes in the csv exports of documents, so that I can keep track of this information in my own research.</p></li>
+<li><p>As a content editor, I want a “no language” option when entering source languages (with help text) for unpublished transcriptions because the language will automatically be determined by the document languages already present on the doc detail pages.</p></li>
+<li><p>As a content editor, I want clear help text when adding a source to explain how to select the source language, so that it is done consistently for translations and transcriptions.</p></li>
+<li><p>As a content admin, I want both dates on document and inferred dates to merge when I merge duplicate PGPIDS so no data is lost when cleaning up duplicates. If there are two different dates on documents for the same PGPID, I want there to be an error message drawing my attention to the issue so I can choose the correct date or otherwise record the discrepancy.</p></li>
+<li><p>As a content editor, I want a way to filter documents by date in the admin for enhanced csv exports</p></li>
+<li><p>bugfix: Mixed inlines/formsets breaks on lack of permissions</p></li>
+<li><p>bugfix: Merging two documents with digital content footnotes for the same source results in unique constraint violation</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>people and places</dt><dd><ul>
+<li><p>As a content editor, I want a separate field to record people’s names and roles in each document, so that I can build a structured dataset of all people across the PGP.</p></li>
+<li><p>As a content editor, I want a separate field in the document detail page so that I can record place information mentioned in the document.</p></li>
+<li><p>As a content editor, I want Person-Person relationship types visually sorted into their categories in the admin form, so that I can select them at a glance.</p></li>
+<li><p>As a content admin, when adding people-to-people relationships in person pages, I want an added “ambiguity” category to the drop down so I can clarify when people are similar/not the same.</p></li>
+<li><p>As a content admin, when viewing people-to-people relationships in person pages, I want reverse relationships to be visible, so that I don’t inadvertently add a relationship twice.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 </section>
-<section id="id3">
-<h2>4.14.2<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<section id="id4">
+<h2>4.14.2<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: fix tinyMCE text direction and API key instantiation</p></li>
 </ul>
 </section>
-<section id="id4">
-<h2>4.14.1<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<section id="id5">
+<h2>4.14.1<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: fix typo in permissions for tag merge</p></li>
 </ul>
 </section>
-<section id="id5">
-<h2>4.14<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<section id="id6">
+<h2>4.14<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -123,8 +149,8 @@ content.</p></li>
 </li>
 </ul>
 </section>
-<section id="id6">
-<h2>4.13<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<section id="id7">
+<h2>4.13<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -180,16 +206,16 @@ transcription editor cancels unsaved changes without warning</p></li>
 </li>
 </ul>
 </section>
-<section id="id7">
-<h2>4.12<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<section id="id8">
+<h2>4.12<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Revise annotation model to link footnotes using foreign keys instead of URIs</p></li>
 <li><p>As a content editor working on transcriptions, I want to be able to move transcriptions from one document to another, so that I can fix a mistake if a transcription was associated incorrectly.</p></li>
 <li><p>bugfix: transcriptions can be orphaned or lost when merging records</p></li>
 </ul>
 </section>
-<section id="id8">
-<h2>4.11.1<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<section id="id9">
+<h2>4.11.1<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: Admin shelfmark search on “BL OR …” gives too many and irrelevant results</p></li>
 <li><p>bugfix: Partial search in descriptions sorted by relevance not working well</p></li>
@@ -200,8 +226,8 @@ transcription editor cancels unsaved changes without warning</p></li>
 <li><p>bugfix: 500 error on wagtail pages for a deleted page model</p></li>
 </ul>
 </section>
-<section id="id9">
-<h2>4.11<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<section id="id10">
+<h2>4.11<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a frontend user, I want search results to include partial matches of phrases in descriptions sorted by relevance, so that I can search by incomplete phrases and view the closest matches first.</p></li>
 <li><p>As a content admin, I want document data exports synchronized to github so that there is a publicly accessible, versioned copy of project data available for researchers.</p></li>
@@ -214,16 +240,16 @@ transcription editor cancels unsaved changes without warning</p></li>
 <li><p>bugfix: search results don’t always highlight matches in description text</p></li>
 </ul>
 </section>
-<section id="id10">
-<h2>4.10.1<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
+<section id="id11">
+<h2>4.10.1<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: annotation export script errors if manifest uri doesn’t resolve
 to a valid document (handle deleted annotations on deleted documents)</p></li>
 <li><p>bugfix: documents in admin should be sorted by shelfmark by default</p></li>
 </ul>
 </section>
-<section id="id11">
-<h2>4.10<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
+<section id="id12">
+<h2>4.10<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -268,8 +294,8 @@ to a valid document (handle deleted annotations on deleted documents)</p></li>
 </li>
 </ul>
 </section>
-<section id="id12">
-<h2>4.9<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h2>
+<section id="id13">
+<h2>4.9<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h2>
 <p><em>transcription migration and new transcription editor</em></p>
 <section id="public-site">
 <h3>public site<a class="headerlink" href="#public-site" title="Link to this heading">¶</a></h3>
@@ -346,14 +372,14 @@ support for importing and displaying those manifests.</p>
 </ul>
 </section>
 </section>
-<section id="id13">
-<h2>4.8.1<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h2>
+<section id="id14">
+<h2>4.8.1<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: documents without images can’t be edited in django admin (makes image order override optional in django admin)</p></li>
 </ul>
 </section>
-<section id="id14">
-<h2>4.8<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h2>
+<section id="id15">
+<h2>4.8<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt>public site</dt><dd><ul>
@@ -384,8 +410,8 @@ support for importing and displaying those manifests.</p>
 - scripts for generating and working with static iiif content</p></li>
 </ul>
 </section>
-<section id="id15">
-<h2>4.7<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h2>
+<section id="id16">
+<h2>4.7<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h2>
 <p>Includes new document “excluded images” display, as well as tagging improvements for content editors.</p>
 <ul class="simple">
 <li><dl class="simple">
@@ -415,8 +441,8 @@ support for importing and displaying those manifests.</p>
 </li>
 </ul>
 </section>
-<section id="id16">
-<h2>4.6<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h2>
+<section id="id17">
+<h2>4.6<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h2>
 <p>Includes new image+transcription panel display.</p>
 <ul class="simple">
 <li><dl class="simple">
@@ -457,8 +483,8 @@ support for importing and displaying those manifests.</p>
 </li>
 </ul>
 </section>
-<section id="id17">
-<h2>4.5<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h2>
+<section id="id18">
+<h2>4.5<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site</p>
 <ul>
@@ -496,14 +522,14 @@ support for importing and displaying those manifests.</p>
 </li>
 </ul>
 </section>
-<section id="id18">
-<h2>4.4.1<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h2>
+<section id="id19">
+<h2>4.4.1<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: nav menu button light/dark toggle overlapping on tablet/mobile</p></li>
 </ul>
 </section>
-<section id="id19">
-<h2>4.4<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h2>
+<section id="id20">
+<h2>4.4<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site</p>
 <ul>
@@ -548,14 +574,14 @@ support for importing and displaying those manifests.</p>
 </li>
 </ul>
 </section>
-<section id="id20">
-<h2>4.3.1<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h2>
+<section id="id21">
+<h2>4.3.1<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>bugfix: edit link on public document detail page wasn’t loading correctly due to Turbo</p></li>
 </ul>
 </section>
-<section id="id21">
-<h2>4.3<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h2>
+<section id="id22">
+<h2>4.3<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site
 -   As a front-end user, I want the document search to automatically reload when I change my search terms, filters, or other options so that I can see the changed results more quickly.
@@ -582,8 +608,8 @@ support for importing and displaying those manifests.</p>
 <li><p>fix twitter/open graph title and description previews for wagtail pages</p></li>
 </ul>
 </section>
-<section id="id22">
-<h2>4.2<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h2>
+<section id="id23">
+<h2>4.2<a class="headerlink" href="#id23" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site
 -   As a front-end user, I want keyword searches automatically sorted by relevance, so that I see the most useful results first.
@@ -611,8 +637,8 @@ support for importing and displaying those manifests.</p>
 -   bugfix: image viewer breaks on mobile for documents with images but no transcriptions</p></li>
 </ul>
 </section>
-<section id="id23">
-<h2>4.1<a class="headerlink" href="#id23" title="Link to this heading">¶</a></h2>
+<section id="id24">
+<h2>4.1<a class="headerlink" href="#id24" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site
 -   As a user, I want to see image thumbnails with search results when available, so that I can quickly see which records have images and what they look like.
@@ -635,8 +661,8 @@ support for importing and displaying those manifests.</p>
 -   include software version in site footer</p></li>
 </ul>
 </section>
-<section id="id24">
-<h2>4.0<a class="headerlink" href="#id24" title="Link to this heading">¶</a></h2>
+<section id="id25">
+<h2>4.0<a class="headerlink" href="#id25" title="Link to this heading">¶</a></h2>
 <p><strong>Initial public version of Princeton Geniza Project v4.0</strong></p>
 <ul class="simple">
 <li><p>public site
@@ -673,8 +699,8 @@ support for importing and displaying those manifests.</p>
 -   Improve handling for IIIF content to work better with PUL/JTS materials</p></li>
 </ul>
 </section>
-<section id="id25">
-<h2>0.8<a class="headerlink" href="#id25" title="Link to this heading">¶</a></h2>
+<section id="id26">
+<h2>0.8<a class="headerlink" href="#id26" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>public site search and document display
 -   As a front-end user, I want to use fields in my keyword searches so I can make my searches more specific and targeted.
@@ -700,8 +726,8 @@ support for importing and displaying those manifests.</p>
 -   image files used in site design organized in site media, and organization documented</p></li>
 </ul>
 </section>
-<section id="id26">
-<h2>0.7<a class="headerlink" href="#id26" title="Link to this heading">¶</a></h2>
+<section id="id27">
+<h2>0.7<a class="headerlink" href="#id27" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>document search
 -   As a user I would like to know explicitly when a search result does not have any scholarship records so that I don’t have to compare with results that do.
@@ -738,16 +764,16 @@ support for importing and displaying those manifests.</p>
 <li><p>Configured and applied <cite>djhtml</cite> commmit hook for consistent formatting in django templates</p></li>
 </ul>
 </section>
-<section id="id27">
-<h2>0.6<a class="headerlink" href="#id27" title="Link to this heading">¶</a></h2>
+<section id="id28">
+<h2>0.6<a class="headerlink" href="#id28" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a content editor, I want duplicate joined documents to be automatically merged without losing their unique metadata, so that I don’t have to merge them manually.</p></li>
 <li><p>Setup for webpack build for frontend scss/js assets and static files</p></li>
 <li><p>bugfix: 500 error saving documents with footnotes (bad footnote equality check)</p></li>
 </ul>
 </section>
-<section id="id28">
-<h2>0.5<a class="headerlink" href="#id28" title="Link to this heading">¶</a></h2>
+<section id="id29">
+<h2>0.5<a class="headerlink" href="#id29" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a Content Editor, I want to see help text for Document Type so that I can make an informed decision while editing documents.</p></li>
 <li><p>As a content editor, I want a one time consolidation of India Book sources so that the source list correctly represents the book volumes.</p></li>
@@ -758,8 +784,8 @@ support for importing and displaying those manifests.</p>
 <li><p>Adopted isort python style and configured pre-commit hook</p></li>
 </ul>
 </section>
-<section id="id29">
-<h2>0.4<a class="headerlink" href="#id29" title="Link to this heading">¶</a></h2>
+<section id="id30">
+<h2>0.4<a class="headerlink" href="#id30" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a content editor, I would like to input dates in a separate field, so that both content editors and site users can sort and filter documents by date.</p></li>
 <li><p>As a content editor, I want to import fragment view and IIIF urls from a csv file into the database so that I can provide access to images for fragments.</p></li>
@@ -775,8 +801,8 @@ support for importing and displaying those manifests.</p>
 <li><p>Adopted black code style and configured pre-commit hook</p></li>
 </ul>
 </section>
-<section id="id30">
-<h2>0.3<a class="headerlink" href="#id30" title="Link to this heading">¶</a></h2>
+<section id="id31">
+<h2>0.3<a class="headerlink" href="#id31" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>As a Global Admin, I want new documents created in the database after data import to receive PGPIDs higher than the highest imported PGPID, so that identifiers will be unique and semi-sequential.</p></li>
 <li><p>As a Global Admin, I want documents associated with language+script based on display name when importing documents from metadata spreadsheet.</p></li>
@@ -855,18 +881,19 @@ support for importing and displaying those manifests.</p>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Change Log</a><ul>
-<li><a class="reference internal" href="#id1">4.15.1</a></li>
-<li><a class="reference internal" href="#id2">4.15</a></li>
-<li><a class="reference internal" href="#id3">4.14.2</a></li>
-<li><a class="reference internal" href="#id4">4.14.1</a></li>
-<li><a class="reference internal" href="#id5">4.14</a></li>
-<li><a class="reference internal" href="#id6">4.13</a></li>
-<li><a class="reference internal" href="#id7">4.12</a></li>
-<li><a class="reference internal" href="#id8">4.11.1</a></li>
-<li><a class="reference internal" href="#id9">4.11</a></li>
-<li><a class="reference internal" href="#id10">4.10.1</a></li>
-<li><a class="reference internal" href="#id11">4.10</a></li>
-<li><a class="reference internal" href="#id12">4.9</a><ul>
+<li><a class="reference internal" href="#id1">4.15.2</a></li>
+<li><a class="reference internal" href="#id2">4.15.1</a></li>
+<li><a class="reference internal" href="#id3">4.15</a></li>
+<li><a class="reference internal" href="#id4">4.14.2</a></li>
+<li><a class="reference internal" href="#id5">4.14.1</a></li>
+<li><a class="reference internal" href="#id6">4.14</a></li>
+<li><a class="reference internal" href="#id7">4.13</a></li>
+<li><a class="reference internal" href="#id8">4.12</a></li>
+<li><a class="reference internal" href="#id9">4.11.1</a></li>
+<li><a class="reference internal" href="#id10">4.11</a></li>
+<li><a class="reference internal" href="#id11">4.10.1</a></li>
+<li><a class="reference internal" href="#id12">4.10</a></li>
+<li><a class="reference internal" href="#id13">4.9</a><ul>
 <li><a class="reference internal" href="#public-site">public site</a></li>
 <li><a class="reference internal" href="#transcription-editing">transcription editing</a></li>
 <li><a class="reference internal" href="#transcription-migration-and-backup">transcription migration and backup</a></li>
@@ -876,25 +903,25 @@ support for importing and displaying those manifests.</p>
 <li><a class="reference internal" href="#accessibility">accessibility</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id13">4.8.1</a></li>
-<li><a class="reference internal" href="#id14">4.8</a></li>
-<li><a class="reference internal" href="#id15">4.7</a></li>
-<li><a class="reference internal" href="#id16">4.6</a></li>
-<li><a class="reference internal" href="#id17">4.5</a></li>
-<li><a class="reference internal" href="#id18">4.4.1</a></li>
-<li><a class="reference internal" href="#id19">4.4</a></li>
-<li><a class="reference internal" href="#id20">4.3.1</a></li>
-<li><a class="reference internal" href="#id21">4.3</a></li>
+<li><a class="reference internal" href="#id14">4.8.1</a></li>
+<li><a class="reference internal" href="#id15">4.8</a></li>
+<li><a class="reference internal" href="#id16">4.7</a></li>
+<li><a class="reference internal" href="#id17">4.6</a></li>
+<li><a class="reference internal" href="#id18">4.5</a></li>
+<li><a class="reference internal" href="#id19">4.4.1</a></li>
+<li><a class="reference internal" href="#id20">4.4</a></li>
+<li><a class="reference internal" href="#id21">4.3.1</a></li>
+<li><a class="reference internal" href="#id22">4.3</a></li>
 <li><a class="reference internal" href="#bugfix-release">4.2.1 — bugfix release</a></li>
-<li><a class="reference internal" href="#id22">4.2</a></li>
-<li><a class="reference internal" href="#id23">4.1</a></li>
-<li><a class="reference internal" href="#id24">4.0</a></li>
-<li><a class="reference internal" href="#id25">0.8</a></li>
-<li><a class="reference internal" href="#id26">0.7</a></li>
-<li><a class="reference internal" href="#id27">0.6</a></li>
-<li><a class="reference internal" href="#id28">0.5</a></li>
-<li><a class="reference internal" href="#id29">0.4</a></li>
-<li><a class="reference internal" href="#id30">0.3</a></li>
+<li><a class="reference internal" href="#id23">4.2</a></li>
+<li><a class="reference internal" href="#id24">4.1</a></li>
+<li><a class="reference internal" href="#id25">4.0</a></li>
+<li><a class="reference internal" href="#id26">0.8</a></li>
+<li><a class="reference internal" href="#id27">0.7</a></li>
+<li><a class="reference internal" href="#id28">0.6</a></li>
+<li><a class="reference internal" href="#id29">0.5</a></li>
+<li><a class="reference internal" href="#id30">0.4</a></li>
+<li><a class="reference internal" href="#id31">0.3</a></li>
 </ul>
 </li>
 </ul>
