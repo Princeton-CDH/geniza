@@ -108,25 +108,18 @@ class DocumentInline(admin.TabularInline):
 
     verbose_name = "Related Document"
     verbose_name_plural = "Related Documents"
-    autocomplete_fields = ["type"]
+    autocomplete_fields = ("document", "type")
     fields = (
-        "document_link",
+        "document",
         "document_description",
         "type",
         "notes",
     )
-    readonly_fields = ("document_link", "document_description")
+    readonly_fields = ("document_description",)
     formfield_overrides = {
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
-    extra = 0
-    max_num = 0
-
-    def document_link(self, obj):
-        document_path = reverse("admin:corpus_document_change", args=[obj.document.id])
-        return format_html(f'<a href="{document_path}">{str(obj.document)}</a>')
-
-    document_link.short_description = "Document"
+    extra = 1
 
     def document_description(self, obj):
         return obj.document.description
