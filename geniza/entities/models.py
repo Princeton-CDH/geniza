@@ -1,3 +1,6 @@
+from django.conf import settings
+from django.contrib.admin.models import CHANGE, LogEntry
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -118,7 +121,9 @@ class Person(models.Model):
         help_text="Social role",
     )
     # sources for the information gathered here
-    footnotes = models.ManyToManyField(Footnote, blank=True, related_name="people")
+    footnotes = GenericRelation(Footnote, blank=True, related_name="people")
+
+    log_entries = GenericRelation(LogEntry, related_query_name="document")
 
     # gender options
     MALE = "M"
@@ -145,6 +150,168 @@ class Person(models.Model):
             return str(self.names.filter(primary=True).first())
         except Name.DoesNotExist:
             return str(self.names.first() or super().__str__())
+
+    def merge_with(self, merge_people, user=None):
+        """Merge the specified people into this one. Combines all metadata
+        into this person and creates a log entry documenting the merge.
+
+        Closely adapted from :class:`Document` merge."""
+
+        # if user is not specified, log entry will be associated with script
+        if user is None:
+            user = User.objects.get(username=settings.SCRIPT_USERNAME)
+
+        # language codes are needed to merge description, which is translated
+        language_codes = [lang_code for lang_code, lang_name in settings.LANGUAGES]
+
+        # handle translated description: create a dict of descriptions
+        # per supported language to aggregate and merge
+        description_chunks = {
+            lang_code: [getattr(self, "description_%s" % lang_code)]
+            for lang_code in language_codes
+        }
+
+        # collect names as strings (since that's the important part for comparison)
+        self_names = [str(name) for name in self.names.all()]
+
+        for person in merge_people:
+            # ensure any has_page overrides are respected
+            if person.has_page and not self.has_page:
+                self.has_page = True
+
+            # ensure missing role and gender are migrated
+            if person.role and not self.role:
+                self.role = person.role
+            if self.gender == Person.UNKNOWN and person.gender != Person.UNKNOWN:
+                self.gender = person.gender
+
+            # combine log entries (before name, since name used in log entries)
+            self._merge_logentries(person)
+
+            # combine names
+            for name in person.names.all():
+                if str(name) not in self_names:
+                    # if not duplicated, make non-primary and add
+                    name.primary = False
+                    name.save()
+                    self.names.add(name)
+
+            # add description if set and not duplicated
+            # for all supported languages
+            for lang_code in language_codes:
+                description_field = "description_%s" % lang_code
+                person_description = getattr(person, description_field)
+                current_description = getattr(self, description_field)
+                if person_description and person_description not in current_description:
+                    description_chunks[lang_code].append(
+                        "Description from merged entry:\n%s" % (person_description,)
+                    )
+
+            # combine person-person relationships
+            for to_relationship in person.to_person.all():
+                # start with "to" relations; merged person is "from_person"
+                # don't add relationships where the other person is self!
+                if to_relationship.to_person.pk != self.pk:
+                    # set self to the side that was the merged person
+                    to_relationship.from_person = self
+                    to_relationship.save()
+            for from_relationship in person.from_person.all():
+                # repeat for "from" relations; merged person is "to_person"
+                if from_relationship.from_person.pk != self.pk:
+                    from_relationship.to_person = self
+                    from_relationship.save()
+
+            # combine person-document relationhips
+            for doc_relationship in person.persondocumentrelation_set.all():
+                # prevent duplicates (by document and relation type)
+                if not self.persondocumentrelation_set.filter(
+                    document=doc_relationship.document,
+                    type=doc_relationship.type,
+                ).exists():
+                    # reassign to self
+                    doc_relationship.person = self
+                    doc_relationship.save()
+
+            # combine person-place relationhips
+            for place_relationship in person.personplacerelation_set.all():
+                # prevent duplicates (by place and relation type)
+                if not self.personplacerelation_set.filter(
+                    place=place_relationship.place,
+                    type=place_relationship.type,
+                ).exists():
+                    # reassign to self
+                    place_relationship.person = self
+                    place_relationship.save()
+
+            # combine footnotes
+            for footnote in person.footnotes.all():
+                if not self.footnotes.includes_footnote(footnote):
+                    # if there is not a matching one on this person, can add footnote
+
+                    # first remove any doc relations; person footnotes should not have
+                    # doc_relation anyway, but just in case...
+                    if footnote.doc_relation:
+                        footnote.doc_relation = ""
+                        footnote.save()
+
+                    # then add to this person
+                    self.footnotes.add(footnote)
+
+        # combine aggregated content for text fields
+        for lang_code in language_codes:
+            description_field = "description_%s" % lang_code
+            # combine, but filter out any None values from unset content
+            setattr(
+                self,
+                description_field,
+                "\n".join([d for d in description_chunks[lang_code] if d]),
+            )
+
+        # save current person with changes; delete merged people
+        self.save()
+        merged_people = ", ".join([str(person) for person in merge_people])
+        for person in merge_people:
+            person.delete()
+        # create log entry documenting the merge; include rationale
+        person_contenttype = ContentType.objects.get_for_model(Person)
+        LogEntry.objects.log_action(
+            user_id=user.id,
+            content_type_id=person_contenttype.pk,
+            object_id=self.pk,
+            object_repr=str(self),
+            change_message="merged with %s" % (merged_people,),
+            action_flag=CHANGE,
+        )
+
+    def _merge_logentries(self, person):
+        # reassociate log entries; logic for merge_with
+        # make a list of currently associated log entries to skip duplicates
+        current_logs = [
+            "%s_%s" % (le.user_id, le.action_time.isoformat())
+            for le in self.log_entries.all()
+        ]
+        for log_entry in person.log_entries.all():
+            # check duplicate log entries, based on user id and time
+            # (likely only applies to historic input & revision)
+            if (
+                "%s_%s" % (log_entry.user_id, log_entry.action_time.isoformat())
+                in current_logs
+            ):
+                # skip if it's a duplicate
+                continue
+
+            # otherwise annotate and reassociate
+            # - modify change message to person which object this event applied to
+            log_entry.change_message = "%s [merged person %s (id = %d)]" % (
+                log_entry.change_message,
+                str(person),
+                person.pk,
+            )
+
+            # - associate with the primary person
+            log_entry.object_id = self.id
+            log_entry.content_type_id = ContentType.objects.get_for_model(Person)
+            log_entry.save()
 
 
 class PersonDocumentRelationTypeManager(models.Manager):
@@ -303,7 +470,7 @@ class Place(models.Model):
         null=True,
     )
     # sources for the information gathered here
-    footnotes = models.ManyToManyField(Footnote, blank=True, related_name="places")
+    footnotes = GenericRelation(Footnote, blank=True, related_name="places")
 
     def __str__(self):
         """
