@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from time import sleep
 from unittest.mock import ANY, MagicMock, Mock, patch
@@ -8,6 +7,7 @@ from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import resolve, reverse
 from django.utils.text import Truncator, slugify
@@ -133,6 +133,48 @@ class TestDocumentDetailView:
             assert len(placeholders) == 2
             assert list(placeholders.keys()) == ["canvas_1", "canvas_2"]
             assert placeholders["canvas_1"] == Document.PLACEHOLDER_CANVAS
+
+    def test_get_context_data(self, client, document, source):
+        # test default shown/disabled behavior in context data
+        response = client.get(reverse("corpus:document", args=(document.pk,)))
+
+        # document has image (via fragment.iiif_url) but no transcription or translation
+        assert response.context["default_shown"] == ["images"]
+        assert "images" not in response.context["disabled"]
+        assert "transcription" in response.context["disabled"]
+        assert "translation" in response.context["disabled"]
+
+        # add a transcription
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        response = client.get(reverse("corpus:document", args=(document.pk,)))
+        # document has image (via fragment.iiif_url) and transcription, so should show those
+        assert "transcription" in response.context["default_shown"]
+        assert "images" in response.context["default_shown"]
+        assert "transcription" not in response.context["disabled"]
+        assert "images" not in response.context["disabled"]
+        # should not show translation
+        assert "translation" not in response.context["default_shown"]
+        assert "translation" in response.context["disabled"]
+
+        # add a translation
+        Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_TRANSLATION,
+        )
+        response = client.get(reverse("corpus:document", args=(document.pk,)))
+        # document has image (via fragment.iiif_url) and translation, so should show those
+        assert "translation" in response.context["default_shown"]
+        assert "images" in response.context["default_shown"]
+        assert "translation" not in response.context["disabled"]
+        assert "images" not in response.context["disabled"]
+        # should not show OR disable transcription
+        assert "transcription" not in response.context["default_shown"]
+        assert "transcription" not in response.context["disabled"]
 
 
 @pytest.mark.django_db
@@ -327,7 +369,6 @@ class TestDocumentSearchView:
                 DocumentSolrQuerySet, extra_methods=["admin_search", "keyword_search"]
             ),
         ) as mock_queryset_cls:
-
             docsearch_view = DocumentSearchView()
             docsearch_view.request = Mock()
 
@@ -469,7 +510,6 @@ class TestDocumentSearchView:
                 DocumentSolrQuerySet, extra_methods=["admin_search", "keyword_search"]
             ),
         ) as mock_queryset_cls:
-
             mock_qs = mock_queryset_cls.return_value
             mock_qs.count.return_value = 22
             mock_qs.get_facets.return_value.facet_fields = {}
@@ -829,7 +869,6 @@ class TestDocumentSearchView:
         docsearch_view.request = Mock()
 
         for shelfmark in [document.shelfmark_override, orig_shelfmark]:
-
             # keyword search should work
             docsearch_view.request.GET = {"q": shelfmark}
             qs = docsearch_view.get_queryset()
@@ -1463,8 +1502,9 @@ class TestDocumentMergeView:
         assert response.status_code == 200
 
         # POST should merge
+        merge_url = "%s?ids=%s" % (reverse("admin:document-merge"), idstring)
         response = admin_client.post(
-            "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+            merge_url,
             {"primary_document": doc1.id, "rationale": "duplicate"},
             follow=True,
         )
@@ -1479,7 +1519,7 @@ class TestDocumentMergeView:
         with patch.object(Document, "merge_with") as mock_merge_with:
             # should pick up rationale notes as parenthetical
             response = admin_client.post(
-                "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+                merge_url,
                 {
                     "primary_document": doc1.id,
                     "rationale": "duplicate",
@@ -1491,7 +1531,7 @@ class TestDocumentMergeView:
 
             # with "other", should use rationale notes as rationale string
             response = admin_client.post(
-                "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+                merge_url,
                 {
                     "primary_document": doc1.id,
                     "rationale": "other",
@@ -1500,6 +1540,20 @@ class TestDocumentMergeView:
                 follow=True,
             )
             mock_merge_with.assert_called_with(ANY, "test", user=ANY)
+
+            # should catch ValidationError and send back to form with error msg
+            mock_merge_with.side_effect = ValidationError("test message")
+            response = admin_client.post(
+                merge_url,
+                {
+                    "primary_document": doc1.id,
+                    "rationale": "duplicate",
+                },
+                follow=True,
+            )
+            TestCase().assertRedirects(response, merge_url)
+            messages = [str(msg) for msg in list(response.context["messages"])]
+            assert "test message" in messages
 
 
 class TestTagMergeView:
@@ -1692,6 +1746,13 @@ class TestDocumentTranscribeView:
         # should include text direction
         assert response.context["annotation_config"]["text_direction"] == "rtl"
 
+        # should show transcription and images by default
+        assert "transcription" in response.context["default_shown"]
+        assert "images" in response.context["default_shown"]
+        assert "transcription" not in response.context["disabled"]
+        # make sure placeholder can be seen!
+        assert "images" not in response.context["disabled"]
+
         # non-existent source_pk should 404
         response = admin_client.get(
             reverse("corpus:document-transcribe", args=(document.id, 123456789))
@@ -1713,6 +1774,11 @@ class TestDocumentTranscribeView:
             response.context["annotation_config"]["text_direction"]
             == source.languages.first().direction
         )
+        # should show translation and images by default
+        assert "translation" in response.context["default_shown"]
+        assert "images" in response.context["default_shown"]
+        assert "translation" not in response.context["disabled"]
+        assert "images" not in response.context["disabled"]
 
 
 class TestSourceAutocompleteView:

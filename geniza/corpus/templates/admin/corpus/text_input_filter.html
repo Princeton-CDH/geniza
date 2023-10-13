@@ -1,0 +1,30 @@
+{% comment %}
+    Template for a text input-based list filter,
+    adapted from Haki Benita https://hakibenita.com/how-to-add-a-text-filter-to-django-admin
+{% endcomment %}
+
+<h3>{{ title }}</h3>
+<ul>
+    <li>
+        {% with choices.0 as all_choice %}
+            <form method="GET" action="">
+
+                {% for k, v in all_choice.query_parts %}
+                    <input type="hidden" name="{{ k }}" value="{{ v }}" />
+                {% endfor %}
+
+                <input  type="text"
+                       value="{{ spec.value|default_if_none:'' }}"
+                       name="{{ spec.parameter_name }}"/>
+
+
+                <div class="help">Press enter after each entry to filter</div>
+
+                {% if not all_choice.selected %}
+                    <strong><a href="{{ all_choice.query_string }}">x Remove</a></strong>
+                {% endif %}
+
+            </form>
+        {% endwith %}
+    </li>
+</ul>

@@ -6,6 +6,9 @@
 @use "../base/typography";
 @use "../components/searchform";
 
+$toggle-default-width: 87px; /* only applies on tablet up */
+$toggle-default-neg: -82px; /* only applies on tablet up */
+
 #itt-panel {
     z-index: 6;
     max-width: none;
@@ -13,8 +16,6 @@
     display: flex;
     flex-flow: row wrap;
     background-color: var(--background);
-
-    $toggle-default-width: 87px; /* only applies on tablet up */
 
     // toggle switches for panels
     input[type="checkbox"].toggle {
@@ -49,7 +50,9 @@
                 height: 65px;
                 transform: scale(calc(40 / 65));
                 outline: 1.5px solid black;
+                outline-offset: -1px;
                 transition: transform 200ms ease;
+                will-change: transform;
             }
 
             // left and right margins on first and last toggles
@@ -228,12 +231,14 @@
                         background-color: var(--background-gray);
                         color: var(--on-background-gray);
                     }
-                    &:hover input[name="transcription"]:focus + span {
+                    &:hover input[name="transcription"]:focus + span,
+                    &:hover input[name="translation"]:focus + span {
                         background-color: var(--tertiary);
                         color: var(--on-tertiary);
                     }
                     // Checkboxes only visible to screen readers
-                    input[name="transcription"] {
+                    input[name="transcription"],
+                    input[name="translation"] {
                         @include a11y.sr-only;
                         // Selected option
                         &:checked + span {
@@ -304,6 +309,10 @@
             overflow: hidden;
             max-width: 100%;
         }
+        /* hide enlarge button on mobile */
+        button.enlarge-button {
+            display: none;
+        }
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 $toggle-default-width 0;
         }
@@ -323,6 +332,42 @@
         // image panel spacing
         div.img {
             margin: 0 auto;
+            /* enlarge button and enlarge functionality */
+            @include breakpoints.for-tablet-landscape-up {
+                transition: max-width 0.3s ease-in-out;
+                img {
+                    transition: width 0.3s ease-in-out;
+                }
+                &.enlarged {
+                    max-width: 100%;
+                    img {
+                        width: 100%;
+                    }
+                }
+                button.enlarge-button {
+                    display: flex;
+                    cursor: pointer;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                    border: none;
+                    background: transparent;
+                    padding: 0;
+                    margin: 0;
+                    z-index: 2;
+                    &::after {
+                        color: var(--on-background);
+                        content: "\f118";
+                        @include typography.icon-button-lg;
+                    }
+                    &:active::after {
+                        color: var(--primary);
+                    }
+                    &.active::after {
+                        content: "\f117";
+                    }
+                }
+            }
         }
 
         // Attribution and license text
@@ -464,6 +509,10 @@
                 }
             }
         }
+        // image enlarge button
+        button.enlarge-button {
+            display: none;
+        }
     }
 
     /* both transcription & translation checked */
@@ -480,7 +529,7 @@
             // adjust line heights to align transcription with translation when both visible
             // give li a standard line height (using largest among transcription/translation styles)
             li {
-                line-height: calc(34 / 22);
+                line-height: calc(34 / 22 * 1.375rem);
             }
             // remove margin/padding that could interrupt alignment
             li p {
@@ -489,22 +538,28 @@
             }
             li[data-lines="1"] {
                 min-height: calc(1 * 34 / 22 * 1.375rem);
+                max-height: calc(1 * 34 / 22 * 1.375rem);
             }
             li[data-lines="2"] {
                 // li, height of two lines (line height = 34 / 22, font size = 1.375rem)
                 min-height: calc(2 * 34 / 22 * 1.375rem);
+                max-height: calc(2 * 34 / 22 * 1.375rem);
             }
             li[data-lines="3"] {
                 min-height: calc(3 * 34 / 22 * 1.375rem);
+                max-height: calc(3 * 34 / 22 * 1.375rem);
             }
             li[data-lines="4"] {
                 min-height: calc(4 * 34 / 22 * 1.375rem);
+                max-height: calc(4 * 34 / 22 * 1.375rem);
             }
             li[data-lines="5"] {
                 min-height: calc(5 * 34 / 22 * 1.375rem);
+                max-height: calc(5 * 34 / 22 * 1.375rem);
             }
             li[data-lines="6"] {
                 min-height: calc(6 * 34 / 22 * 1.375rem);
+                max-height: calc(6 * 34 / 22 * 1.375rem);
             }
             h2 + span.current-transcription,
             h2 + span.current-translation {
@@ -556,6 +611,7 @@
             @include breakpoints.for-tablet-landscape-up {
                 flex-flow: row;
                 margin-bottom: 12px;
+                justify-content: space-between;
             }
             h2 {
                 @include typography.body-bold;
@@ -565,7 +621,18 @@
                 flex: 1 0 100%;
                 @include breakpoints.for-tablet-landscape-up {
                     margin: 12px 0;
-                    flex: 1 0 auto;
+                    flex: 0 1 auto;
+                }
+            }
+            // collect image controls in a div
+            div.img-controls {
+                display: flex;
+                flex-flow: row;
+                align-items: center;
+                justify-content: flex-end;
+                flex: 1 0 auto;
+                @include breakpoints.for-tablet-landscape-up {
+                    flex: 0 1 auto;
                 }
             }
             // zoom control (desktop)
@@ -612,6 +679,14 @@
                     }
                 }
             }
+            label[for^="zoom-slider"] {
+                min-width: 60px;
+                max-width: 60px;
+            }
+            label[for^="rotation"] {
+                min-width: 40px;
+                max-width: 40px;
+            }
             label[for^="zoom-slider"],
             label[for^="rotation"] {
                 display: none;
@@ -634,6 +709,7 @@
                 border-radius: 50%;
                 height: 40px;
                 width: 40px;
+                min-width: 40px;
                 background-color: var(--background-gray);
                 border: 4px solid var(--on-background-light-alt);
                 cursor: pointer;
@@ -1187,9 +1263,9 @@ a.editor-navigation {
             left: -9.5px;
 
             @include breakpoints.for-tablet-landscape-up {
-                font-size: 38px;
-                line-height: 21px;
-                left: -10.75px;
+                font-size: 50px;
+                line-height: 16px;
+                left: -12px;
             }
         }
     }
@@ -1260,6 +1336,22 @@ html[dir="rtl"] #itt-panel {
                 margin-right: 8px;
                 margin-left: 0;
             }
+        }
+    }
+    #images-on:checked
+        ~ #translation-on:checked
+        ~ .panel-container
+        div.translation-panel.label-row,
+    #transcription-on:checked
+        ~ #translation-on:checked
+        ~ .panel-container
+        div.transcription-panel.label-row,
+    #transcription-on:checked
+        ~ #translation-on:checked
+        ~ .panel-container
+        div.translation-panel.label-row {
+        @include breakpoints.for-tablet-landscape-up {
+            margin-left: $toggle-default-neg;
         }
     }
 }

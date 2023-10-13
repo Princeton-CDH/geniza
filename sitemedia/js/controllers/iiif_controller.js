@@ -20,6 +20,20 @@ export default class extends Controller {
     connect() {
         // make iiif controller available at element.iiif
         this.element[this.identifier] = this;
+
+        // allow "enlarge" image during viewing
+        const enlargeButton = this.imageContainerTarget.querySelector(
+            "button.enlarge-button"
+        );
+
+        // will not exist if we are in editor
+        if (enlargeButton) {
+            enlargeButton.addEventListener("click", (e) => {
+                // use toggle to allow opening and closing with the pin icon
+                this.imageContainerTarget.classList.toggle("enlarged");
+                enlargeButton.classList.toggle("active");
+            });
+        }
     }
 
     rotationTargetConnected() {

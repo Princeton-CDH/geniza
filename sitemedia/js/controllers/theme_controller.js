@@ -8,7 +8,11 @@ export default class extends Controller {
     systemDarkMode() {
         // Check system and prior user selection for dark mode
         return (
+            // url param for dark mode should override all
+            new URLSearchParams(window.location.search).get("dark-mode") ||
+            // next priority should be prior user selection
             window.localStorage.getItem("darkMode") === "true" ||
+            // finally, fallback to system setting
             (window.localStorage.getItem("darkMode") === null &&
                 window.matchMedia &&
                 window.matchMedia("(prefers-color-scheme: dark)").matches)

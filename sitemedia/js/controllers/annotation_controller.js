@@ -37,14 +37,15 @@ export default class extends Controller {
             const popOutContainer =
                 this.imageContainerTarget.querySelector(".popout-container");
             popOutButton.addEventListener("click", (e) => {
-                popOutContainer.classList.add("open");
-                closeButton.style.display = "flex";
-                popOutButton.style.display = "none";
+                // use toggle to allow opening and closing with the pin icon
+                popOutContainer.classList.toggle("open");
+                closeButton.classList.toggle("visible");
+                popOutButton.classList.toggle("active");
             });
             closeButton.addEventListener("click", (e) => {
                 popOutContainer.classList.remove("open");
-                closeButton.style.display = "none";
-                popOutButton.style.display = "flex";
+                closeButton.classList.remove("visible");
+                popOutButton.classList.remove("active");
             });
 
             // initialize transcription editor
@@ -88,7 +89,7 @@ export default class extends Controller {
 
         // enable annotorious-tahqiq
         const { config, canvasURL, manifestId, annotationContainer } = settings;
-        const anno = Annotorious(viewer);
+        const anno = Annotorious(viewer, { disableDeleteKey: true });
 
         // Initialize the AnnotationServerStorage plugin
         const annotationServerConfig = {
@@ -113,6 +114,7 @@ export default class extends Controller {
             anno,
             storagePlugin,
             annotationContainer,
+            this.element.querySelector(".tahqiq-toolbar"), // toolbar container fieldset
             config.text_direction,
             config.tiny_api_key
         );

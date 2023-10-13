@@ -1,6 +1,54 @@
 Change Log
 ==========
 
+4.15.2
+------
+
+- bugfix: do not require browser in Google Docs ingest script
+
+4.15.1
+------
+
+- bugfix: pin python dependency piffle==0.4 due to breaking change
+
+4.15
+----
+
+- public site
+    - bugfix: On tag change, document indexing is one revision behind
+    - bugfix: Input date not always populating
+    - bugfix: Digital translation footnote in scholarship records behaving incorrectly, excluding other footnotes on source
+
+- image, transcription, translation viewer/editor
+    - As a front end desktop user, I would like to see a bigger version of the document image in order to read the document (especially when no transcription exists).
+    - As a public site viewer, I would like to see translation alongside the document image by default if both are present, so that I can read the document in my native language.
+    - As a content editor, I want the "pop out" button in the transcription editor up higher, so it's immediately accessible.
+    - As a content editor, I want the ability to add polygon annotation boxes using the transcription editor, so I can draw accurate bounding boxes around text.
+    - As a content editor, I want the location field for digital edition/translations to automatically populate from an existing edition/translation on the same source, so that I can save time manually re-entering it.
+    - bugfix: Editing/deleting parts of annotation box titles results in unexpected behavior (no change or deleting entire annotation box)
+    - bugfix: In Safari, ITT panel toggles leave trails
+    - bugfix: Annotations on the document detail page do not respect reordering
+    - bugfix: Transcription and translation may become misaligned when resizing window
+    - bugfix: Alignment between Arabic transcriptions and English translations is slightly off
+
+- admin
+    - As a content admin, I would like filters in the document admin to search by English and Hebrew language of translation, so that I can collect those documents for CSV export for use in teaching.
+    - As a content admin, I would like to include a rationale for the inferred date field from a list of options, so that I can enter data more efficiently and consistently.
+    - As a content admin, I want inferred date and accompanying notes in the csv exports of documents, so that I can keep track of this information in my own research.
+    - As a content editor, I want a "no language" option when entering source languages (with help text) for unpublished transcriptions because the language will automatically be determined by the document languages already present on the doc detail pages.
+    - As a content editor, I want clear help text when adding a source to explain how to select the source language, so that it is done consistently for translations and transcriptions.
+    - As a content admin, I want both dates on document and inferred dates to merge when I merge duplicate PGPIDS so no data is lost when cleaning up duplicates. If there are two different dates on documents for the same PGPID, I want there to be an error message drawing my attention to the issue so I can choose the correct date or otherwise record the discrepancy.
+    - As a content editor, I want a way to filter documents by date in the admin for enhanced csv exports
+    - bugfix: Mixed inlines/formsets breaks on lack of permissions
+    - bugfix: Merging two documents with digital content footnotes for the same source results in unique constraint violation
+
+- people and places
+    - As a content editor, I want a separate field to record people's names and roles in each document, so that I can build a structured dataset of all people across the PGP.
+    - As a content editor, I want a separate field in the document detail page so that I can record place information mentioned in the document.
+    - As a content editor, I want Person-Person relationship types visually sorted into their categories in the admin form, so that I can select them at a glance.
+    - As a content admin, when adding people-to-people relationships in person pages, I want an added "ambiguity" category to the drop down so I can clarify when people are similar/not the same.
+    - As a content admin, when viewing people-to-people relationships in person pages, I want reverse relationships to be visible, so that I don't inadvertently add a relationship twice.
+
 4.14.2
 ------
 

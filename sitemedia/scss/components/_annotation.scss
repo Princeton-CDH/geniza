@@ -1,5 +1,6 @@
 /* styles for transcription and annotation */
 
+@use "../base/a11y";
 @use "../base/breakpoints";
 @use "../base/spacing";
 @use "../base/typography";
@@ -57,31 +58,51 @@ main.annotating {
             background-color: var(--background-gray);
             opacity: 1;
         }
-        .deep-zoom-container {
-            // popout open and close buttons
-            button.popout-button {
-                display: none;
-                align-items: center;
-                justify-content: center;
-                position: relative;
-                z-index: 2;
-                &::after {
-                    font-family: "Phosphor";
-                    content: "\f058";
-                    margin-left: 5px;
-                    font-weight: normal;
-                }
-                @include breakpoints.for-tablet-landscape-up {
-                    display: flex;
-                }
+        // popout open and close buttons
+        button.popout-button {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: none;
+            background: transparent;
+            padding: 0;
+            margin: 0;
+            z-index: 2;
+            width: 40px;
+            min-width: 40px;
+            height: 40px;
+            svg {
+                fill: var(--on-background);
+                width: 20px;
+                height: 20px;
             }
-            button.popout-close-button {
-                font-size: 32px;
-                display: none;
-                position: absolute;
-                top: 0;
-                right: -1rem;
-                z-index: 2;
+            &:hover svg,
+            &.active svg,
+            &:active svg {
+                fill: var(--on-primary);
+            }
+            &.active,
+            &:active {
+                background-color: var(--secondary);
+            }
+            &:hover:not(:active) {
+                background-color: var(--primary);
+            }
+            @include breakpoints.for-tablet-landscape-up {
+                display: flex;
+                cursor: pointer;
+            }
+        }
+        button.popout-close-button {
+            font-size: 32px;
+            display: none;
+            position: absolute;
+            top: 5rem;
+            right: 0;
+            z-index: 2;
+            &.visible {
+                display: flex;
             }
         }
         // opened "pop out" view of an image
@@ -101,6 +122,54 @@ main.annotating {
             min-height: 100vh !important;
             display: block;
             position: relative;
+        }
+        // tools
+        fieldset.tahqiq-toolbar {
+            display: flex;
+            align-items: center;
+            margin: 0 0.5rem;
+            padding-left: 0.5rem;
+            border-left: 2px solid var(--input-date-text);
+            gap: 0.5rem;
+            label.tahqiq-tool {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                cursor: pointer;
+                color: var(--on-background);
+                &.active-tool,
+                &:hover,
+                &:active {
+                    color: var(--on-primary);
+                }
+                &.active-tool,
+                &:active {
+                    background-color: var(--secondary);
+                }
+                &:hover:not(:active) {
+                    background-color: var(--primary);
+                }
+                input {
+                    display: none;
+                }
+                &::before {
+                    display: block;
+                    font-family: "Phosphor" !important;
+                    font-size: typography.$text-size-2xl;
+                }
+                // tools are icon-only, so make labels sr-only
+                span {
+                    @include a11y.sr-only;
+                }
+            }
+            label.rectangle-tool::before {
+                content: "\f099";
+            }
+            label.polygon-tool::before {
+                content: "\f283";
+            }
         }
     }
 }

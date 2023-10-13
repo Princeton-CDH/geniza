@@ -107,7 +107,7 @@
       <tokenizer class="solr.StandardTokenizerFactory"/>
       <filter class="solr.ICUFoldingFilterFactory"/>
       <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
-      <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="20" luceneMatchVersion="4.3"/>
+      <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="20" />
       <filter class="solr.LowerCaseFilterFactory"/>
     </analyzer>
     <analyzer type="query">

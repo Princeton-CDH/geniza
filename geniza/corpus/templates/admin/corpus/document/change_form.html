@@ -13,20 +13,13 @@
     {% render_bundle_csp "admin" "js" attrs='defer' %}
 {% endblock %}
 
-
+{# Render mixed normal and inline fieldsets #}
 {% block field_sets %}
-    {% for fieldset in adminform %}
-        {% include "admin/corpus/document/snippets/fieldset.html" with inline_admin_formsets=inline_admin_formsets %}
-    {% endfor %}
+    {% include "admin/snippets/mixed_inlines_fieldsets.html" %}
 {% endblock %}
 
+{# Remove standard inline rendering #}
 {% block inline_field_sets %}
-    {% for inline_admin_formset in inline_admin_formsets %}
-        {# don't repeat inline formsets that were inserted earlier #}
-        {% if not inline_admin_formset.opts.insert_after %}
-            {% include inline_admin_formset.opts.template %}
-        {% endif %}
-    {% endfor %}
 {% endblock %}
 
 {% block after_field_sets %}
@@ -69,11 +62,4 @@
             </section>
         {% endif %}
     {% endwith %}
-
-    <fieldset class="module aligned transcriptions-field">
-        <div class="form-row">
-            <label>Transcription{{ original.digital_editions.count|pluralize }}/image{{ original.iiif_images|length|pluralize }}</label>
-            {% include "corpus/snippets/document_transcription.html" with document=original %}
-        </div>
-    </fieldset>
 {% endblock %}

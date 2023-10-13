@@ -18,5 +18,9 @@ def template_globals(request):
         ),
         "site": site,
         "GTAGS_ANALYTICS_ID": getattr(settings, "GTAGS_ANALYTICS_ID", None),
+        "IS_ARCHIVE_CRAWLER": "archive.org_bot"
+        in request.META.get("HTTP_USER_AGENT", "")
+        if hasattr(request, "META")
+        else False,
     }
     return context_extras

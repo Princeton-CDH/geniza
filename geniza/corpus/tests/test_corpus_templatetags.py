@@ -1,11 +1,12 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from django.http.request import HttpRequest, QueryDict
 from piffle.iiif import IIIFImageClient
 
 from geniza.common.utils import absolutize_url
-from geniza.corpus.templatetags import corpus_extras
+from geniza.corpus.templatetags import admin_extras, corpus_extras
+from geniza.footnotes.models import Footnote
 
 
 class TestCorpusExtrasTemplateTags:
@@ -37,6 +38,43 @@ class TestCorpusExtrasTemplateTags:
         lst = []
         alphabetized = corpus_extras.alphabetize(lst)
         assert alphabetized == []
+
+    def test_has_location_or_url(self, document, footnote):
+        # footnote has a location
+        assert corpus_extras.has_location_or_url([footnote]) == True
+        footnote_2 = Footnote.objects.create(
+            object_id=document.pk,
+            content_type=footnote.content_type,
+            source=footnote.source,
+        )
+        # footnote has no location or url
+        assert corpus_extras.has_location_or_url([footnote_2]) == False
+        # one of the document's footnotes has a location
+        assert corpus_extras.has_location_or_url(list(document.footnotes.all())) == True
+
+    def test_all_doc_relations(self, document, footnote):
+        Footnote.objects.create(
+            object_id=document.pk,
+            content_type=footnote.content_type,
+            source=footnote.source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        assert (
+            corpus_extras.all_doc_relations(list(document.footnotes.all()))
+            == "Digital Edition, Edition"
+        )
+        # should not repeat doc relations even if multiple of the same type appear
+        Footnote.objects.create(
+            object_id=document.pk,
+            content_type=footnote.content_type,
+            source=footnote.source,
+            doc_relation=Footnote.EDITION,
+            location="other place",
+        )
+        assert (
+            corpus_extras.all_doc_relations(list(document.footnotes.all()))
+            == "Digital Edition, Edition"
+        )
 
 
 def test_dict_item():
@@ -171,3 +209,29 @@ def test_translate_url(document):
     # if a Hebrew version cannot be determined, should return the original URL
     ctx["request"].path = "https://example.com"
     assert corpus_extras.translate_url(ctx, "he") == "https://example.com"
+
+
+class TestAdminExtrasTemplateTags:
+    def test_get_fieldsets_and_inlines(self):
+        # mock admin form with fieldsets
+        adminform = MagicMock()
+        adminform.__iter__.return_value = ("fieldset1", "fieldset2")
+        # mock inlines
+        inlines = ("inline1", "inline2")
+
+        # mock fieldsets_and_inlines_order
+        adminform.model_admin.fieldsets_and_inlines_order = ("f", "i", "f", "itt")
+
+        # should return the first fieldset, then inline, then second fieldset
+        fieldsets_and_inlines = admin_extras.get_fieldsets_and_inlines(
+            {"adminform": adminform, "inline_admin_formsets": inlines}
+        )
+        assert fieldsets_and_inlines[0] == ("f", "fieldset1")
+        assert fieldsets_and_inlines[1] == ("i", "inline1")
+        assert fieldsets_and_inlines[2] == ("f", "fieldset2")
+
+        # should include itt panel entry with None as its second value
+        assert fieldsets_and_inlines[3] == ("itt", None)
+
+        # should append the remaining inline at the end
+        assert fieldsets_and_inlines[4] == ("i", "inline2")

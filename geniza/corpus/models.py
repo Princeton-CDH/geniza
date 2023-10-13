@@ -2,7 +2,7 @@ import logging
 import re
 from collections import defaultdict
 from copy import deepcopy
-from functools import cache, cached_property
+from functools import cached_property
 from itertools import chain
 
 from django.conf import settings
@@ -28,7 +28,6 @@ from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from djiffy.models import Manifest
 from modeltranslation.manager import MultilingualQuerySet
-from modeltranslation.utils import fallbacks
 from parasolr.django.indexing import ModelIndexable
 from piffle.image import IIIFImageClient
 from piffle.presentation import IIIFException, IIIFPresentation
@@ -38,23 +37,19 @@ from unidecode import unidecode
 from urllib3.exceptions import HTTPError, NewConnectionError
 
 from geniza.annotations.models import Annotation
-from geniza.common.models import TrackChangesModel
+from geniza.common.models import (
+    DisplayLabelMixin,
+    TrackChangesModel,
+    cached_class_property,
+)
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 from geniza.corpus.dates import DocumentDateMixin
 from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
-from geniza.footnotes.models import Creator, Footnote, Source
+from geniza.footnotes.models import Creator, Footnote
 
 logger = logging.getLogger(__name__)
-
-
-def cached_class_property(f):
-    """
-    Reusable decorator to cache a class property, as opposed to an instance property.
-    from https://stackoverflow.com/a/71887897
-    """
-    return classmethod(property(cache(f)))
 
 
 class CollectionManager(models.Manager):
@@ -382,7 +377,7 @@ class DocumentTypeManager(models.Manager):
         return self.get(name_en=name)
 
 
-class DocumentType(models.Model):
+class DocumentType(DisplayLabelMixin, models.Model):
     """Controlled vocabulary of document types."""
 
     name = models.CharField(max_length=255, unique=True)
@@ -391,31 +386,11 @@ class DocumentType(models.Model):
         blank=True,
         help_text="Optional label for display on the public site",
     )
-
     objects = DocumentTypeManager()
-
-    def __str__(self):
-        # temporarily turn off model translate fallbacks;
-        # if display label for current language is not defined,
-        # we want name for the current language rather than the
-        # fallback value for display label
-        with fallbacks(False):
-            current_lang_label = self.display_label or self.name
-
-        return current_lang_label or self.display_label or self.name
-
-    def natural_key(self):
-        """Natural key, name"""
-        return (self.name,)
 
     @cached_class_property
     def objects_by_label(cls):
-        """A dict of DocumentType object instances keyed on English display label"""
-        return {
-            # lookup on display_label_en/name_en since solr should always index in English
-            (doctype.display_label_en or doctype.name_en): doctype
-            for doctype in cls.objects.all()
-        }
+        return super().objects_by_label()
 
 
 class DocumentSignalHandlers:
@@ -428,6 +403,7 @@ class DocumentSignalHandlers:
         "fragment": "fragments",
         "tag": "tags",
         "document type": "doctype",
+        "tagged item": "tagged_items",
         "Related Fragment": "textblock",  # textblock verbose name
         "footnote": "footnotes",
         "source": "footnotes__source",
@@ -484,6 +460,14 @@ class TagSignalHandlers:
     def unidecode_tag(sender, instance, **kwargs):
         """Convert saved tags to ascii, stripping diacritics."""
         instance.name = unidecode(instance.name)
+
+    @staticmethod
+    def tagged_item_change(sender, instance, action, **kwargs):
+        """Ensure document (=instance) is indexed after the tags m2m relationship is saved and the
+        list of tags is pulled from the database, on any tag change."""
+        if action in ["post_add", "post_remove", "post_clear"]:
+            logger.debug("taggit.TaggedItem %s, reindexing related document", action)
+            ModelIndexable.index_items(Document.objects.filter(pk=instance.pk))
 
 
 class DocumentQuerySet(MultilingualQuerySet):
@@ -922,6 +906,21 @@ class Document(ModelIndexable, DocumentDateMixin):
         )
 
     @property
+    def available_digital_content(self):
+        """Helper method for the ITT viewer to collect all available panels into a list"""
+
+        # NOTE: this is ordered by priority, with images first, then translations over
+        # transcriptions.
+        available_panels = []
+        if self.has_image():
+            available_panels.append("images")
+        if self.has_translation():
+            available_panels.append("translation")
+        if self.has_transcription():
+            available_panels.append("transcription")
+        return available_panels
+
+    @property
     def title(self):
         """Short title for identifying the document, e.g. via search."""
         return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"
@@ -955,6 +954,16 @@ class Document(ModelIndexable, DocumentDateMixin):
         return self.footnotes.filter(
             doc_relation__contains=Footnote.DIGITAL_TRANSLATION
         ).order_by("source")
+
+    @property
+    def default_translation(self):
+        """The first translation footnote that is in the current language, or the first
+        translation footnote ordered alphabetically by source if one is not available
+        in the current language."""
+
+        translations = self.digital_translations()
+        in_language = translations.filter(source__languages__code=get_language())
+        return in_language.first() or translations.first()
 
     def digital_footnotes(self):
         """All footnotes for this document where the document relation includes
@@ -1198,7 +1207,8 @@ class Document(ModelIndexable, DocumentDateMixin):
         try:
             last_log_entry = list(self.log_entries.all())[-1]
         except IndexError:
-            # should only occur in unit tests, not real data
+            # occurs in unit tests, and sometimes when new documents are indexed before
+            # log entry is populated
             last_log_entry = None
 
         if last_log_entry:
@@ -1210,6 +1220,14 @@ class Document(ModelIndexable, DocumentDateMixin):
             index_data[
                 "input_date_dt"
             ] = last_log_entry.action_time.isoformat().replace("+00:00", "Z")
+        elif self.created:
+            # when log entry not available, use created date on document object
+            # (will always exist except in some unit tests)
+            index_data["input_year_i"] = self.created.year
+            index_data["input_date_dt"] = self.created.isoformat().replace(
+                "+00:00", "Z"
+            )
+
         return index_data
 
     # define signal handlers to update the index based on changes
@@ -1262,9 +1280,6 @@ class Document(ModelIndexable, DocumentDateMixin):
         metadata into this document, adds the merged documents into
         list of old PGP IDs, and creates a log entry documenting
         the merge, including the rationale."""
-        # initialize old pgpid list if previously unset
-        if self.old_pgpids is None:
-            self.old_pgpids = []
 
         # if user is not specified, log entry will be associated with
         # script and document will be flagged for review
@@ -1287,10 +1302,58 @@ class Document(ModelIndexable, DocumentDateMixin):
         needs_review = [self.needs_review] if self.needs_review else []
 
         for doc in merge_docs:
-            # add merge id to old pgpid list
-            self.old_pgpids.append(doc.id)
+            # handle document dates validation before making any changes;
+            # mismatch should result in exception (caught by DocumentMerge.form_valid)
+            if (
+                (
+                    # both documents have standard dates, and they don't match
+                    doc.doc_date_standard
+                    and self.doc_date_standard
+                    and self.doc_date_standard != doc.doc_date_standard
+                )
+                or (
+                    # both documents have original dates, and they don't match
+                    doc.doc_date_original
+                    and self.doc_date_original
+                    and self.doc_date_original != doc.doc_date_original
+                )
+                or (
+                    # other document has original, this doc has standard, and they don't match
+                    doc.doc_date_original
+                    and self.doc_date_standard
+                    and doc.standardize_date() != self.doc_date_standard
+                )
+                or (
+                    # other document has standard, this doc has original, and they don't match
+                    doc.doc_date_standard
+                    and self.doc_date_original
+                    and self.standardize_date() != doc.doc_date_standard
+                )
+            ):
+                raise ValidationError(
+                    "Merged documents must not contain conflicting dates; resolve before merge"
+                )
+
             # add any tags from merge document tags to primary doc
             self.tags.add(*doc.tags.names())
+
+            # if not in conflict (i.e. missing or exact duplicate), copy dates to result document
+            if doc.doc_date_standard:
+                self.doc_date_standard = doc.doc_date_standard
+            if doc.doc_date_original:
+                self.doc_date_original = doc.doc_date_original
+                self.doc_date_calendar = doc.doc_date_calendar
+
+            # add inferred datings (conflicts or duplicates are post-merge
+            # data cleanup tasks)
+            for dating in doc.dating_set.all():
+                self.dating_set.add(dating)
+
+            # initialize old pgpid list if previously unset
+            if self.old_pgpids is None:
+                self.old_pgpids = []
+            # add merge id to old pgpid list
+            self.old_pgpids.append(doc.id)
             # add description if set and not duplicated
             # for all supported languages
             for lang_code in language_codes:
@@ -1362,9 +1425,50 @@ class Document(ModelIndexable, DocumentDateMixin):
     def _merge_footnotes(self, doc):
         # combine footnotes; footnote logic for merge_with
         for footnote in doc.footnotes.all():
-            # check for match; add new footnote if not a match
-            equiv_fn = self.footnotes.includes_footnote(footnote)
-            if not equiv_fn:
+            # check for match. for each pair of footnotes, there are two possible cases for
+            # non-equivalence:
+            # - the footnote to be merged in has annotations
+            # - there are fields on the footnotes that don't match
+            # in the former case, merge the two by migrating the annotations from the footnote to
+            # be merged in to an otherwise matching footnote if there is one; else, add it to doc.
+            # in the latter case, simply add the footnote to this document.
+
+            if footnote.annotation_set.exists():
+                try:
+                    # if the footnote to be merged in has annotations, try to reassign them to an
+                    # otherwise matching footnote to avoid unique constraint violation
+                    self_fn = self.footnotes.get(
+                        # for multiselect field list, need to cast to list to compare
+                        doc_relation__in=list(footnote.doc_relation),
+                        source_id=footnote.source.pk,
+                    )
+                    # copy over notes, location, url if missing from self_fn
+                    for attr in ["notes", "location", "url"]:
+                        if not getattr(self_fn, attr) and getattr(footnote, attr):
+                            setattr(self_fn, attr, getattr(footnote, attr))
+                    self_fn.save()
+                    # reassign each annotation's footnote to the footnote on this doc
+                    for annotation in footnote.annotation_set.all():
+                        annotation.footnote = self_fn
+                        annotation.save()
+                except Footnote.DoesNotExist:
+                    # if there is no match, we are clear of any unique constaint violation and can
+                    # simply add the footnote to this document
+                    self.footnotes.add(footnote)
+            elif not self.footnotes.includes_footnote(footnote):
+                # if there is otherwise not a match, add the footnote to this document
+
+                # first remove any digital doc relations to avoid unique constraint violation;
+                # footnote should not have such a relation anyway if there are 0 annotations, so
+                # this would be a data error.
+                if Footnote.DIGITAL_EDITION in footnote.doc_relation:
+                    footnote.doc_relation.remove(Footnote.DIGITAL_EDITION)
+                    footnote.save()
+                if Footnote.DIGITAL_TRANSLATION in footnote.doc_relation:
+                    footnote.doc_relation.remove(Footnote.DIGITAL_TRANSLATION)
+                    footnote.save()
+
+                # then add to this document
                 self.footnotes.add(footnote)
 
     def _merge_logentries(self, doc):
@@ -1503,7 +1607,31 @@ class Dating(models.Model):
         max_length=255,
         validators=[RegexValidator(DocumentDateMixin.re_date_format)],
     )
-    notes = models.TextField(
-        help_text="An explanation for how this date was inferred, and/or by whom",
+    PALEOGRAPHY = "PA"
+    PALEOGRAPHY_LABEL = "Paleography"
+    PERSON = "PE"
+    PERSON_LABEL = "Person mentioned"
+    EVENT = "E"
+    EVENT_LABEL = "Event mentioned"
+    COINAGE = "C"
+    COINAGE_LABEL = "Coinage"
+    OTHER = "O"
+    OTHER_LABEL = "Other (please specify)"
+    RATIONALE_CHOICES = (
+        (PALEOGRAPHY, PALEOGRAPHY_LABEL),
+        (PERSON, PERSON_LABEL),
+        (EVENT, EVENT_LABEL),
+        (COINAGE, COINAGE_LABEL),
+        (OTHER, OTHER_LABEL),
+    )
+    rationale = models.CharField(
+        max_length=2,
+        choices=RATIONALE_CHOICES,
+        default=OTHER,
+        help_text="An explanation for how this date was inferred",
         blank=False,
+        null=False,
+    )
+    notes = models.TextField(
+        help_text="Optional further details about the rationale",
     )
