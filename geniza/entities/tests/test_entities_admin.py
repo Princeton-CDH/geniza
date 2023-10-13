@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 from django.contrib import admin
+from django.http import HttpResponseRedirect
 from django.test import RequestFactory
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
@@ -133,6 +134,23 @@ class TestPersonAdmin:
         # should exclude Person with pk=own_pk
         assert qs.count() == 2
         assert not qs.filter(pk=goitein.pk).exists()
+
+    def test_merge_people(self):
+        mockrequest = Mock()
+        test_ids = ["50344", "33003", "10100"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = PersonAdmin(Person, Mock()).merge_people(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 303
+        assert resp["location"].startswith(reverse("admin:person-merge"))
+        assert resp["location"].endswith("?ids=%s" % ",".join(test_ids))
+
+        test_ids = ["50344"]
+        mockrequest.POST.getlist.return_value = test_ids
+        resp = PersonAdmin(Person, Mock()).merge_people(mockrequest, Mock())
+        assert isinstance(resp, HttpResponseRedirect)
+        assert resp.status_code == 302
+        assert resp["location"] == reverse("admin:entities_person_changelist")
 
 
 @pytest.mark.django_db

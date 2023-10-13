@@ -295,7 +295,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         selected = request.POST.getlist("_selected_action")
         if len(selected) < 2:
             messages.error(request, "You must select at least two people to merge")
-            return HttpResponseRedirect(reverse("admin:corpus_person_changelist"))
+            return HttpResponseRedirect(reverse("admin:entities_person_changelist"))
         return HttpResponseRedirect(
             "%s?ids=%s" % (reverse("admin:person-merge"), ",".join(selected)),
             status=303,
