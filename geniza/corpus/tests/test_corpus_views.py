@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from time import sleep
 from unittest.mock import ANY, MagicMock, Mock, patch
@@ -8,6 +7,7 @@ from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import resolve, reverse
 from django.utils.text import Truncator, slugify
@@ -1484,8 +1484,9 @@ class TestDocumentMergeView:
         assert response.status_code == 200
 
         # POST should merge
+        merge_url = "%s?ids=%s" % (reverse("admin:document-merge"), idstring)
         response = admin_client.post(
-            "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+            merge_url,
             {"primary_document": doc1.id, "rationale": "duplicate"},
             follow=True,
         )
@@ -1500,7 +1501,7 @@ class TestDocumentMergeView:
         with patch.object(Document, "merge_with") as mock_merge_with:
             # should pick up rationale notes as parenthetical
             response = admin_client.post(
-                "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+                merge_url,
                 {
                     "primary_document": doc1.id,
                     "rationale": "duplicate",
@@ -1512,7 +1513,7 @@ class TestDocumentMergeView:
 
             # with "other", should use rationale notes as rationale string
             response = admin_client.post(
-                "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+                merge_url,
                 {
                     "primary_document": doc1.id,
                     "rationale": "other",
@@ -1521,6 +1522,20 @@ class TestDocumentMergeView:
                 follow=True,
             )
             mock_merge_with.assert_called_with(ANY, "test", user=ANY)
+
+            # should catch ValidationError and send back to form with error msg
+            mock_merge_with.side_effect = ValidationError("test message")
+            response = admin_client.post(
+                merge_url,
+                {
+                    "primary_document": doc1.id,
+                    "rationale": "duplicate",
+                },
+                follow=True,
+            )
+            TestCase().assertRedirects(response, merge_url)
+            messages = [str(msg) for msg in list(response.context["messages"])]
+            assert "test message" in messages
 
 
 class TestTagMergeView:

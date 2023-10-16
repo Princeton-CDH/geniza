@@ -17,6 +17,9 @@
                        value="{{ spec.value|default_if_none:'' }}"
                        name="{{ spec.parameter_name }}"/>
 
+
+                <div class="help">Press enter after each entry to filter</div>
+
                 {% if not all_choice.selected %}
                     <strong><a href="{{ all_choice.query_string }}">x Remove</a></strong>
                 {% endif %}

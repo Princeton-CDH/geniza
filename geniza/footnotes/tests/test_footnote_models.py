@@ -96,6 +96,13 @@ class TestSource:
         )
 
     def test_str_language(self, article):
+        # English should not show up in citation
+        article.languages.add(SourceLanguage.objects.get(code="en"))
+        assert "English" not in str(article)
+        # unspecified language should not show up in citation
+        article.languages.add(SourceLanguage.objects.get(code="zxx"))
+        assert "Unspecified" not in str(article)
+        # other non-english languages should
         article.languages.add(SourceLanguage.objects.get(name="Hebrew"))
         assert "(in Hebrew)" in str(article)
 
