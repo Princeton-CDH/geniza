@@ -262,7 +262,7 @@ class TestMergeJTSENACollections(TestMigrations):
         assert ena_fragment.collection.pk == self.jts_collection.pk
 
 
-@pytest.mark.last
+@pytest.mark.second_to_last
 @pytest.mark.django_db
 class TestDocumentImageOverrides(TestMigrations):
     app = "corpus"
@@ -287,7 +287,7 @@ class TestDocumentImageOverrides(TestMigrations):
         assert order_override.image_overrides["canvas1"]["order"] == 1
 
 
-@pytest.mark.last
+@pytest.mark.second_to_last
 @pytest.mark.django_db
 class TestDocumentImageOverridesReverse(TestMigrations):
     app = "corpus"
