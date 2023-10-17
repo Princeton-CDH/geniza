@@ -946,17 +946,17 @@ class Document(ModelIndexable, DocumentDateMixin):
             split_date = dating.standard_date.split("/")
             start = PartialDate(split_date[0])
             # use numeric format to compare to current min, replace if smaller
-            start_numeric = start.numeric_format(mode="min")
-            if dating_range[0] is None or start_numeric < dating_range[
-                0
-            ].numeric_format(mode="min"):
+            start_numeric = int(start.numeric_format(mode="min"))
+            if dating_range[0] is None or start_numeric < int(
+                dating_range[0].numeric_format(mode="min")
+            ):
                 dating_range[0] = start
             # get end from standardized date range
             end = PartialDate(split_date[1]) if len(split_date) > 1 else start
             # use numeric format to compare to current max, replace if larger
-            end_numeric = end.numeric_format(mode="max")
-            if dating_range[1] is None or end_numeric > dating_range[1].numeric_format(
-                mode="max"
+            end_numeric = int(end.numeric_format(mode="max"))
+            if dating_range[1] is None or end_numeric > int(
+                dating_range[1].numeric_format(mode="max")
             ):
                 dating_range[1] = end
 
