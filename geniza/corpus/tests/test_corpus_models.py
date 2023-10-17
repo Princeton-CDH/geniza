@@ -1445,8 +1445,8 @@ class TestDocument:
             display_date="",
             standard_date="980",
         )
-        # sometimes these ranges will have leading 0s, solr will accept
-        assert document.solr_dating_range() == "[0980 TO 1010]"
+        # sometimes these years will have leading 0s, solr will accept either way
+        assert document.solr_dating_range() in ["[0980 TO 1010]", "[980 TO 1010]"]
         assert document.solr_dating_range() != document.solr_date_range()
 
         # only datings, range should be entirely from min and max among these
@@ -1458,7 +1458,7 @@ class TestDocument:
             display_date="",
             standard_date="960/990",
         )
-        assert join.solr_dating_range() == "[0960 TO 1005]"
+        assert join.solr_dating_range() in ["[0960 TO 1005]", "[960 TO 1005]"]
 
 
 def test_document_merge_with(document, join):
