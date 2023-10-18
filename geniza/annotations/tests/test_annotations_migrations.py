@@ -7,7 +7,7 @@ from geniza.corpus.models import Document
 from geniza.footnotes.models import Footnote, Source, SourceType
 
 
-@pytest.mark.last
+@pytest.mark.second_to_last
 @pytest.mark.django_db
 class TestAssociateRelatedFootnotes(TestMigrations):
     app = "annotations"
