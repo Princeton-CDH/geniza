@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+4.15.3
+------
+
+- bugfix: Last chosen person not populating in person-document relations dropdown
+
 4.15.2
 ------
 
