@@ -131,19 +131,38 @@ class TestPersonAdmin:
         request_factory = RequestFactory()
 
         # simulate request for person list page
-        request = request_factory.post("/admin/entities/person/")
+        request = request_factory.get("/admin/entities/person/")
         qs = person_admin.get_queryset(request)
         assert qs.count() == 3
 
         # simulate get_form setting own_pk
         person_admin.own_pk = goitein.pk
 
-        # simulate autocomplete request
-        request = request_factory.post("/admin/autocomplete/")
+        # simulate person-person autocomplete request
+        request = request_factory.get(
+            "/admin/autocomplete/",
+            {
+                "app_label": "entities",
+                "model_name": "personpersonrelation",
+                "field_name": "to_person",
+            },
+        )
         qs = person_admin.get_queryset(request)
         # should exclude Person with pk=own_pk
         assert qs.count() == 2
         assert not qs.filter(pk=goitein.pk).exists()
+
+        # simulate person-document autocomplete request
+        request = request_factory.get(
+            "/admin/autocomplete/",
+            {
+                "app_label": "entities",
+                "model_name": "persondocumentrelation",
+                "field_name": "person",
+            },
+        )
+        qs = person_admin.get_queryset(request)
+        assert qs.count() == 3
 
 
 @pytest.mark.django_db
