@@ -963,22 +963,18 @@ class Document(ModelIndexable, DocumentDateMixin):
 
     def solr_dating_range(self):
         """Return the document's dating range, including inferred, as a Solr date range."""
-        dating_range = self.dating_range()
         solr_dating_range = []
-        if dating_range[0] is not None:
-            # min from dating_range, formatted YYYY-MM-DD or YYYY-MM or YYYY
-            solr_dating_range.append(dating_range[0].isoformat())
-        # if there's a max date in the range, ensure it's not the same as the min
-        if (
-            dating_range[1] is not None
-            and dating_range[1].isoformat(mode="max") != solr_dating_range[0]
-        ):
-            # max from dating_range, formatted YYYY-MM-DD or YYYY-MM or YYYY
-            solr_dating_range.append(dating_range[1].isoformat(mode="max"))
+        # self.dating_range() should always return a tuple of two values
+        for i, date in enumerate(self.dating_range()):
+            if date:
+                # min/max from dating_range, formatted YYYY-MM-DD or YYYY-MM or YYYY
+                solr_dating_range.append(
+                    date.isoformat(mode="max" if i == 1 else "min")
+                )
         if not solr_dating_range:
             return None
-        # if a single date instead of a range, start and end are the same
-        if len(solr_dating_range) == 1:
+        # if a single date instead of a range, just return that date
+        if solr_dating_range[0] == solr_dating_range[1]:
             return solr_dating_range[0]
         # if there's more than one date, return as a range
         return "[%s TO %s]" % tuple(solr_dating_range)
