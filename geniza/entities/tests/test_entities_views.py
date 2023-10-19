@@ -1,6 +1,7 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
+from django.forms import ValidationError
 from django.test import TestCase
 from django.urls import resolve, reverse
 
@@ -9,7 +10,7 @@ from geniza.entities.views import PersonMerge
 
 
 class TestPersonMergeView:
-    # adapted from TestPersonMergeView
+    # adapted from TestDocumentMergeView
     @pytest.mark.django_db
     def test_get_success_url(self):
         person = Person.objects.create()
@@ -65,9 +66,7 @@ class TestPersonMergeView:
         # POST should merge
         merge_url = "%s?ids=%s" % (reverse("admin:person-merge"), idstring)
         response = admin_client.post(
-            merge_url,
-            {"primary_person": person.id},
-            follow=True,
+            merge_url, {"primary_person": person.id}, follow=True
         )
         TestCase().assertRedirects(
             response, reverse("admin:entities_person_change", args=[person.id])
@@ -76,3 +75,13 @@ class TestPersonMergeView:
         assert message.tags == "success"
         assert "Successfully merged" in message.message
         assert f"with {str(person)} (id = {person.pk})" in message.message
+
+        with patch.object(Person, "merge_with") as mock_merge_with:
+            # should catch ValidationError and send back to form with error msg
+            mock_merge_with.side_effect = ValidationError("test message")
+            response = admin_client.post(
+                merge_url, {"primary_person": person.id}, follow=True
+            )
+            TestCase().assertRedirects(response, merge_url)
+            messages = [str(msg) for msg in list(response.context["messages"])]
+            assert "test message" in messages

@@ -1,5 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.forms import ValidationError
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.views.generic import FormView
@@ -50,7 +52,17 @@ class PersonMerge(PermissionRequiredMixin, FormView):
         # Merge secondary people into the selected primary person
         user = getattr(self.request, "user", None)
 
-        primary_person.merge_with(secondary_people, user=user)
+        try:
+            primary_person.merge_with(secondary_people, user=user)
+        except ValidationError as err:
+            print("ga")
+            # in case the merge resulted in an error, display error to user
+            messages.error(self.request, err.message)
+            # redirect to this form page instead of one of the people
+            return HttpResponseRedirect(
+                "%s?ids=%s"
+                % (reverse("admin:person-merge"), self.request.GET.get("ids", "")),
+            )
 
         # Display info about the merge to the user
         messages.success(

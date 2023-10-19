@@ -4,6 +4,7 @@ import pytest
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.forms import ValidationError
 from django.utils import timezone
 
 from geniza.corpus.models import Document
@@ -71,6 +72,20 @@ class TestPerson:
         assert LogEntry.objects.filter(
             object_id=person.pk, change_message__contains=f"merged with {p2_str}"
         ).exists()
+
+    def test_merge_with_conflicts(self):
+        # should raise ValidationError on conflicting gender
+        person = Person.objects.create(gender=Person.MALE)
+        person_2 = Person.objects.create(gender=Person.FEMALE)
+        with pytest.raises(ValidationError):
+            person.merge_with([person_2])
+        # should raise ValidationError on conflicting role
+        role = PersonRole.objects.create(name="example")
+        role_2 = PersonRole.objects.create(name="other")
+        person_3 = Person.objects.create(gender=Person.MALE, role=role)
+        person_4 = Person.objects.create(gender=Person.MALE, role=role_2)
+        with pytest.raises(ValidationError):
+            person_3.merge_with([person_4])
 
     def test_merge_with_names(self):
         person = Person.objects.create()

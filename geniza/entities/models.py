@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.forms import ValidationError
 from django.utils.translation import gettext as _
 from gfklookupwidget.fields import GfkLookupField
 
@@ -178,11 +179,19 @@ class Person(models.Model):
             # ensure any has_page overrides are respected
             self.has_page = self.has_page or person.has_page
 
-            # ensure missing role and gender are migrated
+            # migrate/copy role and gender if not already present, check for conflicts otherwies
             if person.role and not self.role:
                 self.role = person.role
+            elif person.role and self.role and person.role.pk != self.role.pk:
+                raise ValidationError(
+                    "Merged people must not have conflicting social roles; resolve before merge"
+                )
             if self.gender == Person.UNKNOWN and person.gender != Person.UNKNOWN:
                 self.gender = person.gender
+            elif person.gender != Person.UNKNOWN and self.gender != person.gender:
+                raise ValidationError(
+                    "Merged people must not have conflicting genders; resolve before merge"
+                )
 
             # combine log entries (before name, since name used in log entries)
             self._merge_logentries(person)
