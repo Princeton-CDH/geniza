@@ -176,8 +176,7 @@ class Person(models.Model):
 
         for person in merge_people:
             # ensure any has_page overrides are respected
-            if person.has_page and not self.has_page:
-                self.has_page = True
+            self.has_page = self.has_page or person.has_page
 
             # ensure missing role and gender are migrated
             if person.role and not self.role:
