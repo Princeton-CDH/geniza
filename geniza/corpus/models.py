@@ -940,24 +940,25 @@ class Document(ModelIndexable, DocumentDateMixin):
         if not self.dating_set.exists():
             return tuple(dating_range)
 
-        # loop through inferred datings to find min and max
+        # loop through inferred datings to find min and max among all dates (including both
+        # on-document and inferred)
         for dating in self.dating_set.all():
             # get start from standardized date range (formatted as "date1/date2" or "date")
             split_date = dating.standard_date.split("/")
             start = PartialDate(split_date[0])
             # use numeric format to compare to current min, replace if smaller
             start_numeric = int(start.numeric_format(mode="min"))
-            if dating_range[0] is None or start_numeric < int(
-                dating_range[0].numeric_format(mode="min")
-            ):
+            min = dating_range[0]
+            if min is None or start_numeric < int(min.numeric_format(mode="min")):
+                # store as PartialDate
                 dating_range[0] = start
             # get end from standardized date range
             end = PartialDate(split_date[1]) if len(split_date) > 1 else start
             # use numeric format to compare to current max, replace if larger
             end_numeric = int(end.numeric_format(mode="max"))
-            if dating_range[1] is None or end_numeric > int(
-                dating_range[1].numeric_format(mode="max")
-            ):
+            max = dating_range[1]
+            if max is None or end_numeric > int(max.numeric_format(mode="max")):
+                # store as PartialDate
                 dating_range[1] = end
 
         return tuple(dating_range)
