@@ -282,14 +282,17 @@ class DateListFilter(TextInputListFilter):
             )
 
             # use Solr to take advantage of processed date range fields
-            sqs = (
-                # exclude inferred: document_date_dr
-                (DocumentSolrQuerySet().filter(document_date_dr=date_filter))
+            sqs = DocumentSolrQuerySet()
+
+            # different solr fields for dates, depdending on whether or not inferred are included
+            date_field = (
+                "document_date_dr"
                 if request.GET.get("exclude_inferred", None) == "true"
-                # include inferred: document_dating_dr
-                else (DocumentSolrQuerySet().filter(document_dating_dr=date_filter))
+                else "document_dating_dr"
             )
-            sqs = sqs.only("pgpid").get_results(rows=100000)
+            date_filter_opts = {date_field: date_filter}
+            sqs = sqs.filter(**date_filter_opts).only("pgpid").get_results(rows=100000)
+
             # filter queryset by id if there are results
             pks = [r["pgpid"] for r in sqs]
             if sqs:
