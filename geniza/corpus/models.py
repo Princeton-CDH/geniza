@@ -932,9 +932,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         """
         # it is unlikely, but technically possible, that a document could have both on-document
         # dates and inferred datings, so find the min and max out of all of them.
-        start_date = self.start_date if self.start_date else None
-        end_date = self.end_date if self.end_date else None
-        dating_range = [start_date, end_date]
+        dating_range = [self.start_date or None, self.end_date or None]
 
         # bail out if we don't have any inferred datings
         if not self.dating_set.exists():
