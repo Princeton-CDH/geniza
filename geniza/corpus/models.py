@@ -270,12 +270,12 @@ class Fragment(TrackChangesModel):
             " ".join(
                 # include label as title for now; include canvas as data attribute for reordering
                 # on Document
-                '<img src="%s" loading="lazy" height="200" title="%s" %s%s>'
+                '<div class="admin-thumbnail%s" %s><img src="%s" loading="lazy" height="200" title="%s" /></div>'
                 % (
+                    " selected" if i in selected else "",
+                    f'data-canvas="{list(canvases)[i]}"' if canvases else "",
                     img,
                     labels[i],
-                    f'data-canvas="{list(canvases)[i]}" ' if canvases else "",
-                    'class="selected" /' if i in selected else "/",
                 )
                 for i, img in enumerate(images)
             )
@@ -498,8 +498,8 @@ class Document(ModelIndexable, DocumentDateMixin):
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
     )
-    image_order_override = ArrayField(
-        models.URLField(), null=True, verbose_name="Image Order", blank=True
+    image_overrides = models.JSONField(
+        null=False, blank=True, default=dict, verbose_name="Image Order/Rotation"
     )
     shelfmark_override = models.CharField(
         "Shelfmark Override",
@@ -749,6 +749,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                             "label": labels[i],
                             "canvas": canvases[i],
                             "shelfmark": b.fragment.shelfmark,
+                            "rotation": 0,  # rotation to 0 by default; will change if overridden
                             "excluded": len(b.selected_images)
                             and i not in b.selected_images,
                         }
@@ -792,14 +793,25 @@ class Document(ModelIndexable, DocumentDateMixin):
                             "recto" if int(uri_match.group("canvas")) == 1 else "verso"
                         )
 
-        # if image_order_override not present, return list, in original order
-        if not self.image_order_override:
+        # if image_overrides not present, return list, in original order
+        if not self.image_overrides:
             return iiif_images
 
-        # otherwise, order returned images according to override
+        # sort canvases by "order" value
+        sorted_overrides = sorted(
+            self.image_overrides.items(),  # this will produce (canvas, overrides) tuples
+            # get order if present; use ∞ as fallback to sort unordered to end of list
+            key=lambda item: item[1].get("order", float("inf")),
+        )
+        # use that recreate dict keyed on canvas, but now in the overriden order
         ordered_images = {
-            canvas: iiif_images.pop(canvas)
-            for canvas in self.image_order_override
+            canvas: {
+                # get values from original unordered dict
+                **iiif_images.pop(canvas),
+                # include rotation: overridden value or 0 degrees
+                "rotation": int(override.get("rotation", 0)),
+            }
+            for canvas, override in sorted_overrides
             if canvas in iiif_images
         } or {}  # if condition is never met, instantiate empty dict (instead of set!)
         ordered_images.update(
@@ -813,12 +825,15 @@ class Document(ModelIndexable, DocumentDateMixin):
         if not iiif_images:
             return ""
         return Fragment.admin_thumbnails(
-            images=[img["image"].size(height=200) for img in iiif_images.values()],
+            images=[
+                img["image"].size(height=200).rotation(degrees=img["rotation"])
+                for img in iiif_images.values()
+            ],
             labels=[img["label"] for img in iiif_images.values()],
             canvases=iiif_images.keys(),
         )
 
-    admin_thumbnails.short_description = "Image order override"
+    admin_thumbnails.short_description = "Image order/rotation overrides"
 
     def fragment_urls(self):
         """List of external URLs to view the Document's Fragments."""

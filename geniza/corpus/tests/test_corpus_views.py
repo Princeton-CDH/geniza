@@ -1174,7 +1174,11 @@ class TestDocumentManifestView:
         mock_manifest.sequences = [Mock(canvases=mock_canvases)]
         # add image order override to a document
         document = Document.objects.create(
-            image_order_override=["urn:m1/c2", "urn:m1/c3", "urn:m1/c1"]
+            image_overrides={
+                "urn:m1/c2": {"order": 0},
+                "urn:m1/c3": {"order": 1},
+                "urn:m1/c1": {"order": 2},
+            }
         )
         TextBlock.objects.create(document=document, fragment=fragment)
         response = client.get(reverse(self.view_name, args=[document.pk]))
