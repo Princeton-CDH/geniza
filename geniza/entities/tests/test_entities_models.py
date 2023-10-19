@@ -2,13 +2,18 @@ import pytest
 
 from geniza.corpus.models import Document
 from geniza.entities.models import (
+    DocumentPlaceRelation,
+    DocumentPlaceRelationType,
     Name,
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
     PersonPersonRelation,
     PersonPersonRelationType,
+    PersonPlaceRelation,
+    PersonPlaceRelationType,
     PersonRole,
+    Place,
 )
 
 
@@ -71,7 +76,22 @@ class TestPersonPersonRelation:
             to_person=rustow,
             type=friendship_type,
         )
-        assert str(friendship) == f"{friendship_type} relation: {goitein} and {rustow}"
+        assert str(friendship) == f"{friendship_type} relation: {rustow} and {goitein}"
+
+        # with converse_name
+        ayala = Person.objects.create()
+        Name.objects.create(name="Ayala Gordon", content_object=ayala)
+        (parent_child, _) = PersonPersonRelationType.objects.get_or_create(
+            name="Parent",
+            converse_name="Child",
+            category=PersonPersonRelationType.IMMEDIATE_FAMILY,
+        )
+        goitein_ayala = PersonPersonRelation.objects.create(
+            from_person=ayala,
+            to_person=goitein,
+            type=parent_child,
+        )
+        assert str(goitein_ayala) == f"Parent-Child relation: {goitein} and {ayala}"
 
 
 @pytest.mark.django_db
@@ -87,3 +107,54 @@ class TestPersonDocumentRelation:
             type=recipient,
         )
         assert str(relation) == f"{recipient} relation: {goitein} and {doc}"
+
+
+@pytest.mark.django_db
+class TestPlace:
+    def test_str(self):
+        place = Place.objects.create()
+        # Place with no name uses default django __str__ method
+        assert str(place) == f"Place object ({place.pk})"
+        # add two names
+        secondary_name = Name.objects.create(name="Philly", content_object=place)
+        primary_name = Name.objects.create(name="Philadelphia", content_object=place)
+        # __str__ should use the first name added
+        assert str(place) == secondary_name.name
+        # set one of them as primary
+        primary_name.primary = True
+        primary_name.save()
+        # __str__ should use the primary name
+        assert str(place) == primary_name.name
+
+
+@pytest.mark.django_db
+class TestPersonPlaceRelation:
+    def test_str(self):
+        goitein = Person.objects.create()
+        Name.objects.create(name="S.D. Goitein", content_object=goitein)
+        philadelphia = Place.objects.create()
+        Name.objects.create(name="Philadelphia", content_object=philadelphia)
+        (home_base, _) = PersonPlaceRelationType.objects.get_or_create(name="Home base")
+        relation = PersonPlaceRelation.objects.create(
+            person=goitein,
+            place=philadelphia,
+            type=home_base,
+        )
+        assert str(relation) == f"{home_base} relation: {goitein} and {philadelphia}"
+
+
+@pytest.mark.django_db
+class TestDocumentPlaceRelation:
+    def test_str(self):
+        fustat = Place.objects.create()
+        Name.objects.create(name="Fustat", content_object=fustat)
+        (letter_origin, _) = DocumentPlaceRelationType.objects.get_or_create(
+            name="Letter origin"
+        )
+        doc = Document.objects.create()
+        relation = DocumentPlaceRelation.objects.create(
+            place=fustat,
+            document=doc,
+            type=letter_origin,
+        )
+        assert str(relation) == f"{letter_origin} relation: {doc} and {fustat}"

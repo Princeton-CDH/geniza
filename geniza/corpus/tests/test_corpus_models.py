@@ -26,6 +26,7 @@ from geniza.annotations.models import Annotation
 from geniza.corpus.dates import Calendar
 from geniza.corpus.models import (
     Collection,
+    Dating,
     Document,
     DocumentType,
     Fragment,
@@ -1137,6 +1138,15 @@ class TestDocument:
         all_old_shelfmarks.append(fragment2.old_shelfmarks)
         assert index_data["fragment_old_shelfmark_ss"] == all_old_shelfmarks
 
+    def test_index_data_input_date(self):
+        doc = Document.objects.create()
+        # when no logentry exists, should still get the year from created attr
+        assert not LogEntry.objects.filter(
+            object_id=doc.pk,
+            content_type_id=ContentType.objects.get_for_model(doc).id,
+        ).exists()
+        assert doc.index_data()["input_year_i"] == doc.created.year
+
     def test_editions(self, document, source):
         # create multiple footnotes to test filtering and sorting
 
@@ -1673,6 +1683,105 @@ def test_document_merge_with_log_entries(document, join):
     # reassociated log entry should include old pgpid
     moved_log = document.log_entries.all()[1]
     assert " [PGPID %s]" % join_pk in moved_log.change_message
+
+
+def test_document_merge_with_dates(document, join):
+    editor = User.objects.get_or_create(username="editor")[0]
+
+    # clone join for additional merges
+    join_clones = []
+    for _ in range(4):
+        join_clone = Document.objects.get(pk=join.pk)
+        join_clone.pk = None
+        join_clone.save()
+        join_clones.append(join_clone)
+
+    # create some datings; doesn't matter that they are identical, as cleaning
+    # up post-merge dupes is a manual data cleanup task. unit test will make
+    # sure that doesn't cause errors!
+    dating_1 = Dating.objects.create(
+        document=document,
+        display_date="1000 CE",
+        standard_date="1000",
+        rationale=Dating.PALEOGRAPHY,
+        notes="a note",
+    )
+    dating_2 = Dating.objects.create(
+        document=join_clone,
+        display_date="1000 CE",
+        standard_date="1000",
+        rationale=Dating.PALEOGRAPHY,
+        notes="a note",
+    )
+
+    # should raise ValidationError on conflicting dates
+    document.doc_date_standard = "1230-01-01"
+    join.doc_date_standard = "1234-01-01"
+    with pytest.raises(ValidationError):
+        document.merge_with([join], "test", editor)
+
+    # should use any existing dates if one of the merged documents has one
+    join.doc_date_standard = ""
+    document.merge_with([join], "test", editor)
+    assert document.doc_date_standard == "1230-01-01"
+
+    document.doc_date_standard = ""
+    document.doc_date_original = ""
+    document.doc_date_calendar = ""
+    join_clones[0].doc_date_original = "15 Tevet 4990"
+    join_clones[0].doc_date_calendar = Calendar.ANNO_MUNDI
+    document.merge_with([join_clones[0]], "test", editor)
+    assert document.doc_date_original == "15 Tevet 4990"
+    assert document.doc_date_calendar == Calendar.ANNO_MUNDI
+
+    # should raise error if one document's standard date conflicts with other document's
+    # original date
+    document.doc_date_original = ""
+    document.doc_date_standard = "1230-01-01"
+    join_clones[1].doc_date_original = "1 Tevet 5000"
+    join_clones[1].doc_date_calendar = Calendar.ANNO_MUNDI
+    with pytest.raises(ValidationError):
+        document.merge_with([join_clones[1]], "test", editor)
+
+    document.doc_date_standard = ""
+    document.doc_date_original = "1 Tevet 5000"
+    document.doc_date_calendar = Calendar.ANNO_MUNDI
+    join_clones[1].doc_date_original = ""
+    join_clones[1].doc_date_standard = "1230-01-01"
+    with pytest.raises(ValidationError):
+        document.merge_with([join_clones[1]], "test", editor)
+
+    # should not raise error on identical dates
+    document.doc_date_standard = "1230-01-01"
+    document.doc_date_original = "15 Tevet 4990"
+    document.doc_date_calendar = Calendar.ANNO_MUNDI
+    join_clones[1].doc_date_standard = "1230-01-01"
+    join_clones[1].doc_date_original = "15 Tevet 4990"
+    join_clones[1].doc_date_calendar = Calendar.ANNO_MUNDI
+    document.merge_with([join_clones[1]], "test", editor)
+
+    # should consider identical if one doc's standardized original date = other doc's standard date
+    document.doc_date_standard = "1230-01-01"
+    document.doc_date_original = ""
+    document.doc_date_calendar = ""
+    join_clones[2].doc_date_standard = ""
+    join_clones[2].doc_date_original = "15 Tevet 4990"
+    join_clones[2].doc_date_calendar = Calendar.ANNO_MUNDI
+    document.merge_with([join_clones[2]], "test", editor)
+    assert document.doc_date_original == "15 Tevet 4990"
+    assert document.doc_date_calendar == Calendar.ANNO_MUNDI
+
+    document.doc_date_standard = ""
+    join_clones[3].doc_date_standard = "1230-01-01"
+    join_clones[3].doc_date_original = ""
+    join_clones[3].doc_date_calendar = ""
+    document.merge_with([join_clones[3]], "test", editor)
+    assert document.doc_date_standard == "1230-01-01"
+
+    # should carry over all inferred datings without error, even if they are identical
+    assert document.dating_set.count() == 2
+    result_pks = [dating.pk for dating in document.dating_set.all()]
+    assert dating_1.pk in result_pks and dating_2.pk in result_pks
 
 
 def test_document_get_by_any_pgpid(document):

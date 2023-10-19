@@ -4,3 +4,7 @@ iiif
 pandas
 python-slugify
 ratelimit
+google-auth
+google-auth-oauthlib
+google-api-python-client
+oauth2client

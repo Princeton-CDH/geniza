@@ -81,7 +81,7 @@
         {% endif %}
         {% block extrascript %}{% endblock extrascript %}
     </head>
-    <body>
+    <body {% if IS_ARCHIVE_CRAWLER %}data-turbo="false"{% endif %}>
         {% wagtailuserbar 'bottom-right' %}
         {% if "SHOW_WARNING_BANNER" in FEATURE_FLAGS %}
             {% include 'snippets/test_banner.html' %}

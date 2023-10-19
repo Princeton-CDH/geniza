@@ -72,7 +72,7 @@ nodeenv==1.7.0
 openpyxl==3.0.10
 outcome==1.2.0
 packaging==21.3
-parasolr==0.9.0
+parasolr==0.9.1
 pathspec==0.10.2
 percy-selenium==1.0.5
 piffle==0.4.0
@@ -86,7 +86,7 @@ progressbar2==4.2.0
 psycopg2-binary==2.9.5
 pucas==0.7.0
 pyasn1==0.4.8
-Pygments==2.13.0
+Pygments==2.16.1
 PyMeeus==0.5.11
 pyparsing==3.0.9
 PySocks==1.7.1
@@ -109,7 +109,7 @@ sniffio==1.3.0
 snowballstemmer==2.2.0
 sortedcontainers==2.4.0
 soupsieve==2.3.2.post1
-Sphinx==5.3.0
+Sphinx==7.2.0
 sphinxcontrib-applehelp==1.0.2
 sphinxcontrib-devhelp==1.0.2
 sphinxcontrib-htmlhelp==2.0.0

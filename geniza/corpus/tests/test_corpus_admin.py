@@ -20,6 +20,8 @@ from django.utils.timezone import now
 from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.corpus.admin import (
+    DateAfterListFilter,
+    DateBeforeListFilter,
     DocumentAdmin,
     DocumentForm,
     DocumentPersonInline,
@@ -512,13 +514,91 @@ class TestHasTranslationListFilter(TestHasTranscriptionListFilter):
 
 
 @pytest.mark.django_db
-class TestDocumentPersonInline:
-    def test_person_link(self):
-        goitein = Person.objects.create()
-        doc = Document.objects.create()
-        relation = PersonDocumentRelation.objects.create(person=goitein, document=doc)
-        inline = DocumentPersonInline(Document, admin_site=admin.site)
-        # should link to to_person Person object
-        person_link = inline.person_link(relation)
-        assert str(goitein.id) in person_link
-        assert str(goitein) in person_link
+class TestDateListFilter:
+    def test_choices(self):
+        # choices() should always just return "All" option
+        filter = DateAfterListFilter(
+            request=Mock(), params={}, model=Mock(), model_admin=Mock()
+        )
+        changelist = Mock()
+        changelist.get_filters_params.return_value = {}
+        all_option = next(filter.choices(changelist))
+        assert all_option["display"] == "All"
+
+    @patch("geniza.corpus.admin.DocumentSolrQuerySet")
+    def test_get_queryset_date_after(self, mock_dqs):
+        Document.objects.create(doc_date_standard="2000")
+        Document.objects.create(doc_date_standard="1240")
+        queryset = Document.objects.all()
+
+        # include all but one document in results
+        pks = [{"pgpid": doc.pk} for doc in queryset][1:]
+        mock_dqs.return_value.filter.return_value.only.return_value.get_results.return_value = (
+            pks
+        )
+
+        date_after_filter = DateAfterListFilter(
+            request=Mock(),
+            params={DateAfterListFilter.parameter_name: "1900"},
+            model=Document,
+            model_admin=DocumentAdmin,
+        )
+        # call the queryset method
+        result_qs = date_after_filter.queryset(Mock(), queryset)
+
+        # should filter a DocumentSolrQuerySet by date after 1900
+        mock_dqs.assert_called_with()
+        mock_sqs = mock_dqs.return_value
+        mock_sqs.filter.assert_called_with(document_date_dr="[1900 TO *]")
+
+        # since we included all but one in the result set, the resulting count should be 1 less
+        assert result_qs.count() == queryset.count() - 1
+
+    @patch("geniza.corpus.admin.DocumentSolrQuerySet")
+    def test_get_queryset_date_before(self, mock_dqs):
+        date_before_filter = DateBeforeListFilter(
+            request=Mock(),
+            params={DateBeforeListFilter.parameter_name: "1900"},
+            model=Document,
+            model_admin=DocumentAdmin,
+        )
+        queryset = Document.objects.all()
+        # call the queryset method
+        date_before_filter.queryset(Mock(), queryset)
+        # should filter a DocumentSolrQuerySet by date before 1900
+        mock_dqs.assert_called_with()
+        mock_sqs = mock_dqs.return_value
+        mock_sqs.filter.assert_called_with(document_date_dr="[* TO 1900]")
+
+    @patch("geniza.corpus.admin.messages")
+    def test_get_queryset_invalid_date(self, mock_messages):
+        # format the date incorrectly
+        date_after_filter = DateAfterListFilter(
+            request=Mock(),
+            params={DateAfterListFilter.parameter_name: "01/01/1900"},
+            model=Document,
+            model_admin=DocumentAdmin,
+        )
+        queryset = Document.objects.all()
+        # call the queryset method
+        date_after_filter.queryset(Mock(), queryset)
+        # error message should be displayed
+        mock_messages.error.assert_called()
+
+    @patch("geniza.corpus.admin.DocumentSolrQuerySet")
+    def test_get_queryset_empty_result(self, mock_dqs):
+        # set the result to empty list []
+        mock_dqs.return_value.filter.return_value.only.return_value.get_results.return_value = (
+            []
+        )
+        date_before_filter = DateBeforeListFilter(
+            request=Mock(),
+            params={DateBeforeListFilter.parameter_name: "1900"},
+            model=Document,
+            model_admin=DocumentAdmin,
+        )
+        # call the queryset method
+        mock_qs = Mock()
+        result_qs = date_before_filter.queryset(Mock(), queryset=mock_qs)
+        # should call exclude() and then return queryset.none()
+        assert result_qs == mock_qs.exclude.return_value.none.return_value

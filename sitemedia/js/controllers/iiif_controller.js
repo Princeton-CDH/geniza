@@ -25,11 +25,15 @@ export default class extends Controller {
         const enlargeButton = this.imageContainerTarget.querySelector(
             "button.enlarge-button"
         );
-        enlargeButton.addEventListener("click", (e) => {
-            // use toggle to allow opening and closing with the pin icon
-            this.imageContainerTarget.classList.toggle("enlarged");
-            enlargeButton.classList.toggle("active");
-        });
+
+        // will not exist if we are in editor
+        if (enlargeButton) {
+            enlargeButton.addEventListener("click", (e) => {
+                // use toggle to allow opening and closing with the pin icon
+                this.imageContainerTarget.classList.toggle("enlarged");
+                enlargeButton.classList.toggle("active");
+            });
+        }
     }
 
     rotationTargetConnected() {

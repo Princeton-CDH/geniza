@@ -165,3 +165,17 @@ def translate_url(context, lang_code):
     # thanks to https://stackoverflow.com/a/51974042
     path = context.get("request").get_full_path()
     return django_translate_url(path, lang_code)
+
+
+@register.filter
+def has_location_or_url(footnotes):
+    """For scholarship records list: return True if any footnote in the list
+    has a URL or location."""
+    return any(fn.url or fn.location for fn in footnotes)
+
+
+@register.filter
+def all_doc_relations(footnotes):
+    """For scholarship records list: join doc relations for all footnotes
+    by a comma."""
+    return ", ".join(sorted(set([str(fn.doc_relation) for fn in footnotes])))

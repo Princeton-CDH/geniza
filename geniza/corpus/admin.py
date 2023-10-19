@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
-from django.db.models import CharField, Count, F, TextField
+from django.db.models import CharField, Count, F, Q, TextField
 from django.db.models.functions import Concat
 from django.forms.widgets import HiddenInput, Textarea, TextInput
 from django.http import HttpResponseRedirect
@@ -18,6 +18,7 @@ from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.annotations.models import Annotation
 from geniza.common.admin import custom_empty_field_list_filter
+from geniza.corpus.dates import DocumentDateMixin
 from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentExporter
 from geniza.corpus.models import (
     Collection,
@@ -30,7 +31,8 @@ from geniza.corpus.models import (
 )
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
-from geniza.entities.models import PersonDocumentRelation
+from geniza.entities.admin import PersonInline, PlaceInline
+from geniza.entities.models import DocumentPlaceRelation, PersonDocumentRelation
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.footnotes.models import Footnote
 
@@ -235,6 +237,80 @@ class HasTranslationListFilter(admin.SimpleListFilter):
             )
 
 
+class TextInputListFilter(admin.SimpleListFilter):
+    """
+    Custom list filter class for text input, adapted from this solution by Haki Benita:
+    https://hakibenita.com/how-to-add-a-text-filter-to-django-admin
+    """
+
+    template = "admin/corpus/text_input_filter.html"
+
+    def lookups(self, request, model_admin):
+        # Dummy, required to show the filter.
+        return ((),)
+
+    def choices(self, changelist):
+        # Grab only the "all" option.
+        all_choice = next(super().choices(changelist))
+        all_choice["query_parts"] = (
+            (k, v)
+            for k, v in changelist.get_filters_params().items()
+            if k != self.parameter_name
+        )
+        yield all_choice
+
+
+class DateListFilter(TextInputListFilter):
+    """Admin date range filter for documents, using Solr queryset"""
+
+    def queryset(self, request, queryset):
+        """Get the filtered queryset based on date range filter input"""
+        if self.value() is not None:
+            date = self.value()
+
+            # exclude any results that don't have a date or dating
+            queryset = queryset.exclude(
+                Q(dating__isnull=True) & Q(doc_date_standard="")
+            )
+
+            # get all before "to date" if we're using DateBeforeListFilter,
+            # otherwise get all after "from date"
+            date_filter = (
+                ("[* TO %s]" % date)
+                if self.parameter_name == "date__lte"
+                else ("[%s TO *]" % date)
+            )
+
+            # use Solr to take advantage of processed date range fields
+            sqs = (
+                DocumentSolrQuerySet()
+                .filter(document_date_dr=date_filter)
+                .only("pgpid")
+                .get_results(rows=100000)
+            )
+            # filter queryset by id if there are results
+            pks = [r["pgpid"] for r in sqs]
+            if sqs:
+                queryset = queryset.filter(pk__in=pks)
+            else:
+                queryset = queryset.none()
+            if not (DocumentDateMixin.re_date_format.match(date)):
+                messages.error(
+                    request, "Dates must be in the format YYYY-MM-DD or YYYY."
+                )
+            return queryset
+
+
+class DateAfterListFilter(DateListFilter):
+    parameter_name = "date__gte"
+    title = "Date from (CE)"
+
+
+class DateBeforeListFilter(DateListFilter):
+    parameter_name = "date__lte"
+    title = "Date to (CE)"
+
+
 class DocumentDatingInline(admin.TabularInline):
     """Inline for inferred dates on a document"""
 
@@ -252,29 +328,16 @@ class DocumentDatingInline(admin.TabularInline):
     }
 
 
-class DocumentPersonInline(admin.TabularInline):
+class DocumentPersonInline(PersonInline):
     """Inline for people related to a document"""
 
     model = PersonDocumentRelation
-    verbose_name = "Related Person"
-    verbose_name_plural = "Related People"
-    autocomplete_fields = ["person", "type"]
-    fields = (
-        "person",
-        "person_link",
-        "type",
-        "notes",
-    )
-    readonly_fields = ("person_link",)
-    formfield_overrides = {
-        TextField: {"widget": Textarea(attrs={"rows": 4})},
-    }
-    extra = 1
 
-    def person_link(self, obj):
-        """Get the link to a related person"""
-        person_path = reverse("admin:entities_person_change", args=[obj.person.id])
-        return format_html(f'<a href="{person_path}">{str(obj.person)}</a>')
+
+class DocumentPlaceInline(PlaceInline):
+    """Inline for places related to a document"""
+
+    model = DocumentPlaceRelation
 
 
 @admin.register(Document)
@@ -338,6 +401,8 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             custom_empty_field_list_filter("review status", "Needs review", "OK"),
         ),
         "status",
+        DateAfterListFilter,
+        DateBeforeListFilter,
         ("textblock__fragment__collection", admin.RelatedOnlyFieldListFilter),
         ("languages", admin.RelatedOnlyFieldListFilter),
         ("secondary_languages", admin.RelatedOnlyFieldListFilter),
@@ -392,9 +457,20 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         DocumentTextBlockInline,
         DocumentFootnoteInline,
         DocumentPersonInline,
+        DocumentPlaceInline,
     ]
-    # mixed fieldsets and inlines: /admin/corpus/document/snippets/mixed_inlines_fieldsets.html
-    fieldsets_and_inlines_order = ("f", "f", "i", "f", "itt", "i", "i", "i")
+    # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
+    fieldsets_and_inlines_order = (
+        "f",  # shelfmark, languages, description fieldset
+        "f",  # date on document fieldset
+        "i",  # DocumentDatingInline
+        "f",  # tags, status, order override fieldset
+        "itt",  # images/transcription/translation panel
+        "i",  # DocumentTextBlockInline
+        "i",  # DocumentFootnoteInline
+        "i",  # DocumentPersonInline
+        "i",  # DocumentPlaceInline
+    )
 
     class Media:
         css = {"all": ("css/admin-local.css",)}
@@ -486,13 +562,29 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         super().save_model(request, obj, form, change)
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
-        """Customize this model's change_view to add IIIF images to context for
-        transcription viewer, then execute existing change_view"""
+        """Customize this model's change_view to add IIIF images and default/disabled panels
+        to context for transcription/translation viewer, then execute existing change_view
+        """
         extra_ctx = extra_context or {}
         document = self.get_object(request, object_id)
         if document:
+            # get images
             images = document.iiif_images(with_placeholders=True)
-            extra_ctx.update({"images": images})
+            # get available digital content panels
+            available_panels = document.available_digital_content
+            extra_ctx.update(
+                {
+                    "images": images,
+                    # show first two panels by default
+                    "default_shown": available_panels[:2],
+                    # disable any unavailable panels
+                    "disabled": [
+                        panel
+                        for panel in ["images", "translation", "transcription"]
+                        if panel not in available_panels
+                    ],
+                }
+            )
         return super().change_view(
             request, object_id, form_url, extra_context=extra_ctx
         )

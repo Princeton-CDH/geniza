@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from time import sleep
 from unittest.mock import ANY, MagicMock, Mock, patch
@@ -8,6 +7,7 @@ from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import resolve, reverse
 from django.utils.text import Truncator, slugify
@@ -983,6 +983,24 @@ class TestDocumentSearchView:
         assert qs[0]["pgpid"] == doc2.id
         assert qs[1]["pgpid"] == document.id
 
+    @pytest.mark.django_db
+    def test_ngram_highlighting(self, empty_solr):
+        # integration test for solr n-gram size of 2, preserveOriginal (EdgeNGramFilterFactory)
+        doc = Document.objects.create(description_en="Abū l-Munā")
+        SolrClient().update.index([doc.index_data()], commit=True)
+        docsearch_view = DocumentSearchView(kwargs={})
+        docsearch_view.request = Mock()
+        docsearch_view.request.GET = {"q": "abu l-muna", "sort": "relevance"}
+        qs = docsearch_view.get_queryset()
+        docsearch_view.object_list = qs
+        context_data = docsearch_view.get_context_data()
+        # should include the "l" in highlighting
+        assert (
+            # it will still break elements on whitespace and dash separators
+            "<em>Abū</em> <em>l</em>-<em>Munā</em>"
+            in context_data["highlighting"]["document.%d" % doc.id]["description"]
+        )
+
 
 class TestDocumentScholarshipView:
     def test_page_title(self, document, client, source):
@@ -1488,8 +1506,9 @@ class TestDocumentMergeView:
         assert response.status_code == 200
 
         # POST should merge
+        merge_url = "%s?ids=%s" % (reverse("admin:document-merge"), idstring)
         response = admin_client.post(
-            "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+            merge_url,
             {"primary_document": doc1.id, "rationale": "duplicate"},
             follow=True,
         )
@@ -1504,7 +1523,7 @@ class TestDocumentMergeView:
         with patch.object(Document, "merge_with") as mock_merge_with:
             # should pick up rationale notes as parenthetical
             response = admin_client.post(
-                "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+                merge_url,
                 {
                     "primary_document": doc1.id,
                     "rationale": "duplicate",
@@ -1516,7 +1535,7 @@ class TestDocumentMergeView:
 
             # with "other", should use rationale notes as rationale string
             response = admin_client.post(
-                "%s?ids=%s" % (reverse("admin:document-merge"), idstring),
+                merge_url,
                 {
                     "primary_document": doc1.id,
                     "rationale": "other",
@@ -1525,6 +1544,20 @@ class TestDocumentMergeView:
                 follow=True,
             )
             mock_merge_with.assert_called_with(ANY, "test", user=ANY)
+
+            # should catch ValidationError and send back to form with error msg
+            mock_merge_with.side_effect = ValidationError("test message")
+            response = admin_client.post(
+                merge_url,
+                {
+                    "primary_document": doc1.id,
+                    "rationale": "duplicate",
+                },
+                follow=True,
+            )
+            TestCase().assertRedirects(response, merge_url)
+            messages = [str(msg) for msg in list(response.context["messages"])]
+            assert "test message" in messages
 
 
 class TestTagMergeView:
