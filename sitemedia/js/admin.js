@@ -2,11 +2,15 @@
 // - enable dragging and dropping images within a Document to set the order
 // - enable clicking images for an associated TextBlock to set which images are part of the
 //   document and which are not
+// - enable rotating images within a Document
 
 window.addEventListener("DOMContentLoaded", () => {
+    // append rotation controls to each image in the image order field thumbnail display
+    appendRotationControls();
+
     // loop through the image order field thumbnail display and attach the drag
-    // and drop behavior to each image
-    attachReorderEventListeners();
+    // and drop and rotation behaviors to each image
+    attachOverrideEventListeners();
 
     // loop through the textblock_set tabular inline (uses one row per TextBlock)
     // and attach the click toggle event listener to each image
@@ -14,12 +18,14 @@ window.addEventListener("DOMContentLoaded", () => {
         "#textblock_set-group tr.has_original"
     );
     textblockRows.forEach((row) => {
-        const images = row.querySelectorAll("td.field-thumbnail p img");
+        const thumbnails = row.querySelectorAll(
+            "td.field-thumbnail div.admin-thumbnail"
+        );
         const selectedImagesField = row.querySelector(
             "td.original input[name$='selected_images']"
         );
-        images.forEach((img, i) => {
-            img.addEventListener(
+        thumbnails.forEach((thumbnailDiv, i) => {
+            thumbnailDiv.addEventListener(
                 "click",
                 toggleImageSelected(i.toString(), selectedImagesField)
             );
@@ -110,98 +116,214 @@ function toggleDisabled(inputList, input) {
     });
 })(django.jQuery);
 
-function attachReorderEventListeners(fromDragEvent) {
-    // attach event listeners to images for reorder functionality.
+function attachOverrideEventListeners(fromDragEvent) {
+    // attach event listeners to images for reorder/rotate functionality.
     // made reusable so that curried event listener functions can be called
     // again with updated nodes once images are reordered
-    const orderImagesField = document.querySelector(
-        "input[name='image_order_override']"
-    );
-    const orderImagesDiv = document.querySelector(
+    const imageOverridesDiv = document.querySelector(
         "div.field-admin_thumbnails div.readonly"
     );
-    const orderImages = orderImagesDiv?.querySelectorAll("img") || [];
-    orderImages.forEach((img) => {
-        img.draggable = true;
-        img.addEventListener("dragstart", startDrag);
-        img.addEventListener("dragend", stopDrag(orderImages));
-        img.addEventListener("dragover", setDraggedOver(orderImages));
-        img.addEventListener(
+    const imageOverrideThumbs =
+        imageOverridesDiv?.querySelectorAll("div.admin-thumbnail") || [];
+    imageOverrideThumbs.forEach((thumb) => {
+        thumb.draggable = true;
+        thumb.addEventListener("dragstart", startDrag);
+        thumb.addEventListener("dragend", stopDrag(imageOverrideThumbs));
+        thumb.addEventListener("dragover", setDraggedOver(imageOverrideThumbs));
+        thumb.addEventListener(
             "drop",
-            dropImage(orderImagesField, orderImagesDiv, orderImages)
+            dropImage(imageOverridesDiv, imageOverrideThumbs)
         );
+        const rotateLeftButton = thumb.querySelector("button.rotate-left");
+        rotateLeftButton.addEventListener("click", rotate(thumb, -90));
+        const rotateRightButton = thumb.querySelector("button.rotate-right");
+        rotateRightButton.addEventListener("click", rotate(thumb, 90));
     });
     if (fromDragEvent) {
         // prevent bug where "selected" class applied after drag end
-        stopDrag(orderImages)(new DragEvent("dragend"));
+        stopDrag(imageOverrideThumbs)(new DragEvent("dragend"));
     }
+}
+
+function appendRotationControls() {
+    // append a div with rotate left and rotate right buttons to each image thumbnail
+    const orderImages =
+        document.querySelectorAll(
+            "div.field-admin_thumbnails div.admin-thumbnail"
+        ) || [];
+    orderImages.forEach((div, i) => {
+        rotationControls = document.createElement("div");
+        rotationControls.classList.add("rotation-controls");
+        // rotate left button
+        rotateLeftButton = document.createElement("button");
+        rotateLeftButton.classList.add("rotate-left");
+        rotateLeftButton.setAttribute("type", "button");
+        rotateLeftButton.setAttribute(
+            "aria-label",
+            "rotate 90 degrees counter-clockwise"
+        );
+        rotateLeftButton.innerHTML = "&#8634;";
+        rotationControls.appendChild(rotateLeftButton);
+        // rotate right button
+        rotateRightButton = document.createElement("button");
+        rotateRightButton.classList.add("rotate-right");
+        rotateRightButton.setAttribute("type", "button");
+        rotateRightButton.setAttribute(
+            "aria-label",
+            "rotate 90 degrees clockwise"
+        );
+        rotateRightButton.innerHTML = "&#8635;";
+        rotationControls.appendChild(rotateRightButton);
+        div.appendChild(rotationControls);
+    });
+}
+
+function getOrInitializeOverrides() {
+    const field = document.querySelector("input[name='image_overrides']");
+    let overrides = {};
+    // parse json from field value
+    if (field.value) {
+        overrides = JSON.parse(field.value);
+    }
+    const images = document.querySelectorAll(
+        "div.field-admin_thumbnails div.admin-thumbnail"
+    );
+    images.forEach((image, idx) => {
+        const canvasUri = image.dataset["canvas"];
+        if (Object.hasOwn(overrides, canvasUri)) {
+            // if there is an override for this canvas, set any needed defaults
+            // default rotation is 0deg
+            if (!Object.hasOwn(overrides[canvasUri], "rotation"))
+                overrides[canvasUri].rotation = 0;
+            // default order is current order
+            if (!Object.hasOwn(overrides[canvasUri], "order"))
+                overrides[canvasUri].order = idx;
+        } else {
+            // if there is no override for this canvas, set all defaults
+            overrides[canvasUri] = { rotation: 0, order: idx };
+        }
+    });
+    return overrides;
+}
+
+function normalize360(degrees) {
+    // normalize any degrees value to be within the range 0–360
+    while (degrees >= 360) {
+        degrees = degrees - 360;
+    }
+    while (degrees < 0) {
+        degrees = degrees + 360;
+    }
+    return degrees;
+}
+
+function rotate(node, degrees) {
+    // rotate an image, a child of `node`, at index `idx`, `degrees` degrees
+    return function () {
+        const imageOverridesField = document.querySelector(
+            "input[name='image_overrides']"
+        );
+        const canvasUri = node.dataset["canvas"];
+        const overrides = getOrInitializeOverrides();
+        const oldRotation = parseInt(overrides[canvasUri]["rotation"]);
+        let newRotation = normalize360(oldRotation + degrees);
+
+        // get the original rotation from the image source URI
+        const src = node.querySelector("img").getAttribute("src");
+        const uriMatches = src.match(/\/\d+\//g);
+        const originalRotation = parseInt(
+            uriMatches[uriMatches.length - 1].replace(/\//g, "")
+        );
+        // set the new rotation (taking into consideration the original from URI) as a class
+        node.classList = ["admin-thumbnail"];
+        node.classList.add(
+            `rotate-${normalize360(newRotation - originalRotation)}`
+        );
+
+        // finally, update the rotations on the hidden rotation overrides field
+        overrides[canvasUri]["rotation"] = newRotation;
+        imageOverridesField.setAttribute("value", JSON.stringify(overrides));
+    };
 }
 
 function startDrag(evt) {
     // on drag start, set the drag data to the dragged item's canvas
-    evt.dataTransfer.setData("text", evt.target.dataset["canvas"]);
+    evt.dataTransfer.setData("text", evt.currentTarget.dataset["canvas"]);
 }
 
-function stopDrag(images) {
+function stopDrag(thumbnails) {
     // on drag end, ensure no images have "selected" class applied
     return function (evt) {
         evt.preventDefault();
-        images.forEach((img) => {
-            img.classList.remove("selected");
+        thumbnails.forEach((thumbnailDiv) => {
+            thumbnailDiv.classList.remove("selected");
         });
     };
 }
 
-function setDraggedOver(images) {
+function setDraggedOver(thumbnails) {
     // when an image is dragged over, give it "selected" style (and remove that
     // style from all other images)
     return function (evt) {
         evt.preventDefault();
-        const dropTarget = evt.target;
+        const dropTarget = evt.currentTarget;
         dropTarget.classList.add("selected");
-        images.forEach((img) => {
-            if (img.dataset["canvas"] !== dropTarget.dataset["canvas"]) {
-                img.classList.remove("selected");
+        thumbnails.forEach((thumbnailDiv) => {
+            if (
+                thumbnailDiv.dataset["canvas"] !== dropTarget.dataset["canvas"]
+            ) {
+                thumbnailDiv.classList.remove("selected");
             }
         });
     };
 }
 
-function dropImage(field, div, images) {
+function dropImage(div, thumbnails) {
     // handle image drop on another image: reorder within display field,
-    // update hidden image_order_override field with new order of canvases
+    // update hidden image_overrides field with new order of canvases
     return function (evt) {
         evt.preventDefault();
 
         // use Array instead of NodeList for access to Array prototype functions
-        const imgArray = Array.from(images);
+        const thumbArray = Array.from(thumbnails);
+
+        // get or initialize rotation override array
+        const imageOverridesField = document.querySelector(
+            "input[name='image_overrides']"
+        );
+        let overrides = getOrInitializeOverrides();
+
         // locate the dragged and dropped canvases in the list
         const draggedCanvas = evt.dataTransfer.getData("text");
-        const dragged = imgArray.find(
-            (img) => img.dataset["canvas"] === draggedCanvas
+        const dragged = thumbArray.find(
+            (thumbnailDiv) => thumbnailDiv.dataset["canvas"] === draggedCanvas
         );
-        const draggedIndex = imgArray.indexOf(dragged);
-        const droppedIndex = imgArray.indexOf(evt.target);
+        const draggedIndex = thumbArray.indexOf(dragged);
+        const droppedIndex = thumbArray.indexOf(evt.currentTarget);
+
         // move the dragged image to the correct index
-        imgArray.splice(draggedIndex, 1);
-        imgArray.splice(droppedIndex, 0, dragged);
+        thumbArray.splice(draggedIndex, 1);
+        thumbArray.splice(droppedIndex, 0, dragged);
+
         // clear out the div, then append each image to it in the new order
         div.innerHTML = "";
-        imgArray.forEach((img, i) => {
+        thumbArray.forEach((thumbnailDiv, i) => {
+            // add a space before every image except first
             if (i !== 0) {
                 div.innerHTML += " ";
             }
-            div.appendChild(img.cloneNode()); // clone to remove existing event listeners
+            // clone to remove existing event listeners
+            div.appendChild(thumbnailDiv.cloneNode(true));
+            // update order in overrides
+            const canvasUri = thumbnailDiv.dataset["canvas"];
+            overrides[canvasUri]["order"] = i;
         });
         // reattach event listeners in order to pass reordered div to curried functions
         // (if we do not do this, the div with the original order is still in evt listeners)
-        attachReorderEventListeners(true);
+        attachOverrideEventListeners(true);
 
-        // set the hidden image_order_override field's value to the canvases in order
-        field.setAttribute(
-            "value",
-            imgArray.map((img) => img.dataset["canvas"])
-        );
+        // update the hidden image_overrides field's value
+        imageOverridesField.setAttribute("value", JSON.stringify(overrides));
     };
 }
 

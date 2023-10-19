@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from attrdict import AttrDict
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
@@ -152,10 +153,14 @@ class TestFragment(TestCase):
             label in placeholder_thumbnails
             for label in ['title="recto"', 'title="verso"']
         )
-        # test with recto side selected: should add class to recto img, but not verso img
-        thumbnails_recto_selected = frag.iiif_thumbnails(selected=[0])
-        assert 'title="recto" class="selected"' in thumbnails_recto_selected
-        assert 'title="verso" class="selected"' not in thumbnails_recto_selected
+        # test with recto side selected: should add class to recto div, but not verso div
+        thumbnails_recto_selected = BeautifulSoup(
+            frag.iiif_thumbnails(selected=[0])
+        ).find_all("div", {"class": "selected"})
+
+        assert len(thumbnails_recto_selected) == 1
+        assert 'title="recto"' in str(thumbnails_recto_selected[0])
+        assert 'title="verso"' not in str(thumbnails_recto_selected[0])
 
         frag.iiif_url = "http://example.co/iiif/ts-1"
         # return simplified part of the manifest we need for this
@@ -205,10 +210,14 @@ class TestFragment(TestCase):
         assert 'title="1v"' in thumbnails
         assert isinstance(thumbnails, SafeString)
 
-        # test with verso side selected: should add class to 1v img, but not 1r img
-        thumbnails_verso_selected = frag.iiif_thumbnails(selected=[1])
-        assert 'title="1v" class="selected"' in thumbnails_verso_selected
-        assert 'title="1r" class="selected"' not in thumbnails_verso_selected
+        # test with verso side selected: should add class to 1v div, but not 1r div
+        thumbnails_recto_selected = BeautifulSoup(
+            frag.iiif_thumbnails(selected=[1])
+        ).find_all("div", {"class": "selected"})
+
+        assert len(thumbnails_recto_selected) == 1
+        assert 'title="1v"' in str(thumbnails_recto_selected[0])
+        assert 'title="1r"' not in str(thumbnails_recto_selected[0])
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
@@ -767,8 +776,8 @@ class TestDocument:
             # dict should be the recto side, since the TextBlock's side is R
             assert list(images.keys()) == ["canvas1"]
 
-            # call with image_order_override present, reversed order
-            doc.image_order_override = ["canvas2", "canvas1"]
+            # call with image_overrides present, reversed order
+            doc.image_overrides = {"canvas2": {"order": 0}, "canvas1": {"order": 1}}
             images = doc.iiif_images()
             # img2 should come first now
             assert list(images.keys()) == ["canvas2", "canvas1"]
@@ -813,6 +822,28 @@ class TestDocument:
         # second image should get verso because of /2/
         assert images[bad_canvas_str]["label"] == "verso"
 
+    def test_iiif_images_with_rotation(self, source):
+        # Create a document and fragment and a TextBlock to associate them
+        # set rotation overrides to 90 and 180
+        doc = Document.objects.create(
+            image_overrides={"canvas1": {"rotation": 90}, "canvas2": {"rotation": 180}}
+        )
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0, 1])
+        # Mock two IIIF images
+        img1 = Mock()
+        img2 = Mock()
+        # Mock Fragment.iiif_images() to return those two images and two fake labels
+        with patch.object(
+            Fragment,
+            "iiif_images",
+            return_value=([img1, img2], ["1r", "1v"], ["canvas1", "canvas2"]),
+        ):
+            images = doc.iiif_images()
+            # should set rotation by canvas, in order, according to rotation override
+            assert images["canvas1"]["rotation"] == 90
+            assert images["canvas2"]["rotation"] == 180
+
     def test_admin_thumbnails(self):
         # Create a document and fragment and a TextBlock to associate them
         doc = Document.objects.create()
@@ -820,9 +851,9 @@ class TestDocument:
         TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0])
         # Mock two IIIF images, mock their size functions
         img1 = Mock()
-        img1.size.return_value = "/img1.jpg"
+        img1.size.return_value.rotation.return_value = "/img1.jpg"
         img2 = Mock()
-        img2.size.return_value = "/img2.jpg"
+        img2.size.return_value.rotation.return_value = "/img2.jpg"
         # Mock Fragment.iiif_images() to return those two images and two fake labels
         with patch.object(
             Fragment,

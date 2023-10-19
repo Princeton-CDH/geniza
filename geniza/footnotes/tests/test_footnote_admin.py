@@ -281,6 +281,7 @@ class TestDocumentFootnoteInlineFormSet:
 
         # should raise error if two digital editions on the same source
         data = {
+            "image_overrides": "{}",  # in real life, will be auto-populated by django admin
             "footnotes-footnote-content_type-object_id-TOTAL_FORMS": ["2"],
             "footnotes-footnote-content_type-object_id-0-source": [str(source.pk)],
             "footnotes-footnote-content_type-object_id-0-doc_relation": [

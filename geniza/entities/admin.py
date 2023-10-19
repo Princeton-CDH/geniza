@@ -277,7 +277,15 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         """For autocomplete ONLY, remove self from queryset, so that Person-Person autocomplete
         does not include self in the list of options"""
         qs = super().get_queryset(request)
-        if self.own_pk and request and request.path == "/admin/autocomplete/":
+
+        # only modify if this is the person-person autocomplete request
+        is_autocomplete = request and request.path == "/admin/autocomplete/"
+        is_personperson = (
+            request
+            and request.GET
+            and request.GET.get("model_name") == "personpersonrelation"
+        )
+        if self.own_pk and is_autocomplete and is_personperson:
             # exclude self from queryset
             return qs.exclude(pk=int(self.own_pk))
         # otherwise, return normal queryset

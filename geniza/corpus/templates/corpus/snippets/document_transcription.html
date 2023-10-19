@@ -135,18 +135,26 @@
                                     <input data-iiif-target="zoomToggle" data-action="iiif#handleDeepZoom" id="zoom-toggle-{{ forloop.counter0 }}" type="checkbox" name="zoom-toggle" />
                                     <label for="zoom-toggle-{{ forloop.counter0 }}">{% translate 'Zoom and Rotate' %}</label>
                                     <div id="rotation-{{ forloop.counter0 }}" class="rotation" data-iiif-target="rotation" data-action="input->iiif#handleDeepZoom change->iiif#handleDeepZoom"></div>
-                                    <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">0&deg;</label>
+                                    <label for="rotation-{{ forloop.counter0 }}" data-iiif-target="rotationLabel">{{ image_info.rotation }}&deg;</label>
                                 </div>
                             {% endif %}
                         </div>
                         <div class="deep-zoom-container">
-                            <img class="iiif-image" data-iiif-target="image" data-annotation-target="image" src="{{ image_info.image|iiif_image:"size:width=500" }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
-                                 sizes="(max-width: 1440px) 50vw, 94vw"
-                                 srcset="{{ image_info.image|iiif_image:"size:width=300" }} 300w,
-                                         {{ image_info.image|iiif_image:"size:width=500" }} 500w,
-                                         {{ image_info.image|iiif_image:"size:width=640" }} 640w,
-                                         {{ image_info.image|iiif_image:"size:width=1440" }} 1440w">
-                            <div class="osd" data-iiif-target="osd" data-iiif-url="{{ image_info.image.info }}"></div>
+                            {% with deg=image_info.rotation|stringformat:"i" %}
+                                {% with rotation="rotation:degrees="|add:deg %}
+                                    <img class="iiif-image" data-iiif-target="image" data-annotation-target="image" src="{{ image_info.image|iiif_image:"size:width=500"|iiif_image:rotation }}" alt="{{ image_info.label }}" title="{{ image_info.label }}" loading="lazy"
+                                         sizes="(max-width: 1440px) 50vw, 94vw"
+                                         srcset="{{ image_info.image|iiif_image:"size:width=300"|iiif_image:rotation }} 300w,
+                                                 {{ image_info.image|iiif_image:"size:width=500"|iiif_image:rotation }} 500w,
+                                                 {{ image_info.image|iiif_image:"size:width=640"|iiif_image:rotation }} 640w,
+                                                 {{ image_info.image|iiif_image:"size:width=1440"|iiif_image:rotation }} 1440w">
+                                {% endwith %}
+                                <div class="osd"
+                                     data-iiif-target="osd"
+                                     data-iiif-url="{{ image_info.image.info }}"
+                                     data-rotation="{{ deg }}">
+                                </div>
+                            {% endwith %}
                         </div>
                     </div>
                     {% if image_info.excluded %}
