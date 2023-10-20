@@ -216,18 +216,19 @@ class Person(models.Model):
                     )
 
             # combine person-person relationships
-            for to_relationship in person.to_person.all():
-                # start with "to" relations; merged person is "from_person"
-                # don't add relationships where the other person is self!
-                if to_relationship.to_person.pk != self.pk:
-                    # set self to the side that was the merged person
-                    to_relationship.from_person = self
-                    to_relationship.save()
-            for from_relationship in person.from_person.all():
-                # repeat for "from" relations; merged person is "to_person"
-                if from_relationship.from_person.pk != self.pk:
-                    from_relationship.to_person = self
-                    from_relationship.save()
+            # exclude relationships to primary person
+            for to_relationship in person.to_person.exclude(to_person__pk=self.pk):
+                # start with "to" relations (i.e. relationship to a related person was
+                # added on this person's admin form); this person was "from_person"
+                to_relationship.from_person = self
+                to_relationship.save()
+            for from_relationship in person.from_person.exclude(
+                from_person__pk=self.pk
+            ):
+                # repeat for "from" relations (i.e. relationship to this person was added
+                # on a related person's admin form); this person was "to_person"
+                from_relationship.to_person = self
+                from_relationship.save()
 
             # combine person-document relationhips
             for doc_relationship in person.persondocumentrelation_set.all():
