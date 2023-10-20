@@ -7,74 +7,73 @@
            title="Go to this person's admin edit page">
             <img src="/static/admin/img/icon-changelink.svg" alt="Change"></a>
     </h2>
-    {% if person.names.count %}
-        {% for name in person.names.all %}
-            <div class="form-row">
-                <label>{% if name.primary %}Display n{% else %}N{% endif %}ame ({{ name.language }})</label><div>{{ name }}</div>
-            </div>
-        {% endfor %}
-    {% endif %}
-    {% if person.role %}
+    {% for name in person.names.all %}
         <div class="form-row">
-            <label>Social role</label><div>{{ person.role }}</div>
+            <label>{% if name.primary %}Display n{% else %}N{% endif %}ame ({{ name.language }})</label><div>{{ name }}</div>
+        </div>
+    {% endfor %}
+    <div class="form-row">
+        <label>Social role</label><div>{{ person.role|default:"[no role]" }}</div>
+    </div>
+    <div class="form-row">
+        <label>Gender</label><div>{{ person.gender }}</div>
+    </div>
+    <div class="form-row">
+        <label>Description</label><div>{{ person.description|default:"[no description]" }}</div>
+    </div>
+    {% for rel in person.persondocumentrelation_set.all %}
+        <div class="form-row">
+            <label>Related document</label><div>
+                <a target="_blank" href="{% url 'admin:corpus_document_change' rel.document.pk %}">
+                    {{ rel.document }}</a> ({{ rel.type }})</div>
+        </div>
+    {% empty %}
+        <div class="form-row">
+            <label>Related document</label><div>[no related documents]</div>
+        </div>
+    {% endfor %}
+    {% for rel in person.to_person.all %}
+        <div class="form-row">
+            <label>Related person</label>
+            <div>
+                <a target="_blank" href="{% url 'admin:entities_person_change' rel.to_person.pk %}">
+                    {{ rel.to_person }}</a> ({{ rel.type }})
+            </div>
+        </div>
+    {% endfor %}
+    {% for rel in person.from_person.all %}
+        <div class="form-row">
+            {# these should use converse_name, if one exists for the relationship type #}
+            <label>Related person</label>
+            <div>
+                <a target="_blank" href="{% url 'admin:entities_person_change' rel.from_person.pk %}">
+                    {{ rel.from_person }}</a> ({{ rel.type.converse_name|default:rel.type }})
+            </div>
+        </div>
+    {% endfor %}
+    {% if not person.from_person.exists and not person.to_person.exists %}
+        <div class="form-row">
+            <label>Related person</label><div>[no related persons]</div>
         </div>
     {% endif %}
-    {% if person.gender %}
+    {% for rel in person.personplacerelation_set.all %}
         <div class="form-row">
-            <label>Gender</label><div>{{ person.gender }}</div>
+            <label>Related place</label><div>
+                <a target="_blank" href="{% url 'admin:entities_place_change' rel.place.pk %}">
+                    {{ rel.place }}</a> ({{ rel.type }})</div>
         </div>
-    {% endif %}
-    {% if person.description %}
+    {% empty %}
         <div class="form-row">
-            <label>Description</label><div>{{ person.description }}</div>
+            <label>Related place</label><div>[no related places]</div>
         </div>
-    {% endif %}
-    {% if person.documents.count %}
-        {% for rel in person.persondocumentrelation_set.all %}
-            <div class="form-row">
-                <label>Related document</label><div>
-                    <a target="_blank" href="{% url 'admin:corpus_document_change' rel.document.pk %}">
-                        {{ rel.document }}</a> ({{ rel.type }})</div>
-            </div>
-        {% endfor %}
-    {% endif %}
-    {% if person.to_person.count %}
-        {% for rel in person.to_person.all %}
-            <div class="form-row">
-                <label>Related person</label>
-                <div>
-                    <a target="_blank" href="{% url 'admin:entities_person_change' rel.to_person.pk %}">
-                        {{ rel.to_person }}</a> ({{ rel.type }})
-                </div>
-            </div>
-        {% endfor %}
-    {% endif %}
-    {% if person.from_person.count %}
-        {% for rel in person.from_person.all %}
-            <div class="form-row">
-                {# these should use converse_name, if one exists for the relationship type #}
-                <label>Related person</label>
-                <div>
-                    <a target="_blank" href="{% url 'admin:entities_person_change' rel.from_person.pk %}">
-                        {{ rel.from_person }}</a> ({{ rel.type.converse_name|default:rel.type }})
-                </div>
-            </div>
-        {% endfor %}
-    {% endif %}
-    {% if person.personplacerelation_set.count %}
-        {% for rel in person.personplacerelation_set.all %}
-            <div class="form-row">
-                <label>Related place</label><div>
-                    <a target="_blank" href="{% url 'admin:entities_place_change' rel.place.pk %}">
-                        {{ rel.place }}</a> ({{ rel.type }})</div>
-            </div>
-        {% endfor %}
-    {% endif %}
-    {% if person.footnotes.count %}
-        {% for footnote in person.footnotes.all %}
-            <div class="form-row">
-                <label>Data source (footnote)</label><div>{{ footnote.source.formatted_display|safe }}</div>
-            </div>
-        {% endfor %}
-    {% endif %}
+    {% endfor %}
+    {% for footnote in person.footnotes.all %}
+        <div class="form-row">
+            <label>Data source (footnote)</label><div>{{ footnote.source.formatted_display|safe }}</div>
+        </div>
+    {% empty %}
+        <div class="form-row">
+            <label>Data source (footnote)</label><div>[no footnotes]</div>
+        </div>
+    {% endfor %}
 </div>
