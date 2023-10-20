@@ -55,7 +55,6 @@ class PersonMerge(PermissionRequiredMixin, FormView):
         try:
             primary_person.merge_with(secondary_people, user=user)
         except ValidationError as err:
-            print("ga")
             # in case the merge resulted in an error, display error to user
             messages.error(self.request, err.message)
             # redirect to this form page instead of one of the people
