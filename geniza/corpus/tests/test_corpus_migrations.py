@@ -324,3 +324,23 @@ class TestDocumentImageOverridesReverse(TestMigrations):
         assert not no_override.image_order_override
         order_override = Document.objects.get(pk=self.order_override.pk)
         assert order_override.image_order_override == ["canvas2", "canvas1"]
+
+
+@pytest.mark.second_to_last
+@pytest.mark.django_db
+class TestDocumentCleanupNbsp(TestMigrations):
+    app = "corpus"
+    migrate_from = "0042_document_image_overrides"
+    migrate_to = "0043_document_cleanup_nbsp"
+    document = None
+
+    def setUpBeforeMigration(self, apps):
+        Document = apps.get_model("corpus", "Document")
+        self.document = Document.objects.create(
+            description_en="Example\xa0with that\xa0space"
+        )
+
+    def test_cleanup_nbsp(self):
+        self.document.refresh_from_db()
+        assert "\xa0" not in self.document.description_en
+        assert self.document.description_en == "Example with that space"
