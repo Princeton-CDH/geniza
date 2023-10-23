@@ -588,19 +588,18 @@ class Document(ModelIndexable, DocumentDateMixin):
                 messages.warning(self.request, "Error standardizing date: %s" % e)
             # otherwise ignore (unsupported date format)
 
+        # cleanup unicode \xa0 from description, in all translated languages
+        for lang_code, _ in settings.LANGUAGES:
+            desc = getattr(self, "description_%s" % lang_code)
+            if desc:
+                # normalize to ascii space
+                desc = desc.replace("\xa0", " ")
+                setattr(self, "description_%s" % lang_code, desc)
+
         super().save(*args, **kwargs)
 
-    # inherits clean method from DocumentDateMixin
-    # make sure to call if extending!
-    def clean(self):
-        """
-        Require doc_date_original and doc_date_calendar to be set
-        if either one is present.
-        """
-        if self.doc_date_calendar and not self.doc_date_original:
-            raise ValidationError("Original date is required when calendar is set")
-        if self.doc_date_original and not self.doc_date_calendar:
-            raise ValidationError("Calendar is required when original date is set")
+    # NOTE: inherits clean() method from DocumentDateMixin
+    # make sure to call super().clean() if extending!
 
     @staticmethod
     def get_by_any_pgpid(pgpid):

@@ -183,6 +183,10 @@ class Annotation(TrackChangesModel):
             attributes=cls.ALLOWED_ATTRIBUTES,
             strip=True,
         )
+
+        # replace Unicode non-breaking space \xa0
+        cleaned_html = cleaned_html.replace("\xa0", " ")
+
         # if resulting text has any span elements with no attributes, remove them
         if "<span>" in cleaned_html:
             # parse as html to identify spans with no attributes

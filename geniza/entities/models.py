@@ -53,6 +53,11 @@ class Name(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        """Override of the model save method to cleanup unicode non breaking space character"""
+        self.name = self.name.replace("\xa0", " ")
+        super().save(*args, **kwargs)
+
 
 class PersonRoleManager(models.Manager):
     """Custom manager for :class:`PersonRole` with natural key lookup"""
