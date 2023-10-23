@@ -229,6 +229,29 @@ class TestDocumentAdmin:
         )
         assert queryset.count() == Document.objects.all().count()
 
+    def test_admin_search_boolean(self, document):
+        # index fixture data in solr
+        doc_2 = Document.objects.create(
+            description_en="deed of testing",
+        )
+        Document.index_items([document, doc_2])
+        time.sleep(1)
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+
+        # default should require all search terms (q.op=AND)
+        queryset, _ = doc_admin.get_search_results(
+            Mock(), Document.objects.all(), "deed sale"
+        )
+        # only one document contains both terms
+        assert queryset.count() == 1
+
+        # OR in query string should override this behavior
+        queryset, _ = doc_admin.get_search_results(
+            Mock(), Document.objects.all(), "deed OR sale"
+        )
+        # both documents contain the term "deed"
+        assert queryset.count() == 2
+
     @pytest.mark.django_db
     def test_export_to_csv(self, document, join):
         doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
