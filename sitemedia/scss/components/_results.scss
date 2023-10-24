@@ -254,6 +254,20 @@ section#document-list {
         }
     }
 
+    /* set height on empty transcription/translation li to prevent overlap issue */
+    .translation li:empty {
+        height: calc(1.125rem * 1.5);
+        @include breakpoints.for-tablet-landscape-up {
+            height: calc(1.25rem * 1.5);
+        }
+    }
+    .transcription li:empty {
+        height: calc(27 / 20 * 1.25rem);
+        @include breakpoints.for-tablet-landscape-up {
+            height: calc(32 / 22 * 1.375rem);
+        }
+    }
+
     /* raise tags & text over clickable pseudo content to allow selection */
     .description,
     .transcription,
