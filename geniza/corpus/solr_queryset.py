@@ -134,8 +134,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
     # (adapted from mep)
     # edismax alias for searching on admin document pseudo-field;
-    # set minimum match to 100% (= require all search terms)
-    admin_doc_qf = "{!edismax qf=$admin_doc_qf pf=$admin_doc_pf v=$doc_query mm=100%}"
+    # set q.op to AND (= require all search terms by default, unless OR specified)
+    admin_doc_qf = "{!edismax qf=$admin_doc_qf pf=$admin_doc_pf v=$doc_query q.op=AND}"
 
     def admin_search(self, search_term):
         # remove " + " from search string to allow searching on shelfmark joins

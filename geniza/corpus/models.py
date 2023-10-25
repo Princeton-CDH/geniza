@@ -44,7 +44,7 @@ from geniza.common.models import (
 )
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
-from geniza.corpus.dates import DocumentDateMixin
+from geniza.corpus.dates import DocumentDateMixin, PartialDate
 from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote
@@ -939,6 +939,60 @@ class Document(ModelIndexable, DocumentDateMixin):
         """Short title for identifying the document, e.g. via search."""
         return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"
 
+    def dating_range(self):
+        """
+        Return the start and end of the document's possible date range, as PartialDate objects,
+        including standardized document dates and inferred Datings, if any exist.
+        """
+        # it is unlikely, but technically possible, that a document could have both on-document
+        # dates and inferred datings, so find the min and max out of all of them.
+        dating_range = [self.start_date or None, self.end_date or None]
+
+        # bail out if we don't have any inferred datings
+        if not self.dating_set.exists():
+            return tuple(dating_range)
+
+        # loop through inferred datings to find min and max among all dates (including both
+        # on-document and inferred)
+        for dating in self.dating_set.all():
+            # get start from standardized date range (formatted as "date1/date2" or "date")
+            split_date = dating.standard_date.split("/")
+            start = PartialDate(split_date[0])
+            # use numeric format to compare to current min, replace if smaller
+            start_numeric = int(start.numeric_format(mode="min"))
+            min = dating_range[0]
+            if min is None or start_numeric < int(min.numeric_format(mode="min")):
+                # store as PartialDate
+                dating_range[0] = start
+            # get end from standardized date range
+            end = PartialDate(split_date[1]) if len(split_date) > 1 else start
+            # use numeric format to compare to current max, replace if larger
+            end_numeric = int(end.numeric_format(mode="max"))
+            max = dating_range[1]
+            if max is None or end_numeric > int(max.numeric_format(mode="max")):
+                # store as PartialDate
+                dating_range[1] = end
+
+        return tuple(dating_range)
+
+    def solr_dating_range(self):
+        """Return the document's dating range, including inferred, as a Solr date range."""
+        solr_dating_range = []
+        # self.dating_range() should always return a tuple of two values
+        for i, date in enumerate(self.dating_range()):
+            if date:
+                # min/max from dating_range, formatted YYYY-MM-DD or YYYY-MM or YYYY
+                solr_dating_range.append(
+                    date.isoformat(mode="max" if i == 1 else "min")
+                )
+        if not solr_dating_range:
+            return None
+        # if a single date instead of a range, just return that date
+        if solr_dating_range[0] == solr_dating_range[1]:
+            return solr_dating_range[0]
+        # if there's more than one date, return as a range
+        return "[%s TO %s]" % tuple(solr_dating_range)
+
     def editions(self):
         """All footnotes for this document where the document relation includes
         edition."""
@@ -1072,6 +1126,7 @@ class Document(ModelIndexable, DocumentDateMixin):
             "tags",
             "languages",
             "log_entries",
+            "dating_set",
             Prefetch(
                 "textblock_set",
                 queryset=TextBlock.objects.select_related(
@@ -1125,6 +1180,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "document_date_t": strip_tags(self.document_date) or None,
                 # date range for filtering
                 "document_date_dr": self.solr_date_range(),
+                # date range for filtering, but including inferred datings if any exist
+                "document_dating_dr": self.solr_dating_range(),
                 # historic date, for searching
                 # start/end of document date or date range
                 "start_date_i": self.start_date.numeric_format()

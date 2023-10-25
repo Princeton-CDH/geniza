@@ -282,12 +282,17 @@ class DateListFilter(TextInputListFilter):
             )
 
             # use Solr to take advantage of processed date range fields
-            sqs = (
-                DocumentSolrQuerySet()
-                .filter(document_date_dr=date_filter)
-                .only("pgpid")
-                .get_results(rows=100000)
+            sqs = DocumentSolrQuerySet()
+
+            # different solr fields for dates, depdending on whether or not inferred are included
+            date_field = (
+                "document_date_dr"
+                if request.GET.get("exclude_inferred", None) == "true"
+                else "document_dating_dr"
             )
+            date_filter_opts = {date_field: date_filter}
+            sqs = sqs.filter(**date_filter_opts).only("pgpid").get_results(rows=100000)
+
             # filter queryset by id if there are results
             pks = [r["pgpid"] for r in sqs]
             if sqs:
@@ -309,6 +314,27 @@ class DateAfterListFilter(DateListFilter):
 class DateBeforeListFilter(DateListFilter):
     parameter_name = "date__lte"
     title = "Date to (CE)"
+
+
+class InferredDatingListFilter(admin.SimpleListFilter):
+    """Custom list filter to indicate whether or not inferred datings should be considered, when
+    filtering by date. Only applies when at least one date filter is also applied."""
+
+    title = "date type (if at least one date filter active)"
+    parameter_name = "exclude_inferred"
+
+    def lookups(self, request, model_admin):
+        return (("true", "Document dates only"),)
+
+    def queryset(self, request, queryset):
+        # no change to queryset, we only need the request param to adjust a different queryset
+        return queryset
+
+    def choices(self, changelist):
+        # Modify the "All" option's display text to clarify its meaning
+        choices = list(super().choices(changelist))
+        choices[0]["display"] = "Document and inferred dates"
+        return iter(choices)
 
 
 class DocumentDatingInline(admin.TabularInline):
@@ -403,6 +429,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         "status",
         DateAfterListFilter,
         DateBeforeListFilter,
+        InferredDatingListFilter,
         ("textblock__fragment__collection", admin.RelatedOnlyFieldListFilter),
         ("languages", admin.RelatedOnlyFieldListFilter),
         ("secondary_languages", admin.RelatedOnlyFieldListFilter),

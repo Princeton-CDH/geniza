@@ -527,7 +527,7 @@ class Footnote(TrackChangesModel):
     content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
-        limit_choices_to=models.Q(app_label="corpus"),
+        limit_choices_to=models.Q(app_label="corpus") | models.Q(app_label="entities"),
     )
     object_id = GfkLookupField(
         "content_type", help_text="If content type is Document, this is PGPID"

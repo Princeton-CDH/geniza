@@ -7,6 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         ("footnotes", "0028_sourcelanguage_direction"),
+        ("corpus", "0037_create_dating"),
     ]
 
     operations = [
