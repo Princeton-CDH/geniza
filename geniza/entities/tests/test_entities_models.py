@@ -1,4 +1,11 @@
+from datetime import datetime
+
 import pytest
+from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.forms import ValidationError
+from django.utils import timezone
 
 from geniza.corpus.models import Document
 from geniza.entities.models import (
@@ -15,6 +22,7 @@ from geniza.entities.models import (
     PersonRole,
     Place,
 )
+from geniza.footnotes.models import Footnote
 
 
 @pytest.mark.django_db
@@ -35,6 +43,226 @@ class TestPerson:
         primary_name.save()
         # __str__ should use the primary name
         assert str(person) == primary_name.name
+
+    def test_merge_with(self):
+        # create two people
+        person = Person.objects.create(
+            description_en="a person",
+            gender=Person.UNKNOWN,
+        )
+        role = PersonRole.objects.create(name="example")
+        person_2 = Person.objects.create(
+            description_en="testing description",
+            gender=Person.FEMALE,
+            role=role,
+            has_page=True,
+        )
+        p2_str = str(person_2)
+        person.merge_with([person_2])
+        # migrated public page override/missing info
+        assert person.role == role
+        assert person.gender == Person.FEMALE
+        assert person.has_page == True
+        # combined descriptions
+        assert "a person" in person.description
+        assert "\nDescription from merged entry:" in person.description
+        assert "testing description" in person.description
+        # should delete and create merge log entry
+        assert not person_2.pk
+        assert LogEntry.objects.filter(
+            object_id=person.pk, change_message__contains=f"merged with {p2_str}"
+        ).exists()
+
+    def test_merge_with_conflicts(self):
+        # should raise ValidationError on conflicting gender
+        person = Person.objects.create(gender=Person.MALE)
+        person_2 = Person.objects.create(gender=Person.FEMALE)
+        with pytest.raises(ValidationError):
+            person.merge_with([person_2])
+        # should raise ValidationError on conflicting role
+        role = PersonRole.objects.create(name="example")
+        role_2 = PersonRole.objects.create(name="other")
+        person_3 = Person.objects.create(gender=Person.MALE, role=role)
+        person_4 = Person.objects.create(gender=Person.MALE, role=role_2)
+        with pytest.raises(ValidationError):
+            person_3.merge_with([person_4])
+
+    def test_merge_with_names(self):
+        person = Person.objects.create()
+        Name.objects.create(name="S.D. Goitein", content_object=person, primary=True)
+        Name.objects.create(name="Shelomo Dov Goitein", content_object=person)
+        person_dupe = Person.objects.create()
+        dupe_name = Name.objects.create(name="S.D. Goitein", content_object=person_dupe)
+        primary_name = Name.objects.create(
+            name="S.D.G.", content_object=person_dupe, primary=True
+        )
+        person.merge_with([person_dupe])
+        # identical name should not get added
+        assert not person.names.filter(pk=dupe_name.pk).exists()
+        # dupe's primary name should be added since it's unique, but should not be primary anymore
+        assert person.names.filter(pk=primary_name.pk, primary=False).exists()
+
+    def test_merge_with_related_people(self):
+        parent = Person.objects.create()
+        parent_dupe = Person.objects.create()
+        child = Person.objects.create()
+        grandchild = Person.objects.create()
+        # "possible same" relation between person and dupe
+        ambiguity_type, _ = PersonPersonRelationType.objects.get_or_create(
+            name_en="possibly the same as"
+        )
+        PersonPersonRelation.objects.create(
+            from_person=parent, to_person=parent_dupe, type=ambiguity_type
+        )
+        # parent relation between dupe and child
+        parent_type, _ = PersonPersonRelationType.objects.get_or_create(
+            name_en="parent", converse_name_en="child"
+        )
+        PersonPersonRelation.objects.create(
+            from_person=parent_dupe, to_person=child, type=parent_type
+        )
+        # grandchild relation between grandchild and dupe
+        grandchild_type, _ = PersonPersonRelationType.objects.get_or_create(
+            name_en="grandchild", converse_name_en="grandparent"
+        )
+        PersonPersonRelation.objects.create(
+            from_person=grandchild, to_person=parent_dupe, type=grandchild_type
+        )
+        parent.merge_with([parent_dupe])
+
+        # ambiguity relationship should no longer be present
+        assert not parent.to_person.filter(type=ambiguity_type).exists()
+        assert not parent.from_person.filter(type=ambiguity_type).exists()
+
+        # child relation should be reassigned with parent as parent
+        assert PersonPersonRelation.objects.filter(
+            from_person=parent, to_person=child, type=parent_type
+        ).exists()
+
+        # grandchild relation should be reassigned with parent as grandparent
+        assert PersonPersonRelation.objects.filter(
+            from_person=grandchild, to_person=parent, type=grandchild_type
+        ).exists()
+
+    def test_merge_with_related_places(self):
+        person = Person.objects.create()
+        person_dupe = Person.objects.create()
+        fustat = Place.objects.create()
+        origin = Place.objects.create()
+        home_base, _ = PersonPlaceRelationType.objects.get_or_create(
+            name_en="Home base"
+        )
+        family_roots, _ = PersonPlaceRelationType.objects.get_or_create(
+            name_en="Family traces roots to"
+        )
+        # both have the same home base (same place and type)
+        PersonPlaceRelation.objects.create(person=person, place=fustat, type=home_base)
+        PersonPlaceRelation.objects.create(
+            person=person_dupe, place=fustat, type=home_base
+        )
+        # dupe has family origin
+        PersonPlaceRelation.objects.create(
+            person=person_dupe, place=origin, type=family_roots
+        )
+        person.merge_with([person_dupe])
+        # merged should have two relations, not three (dupe skipped)
+        assert person.personplacerelation_set.count() == 2
+        # merged should get family origin from dupe
+        assert person.personplacerelation_set.filter(
+            place=origin, type=family_roots
+        ).exists()
+
+    def test_merge_with_related_documents(self, document):
+        person = Person.objects.create()
+        person_dupe = Person.objects.create()
+        person_dupe.documents.add(document)
+        person.merge_with([person_dupe])
+        # document relation should be reassigned to merged result
+        assert person.documents.filter(pk=document.pk).exists()
+
+    def test_merge_with_footnotes(self, source, twoauthor_source):
+        person = Person.objects.create()
+        person_dupe = Person.objects.create()
+        Footnote.objects.create(
+            source=source, doc_relation=Footnote.EDITION, content_object=person_dupe
+        )
+        Footnote.objects.create(source=twoauthor_source, content_object=person)
+        Footnote.objects.create(source=twoauthor_source, content_object=person_dupe)
+        person.merge_with([person_dupe])
+        # should have two footnotes, not three (dupe skipped)
+        assert person.footnotes.count() == 2
+        # first footnote should have been migrated, but had its doc relation removed
+        assert person.footnotes.filter(source=source).exists()
+        assert not person.footnotes.filter(doc_relation=Footnote.EDITION).exists()
+
+    def test_merge_with_log_entries(self):
+        # heavily adapted from document merge test
+        person = Person.objects.create()
+        Name.objects.create(name="S.D. Goitein", content_object=person, primary=True)
+        person_dupe = Person.objects.create()
+        Name.objects.create(
+            name="Shelomo Dov Goitein", content_object=person_dupe, primary=True
+        )
+
+        # create some log entries
+        person_contenttype = ContentType.objects.get_for_model(Person)
+        # creation
+        creation_date = timezone.make_aware(datetime(2023, 10, 12))
+        creator = User.objects.get_or_create(username="editor")[0]
+        LogEntry.objects.bulk_create(
+            [
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=person_contenttype.pk,
+                    object_id=person.id,
+                    object_repr=str(person),
+                    change_message="first input",
+                    action_flag=ADDITION,
+                    action_time=creation_date,
+                ),
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=person_contenttype.pk,
+                    object_id=person_dupe.id,
+                    object_repr=str(person_dupe),
+                    change_message="first input",
+                    action_flag=ADDITION,
+                    action_time=creation_date,
+                ),
+                LogEntry(
+                    user_id=creator.id,
+                    content_type_id=person_contenttype.pk,
+                    object_id=person_dupe.id,
+                    object_repr=str(person_dupe),
+                    change_message="major revision",
+                    action_flag=CHANGE,
+                    action_time=timezone.now(),
+                ),
+            ]
+        )
+
+        assert person.log_entries.count() == 1
+        assert person_dupe.log_entries.count() == 2
+        dupe_pk = person_dupe.pk
+        dupe_str = str(person_dupe)
+        person.merge_with([person_dupe], user=creator)
+        # should have 3 log entries after the merge:
+        # 1 of the two duplicates, 1 unique from dupe,
+        # and 1 documenting the merge
+        assert person.log_entries.count() == 3
+        # based on default sorting, most recent log entry will be first
+        # - should document the merge event
+        merge_log = person.log_entries.first()
+        # log action with specified user
+        assert creator.id == merge_log.user_id
+        assert merge_log.action_flag == CHANGE
+
+        # reassociated log entry should include dupe's primary name, id
+        moved_log = person.log_entries.all()[1]
+        assert (
+            " [merged person %s (id = %s)]" % (dupe_str, dupe_pk)
+            in moved_log.change_message
+        )
 
 
 @pytest.mark.django_db
