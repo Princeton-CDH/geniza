@@ -1,3 +1,5 @@
+import re
+
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
@@ -56,6 +58,11 @@ class Name(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        """Override of the model save method to cleanup unicode non breaking space character"""
+        self.name = re.sub(r"[\xa0 ]+", " ", self.name)
+        super().save(*args, **kwargs)
 
 
 class PersonRoleManager(models.Manager):

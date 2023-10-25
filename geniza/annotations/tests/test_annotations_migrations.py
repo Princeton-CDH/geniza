@@ -84,3 +84,63 @@ class TestAssociateRelatedFootnotes(TestMigrations):
             change_message="Footnote automatically created via annotation migration.",
             object_id=anno_no_footnote_match.footnote.pk,
         ).exists()
+
+
+@pytest.mark.second_to_last
+@pytest.mark.django_db
+class TestAnnotationCleanupNbsp(TestMigrations):
+    app = "annotations"
+    migrate_from = "0004_alter_annotation_footnote"
+    migrate_to = "0005_annotation_cleanup_nbsp"
+    annotation = None
+    annotation_2 = None
+
+    def setUpBeforeMigration(self, apps):
+        Annotation = apps.get_model("annotations", "Annotation")
+
+        # make a dummy footnote, one is required for creating an annotation
+        Footnote = apps.get_model("footnotes", "Footnote")
+        SourceType = apps.get_model("footnotes", "SourceType")
+        Source = apps.get_model("footnotes", "Source")
+        ContentType = apps.get_model("contenttypes", "ContentType")
+        Document = apps.get_model("corpus", "Document")
+        book = SourceType.objects.create(type="Book")
+        source = Source.objects.create(source_type=book)
+        document_contenttype = ContentType.objects.get_for_model(Document)
+        footnote = Footnote.objects.create(
+            source=source,
+            doc_relation=["X"],
+            object_id=123456,
+            content_type=document_contenttype,
+        )
+
+        # create some annotations with \xa0 in them
+        self.annotation = Annotation.objects.create(
+            content={
+                "body": [{"value": "Test\xa0annotation"}],
+            },
+            footnote=footnote,
+        )
+        self.annotation_2 = Annotation.objects.create(
+            content={
+                "body": [
+                    {"value": "Test\xa0example", "label": "Recto \xa0 or\xa0Verso"}
+                ],
+            },
+            footnote=footnote,
+        )
+
+    def test_cleanup_nbsp(self):
+        Annotation = self.apps.get_model("annotations", "Annotation")
+
+        # should remove all \xa0
+        assert not Annotation.objects.filter(content__icontains="\xa0").exists()
+        self.annotation.refresh_from_db()
+        self.annotation_2.refresh_from_db()
+
+        # should cleanup all body value by replacing \xa0 with space
+        assert self.annotation.content["body"][0]["value"] == "Test annotation"
+        assert self.annotation_2.content["body"][0]["value"] == "Test example"
+
+        # should also cleanup label
+        assert self.annotation_2.content["body"][0]["label"] == "Recto or Verso"

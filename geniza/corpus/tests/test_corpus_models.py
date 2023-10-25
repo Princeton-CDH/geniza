@@ -1396,6 +1396,16 @@ class TestDocument:
             "Error standardizing date: 'first quarter of' is not in list",
         )
 
+    def test_save_unicode_cleanup(self, document):
+        # Should cleanup \xa0 from description
+        document.description = "Test\xa0with \xa0wrong space!"
+        document.save()
+        assert document.description == "Test with wrong space!"
+
+        # Should cleanup \xa0 from language specific description fields
+        doc = Document.objects.create(description_he="Wrong\xa0space \xa0 here too")
+        assert doc.description_he == "Wrong space here too"
+
     def test_manifest_uri(self, document):
         assert document.manifest_uri.startswith(settings.ANNOTATION_MANIFEST_BASE_URL)
         assert document.manifest_uri.endswith(

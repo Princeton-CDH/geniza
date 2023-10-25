@@ -26,6 +26,17 @@ from geniza.footnotes.models import Footnote
 
 
 @pytest.mark.django_db
+class TestName:
+    def test_save_unicode_cleanup(self):
+        # Should cleanup \xa0 from name
+        person = Person.objects.create()
+        name = Name.objects.create(
+            name="Shelomo\xa0 Dov Goitein", content_object=person
+        )
+        assert name.name == "Shelomo Dov Goitein"
+
+
+@pytest.mark.django_db
 class TestPerson:
     def test_str(self):
         person = Person.objects.create()
