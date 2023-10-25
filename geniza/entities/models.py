@@ -179,7 +179,7 @@ class Person(models.Model):
             # ensure any has_page overrides are respected
             self.has_page = self.has_page or person.has_page
 
-            # migrate/copy role and gender if not already present, check for conflicts otherwies
+            # migrate/copy role and gender if not already present, check for conflicts otherwise
             if person.role and not self.role:
                 self.role = person.role
             elif person.role and self.role and person.role.pk != self.role.pk:
