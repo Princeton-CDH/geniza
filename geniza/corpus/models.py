@@ -593,7 +593,7 @@ class Document(ModelIndexable, DocumentDateMixin):
             desc = getattr(self, "description_%s" % lang_code)
             if desc:
                 # normalize to ascii space
-                desc = desc.replace("\xa0", " ")
+                desc = re.sub(r"[\xa0 ]+", " ", desc)
                 setattr(self, "description_%s" % lang_code, desc)
 
         super().save(*args, **kwargs)

@@ -22,7 +22,9 @@ class TestName:
     def test_save_unicode_cleanup(self):
         # Should cleanup \xa0 from name
         person = Person.objects.create()
-        name = Name.objects.create(name="Shelomo\xa0Dov Goitein", content_object=person)
+        name = Name.objects.create(
+            name="Shelomo\xa0 Dov Goitein", content_object=person
+        )
         assert name.name == "Shelomo Dov Goitein"
 
 

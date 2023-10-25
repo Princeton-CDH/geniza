@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -55,7 +57,7 @@ class Name(models.Model):
 
     def save(self, *args, **kwargs):
         """Override of the model save method to cleanup unicode non breaking space character"""
-        self.name = self.name.replace("\xa0", " ")
+        self.name = re.sub(r"[\xa0 ]+", " ", self.name)
         super().save(*args, **kwargs)
 
 

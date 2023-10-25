@@ -123,7 +123,9 @@ class TestAnnotationCleanupNbsp(TestMigrations):
         )
         self.annotation_2 = Annotation.objects.create(
             content={
-                "body": [{"value": "Test\xa0example", "label": "Recto\xa0or\xa0Verso"}],
+                "body": [
+                    {"value": "Test\xa0example", "label": "Recto \xa0 or\xa0Verso"}
+                ],
             },
             footnote=footnote,
         )

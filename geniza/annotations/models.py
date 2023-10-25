@@ -1,3 +1,4 @@
+import re
 import uuid
 from collections import defaultdict
 from functools import cached_property
@@ -185,7 +186,7 @@ class Annotation(TrackChangesModel):
         )
 
         # replace Unicode non-breaking space \xa0
-        cleaned_html = cleaned_html.replace("\xa0", " ")
+        cleaned_html = re.sub(r"[\xa0 ]+", " ", cleaned_html)
 
         # if resulting text has any span elements with no attributes, remove them
         if "<span>" in cleaned_html:

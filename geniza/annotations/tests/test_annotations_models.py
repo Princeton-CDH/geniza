@@ -131,7 +131,7 @@ class TestAnnotation:
         assert Annotation.sanitize_html(html) == "<p>text and more text</p>"
 
         # should remove \xa0 Unicode non-breaking space
-        html = "<p>text\xa0and more\xa0text</p>"
+        html = "<p>text\xa0and more \xa0 text</p>"
         assert Annotation.sanitize_html(html) == "<p>text and more text</p>"
 
 
