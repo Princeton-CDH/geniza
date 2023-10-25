@@ -1060,7 +1060,9 @@ class TestDocument:
         }
         # add mock images
         img1 = Mock()
+        img1.info.return_value = "http://example.co/iiif/ts-1/00001/info.json"
         img2 = Mock()
+        img2.info.return_value = "http://example.co/iiif/ts-1/00002/info.json"
         # Mock Fragment.iiif_images() to return those two images
         with patch.object(
             Fragment,
