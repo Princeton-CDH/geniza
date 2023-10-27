@@ -64,70 +64,67 @@ class Command(BaseCommand):
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
         for xmlfile in options["alto"]:
-            print("Processing %s" % xmlfile)
-            alto = xmlmap.load_xmlobject_from_file(xmlfile, EscriptoriumAlto)
-            # associate filename with pgpid
-            m = re.match(self.filename_pattern, alto.filename)
-            pgpid = int(m.group("pgpid"))
-            try:
-                doc = Document.objects.get(
-                    Q(id=pgpid) | Q(old_pgpids__contains=[pgpid])
+            self.stdout.write("Processing %s" % xmlfile)
+            self.ingest_xml(xmlfile)
+
+    def ingest_xml(self, xmlfile):
+        alto = xmlmap.load_xmlobject_from_file(xmlfile, EscriptoriumAlto)
+        # associate filename with pgpid
+        m = re.match(self.filename_pattern, alto.filename)
+        pgpid = int(m.group("pgpid"))
+        try:
+            doc = Document.objects.get(Q(id=pgpid) | Q(old_pgpids__contains=[pgpid]))
+        except Document.DoesNotExist:
+            self.stdout.write("Could not match document; skipping")
+            return
+
+        # we should be able to match the shelfmark portion to a manifest short_id
+        manifest = self.get_manifest(doc, m.group("shelfmark"))
+
+        # use canvas short_id = img number in sequence
+        img_number = int(m.group("img")) + 1
+        canvas = self.get_canvas(manifest, img_number)
+
+        if canvas:
+            canvas_uri = canvas.uri
+        else:
+            # create a placeholder canvas URI that contains textblock pk and canvas number
+            canvas_base_uri = "%siiif/" % doc.permalink
+            b = doc.textblock_set.first()
+            canvas_uri = f"{canvas_base_uri}textblock/{b.pk}/canvas/{img_number}/"
+
+        # get scale factor for converting textblock geometry, based on full image width
+        img_width = alto.printspace.node.attrib["WIDTH"]
+        scale_factor = int(img_width) / (
+            canvas.image.image_width if canvas else 640  # placeholder width = 640
+        )
+
+        # create annotations
+        for tb in alto.printspace.textblocks:
+            # associate tag with tagrefs to get block type
+            tags = [tag.node.attrib for tag in alto.tags]
+            if tb.block_type_id:
+                tag = next((t for t in tags if t["ID"] == tb.block_type_id), None)
+                block_type = tag["LABEL"]
+                # TODO: When implementing line-by-line, use block_type to determine rotation
+
+            # skip arabic; these are Hebrew script transcriptions
+            if not (block_type and "Arabic" in block_type) and len(tb.lines):
+                # get or create footnote
+                footnote = self.get_footnote(doc)
+                # create annotation and log entry
+                anno = Annotation.objects.create(
+                    content=self.create_block_annotation(tb, canvas_uri, scale_factor),
+                    footnote=footnote,
                 )
-            except Document.DoesNotExist:
-                print("Could not match document; skipping")
-                continue
-
-            # we should be able to match the shelfmark portion to a manifest short_id
-            manifest = self.get_manifest(doc, m.group("shelfmark"))
-
-            # use canvas short_id = img number in sequence
-            img_number = int(m.group("img")) + 1
-            canvas = self.get_canvas(manifest, img_number)
-
-            if canvas:
-                canvas_uri = canvas.uri
-            else:
-                # create a placeholder canvas URI that contains textblock pk and canvas number
-                canvas_base_uri = "%siiif/" % doc.permalink
-                b = doc.textblock_set.first()
-                canvas_uri = f"{canvas_base_uri}textblock/{b.pk}/canvas/{img_number}/"
-
-            # get scale factor for converting textblock geometry, based on full image width
-            img_width = alto.printspace.node.attrib["WIDTH"]
-            scale_factor = int(img_width) / (
-                canvas.image.image_width if canvas else 640  # placeholder width = 640
-            )
-
-            # create annotations
-            for tb in alto.printspace.textblocks:
-                # associate tag with tagrefs to get block type
-                tags = [tag.node.attrib for tag in alto.tags]
-                if tb.block_type_id:
-                    tag = next((t for t in tags if t["ID"] == tb.block_type_id), None)
-                    block_type = tag["LABEL"]
-                    # TODO: When implementing line-by-line, use block_type to determine rotation
-
-                # skip arabic; these are Hebrew script transcriptions
-                if not (block_type and "Arabic" in block_type) and len(tb.lines):
-                    # get or create footnote
-                    footnote = self.get_footnote(doc)
-                    # create annotation and log entry
-                    anno = Annotation.objects.create(
-                        content=self.create_block_annotation(
-                            tb, canvas_uri, scale_factor
-                        ),
-                        footnote=footnote,
-                    )
-                    LogEntry.objects.log_action(
-                        user_id=self.script_user.pk,
-                        content_type_id=ContentType.objects.get_for_model(
-                            Annotation
-                        ).pk,
-                        object_id=anno.pk,
-                        object_repr=str(anno),
-                        change_message="Migrated from eScriptorium HTR ALTO",
-                        action_flag=ADDITION,
-                    )
+                LogEntry.objects.log_action(
+                    user_id=self.script_user.pk,
+                    content_type_id=ContentType.objects.get_for_model(Annotation).pk,
+                    object_id=anno.pk,
+                    object_repr=str(anno),
+                    change_message="Migrated from eScriptorium HTR ALTO",
+                    action_flag=ADDITION,
+                )
 
     def get_manifest(self, document, short_id):
         """Attempt to get the manifest using the supplied short id; fallback to first manifest,
@@ -136,7 +133,7 @@ class Command(BaseCommand):
             # NOTE: this works in 100% of tested files so far!
             return Manifest.objects.get(short_id=short_id)
         except Manifest.DoesNotExist:
-            print(
+            self.stdout.write(
                 f"Could not find manifest with short_id {short_id}, falling back to first "
                 + "manifest on document"
             )
@@ -145,7 +142,7 @@ class Command(BaseCommand):
             if manifests and manifests[0]:
                 return manifests[0]
             else:
-                print(
+                self.stdout.write(
                     "Could not find manifests on document, falling back to placeholder "
                     + "canvases"
                 )
@@ -158,7 +155,7 @@ class Command(BaseCommand):
             try:
                 return manifest.canvases.get(short_id=str(img_number))
             except Canvas.DoesNotExist:
-                print(
+                self.stdout.write(
                     f"Could not find canvas with short_id {img_number}, falling back to "
                     + "first canvas"
                 )
@@ -241,7 +238,7 @@ class Command(BaseCommand):
                 "value": f'<svg><polygon points="{points}"></polygon></svg>',
             }
         else:
-            print(f"No block-level geometry available for {textblock.id}")
+            self.stdout.write(f"No block-level geometry available for {textblock.id}")
             # when no block-level geometry available, use full image FragmentSelector
             anno_content["target"]["selector"] = {
                 "conformsTo": "http://www.w3.org/TR/media-frags/",

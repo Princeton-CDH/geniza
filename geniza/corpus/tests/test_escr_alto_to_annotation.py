@@ -1,9 +1,12 @@
 import os.path
+from io import StringIO
 from unittest.mock import patch
 
+import pytest
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, LogEntry
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from djiffy.models import Canvas
 from eulxml import xmlmap
 
@@ -120,3 +123,12 @@ class TestEscrToAltoAnnotation:
 
         # footnote already exists, should find it
         assert self.cmd.get_footnote(document).pk == fn.pk
+
+    @pytest.mark.django_db
+    def test_handle(self):
+        with patch.object(Command, "ingest_xml") as mock_ingest:
+            out = StringIO()
+            call_command("escr_alto_to_annotation", xmlfile, stdout=out)
+            # should print a message and call the ingest function once per xml file
+            assert "Processing %s" % xmlfile in out.getvalue()
+            mock_ingest.assert_called_once_with(xmlfile)
