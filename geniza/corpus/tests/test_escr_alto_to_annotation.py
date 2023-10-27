@@ -1,6 +1,6 @@
 import os.path
 from io import StringIO
-from unittest.mock import patch
+from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 from django.conf import settings
@@ -9,13 +9,13 @@ from django.contrib.auth.models import User
 from django.core.management import call_command
 from djiffy.models import Canvas
 from eulxml import xmlmap
+from parasolr.django.signals import IndexableSignalHandler
 
 from geniza.corpus.management.commands.escr_alto_to_annotation import (
     Command,
     EscriptoriumAlto,
 )
 from geniza.corpus.models import Document
-from geniza.footnotes.models import Footnote
 
 fixture_dir = os.path.join(os.path.dirname(__file__), "fixtures")
 
@@ -132,3 +132,59 @@ class TestEscrToAltoAnnotation:
             # should print a message and call the ingest function once per xml file
             assert "Processing %s" % xmlfile in out.getvalue()
             mock_ingest.assert_called_once_with(xmlfile)
+
+    @pytest.mark.django_db
+    def test_ingest_xml(self, document, annotation_json):
+        alto = xmlmap.load_xmlobject_from_file(xmlfile, EscriptoriumAlto)
+
+        # no matching document, should print error and return
+        out = StringIO()
+        call_command("escr_alto_to_annotation", xmlfile, stdout=out)
+        assert "Could not match document; skipping" in out.getvalue()
+
+        # add as fixture's old PGPID, should not skip
+        document.old_pgpids = [6032]
+        document.save()
+        out = StringIO()
+        call_command("escr_alto_to_annotation", xmlfile, stdout=out)
+        assert "Could not match document; skipping" not in out.getvalue()
+
+        # no canvas, should create annotations on placeholder
+        with patch.object(Command, "create_block_annotation") as mock_create_anno:
+            mock_create_anno.return_value = annotation_json
+            call_command("escr_alto_to_annotation", xmlfile, stdout=out)
+            mock_create_anno.assert_called()
+            # placeholder canvas URI
+            assert (
+                f"{document.permalink}iiif/textblock/"
+                in mock_create_anno.call_args.args[1]
+            )
+            # placeholder width == 640
+            assert mock_create_anno.call_args.args[2] * 640 == int(
+                alto.printspace.node.attrib["WIDTH"]
+            )
+
+        # canvas exists, should get uri
+        manifests = [b.fragment.manifest for b in document.textblock_set.all()]
+        canvas = Canvas.objects.create(
+            short_id="test",
+            manifest=manifests[0],
+            label="fake image",
+            iiif_image_id="http://example.co/iiif/ts-1/00001",
+            uri="http://example.co/iiif/ts-1/canvas/1",
+            order=1,
+        )
+        # disconnect indexing signal handler
+        IndexableSignalHandler.disconnect()
+        with patch.object(Command, "create_block_annotation") as mock_create_anno:
+            mock_create_anno.return_value = annotation_json
+            # mock iiif image to avoid network req
+            with patch.object(Canvas, "image"):
+                call_command("escr_alto_to_annotation", xmlfile, stdout=out)
+                mock_create_anno.assert_called_with(ANY, canvas.uri, ANY)
+
+        # should have created log entries for the new annotations
+        assert LogEntry.objects.filter(
+            change_message="Migrated from eScriptorium HTR ALTO",
+            action_flag=ADDITION,
+        ).exists()
