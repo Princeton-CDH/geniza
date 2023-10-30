@@ -1049,7 +1049,30 @@ class TestDocument:
                 "http://example.co/iiif/ts-1/00002",
             ]
             assert index_data["iiif_labels_ss"] == ["label1", "label2"]
+            assert index_data["iiif_rotations_is"] == [0, 0]
             assert index_data["has_image_b"] is True
+
+    def test_index_data_rotations(self, document):
+        # add image rotation
+        document.image_overrides = {
+            "canvas1": {"rotation": 90},
+            "canvas2": {"rotation": 180},
+        }
+        # add mock images
+        img1 = Mock()
+        img1.info.return_value = "http://example.co/iiif/ts-1/00001/info.json"
+        img2 = Mock()
+        img2.info.return_value = "http://example.co/iiif/ts-1/00002/info.json"
+        # Mock Fragment.iiif_images() to return those two images
+        with patch.object(
+            Fragment,
+            "iiif_images",
+            # match canvas1 and canvas2 names from image overrides
+            return_value=([img1, img2], ["label1", "label2"], ["canvas1", "canvas2"]),
+        ):
+            index_data = document.index_data()
+            # index data should pick up rotation overrides
+            assert index_data["iiif_rotations_is"] == [90, 180]
 
     def test_index_data_footnotes(
         self, document, source, twoauthor_source, multiauthor_untitledsource

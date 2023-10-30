@@ -52,6 +52,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "translation_language_direction": "translation_language_direction_s",
         "iiif_images": "iiif_images_ss",
         "iiif_labels": "iiif_labels_ss",
+        "iiif_rotations": "iiif_rotations_is",
         "has_image": "has_image_b",
         "has_digital_edition": "has_digital_edition_b",
         "has_digital_translation": "has_digital_translation_b",
@@ -188,9 +189,13 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # convert indexed iiif image paths to IIIFImageClient objects
         images = doc.get("iiif_images", [])
         doc["iiif_images"] = [IIIFImageClient(*img.rsplit("/", 1)) for img in images]
-        # zip images and associated labels into (img, label) tuples in result doc
+        # zip images, associated labels, and rotation overrides into (img, label, rotation) tuples
+        # in result doc
         labels = doc.get("iiif_labels", [])
-        doc["iiif_images"] = list(zip(doc["iiif_images"], labels))
+        # NOTE: if/when piffle supports full image urls, revise to remove any rotation related code
+        # from here and search results template, as it will be applied at index time instead
+        rotations = [int(rot) for rot in doc.get("iiif_rotations", [0 for _ in labels])]
+        doc["iiif_images"] = list(zip(doc["iiif_images"], labels, rotations))
 
         # for multilingual support, set doctype to matched DocumentType object
         doctype_str = doc.get("type")

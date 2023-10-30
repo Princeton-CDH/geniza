@@ -141,11 +141,15 @@
 
             {% if document.iiif_images %}
                 <ul class="images">
-                    {# list of tuples of (IIIF image, label) #}
+                    {# list of tuples of (IIIF image, label, rotation) #}
                     {% for image in document.iiif_images|slice:":3" %}
-                        <li class="image-{{ forloop.counter }}">
-                            <img src="{{ image.0|iiif_image:"size:width=250" }}" loading="lazy" alt="{{ image.1 }}">
-                        </li>
+                        {% with deg=image.2|stringformat:"i" %}
+                            {% with rotation="rotation:degrees="|add:deg %}
+                                <li class="image-{{ forloop.counter }}">
+                                    <img src="{{ image.0|iiif_image:"size:width=250"|iiif_image:rotation }}" loading="lazy" alt="{{ image.1 }}">
+                                </li>
+                            {% endwith %}
+                        {% endwith %}
                     {% endfor %}
                 </ul>
             {% endif %}
