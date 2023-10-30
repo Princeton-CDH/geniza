@@ -192,6 +192,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # zip images, associated labels, and rotation overrides into (img, label, rotation) tuples
         # in result doc
         labels = doc.get("iiif_labels", [])
+        # NOTE: if/when piffle supports full image urls, revise to remove any rotation related code
+        # from here and search results template, as it will be applied at index time instead
         rotations = [int(rot) for rot in doc.get("iiif_rotations", [0 for _ in labels])]
         doc["iiif_images"] = list(zip(doc["iiif_images"], labels, rotations))
 

@@ -1198,6 +1198,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "language_code_s": self.primary_lang_code,
                 "language_script_s": self.primary_script,
                 # use image info link without trailing info.json to easily convert back to iiif image client
+                # NOTE: if/when piffle supports initializing from full image uris, we could simplify this
+                # code to index the full image url, with rotation overrides applied
                 "iiif_images_ss": [
                     img["image"].info()[:-10]  # i.e., remove /info.json
                     for img in images
