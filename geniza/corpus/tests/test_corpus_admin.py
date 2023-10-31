@@ -231,6 +231,25 @@ class TestDocumentAdmin:
         )
         assert queryset.count() == Document.objects.all().count()
 
+    def test_get_search_results_with_autocomplete(self, document, join):
+        # autocomplete should use the base get_search_results method, not solr
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        request_factory = RequestFactory()
+
+        # unlike solr query, should only be searching on shelfmark, pgpid
+        request = request_factory.get("/admin/autocomplete/")
+        queryset, _ = doc_admin.get_search_results(
+            request, Document.objects.all(), "deed of sale"
+        )
+        assert queryset.count() == 0
+
+        # shelfmark should return both results
+        request = request_factory.get("/admin/autocomplete/", {"term": "CUL Add.2586"})
+        queryset, _ = doc_admin.get_search_results(
+            request, Document.objects.all(), "CUL Add.2586"
+        )
+        assert queryset.count() == 2
+
     def test_admin_search_boolean(self, document):
         # index fixture data in solr
         doc_2 = Document.objects.create(

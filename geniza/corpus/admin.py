@@ -395,10 +395,6 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     )
     search_fields = (
         "fragments__shelfmark",
-        "tags__name",
-        "description",
-        "notes",
-        "needs_review",
         "id",
         "old_pgpids",
     )
@@ -547,8 +543,11 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     def get_search_results(self, request, queryset, search_term):
         """Override admin search to use Solr."""
 
-        # if search term is not blank, filter the queryset via solr search
-        if search_term:
+        # use inherited method if this is an autocomplete search
+        if request and request.path == "/admin/autocomplete/":
+            return super().get_search_results(request, queryset, search_term)
+        # otherwise, if search term is not blank, filter the queryset via solr search
+        elif search_term:
             # - use AND instead of OR to get smaller result sets, more
             #  similar to default admin search behavior
             # - return pks for all matching records
