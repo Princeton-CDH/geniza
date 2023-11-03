@@ -210,6 +210,18 @@ class TestSource:
             % tuple(lastnames)
         )
 
+    @pytest.mark.django_db
+    def test_formatted_mlmodel(self):
+        (model, _) = SourceType.objects.get_or_create(type="Machine learning model")
+        (source, _) = Source.objects.get_or_create(
+            title_en="HTR for PGP model 1.0",
+            source_type=model,
+        )
+        assert (
+            source.formatted_display()
+            == "Machine-generated transcription (%s)." % source.title_en
+        )
+
     def test_get_volume_from_shelfmark(self):
         assert Source.get_volume_from_shelfmark("T-S 3564.5J") == "T-S 35"
         assert Source.get_volume_from_shelfmark("Bodl. 3563") == "Bodl."

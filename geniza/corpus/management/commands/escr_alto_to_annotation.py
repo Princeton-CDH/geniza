@@ -168,7 +168,7 @@ class Command(BaseCommand):
         # TODO: Replace this with desired source type and source after decision is made
         (model, _) = SourceType.objects.get_or_create(type="Machine learning model")
         (source, _) = Source.objects.get_or_create(
-            title_en="eScriptorium HTR model",
+            title_en="HTR for PGP model 1.0",
             source_type=model,
         )
         try:

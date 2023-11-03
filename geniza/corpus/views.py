@@ -802,7 +802,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
         try:
             source = Source.objects.get(pk=self.kwargs["source_pk"])
             source_label = (
-                source.all_authors()
+                (source.all_authors() or str(source))
                 if self.doc_relation == "transcription"
                 else f"{source.all_authors()} {source.all_languages()}"
             )
