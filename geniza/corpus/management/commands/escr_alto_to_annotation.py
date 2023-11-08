@@ -122,7 +122,7 @@ class Command(BaseCommand):
                     content_type_id=ContentType.objects.get_for_model(Annotation).pk,
                     object_id=anno.pk,
                     object_repr=str(anno),
-                    change_message="Migrated from eScriptorium HTR ALTO",
+                    change_message="Imported from eScriptorium HTR ALTO",
                     action_flag=ADDITION,
                 )
 
