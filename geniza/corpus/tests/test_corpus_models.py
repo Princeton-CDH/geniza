@@ -1786,16 +1786,16 @@ def test_document_merge_with_dates(document, join):
 
 def test_document_get_by_any_pgpid(document):
     # get by current pk
-    assert Document.get_by_any_pgpid(document.pk) == document
+    assert Document.objects.get_by_any_pgpid(document.pk) == document
 
     # add old ids
     document.old_pgpids = [345, 678]
     document.save()
 
-    assert Document.get_by_any_pgpid(345) == document
-    assert Document.get_by_any_pgpid(678) == document
+    assert Document.objects.get_by_any_pgpid(345) == document
+    assert Document.objects.get_by_any_pgpid(678) == document
 
-    assert not Document.get_by_any_pgpid(1234)
+    assert not Document.objects.get_by_any_pgpid(1234)
 
 
 @pytest.mark.django_db

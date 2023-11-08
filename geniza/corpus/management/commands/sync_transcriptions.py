@@ -157,7 +157,6 @@ class Command(BaseCommand):
 
                     footnote.content = {"html": html, "text": text}
                     if footnote.has_changed("content"):
-
                         # don't actually save in --noact mode
                         if not self.noact_mode:
                             footnote.save()
@@ -246,11 +245,8 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
         # but in some cases, it looks like a join 12047 + 12351
 
         # find the document in the database
-        try:
-            return Document.objects.get(
-                models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
-            )
-        except Document.DoesNotExist:
+        doc = Document.objects.get_by_any_pgpid(pgpid)
+        if not doc:
             self.stats["document_not_found"] += 1
             if self.verbosity >= self.v_normal:
                 self.stdout.write("Document %s not found in database" % pgpid)

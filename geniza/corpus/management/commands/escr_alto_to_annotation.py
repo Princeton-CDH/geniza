@@ -72,9 +72,8 @@ class Command(BaseCommand):
         # associate filename with pgpid
         m = re.match(self.filename_pattern, alto.filename)
         pgpid = int(m.group("pgpid"))
-        try:
-            doc = Document.objects.get(Q(id=pgpid) | Q(old_pgpids__contains=[pgpid]))
-        except Document.DoesNotExist:
+        doc = Document.objects.get_by_any_pgpid(pgpid)
+        if not doc:
             self.stdout.write("Could not match document; skipping")
             return
 

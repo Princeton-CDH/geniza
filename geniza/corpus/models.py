@@ -488,6 +488,12 @@ class DocumentQuerySet(MultilingualQuerySet):
         # NOTE: footnotes likely should be prefetched depending on use case,
         # but nested prefetching may vary
 
+    def get_by_any_pgpid(self, pgpid):
+        """Find a document by current or old pgpid"""
+        return self.filter(
+            models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
+        ).first()
+
 
 class Document(ModelIndexable, DocumentDateMixin):
     """A unified document such as a letter or legal document that
@@ -601,13 +607,6 @@ class Document(ModelIndexable, DocumentDateMixin):
             raise ValidationError("Original date is required when calendar is set")
         if self.doc_date_original and not self.doc_date_calendar:
             raise ValidationError("Calendar is required when original date is set")
-
-    @staticmethod
-    def get_by_any_pgpid(pgpid):
-        """Find a document by current or old pgpid"""
-        return Document.objects.filter(
-            models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
-        ).first()
 
     @classmethod
     def from_manifest_uri(cls, uri):
