@@ -15,7 +15,7 @@ from geniza.corpus.management.commands.escr_alto_to_annotation import (
     Command,
     EscriptoriumAlto,
 )
-from geniza.corpus.models import Document
+from geniza.corpus.models import Document, TextBlock
 
 fixture_dir = os.path.join(os.path.dirname(__file__), "fixtures")
 
@@ -90,17 +90,18 @@ class TestEscrToAltoAnnotation:
         id = manifests[0].short_id
         out = StringIO()
         self.cmd.stdout = out
+        self.cmd.canvas_errors = set()
         # short id matches, should get manifest
-        assert self.cmd.get_manifest(document, id).pk == manifests[0].pk
+        assert self.cmd.get_manifest(document, id, "").pk == manifests[0].pk
 
         # short id doesn't match, should get first manifest on document
-        assert self.cmd.get_manifest(document, None).pk == manifests[0].pk
+        assert self.cmd.get_manifest(document, None, "").pk == manifests[0].pk
         assert "Could not find manifest" in out.getvalue()
         assert f"(of {len(manifests)})" in out.getvalue()
 
         # no manifests on document, no short id match, should return None
         doc_2 = Document.objects.create()
-        assert self.cmd.get_manifest(doc_2, None) is None
+        assert self.cmd.get_manifest(doc_2, None, "") is None
         assert "Could not find manifests" in out.getvalue()
 
     def test_get_canvas(self, document):
@@ -113,14 +114,15 @@ class TestEscrToAltoAnnotation:
             iiif_image_id="http://example.co/iiif/ts-1/00001",
             order=1,
         )
+        self.cmd.canvas_errors = set()
         # short id matches, should get canvas
-        assert self.cmd.get_canvas(manifests[0], id).pk == canvas.pk
+        assert self.cmd.get_canvas(manifests[0], id, "").pk == canvas.pk
 
         # short id doesn't match, should get first canvas on manifest
-        assert self.cmd.get_canvas(manifests[0], None).pk == canvas.pk
+        assert self.cmd.get_canvas(manifests[0], None, "").pk == canvas.pk
 
         # no manifest, should return None
-        assert self.cmd.get_canvas(None, id) is None
+        assert self.cmd.get_canvas(None, id, "") is None
 
     def test_get_footnote(self, document):
         self.cmd.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
@@ -134,13 +136,29 @@ class TestEscrToAltoAnnotation:
         assert self.cmd.get_footnote(document).pk == fn.pk
 
     @pytest.mark.django_db
-    def test_handle(self):
+    def test_handle(self, fragment):
         with patch.object(Command, "ingest_xml") as mock_ingest:
             out = StringIO()
             call_command("escr_alto_to_annotation", xmlfile, stdout=out)
             # should print a message and call the ingest function once per xml file
             assert "Processing %s" % xmlfile in out.getvalue()
             mock_ingest.assert_called_once_with(xmlfile)
+            assert "Done! Processed 1 file(s)." in out.getvalue()
+
+        # no document match, should report files that failed this way
+        out = StringIO()
+        call_command("escr_alto_to_annotation", xmlfile, stdout=out)
+        assert "1 file(s) failed to match a PGP document" in out.getvalue()
+        assert f"\t- {xmlfile}" in out.getvalue()
+
+        # no canvas match, should report files that failed this way
+        doc = Document.objects.create(old_pgpids=[6032])
+        TextBlock.objects.create(document=doc, fragment=fragment)
+        out = StringIO()
+        call_command("escr_alto_to_annotation", xmlfile, stdout=out)
+        print(out.getvalue())
+        assert "1 file(s) failed to match a specific image" in out.getvalue()
+        assert f"\t- {xmlfile}" in out.getvalue()
 
     @pytest.mark.django_db
     def test_ingest_xml(self, document, annotation_json):

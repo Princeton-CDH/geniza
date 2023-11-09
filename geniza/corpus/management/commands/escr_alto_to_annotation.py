@@ -68,9 +68,31 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
+        # lists for reporting
+        self.document_errors = set()
+        self.canvas_errors = set()
+
+        # process all files
         for xmlfile in options["alto"]:
             self.stdout.write("Processing %s" % xmlfile)
             self.ingest_xml(xmlfile)
+
+        # report
+        self.stdout.write(f"Done! Processed {len(options['alto'])} file(s).")
+        if self.document_errors:
+            self.stdout.write(
+                f"{len(self.document_errors)} file(s) failed to match a PGP document:"
+            )
+            for filename in self.document_errors:
+                self.stdout.write(f"\t- {filename}")
+        if self.canvas_errors:
+            self.stdout.write(
+                f"{len(self.canvas_errors)} file(s) failed to match a specific image. These "
+                + "transcriptions have been placed on the first image, or a placeholder if the "
+                + "document has no images:"
+            )
+            for filename in self.canvas_errors:
+                self.stdout.write(f"\t- {filename}")
 
     def ingest_xml(self, xmlfile):
         alto = xmlmap.load_xmlobject_from_file(xmlfile, EscriptoriumAlto)
@@ -79,15 +101,16 @@ class Command(BaseCommand):
         pgpid = int(m.group("pgpid"))
         doc = Document.objects.get_by_any_pgpid(pgpid)
         if not doc:
+            self.document_errors.add(xmlfile)
             self.stdout.write("Could not match document; skipping")
             return
 
         # we should be able to match the shelfmark portion to a manifest short_id
-        manifest = self.get_manifest(doc, m.group("shelfmark"))
+        manifest = self.get_manifest(doc, m.group("shelfmark"), xmlfile)
 
         # use canvas short_id = img number in sequence
         img_number = int(m.group("img")) + 1
-        canvas = self.get_canvas(manifest, img_number)
+        canvas = self.get_canvas(manifest, img_number, xmlfile)
 
         if canvas:
             canvas_uri = canvas.uri
@@ -132,13 +155,14 @@ class Command(BaseCommand):
                     action_flag=ADDITION,
                 )
 
-    def get_manifest(self, document, short_id):
+    def get_manifest(self, document, short_id, filename):
         """Attempt to get the manifest using the supplied short id; fallback to first manifest,
         or return None if there are none on the document"""
         try:
             # NOTE: this works in 100% of tested files so far!
             return Manifest.objects.get(short_id=short_id)
         except Manifest.DoesNotExist:
+            self.canvas_errors.add(filename)
             manifests = [b.fragment.manifest for b in document.textblock_set.all()]
             # associate with the first manifest
             if manifests and manifests[0]:
@@ -153,13 +177,14 @@ class Command(BaseCommand):
                 )
                 return None
 
-    def get_canvas(self, manifest, img_number):
+    def get_canvas(self, manifest, img_number, filename):
         """Attempt to get a canvas from a manifest by id; fallback to first canvas, or return
         None if there are none in the manifest (or there is no manifest)"""
         if manifest and manifest.canvases.exists():
             try:
                 return manifest.canvases.get(short_id=str(img_number))
             except Canvas.DoesNotExist:
+                self.canvas_errors.add(filename)
                 self.stdout.write(
                     f"Could not find canvas with short_id {img_number}, falling back to "
                     + "first canvas"
