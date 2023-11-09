@@ -139,18 +139,17 @@ class Command(BaseCommand):
             # NOTE: this works in 100% of tested files so far!
             return Manifest.objects.get(short_id=short_id)
         except Manifest.DoesNotExist:
-            self.stdout.write(
-                f"Could not find manifest with short_id {short_id}, falling back to first "
-                + "manifest on document"
-            )
             manifests = [b.fragment.manifest for b in document.textblock_set.all()]
             # associate with the first manifest
             if manifests and manifests[0]:
+                self.stdout.write(
+                    f"Could not find manifest with short_id {short_id}, falling back to first "
+                    + f"manifest on document (of {len(manifests)})"
+                )
                 return manifests[0]
             else:
                 self.stdout.write(
-                    "Could not find manifests on document, falling back to placeholder "
-                    + "canvases"
+                    "Could not find manifests on document, falling back to placeholder canvases"
                 )
                 return None
 

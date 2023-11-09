@@ -88,15 +88,20 @@ class TestEscrToAltoAnnotation:
     def test_get_manifest(self, document):
         manifests = [b.fragment.manifest for b in document.textblock_set.all()]
         id = manifests[0].short_id
+        out = StringIO()
+        self.cmd.stdout = out
         # short id matches, should get manifest
         assert self.cmd.get_manifest(document, id).pk == manifests[0].pk
 
         # short id doesn't match, should get first manifest on document
         assert self.cmd.get_manifest(document, None).pk == manifests[0].pk
+        assert "Could not find manifest" in out.getvalue()
+        assert f"(of {len(manifests)})" in out.getvalue()
 
         # no manifests on document, no short id match, should return None
         doc_2 = Document.objects.create()
         assert self.cmd.get_manifest(doc_2, None) is None
+        assert "Could not find manifests" in out.getvalue()
 
     def test_get_canvas(self, document):
         manifests = [b.fragment.manifest for b in document.textblock_set.all()]
