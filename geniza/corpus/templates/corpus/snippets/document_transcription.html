@@ -9,6 +9,8 @@
                 <i class="ph-pencil"></i>
                 <span>Edit {% for auth in ed.source.authorship_set.all %}{% include "snippets/comma.html" %}{{ auth.creator.last_name }}{% empty %}[unknown]{% endfor %}'s edition</span>
             </a>
+        {% else %}
+            <span class="editor-navigation">Machine-generated transcription present, but not currently editable</span>
         {% endif %}
     {% endfor %}
     {% for tr in document.digital_translations.all %}
