@@ -40,6 +40,11 @@ class PrintSpace(AltoObject):
     textblocks = xmlmap.NodeListField("alto:TextBlock", TextBlock)
 
 
+class Tag(AltoObject):
+    id = xmlmap.StringField("./@ID")
+    label = xmlmap.StringField("./@LABEL")
+
+
 class EscriptoriumAlto(AltoObject):
     filename = xmlmap.StringField(
         "//alto:alto/alto:Description/alto:sourceImageInformation/alto:fileName"
@@ -47,7 +52,7 @@ class EscriptoriumAlto(AltoObject):
     printspace = xmlmap.NodeField(
         "//alto:alto/alto:Layout/alto:Page/alto:PrintSpace", PrintSpace
     )
-    tags = xmlmap.NodeListField("//alto:alto/alto:Tags/alto:OtherTag", AltoObject)
+    tags = xmlmap.NodeListField("//alto:alto/alto:Tags/alto:OtherTag", Tag)
 
 
 class Command(BaseCommand):
@@ -100,11 +105,13 @@ class Command(BaseCommand):
 
         # create annotations
         for tb in alto.printspace.textblocks:
-            # associate tag with tagrefs to get block type
-            tags = [tag.node.attrib for tag in alto.tags]
+            block_type = None
             if tb.block_type_id:
-                tag = next((t for t in tags if t["ID"] == tb.block_type_id), None)
-                block_type = tag["LABEL"]
+                # find first tag in tag list whose id matches block type id
+                tag_matches = filter(lambda t: t.id == tb.block_type_id, alto.tags)
+                tag = next(tag_matches, None)
+                if tag:
+                    block_type = tag.label
                 # TODO: When implementing line-by-line, use block_type to determine rotation
 
             # skip arabic; these are Hebrew script transcriptions

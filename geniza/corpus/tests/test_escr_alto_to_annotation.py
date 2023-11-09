@@ -34,6 +34,10 @@ class TestEscrToAltoAnnotation:
         tb = alto.printspace.textblocks[0]
         assert "eSc_textblock_" in tb.id
         assert tb.block_type_id == "BT2"
+        # find first tag in tag list whose id matches block type id
+        tag_matches = filter(lambda t: t.id == tb.block_type_id, alto.tags)
+        tag = next(tag_matches, None)
+        assert tag and tag.label == "Main"
         assert tb.polygon
         assert len(tb.lines) == 14
         line = tb.lines[0]
@@ -185,6 +189,6 @@ class TestEscrToAltoAnnotation:
 
         # should have created log entries for the new annotations
         assert LogEntry.objects.filter(
-            change_message="Migrated from eScriptorium HTR ALTO",
+            change_message="Imported from eScriptorium HTR ALTO",
             action_flag=ADDITION,
         ).exists()
