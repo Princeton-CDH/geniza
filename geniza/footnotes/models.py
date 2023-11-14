@@ -244,6 +244,9 @@ class Source(models.Model):
             elif self.source_type.type in doublequoted_types:
                 stripped_title = self.title.strip("\"'")
                 work_title = '"%s%s"' % (stripped_title, ltr_mark)
+            # if this is a machine learning model, format appropriately
+            elif "model" in self.source_type.type:
+                work_title = "Machine-generated transcription (%s)" % self.title
             # otherwise, just leave unformatted
             else:
                 work_title = self.title + ltr_mark
@@ -318,7 +321,7 @@ class Source(models.Model):
                 parts[-1] += ","
                 parts.append("no. %d" % self.issue)
 
-        if extra_fields:
+        if extra_fields and not "model" in self.source_type.type:
             # Location, publisher, and date (omit for unpublished, unless it has a year)
             # examples:
             #   (n.p., n.d.)

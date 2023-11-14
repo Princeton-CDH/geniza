@@ -1123,7 +1123,7 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
         }
     }
 }
-a.editor-navigation {
+.editor-navigation {
     span {
         @include typography.link;
     }
