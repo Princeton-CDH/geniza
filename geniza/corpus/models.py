@@ -490,9 +490,7 @@ class DocumentQuerySet(MultilingualQuerySet):
 
     def get_by_any_pgpid(self, pgpid):
         """Find a document by current or old pgpid"""
-        return self.filter(
-            models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
-        ).first()
+        return self.get(models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid]))
 
 
 class Document(ModelIndexable, DocumentDateMixin):

@@ -245,8 +245,9 @@ Updated {footnote_updated:,} footnotes (created {footnote_created:,}; skipped ov
         # but in some cases, it looks like a join 12047 + 12351
 
         # find the document in the database
-        doc = Document.objects.get_by_any_pgpid(pgpid)
-        if not doc:
+        try:
+            Document.objects.get_by_any_pgpid(pgpid)
+        except Document.DoesNotExist:
             self.stats["document_not_found"] += 1
             if self.verbosity >= self.v_normal:
                 self.stdout.write("Document %s not found in database" % pgpid)

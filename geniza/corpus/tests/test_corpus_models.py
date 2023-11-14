@@ -1795,7 +1795,8 @@ def test_document_get_by_any_pgpid(document):
     assert Document.objects.get_by_any_pgpid(345) == document
     assert Document.objects.get_by_any_pgpid(678) == document
 
-    assert not Document.objects.get_by_any_pgpid(1234)
+    with pytest.raises(Document.DoesNotExist):
+        Document.objects.get_by_any_pgpid(1234)
 
 
 @pytest.mark.django_db
