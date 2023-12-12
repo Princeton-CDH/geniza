@@ -84,6 +84,23 @@ class TestPerson:
             object_id=person.pk, change_message__contains=f"merged with {p2_str}"
         ).exists()
 
+    def test_merge_with_no_description(self):
+        # create two people
+        person = Person.objects.create(
+            gender=Person.UNKNOWN,
+        )
+        role = PersonRole.objects.create(name="example")
+        person_2 = Person.objects.create(
+            description_en="testing description",
+            gender=Person.FEMALE,
+            role=role,
+            has_page=True,
+        )
+        person.merge_with([person_2])
+        # should not error; should combine descriptions
+        assert "Description from merged entry:" in person.description
+        assert "testing description" in person.description
+
     def test_merge_with_conflicts(self):
         # should raise ValidationError on conflicting gender
         person = Person.objects.create(gender=Person.MALE)

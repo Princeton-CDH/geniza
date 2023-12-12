@@ -1548,6 +1548,16 @@ def test_document_merge_with(document, join):
     assert join.needs_review.startswith("SCRIPTMERGE")
 
 
+def test_document_merge_with_no_description(document):
+    doc_id = document.id
+    # create a document with no description
+    doc_2 = Document.objects.create()
+    doc_2.merge_with([document], "test")
+    # should not error; should combine descriptions
+    assert "Description from PGPID %s:" % doc_id in doc_2.description
+    assert document.description in doc_2.description
+
+
 def test_document_merge_with_notes(document, join):
     join.notes = "original doc"
     join.needs_review = "cleanup needed"
