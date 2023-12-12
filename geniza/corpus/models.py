@@ -1365,7 +1365,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         # handle translated description: create a dict of descriptions
         # per supported language to aggregate and merge
         description_chunks = {
-            lang_code: [getattr(self, "description_%s" % lang_code)]
+            lang_code: [getattr(self, "description_%s" % lang_code) or ""]
             for lang_code in language_codes
         }
         language_notes = [self.language_note] if self.language_note else []
@@ -1430,7 +1430,7 @@ class Document(ModelIndexable, DocumentDateMixin):
             for lang_code in language_codes:
                 description_field = "description_%s" % lang_code
                 doc_description = getattr(doc, description_field)
-                current_description = getattr(self, description_field)
+                current_description = getattr(self, description_field) or ""
                 if doc_description and doc_description not in current_description:
                     description_chunks[lang_code].append(
                         "Description from PGPID %s:\n%s" % (doc.id, doc_description)
