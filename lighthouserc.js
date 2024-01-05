@@ -47,7 +47,14 @@ module.exports = {
                 // allow 1 offscreen image per page (OpenSeaDragon first image)
                 "offscreen-images": ["error", { maxLength: 1 }],
                 // allow larger byte weight for multilingual and transcription fonts
-                "total-byte-weight": ["error", { minScore: 0.7 }],
+                "total-byte-weight": ["error", { minScore: 0.5 }],
+                // allow larger lcp images in stylesheets for backgrounds (header, footer, etc)
+                "prioritize-lcp-image": ["error", { minScore: 0.5 }],
+                // allow redirects for locale
+                redirects: "off",
+                // ignore visible text required in aria-label, we need them to differ for icons
+                "label-content-name-mismatch": "off",
+                "identical-links-same-purpose": "off",
                 // ignore error about back/forward cache, bug with using headless mode.
                 // see https://github.com/GoogleChrome/lighthouse/issues/14784
                 "bf-cache": "off",

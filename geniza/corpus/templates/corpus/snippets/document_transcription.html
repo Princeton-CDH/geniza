@@ -74,7 +74,7 @@
                             {% for ed in document.digital_editions.all %}
                                 <li>
                                     <label for="transcription-{{ forloop.counter }}">
-                                        <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown keydown->transcription#keyboardCloseDropdown" id="transcription-{{ forloop.counter }}" data-transcription="ed-{{ ed.pk }}" />
+                                        <input type="radio" name="transcription" {% if forloop.first %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown input->ittpanel#alignLines keydown->transcription#keyboardCloseDropdown" id="transcription-{{ forloop.counter }}" data-transcription="ed-{{ ed.pk }}" />
                                         <span>Edition: {{ ed.source.all_authors|default:ed.source }}</span>
                                     </label>
                                 </li>
@@ -101,7 +101,7 @@
                             {% for tr in document.digital_translations.all %}
                                 <li>
                                     <label for="translation-{{ forloop.counter }}">
-                                        <input type="radio" name="translation" {% if tr.pk == document.default_translation.pk %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown keydown->transcription#keyboardCloseDropdown" id="translation-{{ forloop.counter }}" data-translation="tr-{{ tr.pk }}" />
+                                        <input type="radio" name="translation" {% if tr.pk == document.default_translation.pk %} checked="true"{% endif %} value="relevance" data-action="input->transcription#changeDropdown input->ittpanel#alignLines keydown->transcription#keyboardCloseDropdown" id="translation-{{ forloop.counter }}" data-translation="tr-{{ tr.pk }}" />
                                         <span>Translation: {{ tr.source.all_authors }} {{ tr.source.all_languages }}</span>
                                     </label>
                                 </li>
