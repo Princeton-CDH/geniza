@@ -38,14 +38,9 @@ class Command(BaseCommand):
                     # Bodl. MS heb. b 12/6
                     # --> data migration --> Bodl. MS Heb. b 12, f. 6
                     # --> this script --> Bodl. MS Heb. b 12 (Cat. 2875), f. 6
-                    print(frag.old_shelfmarks)
-
                     hist_repl = (
                         f"Bodl. MS Heb. \g<letter> \g<num> (Cat. {cat_number}),",
                     )
                     hist = re.sub(self.bodl_regex, hist_repl, frag.old_shelfmarks)
                     frag.old_shelfmarks = hist
-
-                    print(hist)
-
                     frag.save()
