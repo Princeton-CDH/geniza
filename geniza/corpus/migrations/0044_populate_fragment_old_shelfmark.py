@@ -130,6 +130,7 @@ def populate_old_shelfmarks(apps, schema_editor):
             )
             # join all historical shelfmarks by semicolon
             frag.old_shelfmarks = "; ".join(historical_shelfmark_set)
+            frag.save()
 
     # More complex combinations require regex (sadly no named groups in regex django query)
     for shelfmark_regex, historical_regex in shelfmark_regex_pairs.items():
@@ -143,6 +144,7 @@ def populate_old_shelfmarks(apps, schema_editor):
                 set([frag.old_shelfmarks, *hist]) if frag.old_shelfmarks else set(hist)
             )
             frag.old_shelfmarks = "; ".join(historical_shelfmark_set)
+            frag.save()
 
     # finally, freer is perhaps the most complex of all! we need to take the existing
     # historical shelfmark, if present, and convert its numeral to roman numerals.
@@ -161,6 +163,7 @@ def populate_old_shelfmarks(apps, schema_editor):
         frag.old_shelfmarks = (
             f"{frag.old_shelfmarks}; {hist}" if frag.old_shelfmarks else hist
         )
+        frag.save()
 
 
 class Migration(migrations.Migration):
