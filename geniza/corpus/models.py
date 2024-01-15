@@ -1158,7 +1158,13 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "pgpid_i": self.id,
                 # type gets matched back to DocumentType object in get_result_document, for i18n;
                 # should always be indexed in English
-                "type_s": str(self.doctype) if self.doctype else "Unknown type",
+                "type_s": (
+                    self.doctype.display_label_en
+                    or self.doctype.name_en
+                    or str(self.doctype)
+                )
+                if self.doctype
+                else "Unknown type",
                 # use english description for now
                 "description_en_bigram": strip_tags(self.description_en),
                 "notes_t": self.notes or None,
