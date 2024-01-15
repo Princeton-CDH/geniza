@@ -81,6 +81,13 @@ export default class extends Controller {
             }
         }
     }
+
+    setNavigatorVisible(visible) {
+        // show or hide the OSD navigator
+        const viewer = this.element.iiif.viewer;
+        viewer.navigator.element.style.display = visible ? "block" : "none";
+    }
+
     initAnnotorious(settings) {
         // initialize annotorious, binding to the osd viewer object
         // on the iiif controlleer
@@ -118,6 +125,12 @@ export default class extends Controller {
             config.text_direction,
             config.tiny_api_key
         );
+
+        // add some special handling to hide the OSD navigator while drawing
+        anno.on("startSelection", () => this.setNavigatorVisible(false));
+        anno.on("createSelection", () => this.setNavigatorVisible(true));
+        anno.on("cancelSelected", () => this.setNavigatorVisible(true));
+
         return viewer;
     }
 }
