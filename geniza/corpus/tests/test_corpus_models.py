@@ -1170,6 +1170,21 @@ class TestDocument:
         ).exists()
         assert doc.index_data()["input_year_i"] == doc.created.year
 
+    def test_index_data_locale(self):
+        # create a doctype with a label in hebrew and english
+        dt = DocumentType.objects.create(
+            display_label_he="wrong", display_label_en="right"
+        )
+        # in english, str should return english label
+        activate("en")
+        assert str(dt) == "right"
+        # in hebrew, str should return hebrew label
+        activate("he")
+        assert str(dt) == "wrong"
+        # but index data should always be in english
+        doc = Document.objects.create(doctype=dt)
+        assert doc.index_data()["type_s"] == "right"
+
     def test_editions(self, document, source):
         # create multiple footnotes to test filtering and sorting
 
