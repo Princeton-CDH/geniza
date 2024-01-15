@@ -1184,6 +1184,7 @@ class TestDocument:
         # but index data should always be in english
         doc = Document.objects.create(doctype=dt)
         assert doc.index_data()["type_s"] == "right"
+        activate("en")
 
     def test_editions(self, document, source):
         # create multiple footnotes to test filtering and sorting
