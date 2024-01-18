@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.models &#8212; Princeton Geniza Project 4.15.3 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
-    <script src="../../../_static/documentation_options.js?v=c8f692fe"></script>
+    <title>geniza.corpus.models &#8212; Princeton Geniza Project 4.16.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=6d71c67f"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -15,8 +15,9 @@
    
   <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -75,7 +76,7 @@
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">geniza.common.utils</span> <span class="kn">import</span> <span class="n">absolutize_url</span>
 <span class="kn">from</span> <span class="nn">geniza.corpus.annotation_utils</span> <span class="kn">import</span> <span class="n">document_id_from_manifest_uri</span>
-<span class="kn">from</span> <span class="nn">geniza.corpus.dates</span> <span class="kn">import</span> <span class="n">DocumentDateMixin</span>
+<span class="kn">from</span> <span class="nn">geniza.corpus.dates</span> <span class="kn">import</span> <span class="n">DocumentDateMixin</span><span class="p">,</span> <span class="n">PartialDate</span>
 <span class="kn">from</span> <span class="nn">geniza.corpus.iiif_utils</span> <span class="kn">import</span> <span class="n">GenizaManifestImporter</span><span class="p">,</span> <span class="n">get_iiif_string</span>
 <span class="kn">from</span> <span class="nn">geniza.corpus.solr_queryset</span> <span class="kn">import</span> <span class="n">DocumentSolrQuerySet</span>
 <span class="kn">from</span> <span class="nn">geniza.footnotes.models</span> <span class="kn">import</span> <span class="n">Creator</span><span class="p">,</span> <span class="n">Footnote</span>
@@ -341,12 +342,12 @@
             <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
                 <span class="c1"># include label as title for now; include canvas as data attribute for reordering</span>
                 <span class="c1"># on Document</span>
-                <span class="s1">&#39;&lt;img src=&quot;</span><span class="si">%s</span><span class="s1">&quot; loading=&quot;lazy&quot; height=&quot;200&quot; title=&quot;</span><span class="si">%s</span><span class="s1">&quot; </span><span class="si">%s%s</span><span class="s1">&gt;&#39;</span>
+                <span class="s1">&#39;&lt;div class=&quot;admin-thumbnail</span><span class="si">%s</span><span class="s1">&quot; </span><span class="si">%s</span><span class="s1">&gt;&lt;img src=&quot;</span><span class="si">%s</span><span class="s1">&quot; loading=&quot;lazy&quot; height=&quot;200&quot; title=&quot;</span><span class="si">%s</span><span class="s1">&quot; /&gt;&lt;/div&gt;&#39;</span>
                 <span class="o">%</span> <span class="p">(</span>
+                    <span class="s2">&quot; selected&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">selected</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s1">&#39;data-canvas=&quot;</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">canvases</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&quot;&#39;</span> <span class="k">if</span> <span class="n">canvases</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
                     <span class="n">img</span><span class="p">,</span>
                     <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                    <span class="sa">f</span><span class="s1">&#39;data-canvas=&quot;</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">canvases</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1">&quot; &#39;</span> <span class="k">if</span> <span class="n">canvases</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="s1">&#39;class=&quot;selected&quot; /&#39;</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">selected</span> <span class="k">else</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">img</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
             <span class="p">)</span>
@@ -604,10 +605,17 @@
                 <span class="p">),</span>
             <span class="p">),</span>
         <span class="p">)</span></div>
-</div>
 
         <span class="c1"># NOTE: footnotes likely should be prefetched depending on use case,</span>
         <span class="c1"># but nested prefetching may vary</span>
+
+<div class="viewcode-block" id="DocumentQuerySet.get_by_any_pgpid">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentQuerySet.get_by_any_pgpid">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_by_any_pgpid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pgpid</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find a document by current or old pgpid&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">pgpid</span><span class="p">)</span> <span class="o">|</span> <span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="n">old_pgpids__contains</span><span class="o">=</span><span class="p">[</span><span class="n">pgpid</span><span class="p">]))</span></div>
+</div>
+
 
 
 <div class="viewcode-block" id="Document">
@@ -621,8 +629,8 @@
     <span class="n">fragments</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span>
         <span class="n">Fragment</span><span class="p">,</span> <span class="n">through</span><span class="o">=</span><span class="s2">&quot;TextBlock&quot;</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s2">&quot;documents&quot;</span>
     <span class="p">)</span>
-    <span class="n">image_order_override</span> <span class="o">=</span> <span class="n">ArrayField</span><span class="p">(</span>
-        <span class="n">models</span><span class="o">.</span><span class="n">URLField</span><span class="p">(),</span> <span class="n">null</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Image Order&quot;</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span>
+    <span class="n">image_overrides</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">JSONField</span><span class="p">(</span>
+        <span class="n">null</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Image Order/Rotation&quot;</span>
     <span class="p">)</span>
     <span class="n">shelfmark_override</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span>
         <span class="s2">&quot;Shelfmark Override&quot;</span><span class="p">,</span>
@@ -713,33 +721,19 @@
                 <span class="n">messages</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;Error standardizing date: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
             <span class="c1"># otherwise ignore (unsupported date format)</span>
 
+        <span class="c1"># cleanup unicode \xa0 from description, in all translated languages</span>
+        <span class="k">for</span> <span class="n">lang_code</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">LANGUAGES</span><span class="p">:</span>
+            <span class="n">desc</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;description_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">lang_code</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">desc</span><span class="p">:</span>
+                <span class="c1"># normalize to ascii space</span>
+                <span class="n">desc</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\xa0 ]+&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">desc</span><span class="p">)</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;description_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">lang_code</span><span class="p">,</span> <span class="n">desc</span><span class="p">)</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-    <span class="c1"># inherits clean method from DocumentDateMixin</span>
-    <span class="c1"># make sure to call if extending!</span>
-<div class="viewcode-block" id="Document.clean">
-<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.clean">[docs]</a>
-    <span class="k">def</span> <span class="nf">clean</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Require doc_date_original and doc_date_calendar to be set</span>
-<span class="sd">        if either one is present.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_date_calendar</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_date_original</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s2">&quot;Original date is required when calendar is set&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_date_original</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_date_calendar</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s2">&quot;Calendar is required when original date is set&quot;</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="Document.get_by_any_pgpid">
-<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.get_by_any_pgpid">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_by_any_pgpid</span><span class="p">(</span><span class="n">pgpid</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find a document by current or old pgpid&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">Document</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-            <span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">pgpid</span><span class="p">)</span> <span class="o">|</span> <span class="n">models</span><span class="o">.</span><span class="n">Q</span><span class="p">(</span><span class="n">old_pgpids__contains</span><span class="o">=</span><span class="p">[</span><span class="n">pgpid</span><span class="p">])</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span></div>
-
+    <span class="c1"># NOTE: inherits clean() method from DocumentDateMixin</span>
+    <span class="c1"># make sure to call super().clean() if extending!</span>
 
 <div class="viewcode-block" id="Document.from_manifest_uri">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.from_manifest_uri">[docs]</a>
@@ -907,6 +901,7 @@
                             <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                             <span class="s2">&quot;canvas&quot;</span><span class="p">:</span> <span class="n">canvases</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                             <span class="s2">&quot;shelfmark&quot;</span><span class="p">:</span> <span class="n">b</span><span class="o">.</span><span class="n">fragment</span><span class="o">.</span><span class="n">shelfmark</span><span class="p">,</span>
+                            <span class="s2">&quot;rotation&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>  <span class="c1"># rotation to 0 by default; will change if overridden</span>
                             <span class="s2">&quot;excluded&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">selected_images</span><span class="p">)</span>
                             <span class="ow">and</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">b</span><span class="o">.</span><span class="n">selected_images</span><span class="p">,</span>
                         <span class="p">}</span>
@@ -950,14 +945,25 @@
                             <span class="s2">&quot;recto&quot;</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">uri_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">&quot;canvas&quot;</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;verso&quot;</span>
                         <span class="p">)</span>
 
-        <span class="c1"># if image_order_override not present, return list, in original order</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_order_override</span><span class="p">:</span>
+        <span class="c1"># if image_overrides not present, return list, in original order</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_overrides</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">iiif_images</span>
 
-        <span class="c1"># otherwise, order returned images according to override</span>
+        <span class="c1"># sort canvases by &quot;order&quot; value</span>
+        <span class="n">sorted_overrides</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">image_overrides</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>  <span class="c1"># this will produce (canvas, overrides) tuples</span>
+            <span class="c1"># get order if present; use ∞ as fallback to sort unordered to end of list</span>
+            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)),</span>
+        <span class="p">)</span>
+        <span class="c1"># use that recreate dict keyed on canvas, but now in the overriden order</span>
         <span class="n">ordered_images</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">canvas</span><span class="p">:</span> <span class="n">iiif_images</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">canvas</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">canvas</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_order_override</span>
+            <span class="n">canvas</span><span class="p">:</span> <span class="p">{</span>
+                <span class="c1"># get values from original unordered dict</span>
+                <span class="o">**</span><span class="n">iiif_images</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">canvas</span><span class="p">),</span>
+                <span class="c1"># include rotation: overridden value or 0 degrees</span>
+                <span class="s2">&quot;rotation&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">override</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rotation&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">canvas</span><span class="p">,</span> <span class="n">override</span> <span class="ow">in</span> <span class="n">sorted_overrides</span>
             <span class="k">if</span> <span class="n">canvas</span> <span class="ow">in</span> <span class="n">iiif_images</span>
         <span class="p">}</span> <span class="ow">or</span> <span class="p">{}</span>  <span class="c1"># if condition is never met, instantiate empty dict (instead of set!)</span>
         <span class="n">ordered_images</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
@@ -974,13 +980,16 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">iiif_images</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;&quot;</span>
         <span class="k">return</span> <span class="n">Fragment</span><span class="o">.</span><span class="n">admin_thumbnails</span><span class="p">(</span>
-            <span class="n">images</span><span class="o">=</span><span class="p">[</span><span class="n">img</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">iiif_images</span><span class="o">.</span><span class="n">values</span><span class="p">()],</span>
+            <span class="n">images</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">img</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span><span class="o">.</span><span class="n">rotation</span><span class="p">(</span><span class="n">degrees</span><span class="o">=</span><span class="n">img</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">iiif_images</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+            <span class="p">],</span>
             <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="n">img</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">iiif_images</span><span class="o">.</span><span class="n">values</span><span class="p">()],</span>
             <span class="n">canvases</span><span class="o">=</span><span class="n">iiif_images</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
         <span class="p">)</span></div>
 
 
-    <span class="n">admin_thumbnails</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">&quot;Image order override&quot;</span>
+    <span class="n">admin_thumbnails</span><span class="o">.</span><span class="n">short_description</span> <span class="o">=</span> <span class="s2">&quot;Image order/rotation overrides&quot;</span>
 
 <div class="viewcode-block" id="Document.fragment_urls">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.fragment_urls">[docs]</a>
@@ -1104,6 +1113,66 @@
     <span class="k">def</span> <span class="nf">title</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Short title for identifying the document, e.g. via search.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">doctype</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Unknown type&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shelfmark_display</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;??&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<div class="viewcode-block" id="Document.dating_range">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.dating_range">[docs]</a>
+    <span class="k">def</span> <span class="nf">dating_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the start and end of the document&#39;s possible date range, as PartialDate objects,</span>
+<span class="sd">        including standardized document dates and inferred Datings, if any exist.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># it is unlikely, but technically possible, that a document could have both on-document</span>
+        <span class="c1"># dates and inferred datings, so find the min and max out of all of them.</span>
+        <span class="n">dating_range</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="c1"># bail out if we don&#39;t have any inferred datings</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dating_set</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">dating_range</span><span class="p">)</span>
+
+        <span class="c1"># loop through inferred datings to find min and max among all dates (including both</span>
+        <span class="c1"># on-document and inferred)</span>
+        <span class="k">for</span> <span class="n">dating</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dating_set</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="c1"># get start from standardized date range (formatted as &quot;date1/date2&quot; or &quot;date&quot;)</span>
+            <span class="n">split_date</span> <span class="o">=</span> <span class="n">dating</span><span class="o">.</span><span class="n">standard_date</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">PartialDate</span><span class="p">(</span><span class="n">split_date</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="c1"># use numeric format to compare to current min, replace if smaller</span>
+            <span class="n">start_numeric</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">))</span>
+            <span class="nb">min</span> <span class="o">=</span> <span class="n">dating_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">min</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">start_numeric</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)):</span>
+                <span class="c1"># store as PartialDate</span>
+                <span class="n">dating_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">start</span>
+            <span class="c1"># get end from standardized date range</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">PartialDate</span><span class="p">(</span><span class="n">split_date</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_date</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">start</span>
+            <span class="c1"># use numeric format to compare to current max, replace if larger</span>
+            <span class="n">end_numeric</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">))</span>
+            <span class="nb">max</span> <span class="o">=</span> <span class="n">dating_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">max</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">end_numeric</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">)):</span>
+                <span class="c1"># store as PartialDate</span>
+                <span class="n">dating_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">end</span>
+
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">dating_range</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Document.solr_dating_range">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.solr_dating_range">[docs]</a>
+    <span class="k">def</span> <span class="nf">solr_dating_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the document&#39;s dating range, including inferred, as a Solr date range.&quot;&quot;&quot;</span>
+        <span class="n">solr_dating_range</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># self.dating_range() should always return a tuple of two values</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">date</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dating_range</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">date</span><span class="p">:</span>
+                <span class="c1"># min/max from dating_range, formatted YYYY-MM-DD or YYYY-MM or YYYY</span>
+                <span class="n">solr_dating_range</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">date</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;max&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;min&quot;</span><span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">solr_dating_range</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1"># if a single date instead of a range, just return that date</span>
+        <span class="k">if</span> <span class="n">solr_dating_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">solr_dating_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="n">solr_dating_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># if there&#39;s more than one date, return as a range</span>
+        <span class="k">return</span> <span class="s2">&quot;[</span><span class="si">%s</span><span class="s2"> TO </span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">solr_dating_range</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="Document.editions">
 <a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.Document.editions">[docs]</a>
@@ -1267,6 +1336,7 @@
             <span class="s2">&quot;tags&quot;</span><span class="p">,</span>
             <span class="s2">&quot;languages&quot;</span><span class="p">,</span>
             <span class="s2">&quot;log_entries&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dating_set&quot;</span><span class="p">,</span>
             <span class="n">Prefetch</span><span class="p">(</span>
                 <span class="s2">&quot;textblock_set&quot;</span><span class="p">,</span>
                 <span class="n">queryset</span><span class="o">=</span><span class="n">TextBlock</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">select_related</span><span class="p">(</span>
@@ -1304,7 +1374,13 @@
                 <span class="s2">&quot;pgpid_i&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
                 <span class="c1"># type gets matched back to DocumentType object in get_result_document, for i18n;</span>
                 <span class="c1"># should always be indexed in English</span>
-                <span class="s2">&quot;type_s&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doctype</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doctype</span> <span class="k">else</span> <span class="s2">&quot;Unknown type&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;type_s&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">doctype</span><span class="o">.</span><span class="n">display_label_en</span>
+                    <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">doctype</span><span class="o">.</span><span class="n">name_en</span>
+                    <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doctype</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doctype</span>
+                <span class="k">else</span> <span class="s2">&quot;Unknown type&quot;</span><span class="p">,</span>
                 <span class="c1"># use english description for now</span>
                 <span class="s2">&quot;description_en_bigram&quot;</span><span class="p">:</span> <span class="n">strip_tags</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_en</span><span class="p">),</span>
                 <span class="s2">&quot;notes_t&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
@@ -1323,6 +1399,8 @@
                 <span class="s2">&quot;document_date_t&quot;</span><span class="p">:</span> <span class="n">strip_tags</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">document_date</span><span class="p">)</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="c1"># date range for filtering</span>
                 <span class="s2">&quot;document_date_dr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">solr_date_range</span><span class="p">(),</span>
+                <span class="c1"># date range for filtering, but including inferred datings if any exist</span>
+                <span class="s2">&quot;document_dating_dr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">solr_dating_range</span><span class="p">(),</span>
                 <span class="c1"># historic date, for searching</span>
                 <span class="c1"># start/end of document date or date range</span>
                 <span class="s2">&quot;start_date_i&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">()</span>
@@ -1339,11 +1417,14 @@
                 <span class="s2">&quot;language_code_s&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_lang_code</span><span class="p">,</span>
                 <span class="s2">&quot;language_script_s&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_script</span><span class="p">,</span>
                 <span class="c1"># use image info link without trailing info.json to easily convert back to iiif image client</span>
+                <span class="c1"># NOTE: if/when piffle supports initializing from full image uris, we could simplify this</span>
+                <span class="c1"># code to index the full image url, with rotation overrides applied</span>
                 <span class="s2">&quot;iiif_images_ss&quot;</span><span class="p">:</span> <span class="p">[</span>
                     <span class="n">img</span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">()[:</span><span class="o">-</span><span class="mi">10</span><span class="p">]</span>  <span class="c1"># i.e., remove /info.json</span>
                     <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">images</span>
                 <span class="p">],</span>
                 <span class="s2">&quot;iiif_labels_ss&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">img</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">images</span><span class="p">],</span>
+                <span class="s2">&quot;iiif_rotations_is&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">img</span><span class="p">[</span><span class="s2">&quot;rotation&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">images</span><span class="p">],</span>
                 <span class="s2">&quot;has_image_b&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
             <span class="p">}</span>
         <span class="p">)</span>
@@ -1509,7 +1590,7 @@
         <span class="c1"># handle translated description: create a dict of descriptions</span>
         <span class="c1"># per supported language to aggregate and merge</span>
         <span class="n">description_chunks</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">lang_code</span><span class="p">:</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;description_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">lang_code</span><span class="p">)]</span>
+            <span class="n">lang_code</span><span class="p">:</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;description_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">lang_code</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">lang_code</span> <span class="ow">in</span> <span class="n">language_codes</span>
         <span class="p">}</span>
         <span class="n">language_notes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">language_note</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">language_note</span> <span class="k">else</span> <span class="p">[]</span>
@@ -1574,7 +1655,7 @@
             <span class="k">for</span> <span class="n">lang_code</span> <span class="ow">in</span> <span class="n">language_codes</span><span class="p">:</span>
                 <span class="n">description_field</span> <span class="o">=</span> <span class="s2">&quot;description_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">lang_code</span>
                 <span class="n">doc_description</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">doc</span><span class="p">,</span> <span class="n">description_field</span><span class="p">)</span>
-                <span class="n">current_description</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description_field</span><span class="p">)</span>
+                <span class="n">current_description</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description_field</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
                 <span class="k">if</span> <span class="n">doc_description</span> <span class="ow">and</span> <span class="n">doc_description</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current_description</span><span class="p">:</span>
                     <span class="n">description_chunks</span><span class="p">[</span><span class="n">lang_code</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                         <span class="s2">&quot;Description from PGPID </span><span class="si">%s</span><span class="s2">:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">doc_description</span><span class="p">)</span>
@@ -1933,11 +2014,11 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2022, Center for Digital Humanities @ Princeton.
+      &#169;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
     </div>
 

@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.views &#8212; Princeton Geniza Project 4.15.3 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=4f649999" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=039e1c02" />
-    <script src="../../../_static/documentation_options.js?v=c8f692fe"></script>
+    <title>geniza.corpus.views &#8212; Princeton Geniza Project 4.16.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../../_static/documentation_options.js?v=6d71c67f"></script>
     <script src="../../../_static/doctools.js?v=888ff710"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -15,8 +15,9 @@
    
   <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -634,8 +635,14 @@
 
             <span class="c1"># respect image order override if present</span>
             <span class="n">ordered_canvases</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">image_order_override</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">canvas_id</span> <span class="ow">in</span> <span class="n">document</span><span class="o">.</span><span class="n">image_order_override</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">document</span><span class="o">.</span><span class="n">image_overrides</span><span class="p">:</span>
+                <span class="c1"># order returned images according to override: first, sort overrides by &quot;order&quot;</span>
+                <span class="n">sorted_overrides</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                    <span class="n">document</span><span class="o">.</span><span class="n">image_overrides</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+                    <span class="c1"># get order if present; use ∞ as fallback to sort unordered to end of list</span>
+                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;order&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)),</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">canvas_id</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">sorted_overrides</span><span class="p">:</span>
                     <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span>
                         <span class="n">c</span>
                         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">remote_manifest</span><span class="o">.</span><span class="n">sequences</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">canvases</span>
@@ -966,7 +973,7 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="n">source</span> <span class="o">=</span> <span class="n">Source</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;source_pk&quot;</span><span class="p">])</span>
             <span class="n">source_label</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">source</span><span class="o">.</span><span class="n">all_authors</span><span class="p">()</span>
+                <span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">all_authors</span><span class="p">()</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">source</span><span class="p">))</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_relation</span> <span class="o">==</span> <span class="s2">&quot;transcription&quot;</span>
                 <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">source</span><span class="o">.</span><span class="n">all_authors</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">source</span><span class="o">.</span><span class="n">all_languages</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
@@ -1316,11 +1323,11 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2022, Center for Digital Humanities @ Princeton.
+      &#169;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
     </div>
 
