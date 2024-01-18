@@ -1,5 +1,11 @@
 # Deploy Notes
 
+## 4.16
+
+-   Import Bodleian catalog numbers from a spreadsheet using the script
+    `python manage.py add_cat_numbers spreadsheet.csv`, then reindex with
+    `python manage.py index`.
+
 ## 4.15
 
 -   The minimum required Solr version has been bumped to 9.2. Please upgrade to this version,

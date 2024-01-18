@@ -1,6 +1,29 @@
 Change Log
 ==========
 
+4.16
+----
+
+- public site
+    - bugfix: Some records have Unicode non-breaking space
+    - bugfix: Empty lines cause line number display issues in search results
+    - bugifx: Indexing issues with creating documents in Hebrew or Arabic
+
+- image, transcription, translation viewer/editor
+    - bugfix: Some newly added transcriptions and translations misaligned
+    - bugfix: Polygon annotation box requires hard refresh to start working (does not work immediately)
+    - bugfix: Zoom thumbnail of document image in transcription editor behaving unpredictably
+    - bugfix: Dark mode styles are broken for new transcription/translation source input
+
+- admin
+    - As a content editor, I want an option to include inferred dates in the admin date filter, so that they are included in CSV exports from filtered results.
+    - As a content admin, I want to be able to merge two (identical) people pages without losing any data
+    - As a content editor, I want to override the orientation of images displayed for a document so I can rotate images to display in logical orientation for readability/useability.
+    - As a content admin, I want to add related documents directly from people pages to facilitate data entry.
+    - bugfix: "PGPID OR PGPID" search does not work in the admin
+    - bugfix: Cannot merge a document into a primary that does not have a description
+    - chore: Automatic ingest of old/historic shelfmarks into the PGP for both backend and front end visibility
+
 4.15.3
 ------
 
