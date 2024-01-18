@@ -87,15 +87,27 @@ export default class extends Controller {
     }
 
     alignLines() {
-        // loop through each transcription and translation (only as many as needed)
+        // get the currently selected transcription and translation
+        const selectedTranscriptionInput = document.querySelector(
+            `input:checked[type="radio"][name="transcription"]`
+        );
+        let className = selectedTranscriptionInput.dataset.transcription;
+        const transcriptionChunks = document.querySelectorAll(`.${className}`);
+        const selectedTranslationInput = document.querySelector(
+            `input:checked[type="radio"][name="translation"]`
+        );
+        className = selectedTranslationInput.dataset.translation;
+        const translationChunks = document.querySelectorAll(`.${className}`);
+
+        // loop through each transcription and translation block (only as many as needed)
         const minTargets = Math.min(
-            this.transcriptionTargets.length,
-            this.translationTargets.length
+            transcriptionChunks.length,
+            translationChunks.length
         );
         for (let i = 0; i < minTargets; i++) {
             // loop through as many OLs in each transcription/translation as needed
-            const edOls = this.transcriptionTargets[i].querySelectorAll("ol");
-            const trOls = this.translationTargets[i].querySelectorAll("ol");
+            const edOls = transcriptionChunks[i].querySelectorAll("ol");
+            const trOls = translationChunks[i].querySelectorAll("ol");
             const minLists = Math.min(edOls.length, trOls.length);
             for (let j = 0; j < minLists; j++) {
                 // first, align tops of lists (using inline styles)
@@ -106,8 +118,13 @@ export default class extends Controller {
                 const trTop = trOl.getBoundingClientRect().top - 1;
                 if (edTop < trTop) {
                     edOl.style.paddingTop = `${trTop - edTop}px`;
+                    trOl.style.paddingTop = "0px";
                 } else if (trTop < edTop) {
                     trOl.style.paddingTop = `${edTop - trTop}px`;
+                    edOl.style.paddingTop = "0px";
+                } else {
+                    trOl.style.paddingTop = "0px";
+                    edOl.style.paddingTop = "0px";
                 }
                 // then, align each line of transcription to translation
                 const edLines = edOl.querySelectorAll("li");

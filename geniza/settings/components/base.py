@@ -234,7 +234,7 @@ TEAM_USERNAME = "pgl"
 SITE_ID = 1
 
 # increase max from default 1000 to handle editing sources with lots of footnotes
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 20000
 
 # configure default auto field for models
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

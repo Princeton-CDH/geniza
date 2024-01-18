@@ -512,8 +512,14 @@ class DocumentManifestView(DocumentDetailView):
 
             # respect image order override if present
             ordered_canvases = []
-            if document.image_order_override:
-                for canvas_id in document.image_order_override:
+            if document.image_overrides:
+                # order returned images according to override: first, sort overrides by "order"
+                sorted_overrides = sorted(
+                    document.image_overrides.items(),
+                    # get order if present; use ∞ as fallback to sort unordered to end of list
+                    key=lambda item: item[1].get("order", float("inf")),
+                )
+                for canvas_id, _ in sorted_overrides:
                     matches = [
                         c
                         for c in remote_manifest.sequences[0].canvases
@@ -796,7 +802,7 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
         try:
             source = Source.objects.get(pk=self.kwargs["source_pk"])
             source_label = (
-                source.all_authors()
+                (source.all_authors() or str(source))
                 if self.doc_relation == "transcription"
                 else f"{source.all_authors()} {source.all_languages()}"
             )

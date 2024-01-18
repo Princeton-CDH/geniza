@@ -1,14 +1,15 @@
 from itertools import groupby
 
 from adminsortable2.admin import SortableAdminBase
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
 from django.db.models.fields import CharField, TextField
 from django.forms import ModelChoiceField, ValidationError
 from django.forms.models import ModelChoiceIterator
 from django.forms.widgets import Textarea, TextInput
-from django.urls import reverse
+from django.http import HttpResponseRedirect
+from django.urls import path, reverse
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 
@@ -26,6 +27,7 @@ from geniza.entities.models import (
     PersonRole,
     Place,
 )
+from geniza.entities.views import PersonMerge
 from geniza.footnotes.models import Footnote
 
 
@@ -108,25 +110,18 @@ class DocumentInline(admin.TabularInline):
 
     verbose_name = "Related Document"
     verbose_name_plural = "Related Documents"
-    autocomplete_fields = ["type"]
+    autocomplete_fields = ("document", "type")
     fields = (
-        "document_link",
+        "document",
         "document_description",
         "type",
         "notes",
     )
-    readonly_fields = ("document_link", "document_description")
+    readonly_fields = ("document_description",)
     formfield_overrides = {
         TextField: {"widget": Textarea(attrs={"rows": 4})},
     }
-    extra = 0
-    max_num = 0
-
-    def document_link(self, obj):
-        document_path = reverse("admin:corpus_document_change", args=[obj.document.id])
-        return format_html(f'<a href="{document_path}">{str(obj.document)}</a>')
-
-    document_link.short_description = "Document"
+    extra = 1
 
     def document_description(self, obj):
         return obj.document.description
@@ -295,6 +290,39 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
             return qs.exclude(pk=int(self.own_pk))
         # otherwise, return normal queryset
         return qs
+
+    @admin.display(description="Merge selected people")
+    def merge_people(self, request, queryset=None):
+        """Admin action to merge selected people. This action redirects to an intermediate
+        page, which displays a form to review for confirmation and choose the primary person before merging.
+        """
+        # Functionality almost identical to Document merge
+
+        # NOTE: using selected ids from form and ignoring queryset
+        # because we can't pass the queryset via redirect
+        selected = request.POST.getlist("_selected_action")
+        if len(selected) < 2:
+            messages.error(request, "You must select at least two people to merge")
+            return HttpResponseRedirect(reverse("admin:entities_person_changelist"))
+        return HttpResponseRedirect(
+            "%s?ids=%s" % (reverse("admin:person-merge"), ",".join(selected)),
+            status=303,
+        )  # status code 303 means "See Other"
+
+    def get_urls(self):
+        """Return admin urls; adds a custom URL for merging people"""
+        urls = [
+            path(
+                "merge/",
+                PersonMerge.as_view(),
+                name="person-merge",
+            ),
+        ]
+        return urls + super().get_urls()
+
+    # -------------------------------------------------------------------------
+
+    actions = (merge_people,)
 
 
 @admin.register(PersonRole)

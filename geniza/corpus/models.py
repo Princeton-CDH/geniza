@@ -44,7 +44,7 @@ from geniza.common.models import (
 )
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
-from geniza.corpus.dates import DocumentDateMixin
+from geniza.corpus.dates import DocumentDateMixin, PartialDate
 from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote
@@ -270,12 +270,12 @@ class Fragment(TrackChangesModel):
             " ".join(
                 # include label as title for now; include canvas as data attribute for reordering
                 # on Document
-                '<img src="%s" loading="lazy" height="200" title="%s" %s%s>'
+                '<div class="admin-thumbnail%s" %s><img src="%s" loading="lazy" height="200" title="%s" /></div>'
                 % (
+                    " selected" if i in selected else "",
+                    f'data-canvas="{list(canvases)[i]}"' if canvases else "",
                     img,
                     labels[i],
-                    f'data-canvas="{list(canvases)[i]}" ' if canvases else "",
-                    'class="selected" /' if i in selected else "/",
                 )
                 for i, img in enumerate(images)
             )
@@ -488,6 +488,10 @@ class DocumentQuerySet(MultilingualQuerySet):
         # NOTE: footnotes likely should be prefetched depending on use case,
         # but nested prefetching may vary
 
+    def get_by_any_pgpid(self, pgpid):
+        """Find a document by current or old pgpid"""
+        return self.get(models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid]))
+
 
 class Document(ModelIndexable, DocumentDateMixin):
     """A unified document such as a letter or legal document that
@@ -498,8 +502,8 @@ class Document(ModelIndexable, DocumentDateMixin):
     fragments = models.ManyToManyField(
         Fragment, through="TextBlock", related_name="documents"
     )
-    image_order_override = ArrayField(
-        models.URLField(), null=True, verbose_name="Image Order", blank=True
+    image_overrides = models.JSONField(
+        null=False, blank=True, default=dict, verbose_name="Image Order/Rotation"
     )
     shelfmark_override = models.CharField(
         "Shelfmark Override",
@@ -588,26 +592,18 @@ class Document(ModelIndexable, DocumentDateMixin):
                 messages.warning(self.request, "Error standardizing date: %s" % e)
             # otherwise ignore (unsupported date format)
 
+        # cleanup unicode \xa0 from description, in all translated languages
+        for lang_code, _ in settings.LANGUAGES:
+            desc = getattr(self, "description_%s" % lang_code)
+            if desc:
+                # normalize to ascii space
+                desc = re.sub(r"[\xa0 ]+", " ", desc)
+                setattr(self, "description_%s" % lang_code, desc)
+
         super().save(*args, **kwargs)
 
-    # inherits clean method from DocumentDateMixin
-    # make sure to call if extending!
-    def clean(self):
-        """
-        Require doc_date_original and doc_date_calendar to be set
-        if either one is present.
-        """
-        if self.doc_date_calendar and not self.doc_date_original:
-            raise ValidationError("Original date is required when calendar is set")
-        if self.doc_date_original and not self.doc_date_calendar:
-            raise ValidationError("Calendar is required when original date is set")
-
-    @staticmethod
-    def get_by_any_pgpid(pgpid):
-        """Find a document by current or old pgpid"""
-        return Document.objects.filter(
-            models.Q(id=pgpid) | models.Q(old_pgpids__contains=[pgpid])
-        ).first()
+    # NOTE: inherits clean() method from DocumentDateMixin
+    # make sure to call super().clean() if extending!
 
     @classmethod
     def from_manifest_uri(cls, uri):
@@ -749,6 +745,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                             "label": labels[i],
                             "canvas": canvases[i],
                             "shelfmark": b.fragment.shelfmark,
+                            "rotation": 0,  # rotation to 0 by default; will change if overridden
                             "excluded": len(b.selected_images)
                             and i not in b.selected_images,
                         }
@@ -792,14 +789,25 @@ class Document(ModelIndexable, DocumentDateMixin):
                             "recto" if int(uri_match.group("canvas")) == 1 else "verso"
                         )
 
-        # if image_order_override not present, return list, in original order
-        if not self.image_order_override:
+        # if image_overrides not present, return list, in original order
+        if not self.image_overrides:
             return iiif_images
 
-        # otherwise, order returned images according to override
+        # sort canvases by "order" value
+        sorted_overrides = sorted(
+            self.image_overrides.items(),  # this will produce (canvas, overrides) tuples
+            # get order if present; use ∞ as fallback to sort unordered to end of list
+            key=lambda item: item[1].get("order", float("inf")),
+        )
+        # use that recreate dict keyed on canvas, but now in the overriden order
         ordered_images = {
-            canvas: iiif_images.pop(canvas)
-            for canvas in self.image_order_override
+            canvas: {
+                # get values from original unordered dict
+                **iiif_images.pop(canvas),
+                # include rotation: overridden value or 0 degrees
+                "rotation": int(override.get("rotation", 0)),
+            }
+            for canvas, override in sorted_overrides
             if canvas in iiif_images
         } or {}  # if condition is never met, instantiate empty dict (instead of set!)
         ordered_images.update(
@@ -813,12 +821,15 @@ class Document(ModelIndexable, DocumentDateMixin):
         if not iiif_images:
             return ""
         return Fragment.admin_thumbnails(
-            images=[img["image"].size(height=200) for img in iiif_images.values()],
+            images=[
+                img["image"].size(height=200).rotation(degrees=img["rotation"])
+                for img in iiif_images.values()
+            ],
             labels=[img["label"] for img in iiif_images.values()],
             canvases=iiif_images.keys(),
         )
 
-    admin_thumbnails.short_description = "Image order override"
+    admin_thumbnails.short_description = "Image order/rotation overrides"
 
     def fragment_urls(self):
         """List of external URLs to view the Document's Fragments."""
@@ -924,6 +935,60 @@ class Document(ModelIndexable, DocumentDateMixin):
     def title(self):
         """Short title for identifying the document, e.g. via search."""
         return f"{self.doctype or _('Unknown type')}: {self.shelfmark_display or '??'}"
+
+    def dating_range(self):
+        """
+        Return the start and end of the document's possible date range, as PartialDate objects,
+        including standardized document dates and inferred Datings, if any exist.
+        """
+        # it is unlikely, but technically possible, that a document could have both on-document
+        # dates and inferred datings, so find the min and max out of all of them.
+        dating_range = [self.start_date or None, self.end_date or None]
+
+        # bail out if we don't have any inferred datings
+        if not self.dating_set.exists():
+            return tuple(dating_range)
+
+        # loop through inferred datings to find min and max among all dates (including both
+        # on-document and inferred)
+        for dating in self.dating_set.all():
+            # get start from standardized date range (formatted as "date1/date2" or "date")
+            split_date = dating.standard_date.split("/")
+            start = PartialDate(split_date[0])
+            # use numeric format to compare to current min, replace if smaller
+            start_numeric = int(start.numeric_format(mode="min"))
+            min = dating_range[0]
+            if min is None or start_numeric < int(min.numeric_format(mode="min")):
+                # store as PartialDate
+                dating_range[0] = start
+            # get end from standardized date range
+            end = PartialDate(split_date[1]) if len(split_date) > 1 else start
+            # use numeric format to compare to current max, replace if larger
+            end_numeric = int(end.numeric_format(mode="max"))
+            max = dating_range[1]
+            if max is None or end_numeric > int(max.numeric_format(mode="max")):
+                # store as PartialDate
+                dating_range[1] = end
+
+        return tuple(dating_range)
+
+    def solr_dating_range(self):
+        """Return the document's dating range, including inferred, as a Solr date range."""
+        solr_dating_range = []
+        # self.dating_range() should always return a tuple of two values
+        for i, date in enumerate(self.dating_range()):
+            if date:
+                # min/max from dating_range, formatted YYYY-MM-DD or YYYY-MM or YYYY
+                solr_dating_range.append(
+                    date.isoformat(mode="max" if i == 1 else "min")
+                )
+        if not solr_dating_range:
+            return None
+        # if a single date instead of a range, just return that date
+        if solr_dating_range[0] == solr_dating_range[1]:
+            return solr_dating_range[0]
+        # if there's more than one date, return as a range
+        return "[%s TO %s]" % tuple(solr_dating_range)
 
     def editions(self):
         """All footnotes for this document where the document relation includes
@@ -1058,6 +1123,7 @@ class Document(ModelIndexable, DocumentDateMixin):
             "tags",
             "languages",
             "log_entries",
+            "dating_set",
             Prefetch(
                 "textblock_set",
                 queryset=TextBlock.objects.select_related(
@@ -1092,7 +1158,13 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "pgpid_i": self.id,
                 # type gets matched back to DocumentType object in get_result_document, for i18n;
                 # should always be indexed in English
-                "type_s": str(self.doctype) if self.doctype else "Unknown type",
+                "type_s": (
+                    self.doctype.display_label_en
+                    or self.doctype.name_en
+                    or str(self.doctype)
+                )
+                if self.doctype
+                else "Unknown type",
                 # use english description for now
                 "description_en_bigram": strip_tags(self.description_en),
                 "notes_t": self.notes or None,
@@ -1111,6 +1183,8 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "document_date_t": strip_tags(self.document_date) or None,
                 # date range for filtering
                 "document_date_dr": self.solr_date_range(),
+                # date range for filtering, but including inferred datings if any exist
+                "document_dating_dr": self.solr_dating_range(),
                 # historic date, for searching
                 # start/end of document date or date range
                 "start_date_i": self.start_date.numeric_format()
@@ -1127,11 +1201,14 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "language_code_s": self.primary_lang_code,
                 "language_script_s": self.primary_script,
                 # use image info link without trailing info.json to easily convert back to iiif image client
+                # NOTE: if/when piffle supports initializing from full image uris, we could simplify this
+                # code to index the full image url, with rotation overrides applied
                 "iiif_images_ss": [
                     img["image"].info()[:-10]  # i.e., remove /info.json
                     for img in images
                 ],
                 "iiif_labels_ss": [img["label"] for img in images],
+                "iiif_rotations_is": [img["rotation"] for img in images],
                 "has_image_b": len(images) > 0,
             }
         )
@@ -1294,7 +1371,7 @@ class Document(ModelIndexable, DocumentDateMixin):
         # handle translated description: create a dict of descriptions
         # per supported language to aggregate and merge
         description_chunks = {
-            lang_code: [getattr(self, "description_%s" % lang_code)]
+            lang_code: [getattr(self, "description_%s" % lang_code) or ""]
             for lang_code in language_codes
         }
         language_notes = [self.language_note] if self.language_note else []
@@ -1359,7 +1436,7 @@ class Document(ModelIndexable, DocumentDateMixin):
             for lang_code in language_codes:
                 description_field = "description_%s" % lang_code
                 doc_description = getattr(doc, description_field)
-                current_description = getattr(self, description_field)
+                current_description = getattr(self, description_field) or ""
                 if doc_description and doc_description not in current_description:
                     description_chunks[lang_code].append(
                         "Description from PGPID %s:\n%s" % (doc.id, doc_description)

@@ -80,7 +80,8 @@ class TestDocumentSolrQuerySet:
         ):
             result_doc = dqs.get_result_document(mock_doc)
             result_imgs = result_doc["iiif_images"]
-            # should produce a list of 2 tuples, each containing a IIIFImageClient and label, from above dict
+            # should produce a list of 2 tuples, each containing a IIIFImageClient, label str,
+            # and rotation int, from above dict
             assert len(result_imgs) == 2
             assert isinstance(result_imgs[0][0], IIIFImageClient)
             assert (
@@ -88,6 +89,23 @@ class TestDocumentSolrQuerySet:
                 == "http://example.co/iiif/ts-1/00001/info.json"
             )
             assert result_imgs[0][1] == "1r"
+            # when no rotations in mock doc (i.e. indexed prior to rotation override), should be 0
+            assert result_imgs[0][2] == 0
+
+        # with rotations
+        dqs = DocumentSolrQuerySet()
+        mock_doc = {
+            "iiif_images": ["http://example.co/iiif/1", "http://example.co/iiif/2"],
+            "iiif_labels": ["1r", "1v"],
+            "iiif_rotations": [90, 180],
+        }
+        with patch.object(
+            AliasedSolrQuerySet, "get_result_document", return_value=mock_doc
+        ):
+            result_doc = dqs.get_result_document(mock_doc)
+            result_imgs = result_doc["iiif_images"]
+            # should set rotation as 3rd entry in each tuple
+            assert result_imgs[0][2] == 90
 
     def test_get_result_document_type(self, document):
         dqs = DocumentSolrQuerySet()

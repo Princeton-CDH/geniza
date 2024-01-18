@@ -1,7 +1,6 @@
 import pytest
 
 from geniza.common.tests import TestMigrations
-from geniza.corpus.models import Document
 
 
 @pytest.mark.last
@@ -211,25 +210,25 @@ class TestDigitalFootnoteLocation(TestMigrations):
         Source = apps.get_model("footnotes", "Source")
         SourceType = apps.get_model("footnotes", "SourceType")
         ContentType = apps.get_model("contenttypes", "ContentType")
+        Document = apps.get_model("corpus", "Document")
+        document_contenttype = ContentType.objects.get_for_model(Document)
 
         book = SourceType.objects.create(type="Book")
         source = Source.objects.create(source_type=book)
         source_2 = Source.objects.create(source_type=book)
-        doc = Document.objects.create()
-        document_contenttype = ContentType.objects.get_for_model(Document)
 
         # example where there is 1 corresponding footnote with location
         Footnote.objects.create(
             source=source,
             doc_relation=["E"],  # Footnote.EDITION
-            object_id=doc.pk,
+            object_id=123454321,
             content_type=document_contenttype,
             location="doc. 123",
         )
         self.digital_edition = Footnote.objects.create(
             source=source,
             doc_relation=["X"],  # Footnote.DIGITAL_EDITION
-            object_id=doc.pk,
+            object_id=123454321,
             content_type=document_contenttype,
         )
 
@@ -237,21 +236,21 @@ class TestDigitalFootnoteLocation(TestMigrations):
         Footnote.objects.create(
             source=source_2,
             doc_relation=["T"],  # Footnote.TRANSLATION
-            object_id=doc.pk,
+            object_id=123454321,
             content_type=document_contenttype,
             location="doc. 1234",
         )
         Footnote.objects.create(
             source=source_2,
             doc_relation=["T"],  # Footnote.TRANSLATION
-            object_id=doc.pk,
+            object_id=123454321,
             content_type=document_contenttype,
-            location="doc. 12345",
+            location="doc. 123454321",
         )
         self.digital_translation = Footnote.objects.create(
             source=source,
             doc_relation=["Y"],  # Footnote.DIGITAL_TRANSLATION
-            object_id=doc.pk,
+            object_id=123454321,
             content_type=document_contenttype,
         )
 

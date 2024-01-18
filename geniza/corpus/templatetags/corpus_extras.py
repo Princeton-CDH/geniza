@@ -89,11 +89,18 @@ def iiif_image(img, args):
     # placeholder images will be a dict with an image url as value for key "info"
     elif isinstance(img, dict) and "info" in img:
         return img["info"]
+    # placeholder images will be strings if this function is called again after the above call,
+    # e.g. when trying to rotate images after resizing, so return as-is since placeholders will not
+    # be rotated or resized
+    elif isinstance(img, str):
+        return img
     mode, opts = args.split(":")
     # split parameters into args and kwargs
     args = opts.split(",")
     # if there's an =, split it and include in kwargs dict
     kwargs = dict(arg.split("=", 1) for arg in args if "=" in arg)
+    # use ints for rotation degrees
+    kwargs = {k: (int(v) if k == "degrees" and v else v) for (k, v) in kwargs.items()}
     # otherwise, include as an arg
     args = [arg for arg in args if "=" not in arg]
     # attempt to call the method with the arguments

@@ -1,4 +1,5 @@
 import time
+from collections import OrderedDict
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
@@ -29,6 +30,7 @@ from geniza.corpus.admin import (
     FragmentTextBlockInline,
     HasTranscriptionListFilter,
     HasTranslationListFilter,
+    InferredDatingListFilter,
     LanguageScriptAdmin,
 )
 from geniza.corpus.models import (
@@ -228,6 +230,48 @@ class TestDocumentAdmin:
             Mock(), Document.objects.all(), ""
         )
         assert queryset.count() == Document.objects.all().count()
+
+    def test_get_search_results_with_autocomplete(self, document, join):
+        # autocomplete should use the base get_search_results method, not solr
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+        request_factory = RequestFactory()
+
+        # unlike solr query, should only be searching on shelfmark, pgpid
+        request = request_factory.get("/admin/autocomplete/")
+        queryset, _ = doc_admin.get_search_results(
+            request, Document.objects.all(), "deed of sale"
+        )
+        assert queryset.count() == 0
+
+        # shelfmark should return both results
+        request = request_factory.get("/admin/autocomplete/", {"term": "CUL Add.2586"})
+        queryset, _ = doc_admin.get_search_results(
+            request, Document.objects.all(), "CUL Add.2586"
+        )
+        assert queryset.count() == 2
+
+    def test_admin_search_boolean(self, document):
+        # index fixture data in solr
+        doc_2 = Document.objects.create(
+            description_en="deed of testing",
+        )
+        Document.index_items([document, doc_2])
+        time.sleep(1)
+        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
+
+        # default should require all search terms (q.op=AND)
+        queryset, _ = doc_admin.get_search_results(
+            Mock(), Document.objects.all(), "deed sale"
+        )
+        # only one document contains both terms
+        assert queryset.count() == 1
+
+        # OR in query string should override this behavior
+        queryset, _ = doc_admin.get_search_results(
+            Mock(), Document.objects.all(), "deed OR sale"
+        )
+        # both documents contain the term "deed"
+        assert queryset.count() == 2
 
     @pytest.mark.django_db
     def test_export_to_csv(self, document, join):
@@ -549,7 +593,7 @@ class TestDateListFilter:
         # should filter a DocumentSolrQuerySet by date after 1900
         mock_dqs.assert_called_with()
         mock_sqs = mock_dqs.return_value
-        mock_sqs.filter.assert_called_with(document_date_dr="[1900 TO *]")
+        mock_sqs.filter.assert_called_with(document_dating_dr="[1900 TO *]")
 
         # since we included all but one in the result set, the resulting count should be 1 less
         assert result_qs.count() == queryset.count() - 1
@@ -568,7 +612,7 @@ class TestDateListFilter:
         # should filter a DocumentSolrQuerySet by date before 1900
         mock_dqs.assert_called_with()
         mock_sqs = mock_dqs.return_value
-        mock_sqs.filter.assert_called_with(document_date_dr="[* TO 1900]")
+        mock_sqs.filter.assert_called_with(document_dating_dr="[* TO 1900]")
 
     @patch("geniza.corpus.admin.messages")
     def test_get_queryset_invalid_date(self, mock_messages):
@@ -602,3 +646,43 @@ class TestDateListFilter:
         result_qs = date_before_filter.queryset(Mock(), queryset=mock_qs)
         # should call exclude() and then return queryset.none()
         assert result_qs == mock_qs.exclude.return_value.none.return_value
+
+    @patch("geniza.corpus.admin.DocumentSolrQuerySet")
+    def test_get_queryset_exclude_inferred(self, mock_dqs):
+        date_before_filter = DateBeforeListFilter(
+            request=Mock(),
+            params={DateBeforeListFilter.parameter_name: "1900"},
+            model=Document,
+            model_admin=DocumentAdmin,
+        )
+        queryset = Document.objects.all()
+        # call the queryset method
+        mock_request = Mock()
+        mock_request.GET = OrderedDict({"exclude_inferred": "true"})
+        date_before_filter.queryset(mock_request, queryset)
+        # should filter a DocumentSolrQuerySet by date before 1900, using document_date_dr
+        # instead of document_dating_dr
+        mock_dqs.assert_called_with()
+        mock_sqs = mock_dqs.return_value
+        mock_sqs.filter.assert_called_with(document_date_dr="[* TO 1900]")
+
+
+class TestInferredDatingListFilter:
+    def test_lookups(self):
+        filter = InferredDatingListFilter(Mock(), {}, Document, DocumentAdmin)
+        assert filter.lookups(Mock(), Mock()) == (("true", "Document dates only"),)
+
+    def test_choices(self):
+        changelist_mock = Mock()
+        changelist_mock.get_query_string.return_value = "test"
+        filter = InferredDatingListFilter(Mock(), {}, Document, DocumentAdmin)
+        assert (
+            next(filter.choices(changelist_mock))["display"]
+            == "Document and inferred dates"
+        )
+
+    def test_queryset(self):
+        queryset_mock = Mock()
+        filter = InferredDatingListFilter(Mock(), {}, Document, DocumentAdmin)
+        filter.queryset(Mock(), queryset_mock)
+        queryset_mock.filter.assert_not_called()

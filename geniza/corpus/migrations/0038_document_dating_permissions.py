@@ -39,8 +39,8 @@ def grant_dating_permissions(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
+        ("common", "0008_preload_github_coauthors"),
         ("corpus", "0037_create_dating"),
     ]
     operations = [

@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from attrdict import AttrDict
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
 from django.contrib.auth.models import User
@@ -22,7 +23,7 @@ from modeltranslation.manager import MultilingualQuerySet
 from piffle.presentation import IIIFException as piffle_IIIFException
 
 from geniza.annotations.models import Annotation
-from geniza.corpus.dates import Calendar
+from geniza.corpus.dates import Calendar, PartialDate
 from geniza.corpus.models import (
     Collection,
     Dating,
@@ -152,10 +153,14 @@ class TestFragment(TestCase):
             label in placeholder_thumbnails
             for label in ['title="recto"', 'title="verso"']
         )
-        # test with recto side selected: should add class to recto img, but not verso img
-        thumbnails_recto_selected = frag.iiif_thumbnails(selected=[0])
-        assert 'title="recto" class="selected"' in thumbnails_recto_selected
-        assert 'title="verso" class="selected"' not in thumbnails_recto_selected
+        # test with recto side selected: should add class to recto div, but not verso div
+        thumbnails_recto_selected = BeautifulSoup(
+            frag.iiif_thumbnails(selected=[0])
+        ).find_all("div", {"class": "selected"})
+
+        assert len(thumbnails_recto_selected) == 1
+        assert 'title="recto"' in str(thumbnails_recto_selected[0])
+        assert 'title="verso"' not in str(thumbnails_recto_selected[0])
 
         frag.iiif_url = "http://example.co/iiif/ts-1"
         # return simplified part of the manifest we need for this
@@ -205,10 +210,14 @@ class TestFragment(TestCase):
         assert 'title="1v"' in thumbnails
         assert isinstance(thumbnails, SafeString)
 
-        # test with verso side selected: should add class to 1v img, but not 1r img
-        thumbnails_verso_selected = frag.iiif_thumbnails(selected=[1])
-        assert 'title="1v" class="selected"' in thumbnails_verso_selected
-        assert 'title="1r" class="selected"' not in thumbnails_verso_selected
+        # test with verso side selected: should add class to 1v div, but not 1r div
+        thumbnails_recto_selected = BeautifulSoup(
+            frag.iiif_thumbnails(selected=[1])
+        ).find_all("div", {"class": "selected"})
+
+        assert len(thumbnails_recto_selected) == 1
+        assert 'title="1v"' in str(thumbnails_recto_selected[0])
+        assert 'title="1r"' not in str(thumbnails_recto_selected[0])
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
@@ -767,8 +776,8 @@ class TestDocument:
             # dict should be the recto side, since the TextBlock's side is R
             assert list(images.keys()) == ["canvas1"]
 
-            # call with image_order_override present, reversed order
-            doc.image_order_override = ["canvas2", "canvas1"]
+            # call with image_overrides present, reversed order
+            doc.image_overrides = {"canvas2": {"order": 0}, "canvas1": {"order": 1}}
             images = doc.iiif_images()
             # img2 should come first now
             assert list(images.keys()) == ["canvas2", "canvas1"]
@@ -813,6 +822,28 @@ class TestDocument:
         # second image should get verso because of /2/
         assert images[bad_canvas_str]["label"] == "verso"
 
+    def test_iiif_images_with_rotation(self, source):
+        # Create a document and fragment and a TextBlock to associate them
+        # set rotation overrides to 90 and 180
+        doc = Document.objects.create(
+            image_overrides={"canvas1": {"rotation": 90}, "canvas2": {"rotation": 180}}
+        )
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0, 1])
+        # Mock two IIIF images
+        img1 = Mock()
+        img2 = Mock()
+        # Mock Fragment.iiif_images() to return those two images and two fake labels
+        with patch.object(
+            Fragment,
+            "iiif_images",
+            return_value=([img1, img2], ["1r", "1v"], ["canvas1", "canvas2"]),
+        ):
+            images = doc.iiif_images()
+            # should set rotation by canvas, in order, according to rotation override
+            assert images["canvas1"]["rotation"] == 90
+            assert images["canvas2"]["rotation"] == 180
+
     def test_admin_thumbnails(self):
         # Create a document and fragment and a TextBlock to associate them
         doc = Document.objects.create()
@@ -820,9 +851,9 @@ class TestDocument:
         TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0])
         # Mock two IIIF images, mock their size functions
         img1 = Mock()
-        img1.size.return_value = "/img1.jpg"
+        img1.size.return_value.rotation.return_value = "/img1.jpg"
         img2 = Mock()
-        img2.size.return_value = "/img2.jpg"
+        img2.size.return_value.rotation.return_value = "/img2.jpg"
         # Mock Fragment.iiif_images() to return those two images and two fake labels
         with patch.object(
             Fragment,
@@ -1018,7 +1049,30 @@ class TestDocument:
                 "http://example.co/iiif/ts-1/00002",
             ]
             assert index_data["iiif_labels_ss"] == ["label1", "label2"]
+            assert index_data["iiif_rotations_is"] == [0, 0]
             assert index_data["has_image_b"] is True
+
+    def test_index_data_rotations(self, document):
+        # add image rotation
+        document.image_overrides = {
+            "canvas1": {"rotation": 90},
+            "canvas2": {"rotation": 180},
+        }
+        # add mock images
+        img1 = Mock()
+        img1.info.return_value = "http://example.co/iiif/ts-1/00001/info.json"
+        img2 = Mock()
+        img2.info.return_value = "http://example.co/iiif/ts-1/00002/info.json"
+        # Mock Fragment.iiif_images() to return those two images
+        with patch.object(
+            Fragment,
+            "iiif_images",
+            # match canvas1 and canvas2 names from image overrides
+            return_value=([img1, img2], ["label1", "label2"], ["canvas1", "canvas2"]),
+        ):
+            index_data = document.index_data()
+            # index data should pick up rotation overrides
+            assert index_data["iiif_rotations_is"] == [90, 180]
 
     def test_index_data_footnotes(
         self, document, source, twoauthor_source, multiauthor_untitledsource
@@ -1115,6 +1169,22 @@ class TestDocument:
             content_type_id=ContentType.objects.get_for_model(doc).id,
         ).exists()
         assert doc.index_data()["input_year_i"] == doc.created.year
+
+    def test_index_data_locale(self):
+        # create a doctype with a label in hebrew and english
+        dt = DocumentType.objects.create(
+            display_label_he="wrong", display_label_en="right"
+        )
+        # in english, str should return english label
+        activate("en")
+        assert str(dt) == "right"
+        # in hebrew, str should return hebrew label
+        activate("he")
+        assert str(dt) == "wrong"
+        # but index data should always be in english
+        doc = Document.objects.create(doctype=dt)
+        assert doc.index_data()["type_s"] == "right"
+        activate("en")
 
     def test_editions(self, document, source):
         # create multiple footnotes to test filtering and sorting
@@ -1365,6 +1435,16 @@ class TestDocument:
             "Error standardizing date: 'first quarter of' is not in list",
         )
 
+    def test_save_unicode_cleanup(self, document):
+        # Should cleanup \xa0 from description
+        document.description = "Test\xa0with \xa0wrong space!"
+        document.save()
+        assert document.description == "Test with wrong space!"
+
+        # Should cleanup \xa0 from language specific description fields
+        doc = Document.objects.create(description_he="Wrong\xa0space \xa0 here too")
+        assert doc.description_he == "Wrong space here too"
+
     def test_manifest_uri(self, document):
         assert document.manifest_uri.startswith(settings.ANNOTATION_MANIFEST_BASE_URL)
         assert document.manifest_uri.endswith(
@@ -1386,6 +1466,79 @@ class TestDocument:
             Document.from_manifest_uri(
                 f"http://bad.com/example/not/{document.pk}/a/manifest/"
             )
+
+    def test_dating_range(self, document, join):
+        # document with no dates or datings should return [None, None]
+        assert document.dating_range() == (None, None)
+
+        # document with single date should return numeric format min and max
+        document.doc_date_standard = "1000"
+        assert document.dating_range() == (PartialDate("1000"), PartialDate("1000"))
+
+        # document with date range should return numeric format min and max
+        document.doc_date_standard = "1000/1010"
+        assert document.dating_range() == (PartialDate("1000"), PartialDate("1010"))
+
+        # document with inferred dating: should include in range
+        dating = Dating.objects.create(
+            document=document,
+            display_date="",
+            standard_date="980",
+        )
+        assert document.dating_range() == (PartialDate("980"), PartialDate("1010"))
+        dating.standard_date = "980/1005"
+        dating.save()
+        assert document.dating_range() == (PartialDate("980"), PartialDate("1010"))
+        dating.standard_date = "980/1020"
+        dating.save()
+        assert document.dating_range() == (PartialDate("980"), PartialDate("1020"))
+
+        # document with multiple inferred datings: should include all in range
+        dating2 = Dating.objects.create(
+            document=document,
+            display_date="",
+            standard_date="960/1000",
+        )
+        assert document.dating_range() == (PartialDate("960"), PartialDate("1020"))
+
+        # document with no document date: should still work using only Datings
+        dating.standard_date = "980/1005"
+        dating.save()
+        join.dating_set.add(dating, dating2)
+        assert join.dating_range() == (PartialDate("960"), PartialDate("1005"))
+
+    def test_solr_dating_range(self, document, join):
+        # no date or dating, should return none
+        assert document.solr_dating_range() == None
+
+        # standard date only, should return same as solr_date_range
+        document.doc_date_standard = "1000"
+        assert document.solr_dating_range() == "1000"
+        assert document.solr_dating_range() == document.solr_date_range()
+        document.doc_date_standard = "1000/1010"
+        assert document.solr_dating_range() == "[1000 TO 1010]"
+        assert document.solr_dating_range() == document.solr_date_range()
+
+        # with a dating and standard date, should include in range
+        dating = Dating.objects.create(
+            document=document,
+            display_date="",
+            standard_date="980",
+        )
+        # sometimes these years will have leading 0s, solr will accept either way
+        assert document.solr_dating_range() in ["[0980 TO 1010]", "[980 TO 1010]"]
+        assert document.solr_dating_range() != document.solr_date_range()
+
+        # only datings, range should be entirely from min and max among these
+        dating.standard_date = "980/1005"
+        dating.save()
+        join.dating_set.add(dating)
+        Dating.objects.create(
+            document=join,
+            display_date="",
+            standard_date="960/990",
+        )
+        assert join.solr_dating_range() in ["[0960 TO 1005]", "[960 TO 1005]"]
 
 
 def test_document_merge_with(document, join):
@@ -1409,6 +1562,16 @@ def test_document_merge_with(document, join):
     assert join.notes == ""
     # merge by script = flagged for review
     assert join.needs_review.startswith("SCRIPTMERGE")
+
+
+def test_document_merge_with_no_description(document):
+    doc_id = document.id
+    # create a document with no description
+    doc_2 = Document.objects.create()
+    doc_2.merge_with([document], "test")
+    # should not error; should combine descriptions
+    assert "Description from PGPID %s:" % doc_id in doc_2.description
+    assert document.description in doc_2.description
 
 
 def test_document_merge_with_notes(document, join):
@@ -1755,16 +1918,17 @@ def test_document_merge_with_dates(document, join):
 
 def test_document_get_by_any_pgpid(document):
     # get by current pk
-    assert Document.get_by_any_pgpid(document.pk) == document
+    assert Document.objects.get_by_any_pgpid(document.pk) == document
 
     # add old ids
     document.old_pgpids = [345, 678]
     document.save()
 
-    assert Document.get_by_any_pgpid(345) == document
-    assert Document.get_by_any_pgpid(678) == document
+    assert Document.objects.get_by_any_pgpid(345) == document
+    assert Document.objects.get_by_any_pgpid(678) == document
 
-    assert not Document.get_by_any_pgpid(1234)
+    with pytest.raises(Document.DoesNotExist):
+        Document.objects.get_by_any_pgpid(1234)
 
 
 @pytest.mark.django_db
