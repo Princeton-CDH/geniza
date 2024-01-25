@@ -19,10 +19,6 @@ Python 3.9 / Django 3.2 / Node 16 / Postgresql / Solr 9.2
    :target: https://codecov.io/gh/Princeton-CDH/geniza
    :alt: Code coverage
 
-.. image:: https://requires.io/github/Princeton-CDH/geniza/requirements.svg?branch=main
-     :target: https://requires.io/github/Princeton-CDH/geniza/requirements/?branch=main
-     :alt: Requirements Status
-
 .. image:: https://github.com/Princeton-CDH/geniza/workflows/dbdocs/badge.svg
     :target: https://dbdocs.io/princetoncdh/geniza
     :alt: dbdocs build
