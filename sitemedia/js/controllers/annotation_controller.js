@@ -85,7 +85,9 @@ export default class extends Controller {
     setNavigatorVisible(visible) {
         // show or hide the OSD navigator
         const viewer = this.element.iiif.viewer;
-        viewer.navigator.element.style.display = visible ? "block" : "none";
+        if (viewer?.navigator?.element) {
+            viewer.navigator.element.style.display = visible ? "block" : "none";
+        }
     }
 
     initAnnotorious(settings) {
