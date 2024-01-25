@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+4.16.1
+------
+
+- bugfix: Add undefined check for OSD navigator
+
 4.16
 ----
 
