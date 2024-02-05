@@ -58,7 +58,7 @@ class TestDocumentDateMixin:
 
         # date range
         doc.doc_date_standard = "1839-03-17/1840-03-04"
-        assert doc.standard_date == "17 March, 1839 — 4 March, 1840 CE"
+        assert doc.standard_date == "17 March, 1839 – 4 March, 1840 CE"
 
         # year/month
         doc.doc_date_standard = "1839-03"
@@ -83,12 +83,12 @@ class TestDocumentDateMixin:
         # should wrap standard date in parentheses and add CE
         doc.doc_date_standard = "1113/1114"
         assert (
-            doc.document_date == "<span>507 Hijrī</span> <span>(1113 — 1114 CE)</span>"
+            doc.document_date == "<span>507 Hijrī</span> <span>(1113 – 1114 CE)</span>"
         )
         # should return standard date only, no parentheses
         doc.doc_date_original = ""
         doc.doc_date_calendar = ""
-        assert doc.document_date == "1113 — 1114 CE"
+        assert doc.document_date == "1113 – 1114 CE"
 
     def test_standardize_date(self):
         doc = Document()

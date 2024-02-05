@@ -194,10 +194,10 @@ class DocumentDateMixin(TrackChangesModel):
         dates = self.doc_date_standard.split("/")
         # we should always have at least one date, if date is set
         # convert to local partial date object for precision-aware string formatting
-        # join dates with n-dash if more than one;
+        # join dates with en-dash if more than one;
         # add CE to the end to make calendar system explicit
         try:
-            return "%s CE" % " — ".join(str(PartialDate(d)) for d in dates)
+            return "%s CE" % " – ".join(str(PartialDate(d)) for d in dates)
         except ValueError:
             # dates entered before validation was applied may not parse
             # as fallback, display as is
