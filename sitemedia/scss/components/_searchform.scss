@@ -123,7 +123,7 @@ main.search form {
     }
 
     // sort field and label
-    fieldset#sort {
+    fieldset#sort-fieldset {
         order: 4;
         display: flex;
         select {
@@ -511,7 +511,7 @@ html[dir="rtl"] main.search form {
         }
     }
     // sort field and label
-    fieldset#sort {
+    fieldset#sort-fieldset {
         // sort options select (uses details/summary)
         details.sort-select {
             summary span {
@@ -562,7 +562,7 @@ html[dir="rtl"] main.search form {
     }
 
     // sort field and label
-    fieldset#sort {
+    fieldset#sort-fieldset {
         i.ph-caret-down {
             margin-left: auto;
             margin-right: -35px;

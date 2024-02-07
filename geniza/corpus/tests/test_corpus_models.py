@@ -1170,6 +1170,22 @@ class TestDocument:
         ).exists()
         assert doc.index_data()["input_year_i"] == doc.created.year
 
+    def test_index_data_locale(self):
+        # create a doctype with a label in hebrew and english
+        dt = DocumentType.objects.create(
+            display_label_he="wrong", display_label_en="right"
+        )
+        # in english, str should return english label
+        activate("en")
+        assert str(dt) == "right"
+        # in hebrew, str should return hebrew label
+        activate("he")
+        assert str(dt) == "wrong"
+        # but index data should always be in english
+        doc = Document.objects.create(doctype=dt)
+        assert doc.index_data()["type_s"] == "right"
+        activate("en")
+
     def test_editions(self, document, source):
         # create multiple footnotes to test filtering and sorting
 
@@ -1546,6 +1562,16 @@ def test_document_merge_with(document, join):
     assert join.notes == ""
     # merge by script = flagged for review
     assert join.needs_review.startswith("SCRIPTMERGE")
+
+
+def test_document_merge_with_no_description(document):
+    doc_id = document.id
+    # create a document with no description
+    doc_2 = Document.objects.create()
+    doc_2.merge_with([document], "test")
+    # should not error; should combine descriptions
+    assert "Description from PGPID %s:" % doc_id in doc_2.description
+    assert document.description in doc_2.description
 
 
 def test_document_merge_with_notes(document, join):

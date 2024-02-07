@@ -4,6 +4,10 @@
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 
+{% block extrastyle %}
+    {{ block.super }}
+    {% render_bundle_csp "annotation" "css" %}
+{% endblock %}
 {% block extrascript %}
     {# jQuery required for autocomplete widget #}
     <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.min.js' %}"></script>

@@ -175,7 +175,7 @@ class Person(models.Model):
         # handle translated description: create a dict of descriptions
         # per supported language to aggregate and merge
         description_chunks = {
-            lang_code: [getattr(self, "description_%s" % lang_code)]
+            lang_code: [getattr(self, "description_%s" % lang_code) or ""]
             for lang_code in language_codes
         }
 
@@ -216,7 +216,7 @@ class Person(models.Model):
             for lang_code in language_codes:
                 description_field = "description_%s" % lang_code
                 person_description = getattr(person, description_field)
-                current_description = getattr(self, description_field)
+                current_description = getattr(self, description_field) or ""
                 if person_description and person_description not in current_description:
                     description_chunks[lang_code].append(
                         "Description from merged entry:\n%s" % (person_description,)
