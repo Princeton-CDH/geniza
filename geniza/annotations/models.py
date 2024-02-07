@@ -153,12 +153,6 @@ class Annotation(TrackChangesModel):
         annotation with line-level children"""
         return self.lines.exists()
 
-    @cached_property
-    def is_line(self):
-        """cached property to indicate whether or not this is a line-level
-        annotation"""
-        return self.content["textGranularity"] == "line"
-
     def set_content(self, data):
         """Set or update annotation content and model fields.
 
