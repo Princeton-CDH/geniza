@@ -62,6 +62,7 @@ def annotation_json(document, source):
                 }
             }
         },
+        "motivation": ["sc:supplementing", "transcribing"],
         "dc:source": source.uri,
     }
 

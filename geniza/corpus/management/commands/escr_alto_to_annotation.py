@@ -338,7 +338,9 @@ class Command(BaseCommand):
             anno_content["target"]["styleClass"] = line_type
         elif "styleClass" in block_anno.content["target"]:
             # if block has rotation but line doesn't, use block's rotation
-            anno_content["target"]["styleClass"] = block_anno.content["target"]
+            anno_content["target"]["styleClass"] = block_anno.content["target"][
+                "styleClass"
+            ]
 
         # add selector
         if line.polygon:
