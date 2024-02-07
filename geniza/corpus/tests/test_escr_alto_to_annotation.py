@@ -116,10 +116,13 @@ class TestEscrToAltoAnnotation:
                 in anno_content["target"]["selector"]["value"]
             )
 
-            # should inherit style class from block if not present in line
             annotation.content["target"]["styleClass"] = "test"
+            line.polygon = None
             anno_content = self.cmd.create_line_annotation(line, annotation, 2, None, 1)
+            # should inherit style class from block if not present in line
             assert anno_content["target"]["styleClass"] == "test"
+            # should not have any target selector if no polygon
+            assert "selector" not in anno_content["target"]
 
     def test_get_manifest(self, document):
         manifests = [b.fragment.manifest for b in document.textblock_set.all()]

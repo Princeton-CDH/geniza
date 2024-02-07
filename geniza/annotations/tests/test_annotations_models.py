@@ -116,6 +116,12 @@ class TestAnnotation:
         assert compiled["canonical"] == annotation.canonical
         assert compiled["via"] == annotation.via
 
+        line = Annotation.objects.create(
+            footnote=annotation.footnote, block=annotation, content={}
+        )
+        compiled = line.compile()
+        assert compiled["partOf"] == annotation.uri()
+
     def test_sanitize_html(self):
         html = '<table><div><p style="foo:bar;">test</p></div><ol><li>line</li></ol></table>'
         # should strip out all unwanted elements and attributes (table, div, style)
