@@ -862,6 +862,8 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     if self.doc_relation == "transcription"
                     else "translating",
                     "text_direction": text_direction,
+                    # line-by-line mode for eScriptorium sourced transcriptions
+                    "line_mode": "model" in source.source_type.type,
                 },
                 # TODO: Add Footnote notes to the following display, if present
                 "source_detail": mark_safe(source.formatted_display())

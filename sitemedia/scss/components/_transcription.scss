@@ -1355,3 +1355,17 @@ html[dir="rtl"] #itt-panel {
         }
     }
 }
+/**
+ * Line-level editor style tweaks
+ */
+.tahqiq-line-group .tahqiq-block-display p {
+    margin: 0;
+    padding: 0;
+}
+.tahqiq-line-group .tahqiq-block-display::before {
+    @include typography.transcription-numerals;
+    font-size: typography.$text-size-md;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: typography.$text-size-xl;
+    }
+}
