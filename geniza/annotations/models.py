@@ -79,6 +79,13 @@ class Annotation(TrackChangesModel):
         on_delete=models.CASCADE,
         null=False,
     )
+    #: block-level annotation associated with this (line-level) annotation
+    block = models.ForeignKey(
+        to="Annotation",
+        on_delete=models.CASCADE,
+        related_name="lines",
+        null=True,
+    )
 
     # use custom manager & queryset
     objects = AnnotationQuerySet.as_manager()
@@ -139,6 +146,18 @@ class Annotation(TrackChangesModel):
             return self.content.get("body", [])[0].get("value", "")
         except IndexError:
             pass
+
+    @cached_property
+    def has_lines(self):
+        """cached property to indicate whether or not this is a block-level
+        annotation with line-level children"""
+        return self.lines.exists()
+
+    @cached_property
+    def is_line(self):
+        """cached property to indicate whether or not this is a line-level
+        annotation"""
+        return self.content["textGranularity"] == "line"
 
     def set_content(self, data):
         """Set or update annotation content and model fields.
@@ -246,4 +265,9 @@ class Annotation(TrackChangesModel):
         # overwrite with the base annotation data in case of any collisions
         # between content and model fields
         anno.update(base_anno)
+
+        # if this is a line-level annotation with block, include in content
+        if self.block:
+            anno.update({"partOf": self.block.uri()})
+
         return anno
