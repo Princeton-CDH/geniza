@@ -612,12 +612,21 @@ class Footnote(TrackChangesModel):
         # handle multiple annotations on the same canvas
         html_content = defaultdict(list)
         # order by optional position property (set by manual reorder in editor), then date
-        for a in self.annotation_set.all().order_by(
+        for a in self.annotation_set.exclude(content__textGranularity="line").order_by(
             "content__schema:position", "created"
         ):
             if a.label:
                 html_content[a.target_source_id].append(f"<h3>{a.label}</h3>")
-            html_content[a.target_source_id].append(a.body_content)
+            if a.has_lines:
+                # if this block annotation has separate line annotations, serialize as ordered list
+                html_content[a.target_source_id].append("<ol>")
+                for l in a.lines.all().order_by("content__schema:position"):
+                    html_content[a.target_source_id].append(
+                        f"<li>{l.body_content}</li>"
+                    )
+                html_content[a.target_source_id].append("</ol>")
+            elif a.body_content:
+                html_content[a.target_source_id].append(a.body_content)
         # cast to a regular dict to avoid weirdness in django templates
         return dict(html_content)
 
