@@ -9,7 +9,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.functions import NullIf
 from django.db.models.query import Prefetch
 from django.urls import reverse
@@ -612,9 +612,12 @@ class Footnote(TrackChangesModel):
         # handle multiple annotations on the same canvas
         html_content = defaultdict(list)
         # order by optional position property (set by manual reorder in editor), then date
-        for a in self.annotation_set.exclude(content__textGranularity="line").order_by(
-            "content__schema:position", "created"
-        ):
+        for a in self.annotation_set.exclude(
+            # only iterate through block-level annotations; we will group their lines together
+            # if they have lines. (isnull check required to include missing attribute)
+            Q(content__textGranularity__isnull=False)
+            & Q(content__textGranularity="line")
+        ).order_by("content__schema:position", "created"):
             if a.label:
                 html_content[a.target_source_id].append(f"<h3>{a.label}</h3>")
             if a.has_lines:
