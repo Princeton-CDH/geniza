@@ -715,10 +715,10 @@
 
       <!-- keyword search field for geniza prototype -->
       <str name="keyword_qf">
-        shelfmark_bigram^200
-        shelfmark_s^150
+        shelfmark_s^200
+        content_nostem^190
+        shelfmark_bigram^180
         shelfmark_textnum^140
-        content_nostem^130
         description_en_bigram^50
         pgpid_i
         type_s
