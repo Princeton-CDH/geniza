@@ -140,15 +140,25 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
     def admin_search(self, search_term):
         # remove " + " from search string to allow searching on shelfmark joins
-        return self.search(self.admin_doc_qf).raw_query_parameters(
-            doc_query=self._search_term_cleanup(search_term)
-        )
+        doc_query = self._search_term_cleanup(search_term)
+        query_params = {"doc_query": doc_query}
+        # nested edismax query no longer works since solr 7.2
+        # https://solr.apache.org/guide/7_2/solr-upgrade-notes.html#solr-7-2
+        if "{!type=edismax" in doc_query:
+            query_params.update({"uf": "* _query_"})
+
+        return self.search(self.admin_doc_qf).raw_query_parameters(**query_params)
 
     keyword_search_qf = "{!type=edismax qf=$keyword_qf pf=$keyword_pf v=$keyword_query}"
 
     def keyword_search(self, search_term):
+        keyword_query = self._search_term_cleanup(search_term)
+        query_params = {"keyword_query": keyword_query}
+        # nested edismax query no longer works since solr 7.2 (see above)
+        if "{!type=edismax" in keyword_query:
+            query_params.update({"uf": "* _query_"})
         search = self.search(self.keyword_search_qf).raw_query_parameters(
-            keyword_query=self._search_term_cleanup(search_term)
+            **query_params
         )
         # if search term cleanup identifies any exact phrase searches,
         # pass the unmodified search to Solr as a highlighting query,
