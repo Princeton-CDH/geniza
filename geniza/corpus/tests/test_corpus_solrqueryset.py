@@ -206,6 +206,13 @@ class TestDocumentSolrQuerySet:
     def test_clean_html(self):
         # minimal prettifier; introduces whitespace changes
         assert clean_html("<li>foo").replace("\n", "") == "<li> foo</li>"
+        # should open unopened </li> tag
+        assert clean_html("foo</li>").replace("\n", "") == "<li> ...foo</li>"
+        # should insert (value - 1) of first numbered <li>
+        assert (
+            clean_html('foo</li>\n<li value="3">bar</li>').replace("\n", "")
+            == '<li value="2"> ...foo</li><li value="3"> bar</li>'
+        )
 
     def test_get_highlighting(self):
         dqs = DocumentSolrQuerySet()
