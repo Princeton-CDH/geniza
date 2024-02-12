@@ -1001,6 +1001,42 @@ class TestDocumentSearchView:
             in context_data["highlighting"]["document.%d" % doc.id]["description"]
         )
 
+    @pytest.mark.django_db
+    def test_nostem_boost(self, empty_solr):
+        # integration tests for boosting content_nostem to ensure exact matches in description are
+        # boosted above partial matches in shelfmark
+        harun_doc1 = Document.objects.create(
+            description_en="Story in Judaeo-Arabic, mentioning Ḥārūn b. Yaʿīsh and ʿAbd al-ʿAzīz al-Kohen."
+        )
+        harun_doc2 = Document.objects.create(
+            description_en="Letter from Hārūn b. Yaʿqūb, in Tiberias, possibly addressed to Mūsā b. Ismāʿīl b. Sahl. Dating: Likely 11th century. Dealing with the indigo trade. Needs examination."
+        )
+        yevr_doc1 = Document.objects.create(
+            shelfmark_override="Yevr.-Arab. II 1408 + Yevr. Arab. II 1739"
+        )
+        yevr_doc2 = Document.objects.create(
+            shelfmark_override="Yevr.-Arab. II 1739 + Yevr. Arab. II 1408"
+        )
+        SolrClient().update.index(
+            [
+                harun_doc1.index_data(),
+                harun_doc2.index_data(),
+                yevr_doc1.index_data(),
+                yevr_doc2.index_data(),
+            ],
+            commit=True,
+        )
+        docsearch_view = DocumentSearchView(kwargs={})
+        docsearch_view.request = Mock()
+        docsearch_view.request.GET = {"q": "Harun b. Y*", "sort": "relevance"}
+        qs = docsearch_view.get_queryset()
+        # should return all four documents
+        assert qs.count() == 4
+        # should return the exact matches in descriptions first
+        assert qs[0]["pgpid"] == harun_doc1.id
+        assert qs[1]["pgpid"] == harun_doc2.id
+        # ^ tested and this fails when the boost is at its old value (130)
+
 
 class TestDocumentScholarshipView:
     def test_page_title(self, document, client, source):
