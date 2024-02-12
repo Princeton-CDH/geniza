@@ -12,6 +12,21 @@ from geniza.corpus.ja import arabic_or_ja
 def clean_html(html_snippet):
     """utility method to clean up html, since solr snippets of html content
     may result in non-valid content"""
+
+    # if this snippet starts with a line that includes a closing </li> but no opening,
+    # try to append the opening <li> (and an ellipsis to show incompleteness)
+    incomplete_line = re.match(r"^(?!<li).+<\/li>$", html_snippet, flags=re.MULTILINE)
+    if incomplete_line:
+        line_number = re.search(r'<li value="(\d+)"', html_snippet, flags=re.MULTILINE)
+        if line_number:
+            # try to include the line number with the malformed <li>:
+            # use the line number of the first displayed numbered line, and subtract 1
+            html_snippet = (
+                f'<li value="{int(line_number.group(1)) - 1}">...{html_snippet}'
+            )
+        else:
+            html_snippet = f"<li>...{html_snippet}"
+
     return BeautifulSoup(html_snippet, "html.parser").prettify(formatter="minimal")
 
 
