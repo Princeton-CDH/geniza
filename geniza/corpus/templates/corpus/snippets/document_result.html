@@ -158,7 +158,7 @@
             {# view link #}
 
             {# Translators: screen-reader label for "view document details" link #}
-            {% blocktranslate asvar aria_view_details with document_label=document.type|add:": "|add:document.shelfmark|default:"[unknown shelfmark]" %}View details for {{ document_label }}{% endblocktranslate %}
+            {% blocktranslate asvar aria_view_details with document_label=document|get_document_label %}View details for {{ document_label }}{% endblocktranslate %}
             <a class="view-link" href="{% url 'corpus:document' document.pgpid %}" data-turbo-frame="main" aria-label="{{ aria_view_details }}">
                 <span>{% translate 'View document details' %}</span>
             </a>
