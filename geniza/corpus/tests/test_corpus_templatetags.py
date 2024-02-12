@@ -200,6 +200,21 @@ def test_shelfmark_wrap():
     )
 
 
+def test_get_document_label():
+    # should not throw an error
+    corpus_extras.get_document_label({})
+    # should use fallback for unknown shelfmark
+    assert (
+        corpus_extras.get_document_label({"type": "Unknown type"})
+        == "Unknown type: [unknown shelfmark]"
+    )
+    # should construct correct label in normal circumstances
+    assert (
+        corpus_extras.get_document_label({"type": "Letter", "shelfmark": "Foo 123"})
+        == "Letter: Foo 123"
+    )
+
+
 def test_translate_url(document):
     # should translate requested URL into Hebrew
     ctx = {"request": HttpRequest()}

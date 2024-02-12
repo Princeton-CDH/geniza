@@ -1,16 +1,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
-"Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
-"POT-Creation-Date: 2022-10-14 12:15-0400\n"
-"PO-Revision-Date: 2023-02-14 19:05\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-09-21 18:59-0400\n"
+"PO-Revision-Date: 2022-09-08 16:11\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Language: he_IL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
+"%100==4 ? 2 : 3;\n"
 "X-Crowdin-Project: princeton-geniza-project\n"
 "X-Crowdin-Project-ID: 520356\n"
 "X-Crowdin-Language: he\n"
@@ -207,7 +208,7 @@ msgstr[3] "שפות משניות"
 
 #. Translators: label for tags on a document
 #: corpus/templates/corpus/document_detail.html:109
-#: corpus/templates/corpus/snippets/document_result.html:112
+#: corpus/templates/corpus/snippets/document_result.html:109
 msgid "Tags"
 msgstr "תגים"
 
@@ -219,10 +220,12 @@ msgstr "תאריך קלט"
 #. Translators: Date document was first added to the PGP
 #: corpus/templates/corpus/document_detail.html:124
 #, python-format
-msgid "\n"
+msgid ""
+"\n"
 "                In PGP since %(date)s\n"
 "            "
-msgstr "\n"
+msgstr ""
+"\n"
 "נמצא בPGP מאז %(date)s\n"
 "            "
 
@@ -232,7 +235,7 @@ msgid "Description"
 msgstr "תיאור"
 
 #. Translators: label for permanent link to a document
-#: corpus/templates/corpus/document_detail.html:146
+#: corpus/templates/corpus/document_detail.html:159
 msgid "Permalink"
 msgstr "קישור קבוע"
 
@@ -264,6 +267,14 @@ msgstr[0] "תוצאה אחת"
 msgstr[1] "%(count_humanized)s תוצאות"
 msgstr[2] "%(count_humanized)s תוצאות"
 msgstr[3] "%(count_humanized)s תוצאות"
+
+#. Translators: screen reader label for pagination navigation displayed after search results
+#: corpus/templates/corpus/document_list.html:115
+#, fuzzy
+#| msgid "Secondary Language"
+#| msgid_plural "Secondary Languages"
+msgid "secondary pagination"
+msgstr "שפה משנית"
 
 #. Translators: accessibility label for a footnote source citation in scholarship records view
 #: corpus/templates/corpus/document_scholarship.html:21
@@ -313,8 +324,15 @@ msgstr "סמל Jewish Theological Seminary"
 msgid "In PGP since"
 msgstr "נמצא בPGP מאז"
 
+#. Translators: label for unknown date for date added to PGP
+#: corpus/templates/corpus/snippets/document_result.html:33
+#, fuzzy
+#| msgid "Unknown type"
+msgid "unknown"
+msgstr "סוג לא ידוע"
+
 #. Translators: number of editions for this document
-#: corpus/templates/corpus/snippets/document_result.html:77
+#: corpus/templates/corpus/snippets/document_result.html:74
 #, python-format
 msgid "1 Transcription"
 msgid_plural "%(counter)s Transcriptions"
@@ -324,7 +342,7 @@ msgstr[2] "%(counter)s תעתוקים"
 msgstr[3] "%(counter)s תעתוקים"
 
 #. Translators: number of translations for this document
-#: corpus/templates/corpus/snippets/document_result.html:87
+#: corpus/templates/corpus/snippets/document_result.html:84
 #, python-format
 msgid "1 Translation"
 msgid_plural "%(counter)s Translations"
@@ -334,7 +352,7 @@ msgstr[2] "%(counter)s תרגומים"
 msgstr[3] "%(counter)s תרגומים"
 
 #. Translators: number of sources that discuss this document
-#: corpus/templates/corpus/snippets/document_result.html:97
+#: corpus/templates/corpus/snippets/document_result.html:94
 #, python-format
 msgid "1 Discussion"
 msgid_plural "%(counter)s Discussions"
@@ -343,13 +361,19 @@ msgstr[1] "%(counter)s דיונים"
 msgstr[2] "%(counter)s דיונים"
 msgstr[3] "%(counter)s דיונים"
 
-#: corpus/templates/corpus/snippets/document_result.html:105
+#: corpus/templates/corpus/snippets/document_result.html:102
 msgid "No Scholarship Records"
 msgstr "אין רשומות קשורות"
 
-#: corpus/templates/corpus/snippets/document_result.html:119
+#: corpus/templates/corpus/snippets/document_result.html:116
 msgid "more"
 msgstr "עוד"
+
+#. Translators: screen-reader label for "view document details" link
+#: corpus/templates/corpus/snippets/document_result.html:136
+#, python-format
+msgid "View details for %(document_label)s"
+msgstr ""
 
 #: corpus/templates/corpus/snippets/document_result.html:138
 msgid "View document details"
@@ -405,19 +429,26 @@ msgstr "תיעתוק"
 msgid "online resource"
 msgstr "מקור אינטרנטי"
 
+#. Translators: screen reader label for pagination navigation
+#: corpus/templates/corpus/snippets/pagination.html:4
+#, fuzzy
+#| msgid "Translation"
+msgid "pagination"
+msgstr "תרגום"
+
 #. Translators: Label for "previous page" button in search results
-#: corpus/templates/corpus/snippets/pagination.html:5
+#: corpus/templates/corpus/snippets/pagination.html:8
 msgid "Previous"
 msgstr "הקודם"
 
 #. Translators: Title for link to page number in search results
-#: corpus/templates/corpus/snippets/pagination.html:19
+#: corpus/templates/corpus/snippets/pagination.html:22
 #, python-format
 msgid "page %(number)s"
 msgstr "%(number)s עמודים"
 
 #. Translators: Label for "next page" button in search results
-#: corpus/templates/corpus/snippets/pagination.html:60
+#: corpus/templates/corpus/snippets/pagination.html:63
 msgid "Next"
 msgstr "הבא"
 
@@ -483,13 +514,21 @@ msgid "Digital Edition"
 msgstr ""
 
 #: pages/models.py:13
-msgid "Alternative text for visually impaired users to\n"
+msgid ""
+"Alternative text for visually impaired users to\n"
 "briefly communicate the intended message of the image in this context."
-msgstr "טקסט אלטרנטיבי למשתמשים כבדי ראייה שמטרתו להעביר בתמצית את המסר של התצלום בהקשר זה."
+msgstr ""
+"טקסט אלטרנטיבי למשתמשים כבדי ראייה שמטרתו להעביר בתמצית את המסר של התצלום "
+"בהקשר זה."
 
 #: pages/models.py:44
-msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
-msgstr "טקסט זה יוקרא למשתמשים עיוורים בלבד ותכליתו לתאר את התובנות והמסרים המרכזיים שעולים מהתוכן הגרפי. ניתן לכלול מספר פסקאות."
+msgid ""
+"This text will only be read to     non-sighted users and should describe the "
+"major insights or     takeaways from the graphic. Multiple paragraphs are "
+"allowed."
+msgstr ""
+"טקסט זה יוקרא למשתמשים עיוורים בלבד ותכליתו לתאר את התובנות והמסרים המרכזיים "
+"שעולים מהתוכן הגרפי. ניתן לכלול מספר פסקאות."
 
 #. Translators: title for Not Found (404) error page
 #: templates/404.html:5 templates/404.html:13
@@ -619,4 +658,3 @@ msgstr "חזרה לתפריט הראשי"
 #: templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
 msgstr "הפעלת מצב כהה"
-

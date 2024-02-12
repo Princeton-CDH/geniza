@@ -1,6 +1,9 @@
 {% load i18n corpus_extras %}
 {% spaceless %} {# disable pagination when sorted randomly #}
-    <nav class="pagination {% if form.sort.value == 'random' %}disabled{% endif %}">
+    {# Translators: screen reader label for pagination navigation #}
+    {% translate "pagination" as pagination_label %}
+    <nav class="pagination {% if form.sort.value == 'random' %}disabled{% endif %}"
+        aria-label="{{ aria_label|default:pagination_label }}">
         {# Translators: Label for "previous page" button in search results #}
         {% translate 'Previous' as previous_page %}
         {% if page_obj.has_previous %}

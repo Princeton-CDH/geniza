@@ -475,7 +475,7 @@ class TestDocumentResult:
     def test_no_scholarship_records(self):
         assert "No Scholarship Records" in self.template.render(
             context={
-                "document": {"pgpid": 1, "id": "document.1"},
+                "document": {"pgpid": 1, "id": "document.1", "shelfmark": "MS a"},
                 "highlighting": {},
                 "page_obj": self.page_obj,
             }
@@ -487,6 +487,7 @@ class TestDocumentResult:
                 "document": {
                     "pgpid": 1,
                     "id": "document.1",
+                    "shelfmark": "MS 12",
                     "num_editions": 15,
                     "scholarship_count": 10,
                 },
@@ -503,7 +504,12 @@ class TestDocumentResult:
         tags = ["bill of sale", "real estate"]
         result = self.template.render(
             context={
-                "document": {"pgpid": 1, "id": "document.1", "tags": tags},
+                "document": {
+                    "pgpid": 1,
+                    "id": "document.1",
+                    "tags": tags,
+                    "shelfmark": "MS 1",
+                },
                 "highlighting": {},
                 "page_obj": self.page_obj,
             }
@@ -519,7 +525,12 @@ class TestDocumentResult:
         tags = ["bill of sale", "real estate", "arabic", "ib6", "ibn", "red sea"]
         result = self.template.render(
             context={
-                "document": {"pgpid": 1, "id": "document.1", "tags": tags},
+                "document": {
+                    "pgpid": 1,
+                    "id": "document.1",
+                    "tags": tags,
+                    "shelfmark": "ms a",
+                },
                 "highlighting": {},
                 "page_obj": self.page_obj,
             }
@@ -532,6 +543,7 @@ class TestDocumentResult:
             context={
                 "document": {
                     "pgpid": 1,
+                    "shelfmark": "JRL Series A 1",
                     "id": "document.1",
                     "num_editions": 2,
                     "num_translations": 1,
@@ -552,6 +564,7 @@ class TestDocumentResult:
                 "pgpid": document.id,
                 "id": "document.%d" % document.id,
                 "description": [document.description],
+                "shelfmark": "ms heb ab",
             },
             # no highlighting at all (i.e., no keyword search)
             "highlighting": {},
@@ -572,7 +585,11 @@ class TestDocumentResult:
         test_highlight = "passage of the <em>Tujib<em> quarter"
         result = self.template.render(
             context={
-                "document": {"pgpid": document.id, "id": "document.%d" % document.id},
+                "document": {
+                    "pgpid": document.id,
+                    "id": "document.%d" % document.id,
+                    "shelfmark": "ms heb 3",
+                },
                 "highlighting": {
                     "document.%d" % document.id: {"description": [test_highlight]}
                 },
@@ -590,6 +607,7 @@ class TestDocumentResult:
             "document": {
                 "pgpid": document.id,
                 "id": "document.%d" % document.id,
+                "shelfmark": "ms abc",
                 "transcription": [transcription_txt],
             },
             "highlighting": {},
@@ -621,6 +639,7 @@ class TestDocumentResult:
                 "document": {
                     "pgpid": document.id,
                     "id": "document.%d" % document.id,
+                    "shelfmark": "ms abc",
                     "transcription": [transcription_txt],
                     "lang": ["jrb"],
                 },

@@ -140,13 +140,14 @@
 
     {# tertiary metadata #}
     <dl class="metadata-list tertiary">
-        <dt id="permalink">
+        {# Translators: label for permanent link to a document #}
+        {% translate 'Permalink' as permalink %}
+        <dt id="permalink" aria-hidden="true"> {# aria hidden because redundant for screen readers #}
             <svg role="presentation"><use xlink:href="{% static 'img/ui/all/all/permalink-icon.svg' %}#permalink-icon" /></svg>
-            {# Translators: label for permanent link to a document #}
-            {% translate 'Permalink' %}
+            {{ permalink }}
         </dt>
         <dd>
-            <a href="{{ document.permalink }}" rel="bookmark">
+            <a href="{{ document.permalink }}" rel="bookmark" aria-label="{{ permalink }}">
                 {{ document.permalink }}
             </a>
         </dd>
