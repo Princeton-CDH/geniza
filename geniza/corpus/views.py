@@ -186,6 +186,8 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                         method="unified",
                         fragsize=150,  # try including more context
                         requireFieldMatch=True,
+                        # use newline as passage boundary
+                        **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
                     )
                     .highlight(
                         "translation",
