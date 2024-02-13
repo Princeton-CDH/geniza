@@ -3,15 +3,14 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-09-21 18:59-0400\n"
-"PO-Revision-Date: 2022-09-08 16:11\n"
+"PO-Revision-Date: 2024-02-12 23:10\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
-"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 "X-Crowdin-Project: princeton-geniza-project\n"
 "X-Crowdin-Project-ID: 520356\n"
 "X-Crowdin-Language: ar\n"
@@ -228,12 +227,10 @@ msgstr "تاريخ الإدخال"
 #. Translators: Date document was first added to the PGP
 #: corpus/templates/corpus/document_detail.html:124
 #, python-format
-msgid ""
-"\n"
+msgid "\n"
 "                In PGP since %(date)s\n"
 "            "
-msgstr ""
-"\n"
+msgstr "\n"
 "                في PGP منذ %(date)s\n"
 "            "
 
@@ -280,11 +277,8 @@ msgstr[5] "%(count_humanized)s مجموع النتائج"
 
 #. Translators: screen reader label for pagination navigation displayed after search results
 #: corpus/templates/corpus/document_list.html:115
-#, fuzzy
-#| msgid "Secondary Language"
-#| msgid_plural "Secondary Languages"
 msgid "secondary pagination"
-msgstr "اللغة الثانوية"
+msgstr ""
 
 #. Translators: accessibility label for a footnote source citation in scholarship records view
 #: corpus/templates/corpus/document_scholarship.html:21
@@ -336,10 +330,8 @@ msgstr "في PGP منذ"
 
 #. Translators: label for unknown date for date added to PGP
 #: corpus/templates/corpus/snippets/document_result.html:33
-#, fuzzy
-#| msgid "Unknown type"
 msgid "unknown"
-msgstr "نوع غير معروف"
+msgstr ""
 
 #. Translators: number of editions for this document
 #: corpus/templates/corpus/snippets/document_result.html:74
@@ -447,10 +439,8 @@ msgstr "مورد عبر الإنترنت"
 
 #. Translators: screen reader label for pagination navigation
 #: corpus/templates/corpus/snippets/pagination.html:4
-#, fuzzy
-#| msgid "Translation"
 msgid "pagination"
-msgstr "الترجمة"
+msgstr ""
 
 #. Translators: Label for "previous page" button in search results
 #: corpus/templates/corpus/snippets/pagination.html:8
@@ -534,21 +524,14 @@ msgid "Digital Edition"
 msgstr ""
 
 #: pages/models.py:13
-msgid ""
-"Alternative text for visually impaired users to\n"
+msgid "Alternative text for visually impaired users to\n"
 "briefly communicate the intended message of the image in this context."
-msgstr ""
-"نص بديل للمستخدمين ضعاف البصر\n"
+msgstr "نص بديل للمستخدمين ضعاف البصر\n"
 "لإيصال الرسالة المقصودة للصورة في هذا السياق بإيجاز."
 
 #: pages/models.py:44
-msgid ""
-"This text will only be read to     non-sighted users and should describe the "
-"major insights or     takeaways from the graphic. Multiple paragraphs are "
-"allowed."
-msgstr ""
-"هذا النص سوف يقرأ فقط للمستخدمين غير المبصرين ويجب أن يصف الرؤى أو الأفكار "
-"الرئيسية من الرسوم. يسمح بفقرات متعددة."
+msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
+msgstr "هذا النص سوف يقرأ فقط للمستخدمين غير المبصرين ويجب أن يصف الرؤى أو الأفكار الرئيسية من الرسوم. يسمح بفقرات متعددة."
 
 #. Translators: title for Not Found (404) error page
 #: templates/404.html:5 templates/404.html:13
@@ -678,3 +661,4 @@ msgstr "العودة إلى القائمة الرئيسية"
 #: templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
 msgstr "تفعيل الوضع المظلم"
+
