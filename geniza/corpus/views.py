@@ -8,6 +8,8 @@ from django.contrib import messages
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.postgres.search import SearchVector
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.db.models.query import Prefetch
@@ -732,11 +734,19 @@ class SourceAutocompleteView(PermissionRequiredMixin, autocomplete.Select2QueryS
         q = self.request.GET.get("q", None)
         qs = Source.objects.all().order_by("authors__last_name")
         if q:
-            qs = qs.filter(
-                Q(title__icontains=q)
-                | Q(authors__first_name__istartswith=q)
-                | Q(authors__last_name__istartswith=q)
-            ).distinct()
+            qs = (
+                qs.annotate(
+                    # ArrayAgg to group together related values from related model instances
+                    authors_last=ArrayAgg("authors__last_name", distinct=True),
+                    authors_first=ArrayAgg("authors__first_name", distinct=True),
+                    # PostgreSQL search vector to search across combined fields
+                    search=SearchVector(
+                        "title", "authors_last", "authors_first", "volume"
+                    ),
+                )
+                .filter(search=q)
+                .distinct()
+            )
         return qs
 
 

@@ -1844,6 +1844,21 @@ class TestSourceAutocompleteView:
         # should filter on title, case insensitive
         source_autocomplete_view.request.GET = {"q": "programming"}
         qs = source_autocomplete_view.get_queryset()
+        print(qs.all())
+        assert qs.count() == 1
+        assert qs.first().pk == twoauthor_source.pk
+
+        # should filter on combination of title and author, case insensitive
+        source_autocomplete_view.request.GET = {"q": "ritchie programming"}
+        qs = source_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == twoauthor_source.pk
+
+        # should filter on volume
+        twoauthor_source.volume = "XXII"
+        twoauthor_source.save()
+        source_autocomplete_view.request.GET = {"q": "ritchie programming xxii"}
+        qs = source_autocomplete_view.get_queryset()
         assert qs.count() == 1
         assert qs.first().pk == twoauthor_source.pk
 
