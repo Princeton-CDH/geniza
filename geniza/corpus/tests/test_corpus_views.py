@@ -1844,7 +1844,6 @@ class TestSourceAutocompleteView:
         # should filter on title, case insensitive
         source_autocomplete_view.request.GET = {"q": "programming"}
         qs = source_autocomplete_view.get_queryset()
-        print(qs.all())
         assert qs.count() == 1
         assert qs.first().pk == twoauthor_source.pk
 
