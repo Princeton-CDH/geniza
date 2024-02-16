@@ -3,6 +3,7 @@
 // - enable clicking images for an associated TextBlock to set which images are part of the
 //   document and which are not
 // - enable rotating images within a Document
+// - latitude and longitude validation for Places
 
 window.addEventListener("DOMContentLoaded", () => {
     // append rotation controls to each image in the image order field thumbnail display
@@ -52,7 +53,26 @@ window.addEventListener("DOMContentLoaded", () => {
                 toggleDisabled(inputList, cb);
             });
     });
+
+    // latitude and longitude validation for Places
+    const latField = document.querySelector("input#id_latitude");
+    const lonField = document.querySelector("input#id_longitude");
+    if (latField && lonField) {
+        latField.addEventListener("input", onLatLonInput);
+        lonField.addEventListener("input", onLatLonInput);
+    }
 });
+
+function onLatLonInput(evt) {
+    // show message if invalid
+    const isValid = evt.target.reportValidity();
+    if (!isValid) {
+        // also add errors class to show red border if invalid
+        evt.target.parentNode.parentNode.classList.add("errors");
+    } else {
+        evt.target.parentNode.parentNode.classList.remove("errors");
+    }
+}
 
 function addDocRelationToggle(inputList) {
     // add click event listener to the list of checkboxes
