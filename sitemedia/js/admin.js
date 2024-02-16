@@ -58,6 +58,18 @@ window.addEventListener("DOMContentLoaded", () => {
     const latField = document.querySelector("input#id_latitude");
     const lonField = document.querySelector("input#id_longitude");
     if (latField && lonField) {
+        // round initial values to 4 decimal places to prevent "step" bug
+        if (latField.value)
+            latField.setAttribute(
+                "value",
+                parseFloat(latField.value).toFixed(4)
+            );
+        if (lonField.value)
+            lonField.setAttribute(
+                "value",
+                parseFloat(lonField.value).toFixed(4)
+            );
+        // attach validation input event listeners
         latField.addEventListener("input", onLatLonInput);
         lonField.addEventListener("input", onLatLonInput);
     }
@@ -67,8 +79,16 @@ function onLatLonInput(evt) {
     // show message if invalid
     const isValid = evt.target.reportValidity();
     if (!isValid) {
-        // also add errors class to show red border if invalid
-        evt.target.parentNode.parentNode.classList.add("errors");
+        const asFloat = parseFloat(evt.target.value);
+        if (asFloat) {
+            // might be invalid until coerced to float with 4 decimal places
+            evt.target.value = parseFloat(asFloat.toFixed(4));
+            // remove errors class in that case
+            evt.target.parentNode.parentNode.classList.remove("errors");
+        } else {
+            // add errors class to show red border if invalid
+            evt.target.parentNode.parentNode.classList.add("errors");
+        }
     } else {
         evt.target.parentNode.parentNode.classList.remove("errors");
     }
