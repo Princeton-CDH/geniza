@@ -478,12 +478,18 @@ class Place(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
+        help_text="""Latitude as a numeric value between -90 and 90, with up to 4 decimal places
+        of precision. <br /><a href='https://www.fcc.gov/media/radio/dms-decimal'>This tool</a> can be
+        used to convert from degrees, minutes, seconds (DMS) to decimal.""",
     )
     longitude = models.DecimalField(
         max_digits=7,
         decimal_places=4,
         blank=True,
         null=True,
+        help_text="""Longitude as a numeric value between -180 and 180, with up to 4 decimal places
+        of precision. <br /><a href='https://www.fcc.gov/media/radio/dms-decimal'>This tool</a> can be
+        used to convert from degrees, minutes, seconds (DMS) to decimal.""",
     )
     # sources for the information gathered here
     footnotes = GenericRelation(Footnote, blank=True, related_name="places")
