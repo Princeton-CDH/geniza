@@ -614,7 +614,7 @@ class Footnote(TrackChangesModel):
             Q(content__textGranularity__isnull=False)
             & Q(content__textGranularity="line")
         ).order_by("content__schema:position", "created"):
-            html_content[a.target_source_id] = a.block_content_html
+            html_content[a.target_source_id] += a.block_content_html
         # cast to a regular dict to avoid weirdness in django templates
         return dict(html_content)
 
