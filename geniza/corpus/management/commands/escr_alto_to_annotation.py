@@ -82,6 +82,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
+        # store content type pk for logentry
+        self.anno_contenttype = ContentType.objects.get_for_model(Annotation).pk
+
         # lists for reporting
         self.document_errors = set()
         self.canvas_errors = set()
@@ -167,7 +170,7 @@ class Command(BaseCommand):
                 )
                 LogEntry.objects.log_action(
                     user_id=self.script_user.pk,
-                    content_type_id=ContentType.objects.get_for_model(Annotation).pk,
+                    content_type_id=self.anno_contenttype,
                     object_id=block.pk,
                     object_repr=str(block),
                     change_message="Imported block from eScriptorium HTR ALTO",
@@ -185,12 +188,20 @@ class Command(BaseCommand):
                         tag = next(tag_matches, None)
                         if tag:
                             line_type = tag
-                    Annotation.objects.create(
+                    line_anno = Annotation.objects.create(
                         content=self.create_line_annotation(
                             line, block, scale_factor, line_type, order=i
                         ),
                         block=block,
                         footnote=footnote,
+                    )
+                    LogEntry.objects.log_action(
+                        user_id=self.script_user.pk,
+                        content_type_id=self.anno_contenttype,
+                        object_id=line_anno.pk,
+                        object_repr=str(line_anno),
+                        change_message="Imported line from eScriptorium HTR ALTO",
+                        action_flag=ADDITION,
                     )
 
         # index after all blocks added

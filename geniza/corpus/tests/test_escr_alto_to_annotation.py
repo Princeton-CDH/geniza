@@ -255,3 +255,7 @@ class TestEscrToAltoAnnotation:
             change_message="Imported block from eScriptorium HTR ALTO",
             action_flag=ADDITION,
         ).exists()
+        assert LogEntry.objects.filter(
+            change_message="Imported line from eScriptorium HTR ALTO",
+            action_flag=ADDITION,
+        ).exists()
