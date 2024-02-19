@@ -148,6 +148,23 @@ class Annotation(TrackChangesModel):
             pass
 
     @cached_property
+    def block_content_html(self):
+        """convenience method to get HTML content, including label and any associated lines,
+        of a block-level annotation, as a list of HTML strings"""
+        content = []
+        if self.label:
+            content.append(f"<h3>{self.label}</h3>")
+        if self.has_lines:
+            # if this block annotation has separate line annotations, serialize as ordered list
+            content.append("<ol>")
+            for l in self.lines.all().order_by("content__schema:position"):
+                content.append(f"<li>{l.body_content}</li>")
+            content.append("</ol>")
+        elif self.body_content:
+            content.append(self.body_content)
+        return content
+
+    @cached_property
     def has_lines(self):
         """cached property to indicate whether or not this is a block-level
         annotation with line-level children"""
