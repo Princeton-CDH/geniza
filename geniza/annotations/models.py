@@ -79,7 +79,8 @@ class Annotation(TrackChangesModel):
         on_delete=models.CASCADE,
         null=False,
     )
-    #: block-level annotation associated with this (line-level) annotation
+    #: block-level annotation associated with this (line-level) annotation. if null, this is a
+    #: block-level annotation. if a block is deleted, all associated lines will be deleted.
     block = models.ForeignKey(
         to="Annotation",
         on_delete=models.CASCADE,
