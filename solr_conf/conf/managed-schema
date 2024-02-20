@@ -104,14 +104,14 @@
     <fieldType name="transcription_text" class="solr.TextField" positionIncrementGap="100" multiValued="true">
     <analyzer type="index">
       <charFilter class="solr.HTMLStripCharFilterFactory"/>
-      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <tokenizer class="solr.WhitespaceTokenizerFactory"/>
       <filter class="solr.ICUFoldingFilterFactory"/>
       <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
       <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="20" />
       <filter class="solr.LowerCaseFilterFactory"/>
     </analyzer>
     <analyzer type="query">
-      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <tokenizer class="solr.WhitespaceTokenizerFactory"/>
       <filter class="solr.ICUFoldingFilterFactory"/>
       <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
       <filter class="solr.SynonymGraphFilterFactory" expand="true" ignoreCase="true" synonyms="synonyms.txt"/>
