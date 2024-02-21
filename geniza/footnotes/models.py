@@ -1,3 +1,4 @@
+import re
 from collections import defaultdict
 from functools import cached_property
 from os import path
@@ -651,6 +652,46 @@ class Footnote(TrackChangesModel):
         # but only return if we have content (otherwise returns string "None")
         if self.content_html_str:
             return BeautifulSoup(self.content_html_str, features="lxml").get_text()
+
+    @staticmethod
+    def clean_text(text):
+        """
+        Strip transcription sigla and unwanted Arabic connectors from passed text, for indexing,
+        so that users can search for words otherwise interrupted by transcription meta-typography
+        """
+        cleaned = text
+
+        # the following sigla are used to indicate various kinds of additions or substitutions:
+        # <> = erroneous omission; \/ or \\// = interlinear addition; () = expanded abbreviation;
+        # [] = restored lacuna; 〚〛 = restored deletion
+        sigla_set = r"[<>\\\/\(\)\[\]〚〛]"
+
+        # the Arabic connector tatweel/kasheeda (ـ U+0640) is sometimes used purely for
+        # typographical reasons before and after sigla in the middle of words with insertions.
+        # (it is also used as a normal part of words, but those cases should not be cleaned.)
+        tatweel = re.compile(f"\u0640{sigla_set}+\u0640")
+        # strip them for indexing
+        cleaned = tatweel.sub("", cleaned)
+        # sometimes it will appear only before or only after a siglum; cleaned separately to ensure
+        # no stray tatweel in the more common case
+        tatweel_edge = re.compile(f"({sigla_set}\u0640)|(\u0640{sigla_set})")
+        cleaned = tatweel_edge.sub("", cleaned)
+
+        # additional sigla: erroneous/superfluous characters surrounded by {}; dot with space
+        removable = re.compile("|".join([sigla_set, r"\{\S+\}", r"( \.)", r"(\. )"]))
+        # strip them for indexing
+        cleaned = removable.sub("", cleaned)
+
+        # the pipe | symbol is used to indicate the edge of a manuscript, and may be used between
+        # two words, or in the middle of a word. since there is no way to tell which one is
+        # happening without NLP, we store both in the cleaned text (i.e. "A | B" --> "A B AB")
+        pipe_space_regex = re.compile(r"(\S+) \| (\S+)")
+        cleaned = pipe_space_regex.sub(r"\1 \2 \1\2", cleaned)
+        # in some cases, transcriptions include the pipe in the middle of a word using A|B; simply
+        # remove the remaining pipes to handle this
+        cleaned = cleaned.replace("|", "")
+
+        return cleaned.strip()
 
     def iiif_annotation_content(self):
         """Return transcription content from this footnote (if any)
