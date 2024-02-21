@@ -1219,6 +1219,8 @@ class Document(ModelIndexable, DocumentDateMixin):
         # collect transcription and translation texts for indexing
         transcription_texts = []
         translation_texts = []
+        # collect cleaned transcriptions (no html, no sigla) for partial matching
+        clean_transcription_texts = []
         # keep track of translation language for RTL/LTR display
         translation_langcode = ""
         translation_langdir = "ltr"
@@ -1232,6 +1234,9 @@ class Document(ModelIndexable, DocumentDateMixin):
                 content = fn.content_html_str
                 if content:
                     transcription_texts.append(Footnote.explicit_line_numbers(content))
+                    clean_transcription_texts.append(
+                        Footnote.clean_text(fn.content_text)
+                    )
             elif Footnote.DIGITAL_TRANSLATION in fn.doc_relation:
                 content = fn.content_html_str
                 if content:
@@ -1269,6 +1274,7 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "scholarship_t": [fn.display() for fn in footnotes],
                 # transcription content as html
                 "text_transcription": transcription_texts,
+                "clean_transcription": clean_transcription_texts,
                 "translation_language_code_s": translation_langcode,
                 "translation_language_direction_s": translation_langdir,
                 # translation content as html
