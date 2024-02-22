@@ -120,18 +120,24 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # to avoid it being interpreted as a boolean
         search_term = self.re_shelfmark_nonbool.sub("BL or", search_term)
 
-        search_term = arabic_or_ja(search_term)
-
         # look for exact search, indicated by double quotes
         exact_queries = self.re_exact_match.findall(search_term)
         if exact_queries:
             # store unmodified query for highlighting
             self.highlight_query = search_term
             # limit any exact phrase searches to non-stemmed field
-            search_term = self.re_exact_match.sub(
-                lambda m: f"content_nostem:{m.group(0)}",
-                search_term,
+            exact_phrases = " ".join(
+                [
+                    f"content_nostem:{m}"
+                    for m in self.re_exact_match.findall(search_term)
+                ]
             )
+            # add in judaeo-arabic conversion for the rest (double-quoted phrase should NOT be
+            # converted to JA, as this breaks if any brackets or other sigla are in doublequotes)
+            remaining_query = arabic_or_ja(self.re_exact_match.sub("", search_term))
+            search_term = " ".join([exact_phrases, remaining_query]).strip()
+        else:
+            search_term = arabic_or_ja(search_term)
 
         # convert any field aliases used in search terms to actual solr fields
         # (i.e. "pgpid:950 shelfmark:ena" -> "pgpid_i:950 shelfmark_t:ena")

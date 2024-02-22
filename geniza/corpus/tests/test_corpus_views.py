@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from time import sleep
 from unittest.mock import ANY, MagicMock, Mock, patch
@@ -1036,6 +1037,55 @@ class TestDocumentSearchView:
         assert qs[0]["pgpid"] == harun_doc1.id
         assert qs[1]["pgpid"] == harun_doc2.id
         # ^ tested and this fails when the boost is at its old value (130)
+
+    @pytest.mark.django_db
+    def test_cleaned_transcription(self, source, empty_solr):
+        # integration tests for cleaned transcription searches
+        document = Document.objects.create()
+        footnote = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            footnote=footnote,
+            content={
+                # annotation contains brackets and tatweel
+                "body": [{"value": "العـ[ـبد]"}],
+                "target": {
+                    "source": {
+                        "id": source.uri,
+                    }
+                },
+            },
+        )
+        SolrClient().update.index([document.index_data()], commit=True)
+
+        # first search for just the phrase without doublequotes
+        docsearch_view = DocumentSearchView(kwargs={})
+        docsearch_view.request = Mock()
+
+        # normal search query without the bracket and connectors should match
+        docsearch_view.request.GET = {"q": "العبد"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+
+        # exact search without brackets should not match
+        docsearch_view.request.GET = {"q": '"العبد"'}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 0
+
+        # exact search with brackets should match AND highlight
+        docsearch_view.request.GET = {"q": '"العـ[ـبد]"'}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+        docsearch_view.object_list = qs
+        context_data = docsearch_view.get_context_data()
+        hl = context_data["highlighting"]["document.%d" % document.id]["transcription"]
+        assert len(hl) == 1
+        assert "<em>العـ[ـبد]</em>" in re.sub(
+            r"\s+", "", hl[0]
+        )  # rm solr-added whitespace
 
 
 class TestDocumentScholarshipView:

@@ -734,6 +734,7 @@
         scholarship_t
         old_pgpids_is
         text_transcription^30
+        clean_transcription^30
         text_translation^30
         document_date_t
       </str>
@@ -748,6 +749,7 @@
         tags_t
         scholarship_t^80
         text_transcription^2500
+        clean_transcription^2500
         text_translation^2500
         document_date_t^550
       </str>
@@ -768,6 +770,7 @@
         old_pgpids_is
         scholarship_t
         text_transcription
+        clean_transcription
         text_translation
         fragment_old_shelfmark_ss
         old_shelfmark_t
@@ -785,6 +788,7 @@
         needs_review_t
         scholarship_t
         text_transcription
+        clean_transcription
         text_translation
         old_shelfmark_t
         old_shelfmark_textnum
