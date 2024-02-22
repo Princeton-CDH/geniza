@@ -659,6 +659,9 @@ class Footnote(TrackChangesModel):
         Strip transcription sigla and unwanted Arabic connectors from passed text, for indexing,
         so that users can search for words otherwise interrupted by transcription meta-typography
         """
+        # NOTE: It may be worth moving this to solr PatternReplaceCharFilterFactory to avoid near-
+        # duplicate fields; revisit during future work on indexing transcriptions and translations
+
         cleaned = text
 
         # the following sigla are used to indicate various kinds of additions or substitutions:
