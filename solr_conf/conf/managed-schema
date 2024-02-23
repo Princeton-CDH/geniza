@@ -261,6 +261,7 @@
     <!-- Simple text field with no stemming, used to find exact matches. -->
     <fieldType name="text_nostem" class="solr.TextField">
       <analyzer>
+        <charFilter class="solr.HTMLStripCharFilterFactory"/>
         <tokenizer class="solr.WhitespaceTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.ICUFoldingFilterFactory"/>
