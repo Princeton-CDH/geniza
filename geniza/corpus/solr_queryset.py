@@ -16,16 +16,18 @@ def clean_html(html_snippet):
     # if this snippet starts with a line that includes a closing </li> but no opening,
     # try to append the opening <li> (and an ellipsis to show incompleteness)
     incomplete_line = re.match(r"^(?!<li).+<\/li>$", html_snippet, flags=re.MULTILINE)
-    if incomplete_line:
+    incomplete_line_with_p = re.match(r"^<p>.*?</p>\n</li>", html_snippet)
+    if incomplete_line or incomplete_line_with_p:
+        ellipsis = "..." if incomplete_line else ""
         line_number = re.search(r'<li value="(\d+)"', html_snippet, flags=re.MULTILINE)
         if line_number:
             # try to include the line number with the malformed <li>:
             # use the line number of the first displayed numbered line, and subtract 1
             html_snippet = (
-                f'<li value="{int(line_number.group(1)) - 1}">...{html_snippet}'
+                f'<li value="{int(line_number.group(1)) - 1}">{ellipsis}{html_snippet}'
             )
         else:
-            html_snippet = f"<li>...{html_snippet}"
+            html_snippet = f"<li>{ellipsis}{html_snippet}"
 
     return BeautifulSoup(html_snippet, "html.parser").prettify(formatter="minimal")
 

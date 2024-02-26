@@ -225,6 +225,11 @@ class TestDocumentSolrQuerySet:
             clean_html('foo</li>\n<li value="3">bar</li>').replace("\n", "")
             == '<li value="2"> ...foo</li><li value="3"> bar</li>'
         )
+        # should work with paragraphs (and not insert ellipsis before paragraph)
+        assert (
+            clean_html('<p>foo</p>\n</li>\n<li value="3">bar</li>').replace("\n", "")
+            == '<li value="2"> <p>  foo </p></li><li value="3"> bar</li>'
+        )
 
     def test_get_highlighting(self):
         dqs = DocumentSolrQuerySet()
