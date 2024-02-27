@@ -4,6 +4,7 @@
 
 -   Solr configuration has changed. Ensure Solr configset has been updated
     and then reindex all content: `python manage.py index`
+-   Configure **MAPBOX_API_TOKEN** in local settings for maps to appear.
 
 ## 4.16
 
