@@ -4,6 +4,9 @@
 //   document and which are not
 // - enable rotating images within a Document
 // - latitude and longitude validation for Places
+// - map for places
+
+import mapboxgl from "mapbox-gl";
 
 window.addEventListener("DOMContentLoaded", () => {
     // append rotation controls to each image in the image order field thumbnail display
@@ -54,32 +57,59 @@ window.addEventListener("DOMContentLoaded", () => {
             });
     });
 
-    // latitude and longitude validation for Places
+    // latitude and longitude validation, and map, for Places
     const latField = document.querySelector("input#id_latitude");
     const lonField = document.querySelector("input#id_longitude");
     if (latField && lonField) {
-        // round initial values to 4 decimal places to prevent "step" bug
-        if (latField.value)
-            latField.setAttribute(
-                "value",
-                parseFloat(latField.value).toFixed(4)
+        // set to fustat by default (if adding a new place / place has no coordinates)
+        let lonlat = [31.231, 30.0057];
+        // if present, round initial values to 4 decimal places to prevent "step" bug
+        if (lonField.value) lonlat[0] = parseFloat(lonField.value);
+        if (latField.value) lonlat[1] = parseFloat(latField.value);
+        lonField.setAttribute("value", lonlat[0].toFixed(4));
+        latField.setAttribute("value", lonlat[1].toFixed(4));
+
+        // add map if we have an access token
+        const accessToken = JSON.parse(
+            document.getElementById("mapbox-token").textContent
+        );
+        let marker = null;
+        if (accessToken) {
+            mapboxgl.accessToken = accessToken;
+            const latRow = document.querySelector(".field-latitude");
+            const mapContainer = document.createElement("div");
+            mapContainer.setAttribute("id", "map");
+            mapContainer.style.width = "400px";
+            mapContainer.style.height = "300px";
+            latRow.parentNode.insertBefore(mapContainer, latRow);
+            const map = new mapboxgl.Map({
+                container: "map",
+                style: "mapbox://styles/mapbox/streets-v12",
+                center: lonlat,
+                zoom: 6,
+            });
+            marker = new mapboxgl.Marker({
+                draggable: true,
+            })
+                .setLngLat(lonlat)
+                .addTo(map);
+
+            // add event listener to map marker
+            marker.on("dragend", () =>
+                onDragMapMarker(marker, lonField, latField)
             );
-        if (lonField.value)
-            lonField.setAttribute(
-                "value",
-                parseFloat(lonField.value).toFixed(4)
-            );
-        // attach validation input event listeners
-        latField.addEventListener("input", onLatLonInput);
-        lonField.addEventListener("input", onLatLonInput);
+        }
+        // attach input event listeners (validate and move marker)
+        latField.addEventListener("input", (e) => onLatLonInput(e, marker));
+        lonField.addEventListener("input", (e) => onLatLonInput(e, marker));
     }
 });
 
-function onLatLonInput(evt) {
+function onLatLonInput(evt, marker) {
     // show message if invalid
     const isValid = evt.target.reportValidity();
+    const asFloat = parseFloat(evt.target.value);
     if (!isValid) {
-        const asFloat = parseFloat(evt.target.value);
         if (asFloat) {
             // might be invalid until coerced to float with 4 decimal places
             evt.target.value = parseFloat(asFloat.toFixed(4));
@@ -92,6 +122,20 @@ function onLatLonInput(evt) {
     } else {
         evt.target.parentNode.parentNode.classList.remove("errors");
     }
+    // move marker to new coordinates
+    if (marker && asFloat) {
+        const lngLat = marker.getLngLat();
+        if (evt.target.id.includes("longitude"))
+            marker.setLngLat([asFloat, lngLat.lat]);
+        else marker.setLngLat([lngLat.lng, asFloat]);
+    }
+}
+
+function onDragMapMarker(marker, lonInput, latInput) {
+    // if you drag the marker, set the input values to the marker's coordinates
+    const lngLat = marker.getLngLat();
+    lonInput.value = lngLat.lng.toFixed(4);
+    latInput.value = lngLat.lat.toFixed(4);
 }
 
 function addDocRelationToggle(inputList) {

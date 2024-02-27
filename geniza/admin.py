@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 
 from geniza.corpus.models import Document, Fragment
@@ -28,5 +29,8 @@ class GenizaAdminSite(admin.AdminSite):
         context["fragments_need_review"] = fragments_need_review[
             : self.REVIEW_PREVIEW_MAX
         ]
+
+        # add mapbox token if we have one
+        context["mapbox_token"] = getattr(settings, "MAPBOX_API_TOKEN", "")
 
         return context
