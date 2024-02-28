@@ -21,6 +21,8 @@ from geniza.entities.models import (
     PersonPlaceRelationType,
     PersonRole,
     Place,
+    PlacePlaceRelation,
+    PlacePlaceRelationType,
 )
 from geniza.footnotes.models import Footnote
 
@@ -414,3 +416,21 @@ class TestDocumentPlaceRelation:
             type=letter_origin,
         )
         assert str(relation) == f"{letter_origin} relation: {doc} and {fustat}"
+
+
+@pytest.mark.django_db
+class TestPlacePlaceRelation:
+    def test_str(self):
+        fustat = Place.objects.create()
+        Name.objects.create(name="Fustat", content_object=fustat)
+        other = Place.objects.create()
+        Name.objects.create(name="tatsuF", content_object=other)
+        (possible_dupe, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="Possibly the same place as"
+        )
+        relation = PlacePlaceRelation.objects.create(
+            place_a=fustat,
+            place_b=other,
+            type=possible_dupe,
+        )
+        assert str(relation) == f"{possible_dupe} relation: {fustat} and {other}"
