@@ -7,6 +7,7 @@ from geniza.entities.models import (
     PersonPersonRelationType,
     PersonPlaceRelationType,
     PersonRole,
+    PlacePlaceRelationType,
 )
 
 
@@ -43,5 +44,11 @@ class PersonPlaceRelationTypeOption(TranslationOptions):
 
 @register(DocumentPlaceRelationType)
 class DocumentPlaceRelationTypeOption(TranslationOptions):
+    fields = ("name",)
+    required_languages = ()
+
+
+@register(PlacePlaceRelationType)
+class PlacePlaceRelationTypeOption(TranslationOptions):
     fields = ("name",)
     required_languages = ()
