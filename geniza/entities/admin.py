@@ -26,6 +26,8 @@ from geniza.entities.models import (
     PersonPlaceRelationType,
     PersonRole,
     Place,
+    PlacePlaceRelation,
+    PlacePlaceRelationType,
 )
 from geniza.entities.views import PersonMerge
 from geniza.footnotes.models import Footnote
@@ -382,17 +384,52 @@ class PlacePersonInline(PersonInline):
     model = PersonPlaceRelation
 
 
+class PlacePlaceInline(admin.TabularInline):
+    """Place-Place relationships inline for the Place admin"""
+
+    model = PlacePlaceRelation
+    verbose_name = "Related Place"
+    verbose_name_plural = "Related Places (input manually)"
+    autocomplete_fields = ("place_b",)
+    fields = (
+        "place_b",
+        "type",
+        "notes",
+    )
+    fk_name = "place_a"
+    formfield_overrides = {
+        TextField: {"widget": Textarea(attrs={"rows": 4})},
+    }
+    extra = 1
+
+
 @admin.register(Place)
 class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
     """Admin for Place entities in the PGP"""
 
     search_fields = ("names__name",)
     fields = ("latitude", "longitude")
-    inlines = (NameInline, DocumentPlaceInline, PlacePersonInline, FootnoteInline)
+    inlines = (
+        NameInline,
+        DocumentPlaceInline,
+        PlacePersonInline,
+        PlacePlaceInline,
+        FootnoteInline,
+    )
     fieldsets_and_inlines_order = (
         "i",  # NameInline
         "f",  # lat/long fieldset
         "i",  # DocumentPlaceInline
         "i",  # PlacePersonInline
+        "i",  # PlacePlaceInline
         "i",  # FootnoteInline
     )
+
+
+@admin.register(PlacePlaceRelationType)
+class PlacePlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
+    """Admin for managing the controlled vocabulary of places' relationships to other places"""
+
+    fields = ("name",)
+    search_fields = ("name",)
+    ordering = ("name",)

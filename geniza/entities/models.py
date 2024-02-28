@@ -583,3 +583,61 @@ class DocumentPlaceRelation(models.Model):
 
     def __str__(self):
         return f"{self.type} relation: {self.document} and {self.place}"
+
+
+class PlacePlaceRelationTypeManager(models.Manager):
+    """Custom manager for :class:`PlacePlaceRelationType` with natural key lookup"""
+
+    def get_by_natural_key(self, name):
+        "natural key lookup, based on name"
+        return self.get(name_en=name)
+
+
+class PlacePlaceRelationType(models.Model):
+    """Controlled vocabulary of place's relationships to other places."""
+
+    name = models.CharField(max_length=255, unique=True)
+    objects = PlacePlaceRelationTypeManager()
+
+    class Meta:
+        verbose_name = "Place-Place relationship"
+        verbose_name_plural = "Place-Place relationships"
+
+    def __str__(self):
+        return self.name
+
+
+class PlacePlaceRelation(models.Model):
+    """A relationship between two places."""
+
+    place_a = models.ForeignKey(Place, on_delete=models.CASCADE, related_name="place_b")
+    place_b = models.ForeignKey(
+        Place,
+        on_delete=models.CASCADE,
+        related_name="place_a",
+        verbose_name="Place",
+    )
+    type = models.ForeignKey(
+        PlacePlaceRelationType,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="Relation",
+    )
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        constraints = [
+            # only allow one relationship per type between place and place
+            models.UniqueConstraint(
+                fields=("type", "place_a", "place_b"),
+                name="unique_place_place_relation_by_type",
+            ),
+            # do not allow place_a and place_b to be the same place
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_prevent_self_relationship",
+                check=~models.Q(place_a=models.F("place_b")),
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.type} relation: {self.place_a} and {self.place_b}"
