@@ -22,7 +22,7 @@ Django==3.2.16
 django-admin-inline-paginator==0.3.0
 django-admin-sortable2==1.0.4
 django-adminlogentries==0.1.2
-django-autocomplete-light==3.9.4
+django-autocomplete-light==3.11.0
 django-cas-ng==4.3.0
 django-csp==3.7
 django-csp-helpers==0.6.2

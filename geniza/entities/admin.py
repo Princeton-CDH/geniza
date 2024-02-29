@@ -13,6 +13,12 @@ from django.urls import path, reverse
 from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 
+from geniza.entities.forms import (
+    PersonPersonForm,
+    PersonPlaceForm,
+    PlacePersonForm,
+    PlacePlaceForm,
+)
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
@@ -75,15 +81,6 @@ class PersonInline(admin.TabularInline):
 
     verbose_name = "Related Person"
     verbose_name_plural = "Related People"
-    autocomplete_fields = ["person", "type"]
-    fields = (
-        "person",
-        "type",
-        "notes",
-    )
-    formfield_overrides = {
-        TextField: {"widget": Textarea(attrs={"rows": 4})},
-    }
     extra = 1
 
 
@@ -140,29 +137,14 @@ class PlaceInline(admin.TabularInline):
 
     verbose_name = "Related Place"
     verbose_name_plural = "Related Places"
-    autocomplete_fields = ["place", "type"]
-    fields = (
-        "place",
-        "place_link",
-        "type",
-        "notes",
-    )
-    readonly_fields = ("place_link",)
-    formfield_overrides = {
-        TextField: {"widget": Textarea(attrs={"rows": 4})},
-    }
     extra = 1
-
-    def place_link(self, obj):
-        """Get the link to a related place"""
-        place_path = reverse("admin:entities_place_change", args=[obj.place.id])
-        return format_html(f'<a href="{place_path}">{str(obj.place)}</a>')
 
 
 class PersonPlaceInline(PlaceInline):
     """Inline for places related to people"""
 
     model = PersonPlaceRelation
+    form = PersonPlaceForm
 
 
 class PersonPersonRelationTypeChoiceIterator(ModelChoiceIterator):
@@ -198,16 +180,8 @@ class PersonPersonInline(admin.TabularInline):
     model = PersonPersonRelation
     verbose_name = "Related Person"
     verbose_name_plural = "Related People (input manually)"
-    autocomplete_fields = ("to_person",)
-    fields = (
-        "to_person",
-        "type",
-        "notes",
-    )
+    form = PersonPersonForm
     fk_name = "from_person"
-    formfield_overrides = {
-        TextField: {"widget": Textarea(attrs={"rows": 4})},
-    }
     extra = 1
 
     def get_formset(self, request, obj=None, **kwargs):
@@ -382,6 +356,7 @@ class PlacePersonInline(PersonInline):
     """Inline for people related to a place"""
 
     model = PersonPlaceRelation
+    form = PlacePersonForm
 
 
 class PlacePlaceInline(admin.TabularInline):
@@ -390,17 +365,26 @@ class PlacePlaceInline(admin.TabularInline):
     model = PlacePlaceRelation
     verbose_name = "Related Place"
     verbose_name_plural = "Related Places (input manually)"
-    autocomplete_fields = ("place_b",)
+    form = PlacePlaceForm
+    fk_name = "place_a"
+    extra = 1
+
+
+class PlacePlaceReverseInline(admin.TabularInline):
+    """Place-Place reverse relationships inline for the Place admin"""
+
+    model = PlacePlaceRelation
+    verbose_name = "Related Place"
+    verbose_name_plural = "Related Places (automatically populated)"
     fields = (
-        "place_b",
+        "place_a",
         "type",
         "notes",
     )
-    fk_name = "place_a"
-    formfield_overrides = {
-        TextField: {"widget": Textarea(attrs={"rows": 4})},
-    }
-    extra = 1
+    fk_name = "place_b"
+    readonly_fields = ("place_a", "type", "notes")
+    extra = 0
+    max_num = 0
 
 
 @admin.register(Place)
@@ -414,6 +398,7 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         DocumentPlaceInline,
         PlacePersonInline,
         PlacePlaceInline,
+        PlacePlaceReverseInline,
         FootnoteInline,
     )
     fieldsets_and_inlines_order = (
@@ -422,6 +407,7 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         "i",  # DocumentPlaceInline
         "i",  # PlacePersonInline
         "i",  # PlacePlaceInline
+        "i",  # PlacePlaceReverseInline
         "i",  # FootnoteInline
     )
 
