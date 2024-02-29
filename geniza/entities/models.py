@@ -610,7 +610,12 @@ class PlacePlaceRelationType(models.Model):
 class PlacePlaceRelation(models.Model):
     """A relationship between two places."""
 
-    place_a = models.ForeignKey(Place, on_delete=models.CASCADE, related_name="place_b")
+    place_a = models.ForeignKey(
+        Place,
+        on_delete=models.CASCADE,
+        related_name="place_b",
+        verbose_name="Place",
+    )
     place_b = models.ForeignKey(
         Place,
         on_delete=models.CASCADE,
