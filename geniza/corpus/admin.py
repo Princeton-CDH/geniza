@@ -19,6 +19,7 @@ from modeltranslation.admin import TabbedTranslationAdmin
 from geniza.annotations.models import Annotation
 from geniza.common.admin import custom_empty_field_list_filter
 from geniza.corpus.dates import DocumentDateMixin
+from geniza.corpus.forms import DocumentPersonForm, DocumentPlaceForm
 from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentExporter
 from geniza.corpus.models import (
     Collection,
@@ -358,12 +359,14 @@ class DocumentPersonInline(PersonInline):
     """Inline for people related to a document"""
 
     model = PersonDocumentRelation
+    form = DocumentPersonForm
 
 
 class DocumentPlaceInline(PlaceInline):
     """Inline for places related to a document"""
 
     model = DocumentPlaceRelation
+    form = DocumentPlaceForm
 
 
 @admin.register(Document)

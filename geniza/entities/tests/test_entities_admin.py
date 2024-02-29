@@ -85,19 +85,6 @@ class TestPersonPersonReverseInline:
 
 
 @pytest.mark.django_db
-class TestPersonPlaceInline:
-    def test_place_link(self):
-        goitein = Person.objects.create()
-        place = Place.objects.create()
-        relation = PersonPlaceRelation.objects.create(person=goitein, place=place)
-        inline = PersonPlaceInline(Person, admin_site=admin.site)
-        # should link to Place object
-        place_link = inline.place_link(relation)
-        assert str(place.id) in place_link
-        assert str(place) in place_link
-
-
-@pytest.mark.django_db
 class TestPersonAdmin:
     def test_get_form(self):
         # should set own_pk property if obj exists

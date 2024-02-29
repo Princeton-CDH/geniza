@@ -1,7 +1,13 @@
+from dal import autocomplete
 from django import forms
 from django.template.loader import get_template
 
-from geniza.entities.models import Person
+from geniza.entities.models import (
+    Person,
+    PersonPersonRelation,
+    PersonPlaceRelation,
+    PlacePlaceRelation,
+)
 
 
 class PersonChoiceField(forms.ModelChoiceField):
@@ -39,3 +45,62 @@ class PersonMergeForm(forms.Form):
         self.fields["primary_person"].queryset = Person.objects.filter(
             id__in=person_ids
         )
+
+
+class PersonPersonForm(forms.ModelForm):
+    class Meta:
+        model = PersonPersonRelation
+        fields = (
+            "to_person",
+            "type",
+            "notes",
+        )
+        widgets = {
+            "notes": forms.Textarea(attrs={"rows": 4}),
+            "to_person": autocomplete.ModelSelect2(url="entities:person-autocomplete"),
+        }
+
+
+class PersonPlaceForm(forms.ModelForm):
+    class Meta:
+        model = PersonPlaceRelation
+        fields = (
+            "place",
+            "type",
+            "notes",
+        )
+        widgets = {
+            "notes": forms.Textarea(attrs={"rows": 4}),
+            "place": autocomplete.ModelSelect2(url="entities:place-autocomplete"),
+            "type": autocomplete.ModelSelect2(),
+        }
+
+
+class PlacePersonForm(forms.ModelForm):
+    class Meta:
+        model = PersonPlaceRelation
+        fields = (
+            "person",
+            "type",
+            "notes",
+        )
+        widgets = {
+            "notes": forms.Textarea(attrs={"rows": 4}),
+            "person": autocomplete.ModelSelect2(url="entities:person-autocomplete"),
+            "type": autocomplete.ModelSelect2(),
+        }
+
+
+class PlacePlaceForm(forms.ModelForm):
+    class Meta:
+        model = PlacePlaceRelation
+        fields = (
+            "place_b",
+            "type",
+            "notes",
+        )
+        widgets = {
+            "notes": forms.Textarea(attrs={"rows": 4}),
+            "place_b": autocomplete.ModelSelect2(url="entities:place-autocomplete"),
+            "type": autocomplete.ModelSelect2(),
+        }
