@@ -355,31 +355,6 @@ class TestFootnote:
         assert edition.content_text == None
         assert edition.content_text != "None"
 
-    def test_clean_text(self):
-        # should remove instances of basic transcription sigla
-        assert (
-            Footnote.clean_text("פי 〚מ〛תל //דלך// [א]לל[ה] תע/א\לי[ . . . ]")
-            == "פי מתל דלך אללה תעאלי"
-        )
-
-        # should remove instances of the tatweel Arabic connector when beside a siglum
-        with_tatweel = "فوزن العـ[ـبد] شهد"
-        assert Footnote.clean_text(with_tatweel) == "فوزن العبد شهد"
-        # should have removed: 2 bracket characters, 2 connector characters
-        assert len(Footnote.clean_text(with_tatweel)) == len(with_tatweel) - 4
-
-        # but should not remove tatweel when inside a word normally
-        normal_word_tatweel = "الحمــــــد"
-        assert Footnote.clean_text(normal_word_tatweel) == normal_word_tatweel
-
-        # should remove superfluous characters surrounded by {}
-        assert Footnote.clean_text("ויב{י}עו") == "ויבעו"
-
-        # should do the transformation "A | B" --> "A B AB"
-        assert Footnote.clean_text("להא | בגמיע") == "להא בגמיע להאבגמיע"
-        # and remove | otherwise
-        assert Footnote.clean_text("ולא|ואן") == "ולאואן"
-
     def test_explicit_line_numbers(self, document, source):
         # should parse html to include line numbers in li "value" attribute
         digital_edition = Footnote.objects.create(

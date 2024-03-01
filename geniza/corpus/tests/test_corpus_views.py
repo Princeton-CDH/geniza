@@ -1087,6 +1087,83 @@ class TestDocumentSearchView:
             r"\s+", "", hl[0]
         )  # rm solr-added whitespace
 
+        doc2 = Document.objects.create()
+        footnote2 = Footnote.objects.create(
+            content_object=doc2,
+            source=source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            footnote=footnote2,
+            content={
+                # annotation contains other types of sigla
+                "body": [{"value": "פי 〚מ〛תל //דלך// [א]לל[ה] תע/א\לי[ . . . ]"}],
+                "target": {
+                    "source": {
+                        "id": source.uri,
+                    }
+                },
+            },
+        )
+        SolrClient().update.index([doc2.index_data()], commit=True)
+        docsearch_view.request.GET = {"q": "פי מתל דלך אללה תעאלי"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+        docsearch_view.object_list = qs
+        context_data = docsearch_view.get_context_data()
+        hl = context_data["highlighting"]["document.%d" % doc2.id]["transcription"]
+        assert len(hl) == 1
+        highlight = re.sub(r"\s+", "", hl[0])  # rm solr-added whitespace
+        # should match on all words
+        assert all(
+            h in highlight for h in ["<em>מ〛תל", "לל[ה]</em>", "<em>תע/א\לי", "<em>דלך"]
+        )
+
+        # should remove superfluous characters surrounded by {}
+        Annotation.objects.create(
+            footnote=footnote2,
+            content={
+                # annotation contains other types of sigla
+                "body": [{"value": "ויב{י}עו"}],
+                "target": {"source": {"id": source.uri}},
+            },
+        )
+        SolrClient().update.index([doc2.index_data()], commit=True)
+        docsearch_view.request.GET = {"q": "ויבעו"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+
+        # should do the transformation "A | B" --> "A B AB"
+        Annotation.objects.create(
+            footnote=footnote2,
+            content={
+                # annotation contains other types of sigla
+                "body": [{"value": "להא | בגמיע"}],
+                "target": {"source": {"id": source.uri}},
+            },
+        )
+        SolrClient().update.index([doc2.index_data()], commit=True)
+        docsearch_view.request.GET = {"q": "להא בגמיע"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+        docsearch_view.request.GET = {"q": "להאבגמיע"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+
+        # and remove | otherwise
+        Annotation.objects.create(
+            footnote=footnote2,
+            content={
+                # annotation contains other types of sigla
+                "body": [{"value": "ולא|ואן"}],
+                "target": {"source": {"id": source.uri}},
+            },
+        )
+        SolrClient().update.index([doc2.index_data()], commit=True)
+        docsearch_view.request.GET = {"q": "ולאואן"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+
 
 class TestDocumentScholarshipView:
     def test_page_title(self, document, client, source):
