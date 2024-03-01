@@ -4,7 +4,8 @@
 
 -   Solr configuration has changed. Ensure Solr configset has been updated
     and then reindex all content: `python manage.py index`
--   Configure **MAPBOX_API_TOKEN** in local settings for maps to appear.
+-   Configure **MAPTILER_API_TOKEN** in local settings for maps to appear.
+-   Anywhere that Node versions are being managed manually, NPM should be upgraded to 8.x, at least 8.1.0.
 
 ## 4.16
 

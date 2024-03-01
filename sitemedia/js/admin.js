@@ -6,7 +6,7 @@
 // - latitude and longitude validation for Places
 // - map for places
 
-import mapboxgl from "mapbox-gl";
+import maplibregl from "maplibre-gl";
 
 window.addEventListener("DOMContentLoaded", () => {
     // append rotation controls to each image in the image order field thumbnail display
@@ -84,25 +84,24 @@ window.addEventListener("DOMContentLoaded", () => {
 
         // add map if we have an access token
         const accessToken = JSON.parse(
-            document.getElementById("mapbox-token").textContent
+            document.getElementById("maptiler-token").textContent
         );
         let marker = null;
         let map = null;
         if (accessToken) {
-            mapboxgl.accessToken = accessToken;
             const latRow = document.querySelector(".field-latitude");
             const mapContainer = document.createElement("div");
             mapContainer.setAttribute("id", "map");
-            mapContainer.style.width = "400px";
-            mapContainer.style.height = "300px";
+            mapContainer.style.width = "600px";
+            mapContainer.style.height = "400px";
             latRow.parentNode.insertBefore(mapContainer, latRow);
-            map = new mapboxgl.Map({
+            map = new maplibregl.Map({
                 container: "map",
-                style: "mapbox://styles/mapbox/streets-v12",
+                style: `https://api.maptiler.com/maps/openstreetmap/style.json?key=${accessToken}`,
                 center: lonlat,
-                zoom: 6,
+                zoom: 9,
             });
-            marker = new mapboxgl.Marker({
+            marker = new maplibregl.Marker({
                 draggable: true,
             })
                 .setLngLat(lonlat)
