@@ -379,7 +379,9 @@ class AnnotationExporter:
         # filename based on pgpid and source authors;
         # explicitly label as transcription/translation for context
         authors = [a.creator.last_name for a in source.authorship_set.all()] or [
-            "unknown author"
+            "machine-generated"
+            if "model" in source.source_type.type
+            else "unknown author"
         ]
 
         return "PGPID%(pgpid)s_s%(source_id)d_%(authors)s_%(text_type)s" % {

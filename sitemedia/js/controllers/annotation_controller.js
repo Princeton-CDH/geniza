@@ -106,6 +106,7 @@ export default class extends Controller {
             target: canvasURL,
             manifest: config.manifest_base_url + manifestId,
             csrf_token: config.csrf_token,
+            lineMode: config.line_mode,
         };
         if (config.source_uri) {
             annotationServerConfig["sourceUri"] = config.source_uri;
