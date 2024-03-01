@@ -126,6 +126,6 @@ TRANSCRIPTIONS_JSON_FILE = BASE_DIR.parent / "data" / "transcriptions.json"
 # Local path for metadata repo
 # METADATA_BACKUP_PATH = 'data/metadata_repo'
 
-# Mapbox API token, required for showing maps on the admin site and the public site
-# for more information: https://docs.mapbox.com/help/getting-started/access-tokens/
-# MAPBOX_API_TOKEN = ''
+# Maptiler API token, required for showing maps on the admin site and the public site
+# for more information: https://docs.maptiler.com/cloud/api/authentication-key/
+# MAPTILER_API_TOKEN = ''

@@ -6,7 +6,7 @@
 // - latitude and longitude validation for Places
 // - map for places
 
-import mapboxgl from "mapbox-gl";
+import maplibregl from "maplibre-gl";
 
 window.addEventListener("DOMContentLoaded", () => {
     // append rotation controls to each image in the image order field thumbnail display
@@ -61,34 +61,47 @@ window.addEventListener("DOMContentLoaded", () => {
     const latField = document.querySelector("input#id_latitude");
     const lonField = document.querySelector("input#id_longitude");
     if (latField && lonField) {
-        // set to fustat by default (if adding a new place / place has no coordinates)
+        // center fustat by default
         let lonlat = [31.231, 30.0057];
+
         // if present, round initial values to 4 decimal places to prevent "step" bug
-        if (lonField.value) lonlat[0] = parseFloat(lonField.value);
-        if (latField.value) lonlat[1] = parseFloat(latField.value);
-        lonField.setAttribute("value", lonlat[0].toFixed(4));
-        latField.setAttribute("value", lonlat[1].toFixed(4));
+        if (
+            lonField.value &&
+            parseFloat(lonField.value) <= 180 &&
+            parseFloat(lonField.value) >= -180
+        ) {
+            lonlat[0] = parseFloat(lonField.value);
+            lonField.setAttribute("value", lonlat[0].toFixed(4));
+        }
+        if (
+            latField.value &&
+            parseFloat(latField.value) <= 90 &&
+            parseFloat(latField.value) >= -90
+        ) {
+            lonlat[1] = parseFloat(latField.value);
+            latField.setAttribute("value", lonlat[1].toFixed(4));
+        }
 
         // add map if we have an access token
         const accessToken = JSON.parse(
-            document.getElementById("mapbox-token").textContent
+            document.getElementById("maptiler-token").textContent
         );
         let marker = null;
+        let map = null;
         if (accessToken) {
-            mapboxgl.accessToken = accessToken;
             const latRow = document.querySelector(".field-latitude");
             const mapContainer = document.createElement("div");
             mapContainer.setAttribute("id", "map");
-            mapContainer.style.width = "400px";
-            mapContainer.style.height = "300px";
+            mapContainer.style.width = "600px";
+            mapContainer.style.height = "400px";
             latRow.parentNode.insertBefore(mapContainer, latRow);
-            const map = new mapboxgl.Map({
+            map = new maplibregl.Map({
                 container: "map",
-                style: "mapbox://styles/mapbox/streets-v12",
+                style: `https://api.maptiler.com/maps/openstreetmap/style.json?key=${accessToken}`,
                 center: lonlat,
-                zoom: 6,
+                zoom: 9,
             });
-            marker = new mapboxgl.Marker({
+            marker = new maplibregl.Marker({
                 draggable: true,
             })
                 .setLngLat(lonlat)
@@ -100,12 +113,30 @@ window.addEventListener("DOMContentLoaded", () => {
             );
         }
         // attach input event listeners (validate and move marker)
-        latField.addEventListener("input", (e) => onLatLonInput(e, marker));
-        lonField.addEventListener("input", (e) => onLatLonInput(e, marker));
+        latField.addEventListener("input", (e) =>
+            onLatLonInput(e, marker, map)
+        );
+        lonField.addEventListener("input", (e) =>
+            onLatLonInput(e, marker, map)
+        );
+
+        // attach form submit event listener
+        const form = document.querySelector("form");
+        form.addEventListener("submit", (e) => {
+            if (!latField.value || !lonField.value) {
+                if (
+                    !confirm(
+                        "Are you sure you want to save without adding coordinates?"
+                    )
+                ) {
+                    e.preventDefault();
+                }
+            }
+        });
     }
 });
 
-function onLatLonInput(evt, marker) {
+function onLatLonInput(evt, marker, map) {
     // show message if invalid
     const isValid = evt.target.reportValidity();
     const asFloat = parseFloat(evt.target.value);
@@ -123,11 +154,20 @@ function onLatLonInput(evt, marker) {
         evt.target.parentNode.parentNode.classList.remove("errors");
     }
     // move marker to new coordinates
-    if (marker && asFloat) {
+    if (map && marker && asFloat) {
         const lngLat = marker.getLngLat();
-        if (evt.target.id.includes("longitude"))
-            marker.setLngLat([asFloat, lngLat.lat]);
-        else marker.setLngLat([lngLat.lng, asFloat]);
+        try {
+            if (evt.target.id.includes("longitude")) {
+                marker.setLngLat([asFloat, lngLat.lat]);
+                map.jumpTo({ center: [asFloat, lngLat.lat] });
+            } else {
+                marker.setLngLat([lngLat.lng, asFloat]);
+                map.jumpTo({ center: [lngLat.lng, asFloat] });
+            }
+        } catch (e) {
+            // if it's out of bounds, our form validation will catch it anyway
+            console.error(e);
+        }
     }
 }
 

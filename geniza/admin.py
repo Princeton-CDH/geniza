@@ -30,7 +30,7 @@ class GenizaAdminSite(admin.AdminSite):
             : self.REVIEW_PREVIEW_MAX
         ]
 
-        # add mapbox token if we have one
-        context["mapbox_token"] = getattr(settings, "MAPBOX_API_TOKEN", "")
+        # add maptiler token if we have one
+        context["maptiler_token"] = getattr(settings, "MAPTILER_API_TOKEN", "")
 
         return context
