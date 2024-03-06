@@ -491,6 +491,7 @@ class Place(models.Model):
         of precision. <br /><a href='https://www.fcc.gov/media/radio/dms-decimal'>This tool</a> can be
         used to convert from degrees, minutes, seconds (DMS) to decimal.""",
     )
+    notes = models.TextField(blank=True)
     # sources for the information gathered here
     footnotes = GenericRelation(Footnote, blank=True, related_name="places")
 
