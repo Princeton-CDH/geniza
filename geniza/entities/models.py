@@ -18,7 +18,10 @@ from geniza.footnotes.models import Footnote
 class Name(models.Model):
     """A name for an entity, such as a person or a place."""
 
-    name = models.CharField(max_length=255)
+    name = models.CharField(
+        max_length=255,
+        help_text="Please add common forms of the name in both English and other languages in which it appears in documents.",
+    )
     primary = models.BooleanField(
         default=False,
         help_text="Check box if this is the primary name that should be displayed on the site.",
@@ -28,7 +31,7 @@ class Name(models.Model):
         LanguageScript,
         on_delete=models.SET_NULL,
         null=True,
-        help_text="Please indicate the language of most components of the name as written here.",
+        help_text='Please indicate the language of most components of the name as written here. Refers to the language in which a name is written, not the linguistic origin of the name. Ex: "Nahray b. Nissim" should be marked as English.',
     )
     notes = models.TextField(blank=True)
 
