@@ -132,6 +132,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     readonly_fields = (
         "thumbnail",
         "side",
+        "fragment_provenance",
     )
     fields = (
         "fragment",
@@ -140,6 +141,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
         "region",
         "order",
         "certain",
+        "fragment_provenance",
         "thumbnail",
         "selected_images",
     )
@@ -149,6 +151,10 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
         CharField: {"widget": TextInput(attrs={"size": "10"})},
         ArrayField: {"widget": HiddenInput()},  # hidden input for selected_images
     }
+
+    @admin.display(description="Provenance")
+    def fragment_provenance(self, obj):
+        return obj.fragment.provenance
 
 
 class DocumentForm(forms.ModelForm):
@@ -717,7 +723,7 @@ class DocumentTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 class FragmentAdmin(admin.ModelAdmin):
     list_display = ("shelfmark", "collection_display", "url", "is_multifragment")
     search_fields = ("shelfmark", "old_shelfmarks", "notes", "needs_review")
-    readonly_fields = ("created", "last_modified")
+    readonly_fields = ("created", "last_modified", "iiif_provenance")
     list_filter = (
         ("url", custom_empty_field_list_filter("IIIF image", "Has image", "No image")),
         (
@@ -734,6 +740,8 @@ class FragmentAdmin(admin.ModelAdmin):
         "collection",
         ("url", "iiif_url"),
         "is_multifragment",
+        "provenance",
+        "iiif_provenance",
         "notes",
         "needs_review",
         ("created", "last_modified"),

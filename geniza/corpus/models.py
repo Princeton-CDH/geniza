@@ -197,6 +197,9 @@ class Fragment(TrackChangesModel):
         default=False,
         help_text="True if there are multiple fragments in one shelfmark",
     )
+    provenance = models.TextField(
+        blank=True, help_text="The origin and acquisition history of this fragment."
+    )
     notes = models.TextField(blank=True)
     needs_review = models.TextField(
         blank=True,
@@ -316,8 +319,9 @@ class Fragment(TrackChangesModel):
                 )
 
     @property
-    def provenance(self):
-        """Generate a provenance statement for this fragment"""
+    @admin.display(description="Provenance from IIIF manifest")
+    def iiif_provenance(self):
+        """Generate a provenance statement for this fragment from IIIF"""
         if self.manifest and self.manifest.metadata:
             return get_iiif_string(self.manifest.metadata.get("Provenance", ""))
 
@@ -1159,12 +1163,14 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # type gets matched back to DocumentType object in get_result_document, for i18n;
                 # should always be indexed in English
                 "type_s": (
-                    self.doctype.display_label_en
-                    or self.doctype.name_en
-                    or str(self.doctype)
-                )
-                if self.doctype
-                else "Unknown type",
+                    (
+                        self.doctype.display_label_en
+                        or self.doctype.name_en
+                        or str(self.doctype)
+                    )
+                    if self.doctype
+                    else "Unknown type"
+                ),
                 # use english description for now
                 "description_en_bigram": strip_tags(self.description_en),
                 "notes_t": self.notes or None,
@@ -1187,12 +1193,12 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "document_dating_dr": self.solr_dating_range(),
                 # historic date, for searching
                 # start/end of document date or date range
-                "start_date_i": self.start_date.numeric_format()
-                if self.start_date
-                else None,
-                "end_date_i": self.end_date.numeric_format(mode="max")
-                if self.end_date
-                else None,
+                "start_date_i": (
+                    self.start_date.numeric_format() if self.start_date else None
+                ),
+                "end_date_i": (
+                    self.end_date.numeric_format(mode="max") if self.end_date else None
+                ),
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],

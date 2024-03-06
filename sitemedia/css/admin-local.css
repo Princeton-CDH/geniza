@@ -307,6 +307,9 @@ fieldset.transcriptions-field
 div.field-admin_thumbnails img {
     cursor: pointer;
 }
+#textblock_set-group td.field-thumbnail {
+    min-width: 314px;
+}
 /* selected side thumbnail for fragment admin, drop target for document admin */
 #textblock_set-group td.field-thumbnail .admin-thumbnail.selected,
 div.field-admin_thumbnails .admin-thumbnail.selected {

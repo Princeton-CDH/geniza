@@ -12,12 +12,12 @@
                     {% endwith %}
                     {% if fragment.attribution %}
                         {{ fragment.attribution }}
-                    {% elif fragment.provenance %}
-                        {{ fragment.provenance }}
+                    {% elif fragment.iiif_provenance %}
+                        {{ fragment.iiif_provenance }}
                     {% endif %}
                     {% if fragment.manifest.license %}
                         {% include "corpus/snippets/fragment_license_statement.html" %}
-                    {% elif not fragment.attribution and not fragment.provenance %}
+                    {% elif not fragment.attribution and not fragment.iiif_provenance %}
                         {% translate "No attribution or license noted." %}
                     {% endif %}
                 </li>
@@ -25,15 +25,15 @@
         {% endfor %}
     </ul>
     {% regroup document.fragments.all by manifest.logo as logos_list %}
-    {% regroup document.fragments.all by provenance as provenance_list %}
+    {% regroup document.fragments.all by iiif_provenance as provenance_list %}
     <ul class="logos">
         {% for logo in logos_list %}
             <li>
                 <img src="{{ logo.grouper }}" alt="" role="presentation" height="64" loading="lazy" />
             </li>
         {% endfor %}
-        {% for provenance in provenance_list %}
-            {% if "JTS" in provenance.grouper %}
+        {% for iiif_provenance in provenance_list %}
+            {% if "JTS" in iiif_provenance.grouper %}
                 <li>
                     <a href="https://www.jtsa.edu/" aria-label="{% translate 'Jewish Theological Seminary homepage' %}">
                         <svg id="jts">
