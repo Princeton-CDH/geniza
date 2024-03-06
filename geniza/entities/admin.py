@@ -392,7 +392,7 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
     """Admin for Place entities in the PGP"""
 
     search_fields = ("names__name",)
-    fields = ("latitude", "longitude")
+    fields = (("latitude", "longitude"), "notes")
     inlines = (
         NameInline,
         DocumentPlaceInline,
