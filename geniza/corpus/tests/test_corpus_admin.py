@@ -26,6 +26,7 @@ from geniza.corpus.admin import (
     DocumentAdmin,
     DocumentForm,
     DocumentPersonInline,
+    DocumentTextBlockInline,
     FragmentAdmin,
     FragmentTextBlockInline,
     HasTranscriptionListFilter,
@@ -415,6 +416,19 @@ class TestFragmentTextBlockInline:
         inline = FragmentTextBlockInline(Fragment, admin_site=admin.site)
 
         assert test_description == inline.document_description(textblock)
+
+
+@pytest.mark.django_db
+class TestDocumentTextBlockInline:
+    def test_fragment_provenance(self):
+        test_provenance = "from Cambridge University Library"
+        fragment = Fragment.objects.create(
+            shelfmark="CUL 123", provenance=test_provenance
+        )
+        doc = Document.objects.create()
+        textblock = TextBlock.objects.create(fragment=fragment, document=doc)
+        inline = DocumentTextBlockInline(Document, admin_site=admin.site)
+        assert inline.fragment_provenance(textblock) == test_provenance
 
 
 class TestFragmentAdmin:

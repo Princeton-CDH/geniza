@@ -289,10 +289,10 @@ class TestFragment(TestCase):
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
-    def test_provenance(self, mock_manifestimporter):
+    def test_iiif_provenance(self, mock_manifestimporter):
         # fragment with no manifest
         frag = Fragment(shelfmark="TS 1")
-        assert not frag.provenance
+        assert not frag.iiif_provenance
 
         # fragment with a locally cached manifest
         frag = Fragment(shelfmark="TS 2")
@@ -303,7 +303,7 @@ class TestFragment(TestCase):
         )
         mock_manifestimporter.return_value.import_paths.return_value = [frag.manifest]
         frag.save()
-        assert frag.provenance == "From a place"
+        assert frag.iiif_provenance == "From a place"
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
