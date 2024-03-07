@@ -13,7 +13,7 @@ from pytest_django.asserts import assertContains, assertNotContains, assertTempl
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.admin import DocumentDatingInline
-from geniza.corpus.models import Document, LanguageScript
+from geniza.corpus.models import Dating, Document, LanguageScript
 from geniza.corpus.templatetags.corpus_extras import shelfmark_wrap
 from geniza.footnotes.models import Footnote, SourceLanguage
 
@@ -296,6 +296,22 @@ class TestDocumentDetailTemplate:
         assertContains(response, "Secondary Languages")
         assertContains(response, str(judeo_arabic))
         assertContains(response, str(arabic))
+
+    def test_inferred_dates(self, client, document):
+        # add a dating
+        dating = Dating.objects.create(document=document, display_date="c. 1050")
+        response = client.get(document.get_absolute_url())
+        # should have one inferred date
+        assertContains(response, "Inferred Date")
+        assertNotContains(response, "Inferred Dates")
+        assertContains(response, str(dating.display_date))
+        # add a second dating
+        dating2 = Dating.objects.create(document=document, display_date="11th century")
+        response = client.get(document.get_absolute_url())
+        # should have two inferred dates
+        assertContains(response, "Inferred Dates")
+        assertContains(response, str(dating.display_date))
+        assertContains(response, str(dating2.display_date))
 
 
 class TestDocumentScholarshipTemplate:
