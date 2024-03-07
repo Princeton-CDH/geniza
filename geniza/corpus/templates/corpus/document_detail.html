@@ -74,6 +74,23 @@
                         </time>
                     </dd>
                 {% endif %}
+                {% if document.dating_set.exists %}
+                    <dt>
+                        {# Translators: Inferred dating label #}
+                        {% blocktranslate count counter=document.dating_set.count trimmed %}
+                            Inferred Date
+                        {% plural %}
+                            Inferred Dates
+                        {% endblocktranslate %}
+                    </dt>
+                    {% for date in document.dating_set.all %}
+                        <dd>
+                            <time{% if date.standard_date %} datetime="{{ date.standard_date }}"{% endif %}>
+                                {{ date.display_date }}
+                            </time>
+                        </dd>
+                    {% endfor %}
+                {% endif %}
                 {% if document.languages.exists %}
                     <dt>
                         {# Translators: Primary language label #}
