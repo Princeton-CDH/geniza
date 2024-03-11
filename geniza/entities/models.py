@@ -31,7 +31,7 @@ class Name(models.Model):
         LanguageScript,
         on_delete=models.SET_NULL,
         null=True,
-        help_text='Please indicate the language of most components of the name as written here. Refers to the language in which a name is written, not the linguistic origin of the name. Ex: "Nahray b. Nissim" should be marked as English.',
+        help_text='Please indicate the language of most components of the name as written here. Refers to the language in which a name is written, not the linguistic origin of the name. Ex: “Nahray b. Nissim” and "Fusṭāṭ" should be marked as English.',
     )
     notes = models.TextField(blank=True)
 
