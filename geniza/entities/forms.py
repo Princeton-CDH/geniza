@@ -3,6 +3,7 @@ from django import forms
 from django.template.loader import get_template
 
 from geniza.entities.models import (
+    Event,
     Person,
     PersonPersonRelation,
     PersonPlaceRelation,
@@ -103,4 +104,29 @@ class PlacePlaceForm(forms.ModelForm):
             "notes": forms.Textarea(attrs={"rows": 4}),
             "place_b": autocomplete.ModelSelect2(url="entities:place-autocomplete"),
             "type": autocomplete.ModelSelect2(),
+        }
+
+
+class EventPersonForm(forms.ModelForm):
+    class Meta:
+        model = Event.people.through
+        fields = ("person",)
+        widgets = {
+            "person": autocomplete.ModelSelect2(url="entities:person-autocomplete")
+        }
+
+
+class EventPlaceForm(forms.ModelForm):
+    class Meta:
+        model = Event.places.through
+        fields = ("place",)
+        widgets = {
+            "place": autocomplete.ModelSelect2(url="entities:place-autocomplete")
+        }
+
+
+class EventForm(forms.ModelForm):
+    class Meta:
+        help_texts = {
+            "automatic_date": "Date or date range automatically generated from associated document(s)"
         }

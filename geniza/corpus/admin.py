@@ -33,7 +33,7 @@ from geniza.corpus.models import (
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
 from geniza.entities.admin import PersonInline, PlaceInline
-from geniza.entities.models import DocumentPlaceRelation, PersonDocumentRelation
+from geniza.entities.models import DocumentPlaceRelation, Event, PersonDocumentRelation
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.footnotes.models import Footnote
 
@@ -375,6 +375,18 @@ class DocumentPlaceInline(PlaceInline):
     form = DocumentPlaceForm
 
 
+class DocumentEventInline(admin.TabularInline):
+    """Inline for events related to a document"""
+
+    autocomplete_fields = ("event",)
+    model = Document.events.through
+    min_num = 0
+    extra = 1
+    show_change_link = True
+    verbose_name = "Related Event"
+    verbose_name_plural = "Related Events"
+
+
 @admin.register(Document)
 class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     form = DocumentForm
@@ -515,6 +527,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         DocumentFootnoteInline,
         DocumentPersonInline,
         DocumentPlaceInline,
+        DocumentEventInline,
     ]
     # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
     fieldsets_and_inlines_order = (
@@ -527,6 +540,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         "i",  # DocumentFootnoteInline
         "i",  # DocumentPersonInline
         "i",  # DocumentPlaceInline
+        "i",  # DocumentEventInline
     )
 
     class Media:

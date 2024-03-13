@@ -10,10 +10,13 @@ from django.forms.models import ModelChoiceIterator
 from django.forms.widgets import Textarea, TextInput
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
-from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 
+from geniza.corpus.dates import DocumentDateMixin
 from geniza.entities.forms import (
+    EventForm,
+    EventPersonForm,
+    EventPlaceForm,
     PersonPersonForm,
     PersonPlaceForm,
     PlacePersonForm,
@@ -22,6 +25,7 @@ from geniza.entities.forms import (
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
+    Event,
     Name,
     Person,
     PersonDocumentRelation,
@@ -215,6 +219,18 @@ class PersonPersonReverseInline(admin.TabularInline):
         return (obj.type.converse_name or str(obj.type)) if obj else None
 
 
+class PersonEventInline(admin.TabularInline):
+    """Inline for events related to a person"""
+
+    autocomplete_fields = ("event",)
+    model = Person.events.through
+    min_num = 0
+    extra = 1
+    show_change_link = True
+    verbose_name = "Related Event"
+    verbose_name_plural = "Related Events"
+
+
 @admin.register(Person)
 class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Person entities in the PGP"""
@@ -228,6 +244,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         PersonPersonInline,
         PersonPersonReverseInline,
         PersonPlaceInline,
+        PersonEventInline,
     )
     # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
     fieldsets_and_inlines_order = (
@@ -237,6 +254,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         "i",  # PersonPersonInline
         "i",  # PersonPersonReverseInline
         "i",  # PersonPlaceInline
+        "i",  # PersonEventInline
     )
     own_pk = None
 
@@ -387,6 +405,18 @@ class PlacePlaceReverseInline(admin.TabularInline):
     max_num = 0
 
 
+class PlaceEventInline(admin.TabularInline):
+    """Inline for events related to a place"""
+
+    autocomplete_fields = ("event",)
+    model = Place.events.through
+    min_num = 0
+    extra = 1
+    show_change_link = True
+    verbose_name = "Related Event"
+    verbose_name_plural = "Related Events"
+
+
 @admin.register(Place)
 class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
     """Admin for Place entities in the PGP"""
@@ -399,6 +429,7 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         PlacePersonInline,
         PlacePlaceInline,
         PlacePlaceReverseInline,
+        PlaceEventInline,
         FootnoteInline,
     )
     fieldsets_and_inlines_order = (
@@ -408,6 +439,7 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         "i",  # PlacePersonInline
         "i",  # PlacePlaceInline
         "i",  # PlacePlaceReverseInline
+        "i",  # PlaceEventInline
         "i",  # FootnoteInline
     )
 
@@ -419,3 +451,54 @@ class PlacePlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     fields = ("name",)
     search_fields = ("name",)
     ordering = ("name",)
+
+
+class EventDocumentInline(DocumentInline):
+    """Related documents inline for the Event admin"""
+
+    model = Event.documents.through
+    autocomplete_fields = ("document",)
+    fields = (
+        "document",
+        "document_description",
+    )
+
+
+class EventPersonInline(PersonInline):
+    """Related people inline for the Event admin"""
+
+    model = Event.people.through
+    form = EventPersonForm
+    autocomplete_fields = ("person",)
+    fields = ("person",)
+
+
+class EventPlaceInline(PlaceInline):
+    """Related places inline for the Event admin"""
+
+    model = Event.places.through
+    form = EventPlaceForm
+    autocomplete_fields = ("place",)
+    fields = ("place",)
+
+
+@admin.register(Event)
+class EventAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
+    """Admin for Event entities in the PGP"""
+
+    fields = (
+        "name",
+        "description",
+        "standard_date",
+        "display_date",
+        "automatic_date",
+    )
+    readonly_fields = ("automatic_date",)
+    search_fields = ("name",)
+    ordering = ("name",)
+    inlines = (EventDocumentInline, EventPersonInline, EventPlaceInline, FootnoteInline)
+    form = EventForm
+
+    def automatic_date(self, obj):
+        """Display automatically generated date/date range for an event as a formatted string"""
+        return DocumentDateMixin.standard_date_display(obj.documents_date_range)

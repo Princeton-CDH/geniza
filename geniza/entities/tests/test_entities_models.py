@@ -7,10 +7,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.forms import ValidationError
 from django.utils import timezone
 
-from geniza.corpus.models import Document
+from geniza.corpus.models import Dating, Document
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
+    Event,
     Name,
     Person,
     PersonDocumentRelation,
@@ -434,3 +435,57 @@ class TestPlacePlaceRelation:
             type=possible_dupe,
         )
         assert str(relation) == f"{possible_dupe} relation: {fustat} and {other}"
+
+
+@pytest.mark.django_db
+class TestEvent:
+    def test_str(self):
+        event = Event.objects.create(name_en="PGPv4 released")
+        assert str(event) == event.name
+
+    def test_date_str(self, document):
+        event = Event.objects.create()
+        assert not event.date_str
+
+        # should use standardized dates from associated docs
+        document.events.add(event)
+        document.doc_date_standard = "1000/1010"
+        document.save()
+        assert event.date_str == Document.standard_date_display(
+            document.doc_date_standard
+        )
+
+        # if defined, should use standard override date on event
+        event.standard_date = "1000/1099"
+        assert event.date_str == Document.standard_date_display(event.standard_date)
+
+        # if defined, should use display override date on event
+        event.display_date = "ca. 11th century"
+        assert event.date_str == event.display_date
+
+    def test_documents_date_range(self, document, join):
+        event = Event.objects.create()
+        assert event.documents_date_range == ""
+
+        # should populate from standardized dates and date ranges in associated docs
+        document.events.add(event)
+        document.doc_date_standard = "1000"
+        document.save()
+        assert event.documents_date_range == document.doc_date_standard
+        document.doc_date_standard = "1000/1010"
+        document.save()
+        assert event.documents_date_range == document.doc_date_standard
+
+        # should use the combined range between dating and standard date
+        Dating.objects.create(
+            document=document,
+            display_date="",
+            standard_date="960/990",
+        )
+        assert event.documents_date_range == "0960/1010"
+
+        # should use the combined range between multiple documents
+        event.documents.add(join)
+        join.doc_date_standard = "900/1000"
+        join.save()
+        assert event.documents_date_range == "0900/1010"

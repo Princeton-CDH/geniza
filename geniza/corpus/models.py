@@ -562,7 +562,9 @@ class Document(ModelIndexable, DocumentDateMixin):
         default=PUBLIC,
         help_text="Decide whether a document should be publicly visible",
     )
-
+    events = models.ManyToManyField(
+        to="entities.Event", related_name="documents", verbose_name="Related Events"
+    )
     footnotes = GenericRelation(Footnote, related_query_name="document")
     log_entries = GenericRelation(LogEntry, related_query_name="document")
 

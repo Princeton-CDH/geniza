@@ -5,12 +5,14 @@ from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import RegexValidator
 from django.db import models
 from django.forms import ValidationError
 from django.utils.translation import gettext as _
 from gfklookupwidget.fields import GfkLookupField
 
 from geniza.common.models import cached_class_property
+from geniza.corpus.dates import DocumentDateMixin
 from geniza.corpus.models import DisplayLabelMixin, Document, LanguageScript
 from geniza.footnotes.models import Footnote
 
@@ -66,6 +68,78 @@ class Name(models.Model):
         """Override of the model save method to cleanup unicode non breaking space character"""
         self.name = re.sub(r"[\xa0 ]+", " ", self.name)
         super().save(*args, **kwargs)
+
+
+class Event(models.Model):
+    """A historical event involving one or more documents, and optionally additional entities."""
+
+    name = models.CharField(
+        max_length=255,
+        help_text="A short name for the event to use as a display label",
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="A description of the event",
+    )
+    footnotes = GenericRelation(Footnote, blank=True, related_query_name="event")
+    display_date = models.CharField(
+        "Display date",
+        help_text='''Display date for manually entered or automatically generated date,
+        as it should appear in the public site, such as "Late 12th century"''',
+        max_length=255,
+        blank=True,  # use standard date for display if this is blank
+    )
+    standard_date = models.CharField(
+        "CE date override",
+        help_text="Manual override for automatically generated date or date range. "
+        + DocumentDateMixin.standard_date_helptext,
+        blank=True,  # use automatic date range from associated documents if this is blank
+        null=True,
+        max_length=255,
+        validators=[RegexValidator(DocumentDateMixin.re_date_format)],
+    )
+
+    def __str__(self):
+        """Use the name field for string representations"""
+        return self.name
+
+    @property
+    def date_str(self):
+        """Return a formatted string for the event's date/range, for use in public site"""
+        return (
+            self.display_date
+            or Document.standard_date_display(self.standard_date)
+            or Document.standard_date_display(self.documents_date_range)
+        )
+
+    @property
+    def documents_date_range(self):
+        """Standardized range of dates across associated documents"""
+        full_range = [None, None]
+        # NOTE: This looks similar to Document.dating_range() but applies across multiple docs
+        for doc in self.documents.all():
+            doc_range = doc.dating_range()
+            if doc_range and doc_range[0]:
+                start = doc_range[0]
+                end = doc_range[1] if len(doc_range) > 1 else start
+                # use numeric format to compare to current min, replace if smaller
+                start_numeric = int(start.numeric_format(mode="min"))
+                min = full_range[0]
+                if min is None or start_numeric < int(min.numeric_format(mode="min")):
+                    # store as PartialDate
+                    full_range[0] = start
+                # use numeric format to compare to current max, replace if larger
+                end_numeric = int(end.numeric_format(mode="max"))
+                max = full_range[1]
+                if max is None or end_numeric > int(max.numeric_format(mode="max")):
+                    # store as PartialDate
+                    full_range[1] = end
+
+        # prune Nones and use isoformat for standardized representation
+        full_range = [d.isoformat() for d in full_range if d]
+        if len(full_range) == 2 and full_range[0] == full_range[1]:
+            full_range.pop(1)
+        return "/".join(full_range)
 
 
 class PersonRoleManager(models.Manager):
@@ -131,6 +205,10 @@ class Person(models.Model):
         verbose_name="Role",
         help_text="Social role",
     )
+    events = models.ManyToManyField(
+        Event, related_name="people", verbose_name="Related Events"
+    )
+
     # sources for the information gathered here
     footnotes = GenericRelation(Footnote, blank=True, related_name="people")
 
@@ -495,6 +573,9 @@ class Place(models.Model):
         used to convert from degrees, minutes, seconds (DMS) to decimal.""",
     )
     notes = models.TextField(blank=True)
+    events = models.ManyToManyField(
+        Event, related_name="places", verbose_name="Related Events"
+    )
     # sources for the information gathered here
     footnotes = GenericRelation(Footnote, blank=True, related_name="places")
 
