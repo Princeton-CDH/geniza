@@ -469,10 +469,10 @@ class TestEvent:
 
         # should populate from standardized dates and date ranges in associated docs
         document.events.add(event)
-        document.doc_date_standard = "1000"
+        document.doc_date_standard = "1100"
         document.save()
         assert event.documents_date_range == document.doc_date_standard
-        document.doc_date_standard = "1000/1010"
+        document.doc_date_standard = "1100/1150"
         document.save()
         assert event.documents_date_range == document.doc_date_standard
 
@@ -480,12 +480,13 @@ class TestEvent:
         Dating.objects.create(
             document=document,
             display_date="",
-            standard_date="960/990",
+            standard_date="1010/1050",
         )
-        assert event.documents_date_range == "0960/1010"
+        # sometimes these years will have leading 0s
+        assert event.documents_date_range == "1010/1150"
 
         # should use the combined range between multiple documents
         event.documents.add(join)
-        join.doc_date_standard = "900/1000"
+        join.doc_date_standard = "1000/1010"
         join.save()
-        assert event.documents_date_range == "0900/1010"
+        assert event.documents_date_range == "1000/1150"
