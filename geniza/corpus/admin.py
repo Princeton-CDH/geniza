@@ -433,6 +433,12 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             )
         ) or "-"
 
+    @admin.display(
+        description="Standard date",
+    )
+    def standard_date(self, obj):
+        return Document.standard_date_display(obj.doc_date_standard)
+
     list_filter = (
         "doctype",
         HasTranscriptionListFilter,

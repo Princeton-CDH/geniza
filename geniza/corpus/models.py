@@ -1718,3 +1718,8 @@ class Dating(models.Model):
     notes = models.TextField(
         help_text="Optional further details about the rationale",
     )
+
+    @property
+    def standard_date_display(self):
+        """Standard date in human-readable format for document details pages"""
+        return Document.standard_date_display(self.standard_date)

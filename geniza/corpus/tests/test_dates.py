@@ -50,27 +50,33 @@ class TestDocumentDateMixin:
     def test_standard_date(self):
         # no dates; no error
         doc = Document()
-        assert doc.standard_date is None
+        assert Document.standard_date_display(doc.doc_date_standard) is None
 
         # single day
         doc.doc_date_standard = "1569-10-23"
-        assert doc.standard_date == "23 October, 1569 CE"
+        assert (
+            Document.standard_date_display(doc.doc_date_standard)
+            == "23 October, 1569 CE"
+        )
 
         # date range
         doc.doc_date_standard = "1839-03-17/1840-03-04"
-        assert doc.standard_date == "17 March, 1839 – 4 March, 1840 CE"
+        assert (
+            Document.standard_date_display(doc.doc_date_standard)
+            == "17 March, 1839 – 4 March, 1840 CE"
+        )
 
         # year/month
         doc.doc_date_standard = "1839-03"
-        assert doc.standard_date == "March 1839 CE"
+        assert Document.standard_date_display(doc.doc_date_standard) == "March 1839 CE"
 
         # year only
         doc.doc_date_standard = "1839"
-        assert doc.standard_date == "1839 CE"
+        assert Document.standard_date_display(doc.doc_date_standard) == "1839 CE"
 
         # fallback behavior for dates in the wrong format
         doc.doc_date_standard = "1029–38"
-        assert doc.standard_date == "1029–38 CE"
+        assert Document.standard_date_display(doc.doc_date_standard) == "1029–38 CE"
 
     def test_document_date(self):
         """Should combine historical and converted dates"""
