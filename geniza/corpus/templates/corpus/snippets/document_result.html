@@ -19,7 +19,7 @@
             <dl class="metadata-list">
                 {% if document.document_date %}
                     <dt>
-                        {% translate "Document Date" %}
+                        {% translate "Document date" %}
                     </dt>
                     <dd>
                         <time>
@@ -27,140 +27,147 @@
                         </time>
                     </dd>
                 {% endif %}
+                {% with document_highlights=highlighting|dict_item:document.id %}
+                    {% if document_highlights.old_shelfmark %}
+                        {# Translators: label for historical/old shelfmark on document fragments #}
+                        <dt>{% translate "Historical shelfmark" %}</dt>
+                        <dd>{{ document_highlights.old_shelfmark.0|striptags }}</dd>
+                    {% endif %}
+                {% endwith %}
                 {# Translators: Date document was first added to the PGP #}
-                <dt>{% translate "In PGP since" %}
-                    {# Translators: label for unknown date for date added to PGP #}
-                    {% translate "unknown" as unknown %}
-                    <dd>{{ document.input_year|default:unknown }}</dd>
-                    {# NOTE: Intentionally left untranslated #}
-                    <dt lang="en">PGP ID</dt>
-                    <dd>{{ document.pgpid }}</dd>
-                </dl>
+                <dt>{% translate "In PGP since" %}</dt>
+                {# Translators: label for unknown date for date added to PGP #}
+                {% translate "unknown" as unknown %}
+                <dd>{{ document.input_year|default:unknown }}</dd>
+                {# NOTE: Intentionally left untranslated #}
+                <dt lang="en">PGP ID</dt>
+                <dd>{{ document.pgpid }}</dd>
+            </dl>
 
                 {# description #}
                 {# TODO: Adjust lang attribute logic for non-English descriptions #}
-                <p class="description" lang="en">
+            <p class="description" lang="en">
                     {# display keywords in context if any #}
-                    {% with document_highlights=highlighting|dict_item:document.id %}
-                        {% if document_highlights.description %}
-                            {% for snippet in document_highlights.description %}
-                                {{ snippet|safe }}
-                            {% endfor %}
-                        {% else %}
+                {% with document_highlights=highlighting|dict_item:document.id %}
+                    {% if document_highlights.description %}
+                        {% for snippet in document_highlights.description %}
+                            {{ snippet|safe }}
+                        {% endfor %}
+                    {% else %}
                             {# otherwise, display truncated description #}
-                            {{ document.description|truncatewords:25 }}
-                        {% endif %}
-                    {% endwith %}
-                </p>
+                        {{ document.description|truncatewords:25 }}
+                    {% endif %}
+                {% endwith %}
+            </p>
 
                 {# transcription: keywords in context if any, or excerpt #}
-                {% with document_highlights=highlighting|dict_item:document.id lang=document.language_code lang_script=document.language_script %}
+            {% with document_highlights=highlighting|dict_item:document.id lang=document.language_code lang_script=document.language_script %}
                     <!-- indicate language when possible, or at least change of language (if unknown) for screen readers -->
-                    {% if document_highlights.transcription or document.transcription %}
-                        <div class="transcription" dir="rtl" lang="{{ lang }}" {% if lang_script %}data-lang-script="{{ lang_script|lower }}"{% endif %}>
+                {% if document_highlights.transcription or document.transcription %}
+                    <div class="transcription" dir="rtl" lang="{{ lang }}" {% if lang_script %}data-lang-script="{{ lang_script|lower }}"{% endif %}>
 
-                            {% if document_highlights.transcription %}
-                                {% for snippet in document_highlights.transcription %}{{ snippet.strip|safe }}{% endfor %}
-                            {% elif document.transcription %}
+                        {% if document_highlights.transcription %}
+                            {% for snippet in document_highlights.transcription %}{{ snippet.strip|safe }}{% endfor %}
+                        {% elif document.transcription %}
                                 {# otherwise, display truncated transcription #}
                                 {# NOTE: might be nice to display N lines instead of using truncatechars #}
-                                {{ document.transcription.0|safe|truncatechars_html:150 }}
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                {% endwith %}
+                            {{ document.transcription.0|safe|truncatechars_html:150 }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endwith %}
 
                 {# translation: keywords in context if any, or excerpt #}
-                {% with document_highlights=highlighting|dict_item:document.id lang=document.translation_language_code dir=document.translation_language_direction %}
+            {% with document_highlights=highlighting|dict_item:document.id lang=document.translation_language_code dir=document.translation_language_direction %}
                     <!-- indicate language when possible, or at least change of language (if unknown) for screen readers -->
-                    {% if document_highlights.translation or document.translation %}
-                        <div class="translation" lang="{{ lang }}" dir="{{ dir }}">
-                            {% if document_highlights.translation %}
-                                {% for snippet in document_highlights.translation %}{{ snippet.strip|safe }}{% endfor %}
-                            {% elif document.translation %}
+                {% if document_highlights.translation or document.translation %}
+                    <div class="translation" lang="{{ lang }}" dir="{{ dir }}">
+                        {% if document_highlights.translation %}
+                            {% for snippet in document_highlights.translation %}{{ snippet.strip|safe }}{% endfor %}
+                        {% elif document.translation %}
                                 {# otherwise, display truncated transcription #}
                                 {# NOTE: might be nice to display N lines instead of using truncatechars #}
-                                {{ document.translation.0|safe|truncatechars_html:150 }}
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                {% endwith %}
+                            {{ document.translation.0|safe|truncatechars_html:150 }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endwith %}
 
                 {# scholarship records #}
-                <p class="scholarship">
-                    {% if document.scholarship_count %}
-                        {% if document.num_editions %}
-                            <span>
+            <p class="scholarship">
+                {% if document.scholarship_count %}
+                    {% if document.num_editions %}
+                        <span>
                                 {% comment %}Translators: number of editions for this document{% endcomment %}
-                                {% blocktranslate count counter=document.num_editions trimmed %}
-                                    1 Transcription
-                                {% plural %}
-                                    {{ counter }} Transcriptions
-                                {% endblocktranslate %}
-                            </span>
-                        {% endif %}
-                        {% if document.num_translations %}
-                            <span>
-                                {% comment %}Translators: number of translations for this document{% endcomment %}
-                                {% blocktranslate count counter=document.num_translations trimmed %}
-                                    1 Translation
-                                {% plural %}
-                                    {{ counter }} Translations
-                                {% endblocktranslate %}
-                            </span>
-                        {% endif %}
-                        {% if document.num_discussions %}
-                            <span>
-                                {% comment %}Translators: number of sources that discuss this document{% endcomment %}
-                                {% blocktranslate count counter=document.num_discussions trimmed %}
-                                    1 Discussion
-                                {% plural %}
-                                    {{ counter }} Discussions
-                                {% endblocktranslate %}
-                            </span>
-                        {% endif %}
-                    {% else %}
-                        {% translate 'No Scholarship Records' %}
+                            {% blocktranslate count counter=document.num_editions trimmed %}
+                                1 Transcription
+                            {% plural %}
+                                {{ counter }} Transcriptions
+                            {% endblocktranslate %}
+                        </span>
                     {% endif %}
-                </p>
+                    {% if document.num_translations %}
+                        <span>
+                                {% comment %}Translators: number of translations for this document{% endcomment %}
+                            {% blocktranslate count counter=document.num_translations trimmed %}
+                                1 Translation
+                            {% plural %}
+                                {{ counter }} Translations
+                            {% endblocktranslate %}
+                        </span>
+                    {% endif %}
+                    {% if document.num_discussions %}
+                        <span>
+                                {% comment %}Translators: number of sources that discuss this document{% endcomment %}
+                            {% blocktranslate count counter=document.num_discussions trimmed %}
+                                1 Discussion
+                            {% plural %}
+                                {{ counter }} Discussions
+                            {% endblocktranslate %}
+                        </span>
+                    {% endif %}
+                {% else %}
+                    {% translate 'No Scholarship Records' %}
+                {% endif %}
+            </p>
 
                 {# tags #}
-                {% if document.tags %}
+            {% if document.tags %}
                     {# Translators: label for tags on a document #}
-                    <h3 class="sr-only">{% translate 'Tags' %}</h3>
-                    <ul class="tags">
-                        {% spaceless %}
-                            {% for tag in document.tags|alphabetize|slice:":5" %}
-                                <li><a href='{% url "corpus:document-search" %}?q=tag:"{{ tag }}"'>{{ tag }}</a></li>
-                            {% endfor %}
-                            {% if document.tags|length > 5 %}
-                                <li class="more">(+ {{ document.tags|length|add:"-5" }} {% translate 'more' %})</li>
-                            {% endif %}
-                        {% endspaceless %}
-                    </ul>
-                {% endif %}
-            </section>
-
-            {% if document.iiif_images %}
-                <ul class="images">
-                    {# list of tuples of (IIIF image, label, rotation) #}
-                    {% for image in document.iiif_images|slice:":3" %}
-                        {% with deg=image.2|stringformat:"i" %}
-                            {% with rotation="rotation:degrees="|add:deg %}
-                                <li class="image-{{ forloop.counter }}">
-                                    <img src="{{ image.0|iiif_image:"size:width=250"|iiif_image:rotation }}" loading="lazy" alt="{{ image.1 }}">
-                                </li>
-                            {% endwith %}
-                        {% endwith %}
-                    {% endfor %}
+                <h3 class="sr-only">{% translate 'Tags' %}</h3>
+                <ul class="tags">
+                    {% spaceless %}
+                        {% for tag in document.tags|alphabetize|slice:":5" %}
+                            <li><a href='{% url "corpus:document-search" %}?q=tag:"{{ tag }}"'>{{ tag }}</a></li>
+                        {% endfor %}
+                        {% if document.tags|length > 5 %}
+                            <li class="more">(+ {{ document.tags|length|add:"-5" }} {% translate 'more' %})</li>
+                        {% endif %}
+                    {% endspaceless %}
                 </ul>
             {% endif %}
+        </section>
+
+        {% if document.iiif_images %}
+            <ul class="images">
+                    {# list of tuples of (IIIF image, label, rotation) #}
+                {% for image in document.iiif_images|slice:":3" %}
+                    {% with deg=image.2|stringformat:"i" %}
+                        {% with rotation="rotation:degrees="|add:deg %}
+                            <li class="image-{{ forloop.counter }}">
+                                <img src="{{ image.0|iiif_image:"size:width=250"|iiif_image:rotation }}" loading="lazy" alt="{{ image.1 }}">
+                            </li>
+                        {% endwith %}
+                    {% endwith %}
+                {% endfor %}
+            </ul>
+        {% endif %}
             {# view link #}
 
             {# Translators: screen-reader label for "view document details" link #}
-            {% blocktranslate asvar aria_view_details with document_label=document|get_document_label %}View details for {{ document_label }}{% endblocktranslate %}
-            <a class="view-link" href="{% url 'corpus:document' document.pgpid %}" data-turbo-frame="main" aria-label="{{ aria_view_details }}">
-                <span>{% translate 'View document details' %}</span>
-            </a>
-        </li>
+        {% blocktranslate asvar aria_view_details with document_label=document|get_document_label %}View details for {{ document_label }}{% endblocktranslate %}
+        <a class="view-link" href="{% url 'corpus:document' document.pgpid %}" data-turbo-frame="main" aria-label="{{ aria_view_details }}">
+            <span>{% translate 'View document details' %}</span>
+        </a>
+    </li>
 {% endspaceless %}
