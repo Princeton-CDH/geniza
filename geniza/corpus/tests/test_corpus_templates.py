@@ -33,8 +33,12 @@ class TestDocumentDetailTemplate:
     def test_first_input(self, client, document):
         """Document detail template should include document first input date"""
         response = client.get(document.get_absolute_url())
-        # NOTE: No longer using definition list
         assertContains(response, "In PGP since 2004")
+
+    def test_old_shelfmarks(self, client, document):
+        """Document detail template should include historical shelfmarks"""
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "ULC Add. 2586")
 
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""
