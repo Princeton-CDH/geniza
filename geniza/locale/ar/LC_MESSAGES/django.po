@@ -3,15 +3,14 @@ msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
 "Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
 "POT-Creation-Date: 2024-03-15 12:29-0400\n"
-"PO-Revision-Date: 2024-02-12 23:10\n"
+"PO-Revision-Date: 2024-03-15 17:13\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Language: ar_SA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
-"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 "X-Crowdin-Project: princeton-geniza-project\n"
 "X-Crowdin-Project-ID: 520356\n"
 "X-Crowdin-Language: ar\n"
@@ -247,19 +246,11 @@ msgstr "تاريخ الإدخال"
 
 #. Translators: Date document was first added to the PGP
 #: corpus/templates/corpus/document_detail.html:152
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "                In PGP since %(date)s\n"
-#| "            "
-msgid ""
-"\n"
+#, python-format
+msgid "\n"
 "                        In PGP since %(date)s\n"
 "                    "
 msgstr ""
-"\n"
-"                في PGP منذ %(date)s\n"
-"            "
 
 #. Translators: label for document description
 #: corpus/templates/corpus/document_detail.html:162
@@ -351,10 +342,9 @@ msgid "Jewish Theological Seminary logo"
 msgstr "شعار Jewish Theological Seminary"
 
 #: corpus/templates/corpus/snippets/document_result.html:22
-#, fuzzy
-#| msgid "Document Date"
+#| msgid "Input date"
 msgid "Document date"
-msgstr "تاريخ الوثيقة"
+msgstr ""
 
 #. Translators: label for historical/old shelfmark on document fragments
 #: corpus/templates/corpus/snippets/document_result.html:33
@@ -554,10 +544,8 @@ msgid "Female"
 msgstr ""
 
 #: entities/models.py:146
-#, fuzzy
-#| msgid "Unknown type"
 msgid "Unknown"
-msgstr "نوع غير معروف"
+msgstr ""
 
 #: entities/models.py:412
 msgid "Immediate family relations"
@@ -593,21 +581,14 @@ msgid "Discussion"
 msgstr "المناقشة"
 
 #: pages/models.py:13
-msgid ""
-"Alternative text for visually impaired users to\n"
+msgid "Alternative text for visually impaired users to\n"
 "briefly communicate the intended message of the image in this context."
-msgstr ""
-"نص بديل للمستخدمين ضعاف البصر\n"
+msgstr "نص بديل للمستخدمين ضعاف البصر\n"
 "لإيصال الرسالة المقصودة للصورة في هذا السياق بإيجاز."
 
 #: pages/models.py:44
-msgid ""
-"This text will only be read to     non-sighted users and should describe the "
-"major insights or     takeaways from the graphic. Multiple paragraphs are "
-"allowed."
-msgstr ""
-"هذا النص سوف يقرأ فقط للمستخدمين غير المبصرين ويجب أن يصف الرؤى أو الأفكار "
-"الرئيسية من الرسوم. يسمح بفقرات متعددة."
+msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
+msgstr "هذا النص سوف يقرأ فقط للمستخدمين غير المبصرين ويجب أن يصف الرؤى أو الأفكار الرئيسية من الرسوم. يسمح بفقرات متعددة."
 
 #. Translators: title for Not Found (404) error page
 #: templates/404.html:5 templates/404.html:13
@@ -737,3 +718,4 @@ msgstr "العودة إلى القائمة الرئيسية"
 #: templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
 msgstr "تفعيل الوضع المظلم"
+
