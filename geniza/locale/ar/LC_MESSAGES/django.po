@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: princeton-geniza-project\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-21 18:59-0400\n"
+"Report-Msgid-Bugs-To: cdhdevteam@princeton.edu\n"
+"POT-Creation-Date: 2024-03-15 11:03-0400\n"
 "PO-Revision-Date: 2024-02-12 23:10\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -10,7 +10,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 "X-Crowdin-Project: princeton-geniza-project\n"
 "X-Crowdin-Project-ID: 520356\n"
 "X-Crowdin-Language: ar\n"
@@ -18,143 +19,146 @@ msgstr ""
 "X-Crowdin-File-ID: 12\n"
 
 #. Translators: placeholder for keyword search input
-#: corpus/forms.py:161
+#: geniza/corpus/forms.py:164
 msgid "search by keyword"
 msgstr "البحث بواسطة الكلمة المفتاحية"
 
 #. Translators: accessible label for keyword search input
-#: corpus/forms.py:163
+#: geniza/corpus/forms.py:166
 msgid "Keyword or Phrase"
 msgstr "الكلمة المفتاحية أو العبارة"
 
 #. Translators: label for sort by relevance
-#: corpus/forms.py:172
+#: geniza/corpus/forms.py:175
 msgid "Relevance"
 msgstr "الصلة"
 
 #. Translators: label for sort in random order
-#: corpus/forms.py:174
+#: geniza/corpus/forms.py:177
 msgid "Random"
 msgstr "عشوائي"
 
 #. Translators: label for sort by document date (most recent first)
-#: corpus/forms.py:176
+#: geniza/corpus/forms.py:179
 msgid "Document Date (Latest–Earliest)"
 msgstr "تاريخ المستند (الأحدث - الأقدم)"
 
 #. Translators: label for sort by document date (oldest first)
-#: corpus/forms.py:178
+#: geniza/corpus/forms.py:181
 msgid "Document Date (Earliest–Latest)"
 msgstr "تاريخ المستند (الأقدم - الأحدث)"
 
 #. Translators: label for alphabetical sort by shelfmark
-#: corpus/forms.py:180
+#: geniza/corpus/forms.py:183
 msgid "Shelfmark (A–Z)"
 msgstr "علامة الرف (أ-ي)"
 
 #. Translators: label for descending sort by number of scholarship records
-#: corpus/forms.py:182
+#: geniza/corpus/forms.py:185
 msgid "Scholarship Records (Most–Least)"
 msgstr "ثبت المراجع والمصادر (أكثر - أقل)"
 
 #. Translators: label for ascending sort by number of scholarship records
-#: corpus/forms.py:184
+#: geniza/corpus/forms.py:187
 msgid "Scholarship Records (Least–Most)"
 msgstr "ثبت المراجع والمصادر (أقل - أكثر)"
 
 #. Translators: label for sort by when document was added to PGP (most recent first)
-#: corpus/forms.py:186
+#: geniza/corpus/forms.py:189
 msgid "PGP Input Date (Latest–Earliest)"
 msgstr "تاريخ الإدخال (الأحدث - الأقدم)"
 
 #. Translators: label for sort by when document was added to PGP (oldest first)
-#: corpus/forms.py:188
+#: geniza/corpus/forms.py:191
 msgid "PGP Input Date (Earliest–Latest)"
 msgstr "تاريخ إدخال PGP (الأقدم - الأحدث)"
 
 #. Translators: label for start year when filtering by date range
-#: corpus/forms.py:191 corpus/templates/corpus/widgets/yearrangewidget.html:5
+#: geniza/corpus/forms.py:194
+#: geniza/corpus/templates/corpus/widgets/yearrangewidget.html:5
 msgid "From year"
 msgstr "من عام"
 
 #. Translators: label for end year when filtering by date range
-#: corpus/forms.py:193 corpus/templates/corpus/widgets/yearrangewidget.html:5
+#: geniza/corpus/forms.py:196
+#: geniza/corpus/templates/corpus/widgets/yearrangewidget.html:5
 msgid "To year"
 msgstr "إلى عام"
 
 #. Translators: label for form sort field
-#: corpus/forms.py:201
+#: geniza/corpus/forms.py:204
 msgid "Sort by"
 msgstr "الترتيب حسب"
 
-#: corpus/forms.py:208
+#: geniza/corpus/forms.py:211
 msgid "Document Dates (CE)"
 msgstr "تواريخ المستند (التقويم الميلادي)"
 
 #. Translators: label for document type search form filter
-#: corpus/forms.py:217
+#: geniza/corpus/forms.py:220
 msgid "Document Type"
 msgstr "نوع المستند"
 
 #. Translators: label for "has image" search form filter
-#: corpus/forms.py:221
+#: geniza/corpus/forms.py:224
 msgid "Has Image"
 msgstr "لديه صورة"
 
 #. Translators: label for "has transcription" search form filter
-#: corpus/forms.py:225
+#: geniza/corpus/forms.py:228
 msgid "Has Transcription"
 msgstr "لديه نسخ"
 
 #. Translators: label for "has translation" search form filter
-#: corpus/forms.py:229
+#: geniza/corpus/forms.py:232
 msgid "Has Translation"
 msgstr "لديه ترجمة"
 
 #. Translators: label for "has discussion" search form filter
-#: corpus/forms.py:233
+#: geniza/corpus/forms.py:236
 msgid "Has Discussion"
 msgstr "لديه مناقشة"
 
 #. Translators: Default label when document does not have a type
-#: corpus/forms.py:279 corpus/solr_queryset.py:152
-#: corpus/templates/corpus/snippets/document_header.html:17
-#: corpus/templates/corpus/snippets/document_transcription.html:95
+#: geniza/corpus/forms.py:282 geniza/corpus/solr_queryset.py:240
+#: geniza/corpus/templates/corpus/snippets/document_header.html:17
+#: geniza/corpus/templates/corpus/snippets/document_transcription.html:173
 msgid "Unknown type"
 msgstr "نوع غير معروف"
 
-#: corpus/forms.py:311
+#: geniza/corpus/forms.py:314
 msgid "Relevance sort is not available without a keyword search term."
 msgstr "ترتيب الصلة غير متوفر بدون مصطلح البحث بواسطة كلمة مفتاحية."
 
-#: corpus/models.py:911 templates/base.html:21
+#: geniza/corpus/models.py:1081 geniza/templates/base.html:21
 msgid "Princeton Geniza Project"
 msgstr "Princeton Geniza Project"
 
 #. Translators: attribution for local IIIF manifests
-#: corpus/models.py:913
+#: geniza/corpus/models.py:1083
 #, python-format
 msgid "Compilation by %(pgp)s."
 msgstr "تجميع بواسطة %(pgp)s."
 
 #. Translators: attribution for local IIIF manifests that include transcription
-#: corpus/models.py:916
+#: geniza/corpus/models.py:1086
 #, python-format
 msgid "Compilation and transcription by %(pgp)s."
 msgstr "التجميع والنسخ بواسطة %(pgp)s."
 
 #. Translators: manifest attribution note that content from other institutions may have restrictions
-#: corpus/models.py:918
+#: geniza/corpus/models.py:1088
 msgid "Additional restrictions may apply."
 msgstr "قد تطبق قيود إضافية."
 
 #. Translators: label for 'home' link in footer navigation
-#: corpus/templates/admin/corpus/app_index.html:9 templates/footer.html:12
+#: geniza/corpus/templates/admin/corpus/app_index.html:9
+#: geniza/templates/footer.html:12
 msgid "Home"
 msgstr "الصفحة الرئيسية"
 
 #. Translators: Other documents on the same fragment/shelfmark
-#: corpus/templates/admin/corpus/document/change_form.html:41
+#: geniza/corpus/templates/admin/corpus/document/change_form.html:49
 msgid "Other documents on this shelfmark"
 msgid_plural "Other documents on these shelfmarks"
 msgstr[0] "مستندات أخرى على هذه العلامة"
@@ -165,8 +169,8 @@ msgstr[4] "مستندات أخرى على هذه العلامات"
 msgstr[5] "مستندات أخرى على هذه العلامات"
 
 #. Translators: Editor label
-#: corpus/templates/corpus/document_detail.html:17
-#: corpus/templates/corpus/document_detail.html:50
+#: geniza/corpus/templates/corpus/document_detail.html:17
+#: geniza/corpus/templates/corpus/document_detail.html:50
 msgid "Editor"
 msgid_plural "Editors"
 msgstr[0] "محرر"
@@ -177,22 +181,32 @@ msgstr[4] "المحررون"
 msgstr[5] "المحررون"
 
 #. Translators: label for document metadata section (editor, date, input date)
-#: corpus/templates/corpus/document_detail.html:41
+#: geniza/corpus/templates/corpus/document_detail.html:41
 msgid "Metadata"
 msgstr "بيانات التعريف"
 
-#: corpus/templates/corpus/document_detail.html:45
+#: geniza/corpus/templates/corpus/document_detail.html:45
 msgid "Shelfmark"
 msgstr "علامة الرف"
 
 #. Translators: label for date of this document, if known
-#: corpus/templates/corpus/document_detail.html:69
-#: corpus/templates/corpus/snippets/document_result.html:22
+#: geniza/corpus/templates/corpus/document_detail.html:69
 msgid "Document Date"
 msgstr "تاريخ الوثيقة"
 
+#. Translators: Inferred dating label
+#: geniza/corpus/templates/corpus/document_detail.html:80
+msgid "Inferred Date"
+msgid_plural "Inferred Dates"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
+msgstr[4] ""
+msgstr[5] ""
+
 #. Translators: Primary language label
-#: corpus/templates/corpus/document_detail.html:80
+#: geniza/corpus/templates/corpus/document_detail.html:97
 msgid "Primary Language"
 msgid_plural "Primary Languages"
 msgstr[0] "اللغة الأساسية"
@@ -203,7 +217,7 @@ msgstr[4] "اللغات الأساسية"
 msgstr[5] "اللغات الأساسية"
 
 #. Translators: Secondary language label
-#: corpus/templates/corpus/document_detail.html:93
+#: geniza/corpus/templates/corpus/document_detail.html:110
 msgid "Secondary Language"
 msgid_plural "Secondary Languages"
 msgstr[0] "اللغة الثانوية"
@@ -214,57 +228,73 @@ msgstr[4] "اللغات الثانوية"
 msgstr[5] "اللغات الثانوية"
 
 #. Translators: label for tags on a document
-#: corpus/templates/corpus/document_detail.html:109
-#: corpus/templates/corpus/snippets/document_result.html:109
+#: geniza/corpus/templates/corpus/document_detail.html:126
+#: geniza/corpus/templates/corpus/snippets/document_result.html:137
 msgid "Tags"
 msgstr "العلامات"
 
+#. Translators: label for secondary/historiographical metadata
+#: geniza/corpus/templates/corpus/document_detail.html:140
+msgid "Additional metadata"
+msgstr ""
+
+#. Translators: label for historical/old shelfmarks on document fragments
+#: geniza/corpus/templates/corpus/document_detail.html:145
+msgid "Historical shelfmarks"
+msgstr ""
+
 #. Translators: Label for date document was first added to the PGP
-#: corpus/templates/corpus/document_detail.html:122
+#: geniza/corpus/templates/corpus/document_detail.html:149
 msgid "Input date"
 msgstr "تاريخ الإدخال"
 
 #. Translators: Date document was first added to the PGP
-#: corpus/templates/corpus/document_detail.html:124
-#, python-format
-msgid "\n"
-"                In PGP since %(date)s\n"
-"            "
-msgstr "\n"
+#: geniza/corpus/templates/corpus/document_detail.html:152
+#, fuzzy, python-format
+#| msgid ""
+#| "\n"
+#| "                In PGP since %(date)s\n"
+#| "            "
+msgid ""
+"\n"
+"                        In PGP since %(date)s\n"
+"                    "
+msgstr ""
+"\n"
 "                في PGP منذ %(date)s\n"
 "            "
 
 #. Translators: label for document description
-#: corpus/templates/corpus/document_detail.html:132
+#: geniza/corpus/templates/corpus/document_detail.html:162
 msgid "Description"
 msgstr "الوصف"
 
 #. Translators: label for permanent link to a document
-#: corpus/templates/corpus/document_detail.html:159
+#: geniza/corpus/templates/corpus/document_detail.html:174
 msgid "Permalink"
 msgstr "رابط دائم"
 
 #. Translators: Search submit button
-#: corpus/templates/corpus/document_list.html:14
+#: geniza/corpus/templates/corpus/document_list.html:14
 msgid "Submit search"
 msgstr "إرسال البحث"
 
-#: corpus/templates/corpus/document_list.html:19
-#: corpus/templates/corpus/document_list.html:30
+#: geniza/corpus/templates/corpus/document_list.html:19
+#: geniza/corpus/templates/corpus/document_list.html:30
 msgid "Filters"
 msgstr "عوامل التصفية"
 
 #. Translators: label for 'filters' close button for mobile navigation
-#: corpus/templates/corpus/document_list.html:25
+#: geniza/corpus/templates/corpus/document_list.html:25
 msgid "Close filter options"
 msgstr "إغلاق خيارات التصفية"
 
-#: corpus/templates/corpus/document_list.html:60
+#: geniza/corpus/templates/corpus/document_list.html:60
 msgid "Apply"
 msgstr "تطبيق"
 
 #. Translators: number of search results
-#: corpus/templates/corpus/document_list.html:87
+#: geniza/corpus/templates/corpus/document_list.html:87
 #, python-format
 msgid "1 result"
 msgid_plural "%(count_humanized)s total results"
@@ -276,65 +306,76 @@ msgstr[4] "%(count_humanized)s نتائج"
 msgstr[5] "%(count_humanized)s مجموع النتائج"
 
 #. Translators: screen reader label for pagination navigation displayed after search results
-#: corpus/templates/corpus/document_list.html:115
+#: geniza/corpus/templates/corpus/document_list.html:103
 msgid "secondary pagination"
 msgstr ""
 
 #. Translators: accessibility label for a footnote source citation in scholarship records view
-#: corpus/templates/corpus/document_scholarship.html:21
+#: geniza/corpus/templates/corpus/document_scholarship.html:21
 msgid "Bibliographic citation"
 msgstr "الاقتباس المرجعي"
 
 #. Translators: label for included document relations for a single footnote
-#: corpus/templates/corpus/document_scholarship.html:28
+#: geniza/corpus/templates/corpus/document_scholarship.html:28
 msgid "includes"
 msgstr "يشمل"
 
 #. Translators: label for document relations in list of footnotes
-#: corpus/templates/corpus/document_scholarship.html:31
+#: geniza/corpus/templates/corpus/document_scholarship.html:31
 #, python-format
 msgid "for %(relation)s see"
 msgstr "لرؤية %(relation)s"
 
 #. Translators: label for document relations for one footnote with no location or URL
-#: corpus/templates/corpus/document_scholarship.html:36
+#: geniza/corpus/templates/corpus/document_scholarship.html:36
 #, python-format
 msgid "includes %(relation)s"
 msgstr "يشمل %(relation)s"
 
 #. Translators: Document edit link for admins
-#: corpus/templates/corpus/snippets/document_header.html:9
+#: geniza/corpus/templates/corpus/snippets/document_header.html:9
 msgid "Edit"
 msgstr "تحرير"
 
-#: corpus/templates/corpus/snippets/document_image_rights.html:4
+#: geniza/corpus/templates/corpus/snippets/document_image_rights.html:4
 msgid "Image Permissions Statement"
 msgstr "بيان أذونات الصورة"
 
-#: corpus/templates/corpus/snippets/document_image_rights.html:21
+#: geniza/corpus/templates/corpus/snippets/document_image_rights.html:21
 msgid "No attribution or license noted."
 msgstr "لم يتم ملاحظة أي إسناد أو ترخيص."
 
-#: corpus/templates/corpus/snippets/document_image_rights.html:38
+#: geniza/corpus/templates/corpus/snippets/document_image_rights.html:38
 msgid "Jewish Theological Seminary homepage"
 msgstr "الصفحة الرئيسية Jewish Theological Seminary"
 
-#: corpus/templates/corpus/snippets/document_image_rights.html:40
+#: geniza/corpus/templates/corpus/snippets/document_image_rights.html:40
 msgid "Jewish Theological Seminary logo"
 msgstr "شعار Jewish Theological Seminary"
 
+#: geniza/corpus/templates/corpus/snippets/document_result.html:22
+#, fuzzy
+#| msgid "Document Date"
+msgid "Document date"
+msgstr "تاريخ الوثيقة"
+
+#. Translators: label for historical/old shelfmark on document fragments
+#: geniza/corpus/templates/corpus/snippets/document_result.html:33
+msgid "Historical shelfmark"
+msgstr ""
+
 #. Translators: Date document was first added to the PGP
-#: corpus/templates/corpus/snippets/document_result.html:31
+#: geniza/corpus/templates/corpus/snippets/document_result.html:38
 msgid "In PGP since"
 msgstr "في PGP منذ"
 
 #. Translators: label for unknown date for date added to PGP
-#: corpus/templates/corpus/snippets/document_result.html:33
+#: geniza/corpus/templates/corpus/snippets/document_result.html:40
 msgid "unknown"
 msgstr ""
 
 #. Translators: number of editions for this document
-#: corpus/templates/corpus/snippets/document_result.html:74
+#: geniza/corpus/templates/corpus/snippets/document_result.html:102
 #, python-format
 msgid "1 Transcription"
 msgid_plural "%(counter)s Transcriptions"
@@ -346,7 +387,7 @@ msgstr[4] "%(counter)s نسخ"
 msgstr[5] "%(counter)s نسخ"
 
 #. Translators: number of translations for this document
-#: corpus/templates/corpus/snippets/document_result.html:84
+#: geniza/corpus/templates/corpus/snippets/document_result.html:112
 #, python-format
 msgid "1 Translation"
 msgid_plural "%(counter)s Translations"
@@ -358,7 +399,7 @@ msgstr[4] "%(counter)s ترجمات"
 msgstr[5] "%(counter)s ترجمات"
 
 #. Translators: number of sources that discuss this document
-#: corpus/templates/corpus/snippets/document_result.html:94
+#: geniza/corpus/templates/corpus/snippets/document_result.html:122
 #, python-format
 msgid "1 Discussion"
 msgid_plural "%(counter)s Discussions"
@@ -369,112 +410,117 @@ msgstr[3] "%(counter)s مناقشات"
 msgstr[4] "%(counter)s مناقشات"
 msgstr[5] "%(counter)s مناقشات"
 
-#: corpus/templates/corpus/snippets/document_result.html:102
+#: geniza/corpus/templates/corpus/snippets/document_result.html:130
 msgid "No Scholarship Records"
 msgstr "لا توجد ثبت المراجع والمصادر"
 
-#: corpus/templates/corpus/snippets/document_result.html:116
+#: geniza/corpus/templates/corpus/snippets/document_result.html:144
 msgid "more"
 msgstr "المزيد"
 
 #. Translators: screen-reader label for "view document details" link
-#: corpus/templates/corpus/snippets/document_result.html:136
+#: geniza/corpus/templates/corpus/snippets/document_result.html:168
 #, python-format
 msgid "View details for %(document_label)s"
 msgstr ""
 
-#: corpus/templates/corpus/snippets/document_result.html:138
+#: geniza/corpus/templates/corpus/snippets/document_result.html:170
 msgid "View document details"
 msgstr "عرض تفاصيل المستند"
 
 #. Translators: accessibility text label for document detail view tabs navigation
-#: corpus/templates/corpus/snippets/document_tabs.html:4
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:4
 msgid "tabs"
 msgstr "علامات التبويب"
 
-#: corpus/templates/corpus/snippets/document_tabs.html:7
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:7
 msgid "Document Details"
 msgstr "تفاصيل المستند"
 
 #. Translators: n_records is number of scholarship records
-#: corpus/templates/corpus/snippets/document_tabs.html:10
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:10
 #, python-format
 msgid "Scholarship Records (%(n_records)s)"
 msgstr "ثبت المراجع والمصادر (%(n_records)s)"
 
-#: corpus/templates/corpus/snippets/document_tabs.html:17
+#: geniza/corpus/templates/corpus/snippets/document_tabs.html:17
 #, python-format
 msgid "Related Documents (%(n_reldocs)s)"
 msgstr "المستندات ذات الصلة %(n_reldocs)s)"
 
-#: corpus/templates/corpus/snippets/document_transcription.html:23
+#: geniza/corpus/templates/corpus/snippets/document_transcription.html:39
 msgid "show images"
 msgstr "عرض الصور"
 
-#: corpus/templates/corpus/snippets/document_transcription.html:27
+#: geniza/corpus/templates/corpus/snippets/document_transcription.html:42
 msgid "show transcription"
 msgstr "عرض النسخ"
 
-#: corpus/templates/corpus/snippets/document_transcription.html:31
+#: geniza/corpus/templates/corpus/snippets/document_transcription.html:46
 msgid "show translation"
 msgstr "عرض الترجمة"
 
-#: corpus/templates/corpus/snippets/document_transcription.html:74
+#: geniza/corpus/templates/corpus/snippets/document_transcription.html:142
 msgid "Zoom and Rotate"
 msgstr "تكبير و تدوير"
 
-#: corpus/templates/corpus/snippets/document_transcription.html:98
+#: geniza/corpus/templates/corpus/snippets/document_transcription.html:176
 #, python-format
 msgid "View %(related_doc)s"
 msgstr "عرض %(related_doc)s"
 
-#: corpus/templates/corpus/snippets/document_transcription.html:128
+#: geniza/corpus/templates/corpus/snippets/document_transcription.html:200
 msgid "Transcription"
 msgstr "النصوص المفرّغة"
 
+#: geniza/corpus/templates/corpus/snippets/document_transcription.html:239
+#: geniza/footnotes/models.py:495
+msgid "Translation"
+msgstr "الترجمة"
+
 #. Translators: label for a link to a resource with no named location
-#: corpus/templates/corpus/snippets/footnote_location.html:9
+#: geniza/corpus/templates/corpus/snippets/footnote_location.html:9
 msgid "online resource"
 msgstr "مورد عبر الإنترنت"
 
 #. Translators: screen reader label for pagination navigation
-#: corpus/templates/corpus/snippets/pagination.html:4
+#: geniza/corpus/templates/corpus/snippets/pagination.html:4
 msgid "pagination"
 msgstr ""
 
 #. Translators: Label for "previous page" button in search results
-#: corpus/templates/corpus/snippets/pagination.html:8
+#: geniza/corpus/templates/corpus/snippets/pagination.html:8
 msgid "Previous"
 msgstr "السابق"
 
 #. Translators: Title for link to page number in search results
-#: corpus/templates/corpus/snippets/pagination.html:22
+#: geniza/corpus/templates/corpus/snippets/pagination.html:22
 #, python-format
 msgid "page %(number)s"
 msgstr "صفحة %(number)s"
 
 #. Translators: Label for "next page" button in search results
-#: corpus/templates/corpus/snippets/pagination.html:63
+#: geniza/corpus/templates/corpus/snippets/pagination.html:63
 msgid "Next"
 msgstr "التالي"
 
 #. Translators: title of document search page
-#: corpus/views.py:42
+#: geniza/corpus/views.py:49
 msgid "Search Documents"
 msgstr "البحث في المستندات"
 
 #. Translators: description of document search page, for search engines
-#: corpus/views.py:44
+#: geniza/corpus/views.py:51
 msgid "Search and browse Geniza documents."
 msgstr "البحث في وثائق جنيزا وتصفحها."
 
 #. Translators: title of document scholarship page
-#: corpus/views.py:350
+#: geniza/corpus/views.py:382
 #, python-format
 msgid "Scholarship on %(doc)s"
 msgstr "منحة في %(doc)s"
 
-#: corpus/views.py:357
+#: geniza/corpus/views.py:389
 #, python-format
 msgid "%(count)d scholarship record"
 msgid_plural "%(count)d scholarship records"
@@ -486,12 +532,12 @@ msgstr[4] "%(count)d سجلات منح دراسية"
 msgstr[5] "%(count)d سجلات منح دراسية"
 
 #. Translators: title of related documents page
-#: corpus/views.py:398
+#: geniza/corpus/views.py:430
 #, python-format
 msgid "Related documents for %(doc)s"
 msgstr "المستندات ذات الصلة لـ %(doc)s"
 
-#: corpus/views.py:405
+#: geniza/corpus/views.py:437
 #, python-format
 msgid "%(count)d related document"
 msgid_plural "%(count)d related documents"
@@ -502,163 +548,195 @@ msgstr[3] "%(count)d مستندات ذات صلة"
 msgstr[4] "%(count)d مستندات ذات صلة"
 msgstr[5] "%(count)d مستندات ذات صلة"
 
+#: geniza/entities/models.py:144
+msgid "Male"
+msgstr ""
+
+#: geniza/entities/models.py:145
+msgid "Female"
+msgstr ""
+
+#: geniza/entities/models.py:146
+#, fuzzy
+#| msgid "Unknown type"
+msgid "Unknown"
+msgstr "نوع غير معروف"
+
+#: geniza/entities/models.py:412
+msgid "Immediate family relations"
+msgstr ""
+
+#: geniza/entities/models.py:413
+msgid "Extended family"
+msgstr ""
+
+#: geniza/entities/models.py:414
+msgid "Relatives by marriage"
+msgstr ""
+
+#: geniza/entities/models.py:415
+msgid "Business and property relationships"
+msgstr ""
+
+#: geniza/entities/models.py:416
+msgid "Ambiguity"
+msgstr ""
+
 #. Translators: Placeholder for when a work has no title available
-#: footnotes/models.py:211
+#: geniza/footnotes/models.py:259
 msgid "[digital geniza document edition]"
 msgstr "[طبعة وثيقة جينيزا رقمية]"
 
-#: footnotes/models.py:438
+#: geniza/footnotes/models.py:494
 msgid "Edition"
 msgstr "الطبعة"
 
-#: footnotes/models.py:439
-msgid "Translation"
-msgstr "الترجمة"
-
-#: footnotes/models.py:440
+#: geniza/footnotes/models.py:496
 msgid "Discussion"
 msgstr "المناقشة"
 
-#: footnotes/models.py:441
-msgid "Digital Edition"
-msgstr ""
-
-#: pages/models.py:13
-msgid "Alternative text for visually impaired users to\n"
+#: geniza/pages/models.py:13
+msgid ""
+"Alternative text for visually impaired users to\n"
 "briefly communicate the intended message of the image in this context."
-msgstr "نص بديل للمستخدمين ضعاف البصر\n"
+msgstr ""
+"نص بديل للمستخدمين ضعاف البصر\n"
 "لإيصال الرسالة المقصودة للصورة في هذا السياق بإيجاز."
 
-#: pages/models.py:44
-msgid "This text will only be read to     non-sighted users and should describe the major insights or     takeaways from the graphic. Multiple paragraphs are allowed."
-msgstr "هذا النص سوف يقرأ فقط للمستخدمين غير المبصرين ويجب أن يصف الرؤى أو الأفكار الرئيسية من الرسوم. يسمح بفقرات متعددة."
+#: geniza/pages/models.py:44
+msgid ""
+"This text will only be read to     non-sighted users and should describe the "
+"major insights or     takeaways from the graphic. Multiple paragraphs are "
+"allowed."
+msgstr ""
+"هذا النص سوف يقرأ فقط للمستخدمين غير المبصرين ويجب أن يصف الرؤى أو الأفكار "
+"الرئيسية من الرسوم. يسمح بفقرات متعددة."
 
 #. Translators: title for Not Found (404) error page
-#: templates/404.html:5 templates/404.html:13
+#: geniza/templates/404.html:5 geniza/templates/404.html:13
 msgid "Not Found"
 msgstr "لم يتم العثور عليه"
 
 #. Translators: description for Not Found (404) error page
-#: templates/404.html:7 templates/404.html:14
+#: geniza/templates/404.html:7 geniza/templates/404.html:14
 msgid "Oops, you've hit a lacuna! Page not found."
 msgstr "عفواً، لقد أصبت فراغ! لم يتم العثور على الصفحة."
 
 #. Translators: title for Internal Server Error (500) error page
-#: templates/500.html:5 templates/500.html:19
+#: geniza/templates/500.html:5 geniza/templates/500.html:19
 msgid "Server Error"
 msgstr "خطأ في الخادم"
 
 #. Translators: description for Internal Server Error (500) error page
-#: templates/500.html:7 templates/500.html:20
+#: geniza/templates/500.html:7 geniza/templates/500.html:20
 msgid "Something went wrong putting this page together."
 msgstr "حدث خطأ في وضع هذه الصفحة معا."
 
-#: templates/admin/base_site.html:4
+#: geniza/templates/admin/base_site.html:4
 msgid "Django site admin"
 msgstr "مسؤول موقع Django"
 
-#: templates/base.html:91
+#: geniza/templates/base.html:91
 msgid "Skip to main content"
 msgstr "تخطي إلى المحتوى الرئيسي"
 
 #. Translators: accessibility text label for footer site navigation
-#: templates/footer.html:4
+#: geniza/templates/footer.html:4
 msgid "footer navigation"
 msgstr "التنقل في التذييل"
 
 #. Translators: accessibility label for Princeton Geniza Lab homepage, for footer
-#: templates/footer.html:21
+#: geniza/templates/footer.html:21
 msgid "Princeton Geniza Lab homepage"
 msgstr "الصفحة الرئيسية لـ Princeton Geniza Lab"
 
-#: templates/footer.html:28 templates/footer.html:42
+#: geniza/templates/footer.html:28 geniza/templates/footer.html:42
 #, python-format
 msgid "Follow %(username)s on Twitter."
 msgstr ""
 
 #. Translators: accessibility label for Princeton CDH homepage, for footer
-#: templates/footer.html:35
+#: geniza/templates/footer.html:35
 msgid "Princeton Center for Digital Humanities homepage"
 msgstr "الصفحة الرئيسية لـ Princeton Center for Digital Humanities"
 
-#: templates/footer.html:46
+#: geniza/templates/footer.html:46
 #, python-format
 msgid "Follow %(username)s on Instagram."
 msgstr ""
 
 #. Translators: link label for Princeton accessibility assistance page, for footer
-#: templates/footer.html:56
+#: geniza/templates/footer.html:56
 msgid "Accessibility"
 msgstr "إمكانية الوصول"
 
 #. Translators: official name of Princeton University's board of trustees, for footer
-#: templates/footer.html:61
+#: geniza/templates/footer.html:61
 msgid "The Trustees of Princeton University"
 msgstr "The Trustees of Princeton University"
 
 #. Translators: Creative Commons license text, for footer
-#: templates/footer.html:65
+#: geniza/templates/footer.html:65
 msgid "Creative Commons CC-BY license"
 msgstr "ترخيص Creative Commons CC-BY"
 
 #. Translators: International Standard Serial Number (ISSN), for footer
-#: templates/footer.html:72
+#: geniza/templates/footer.html:72
 msgid "ISSN: 2834-4146"
 msgstr "ISSN: 2834-4146"
 
 #. Translators: software version, for footer
-#: templates/footer.html:76
+#: geniza/templates/footer.html:76
 msgid "software version"
 msgstr "إصدار البرنامج"
 
 #. Translators: official name of Princeton University, for footer
-#: templates/footer.html:83
+#: geniza/templates/footer.html:83
 msgid "Princeton University homepage"
 msgstr "الصفحة الرئيسية لـ Princeton University"
 
 #. Translators: accessibility text label for site navigation
-#: templates/nav.html:4
+#: geniza/templates/nav.html:4
 msgid "main navigation"
 msgstr "التنقل الرئيسي"
 
 #. Translators: accessibility label for 'home' button in main navigation
-#: templates/nav.html:11
+#: geniza/templates/nav.html:11
 msgid "home"
 msgstr "الصفحة الرئيسية"
 
 #. Translators: site name label for 'home' button in main navigation
-#: templates/nav.html:13
+#: geniza/templates/nav.html:13
 msgid "The Princeton Geniza Project"
 msgstr "The Princeton Geniza Project"
 
 #. Translators: label for 'menu' open button for mobile navigation
-#: templates/nav.html:24
+#: geniza/templates/nav.html:24
 msgid "Open main navigation menu"
 msgstr "فتح قائمة التنقل الرئيسية"
 
 #. Translators: label for 'menu' close button for mobile navigation
-#: templates/nav.html:32
+#: geniza/templates/nav.html:32
 msgid "Close main navigation menu"
 msgstr "إغلاق قائمة التنقل الرئيسية"
 
 #. Translators: label for language choices in navigation
-#: templates/snippets/language_switcher.html:11
+#: geniza/templates/snippets/language_switcher.html:11
 #, python-format
 msgid "read this page in %(language_name)s (%(language_code)s)"
 msgstr "قراءة هذه الصفحة في %(language_name)s (%(language_code)s)"
 
 #. Translators: label for link to 'Search' page in main navigation
-#: templates/snippets/menu.html:7
+#: geniza/templates/snippets/menu.html:7
 msgid "Search"
 msgstr "بحث"
 
 #. Translators: label for main menu back button for mobile navigation
-#: templates/snippets/sub_menu.html:8
+#: geniza/templates/snippets/sub_menu.html:8
 msgid "Return to main menu"
 msgstr "العودة إلى القائمة الرئيسية"
 
 #. Translators: label for dark mode/light mode theme switcher
-#: templates/snippets/theme_toggle.html:5
+#: geniza/templates/snippets/theme_toggle.html:5
 msgid "Enable dark mode"
 msgstr "تفعيل الوضع المظلم"
-
