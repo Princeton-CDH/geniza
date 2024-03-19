@@ -1,3 +1,5 @@
+import hashlib
+import json
 import re
 import uuid
 from collections import defaultdict
@@ -193,7 +195,7 @@ class Annotation(TrackChangesModel):
         and the data will not be saved.
         """
         # remove any values tracked on the model; redundant in json field
-        for val in ["id", "created", "modified", "@context", "type"]:
+        for val in ["id", "created", "modified", "@context", "type", "etag"]:
             if val in data:
                 del data[val]
 
@@ -247,6 +249,14 @@ class Annotation(TrackChangesModel):
         else:
             return cleaned_html
 
+    @property
+    def etag(self):
+        """Compute and return an md5 hash of content to use as an ETag"""
+        # must be a string encoded as utf-8 to compute md5 hash
+        content_str = json.dumps(self.content, sort_keys=True).encode("utf-8")
+        # ETag should be wrapped in double quotes, per Django @condition docs
+        return f'"{hashlib.md5(content_str).hexdigest()}"'
+
     def compile(self, include_context=True):
         """Combine annotation data and return as a dictionary that
         can be serialized as JSON.  Includes context by default,
@@ -258,6 +268,11 @@ class Annotation(TrackChangesModel):
         anno = {}
         if include_context:
             anno = {"@context": "http://www.w3.org/ns/anno.jsonld"}
+        else:
+            # NOTE: ETag required here for inclusion in annotation list, which is how
+            # annotations are fetched during editing; need to associate each ETag with
+            # an individual annotation, for comparison with response ETag on POST/DELETE
+            anno = {"etag": self.etag}
 
         # define fields in desired order
         anno.update(

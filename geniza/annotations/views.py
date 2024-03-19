@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import AccessMixin, PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import BadRequest
 from django.http import HttpResponse, JsonResponse
+from django.views.decorators.http import condition
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
@@ -28,6 +29,38 @@ logger = logging.getLogger(__name__)
 
 class ApiAccessMixin(AccessMixin):
     raise_exception = True  # return an error instead of redirecting to login
+
+
+class AnnotationLastModifiedMixin(View):
+    """View mixin to add ETag/last modified headers."""
+
+    def get_etag(self, request, *args, **kwargs):
+        """Get etag from annotation"""
+        try:
+            anno = Annotation.objects.get(pk=kwargs.get("pk"))
+            return anno.etag
+        except Annotation.DoesNotExist:
+            return None
+
+    def get_last_modified(self, request, *args, **kwargs):
+        """Return last modified :class:`datetime.datetime`"""
+        try:
+            anno = Annotation.objects.get(pk=kwargs.get("pk"))
+            return anno.modified
+        except Annotation.DoesNotExist:
+            return None
+
+    def dispatch(self, request, *args, **kwargs):
+        """Wrap the dispatch method to add ETag/last modified headers when
+        appropriate, then return a conditional response."""
+
+        @condition(etag_func=self.get_etag, last_modified_func=self.get_last_modified)
+        def _dispatch(request, *args, **kwargs):
+            return super(AnnotationLastModifiedMixin, self).dispatch(
+                request, *args, **kwargs
+            )
+
+        return _dispatch(request, *args, **kwargs)
 
 
 class AnnotationResponse(JsonResponse):
@@ -269,7 +302,11 @@ class AnnotationSearch(View, MultipleObjectMixin):
 
 
 class AnnotationDetail(
-    PermissionRequiredMixin, ApiAccessMixin, View, SingleObjectMixin
+    PermissionRequiredMixin,
+    AnnotationLastModifiedMixin,
+    ApiAccessMixin,
+    View,
+    SingleObjectMixin,
 ):
     """View to read, update, or delete a single annotation."""
 
@@ -293,7 +330,6 @@ class AnnotationDetail(
 
     def post(self, request, *args, **kwargs):
         """update the annotation on POST"""
-        # NOTE: should use etag / if-match
         anno = self.get_object()
         try:
             anno_data = parse_annotation_data(request=request)
@@ -316,7 +352,6 @@ class AnnotationDetail(
 
     def delete(self, request, *args, **kwargs):
         """delete the annotation on DELETE"""
-        # should use etag / if-match
         # deleted uuid should not be reused (relying on low likelihood of uuid collision)
         anno = self.get_object()
         # create log entry to document deletion *BEFORE* deleting
