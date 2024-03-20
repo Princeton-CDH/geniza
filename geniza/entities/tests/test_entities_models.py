@@ -294,6 +294,11 @@ class TestPerson:
             in moved_log.change_message
         )
 
+    def test_get_absolute_url(self):
+        # should get person page url in user's language by pk
+        person = Person.objects.create()
+        assert person.get_absolute_url() == "/en/people/%s/" % person.pk
+
 
 @pytest.mark.django_db
 class TestPersonRole:
@@ -317,6 +322,13 @@ class TestPersonRole:
         # should match by name_en or display_label_en, depending on what's set
         assert PersonRole.objects_by_label.get("Some kind of official").pk == role.pk
         assert PersonRole.objects_by_label.get("Example").pk == role_2.pk
+
+    def test_str(self):
+        # str should use display label, with name as a fallback
+        pr = PersonRole.objects.create(name="test")
+        assert str(pr) == pr.name
+        pr.display_label = "Test Display"
+        assert str(pr) == pr.display_label
 
 
 @pytest.mark.django_db
