@@ -91,7 +91,7 @@ main.person {
             font-size: typography.$text-size-md;
             @include breakpoints.for-tablet-landscape-up {
                 margin-top: spacing.$spacing-lg;
-                font-size: typography.$text-size-lg;
+                font-size: typography.$text-size-xl;
             }
             p {
                 max-width: 100%;
