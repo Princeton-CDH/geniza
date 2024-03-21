@@ -474,6 +474,8 @@ class EventDocumentInline(DocumentInline):
         "document_description",
         "notes",
     )
+    min_num = 1
+    extra = 0
 
 
 class EventPersonInline(PersonInline):
