@@ -3,10 +3,11 @@ from django import forms
 from django.template.loader import get_template
 
 from geniza.entities.models import (
-    Event,
     Person,
+    PersonEventRelation,
     PersonPersonRelation,
     PersonPlaceRelation,
+    PlaceEventRelation,
     PlacePlaceRelation,
 )
 
@@ -109,19 +110,21 @@ class PlacePlaceForm(forms.ModelForm):
 
 class EventPersonForm(forms.ModelForm):
     class Meta:
-        model = Event.people.through
-        fields = ("person",)
+        model = PersonEventRelation
+        fields = ("person", "notes")
         widgets = {
-            "person": autocomplete.ModelSelect2(url="entities:person-autocomplete")
+            "person": autocomplete.ModelSelect2(url="entities:person-autocomplete"),
+            "notes": forms.Textarea(attrs={"rows": "4"}),
         }
 
 
 class EventPlaceForm(forms.ModelForm):
     class Meta:
-        model = Event.places.through
-        fields = ("place",)
+        model = PlaceEventRelation
+        fields = ("place", "notes")
         widgets = {
-            "place": autocomplete.ModelSelect2(url="entities:place-autocomplete")
+            "place": autocomplete.ModelSelect2(url="entities:place-autocomplete"),
+            "notes": forms.Textarea(attrs={"rows": "4"}),
         }
 
 

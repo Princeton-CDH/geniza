@@ -206,7 +206,10 @@ class Person(models.Model):
         help_text="Social role",
     )
     events = models.ManyToManyField(
-        Event, related_name="people", verbose_name="Related Events"
+        Event,
+        related_name="people",
+        verbose_name="Related Events",
+        through="PersonEventRelation",
     )
 
     # sources for the information gathered here
@@ -550,6 +553,17 @@ class PersonPersonRelation(models.Model):
         return f"{relation_type} relation: {self.to_person} and {self.from_person}"
 
 
+class PersonEventRelation(models.Model):
+    """A relationship between a person and an event"""
+
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Person-Event relation: {self.person} and {self.event}"
+
+
 class Place(models.Model):
     """A named geographical location, which may be associated with documents or people."""
 
@@ -574,7 +588,10 @@ class Place(models.Model):
     )
     notes = models.TextField(blank=True)
     events = models.ManyToManyField(
-        Event, related_name="places", verbose_name="Related Events"
+        Event,
+        related_name="places",
+        verbose_name="Related Events",
+        through="PlaceEventRelation",
     )
     # sources for the information gathered here
     footnotes = GenericRelation(Footnote, blank=True, related_name="places")
@@ -731,3 +748,14 @@ class PlacePlaceRelation(models.Model):
 
     def __str__(self):
         return f"{self.type} relation: {self.place_a} and {self.place_b}"
+
+
+class PlaceEventRelation(models.Model):
+    """A relationship between a place and an event"""
+
+    place = models.ForeignKey(Place, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Place-Event relation: {self.place} and {self.event}"

@@ -11,6 +11,18 @@ event_perms = [
     "change_event",
     "delete_event",
     "view_event",
+    "add_documenteventrelation",
+    "change_documenteventrelation",
+    "delete_documenteventrelation",
+    "view_documenteventrelation",
+    "add_personeventrelation",
+    "change_personeventrelation",
+    "delete_personeventrelation",
+    "view_personeventrelation",
+    "add_placeeventrelation",
+    "change_placeeventrelation",
+    "delete_placeeventrelation",
+    "view_placeeventrelation",
 ]
 
 

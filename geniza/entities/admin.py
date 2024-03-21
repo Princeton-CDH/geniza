@@ -13,6 +13,7 @@ from django.urls import path, reverse
 from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.corpus.dates import DocumentDateMixin
+from geniza.corpus.models import DocumentEventRelation
 from geniza.entities.forms import (
     EventForm,
     EventPersonForm,
@@ -30,12 +31,14 @@ from geniza.entities.models import (
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
+    PersonEventRelation,
     PersonPersonRelation,
     PersonPersonRelationType,
     PersonPlaceRelation,
     PersonPlaceRelationType,
     PersonRole,
     Place,
+    PlaceEventRelation,
     PlacePlaceRelation,
     PlacePlaceRelationType,
 )
@@ -223,12 +226,16 @@ class PersonEventInline(admin.TabularInline):
     """Inline for events related to a person"""
 
     autocomplete_fields = ("event",)
-    model = Person.events.through
+    fields = ("event", "notes")
+    model = PersonEventRelation
     min_num = 0
     extra = 1
     show_change_link = True
     verbose_name = "Related Event"
     verbose_name_plural = "Related Events"
+    formfield_overrides = {
+        TextField: {"widget": Textarea(attrs={"rows": "4"})},
+    }
 
 
 @admin.register(Person)
@@ -409,12 +416,16 @@ class PlaceEventInline(admin.TabularInline):
     """Inline for events related to a place"""
 
     autocomplete_fields = ("event",)
-    model = Place.events.through
+    fields = ("event", "notes")
+    model = PlaceEventRelation
     min_num = 0
     extra = 1
     show_change_link = True
     verbose_name = "Related Event"
     verbose_name_plural = "Related Events"
+    formfield_overrides = {
+        TextField: {"widget": Textarea(attrs={"rows": "4"})},
+    }
 
 
 @admin.register(Place)
@@ -456,30 +467,31 @@ class PlacePlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 class EventDocumentInline(DocumentInline):
     """Related documents inline for the Event admin"""
 
-    model = Event.documents.through
+    model = DocumentEventRelation
     autocomplete_fields = ("document",)
     fields = (
         "document",
         "document_description",
+        "notes",
     )
 
 
 class EventPersonInline(PersonInline):
     """Related people inline for the Event admin"""
 
-    model = Event.people.through
+    model = PersonEventRelation
     form = EventPersonForm
     autocomplete_fields = ("person",)
-    fields = ("person",)
+    fields = ("person", "notes")
 
 
 class EventPlaceInline(PlaceInline):
     """Related places inline for the Event admin"""
 
-    model = Event.places.through
+    model = PlaceEventRelation
     form = EventPlaceForm
     autocomplete_fields = ("place",)
-    fields = ("place",)
+    fields = ("place", "notes")
 
 
 @admin.register(Event)

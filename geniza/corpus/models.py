@@ -563,7 +563,10 @@ class Document(ModelIndexable, DocumentDateMixin):
         help_text="Decide whether a document should be publicly visible",
     )
     events = models.ManyToManyField(
-        to="entities.Event", related_name="documents", verbose_name="Related Events"
+        to="entities.Event",
+        related_name="documents",
+        verbose_name="Related Events",
+        through="DocumentEventRelation",
     )
     footnotes = GenericRelation(Footnote, related_query_name="document")
     log_entries = GenericRelation(LogEntry, related_query_name="document")
@@ -1725,3 +1728,14 @@ class Dating(models.Model):
     def standard_date_display(self):
         """Standard date in human-readable format for document details pages"""
         return Document.standard_date_display(self.standard_date)
+
+
+class DocumentEventRelation(models.Model):
+    """A relationship between a document and an event"""
+
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    event = models.ForeignKey("entities.Event", on_delete=models.CASCADE)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Document-Event relation: {self.document} and {self.event}"

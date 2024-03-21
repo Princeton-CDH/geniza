@@ -25,6 +25,7 @@ from geniza.corpus.models import (
     Collection,
     Dating,
     Document,
+    DocumentEventRelation,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -379,12 +380,16 @@ class DocumentEventInline(admin.TabularInline):
     """Inline for events related to a document"""
 
     autocomplete_fields = ("event",)
-    model = Document.events.through
+    fields = ("event", "notes")
+    model = DocumentEventRelation
     min_num = 0
     extra = 1
     show_change_link = True
     verbose_name = "Related Event"
     verbose_name_plural = "Related Events"
+    formfield_overrides = {
+        TextField: {"widget": Textarea(attrs={"rows": "4"})},
+    }
 
 
 @admin.register(Document)

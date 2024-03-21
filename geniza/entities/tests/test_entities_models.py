@@ -16,12 +16,14 @@ from geniza.entities.models import (
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
+    PersonEventRelation,
     PersonPersonRelation,
     PersonPersonRelationType,
     PersonPlaceRelation,
     PersonPlaceRelationType,
     PersonRole,
     Place,
+    PlaceEventRelation,
     PlacePlaceRelation,
     PlacePlaceRelationType,
 )
@@ -490,3 +492,23 @@ class TestEvent:
         join.doc_date_standard = "1000/1010"
         join.save()
         assert event.documents_date_range == "1000/1150"
+
+
+@pytest.mark.django_db
+class TestPersonEventRelation:
+    def test_str(self):
+        goitein = Person.objects.create()
+        Name.objects.create(name="Goitein", content_object=goitein)
+        event = Event.objects.create(name="S.D. Goitein's first publication")
+        relation = PersonEventRelation.objects.create(person=goitein, event=event)
+        assert str(relation) == f"Person-Event relation: {goitein} and {event}"
+
+
+@pytest.mark.django_db
+class TestPlaceEventRelation:
+    def test_str(self):
+        fustat = Place.objects.create()
+        Name.objects.create(name="Fustat", content_object=fustat)
+        event = Event.objects.create(name="Founding of the Ben Ezra Synagogue")
+        relation = PlaceEventRelation.objects.create(place=fustat, event=event)
+        assert str(relation) == f"Place-Event relation: {fustat} and {event}"
