@@ -123,6 +123,11 @@ main.person {
     // person tabs styling: 4 tabs!
     nav#tabs {
         max-width: 896px;
+        // TODO: show <select> on mobile instead when another page is ready
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            display: block;
+        }
     }
     .tabs {
         @include breakpoints.for-tablet-landscape-up {
