@@ -237,6 +237,14 @@ class PersonEventInline(admin.TabularInline):
         TextField: {"widget": Textarea(attrs={"rows": "4"})},
     }
 
+    def get_formset(self, request, obj=None, **kwargs):
+        """Disable the 'add' link for an Event from a Person. Must be added from
+        a document or created manually with a document attached in the admin."""
+        formset = super().get_formset(request, obj, **kwargs)
+        service = formset.form.base_fields["event"]
+        service.widget.can_add_related = False
+        return formset
+
 
 @admin.register(Person)
 class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
@@ -427,6 +435,14 @@ class PlaceEventInline(admin.TabularInline):
         TextField: {"widget": Textarea(attrs={"rows": "4"})},
     }
 
+    def get_formset(self, request, obj=None, **kwargs):
+        """Disable the 'add' link for an Event from a Place. Must be added from
+        a document or created manually with a document attached in the admin."""
+        formset = super().get_formset(request, obj, **kwargs)
+        service = formset.form.base_fields["event"]
+        service.widget.can_add_related = False
+        return formset
+
 
 @admin.register(Place)
 class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
@@ -474,8 +490,17 @@ class EventDocumentInline(DocumentInline):
         "document_description",
         "notes",
     )
-    min_num = 1
     extra = 0
+
+    def get_min_num(self, request, obj=None, **kwargs):
+        """Override min_num to change it conditionally based on how Event is being added"""
+        if "_popup" in request.GET and request.GET["_popup"] == "1" and obj is None:
+            # If accessed via popup, min number of associated documents should be 0
+            # since it's being added via a document, so it will always get one
+            return 0
+        else:
+            # If accessed via Event section of admin, requires minimum 1 document
+            return 1
 
 
 class EventPersonInline(PersonInline):

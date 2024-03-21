@@ -253,3 +253,23 @@ class TestPersonPersonRelationTypeChoiceIterator:
         assert len(choices[extended_family]) == 2
         assert (type_a.pk, type_a.name) in choices[immediate_family]
         assert (type_a.pk, type_a.name) not in choices[extended_family]
+
+
+class TestPersonEventInline:
+    def test_get_formset(self, admin_client):
+        # there should be no link to a popup to add an event from the Person admin
+        url = reverse("admin:entities_person_add")
+        response = admin_client.get(url)
+        content = str(response.content)
+        # NOTE: confirmed the following assertion fails when get_formset not overridden
+        assert "Add another event" not in content
+
+
+class TestPlaceEventInline:
+    def test_get_formset(self, admin_client):
+        # there should be no link to a popup to add an event from the Person admin
+        url = reverse("admin:entities_place_add")
+        response = admin_client.get(url)
+        content = str(response.content)
+        # NOTE: confirmed the following assertion fails when get_formset not overridden
+        assert "Add another event" not in content
