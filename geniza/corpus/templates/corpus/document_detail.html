@@ -134,13 +134,26 @@
             </section>
         {% endif %}
 
-        <section class="input-date">
-            {# Translators: Label for date document was first added to the PGP #}
-            <h2 class="sr-only">{% translate 'Input date' %}</h2>
-            {# Translators: Date document was first added to the PGP #}
-            {% blocktranslate with date=document.log_entries.last.action_time.year %}
-                In PGP since {{ date }}
-            {% endblocktranslate %}
+        <section class="extra-metadata">
+            <h2 class="sr-only">
+                {# Translators: label for secondary/historiographical metadata #}
+                {% translate 'Additional metadata' %}
+            </h2>
+            <dl>
+                {% if document.fragment_historical_shelfmarks %}
+                {# Translators: label for historical/old shelfmarks on document fragments #}
+                    <dt>{% translate 'Historical shelfmarks' %}</dt>
+                    <dd>{{ document.fragment_historical_shelfmarks }}</dd>
+                {% endif %}
+                {# Translators: Label for date document was first added to the PGP #}
+                <dt>{% translate 'Input date' %}</dt>
+                <dd>
+                    {# Translators: Date document was first added to the PGP #}
+                    {% blocktranslate with date=document.log_entries.last.action_time.year %}
+                        In PGP since {{ date }}
+                    {% endblocktranslate %}
+                </dd>
+            </dl>
         </section>
 
         <section class="description">

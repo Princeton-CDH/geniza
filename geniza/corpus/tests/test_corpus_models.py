@@ -1994,6 +1994,18 @@ def test_items_to_index(document, footnote):
     assert isinstance(docs, MultilingualQuerySet)
 
 
+def test_fragment_historic_shelfmarks(document, join, fragment, multifragment):
+    fragment.old_shelfmarks = "ULC Add. 2586"
+    fragment.save()
+    assert document.fragment_historical_shelfmarks == fragment.old_shelfmarks
+    assert join.fragment_historical_shelfmarks == fragment.old_shelfmarks
+    multifragment.old_shelfmarks = "T-S Misc.29.6"
+    multifragment.save()
+    hist_string = join.fragment_historical_shelfmarks
+    assert fragment.old_shelfmarks in hist_string
+    assert multifragment.old_shelfmarks in hist_string
+
+
 @pytest.mark.django_db
 class TestDocumentEventRelation:
     def test_str(self, document):

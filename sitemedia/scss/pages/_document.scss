@@ -96,14 +96,21 @@ main.document {
                 margin-left: 0;
             }
         }
-        // Input date "In PGP since" text
-        section.input-date {
+        // Additional metadata section, like input date ("In PGP since") and historical shelfmark
+        section.extra-metadata {
             margin: 12px spacing.$spacing-md 0;
             @include breakpoints.for-tablet-landscape-up {
                 margin: 12px 0 0;
             }
             @include typography.meta;
-            color: var(--input-date-text);
+            color: var(--extra-metadata-text);
+            dl {
+                display: grid;
+                grid-template-columns: 3fr 7fr;
+                dt {
+                    font-weight: bold;
+                }
+            }
         }
         // "Description" header and content
         section.description {
@@ -198,7 +205,7 @@ html[lang="he"] main.document {
         @include typography.body-he;
     }
     .container dl.metadata-list,
-    .container section.input-date,
+    .container section.extra-metadata,
     .container dl.metadata-list dt,
     .container dl.metadata-list dd,
     dl.metadata-list.tertiary dt#permalink {
@@ -219,7 +226,7 @@ html[lang="ar"] main.document {
     .container dl.metadata-list,
     .container dl.metadata-list dt,
     .container dl.metadata-list dd,
-    .container section.input-date,
+    .container section.extra-metadata,
     dl.metadata-list.tertiary dt#permalink {
         @include typography.meta-ar;
     }

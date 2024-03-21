@@ -74,6 +74,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "has_digital_edition": "has_digital_edition_b",
         "has_digital_translation": "has_digital_translation_b",
         "has_discussion": "has_discussion_b",
+        "old_shelfmark": "old_shelfmark_bigram",
     }
 
     # regex to convert field aliases used in search to actual solr fields

@@ -197,6 +197,8 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                         fragsize=150,
                         requireFieldMatch=True,
                     )
+                    # highlight old shelfmark so we can show match in results
+                    .highlight("old_shelfmark", requireFieldMatch=True)
                     .also("score")
                 )  # include relevance score in results
 

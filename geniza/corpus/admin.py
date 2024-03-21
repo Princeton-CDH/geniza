@@ -418,7 +418,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         "view_old_pgpids",
         "standard_date",
         "admin_thumbnails",
-        "fragment_historic_shelfmarks",
+        "fragment_historical_shelfmarks",
     )
     search_fields = (
         "fragments__shelfmark",
@@ -436,19 +436,6 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     )
     def view_old_pgpids(self, obj):
         return ",".join([str(pid) for pid in obj.old_pgpids]) if obj.old_pgpids else "-"
-
-    # show fragment historic shelfmarks
-    @admin.display(
-        description="Historic shelfmarks",
-    )
-    def fragment_historic_shelfmarks(self, obj):
-        all_textblocks = obj.textblock_set.all()
-        all_fragments = [tb.fragment for tb in all_textblocks]
-        return (
-            "; ".join(
-                [frag.old_shelfmarks for frag in all_fragments if frag.old_shelfmarks]
-            )
-        ) or "-"
 
     @admin.display(
         description="Standard date",
@@ -487,7 +474,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
                         "shelfmark",
                         "id",
                         "view_old_pgpids",
-                        "fragment_historic_shelfmarks",
+                        "fragment_historical_shelfmarks",
                     ),
                     "shelfmark_override",
                     "doctype",

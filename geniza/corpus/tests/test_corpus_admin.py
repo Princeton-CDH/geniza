@@ -376,25 +376,6 @@ class TestDocumentAdmin:
         assert footnote_log_entry not in response.context["footnote_action_list"]
         assert annotation_log_entry not in response.context["annotation_action_list"]
 
-    def test_fragment_historic_shelfmarks(
-        self, document, join, fragment, multifragment
-    ):
-        doc_admin = DocumentAdmin(model=Document, admin_site=admin.site)
-        # dash when there are no old shelfmarks
-        assert doc_admin.fragment_historic_shelfmarks(document) == "-"
-        fragment.old_shelfmarks = "ULC Add. 2586"
-        fragment.save()
-        # otherwise should display all old shelfmarks
-        assert (
-            doc_admin.fragment_historic_shelfmarks(document) == fragment.old_shelfmarks
-        )
-        assert doc_admin.fragment_historic_shelfmarks(join) == fragment.old_shelfmarks
-        multifragment.old_shelfmarks = "T-S Misc.29.6"
-        multifragment.save()
-        hist_string = doc_admin.fragment_historic_shelfmarks(join)
-        assert fragment.old_shelfmarks in hist_string
-        assert multifragment.old_shelfmarks in hist_string
-
 
 @pytest.mark.django_db
 class TestDocumentForm:

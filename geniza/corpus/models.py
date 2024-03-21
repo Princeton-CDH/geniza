@@ -642,6 +642,16 @@ class Document(ModelIndexable, DocumentDateMixin):
         return self.shelfmark_override or self.shelfmark
 
     @property
+    @admin.display(description="Historical shelfmarks")
+    def fragment_historical_shelfmarks(self):
+        """Property to display set of all historical shelfmarks on the document"""
+        all_textblocks = self.textblock_set.all()
+        all_fragments = [tb.fragment for tb in all_textblocks]
+        return "; ".join(
+            [frag.old_shelfmarks for frag in all_fragments if frag.old_shelfmarks]
+        )
+
+    @property
     def collection(self):
         """collection (abbreviation) for associated fragments"""
         # use set to ensure unique; sort for reliable output order
