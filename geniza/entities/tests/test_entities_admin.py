@@ -9,6 +9,7 @@ from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.corpus.models import Document, LanguageScript
 from geniza.entities.admin import (
+    EventDocumentInline,
     NameInlineFormSet,
     PersonAdmin,
     PersonDocumentInline,
@@ -273,3 +274,19 @@ class TestPlaceEventInline:
         content = str(response.content)
         # NOTE: confirmed the following assertion fails when get_formset not overridden
         assert "Add another event" not in content
+
+
+class TestEventDocumentInline:
+    def test_get_min_num(self, admin_client, document):
+        # it should be required to add at least one document from the Event admin
+        response = admin_client.get(reverse("admin:entities_event_add"))
+        content = str(response.content)
+        assert 'name="documenteventrelation_set-MIN_NUM_FORMS" value="1"' in content
+
+        # however, when accessed via popup from the Document admin, this requirement
+        # should be removed
+        response = admin_client.get(
+            reverse("admin:entities_event_add"), {"_popup": "1"}
+        )
+        content = str(response.content)
+        assert 'name="documenteventrelation_set-MIN_NUM_FORMS" value="0"' in content
