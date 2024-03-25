@@ -31,7 +31,7 @@ class TestAnnotationLastModifiedMixin:
             == annotation.modified
         )
 
-    def test_disaptch(self, admin_client, annotation):
+    def test_dispatch(self, admin_client, annotation):
         # integration test for conditional response
         # get current etag
         old_etag = annotation.etag
