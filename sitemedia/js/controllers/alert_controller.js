@@ -27,7 +27,7 @@ export default class extends Controller {
         this.element.appendChild(alert);
 
         // longer timeout for error messages for readability
-        const timeout = status === "error" ? 5000 : 3000;
+        const timeout = status === "error" ? 10000 : 3000;
 
         // remove visible class after timeout
         setTimeout(() => {
