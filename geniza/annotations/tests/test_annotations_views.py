@@ -8,59 +8,9 @@ from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.annotations.models import Annotation
-from geniza.annotations.views import AnnotationLastModifiedMixin, AnnotationResponse
+from geniza.annotations.views import AnnotationDetail, AnnotationResponse
 from geniza.corpus.models import Document
 from geniza.footnotes.models import Footnote, Source, SourceType
-
-
-class TestAnnotationLastModifiedMixin:
-    def test_get_etag(self, annotation):
-        mixin = AnnotationLastModifiedMixin()
-        # nonexistent annotation should return None
-        assert mixin.get_etag(request=None, pk=1234) == None
-        # otherwise should return ETag
-        assert mixin.get_etag(request=None, pk=annotation.pk) == annotation.etag
-
-    def test_get_last_modified(self, annotation):
-        mixin = AnnotationLastModifiedMixin()
-        # nonexistent annotation should return None
-        assert mixin.get_last_modified(request=None, pk=1234) == None
-        # otherwise should return last modified
-        assert (
-            mixin.get_last_modified(request=None, pk=annotation.pk)
-            == annotation.modified
-        )
-
-    def test_dispatch(self, admin_client, annotation):
-        # integration test for conditional response
-        # get current etag
-        old_etag = annotation.etag
-
-        # change content
-        annotation.content = {
-            **annotation.content,
-            "body": [{"value": "changed"}],
-        }
-        annotation.save()
-
-        # attempt to update annotation with POST request as admin, including the old
-        # ETag in If-Match header
-        response = admin_client.post(
-            annotation.get_absolute_url(),
-            json.dumps(annotation.content),
-            content_type="application/json",
-            HTTP_IF_MATCH=old_etag,
-        )
-        # should result in 412 Precondition Failed status
-        assert response.status_code == 412
-
-        # attempt to delete annotation with DELETE request as admin, including the old
-        # ETag in If-Match header
-        response = admin_client.delete(
-            annotation.get_absolute_url(), HTTP_IF_MATCH=old_etag
-        )
-        # should result in 412 Precondition Failed status
-        assert response.status_code == 412
 
 
 @pytest.mark.django_db
@@ -411,6 +361,55 @@ class TestAnnotationDetail:
         )
         # should have its location copied from the existing Edition footnote
         assert created_digital_edition.location == "doc. 123"
+
+    def test_get_etag(self, annotation):
+        # nonexistent annotation should return None
+        view = AnnotationDetail()
+        view.kwargs = {"pk": 1234}
+        assert view.get_etag(request=None) == None
+        # otherwise should return ETag
+        view.kwargs = {"pk": annotation.pk}
+        assert view.get_etag(request=None) == annotation.etag
+
+    def test_get_last_modified(self, annotation):
+        view = AnnotationDetail()
+        view.kwargs = {"pk": 1234}
+        # nonexistent annotation should return None
+        assert view.get_last_modified(request=None) == None
+        # otherwise should return last modified
+        view.kwargs = {"pk": annotation.pk}
+        assert view.get_last_modified(request=None) == annotation.modified
+
+    def test_dispatch(self, admin_client, annotation):
+        # integration test for conditional response
+        # get current etag
+        old_etag = annotation.etag
+
+        # change content
+        annotation.content = {
+            **annotation.content,
+            "body": [{"value": "changed"}],
+        }
+        annotation.save()
+
+        # attempt to update annotation with POST request as admin, including the old
+        # ETag in If-Match header
+        response = admin_client.post(
+            annotation.get_absolute_url(),
+            json.dumps(annotation.content),
+            content_type="application/json",
+            HTTP_IF_MATCH=old_etag,
+        )
+        # should result in 412 Precondition Failed status
+        assert response.status_code == 412
+
+        # attempt to delete annotation with DELETE request as admin, including the old
+        # ETag in If-Match header
+        response = admin_client.delete(
+            annotation.get_absolute_url(), HTTP_IF_MATCH=old_etag
+        )
+        # should result in 412 Precondition Failed status
+        assert response.status_code == 412
 
 
 @pytest.mark.django_db

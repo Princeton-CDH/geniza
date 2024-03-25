@@ -6,7 +6,7 @@ from django.contrib.admin.models import ADDITION, DELETION, LogEntry
 from django.contrib.auth.mixins import AccessMixin, PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import BadRequest
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.http import condition
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin
@@ -29,38 +29,6 @@ logger = logging.getLogger(__name__)
 
 class ApiAccessMixin(AccessMixin):
     raise_exception = True  # return an error instead of redirecting to login
-
-
-class AnnotationLastModifiedMixin(View):
-    """View mixin to add ETag/last modified headers."""
-
-    def get_etag(self, request, *args, **kwargs):
-        """Get etag from annotation"""
-        try:
-            anno = Annotation.objects.get(pk=kwargs.get("pk"))
-            return anno.etag
-        except Annotation.DoesNotExist:
-            return None
-
-    def get_last_modified(self, request, *args, **kwargs):
-        """Return last modified :class:`datetime.datetime`"""
-        try:
-            anno = Annotation.objects.get(pk=kwargs.get("pk"))
-            return anno.modified
-        except Annotation.DoesNotExist:
-            return None
-
-    def dispatch(self, request, *args, **kwargs):
-        """Wrap the dispatch method to add ETag/last modified headers when
-        appropriate, then return a conditional response."""
-
-        @condition(etag_func=self.get_etag, last_modified_func=self.get_last_modified)
-        def _dispatch(request, *args, **kwargs):
-            return super(AnnotationLastModifiedMixin, self).dispatch(
-                request, *args, **kwargs
-            )
-
-        return _dispatch(request, *args, **kwargs)
 
 
 class AnnotationResponse(JsonResponse):
@@ -303,7 +271,6 @@ class AnnotationSearch(View, MultipleObjectMixin):
 
 class AnnotationDetail(
     PermissionRequiredMixin,
-    AnnotationLastModifiedMixin,
     ApiAccessMixin,
     View,
     SingleObjectMixin,
@@ -387,3 +354,33 @@ class AnnotationDetail(
             footnote.refresh_from_db()
 
         return HttpResponse(status=204)
+
+    def get_etag(self, request, *args, **kwargs):
+        """Get etag from annotation"""
+        try:
+            if not hasattr(self, "object"):
+                self.object = self.get_object()
+            anno = self.object
+            return anno.etag
+        except Http404:
+            return None
+
+    def get_last_modified(self, request, *args, **kwargs):
+        """Return last modified :class:`datetime.datetime`"""
+        try:
+            if not hasattr(self, "object"):
+                self.object = self.get_object()
+            anno = self.object
+            return anno.modified
+        except Http404:
+            return None
+
+    def dispatch(self, request, *args, **kwargs):
+        """Wrap the dispatch method to add ETag/last modified headers when
+        appropriate, then return a conditional response."""
+
+        @condition(etag_func=self.get_etag, last_modified_func=self.get_last_modified)
+        def _dispatch(request, *args, **kwargs):
+            return super(AnnotationDetail, self).dispatch(request, *args, **kwargs)
+
+        return _dispatch(request, *args, **kwargs)
