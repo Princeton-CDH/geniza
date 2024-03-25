@@ -191,6 +191,12 @@ class TestDocumentSolrQuerySet:
             'shelfmark:"T-S NS" "he divorced"'
         )
 
+        # should preserve order for e.g. boolean searches with exact matches
+        assert (
+            dqs._search_term_cleanup('"מרכב אלצלטאן" AND "אלמרכב אלצלטאן"')
+            == 'content_nostem:"מרכב אלצלטאן" AND content_nostem:"אלמרכב אלצלטאן"'
+        )
+
     def test_related_to(self, document, join, fragment, empty_solr):
         """should give filtered result: public documents with any shared shelfmarks"""
 
