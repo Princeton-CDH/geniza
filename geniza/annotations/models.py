@@ -251,7 +251,11 @@ class Annotation(TrackChangesModel):
 
     @property
     def etag(self):
-        """Compute and return an md5 hash of content to use as an ETag"""
+        """Compute and return an md5 hash of content to use as an ETag.
+
+        NOTE: Only :attr:`content` can be modified in the editor, so it is the only hashed
+        attribute. If other attributes become mutable, modify this function to include them in
+        the ETag computation."""
         # must be a string encoded as utf-8 to compute md5 hash
         content_str = json.dumps(self.content, sort_keys=True).encode("utf-8")
         # ETag should be wrapped in double quotes, per Django @condition docs
