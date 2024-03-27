@@ -66,8 +66,9 @@
         <div class="grid">
             {% for person in people %}
                 <div class="person">
+                    {# Translators: accessible label for section showing metadata like name, gender, etc #}
                     <dl aria-label="{% translate 'metadata' %}">
-                        <dt class="sr-only">{% translate 'name' %}</dt>
+                        <dt class="sr-only">{% translate "Name" %}</dt>
                         <dd class="name">
                             {% if person.get_absolute_url %}
                                 <a href="{{ person.get_absolute_url }}">{{ person }}</a>
@@ -75,26 +76,28 @@
                                 <span>{{ person }}</span>
                             {% endif %}
                         </dd>
-                        <dt class="sr-only">{% translate 'gender' %}</dt>
+                        <dt class="sr-only">{% translate "Gender" %}</dt>
                         <dd>{{ person.get_gender_display }}</dd>
-                        {% comment %}<dt class="sr-only">{% translate 'dates active' %}</dt><dd></dd>{% endcomment %}
-                        <dt class="sr-only">{% translate 'social role' %}</dt>
+                        {% comment %}<dt class="sr-only">{% translate 'Dates' %}</dt><dd></dd>{% endcomment %}
+                        <dt class="sr-only">{% translate "Social role" %}</dt>
                         <dd>{{ person.role }}</dd>
-                        <dt class="sr-only">{% translate 'description' %}</dt>
+                        {# Translators: label for person description / bio #}
+                        <dt class="sr-only">{% translate "Description / Bio" %}</dt>
                         <dd class="description">{{ person.description|truncatewords:15 }}</dd>
                     </dl>
-                    <dl class="relations" aria-label="{% translate 'related entries' %}">
-                        <dt class="sr-only">{% translate 'related people' %}</dt>
+                    {# Translators: accessible label for section showing counts of entries related to an entity #}
+                    <dl class="relations" aria-label="{% translate 'Related entries' %}">
+                        <dt class="sr-only">{% translate "Number of related people" %}</dt>
                         <dd>
                             <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-people-icon.svg' %}#related-people" /></svg>
                             <span>{{ person.relationships.count }}</span>
                         </dd>
-                        <dt class="sr-only">{% translate 'related places' %}</dt>
+                        <dt class="sr-only">{% translate "Number of related places" %}</dt>
                         <dd>
                             <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-places-icon.svg' %}#related-places" /></svg>
                             <span>{{ person.personplacerelation_set.count }}</span>
                         </dd>
-                        <dt class="sr-only">{% translate 'related documents' %}</dt>
+                        <dt class="sr-only">{% translate "Number of related documents" %}</dt>
                         <dd>
                             <svg aria-hidden="true"><use xlink:href="{% static 'img/ui/all/all/related-documents-icon.svg' %}#related-documents" /></svg>
                             <span>{{ person.documents.count }}</span>
@@ -105,7 +108,7 @@
         </div>
     </section>
     <div class="pagination-container">
-        {# Translators: number of search results #}
+        {# Translators: range of search results on the current page, out of total #}
         {% blocktranslate with start=page_obj.start_index end=page_obj.end_index count_humanized=paginator.count|intcomma %}
             <div>{{ start }} – {{ end }} of {{ count_humanized }}</div>
         {% endblocktranslate %}
