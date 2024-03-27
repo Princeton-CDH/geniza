@@ -2,11 +2,13 @@ from dal import autocomplete
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Count, Q
 from django.forms import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from django.views.generic import FormView
+from django.utils.text import Truncator
+from django.views.generic import DetailView, FormView
 
 from geniza.entities.forms import PersonMergeForm
 from geniza.entities.models import Person, Place
@@ -97,3 +99,44 @@ class PersonAutocompleteView(PermissionRequiredMixin, UnaccentedNameAutocomplete
 class PlaceAutocompleteView(PermissionRequiredMixin, UnaccentedNameAutocompleteView):
     permission_required = ("entities.change_place",)
     model = Place
+
+
+class PersonDetailView(DetailView):
+    """public display of a single :class:`~geniza.entities.models.Person`"""
+
+    model = Person
+    context_object_name = "person"
+    MIN_DOCUMENTS = 10
+
+    def page_title(self):
+        """page title, for metadata; uses Person primary name"""
+        return str(self.get_object())
+
+    def page_description(self):
+        """page description, for metadata; uses truncated description"""
+        return Truncator(self.get_object().description).words(20)
+
+    def get_queryset(self, *args, **kwargs):
+        """Don't show person if it does not have more than MIN_DOCUMENTS document associations
+        and has_page override is False"""
+        queryset = (
+            super()
+            .get_queryset(*args, **kwargs)
+            .annotate(
+                doc_count=Count("documents", distinct=True),
+            )
+        )
+        return queryset.filter(Q(doc_count__gte=self.MIN_DOCUMENTS) | Q(has_page=True))
+
+    def get_context_data(self, **kwargs):
+        """extend context data to add page metadata"""
+        context_data = super().get_context_data(**kwargs)
+
+        context_data.update(
+            {
+                "page_title": self.page_title(),
+                "page_description": self.page_description(),
+                "page_type": "person",
+            }
+        )
+        return context_data

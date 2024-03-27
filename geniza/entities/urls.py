@@ -6,6 +6,11 @@ app_name = "entities"
 
 urlpatterns = [
     path(
+        "people/<int:pk>/",
+        entities_views.PersonDetailView.as_view(),
+        name="person",
+    ),
+    path(
         "person-autocomplete/",
         entities_views.PersonAutocompleteView.as_view(),
         name="person-autocomplete",

@@ -7,6 +7,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.forms import ValidationError
+from django.urls import reverse
 from django.utils.translation import gettext as _
 from gfklookupwidget.fields import GfkLookupField
 
@@ -91,6 +92,9 @@ class PersonRole(DisplayLabelMixin, models.Model):
     def objects_by_label(cls):
         return super().objects_by_label()
 
+    def __str__(self):
+        return self.display_label or self.name
+
     class Meta:
         verbose_name = "Person social role"
         verbose_name_plural = "Person social roles"
@@ -161,6 +165,10 @@ class Person(models.Model):
             return str(self.names.filter(primary=True).first())
         except Name.DoesNotExist:
             return str(self.names.first() or super().__str__())
+
+    def get_absolute_url(self):
+        """url for this person"""
+        return reverse("entities:person", args=[str(self.pk)])
 
     def merge_with(self, merge_people, user=None):
         """Merge the specified people into this one. Combines all metadata

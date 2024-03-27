@@ -4,10 +4,13 @@ import pytest
 from django.forms import ValidationError
 from django.test import TestCase
 from django.urls import resolve, reverse
+from django.utils.text import Truncator
 
+from geniza.corpus.models import Document
 from geniza.entities.models import Name, Person, Place
 from geniza.entities.views import (
     PersonAutocompleteView,
+    PersonDetailView,
     PersonMerge,
     PlaceAutocompleteView,
 )
@@ -139,3 +142,55 @@ class TestPlaceAutocompleteView:
         qs = place_autocomplete_view.get_queryset()
         assert qs.count() == 1
         assert qs.first().pk == place.pk
+
+
+@pytest.mark.django_db
+class TestPersonDetailView:
+    def test_page_title(self, client):
+        # should use primary name as page title
+        person = Person.objects.create(has_page=True)
+        name1 = Name.objects.create(
+            name="Mūsā b. Yaḥyā al-Majjānī", content_object=person, primary=True
+        )
+        Name.objects.create(name="Abū 'Imrān", content_object=person, primary=False)
+        response = client.get(reverse("entities:person", args=(person.pk,)))
+        assert response.context["page_title"] == str(name1)
+
+    def test_page_description(self, client):
+        # should use person description as page description
+        person = Person.objects.create(has_page=True, description_en="Example")
+        response = client.get(reverse("entities:person", args=(person.pk,)))
+        assert response.context["page_description"] == "Example"
+
+        # should truncate long description
+        long_description = " ".join(["test" for _ in range(50)])
+        person.description = long_description
+        person.save()
+        response = client.get(reverse("entities:person", args=(person.pk,)))
+        assert response.context["page_description"] == Truncator(
+            long_description
+        ).words(20)
+
+    def test_get_queryset(self, client):
+        # should 404 on person with has_page=False and < 10 related documents
+        person = Person.objects.create()
+        response = client.get(reverse("entities:person", args=(person.pk,)))
+        assert response.status_code == 404
+
+        # should 200 on person with 10+ associated documents
+        for _ in range(PersonDetailView.MIN_DOCUMENTS):
+            d = Document.objects.create()
+            person.documents.add(d)
+        response = client.get(reverse("entities:person", args=(person.pk,)))
+        assert response.status_code == 200
+
+        # should 200 on person with has_page = True
+        person_override = Person.objects.create(has_page=True)
+        response = client.get(reverse("entities:person", args=(person_override.pk,)))
+        assert response.status_code == 200
+
+    def test_get_context_data(self, client):
+        # context should include "page_type": "person"
+        person = Person.objects.create(has_page=True)
+        response = client.get(reverse("entities:person", args=(person.pk,)))
+        assert response.context["page_type"] == "person"

@@ -1,0 +1,15 @@
+{% load i18n %}
+
+{# title #}
+<h1>{{ person }}</h1>
+
+{# edit link #}
+{% if perms.entities.change_person %}
+    <div class="edit-link-container">
+        <a class="edit-link" href="{% url 'admin:entities_person_change' person.pk %}" data-turbo="false">
+            <i class="ph-pencil"></i>
+            {# Translators: Person edit link for admins #}
+            <span>{% translate 'Edit' %}</span>
+        </a>
+    </div>
+{% endif %}
