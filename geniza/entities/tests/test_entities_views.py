@@ -178,7 +178,7 @@ class TestPersonDetailView:
         assert response.status_code == 404
 
         # should 200 on person with 10+ associated documents
-        for _ in range(PersonDetailView.MIN_DOCUMENTS):
+        for _ in range(Person.MIN_DOCUMENTS):
             d = Document.objects.create()
             person.documents.add(d)
         response = client.get(reverse("entities:person", args=(person.pk,)))

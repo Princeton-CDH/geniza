@@ -106,7 +106,6 @@ class PersonDetailView(DetailView):
 
     model = Person
     context_object_name = "person"
-    MIN_DOCUMENTS = 10
 
     def page_title(self):
         """page title, for metadata; uses Person primary name"""
@@ -126,7 +125,9 @@ class PersonDetailView(DetailView):
                 doc_count=Count("documents", distinct=True),
             )
         )
-        return queryset.filter(Q(doc_count__gte=self.MIN_DOCUMENTS) | Q(has_page=True))
+        return queryset.filter(
+            Q(doc_count__gte=Person.MIN_DOCUMENTS) | Q(has_page=True)
+        )
 
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata"""

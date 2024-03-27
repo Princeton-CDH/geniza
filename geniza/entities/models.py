@@ -151,6 +151,9 @@ class Person(models.Model):
     )
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
 
+    # minimum documents to show a page if has_page is False
+    MIN_DOCUMENTS = 10
+
     class Meta:
         verbose_name_plural = "People"
 
