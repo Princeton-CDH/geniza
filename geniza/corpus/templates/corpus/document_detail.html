@@ -86,7 +86,7 @@
                     {% for date in document.dating_set.all %}
                         <dd>
                             <time{% if date.standard_date %} datetime="{{ date.standard_date }}"{% endif %}>
-                                {{ date.display_date|default:date.standard_date }}
+                                {{ date.display_date|default:date.standard_date_display }}
                             </time>
                         </dd>
                     {% endfor %}

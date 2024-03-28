@@ -183,15 +183,15 @@ class DocumentDateMixin(TrackChangesModel):
             [self.doc_date_original, self.get_doc_date_calendar_display()]
         ).strip()
 
-    @property
-    def standard_date(self):
+    @staticmethod
+    def standard_date_display(standard_date):
         """Display standard date in human readable format, when set."""
         # bail out if there is nothing to display
-        if not self.doc_date_standard:
+        if not standard_date:
             return
 
         # currently storing in isoformat, with slash if a date range
-        dates = self.doc_date_standard.split("/")
+        dates = standard_date.split("/")
         # we should always have at least one date, if date is set
         # convert to local partial date object for precision-aware string formatting
         # join dates with en-dash if more than one;
@@ -201,13 +201,13 @@ class DocumentDateMixin(TrackChangesModel):
         except ValueError:
             # dates entered before validation was applied may not parse
             # as fallback, display as is
-            return "%s CE" % self.doc_date_standard
+            return "%s CE" % standard_date
 
     @property
     def document_date(self):
         """Generate formatted display of combined original and standardized dates"""
         if self.doc_date_standard:
-            standardized_date = self.standard_date
+            standardized_date = self.standard_date_display(self.doc_date_standard)
             # add parentheses to standardized date if original date is also present
             if self.original_date:
                 # NOTE: we want no-wrap for individual dates when displaying as html
