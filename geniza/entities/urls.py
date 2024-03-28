@@ -5,11 +5,8 @@ from geniza.entities import views as entities_views
 app_name = "entities"
 
 urlpatterns = [
-    path(
-        "people/<int:pk>/",
-        entities_views.PersonDetailView.as_view(),
-        name="person",
-    ),
+    path("people/", entities_views.PersonListView.as_view(), name="person-list"),
+    path("people/<int:pk>/", entities_views.PersonDetailView.as_view(), name="person"),
     path(
         "person-autocomplete/",
         entities_views.PersonAutocompleteView.as_view(),

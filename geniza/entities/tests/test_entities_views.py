@@ -11,6 +11,7 @@ from geniza.entities.models import Name, Person, Place
 from geniza.entities.views import (
     PersonAutocompleteView,
     PersonDetailView,
+    PersonListView,
     PersonMerge,
     PlaceAutocompleteView,
 )
@@ -178,7 +179,7 @@ class TestPersonDetailView:
         assert response.status_code == 404
 
         # should 200 on person with 10+ associated documents
-        for _ in range(PersonDetailView.MIN_DOCUMENTS):
+        for _ in range(Person.MIN_DOCUMENTS):
             d = Document.objects.create()
             person.documents.add(d)
         response = client.get(reverse("entities:person", args=(person.pk,)))
@@ -194,3 +195,29 @@ class TestPersonDetailView:
         person = Person.objects.create(has_page=True)
         response = client.get(reverse("entities:person", args=(person.pk,)))
         assert response.context["page_type"] == "person"
+
+
+@pytest.mark.django_db
+class TestPersonListView:
+    def test_get_queryset(self):
+        # create people with and without diacritics in their names
+        p1 = Person.objects.create()
+        Name.objects.create(name="Example", content_object=p1, primary=True)
+        p2 = Person.objects.create()
+        Name.objects.create(name="Ḥalfon b. Menashshe", content_object=p2, primary=True)
+        p3 = Person.objects.create()
+        Name.objects.create(name="Zed", content_object=p3, primary=True)
+        Name.objects.create(name="Apple", content_object=p3, primary=False)
+        personlist_view = PersonListView()
+
+        # should order diacritics unaccented
+        qs = personlist_view.get_queryset()
+        assert qs.first().pk == p1.pk  # Example
+        assert qs[1].pk == p2.pk  # Halfon
+        # should order by primary name only
+        assert qs[2].pk == p3.pk  # Zed
+
+    def test_get_context_data(self, client):
+        # context should include "page_type": "people"
+        response = client.get(reverse("entities:person-list"))
+        assert response.context["page_type"] == "people"

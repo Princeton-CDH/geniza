@@ -296,7 +296,20 @@ class TestPerson:
 
     def test_get_absolute_url(self):
         # should get person page url in user's language by pk
+
+        # should not have an absolute url if has_page is false and < MIN_DOCUMENTS associated docs
         person = Person.objects.create()
+        assert person.get_absolute_url() == None
+
+        # has_page is true, should get the url in user's language by pk
+        person.has_page = True
+        assert person.get_absolute_url() == "/en/people/%s/" % person.pk
+
+        # has_page is false but has >= MIN_DOCUMENTS, should get url
+        person.has_page = False
+        for _ in range(Person.MIN_DOCUMENTS):
+            d = Document.objects.create()
+            person.documents.add(d)
         assert person.get_absolute_url() == "/en/people/%s/" % person.pk
 
 

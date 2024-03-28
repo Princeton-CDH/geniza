@@ -151,6 +151,9 @@ class Person(models.Model):
     )
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
 
+    # minimum documents to show a page if has_page is False
+    MIN_DOCUMENTS = 10
+
     class Meta:
         verbose_name_plural = "People"
 
@@ -168,7 +171,10 @@ class Person(models.Model):
 
     def get_absolute_url(self):
         """url for this person"""
-        return reverse("entities:person", args=[str(self.pk)])
+        if self.documents.count() >= self.MIN_DOCUMENTS or self.has_page == True:
+            return reverse("entities:person", args=[str(self.pk)])
+        else:
+            return None
 
     def merge_with(self, merge_people, user=None):
         """Merge the specified people into this one. Combines all metadata
