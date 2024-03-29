@@ -12,7 +12,7 @@ from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from modeltranslation.admin import TabbedTranslationAdmin
 
-from geniza.corpus.dates import DocumentDateMixin
+from geniza.corpus.dates import standard_date_display
 from geniza.corpus.models import DocumentEventRelation
 from geniza.entities.forms import (
     EventForm,
@@ -546,4 +546,4 @@ class EventAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
 
     def automatic_date(self, obj):
         """Display automatically generated date/date range for an event as a formatted string"""
-        return DocumentDateMixin.standard_date_display(obj.documents_date_range)
+        return standard_date_display(obj.documents_date_range)

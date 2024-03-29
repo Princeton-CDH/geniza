@@ -44,7 +44,7 @@ from geniza.common.models import (
 )
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
-from geniza.corpus.dates import DocumentDateMixin, PartialDate
+from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote
@@ -1737,7 +1737,7 @@ class Dating(models.Model):
     @property
     def standard_date_display(self):
         """Standard date in human-readable format for document details pages"""
-        return Document.standard_date_display(self.standard_date)
+        return standard_date_display(self.standard_date)
 
 
 class DocumentEventRelation(models.Model):

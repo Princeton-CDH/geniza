@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.forms import ValidationError
 from django.utils import timezone
 
+from geniza.corpus.dates import standard_date_display
 from geniza.corpus.models import Dating, Document
 from geniza.entities.models import (
     DocumentPlaceRelation,
@@ -453,13 +454,11 @@ class TestEvent:
         document.events.add(event)
         document.doc_date_standard = "1000/1010"
         document.save()
-        assert event.date_str == Document.standard_date_display(
-            document.doc_date_standard
-        )
+        assert event.date_str == standard_date_display(document.doc_date_standard)
 
         # if defined, should use standard override date on event
         event.standard_date = "1000/1099"
-        assert event.date_str == Document.standard_date_display(event.standard_date)
+        assert event.date_str == standard_date_display(event.standard_date)
 
         # if defined, should use display override date on event
         event.display_date = "ca. 11th century"

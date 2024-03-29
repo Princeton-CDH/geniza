@@ -183,31 +183,11 @@ class DocumentDateMixin(TrackChangesModel):
             [self.doc_date_original, self.get_doc_date_calendar_display()]
         ).strip()
 
-    @staticmethod
-    def standard_date_display(standard_date):
-        """Display standard date in human readable format, when set."""
-        # bail out if there is nothing to display
-        if not standard_date:
-            return
-
-        # currently storing in isoformat, with slash if a date range
-        dates = standard_date.split("/")
-        # we should always have at least one date, if date is set
-        # convert to local partial date object for precision-aware string formatting
-        # join dates with en-dash if more than one;
-        # add CE to the end to make calendar system explicit
-        try:
-            return "%s CE" % " – ".join(str(PartialDate(d)) for d in dates)
-        except ValueError:
-            # dates entered before validation was applied may not parse
-            # as fallback, display as is
-            return "%s CE" % standard_date
-
     @property
     def document_date(self):
         """Generate formatted display of combined original and standardized dates"""
         if self.doc_date_standard:
-            standardized_date = self.standard_date_display(self.doc_date_standard)
+            standardized_date = standard_date_display(self.doc_date_standard)
             # add parentheses to standardized date if original date is also present
             if self.original_date:
                 # NOTE: we want no-wrap for individual dates when displaying as html
@@ -528,3 +508,23 @@ def get_islamic_month(month_name):
     with or without accents, and supports local month-name overrides."""
     month_name = unidecode(month_name)
     return islamic_months.index(islamic_month_aliases.get(month_name, month_name)) + 1
+
+
+def standard_date_display(standard_date):
+    """Display a standardized CE date in human readable format."""
+    # bail out if there is nothing to display
+    if not standard_date:
+        return
+
+    # currently storing in isoformat, with slash if a date range
+    dates = standard_date.split("/")
+    # we should always have at least one date, if date is set
+    # convert to local partial date object for precision-aware string formatting
+    # join dates with en-dash if more than one;
+    # add CE to the end to make calendar system explicit
+    try:
+        return "%s CE" % " – ".join(str(PartialDate(d)) for d in dates)
+    except ValueError:
+        # dates entered before validation was applied may not parse
+        # as fallback, display as is
+        return "%s CE" % standard_date

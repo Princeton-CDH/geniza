@@ -18,7 +18,7 @@ from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.annotations.models import Annotation
 from geniza.common.admin import custom_empty_field_list_filter
-from geniza.corpus.dates import DocumentDateMixin
+from geniza.corpus.dates import DocumentDateMixin, standard_date_display
 from geniza.corpus.forms import DocumentPersonForm, DocumentPlaceForm
 from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentExporter
 from geniza.corpus.models import (
@@ -441,7 +441,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         description="Standard date",
     )
     def standard_date(self, obj):
-        return Document.standard_date_display(obj.doc_date_standard)
+        return standard_date_display(obj.doc_date_standard)
 
     list_filter = (
         "doctype",

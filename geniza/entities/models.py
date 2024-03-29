@@ -12,7 +12,7 @@ from django.utils.translation import gettext as _
 from gfklookupwidget.fields import GfkLookupField
 
 from geniza.common.models import cached_class_property
-from geniza.corpus.dates import DocumentDateMixin
+from geniza.corpus.dates import DocumentDateMixin, standard_date_display
 from geniza.corpus.models import DisplayLabelMixin, Document, LanguageScript
 from geniza.footnotes.models import Footnote
 
@@ -111,8 +111,8 @@ class Event(models.Model):
         """
         return (
             self.display_date
-            or Document.standard_date_display(self.standard_date)
-            or Document.standard_date_display(self.documents_date_range)
+            or standard_date_display(self.standard_date)
+            or standard_date_display(self.documents_date_range)
         )
 
     @property
