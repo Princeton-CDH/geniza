@@ -493,13 +493,19 @@ class EventDocumentInline(DocumentInline):
     extra = 0
 
     def get_min_num(self, request, obj=None, **kwargs):
-        """Override min_num to change it conditionally based on how Event is being added"""
+        """On new Event creation, set min_num of Document relationships conditionally based on
+        whether it is being created from a popup in the admin edit page for a Document, or
+        created from the Event admin"""
         if "_popup" in request.GET and request.GET["_popup"] == "1" and obj is None:
-            # If accessed via popup, min number of associated documents should be 0
-            # since it's being added via a document, so it will always get one
+            # For admin convenience: If a new Event is being created (via popup) in the Document
+            # admin, min number of associated documents should be 0; otherwise admins would have
+            # to create the relationship manually from within the popup even though it is about
+            # to be created by saving the Document.
+            # NOTE: If an Event is created in the Document admin and the Document is NOT saved,
+            # or the relationship is removed before saving, an orphan Event could be created.
             return 0
         else:
-            # If accessed via Event section of admin, requires minimum 1 document
+            # If accessed via Event section of admin, requires minimum 1 related Document.
             return 1
 
 
