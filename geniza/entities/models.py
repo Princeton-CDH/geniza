@@ -105,7 +105,10 @@ class Event(models.Model):
 
     @property
     def date_str(self):
-        """Return a formatted string for the event's date/range, for use in public site"""
+        """Return a formatted string for the event's date/range, for use in public site.
+        Display date override takes highest precedence; fallback to formatted CE date override,
+        then computed date range from associated documents if neither override is set.
+        """
         return (
             self.display_date
             or Document.standard_date_display(self.standard_date)
