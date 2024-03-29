@@ -12,7 +12,7 @@ from django.utils.translation import gettext as _
 from gfklookupwidget.fields import GfkLookupField
 
 from geniza.common.models import cached_class_property
-from geniza.corpus.dates import DocumentDateMixin, standard_date_display
+from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.models import DisplayLabelMixin, Document, LanguageScript
 from geniza.footnotes.models import Footnote
 
@@ -119,24 +119,18 @@ class Event(models.Model):
     def documents_date_range(self):
         """Standardized range of dates across associated documents"""
         full_range = [None, None]
-        # NOTE: This looks similar to Document.dating_range() but applies across multiple docs
         for doc in self.documents.all():
+            # get each doc's full range, including inferred and on-document
             doc_range = doc.dating_range()
+            # if doc has a range, and the range is not [None, None], compare
+            # it against the current min and max
             if doc_range and doc_range[0]:
                 start = doc_range[0]
                 end = doc_range[1] if len(doc_range) > 1 else start
-                # use numeric format to compare to current min, replace if smaller
-                start_numeric = int(start.numeric_format(mode="min"))
-                min = full_range[0]
-                if min is None or start_numeric < int(min.numeric_format(mode="min")):
-                    # store as PartialDate
-                    full_range[0] = start
-                # use numeric format to compare to current max, replace if larger
-                end_numeric = int(end.numeric_format(mode="max"))
-                max = full_range[1]
-                if max is None or end_numeric > int(max.numeric_format(mode="max")):
-                    # store as PartialDate
-                    full_range[1] = end
+                # update full range with comparison results
+                full_range = PartialDate.get_date_range(
+                    old_range=full_range, new_range=[start, end]
+                )
 
         # prune Nones and use isoformat for standardized representation
         full_range = [d.isoformat() for d in full_range if d]

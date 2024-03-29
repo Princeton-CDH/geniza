@@ -126,6 +126,27 @@ class PartialDate:
         See :meth:`isoformat` for more details."""
         return self.isoformat(mode, "numeric")
 
+    @staticmethod
+    def get_date_range(old_range, new_range):
+        """Compute the min and max dates between two PartialDate ranges."""
+        minmax = old_range
+        [start, end] = new_range
+
+        # use numeric format to compare to current min, replace if smaller
+        start_numeric = int(start.numeric_format(mode="min"))
+        min = minmax[0]
+        if min is None or start_numeric < int(min.numeric_format(mode="min")):
+            # store as PartialDate, not numeric format
+            minmax[0] = start
+        # use numeric format to compare to current max, replace if larger
+        end_numeric = int(end.numeric_format(mode="max"))
+        max = minmax[1]
+        if max is None or end_numeric > int(max.numeric_format(mode="max")):
+            # store as PartialDate, not numeric format
+            minmax[1] = end
+
+        return minmax
+
 
 class DocumentDateMixin(TrackChangesModel):
     """Mixin for document date fields (original and standardized),
