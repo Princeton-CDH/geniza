@@ -6,7 +6,8 @@ from django.contrib.admin.models import ADDITION, DELETION, LogEntry
 from django.contrib.auth.mixins import AccessMixin, PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import BadRequest
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
+from django.views.decorators.http import condition
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.list import MultipleObjectMixin
@@ -269,7 +270,10 @@ class AnnotationSearch(View, MultipleObjectMixin):
 
 
 class AnnotationDetail(
-    PermissionRequiredMixin, ApiAccessMixin, View, SingleObjectMixin
+    PermissionRequiredMixin,
+    ApiAccessMixin,
+    View,
+    SingleObjectMixin,
 ):
     """View to read, update, or delete a single annotation."""
 
@@ -293,7 +297,6 @@ class AnnotationDetail(
 
     def post(self, request, *args, **kwargs):
         """update the annotation on POST"""
-        # NOTE: should use etag / if-match
         anno = self.get_object()
         try:
             anno_data = parse_annotation_data(request=request)
@@ -316,7 +319,6 @@ class AnnotationDetail(
 
     def delete(self, request, *args, **kwargs):
         """delete the annotation on DELETE"""
-        # should use etag / if-match
         # deleted uuid should not be reused (relying on low likelihood of uuid collision)
         anno = self.get_object()
         # create log entry to document deletion *BEFORE* deleting
@@ -352,3 +354,33 @@ class AnnotationDetail(
             footnote.refresh_from_db()
 
         return HttpResponse(status=204)
+
+    def get_etag(self, request, *args, **kwargs):
+        """Get etag from annotation"""
+        try:
+            if not hasattr(self, "object"):
+                self.object = self.get_object()
+            anno = self.object
+            return anno.etag
+        except Http404:
+            return None
+
+    def get_last_modified(self, request, *args, **kwargs):
+        """Return last modified :class:`datetime.datetime`"""
+        try:
+            if not hasattr(self, "object"):
+                self.object = self.get_object()
+            anno = self.object
+            return anno.modified
+        except Http404:
+            return None
+
+    def dispatch(self, request, *args, **kwargs):
+        """Wrap the dispatch method to add ETag/last modified headers when
+        appropriate, then return a conditional response."""
+
+        @condition(etag_func=self.get_etag, last_modified_func=self.get_last_modified)
+        def _dispatch(request, *args, **kwargs):
+            return super(AnnotationDetail, self).dispatch(request, *args, **kwargs)
+
+        return _dispatch(request, *args, **kwargs)
