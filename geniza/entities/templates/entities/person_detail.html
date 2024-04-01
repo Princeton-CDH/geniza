@@ -7,7 +7,7 @@
     {% spaceless %}
         {% for lang_code in PUBLIC_SITE_LANGUAGES %}
             {% language lang_code %}
-                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "entities:person" person.pk %}" />
+                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "entities:person" person.slug %}" />
             {% endlanguage %}
         {% endfor %}
     {% endspaceless %}

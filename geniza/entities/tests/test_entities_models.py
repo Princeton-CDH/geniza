@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest.mock import patch
 
 import pytest
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
@@ -6,12 +7,15 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.forms import ValidationError
 from django.utils import timezone
+from slugify import slugify
+from unidecode import unidecode
 
 from geniza.corpus.models import Document
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
     Name,
+    PastPersonSlug,
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
@@ -295,9 +299,41 @@ class TestPerson:
         )
 
     def test_get_absolute_url(self):
-        # should get person page url in user's language by pk
+        # should get person page url in user's language by slug
         person = Person.objects.create()
-        assert person.get_absolute_url() == "/en/people/%s/" % person.pk
+        assert person.get_absolute_url() == "/en/people/%s/" % person.slug
+
+    def test_save(self):
+        # test past slugs are recorded on save
+        person = Person(slug="test")
+        person.save()
+        person.slug = ""
+        person.save()
+        assert PastPersonSlug.objects.filter(slug="test", person=person).exists()
+
+    def test_generate_slug(self):
+        person = Person.objects.create()
+        Name.objects.create(name="S.D. Goitein", content_object=person, primary=True)
+        person.generate_slug()
+
+        # should use slugified, unidecoded string
+        assert person.slug == slugify(unidecode(str(person)))
+        person.save()
+
+        # numeric differentiation when needed
+        person2 = Person.objects.create()
+        Name.objects.create(name="S.D. Goitein", content_object=person2, primary=True)
+        person2.generate_slug()
+
+        # should determine -2 based on the existence of identical slug
+        assert person2.slug == f"{person.slug}-2"
+        person2.save()
+
+        # should increment if there are existing numbers
+        person3 = Person.objects.create()
+        Name.objects.create(name="S.D. Goitein", content_object=person3, primary=True)
+        person3.generate_slug()
+        assert person3.slug == f"{person.slug}-3"
 
 
 @pytest.mark.django_db

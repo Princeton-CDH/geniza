@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 from django.contrib import admin
@@ -15,7 +15,6 @@ from geniza.entities.admin import (
     PersonPersonInline,
     PersonPersonRelationTypeChoiceField,
     PersonPersonReverseInline,
-    PersonPlaceInline,
 )
 from geniza.entities.models import (
     Name,
@@ -23,8 +22,6 @@ from geniza.entities.models import (
     PersonDocumentRelation,
     PersonPersonRelation,
     PersonPersonRelationType,
-    PersonPlaceRelation,
-    Place,
 )
 
 
@@ -157,6 +154,19 @@ class TestPersonAdmin:
         assert isinstance(resp, HttpResponseRedirect)
         assert resp.status_code == 302
         assert resp["location"] == reverse("admin:entities_person_changelist")
+
+    def test_save_related(self):
+        # if a person does not have a slug, the form should generate one after related_save
+        # (i.e. the Name association has been saved)
+        person = Person.objects.create()
+        Name.objects.create(name="Goitein", content_object=person)
+        assert not person.slug
+        # mock all arguments to admin method; form.instance should be our person
+        mockform = Mock()
+        mockform.instance = person
+        with patch.object(admin.ModelAdmin, "save_related"):
+            PersonAdmin(Person, Mock()).save_related(Mock(), mockform, Mock(), Mock())
+        assert person.slug
 
 
 @pytest.mark.django_db

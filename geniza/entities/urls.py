@@ -6,7 +6,7 @@ app_name = "entities"
 
 urlpatterns = [
     path(
-        "people/<int:pk>/",
+        "people/<slug:slug>/",
         entities_views.PersonDetailView.as_view(),
         name="person",
     ),

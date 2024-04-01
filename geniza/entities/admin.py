@@ -23,6 +23,7 @@ from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
     Name,
+    PastPersonSlug,
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
@@ -220,7 +221,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Person entities in the PGP"""
 
     search_fields = ("names__name",)
-    fields = ("gender", "role", "has_page", "description")
+    fields = ("slug", "gender", "role", "has_page", "description")
     inlines = (
         NameInline,
         FootnoteInline,
@@ -239,6 +240,20 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         "i",  # PersonPlaceInline
     )
     own_pk = None
+
+    def save_related(self, request, form, formsets, change):
+        """Override save to ensure slug is generated if empty. Adapted from mep-django"""
+        super().save_related(request, form, formsets, change)
+
+        # this must be done after related objects are saved, because generate_slug
+        # requires related Name records
+        person = form.instance
+        print(person)
+        print(person.slug)
+        if not person.slug:
+            print("HEE HEE")
+            person.generate_slug()
+            person.save()
 
     def get_form(self, request, obj=None, **kwargs):
         """For Person-Person autocomplete on the PersonAdmin form, keep track of own pk"""

@@ -4,14 +4,14 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Count, Q
 from django.forms import ValidationError
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
 from django.views.generic import DetailView, FormView
 
 from geniza.entities.forms import PersonMergeForm
-from geniza.entities.models import Person, Place
+from geniza.entities.models import PastPersonSlug, Person, Place
 
 
 class PersonMerge(PermissionRequiredMixin, FormView):
@@ -101,7 +101,28 @@ class PlaceAutocompleteView(PermissionRequiredMixin, UnaccentedNameAutocompleteV
     model = Place
 
 
-class PersonDetailView(DetailView):
+class PersonDetailMixin(DetailView):
+    """Mixin for redirecting on past slugs, to be used on all Person pages (detail
+    and related objects lists)"""
+
+    def get(self, request, *args, **kwargs):
+        """extend GET to check for old slug and redirect on 404"""
+        try:
+            return super().get(request, *args, **kwargs)
+        except Http404:
+            # if not found, check for a match on a past slug
+            past_slug = PastPersonSlug.objects.filter(slug=self.kwargs["slug"]).first()
+            # if found, redirect to the correct url for this view
+            if past_slug:
+                self.kwargs["slug"] = past_slug.person.slug
+                return HttpResponsePermanentRedirect(
+                    past_slug.person.get_absolute_url()
+                )
+            # otherwise, continue raising the 404
+            raise
+
+
+class PersonDetailView(PersonDetailMixin):
     """public display of a single :class:`~geniza.entities.models.Person`"""
 
     model = Person
