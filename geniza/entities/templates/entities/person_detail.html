@@ -6,7 +6,7 @@
 {% block extrameta %}
     {# use English page as canonical for search engine crawlers (no redirects) #}
     {% language "en" %}
-        <link rel="canonical" href="{% fullurl "corpus:document" document.pk %}" />
+        <link rel="canonical" href="{% fullurl "entities:person" person.slug %}" />
     {% endlanguage %}
     {% spaceless %}
         {% for lang_code in PUBLIC_SITE_LANGUAGES %}
