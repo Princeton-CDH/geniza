@@ -43,7 +43,7 @@
                 {% if person.names.non_primary.exists %}
                     <dt>
                         {# Translators: label for alternative names for a person #}
-                        {% blocktranslate count counter=person.names.non_primary trimmed %}
+                        {% blocktranslate count counter=person.names.non_primary.count trimmed %}
                             Other name
                         {% plural %}
                             Other names
