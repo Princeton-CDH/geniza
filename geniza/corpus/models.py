@@ -44,7 +44,7 @@ from geniza.common.models import (
 )
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
-from geniza.corpus.dates import DocumentDateMixin, PartialDate
+from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote
@@ -562,7 +562,12 @@ class Document(ModelIndexable, DocumentDateMixin):
         default=PUBLIC,
         help_text="Decide whether a document should be publicly visible",
     )
-
+    events = models.ManyToManyField(
+        to="entities.Event",
+        related_name="documents",
+        verbose_name="Related Events",
+        through="DocumentEventRelation",
+    )
     footnotes = GenericRelation(Footnote, related_query_name="document")
     log_entries = GenericRelation(LogEntry, related_query_name="document")
 
@@ -957,6 +962,8 @@ class Document(ModelIndexable, DocumentDateMixin):
         """
         # it is unlikely, but technically possible, that a document could have both on-document
         # dates and inferred datings, so find the min and max out of all of them.
+
+        # start_date and end_date are PartialDate instances
         dating_range = [self.start_date or None, self.end_date or None]
 
         # bail out if we don't have any inferred datings
@@ -965,24 +972,15 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         # loop through inferred datings to find min and max among all dates (including both
         # on-document and inferred)
-        for dating in self.dating_set.all():
+        for inferred in self.dating_set.all():
             # get start from standardized date range (formatted as "date1/date2" or "date")
-            split_date = dating.standard_date.split("/")
+            split_date = inferred.standard_date.split("/")
             start = PartialDate(split_date[0])
-            # use numeric format to compare to current min, replace if smaller
-            start_numeric = int(start.numeric_format(mode="min"))
-            min = dating_range[0]
-            if min is None or start_numeric < int(min.numeric_format(mode="min")):
-                # store as PartialDate
-                dating_range[0] = start
             # get end from standardized date range
             end = PartialDate(split_date[1]) if len(split_date) > 1 else start
-            # use numeric format to compare to current max, replace if larger
-            end_numeric = int(end.numeric_format(mode="max"))
-            max = dating_range[1]
-            if max is None or end_numeric > int(max.numeric_format(mode="max")):
-                # store as PartialDate
-                dating_range[1] = end
+            dating_range = PartialDate.get_date_range(
+                old_range=dating_range, new_range=[start, end]
+            )
 
         return tuple(dating_range)
 
@@ -1728,3 +1726,19 @@ class Dating(models.Model):
     notes = models.TextField(
         help_text="Optional further details about the rationale",
     )
+
+    @property
+    def standard_date_display(self):
+        """Standard date in human-readable format for document details pages"""
+        return standard_date_display(self.standard_date)
+
+
+class DocumentEventRelation(models.Model):
+    """A relationship between a document and an event"""
+
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    event = models.ForeignKey("entities.Event", on_delete=models.CASCADE)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Document-Event relation: {self.document} and {self.event}"
