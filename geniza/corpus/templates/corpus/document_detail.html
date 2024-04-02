@@ -4,7 +4,10 @@
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 {% block extrameta %}
-    <link rel="canonical" href="{{ document.permalink }}" />
+    {# use English page as canonical for search engine crawlers (no redirects) #}
+    {% language "en" %}
+        <link rel="canonical" href="{% fullurl "corpus:document" document.pk %}" />
+    {% endlanguage %}
     {% spaceless %}
         {% for lang_code in PUBLIC_SITE_LANGUAGES %}
             {% language lang_code %}
