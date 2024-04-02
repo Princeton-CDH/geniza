@@ -20,6 +20,14 @@ from geniza.corpus.models import DisplayLabelMixin, Document, LanguageScript
 from geniza.footnotes.models import Footnote
 
 
+class NameQuerySet(models.QuerySet):
+    """Custom queryset for names for filter utility functions"""
+
+    def non_primary(self):
+        """Filter this queryset to only non-primary names"""
+        return self.filter(primary=False)
+
+
 class Name(models.Model):
     """A name for an entity, such as a person or a place."""
 
@@ -48,6 +56,9 @@ class Name(models.Model):
     )
     object_id = GfkLookupField("content_type")
     content_object = GenericForeignKey()
+
+    # use custom manager & queryset
+    objects = NameQuerySet.as_manager()
 
     # transliteration style
     PGP = "P"

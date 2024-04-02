@@ -36,6 +36,23 @@ from geniza.footnotes.models import Footnote
 
 
 @pytest.mark.django_db
+class TestNameQuerySet:
+    def test_non_primary(self):
+        person = Person.objects.create()
+        name = Name.objects.create(
+            name="S.D. Goitein", content_object=person, primary=True
+        )
+        non_primary = Name.objects.create(
+            name="Goitein", content_object=person, primary=False
+        )
+        # should filter out primary names, only include non-primary
+        assert person.names.non_primary().exists()
+        assert person.names.non_primary().count() == 1
+        assert name not in person.names.non_primary()
+        assert non_primary in person.names.non_primary()
+
+
+@pytest.mark.django_db
 class TestName:
     def test_save_unicode_cleanup(self):
         # Should cleanup \xa0 from name

@@ -40,19 +40,17 @@
             </dl>
             {# secondary metadata #}
             <dl class="metadata-list secondary">
-                {% if person.names.count > 1 %}
+                {% if person.names.non_primary.exists %}
                     <dt>
                         {# Translators: label for alternative names for a person #}
-                        {% blocktranslate count counter=person.names.count|add:-1 trimmed %}
+                        {% blocktranslate count counter=person.names.non_primary trimmed %}
                             Other name
                         {% plural %}
                             Other names
                         {% endblocktranslate %}
                     </dt>
-                    {% for name in person.names.all %}
-                        {% if not name.primary %}
-                            <dd>{{ name }}</dd>
-                        {% endif %}
+                    {% for name in person.names.non_primary %}
+                        <dd>{{ name }}</dd>
                     {% endfor %}
                 {% endif %}
             </dl>
