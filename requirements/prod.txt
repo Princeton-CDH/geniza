@@ -39,3 +39,4 @@ unidecode
 addict
 beautifulsoup4
 bleach
+slugify
