@@ -1,9 +1,15 @@
+import os
+
 import pytest
 from slugify import slugify
 
 from geniza.common.tests import TestMigrations
 
 
+@pytest.mark.skipif(
+    os.getenv("GITHUB_ACTIONS") == "true",
+    reason="disabled in GitHub Actions due to Group.DoesNotExist in CI only",
+)
 @pytest.mark.last
 @pytest.mark.django_db
 class TestPopulatePersonSlugs(TestMigrations):
