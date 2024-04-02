@@ -1,3 +1,4 @@
+import itertools
 import re
 
 from bs4 import BeautifulSoup
@@ -108,7 +109,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # beginning/end of the string or after/before a space, and not followed by a
     # tilde for fuzzy/proximity search (non-greedy to prevent matching the entire
     # string if there are multiple sets of doublequotes)
-    re_exact_match = re.compile(r'(?<!:)\B(".+?")\B(?!~)')
+    re_exact_match = re.compile(r'(?<!:)\B".+?"\B(?!~)')
 
     # if keyword search includes an exact phrase, store unmodified query
     # to use as highlighting query
@@ -129,16 +130,25 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             # store unmodified query for highlighting
             self.highlight_query = search_term
             # limit any exact phrase searches to non-stemmed field
-            exact_phrases = " ".join(
-                [
-                    f"content_nostem:{m}"
-                    for m in self.re_exact_match.findall(search_term)
-                ]
-            )
+            exact_phrases = [
+                f"content_nostem:{m}" for m in self.re_exact_match.findall(search_term)
+            ]
             # add in judaeo-arabic conversion for the rest (double-quoted phrase should NOT be
             # converted to JA, as this breaks if any brackets or other sigla are in doublequotes)
-            remaining_query = arabic_or_ja(self.re_exact_match.sub("", search_term))
-            search_term = " ".join([exact_phrases, remaining_query]).strip()
+            remaining_phrases = [
+                arabic_or_ja(p) for p in self.re_exact_match.split(search_term)
+            ]
+            # stitch the search query back together, in order, so that boolean operators
+            # and phrase order are preserved
+            search_term = "".join(
+                itertools.chain.from_iterable(
+                    (
+                        itertools.zip_longest(
+                            remaining_phrases, exact_phrases, fillvalue=""
+                        )
+                    )
+                )
+            )
         else:
             search_term = arabic_or_ja(search_term)
 

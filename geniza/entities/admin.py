@@ -10,10 +10,14 @@ from django.forms.models import ModelChoiceIterator
 from django.forms.widgets import Textarea, TextInput
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
-from django.utils.html import format_html
 from modeltranslation.admin import TabbedTranslationAdmin
 
+from geniza.corpus.dates import standard_date_display
+from geniza.corpus.models import DocumentEventRelation
 from geniza.entities.forms import (
+    EventForm,
+    EventPersonForm,
+    EventPlaceForm,
     PersonPersonForm,
     PersonPlaceForm,
     PlacePersonForm,
@@ -22,17 +26,20 @@ from geniza.entities.forms import (
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
+    Event,
     Name,
     PastPersonSlug,
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
+    PersonEventRelation,
     PersonPersonRelation,
     PersonPersonRelationType,
     PersonPlaceRelation,
     PersonPlaceRelationType,
     PersonRole,
     Place,
+    PlaceEventRelation,
     PlacePlaceRelation,
     PlacePlaceRelationType,
 )
@@ -216,6 +223,30 @@ class PersonPersonReverseInline(admin.TabularInline):
         return (obj.type.converse_name or str(obj.type)) if obj else None
 
 
+class PersonEventInline(admin.TabularInline):
+    """Inline for events related to a person"""
+
+    autocomplete_fields = ("event",)
+    fields = ("event", "notes")
+    model = PersonEventRelation
+    min_num = 0
+    extra = 1
+    show_change_link = True
+    verbose_name = "Related Event"
+    verbose_name_plural = "Related Events"
+    formfield_overrides = {
+        TextField: {"widget": Textarea(attrs={"rows": "4"})},
+    }
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Disable the 'add' link for an Event from a Person. Must be added from
+        a document or created manually with a document attached in the admin."""
+        formset = super().get_formset(request, obj, **kwargs)
+        service = formset.form.base_fields["event"]
+        service.widget.can_add_related = False
+        return formset
+
+
 @admin.register(Person)
 class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Person entities in the PGP"""
@@ -229,6 +260,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         PersonPersonInline,
         PersonPersonReverseInline,
         PersonPlaceInline,
+        PersonEventInline,
     )
     # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
     fieldsets_and_inlines_order = (
@@ -238,6 +270,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         "i",  # PersonPersonInline
         "i",  # PersonPersonReverseInline
         "i",  # PersonPlaceInline
+        "i",  # PersonEventInline
     )
     own_pk = None
 
@@ -399,6 +432,30 @@ class PlacePlaceReverseInline(admin.TabularInline):
     max_num = 0
 
 
+class PlaceEventInline(admin.TabularInline):
+    """Inline for events related to a place"""
+
+    autocomplete_fields = ("event",)
+    fields = ("event", "notes")
+    model = PlaceEventRelation
+    min_num = 0
+    extra = 1
+    show_change_link = True
+    verbose_name = "Related Event"
+    verbose_name_plural = "Related Events"
+    formfield_overrides = {
+        TextField: {"widget": Textarea(attrs={"rows": "4"})},
+    }
+
+    def get_formset(self, request, obj=None, **kwargs):
+        """Disable the 'add' link for an Event from a Place. Must be added from
+        a document or created manually with a document attached in the admin."""
+        formset = super().get_formset(request, obj, **kwargs)
+        service = formset.form.base_fields["event"]
+        service.widget.can_add_related = False
+        return formset
+
+
 @admin.register(Place)
 class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
     """Admin for Place entities in the PGP"""
@@ -411,6 +468,7 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         PlacePersonInline,
         PlacePlaceInline,
         PlacePlaceReverseInline,
+        PlaceEventInline,
         FootnoteInline,
     )
     fieldsets_and_inlines_order = (
@@ -420,6 +478,7 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         "i",  # PlacePersonInline
         "i",  # PlacePlaceInline
         "i",  # PlacePlaceReverseInline
+        "i",  # PlaceEventInline
         "i",  # FootnoteInline
     )
 
@@ -431,3 +490,72 @@ class PlacePlaceRelationTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
     fields = ("name",)
     search_fields = ("name",)
     ordering = ("name",)
+
+
+class EventDocumentInline(DocumentInline):
+    """Related documents inline for the Event admin"""
+
+    model = DocumentEventRelation
+    autocomplete_fields = ("document",)
+    fields = (
+        "document",
+        "document_description",
+        "notes",
+    )
+    extra = 0
+
+    def get_min_num(self, request, obj=None, **kwargs):
+        """On new Event creation, set min_num of Document relationships conditionally based on
+        whether it is being created from a popup in the admin edit page for a Document, or
+        created from the Event admin"""
+        if "_popup" in request.GET and request.GET["_popup"] == "1" and obj is None:
+            # For admin convenience: If a new Event is being created (via popup) in the Document
+            # admin, min number of associated documents should be 0; otherwise admins would have
+            # to create the relationship manually from within the popup even though it is about
+            # to be created by saving the Document.
+            # NOTE: If an Event is created in the Document admin and the Document is NOT saved,
+            # or the relationship is removed before saving, an orphan Event could be created.
+            return 0
+        else:
+            # If accessed via Event section of admin, requires minimum 1 related Document.
+            return 1
+
+
+class EventPersonInline(PersonInline):
+    """Related people inline for the Event admin"""
+
+    model = PersonEventRelation
+    form = EventPersonForm
+    autocomplete_fields = ("person",)
+    fields = ("person", "notes")
+
+
+class EventPlaceInline(PlaceInline):
+    """Related places inline for the Event admin"""
+
+    model = PlaceEventRelation
+    form = EventPlaceForm
+    autocomplete_fields = ("place",)
+    fields = ("place", "notes")
+
+
+@admin.register(Event)
+class EventAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
+    """Admin for Event entities in the PGP"""
+
+    fields = (
+        "name",
+        "description",
+        "standard_date",
+        "display_date",
+        "automatic_date",
+    )
+    readonly_fields = ("automatic_date",)
+    search_fields = ("name",)
+    ordering = ("name",)
+    inlines = (EventDocumentInline, EventPersonInline, EventPlaceInline, FootnoteInline)
+    form = EventForm
+
+    def automatic_date(self, obj):
+        """Display automatically generated date/date range for an event as a formatted string"""
+        return standard_date_display(obj.documents_date_range)

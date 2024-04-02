@@ -28,11 +28,13 @@ from geniza.corpus.models import (
     Collection,
     Dating,
     Document,
+    DocumentEventRelation,
     DocumentType,
     Fragment,
     LanguageScript,
     TextBlock,
 )
+from geniza.entities.models import Event
 from geniza.footnotes.models import Footnote, Source, SourceLanguage, SourceType
 
 
@@ -2002,3 +2004,11 @@ def test_fragment_historic_shelfmarks(document, join, fragment, multifragment):
     hist_string = join.fragment_historical_shelfmarks
     assert fragment.old_shelfmarks in hist_string
     assert multifragment.old_shelfmarks in hist_string
+
+
+@pytest.mark.django_db
+class TestDocumentEventRelation:
+    def test_str(self, document):
+        event = Event.objects.create(name="Founding of the Ben Ezra Synagogue")
+        relation = DocumentEventRelation.objects.create(document=document, event=event)
+        assert str(relation) == f"Document-Event relation: {document} and {event}"
