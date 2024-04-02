@@ -6,11 +6,10 @@ from slugify import slugify
 from geniza.common.tests import TestMigrations
 
 
-@pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
-    reason="disabled in GitHub Actions due to Group.DoesNotExist in CI only",
+# must run before other migrations in order to prevent Group.DoesNotExist
+@pytest.mark.order(
+    before="geniza/annotations/tests/test_annotations_migrations.py::TestAssociateRelatedFootnotes::test_footnote_associated"
 )
-@pytest.mark.last
 @pytest.mark.django_db
 class TestPopulatePersonSlugs(TestMigrations):
     app = "entities"
