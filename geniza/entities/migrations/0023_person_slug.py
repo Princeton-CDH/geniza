@@ -61,7 +61,7 @@ def populate_slugs(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("entities", "0020_alter_name_language"),
+        ("entities", "0022_event_permissions"),
     ]
 
     operations = [
