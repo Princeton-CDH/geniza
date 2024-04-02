@@ -153,12 +153,16 @@ class TestPersonDetailView:
             name="Mūsā b. Yaḥyā al-Majjānī", content_object=person, primary=True
         )
         Name.objects.create(name="Abū 'Imrān", content_object=person, primary=False)
+        person.generate_slug()
+        person.save()
         response = client.get(reverse("entities:person", args=(person.slug,)))
         assert response.context["page_title"] == str(name1)
 
     def test_page_description(self, client):
         # should use person description as page description
-        person = Person.objects.create(has_page=True, description_en="Example")
+        person = Person.objects.create(
+            has_page=True, description_en="Example", slug="test"
+        )
         response = client.get(reverse("entities:person", args=(person.slug,)))
         assert response.context["page_description"] == "Example"
 
@@ -173,7 +177,7 @@ class TestPersonDetailView:
 
     def test_get_queryset(self, client):
         # should 404 on person with has_page=False and < 10 related documents
-        person = Person.objects.create()
+        person = Person.objects.create(slug="test")
         response = client.get(reverse("entities:person", args=(person.slug,)))
         assert response.status_code == 404
 
@@ -185,13 +189,13 @@ class TestPersonDetailView:
         assert response.status_code == 200
 
         # should 200 on person with has_page = True
-        person_override = Person.objects.create(has_page=True)
+        person_override = Person.objects.create(has_page=True, slug="has-page")
         response = client.get(reverse("entities:person", args=(person_override.slug,)))
         assert response.status_code == 200
 
     def test_get_context_data(self, client):
         # context should include "page_type": "person"
-        person = Person.objects.create(has_page=True)
+        person = Person.objects.create(has_page=True, slug="test")
         response = client.get(reverse("entities:person", args=(person.slug,)))
         assert response.context["page_type"] == "person"
 
