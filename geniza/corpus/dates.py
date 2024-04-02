@@ -128,7 +128,7 @@ class PartialDate:
 
     @staticmethod
     def get_date_range(old_range, new_range):
-        """Compute the min and max dates between two PartialDate ranges."""
+        """Compute the union (widest possible date range) between two PartialDate ranges."""
         minmax = old_range
         [start, end] = new_range
 
