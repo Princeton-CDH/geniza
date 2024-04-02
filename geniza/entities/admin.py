@@ -248,10 +248,7 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
         # this must be done after related objects are saved, because generate_slug
         # requires related Name records
         person = form.instance
-        print(person)
-        print(person.slug)
         if not person.slug:
-            print("HEE HEE")
             person.generate_slug()
             person.save()
 
