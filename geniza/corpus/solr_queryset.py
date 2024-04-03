@@ -76,6 +76,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "has_digital_translation": "has_digital_translation_b",
         "has_discussion": "has_discussion_b",
         "old_shelfmark": "old_shelfmark_bigram",
+        "transcription_nostem": "transcription_nostem",
+        "description_nostem": "description_nostem",
     }
 
     # regex to convert field aliases used in search to actual solr fields
@@ -131,7 +133,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             self.highlight_query = search_term
             # limit any exact phrase searches to non-stemmed field
             exact_phrases = [
-                f"content_nostem:{m}" for m in self.re_exact_match.findall(search_term)
+                f"(description_nostem:{m} OR transcription_nostem:{m})"
+                for m in self.re_exact_match.findall(search_term)
             ]
             # add in judaeo-arabic conversion for the rest (double-quoted phrase should NOT be
             # converted to JA, as this breaks if any brackets or other sigla are in doublequotes)
@@ -256,8 +259,17 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         """highlight snippets within transcription/translation html may result in
         invalid tags that will render strangely; clean up the html before returning"""
         highlights = super().get_highlighting()
+        is_exact_search = "hl_query" in self.raw_params
         for doc in highlights.keys():
-            if "transcription" in highlights[doc]:
+            # _nostem fields should take precedence over stemmed fields in the case of an
+            # exact search; in that case, replace highlights for stemmed fields with nostem
+            if is_exact_search and "description_nostem" in highlights[doc]:
+                highlights[doc]["description"] = highlights[doc]["description_nostem"]
+            if is_exact_search and "transcription_nostem" in highlights[doc]:
+                highlights[doc]["transcription"] = [
+                    clean_html(s) for s in highlights[doc]["transcription_nostem"]
+                ]
+            elif "transcription" in highlights[doc]:
                 highlights[doc]["transcription"] = [
                     clean_html(s) for s in highlights[doc]["transcription"]
                 ]
