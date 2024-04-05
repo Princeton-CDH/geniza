@@ -7,7 +7,15 @@ from django.urls import resolve, reverse
 from django.utils.text import Truncator
 
 from geniza.corpus.models import Document
-from geniza.entities.models import Name, Person, Place
+from geniza.entities.forms import PersonListForm
+from geniza.entities.models import (
+    Name,
+    Person,
+    PersonDocumentRelation,
+    PersonDocumentRelationType,
+    PersonRole,
+    Place,
+)
 from geniza.entities.views import (
     PersonAutocompleteView,
     PersonDetailView,
@@ -199,25 +207,171 @@ class TestPersonDetailView:
 
 @pytest.mark.django_db
 class TestPersonListView:
-    def test_get_queryset(self):
-        # create people with and without diacritics in their names
-        p1 = Person.objects.create()
-        Name.objects.create(name="Example", content_object=p1, primary=True)
-        p2 = Person.objects.create()
-        Name.objects.create(name="Ḥalfon b. Menashshe", content_object=p2, primary=True)
-        p3 = Person.objects.create()
-        Name.objects.create(name="Zed", content_object=p3, primary=True)
-        Name.objects.create(name="Apple", content_object=p3, primary=False)
+    def test_get_queryset__order(self, person, person_diacritic, person_multiname):
         personlist_view = PersonListView()
+        with patch.object(personlist_view, "get_form") as mock_get_form:
+            mock_get_form.return_value.cleaned_data = {}
+            mock_get_form.return_value.is_valid.return_value = True
+            # should order diacritics unaccented
+            qs = personlist_view.get_queryset()
+            assert qs.first().pk == person.pk  # Berakha
+            assert qs[1].pk == person_diacritic.pk  # Halfon
+            # should order by primary name only
+            assert qs[2].pk == person_multiname.pk  # Zed
 
-        # should order diacritics unaccented
-        qs = personlist_view.get_queryset()
-        assert qs.first().pk == p1.pk  # Example
-        assert qs[1].pk == p2.pk  # Halfon
-        # should order by primary name only
-        assert qs[2].pk == p3.pk  # Zed
+    def test_get_queryset__invalidform(self):
+        # should give empty queryset on invalid form
+        personlist_view = PersonListView()
+        with patch.object(personlist_view, "get_form") as mock_get_form:
+            mock_get_form.return_value.cleaned_data = {}
+            mock_get_form.return_value.is_valid.return_value = False
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 0
 
-    def test_get_context_data(self, client):
-        # context should include "page_type": "people"
-        response = client.get(reverse("entities:person-list"))
-        assert response.context["page_type"] == "people"
+    def test_get_queryset__filters(
+        self, document, join, person, person_diacritic, person_multiname
+    ):
+        # add document relations
+        (mentioned, _) = PersonDocumentRelationType.objects.get_or_create(
+            name_en="Other person mentioned"
+        )
+        (author, _) = PersonDocumentRelationType.objects.get_or_create(name_en="Author")
+        PersonDocumentRelation.objects.create(
+            person=person, document=document, type=mentioned
+        )
+        PersonDocumentRelation.objects.create(
+            person=person_diacritic, document=document, type=mentioned
+        )
+        PersonDocumentRelation.objects.create(
+            person=person_diacritic, document=document, type=author
+        )
+        PersonDocumentRelation.objects.create(
+            person=person_multiname, document=join, type=author
+        )
+
+        personlist_view = PersonListView()
+        with patch.object(personlist_view, "get_form") as mock_get_form:
+            # filter by gender: F should return 2 records
+            # form data comes in as string that we use literal_eval to parse
+            mock_get_form.return_value.cleaned_data = {"gender": f"['{Person.FEMALE}']"}
+            mock_get_form.return_value.is_valid.return_value = True
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 2
+            assert person in qs
+            assert person_diacritic not in qs
+
+            # [M, F] should return all 3
+            mock_get_form.return_value.cleaned_data = {
+                "gender": f"['{Person.FEMALE}', '{Person.MALE}']"
+            }
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 3
+            # should be sorted by primary name
+            assert qs.first() == person
+            assert qs.last() == person_multiname
+
+            # filter by social role
+            mock_get_form.return_value.cleaned_data = {
+                "social_role": f"['{person.role.name}']"
+            }
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 2
+
+            # filter by social role and gender
+            mock_get_form.return_value.cleaned_data = {
+                "social_role": f"['{person.role.name}']",
+                "gender": f"['{Person.FEMALE}']",
+            }
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 1
+
+            # filter by doc relation
+            mock_get_form.return_value.cleaned_data = {
+                "document_relation": f"['{mentioned.name_en}']",
+            }
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 2
+            assert person_diacritic in qs
+            mock_get_form.return_value.cleaned_data = {
+                "document_relation": f"['{author.name_en}']",
+            }
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 2
+            assert person_diacritic in qs
+            mock_get_form.return_value.cleaned_data = {
+                "document_relation": f"['{author.name_en}']",
+                "gender": f"['{Person.MALE}']",
+            }
+            qs = personlist_view.get_queryset()
+            assert qs.count() == 1
+
+    def test_get_facets(
+        self, document, join, person, person_diacritic, person_multiname
+    ):
+        # add document relations
+        (mentioned, _) = PersonDocumentRelationType.objects.get_or_create(
+            name_en="Other person mentioned"
+        )
+        (author, _) = PersonDocumentRelationType.objects.get_or_create(name_en="Author")
+        PersonDocumentRelation.objects.create(
+            person=person, document=document, type=mentioned
+        )
+        PersonDocumentRelation.objects.create(
+            person=person_diacritic, document=document, type=mentioned
+        )
+        PersonDocumentRelation.objects.create(
+            person=person_multiname, document=join, type=author
+        )
+        personlist_view = PersonListView()
+        with patch.object(personlist_view, "get_form") as mock_get_form:
+            mock_get_form.return_value.is_valid.return_value = True
+
+            # unfiltered results should get all facets annotated with counts
+            mock_get_form.return_value.is_filtered.return_value = False
+            facets = personlist_view.get_facets()
+            assert all(
+                any([d["role__name"] == role for d in facets["role__name"]])
+                for role in [
+                    person.role.name,
+                    person_diacritic.role.name,
+                    person_multiname.role.name,
+                ]
+            )
+            get_count = lambda field, val: [
+                item for item in facets[field] if item[field] == val
+            ][0]["count"]
+            # person and person_diacritic share a role, so count should be 2
+            assert get_count("role__name", person.role.name) == 2
+            # person_multiname is the only one with their role
+            assert get_count("role__name", person_multiname.role.name) == 1
+            # two entries with female gender
+            assert get_count("gender", Person.FEMALE) == 2
+            # two entries with document relation = mentioned
+            assert (
+                get_count("persondocumentrelation__type__name", mentioned.name_en) == 2
+            )
+
+            # mock filters applied
+            mock_get_form.return_value.is_filtered.return_value = True
+            mock_get_form.return_value.cleaned_data = {
+                "social_role": f"['{person.role.name}']"
+            }
+            facets = personlist_view.get_facets()
+
+            # should accurately update the facet counts
+            assert get_count("role__name", person.role.name) == 2
+            assert get_count("gender", Person.FEMALE) == 1
+
+            # should include 0 counts for values present in db but filtered out
+            assert get_count("role__name", person_multiname.role.name) == 0
+            assert get_count("persondocumentrelation__type__name", author.name_en) == 0
+
+    def test_get_context_data(self, client, person):
+        with patch.object(PersonListForm, "set_choices_from_facets") as mock_setchoices:
+            response = client.get(reverse("entities:person-list"))
+            # context should include "page_type": "people"
+            assert response.context["page_type"] == "people"
+            # should get facets with counts
+            assert isinstance(response.context["facets"], dict)
+            # should call set_choices_from_facets on form
+            mock_setchoices.assert_called_once()
