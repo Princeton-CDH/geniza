@@ -325,6 +325,15 @@ $text-size-7xl: 2.25rem; //  = 36px
     line-height: 1.2;
 }
 
+@mixin form-option-xs {
+    font-family: fonts.$primary;
+    font-size: $text-size-md;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-md;
+    }
+    line-height: 1.5;
+}
+
 // counts next to the filter options
 @mixin filter-count {
     @include meta; // same font+sizes as meta

@@ -1,14 +1,29 @@
 {% extends 'base.html' %}
-{% load static i18n humanize %}
+{% load static i18n humanize widget_tweaks %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 
 {% block main %}
     <h1>{{ page_title }}</h1>
+
+    <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance">
+        <label for="{{ form.gender.auto_id }}">
+            <span class="fieldname">{{ form.gender.label }}</span>
+            {% render_field form.gender data-action="search#update" %}
+        </label>
+        <label for="{{ form.social_role.auto_id }}">
+            <span class="fieldname">{{ form.social_role.label }}</span>
+            {% render_field form.social_role data-action="search#update" %}
+        </label>
+        <label for="{{ form.document_relation.auto_id }}">
+            <span class="fieldname">{{ form.document_relation.label }}</span>
+            {% render_field form.document_relation data-action="search#update" %}
+        </label>
+    </form>
     <section id="person-list">
         <h2>
-            {# Translators: number of search results #}
+            {# Translators: number of results #}
             {% blocktranslate with count_humanized=paginator.count|intcomma count counter=paginator.count trimmed %}
                 1 result
             {% plural %}
