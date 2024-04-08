@@ -157,6 +157,7 @@ class PersonListView(ListView, FormMixin):
     page_description = _("Browse people present in Geniza documents.")
     paginate_by = 50
     form_class = PersonListForm
+    applied_filter_count = 0
 
     # fields to facet
     facet_fields = ["gender", "role__name", "persondocumentrelation__type__name"]
@@ -178,15 +179,19 @@ class PersonListView(ListView, FormMixin):
 
         # filter by each supported field
         search_opts = form.cleaned_data
+        self.applied_filter_count = 0
         if "gender" in search_opts and search_opts["gender"]:
             genders = literal_eval(search_opts["gender"])
             people = people.filter(gender__in=genders)
+            self.applied_filter_count += len(genders)
         if "social_role" in search_opts and search_opts["social_role"]:
             roles = literal_eval(search_opts["social_role"])
             people = people.filter(role__name__in=roles)
+            self.applied_filter_count += len(roles)
         if "document_relation" in search_opts and search_opts["document_relation"]:
             relations = literal_eval(search_opts["document_relation"])
             people = people.filter(persondocumentrelation__type__name__in=relations)
+            self.applied_filter_count += len(relations)
 
         return people
 
@@ -243,6 +248,7 @@ class PersonListView(ListView, FormMixin):
                 "page_description": self.page_description,
                 "page_type": "people",
                 "facets": facets,
+                "filter_count": self.applied_filter_count,
             }
         )
         return context_data

@@ -7,19 +7,42 @@
 {% block main %}
     <h1>{{ page_title }}</h1>
 
-    <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance">
-        <label for="{{ form.gender.auto_id }}">
-            <span class="fieldname">{{ form.gender.label }}</span>
-            {% render_field form.gender data-action="search#update" %}
-        </label>
-        <label for="{{ form.social_role.auto_id }}">
-            <span class="fieldname">{{ form.social_role.label }}</span>
-            {% render_field form.social_role data-action="search#update" %}
-        </label>
-        <label for="{{ form.document_relation.auto_id }}">
-            <span class="fieldname">{{ form.document_relation.label }}</span>
-            {% render_field form.document_relation data-action="search#update" %}
-        </label>
+    <form data-controller="search" data-turbo-frame="main" data-turbo-action="advance" data-page="person">
+        <a href="#filters" role="button" id="filters-button" data-action="click->search#openFilters"{% if form.filters_active %} class="active"{% endif %}>
+            <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
+            <span>{% translate "Filters" %}</span>
+            {% if filter_count %}
+                <span class="filter-count">{{ filter_count }}</span>
+            {% endif %}
+        </a>
+        <div class="modal-backdrop" aria-hidden="true" data-action="click->search#closeFilters"></div>
+        <fieldset id="filters" aria-expanded="false" data-search-target="filterModal">
+            <legend>{% translate "Filters" %}</legend>
+            <a href="#" role="button" id="close-filters-modal" data-action="click->search#closeFilters">
+                {# Translators: label for 'filters' close button for mobile navigation #}
+                {% translate "Close filter options" as close_button %}
+                <span class="sr-only">{{ close_button }}</span>
+            </a>
+            <a href="#" role="button" id="close-filters-button" data-action="click->search#closeFilters"{% if form.filters_active %} class="active"{% endif %}>
+                <svg><use xlink:href="{% static 'img/ui/all/all/search-filter-icon.svg' %}#filter-icon" /></svg>
+                <span>{% translate "Filters" %}</span>
+                {% if filter_count %}
+                    <span class="filter-count">{{ filter_count }}</span>
+                {% endif %}
+            </a>
+            <label for="{{ form.gender.auto_id }}">
+                <span class="fieldname">{{ form.gender.label }}</span>
+                {% render_field form.gender data-action="search#update" %}
+            </label>
+            <label for="{{ form.social_role.auto_id }}">
+                <span class="fieldname">{{ form.social_role.label }}</span>
+                {% render_field form.social_role data-action="search#update" %}
+            </label>
+            <label for="{{ form.document_relation.auto_id }}">
+                <span class="fieldname">{{ form.document_relation.label }}</span>
+                {% render_field form.document_relation data-action="search#update" %}
+            </label>
+        </fieldset>
     </form>
     <section id="person-list">
         <h2>

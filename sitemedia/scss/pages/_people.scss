@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------------
-// Person detail page.
+// Person list/browse page.
 // -----------------------------------------------------------------------------
 
 @use "../base/a11y";
@@ -30,64 +30,7 @@ main.people {
         @include breakpoints.for-tablet-landscape-up {
             font-size: typography.$text-size-7xl;
         }
-        margin-bottom: 1.5rem;
-    }
-    // Form with filters
-    form {
-        display: flex;
-        flex-flow: column;
-        @include breakpoints.for-tablet-landscape-up {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-        }
-        width: 100%;
-        gap: 2rem;
-        padding: 1.5rem;
-        border-top: 1px solid var(--background-gray);
-        border-bottom: 1px solid var(--background-gray);
-        li label {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            // focus indicator for accessibility (will not appear on click)
-            &:has(input[type="checkbox"]:focus-visible) {
-                outline: 1px solid var(--secondary);
-            }
-        }
-        label span.fieldname {
-            @include typography.form-option-sm-bold;
-        }
-        input[type="checkbox"] {
-            @include a11y.sr-only;
-        }
-        input[type="checkbox"] + span {
-            display: flex;
-            align-items: center;
-        }
-        input[type="checkbox"] + span,
-        input[type="checkbox"] + span + span {
-            @include typography.form-option-xs;
-        }
-        input[type="checkbox"] + span::before {
-            display: block;
-            content: "\f0ec"; // phosphor circle icon
-            @include typography.icon-button;
-            font-size: typography.$text-size-xl;
-            transition: transform 0.75s ease;
-            float: left;
-            color: var(--disabled);
-            padding-right: 0.5rem;
-            margin-top: -1px;
-        }
-        input:active + span::before,
-        input:checked + span::before {
-            content: "\f851"; // phosphor check-circle-fill icon
-            color: var(--secondary);
-        }
-        input:checked:active + span::before {
-            content: "\f0ec"; // phosphor circle icon
-        }
+        margin-bottom: 1rem;
     }
     // Primary container
     section#person-list {
@@ -270,11 +213,6 @@ main.people {
 
 // RTL overrides
 html[dir="rtl"] main.people {
-    form input[type="checkbox"] + span::before {
-        float: right;
-        padding-right: 0;
-        padding-left: 0.5rem;
-    }
     // pagination
     nav.pagination {
         // Hebrew and Arabic reversed arrows
