@@ -124,6 +124,12 @@ class TestPersonAutocompleteView:
         assert qs.count() == 1
         assert qs.first().pk == person.pk
 
+        # should allow search by name WITH diacritics
+        person_autocomplete_view.request.GET = {"q": "Ḥayyim"}
+        qs = person_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == person_2.pk
+
 
 class TestPlaceAutocompleteView:
     @pytest.mark.django_db
@@ -135,6 +141,11 @@ class TestPlaceAutocompleteView:
 
         # should filter on place name, case and diacritic insensitive
         place_autocomplete_view.request = Mock()
+        place_autocomplete_view.request.GET = {"q": "Fusṭāṭ"}
+        qs = place_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == place.pk
+
         place_autocomplete_view.request.GET = {"q": "fustat"}
         qs = place_autocomplete_view.get_queryset()
         assert qs.count() == 1
