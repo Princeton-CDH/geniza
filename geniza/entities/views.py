@@ -2,6 +2,7 @@ from dal import autocomplete
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Q
 from django.forms import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -85,7 +86,9 @@ class UnaccentedNameAutocompleteView(autocomplete.Select2QuerySetView):
             name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
         ).order_by("name_unaccented")
         if q:
-            qs = qs.filter(name_unaccented__icontains=q)
+            qs = qs.filter(
+                Q(name_unaccented__icontains=q) | Q(names__name__icontains=q)
+            ).distinct()
         return qs
 
 

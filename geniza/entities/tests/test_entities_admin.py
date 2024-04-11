@@ -17,6 +17,7 @@ from geniza.entities.admin import (
     PersonPersonRelationTypeChoiceField,
     PersonPersonReverseInline,
     PersonPlaceInline,
+    PlaceAdmin,
 )
 from geniza.entities.models import (
     Name,
@@ -290,3 +291,16 @@ class TestEventDocumentInline:
         )
         content = str(response.content)
         assert 'name="documenteventrelation_set-MIN_NUM_FORMS" value="0"' in content
+
+
+@pytest.mark.django_db
+class TestPlaceAdmin:
+    def test_get_queryset(self):
+        # create a place
+        place = Place.objects.create()
+        Name.objects.create(name="Fusṭāṭ", content_object=place, primary=True)
+        place_admin = PlaceAdmin(Place, admin_site=admin.site)
+
+        # queryset should include name_unaccented field without diacritics
+        qs = place_admin.get_queryset(Mock())
+        assert qs.filter(name_unaccented__icontains="fustat").exists()
