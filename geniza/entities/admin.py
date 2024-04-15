@@ -238,14 +238,6 @@ class PersonEventInline(admin.TabularInline):
         TextField: {"widget": Textarea(attrs={"rows": "4"})},
     }
 
-    def get_formset(self, request, obj=None, **kwargs):
-        """Disable the 'add' link for an Event from a Person. Must be added from
-        a document or created manually with a document attached in the admin."""
-        formset = super().get_formset(request, obj, **kwargs)
-        service = formset.form.base_fields["event"]
-        service.widget.can_add_related = False
-        return formset
-
 
 @admin.register(Person)
 class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
@@ -517,7 +509,10 @@ class EventDocumentInline(DocumentInline):
         """On new Event creation, set min_num of Document relationships conditionally based on
         whether it is being created from a popup in the admin edit page for a Document, or
         created from the Event admin"""
-        if "_popup" in request.GET and request.GET["_popup"] == "1" and obj is None:
+        from_document = (
+            "from_document" in request.GET and request.GET["from_document"] == "true"
+        )
+        if from_document and obj is None:
             # For admin convenience: If a new Event is being created (via popup) in the Document
             # admin, min number of associated documents should be 0; otherwise admins would have
             # to create the relationship manually from within the popup even though it is about
@@ -526,7 +521,8 @@ class EventDocumentInline(DocumentInline):
             # or the relationship is removed before saving, an orphan Event could be created.
             return 0
         else:
-            # If accessed via Event section of admin, requires minimum 1 related Document.
+            # If accessed via Event section of admin, or a popup from other related objects like
+            # Person, requires minimum 1 related Document.
             return 1
 
 
