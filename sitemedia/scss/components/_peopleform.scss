@@ -26,15 +26,13 @@ main.people {
         align-items: center;
         min-height: 48px;
         padding: 0 0.5rem;
+        border-radius: 5px;
         @include breakpoints.for-tablet-landscape-up {
             padding: 0 2rem 0 0.5rem;
         }
         svg {
             width: 20px;
             height: 20px;
-        }
-        &.active svg {
-            color: var(--filter-active);
         }
         &:focus {
             outline: 0.125rem solid var(--focus);
@@ -70,6 +68,9 @@ main.people {
         align-self: flex-start;
         flex: 0 1 auto;
         margin-bottom: 0.25rem;
+        &.active svg {
+            color: var(--filter-active);
+        }
         @include breakpoints.for-tablet-landscape-up {
             span:last-of-type:after {
                 content: "\f0c2"; // phosphor caret-down icon
@@ -89,8 +90,14 @@ main.people {
             position: absolute;
             margin-top: -4.81rem;
             margin-left: -1.5rem;
+            background-color: var(--secondary);
+            color: var(--on-secondary);
+            fill: var(--on-secondary);
             span:last-of-type:after {
-                content: "\f0c5"; // phosphor caret-down icon
+                content: "\f0c5"; // phosphor caret-up icon
+            }
+            span.filter-count {
+                background-color: var(--primary);
             }
         }
     }
