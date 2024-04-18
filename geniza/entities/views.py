@@ -217,7 +217,9 @@ class PersonListView(ListView, FormMixin):
             all_objects = self.model.objects.all()
         for field in self.facet_fields:
             # get counts of each unique value for this field in the current queryset
-            facets[field] = list(qs.values(field).annotate(count=Count(field)))
+            facets[field] = list(
+                qs.values(field).annotate(count=Count("pk", distinct=True))
+            )
             if is_filtered:
                 # if a filter is applied, get all values from db, not just filtered queryset
                 unfiltered_values = list(
