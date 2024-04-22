@@ -5,7 +5,13 @@ import { ApplicationController, useDebounce } from "stimulus-use";
 import * as Turbo from "@hotwired/turbo";
 
 export default class extends Controller {
-    static targets = ["query", "sort", "filterModal", "doctypeFilter"];
+    static targets = [
+        "query",
+        "sort",
+        "filterModal",
+        "doctypeFilter",
+        "dropdownDetails",
+    ];
     static debounces = ["update"];
 
     connect() {
@@ -138,5 +144,16 @@ export default class extends Controller {
         // disable relevance sort
         this.relevanceSortElement.disabled = true;
         this.relevanceSortElement.ariaDisabled = true;
+    }
+
+    clickCloseDropdown(e) {
+        // Event listener to close the list view sort dropdown <details> element when a click is
+        // registered outside of it. This needs to be on the whole document because the click could
+        // be from anywhere!
+        this.dropdownDetailsTargets.forEach((target) => {
+            if (target.open && !target.contains(e.target)) {
+                target.removeAttribute("open");
+            }
+        });
     }
 }

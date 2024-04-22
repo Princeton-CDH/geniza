@@ -243,7 +243,7 @@ class TestPersonListView:
             person=person_diacritic, document=document, type=mentioned
         )
         PersonDocumentRelation.objects.create(
-            person=person_diacritic, document=document, type=author
+            person=person_diacritic, document=join, type=author
         )
         PersonDocumentRelation.objects.create(
             person=person_multiname, document=join, type=author
@@ -304,6 +304,20 @@ class TestPersonListView:
             }
             qs = personlist_view.get_queryset()
             assert qs.count() == 1
+
+            # ---- sort ----
+            # sort by related documents: ascending
+            mock_get_form.return_value.cleaned_data = {"sort": "documents"}
+            qs = personlist_view.get_queryset()
+            assert qs.first().pk != person_diacritic.pk
+
+            # sort by related documents: descending
+            mock_get_form.return_value.cleaned_data = {
+                "sort": "documents",
+                "sort_dir": "desc",
+            }
+            qs = personlist_view.get_queryset()
+            assert qs.first().pk == person_diacritic.pk
 
     def test_get_facets(
         self, document, join, person, person_diacritic, person_multiname
@@ -375,3 +389,15 @@ class TestPersonListView:
             assert isinstance(response.context["facets"], dict)
             # should call set_choices_from_facets on form
             mock_setchoices.assert_called_once()
+
+    def test_get_form_kwargs(self, client):
+        # should use initial values if not set
+        response = client.get(reverse("entities:person-list"))
+        assert (
+            response.context["form"].cleaned_data["sort"]
+            == PersonListView.initial["sort"]
+        )
+        # should not overwrite values from request if they are set
+        sort_role = "role"
+        response = client.get(reverse("entities:person-list"), {"sort": sort_role})
+        assert response.context["form"].cleaned_data["sort"] == sort_role

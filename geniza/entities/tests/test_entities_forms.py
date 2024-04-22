@@ -83,3 +83,10 @@ class TestPersonListForm:
         # sort should not count as a filter
         form = PersonListForm({"sort": "gender"})
         assert form.filters_active() == False
+
+    def test_get_sort_label(self):
+        form = PersonListForm({})
+        assert form.get_sort_label() is None
+
+        form = PersonListForm({"sort": "role"})
+        assert form.get_sort_label() == dict(PersonListForm.SORT_CHOICES)["role"]
