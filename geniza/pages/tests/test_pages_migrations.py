@@ -10,10 +10,9 @@ from geniza.common.tests import TestMigrations
 RAW_TEXT = "<h2>Geniza Project contributors</h2><h3>Co-PI Research Lead</h3><p><b>Marina Rustow</b></p<h3>Co-PI Technical Lead</h3><p>Rebecca Sutton Koeser</p><blockquote>Project Manager (March 2020-Present)</blockquote><blockquote>Rachel Richman</blockquote>"
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 @pytest.mark.django_db
 class TestConvertFieldsToStreamField(TestMigrations):
-
     app = "pages"
     migrate_from = "0005_containerpage"
     migrate_to = "0006_convert_richtextfield_to_streamfield"
@@ -77,10 +76,9 @@ class TestConvertFieldsToStreamField(TestMigrations):
                 assert isinstance(body_data, list)
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 @pytest.mark.django_db
 class TestConvertFieldsReverseToRichTextField(TestMigrations):
-
     app = "pages"
     migrate_from = "0006_convert_richtextfield_to_streamfield"
     migrate_to = "0005_containerpage"
@@ -138,10 +136,9 @@ class TestConvertFieldsReverseToRichTextField(TestMigrations):
                 assert isinstance(body, str)
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 @pytest.mark.django_db
 class TestDeleteCreditsPageInstances(TestMigrations):
-
     app = "pages"
     migrate_from = "0007_create_svgimageblock"
     migrate_to = "0008_delete_creditspage_instances"

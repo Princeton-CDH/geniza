@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest.mock import patch
 
 import pytest
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
@@ -6,25 +7,49 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.forms import ValidationError
 from django.utils import timezone
+from slugify import slugify
+from unidecode import unidecode
 
-from geniza.corpus.models import Document
+from geniza.corpus.dates import standard_date_display
+from geniza.corpus.models import Dating, Document
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
+    Event,
     Name,
+    PastPersonSlug,
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
+    PersonEventRelation,
     PersonPersonRelation,
     PersonPersonRelationType,
     PersonPlaceRelation,
     PersonPlaceRelationType,
     PersonRole,
     Place,
+    PlaceEventRelation,
     PlacePlaceRelation,
     PlacePlaceRelationType,
 )
 from geniza.footnotes.models import Footnote
+
+
+@pytest.mark.django_db
+class TestNameQuerySet:
+    def test_non_primary(self):
+        person = Person.objects.create()
+        name = Name.objects.create(
+            name="S.D. Goitein", content_object=person, primary=True
+        )
+        non_primary = Name.objects.create(
+            name="Goitein", content_object=person, primary=False
+        )
+        # should filter out primary names, only include non-primary
+        assert person.names.non_primary().exists()
+        assert person.names.non_primary().count() == 1
+        assert name not in person.names.non_primary()
+        assert non_primary in person.names.non_primary()
 
 
 @pytest.mark.django_db
@@ -295,22 +320,52 @@ class TestPerson:
         )
 
     def test_get_absolute_url(self):
-        # should get person page url in user's language by pk
-
         # should not have an absolute url if has_page is false and < MIN_DOCUMENTS associated docs
         person = Person.objects.create()
         assert person.get_absolute_url() == None
 
-        # has_page is true, should get the url in user's language by pk
+        # has_page is true, should get the url in user's language by slug
         person.has_page = True
-        assert person.get_absolute_url() == "/en/people/%s/" % person.pk
+        assert person.get_absolute_url() == "/en/people/%s/" % person.slug
 
         # has_page is false but has >= MIN_DOCUMENTS, should get url
         person.has_page = False
         for _ in range(Person.MIN_DOCUMENTS):
             d = Document.objects.create()
             person.documents.add(d)
-        assert person.get_absolute_url() == "/en/people/%s/" % person.pk
+        assert person.get_absolute_url() == "/en/people/%s/" % person.slug
+
+    def test_save(self):
+        # test past slugs are recorded on save
+        person = Person(slug="test")
+        person.save()
+        person.slug = ""
+        person.save()
+        assert PastPersonSlug.objects.filter(slug="test", person=person).exists()
+
+    def test_generate_slug(self):
+        person = Person.objects.create()
+        Name.objects.create(name="S.D. Goitein", content_object=person, primary=True)
+        person.generate_slug()
+
+        # should use slugified, unidecoded string
+        assert person.slug == slugify(unidecode(str(person)))
+        person.save()
+
+        # numeric differentiation when needed
+        person2 = Person.objects.create()
+        Name.objects.create(name="S.D. Goitein", content_object=person2, primary=True)
+        person2.generate_slug()
+
+        # should determine -2 based on the existence of identical slug
+        assert person2.slug == f"{person.slug}-2"
+        person2.save()
+
+        # should increment if there are existing numbers
+        person3 = Person.objects.create()
+        Name.objects.create(name="S.D. Goitein", content_object=person3, primary=True)
+        person3.generate_slug()
+        assert person3.slug == f"{person.slug}-3"
 
 
 @pytest.mark.django_db
@@ -459,3 +514,76 @@ class TestPlacePlaceRelation:
             type=possible_dupe,
         )
         assert str(relation) == f"{possible_dupe} relation: {fustat} and {other}"
+
+
+@pytest.mark.django_db
+class TestEvent:
+    def test_str(self):
+        event = Event.objects.create(name_en="PGPv4 released")
+        assert str(event) == event.name
+
+    def test_date_str(self, document):
+        event = Event.objects.create()
+        assert not event.date_str
+
+        # should use standardized dates from associated docs
+        document.events.add(event)
+        document.doc_date_standard = "1000/1010"
+        document.save()
+        assert event.date_str == standard_date_display(document.doc_date_standard)
+
+        # if defined, should use standard override date on event
+        event.standard_date = "1000/1099"
+        assert event.date_str == standard_date_display(event.standard_date)
+
+        # if defined, should use display override date on event
+        event.display_date = "ca. 11th century"
+        assert event.date_str == event.display_date
+
+    def test_documents_date_range(self, document, join):
+        event = Event.objects.create()
+        assert event.documents_date_range == ""
+
+        # should populate from standardized dates and date ranges in associated docs
+        document.events.add(event)
+        document.doc_date_standard = "1100"
+        document.save()
+        assert event.documents_date_range == document.doc_date_standard
+        document.doc_date_standard = "1100/1150"
+        document.save()
+        assert event.documents_date_range == document.doc_date_standard
+
+        # should use the combined range between dating and standard date
+        Dating.objects.create(
+            document=document,
+            display_date="",
+            standard_date="1010/1050",
+        )
+        # sometimes these years will have leading 0s
+        assert event.documents_date_range == "1010/1150"
+
+        # should use the combined range between multiple documents
+        event.documents.add(join)
+        join.doc_date_standard = "1000/1010"
+        join.save()
+        assert event.documents_date_range == "1000/1150"
+
+
+@pytest.mark.django_db
+class TestPersonEventRelation:
+    def test_str(self):
+        goitein = Person.objects.create()
+        Name.objects.create(name="Goitein", content_object=goitein)
+        event = Event.objects.create(name="S.D. Goitein's first publication")
+        relation = PersonEventRelation.objects.create(person=goitein, event=event)
+        assert str(relation) == f"Person-Event relation: {goitein} and {event}"
+
+
+@pytest.mark.django_db
+class TestPlaceEventRelation:
+    def test_str(self):
+        fustat = Place.objects.create()
+        Name.objects.create(name="Fustat", content_object=fustat)
+        event = Event.objects.create(name="Founding of the Ben Ezra Synagogue")
+        relation = PlaceEventRelation.objects.create(place=fustat, event=event)
+        assert str(relation) == f"Place-Event relation: {fustat} and {event}"

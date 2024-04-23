@@ -20,8 +20,9 @@ div#alerts {
         justify-content: center;
         position: relative;
         min-width: 20rem;
-        height: 1rem;
-        padding: 1.25rem;
+        max-width: 50rem;
+        min-height: 1rem;
+        padding: 0.25rem 1rem;
         margin-bottom: 0.25rem;
         background-color: var(--background-gray);
         color: var(--on-background-light);

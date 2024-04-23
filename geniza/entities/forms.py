@@ -7,9 +7,11 @@ from geniza.corpus.forms import FacetChoiceField
 from geniza.entities.models import (
     Person,
     PersonDocumentRelationType,
+    PersonEventRelation,
     PersonPersonRelation,
     PersonPlaceRelation,
     PersonRole,
+    PlaceEventRelation,
     PlacePlaceRelation,
 )
 
@@ -157,3 +159,30 @@ class PersonListForm(forms.Form):
                 {k: v for k, v in self.cleaned_data.items() if k != "sort" and bool(v)}
             )
         return False
+
+
+class EventPersonForm(forms.ModelForm):
+    class Meta:
+        model = PersonEventRelation
+        fields = ("person", "notes")
+        widgets = {
+            "person": autocomplete.ModelSelect2(url="entities:person-autocomplete"),
+            "notes": forms.Textarea(attrs={"rows": "4"}),
+        }
+
+
+class EventPlaceForm(forms.ModelForm):
+    class Meta:
+        model = PlaceEventRelation
+        fields = ("place", "notes")
+        widgets = {
+            "place": autocomplete.ModelSelect2(url="entities:place-autocomplete"),
+            "notes": forms.Textarea(attrs={"rows": "4"}),
+        }
+
+
+class EventForm(forms.ModelForm):
+    class Meta:
+        help_texts = {
+            "automatic_date": "Date or date range automatically generated from associated document(s)"
+        }
