@@ -3,7 +3,7 @@
 {# Translators: accessibility text label for person detail view tabs navigation #}
 <nav aria-label="{% translate "tabs" %}" id="tabs">
     <ul class="tabs">
-        {% url 'entities:person' pk=person.pk as person_url %}
+        {% url 'entities:person' slug=person.slug as person_url %}
         <li><a href="{{ person_url }}"{% if request.path == person_url %} aria-current="page"{% endif %}>{% translate "Person Details" %}</a></li>
 
         {# TODO: Enable these tabs when each design is implemented #}

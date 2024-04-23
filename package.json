@@ -25,7 +25,7 @@
     "@recogito/annotorious": "^2.7.13",
     "@recogito/annotorious-openseadragon": "^2.7.17",
     "angle-input": "^0.0.1",
-    "annotorious-tahqiq": "github:Princeton-CDH/annotorious-tahqiq#ba2990213d72059471752ba42af2bc552e387377",
+    "annotorious-tahqiq": "github:Princeton-CDH/annotorious-tahqiq#8a6f8ea5259c08215057f82df77310012a4dfb9b",
     "autoprefixer": "^10.3.2",
     "babel-loader": "^8.2.2",
     "core-js": "^3.16.3",

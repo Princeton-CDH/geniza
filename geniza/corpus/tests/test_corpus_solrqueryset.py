@@ -127,7 +127,6 @@ class TestDocumentSolrQuerySet:
         ):
             # should match a DocumentType by name
             result_doc = dqs.get_result_document(mock_doc)
-            print(result_doc["type"])
             assert isinstance(result_doc["type"], DocumentType)
 
         # special case for Unknown type
@@ -167,28 +166,40 @@ class TestDocumentSolrQuerySet:
         # confirm arabic to judaeo-arabic runs here (with boost)
         assert dqs._search_term_cleanup("دينار") == "(دينار^2.0|דינאר)"
         # confirm arabic to judaeo-arabic does not run here
-        assert dqs._search_term_cleanup('"دي[نا]ر"') == 'content_nostem:"دي[نا]ر"'
+        assert (
+            dqs._search_term_cleanup('"دي[نا]ر"')
+            == '(description_nostem:"دي[نا]ر" OR transcription_nostem:"دي[نا]ر")'
+        )
 
     def test_search_term_cleanup__exact_match_regex(self):
         dqs = DocumentSolrQuerySet()
-        # double quotes scoped to fields should not become scoped to content_nostem field
-        assert "content_nostem" not in dqs._search_term_cleanup('shelfmark:"T-S NS"')
-        assert "content_nostem" not in dqs._search_term_cleanup(
+        # double quotes scoped to fields should not become scoped to nostem fields
+        assert "description_nostem" not in dqs._search_term_cleanup(
+            'shelfmark:"T-S NS"'
+        )
+        assert "description_nostem" not in dqs._search_term_cleanup(
             'tag:"marriage payment" shelfmark:"T-S NS"'
         )
 
         # double quotes for fuzzy/proximity searches should also not be scoped
-        assert "content_nostem" not in dqs._search_term_cleanup('"divorced"~20')
-        assert "content_nostem" not in dqs._search_term_cleanup('"he divorced"~20')
+        assert "description_nostem" not in dqs._search_term_cleanup('"divorced"~20')
+        assert "description_nostem" not in dqs._search_term_cleanup('"he divorced"~20')
 
         # double quotes at the beginning of the query or after a space should be scoped (as well
         # as repeated as an unscoped query)
         assert (
-            dqs._search_term_cleanup('"he divorced"') == 'content_nostem:"he divorced"'
+            dqs._search_term_cleanup('"he divorced"')
+            == '(description_nostem:"he divorced" OR transcription_nostem:"he divorced")'
         )
 
-        assert 'content_nostem:"he divorced"' in dqs._search_term_cleanup(
+        assert 'description_nostem:"he divorced"' in dqs._search_term_cleanup(
             'shelfmark:"T-S NS" "he divorced"'
+        )
+
+        # should preserve order for e.g. boolean searches with exact matches
+        assert (
+            dqs._search_term_cleanup('"מרכב אלצלטאן" AND "אלמרכב אלצלטאן"')
+            == '(description_nostem:"מרכב אלצלטאן" OR transcription_nostem:"מרכב אלצלטאן") AND (description_nostem:"אלמרכב אלצלטאן" OR transcription_nostem:"אלמרכב אלצלטאן")'
         )
 
     def test_related_to(self, document, join, fragment, empty_solr):
@@ -262,3 +273,27 @@ class TestDocumentSolrQuerySet:
             assert cleaned_highlight["doc.1"]["translation"] == [
                 clean_html("<li>bar baz")
             ]
+
+    def test_get_highlighting__exact_search(self):
+        dqs = DocumentSolrQuerySet()
+        with patch("geniza.corpus.solr_queryset.super") as mock_super:
+            mock_get_highlighting = mock_super.return_value.get_highlighting
+            test_highlight = {
+                "doc.1": {
+                    "description": ["matched"],
+                    "description_nostem": ["exactly matched"],
+                    "transcription": ["match"],
+                    "transcription_nostem": ["exact match"],
+                }
+            }
+            mock_get_highlighting.return_value = test_highlight
+            # no exact search was made; returned unchanged
+            assert dqs.get_highlighting() == test_highlight
+
+            # an exact search was made; now, the highlighting we actually use in the template
+            # ("description" and "transcription" keys) should be replaced w/ the nostem matches
+            dqs.raw_params["hl_query"] = "exact match"
+            assert dqs.get_highlighting()["doc.1"]["description"] == ["exactly matched"]
+            assert dqs.get_highlighting()["doc.1"]["transcription"][0] == clean_html(
+                "exact match"
+            )

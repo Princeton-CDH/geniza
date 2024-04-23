@@ -4,10 +4,14 @@
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
 {% block extrameta %}
+    {# use English page as canonical for search engine crawlers (no redirects) #}
+    {% language "en" %}
+        <link rel="canonical" href="{% fullurl "entities:person" person.slug %}" />
+    {% endlanguage %}
     {% spaceless %}
         {% for lang_code in PUBLIC_SITE_LANGUAGES %}
             {% language lang_code %}
-                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "entities:person" person.pk %}" />
+                <link rel="alternate" hreflang="{{ lang_code }}" href="{% fullurl "entities:person" person.slug %}" />
             {% endlanguage %}
         {% endfor %}
     {% endspaceless %}
@@ -40,19 +44,17 @@
             </dl>
             {# secondary metadata #}
             <dl class="metadata-list secondary">
-                {% if person.names.count > 1 %}
+                {% if person.names.non_primary.exists %}
                     <dt>
                         {# Translators: label for alternative names for a person #}
-                        {% blocktranslate count counter=person.names.count|add:-1 trimmed %}
+                        {% blocktranslate count counter=person.names.non_primary.count trimmed %}
                             Other name
                         {% plural %}
                             Other names
                         {% endblocktranslate %}
                     </dt>
-                    {% for name in person.names.all %}
-                        {% if not name.primary %}
-                            <dd>{{ name }}</dd>
-                        {% endif %}
+                    {% for name in person.names.non_primary %}
+                        <dd>{{ name }}</dd>
                     {% endfor %}
                 {% endif %}
             </dl>

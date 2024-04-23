@@ -6,7 +6,7 @@ from django.conf import settings
 from geniza.common.tests import TestMigrations
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 @pytest.mark.django_db
 class ReassignLogEntries(TestMigrations):
     app = "corpus"
@@ -42,7 +42,7 @@ class ReassignLogEntries(TestMigrations):
         assert self.log_entry.content_type_id == document_type.pk
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 @pytest.mark.django_db
 class TestConvertSideToSelectedImages(TestMigrations):
     app = "corpus"
@@ -80,7 +80,7 @@ class TestConvertSideToSelectedImages(TestMigrations):
         assert 0 in both_sides.selected_images and 1 in both_sides.selected_images
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 @pytest.mark.django_db
 class TestConvertSelectedImagesToSide(TestMigrations):
     app = "corpus"
@@ -118,7 +118,7 @@ class TestConvertSelectedImagesToSide(TestMigrations):
         assert both_sides.side == "rv"
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 @pytest.mark.django_db
 class TestMergeDuplicateTags(TestMigrations):
     app = "corpus"
@@ -217,7 +217,7 @@ class TestMergeDuplicateTags(TestMigrations):
         ).exists()
 
 
-@pytest.mark.last
+@pytest.mark.order("last")
 @pytest.mark.django_db
 class TestMergeJTSENACollections(TestMigrations):
     app = "corpus"
@@ -264,13 +264,7 @@ class TestMergeJTSENACollections(TestMigrations):
         assert ena_fragment.collection.pk == self.jts_collection.pk
 
 
-# the following two tests fail in GitHub Actions with Group.DoesNotExist, but succeed locally;
-# possibly related to test order?
-@pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
-    reason="disabled in GitHub Actions due to Group.DoesNotExist in CI only",
-)
-@pytest.mark.second_to_last
+@pytest.mark.order("second_to_last")
 @pytest.mark.django_db
 class TestDocumentImageOverrides(TestMigrations):
     app = "corpus"
@@ -295,11 +289,7 @@ class TestDocumentImageOverrides(TestMigrations):
         assert order_override.image_overrides["canvas1"]["order"] == 1
 
 
-@pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
-    reason="disabled in GitHub Actions due to Group.DoesNotExist in CI only",
-)
-@pytest.mark.second_to_last
+@pytest.mark.order("second_to_last")
 @pytest.mark.django_db
 class TestDocumentImageOverridesReverse(TestMigrations):
     app = "corpus"
@@ -326,11 +316,7 @@ class TestDocumentImageOverridesReverse(TestMigrations):
         assert order_override.image_order_override == ["canvas2", "canvas1"]
 
 
-@pytest.mark.skipif(
-    os.getenv("GITHUB_ACTIONS") == "true",
-    reason="disabled in GitHub Actions due to Group.DoesNotExist in CI only",
-)
-@pytest.mark.second_to_last
+@pytest.mark.order("second_to_last")
 @pytest.mark.django_db
 class TestDocumentCleanupNbsp(TestMigrations):
     app = "corpus"

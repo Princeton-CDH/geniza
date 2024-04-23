@@ -1,3 +1,4 @@
+import itertools
 import re
 
 from bs4 import BeautifulSoup
@@ -75,6 +76,8 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "has_digital_translation": "has_digital_translation_b",
         "has_discussion": "has_discussion_b",
         "old_shelfmark": "old_shelfmark_bigram",
+        "transcription_nostem": "transcription_nostem",
+        "description_nostem": "description_nostem",
     }
 
     # regex to convert field aliases used in search to actual solr fields
@@ -108,7 +111,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # beginning/end of the string or after/before a space, and not followed by a
     # tilde for fuzzy/proximity search (non-greedy to prevent matching the entire
     # string if there are multiple sets of doublequotes)
-    re_exact_match = re.compile(r'(?<!:)\B(".+?")\B(?!~)')
+    re_exact_match = re.compile(r'(?<!:)\B".+?"\B(?!~)')
 
     # if keyword search includes an exact phrase, store unmodified query
     # to use as highlighting query
@@ -129,16 +132,26 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
             # store unmodified query for highlighting
             self.highlight_query = search_term
             # limit any exact phrase searches to non-stemmed field
-            exact_phrases = " ".join(
-                [
-                    f"content_nostem:{m}"
-                    for m in self.re_exact_match.findall(search_term)
-                ]
-            )
+            exact_phrases = [
+                f"(description_nostem:{m} OR transcription_nostem:{m})"
+                for m in self.re_exact_match.findall(search_term)
+            ]
             # add in judaeo-arabic conversion for the rest (double-quoted phrase should NOT be
             # converted to JA, as this breaks if any brackets or other sigla are in doublequotes)
-            remaining_query = arabic_or_ja(self.re_exact_match.sub("", search_term))
-            search_term = " ".join([exact_phrases, remaining_query]).strip()
+            remaining_phrases = [
+                arabic_or_ja(p) for p in self.re_exact_match.split(search_term)
+            ]
+            # stitch the search query back together, in order, so that boolean operators
+            # and phrase order are preserved
+            search_term = "".join(
+                itertools.chain.from_iterable(
+                    (
+                        itertools.zip_longest(
+                            remaining_phrases, exact_phrases, fillvalue=""
+                        )
+                    )
+                )
+            )
         else:
             search_term = arabic_or_ja(search_term)
 
@@ -246,8 +259,17 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         """highlight snippets within transcription/translation html may result in
         invalid tags that will render strangely; clean up the html before returning"""
         highlights = super().get_highlighting()
+        is_exact_search = "hl_query" in self.raw_params
         for doc in highlights.keys():
-            if "transcription" in highlights[doc]:
+            # _nostem fields should take precedence over stemmed fields in the case of an
+            # exact search; in that case, replace highlights for stemmed fields with nostem
+            if is_exact_search and "description_nostem" in highlights[doc]:
+                highlights[doc]["description"] = highlights[doc]["description_nostem"]
+            if is_exact_search and "transcription_nostem" in highlights[doc]:
+                highlights[doc]["transcription"] = [
+                    clean_html(s) for s in highlights[doc]["transcription_nostem"]
+                ]
+            elif "transcription" in highlights[doc]:
                 highlights[doc]["transcription"] = [
                     clean_html(s) for s in highlights[doc]["transcription"]
                 ]
