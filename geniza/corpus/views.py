@@ -171,12 +171,18 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
 
             if search_opts["q"]:
                 # NOTE: using requireFieldMatch so that field-specific search
-                # terms will NOT be usind for highlighting text matches
+                # terms will NOT be used for highlighting text matches
                 # (unless they are in the appropriate field)
                 documents = (
                     documents.keyword_search(search_opts["q"])
                     .highlight(
                         "description",
+                        snippets=3,
+                        method="unified",
+                        requireFieldMatch=True,
+                    )
+                    .highlight(
+                        "description_nostem",
                         snippets=3,
                         method="unified",
                         requireFieldMatch=True,
@@ -196,6 +202,13 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                         method="unified",
                         fragsize=150,
                         requireFieldMatch=True,
+                    )
+                    .highlight(
+                        "transcription_nostem",
+                        method="unified",
+                        fragsize=150,
+                        requireFieldMatch=False,
+                        **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
                     )
                     # highlight old shelfmark so we can show match in results
                     .highlight("old_shelfmark", requireFieldMatch=True)

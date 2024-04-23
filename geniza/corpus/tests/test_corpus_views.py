@@ -21,7 +21,7 @@ from geniza.annotations.models import Annotation
 from geniza.common.utils import absolutize_url
 from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
-from geniza.corpus.solr_queryset import DocumentSolrQuerySet
+from geniza.corpus.solr_queryset import DocumentSolrQuerySet, clean_html
 from geniza.corpus.views import (
     DocumentAnnotationListView,
     DocumentDetailView,
@@ -946,7 +946,7 @@ class TestDocumentSearchView:
         assert new_last_modified != init_last_modified
 
     def test_exact_match(self, empty_solr, document):
-        # integration test for description exact match indexing (content_nostem)
+        # integration test for description exact match indexing (description_nostem)
         doc1 = Document.objects.create(description_en="His son sells seashells")
         doc2 = Document.objects.create(
             description_en="Example of something a father sells to his son"
@@ -1004,7 +1004,7 @@ class TestDocumentSearchView:
 
     @pytest.mark.django_db
     def test_nostem_boost(self, empty_solr):
-        # integration tests for boosting content_nostem to ensure exact matches in description are
+        # integration tests for boosting description_nostem to ensure exact matches in description are
         # boosted above partial matches in shelfmark
         harun_doc1 = Document.objects.create(
             description_en="Story in Judaeo-Arabic, mentioning Ḥārūn b. Yaʿīsh and ʿAbd al-ʿAzīz al-Kohen."
@@ -1163,6 +1163,47 @@ class TestDocumentSearchView:
         docsearch_view.request.GET = {"q": "ולאואן"}
         qs = docsearch_view.get_queryset()
         assert qs.count() == 1
+
+    @pytest.mark.django_db
+    def test_exact_search_highlight(self, source, empty_solr):
+        # integration tests for exact search highlighting
+        document = Document.objects.create()
+        footnote = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            footnote=footnote,
+            content={
+                # body contains both a partial and an exact match for אלממ
+                "body": [{"value": "אלממחה ... אלממ"}],
+                "target": {
+                    "source": {
+                        "id": source.uri,
+                    }
+                },
+            },
+        )
+        SolrClient().update.index([document.index_data()], commit=True)
+        docsearch_view = DocumentSearchView(kwargs={})
+        docsearch_view.request = Mock()
+
+        # no double quotes in search, should highlight entire phrase
+        docsearch_view.request.GET = {"q": "אלממ"}
+        dqs = docsearch_view.get_queryset()
+        assert dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][
+            0
+        ] == clean_html("<em>אלממחה ... אלממ</em>")
+
+        # double quotes in search, should highlight only the exact match
+        docsearch_view.request.GET = {"q": '"אלממ"'}
+        dqs = docsearch_view.get_queryset()
+        assert dqs.raw_params["hl_query"] == '"אלממ"'
+        assert (
+            clean_html("<em>אלממ</em>")
+            in dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][0]
+        )
 
 
 class TestDocumentScholarshipView:

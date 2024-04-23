@@ -4,6 +4,7 @@ from adminsortable2.admin import SortableAdminBase
 from django.contrib import admin, messages
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.forms import BaseGenericInlineFormSet
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models.fields import CharField, TextField
 from django.forms import ModelChoiceField, ValidationError
 from django.forms.models import ModelChoiceIterator
@@ -251,7 +252,7 @@ class PersonEventInline(admin.TabularInline):
 class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     """Admin for Person entities in the PGP"""
 
-    search_fields = ("names__name",)
+    search_fields = ("name_unaccented", "names__name")
     fields = ("slug", "gender", "role", "has_page", "description")
     inlines = (
         NameInline,
@@ -297,7 +298,15 @@ class PersonAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin):
     def get_queryset(self, request):
         """For autocomplete ONLY, remove self from queryset, so that Person-Person autocomplete
         does not include self in the list of options"""
-        qs = super().get_queryset(request)
+        # also add unaccented name to queryset so we can search on it
+        qs = (
+            super()
+            .get_queryset(request)
+            .annotate(
+                # ArrayAgg to group together related values from related model instances
+                name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
+            )
+        )
 
         # only modify if this is the person-person autocomplete request
         is_autocomplete = request and request.path == "/admin/autocomplete/"
@@ -460,7 +469,7 @@ class PlaceEventInline(admin.TabularInline):
 class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
     """Admin for Place entities in the PGP"""
 
-    search_fields = ("names__name",)
+    search_fields = ("name_unaccented", "names__name")
     fields = (("latitude", "longitude"), "notes")
     inlines = (
         NameInline,
@@ -481,6 +490,18 @@ class PlaceAdmin(SortableAdminBase, admin.ModelAdmin):
         "i",  # PlaceEventInline
         "i",  # FootnoteInline
     )
+
+    def get_queryset(self, request):
+        """Modify queryset to add unaccented name annotation field, so that places
+        can be searched from admin list view without entering diacritics"""
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(
+                # ArrayAgg to group together related values from related model instances
+                name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
+            )
+        )
 
 
 @admin.register(PlacePlaceRelationType)

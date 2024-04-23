@@ -87,7 +87,9 @@ class UnaccentedNameAutocompleteView(autocomplete.Select2QuerySetView):
             name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
         ).order_by("name_unaccented")
         if q:
-            qs = qs.filter(name_unaccented__icontains=q)
+            qs = qs.filter(
+                Q(name_unaccented__icontains=q) | Q(names__name__icontains=q)
+            ).distinct()
         return qs
 
 
