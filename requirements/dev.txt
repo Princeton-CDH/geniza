@@ -7,7 +7,6 @@ django-debug-toolbar
 pre-commit
 black
 
-pytest-ordering
 # Using a fork of django-fixture-magic until this PR is merged:
 # https://github.com/davedash/django-fixture-magic/pull/76
 # (merge_fixtures with natural keys)

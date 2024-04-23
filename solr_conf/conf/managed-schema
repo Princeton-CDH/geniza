@@ -342,9 +342,9 @@
   <copyField source="tags_ss_lower" dest="tags_t" maxChars="30000" />
   <copyField source="type_s" dest="type_t" maxChars="300" />
 
-  <!-- copy description and transcription to a nostem field for exact matches -->
-  <copyField source="description_en_bigram" dest="content_nostem" maxChars="30000" />
-  <copyField source="text_transcription" dest="content_nostem" maxChars="30000" />
+  <!-- copy description and transcription to nostem fields for exact matches -->
+  <copyField source="description_en_bigram" dest="description_nostem" maxChars="30000" />
+  <copyField source="text_transcription" dest="transcription_nostem" maxChars="30000" />
 
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
@@ -401,6 +401,6 @@
   <dynamicField name="*_d" type="double" indexed="true" stored="true"/>
   <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
   <dynamicField name="*_natsort" type="natural_sort" indexed="true" stored="true" sortMissingLast="true"/>
-  <dynamicField name="*_nostem" type="text_nostem" indexed="true" stored="false" multiValued="true"/>
+  <dynamicField name="*_nostem" type="text_nostem" indexed="true" stored="true" multiValued="true"/>
 
 </schema>
