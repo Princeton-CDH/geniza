@@ -28,11 +28,13 @@ from geniza.corpus.models import (
     Collection,
     Dating,
     Document,
+    DocumentEventRelation,
     DocumentType,
     Fragment,
     LanguageScript,
     TextBlock,
 )
+from geniza.entities.models import Event
 from geniza.footnotes.models import Footnote, Source, SourceLanguage, SourceType
 
 
@@ -289,10 +291,10 @@ class TestFragment(TestCase):
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
-    def test_provenance(self, mock_manifestimporter):
+    def test_iiif_provenance(self, mock_manifestimporter):
         # fragment with no manifest
         frag = Fragment(shelfmark="TS 1")
-        assert not frag.provenance
+        assert not frag.iiif_provenance
 
         # fragment with a locally cached manifest
         frag = Fragment(shelfmark="TS 2")
@@ -303,7 +305,7 @@ class TestFragment(TestCase):
         )
         mock_manifestimporter.return_value.import_paths.return_value = [frag.manifest]
         frag.save()
-        assert frag.provenance == "From a place"
+        assert frag.iiif_provenance == "From a place"
 
     @pytest.mark.django_db
     @patch("geniza.corpus.models.GenizaManifestImporter")
@@ -1086,7 +1088,7 @@ class TestDocument:
         Annotation.objects.create(
             footnote=edition,
             content={
-                "body": [{"value": "transcription lines"}],
+                "body": [{"value": "transcrip[ti]on lines"}],
             },
         )
         # digital translation footnote
@@ -1118,7 +1120,7 @@ class TestDocument:
         assert index_data["num_translations_i"] == 2
         assert index_data["has_digital_translation_b"] == True
         assert index_data["scholarship_count_i"] == 3  # unique sources
-        assert index_data["text_transcription"] == ["transcription lines"]
+        assert index_data["text_transcription"] == ["transcrip[ti]on lines"]
         assert index_data["text_translation"] == ["translation lines"]
         assert index_data["translation_language_code_s"] == "en"
         assert index_data["translation_language_direction_s"] == "ltr"
@@ -1990,3 +1992,23 @@ def test_items_to_index(document, footnote):
     docs = Document.items_to_index()
     assert docs
     assert isinstance(docs, MultilingualQuerySet)
+
+
+def test_fragment_historic_shelfmarks(document, join, fragment, multifragment):
+    fragment.old_shelfmarks = "ULC Add. 2586"
+    fragment.save()
+    assert document.fragment_historical_shelfmarks == fragment.old_shelfmarks
+    assert join.fragment_historical_shelfmarks == fragment.old_shelfmarks
+    multifragment.old_shelfmarks = "T-S Misc.29.6"
+    multifragment.save()
+    hist_string = join.fragment_historical_shelfmarks
+    assert fragment.old_shelfmarks in hist_string
+    assert multifragment.old_shelfmarks in hist_string
+
+
+@pytest.mark.django_db
+class TestDocumentEventRelation:
+    def test_str(self, document):
+        event = Event.objects.create(name="Founding of the Ben Ezra Synagogue")
+        relation = DocumentEventRelation.objects.create(document=document, event=event)
+        assert str(relation) == f"Document-Event relation: {document} and {event}"

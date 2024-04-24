@@ -42,7 +42,9 @@
                                 <dd class="relation">
                                     <ul>
                                         {% for fn in source.list %}
-                                            <li class="location">{% include "corpus/snippets/footnote_location.html" %}</li>
+                                            {% ifchanged %}{# omit duplicate footnote locations #}
+                                                <li class="location">{% include "corpus/snippets/footnote_location.html" %}</li>
+                                            {% endifchanged %}
                                         {% endfor %}
                                     </ul>
                                 </dd>

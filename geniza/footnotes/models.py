@@ -1,3 +1,4 @@
+import re
 from collections import defaultdict
 from functools import cached_property
 from os import path
@@ -9,7 +10,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.functions import NullIf
 from django.db.models.query import Prefetch
 from django.urls import reverse
@@ -602,22 +603,19 @@ class Footnote(TrackChangesModel):
         # now that we're using foreign keys, return content from
         # any associated annotations, regardless of what doc relation.
 
-        # NOTE: when we implement translation, will need to filter on
-        # motivation here to distinguish transcription/translation;
-        # may need separate methods for transcription content
-        # and translation content, since one source could provide both
-
         # generate return a dictionary of lists of annotation html content
         # keyed on canvas uri
         # handle multiple annotations on the same canvas
         html_content = defaultdict(list)
         # order by optional position property (set by manual reorder in editor), then date
-        for a in self.annotation_set.all().order_by(
-            "content__schema:position", "created"
-        ):
-            if a.label:
-                html_content[a.target_source_id].append(f"<h3>{a.label}</h3>")
-            html_content[a.target_source_id].append(a.body_content)
+        for a in self.annotation_set.exclude(
+            # only iterate through block-level annotations; we will group their lines together
+            # if they have lines. (isnull check required to not exclude block-level annotations
+            # missing the textGranularity attribute)
+            Q(content__textGranularity__isnull=False)
+            & Q(content__textGranularity="line")
+        ).order_by("content__schema:position", "created"):
+            html_content[a.target_source_id] += a.block_content_html
         # cast to a regular dict to avoid weirdness in django templates
         return dict(html_content)
 

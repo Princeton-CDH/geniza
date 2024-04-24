@@ -9,6 +9,7 @@ from pytest_django.asserts import assertContains, assertNotContains
 
 from geniza.corpus.models import Document, LanguageScript
 from geniza.entities.admin import (
+    EventDocumentInline,
     NameInlineFormSet,
     PersonAdmin,
     PersonDocumentInline,
@@ -16,6 +17,7 @@ from geniza.entities.admin import (
     PersonPersonRelationTypeChoiceField,
     PersonPersonReverseInline,
     PersonPlaceInline,
+    PlaceAdmin,
 )
 from geniza.entities.models import (
     Name,
@@ -82,19 +84,6 @@ class TestPersonPersonReverseInline:
             type=sibilng,
         )
         assert reverse_inline.relation(goitein_siblings) == "Sibling"
-
-
-@pytest.mark.django_db
-class TestPersonPlaceInline:
-    def test_place_link(self):
-        goitein = Person.objects.create()
-        place = Place.objects.create()
-        relation = PersonPlaceRelation.objects.create(person=goitein, place=place)
-        inline = PersonPlaceInline(Person, admin_site=admin.site)
-        # should link to Place object
-        place_link = inline.place_link(relation)
-        assert str(place.id) in place_link
-        assert str(place) in place_link
 
 
 @pytest.mark.django_db
@@ -266,3 +255,52 @@ class TestPersonPersonRelationTypeChoiceIterator:
         assert len(choices[extended_family]) == 2
         assert (type_a.pk, type_a.name) in choices[immediate_family]
         assert (type_a.pk, type_a.name) not in choices[extended_family]
+
+
+class TestPersonEventInline:
+    def test_get_formset(self, admin_client):
+        # there should be no link to a popup to add an event from the Person admin
+        url = reverse("admin:entities_person_add")
+        response = admin_client.get(url)
+        content = str(response.content)
+        # NOTE: confirmed the following assertion fails when get_formset not overridden
+        assert "Add another event" not in content
+
+
+class TestPlaceEventInline:
+    def test_get_formset(self, admin_client):
+        # there should be no link to a popup to add an event from the Person admin
+        url = reverse("admin:entities_place_add")
+        response = admin_client.get(url)
+        content = str(response.content)
+        # NOTE: confirmed the following assertion fails when get_formset not overridden
+        assert "Add another event" not in content
+
+
+class TestEventDocumentInline:
+    def test_get_min_num(self, admin_client, document):
+        # it should be required to add at least one document from the Event admin
+        response = admin_client.get(reverse("admin:entities_event_add"))
+        content = str(response.content)
+        assert 'name="documenteventrelation_set-MIN_NUM_FORMS" value="1"' in content
+
+        # however, when accessed via popup from the Document admin, this requirement
+        # should be removed
+        response = admin_client.get(
+            reverse("admin:entities_event_add"), {"_popup": "1"}
+        )
+        content = str(response.content)
+        assert 'name="documenteventrelation_set-MIN_NUM_FORMS" value="0"' in content
+
+
+@pytest.mark.django_db
+class TestPlaceAdmin:
+    def test_get_queryset(self):
+        # create a place
+        place = Place.objects.create()
+        Name.objects.create(name="Fusṭāṭ", content_object=place, primary=True)
+        place_admin = PlaceAdmin(Place, admin_site=admin.site)
+
+        # queryset should include name_unaccented field without diacritics
+        qs = place_admin.get_queryset(Mock())
+        assert qs.filter(name_unaccented__icontains="fustat").exists()

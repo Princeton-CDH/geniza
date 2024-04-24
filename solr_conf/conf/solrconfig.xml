@@ -715,10 +715,11 @@
 
       <!-- keyword search field for geniza prototype -->
       <str name="keyword_qf">
-        shelfmark_bigram^200
-        shelfmark_s^150
+        shelfmark_s^200
+        description_nostem^190
+        transcription_nostem^190
+        shelfmark_bigram^180
         shelfmark_textnum^140
-        content_nostem^130
         description_en_bigram^50
         pgpid_i
         type_s
@@ -741,7 +742,8 @@
         shelfmark_bigram^9500
         shelfmark_textnum^9500
         description_en_bigram^3500
-        content_nostem^3500
+        description_nostem^3500
+        transcription_nostem^3500
         old_shelfmark_t
         old_shelfmark_textnum
         old_shelfmark_bigram^100

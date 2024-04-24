@@ -7,20 +7,26 @@ from django.contrib.contenttypes.models import ContentType
 from django.forms import ValidationError
 from django.utils import timezone
 
-from geniza.corpus.models import Document
+from geniza.corpus.dates import standard_date_display
+from geniza.corpus.models import Dating, Document
 from geniza.entities.models import (
     DocumentPlaceRelation,
     DocumentPlaceRelationType,
+    Event,
     Name,
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
+    PersonEventRelation,
     PersonPersonRelation,
     PersonPersonRelationType,
     PersonPlaceRelation,
     PersonPlaceRelationType,
     PersonRole,
     Place,
+    PlaceEventRelation,
+    PlacePlaceRelation,
+    PlacePlaceRelationType,
 )
 from geniza.footnotes.models import Footnote
 
@@ -414,3 +420,94 @@ class TestDocumentPlaceRelation:
             type=letter_origin,
         )
         assert str(relation) == f"{letter_origin} relation: {doc} and {fustat}"
+
+
+@pytest.mark.django_db
+class TestPlacePlaceRelation:
+    def test_str(self):
+        fustat = Place.objects.create()
+        Name.objects.create(name="Fustat", content_object=fustat)
+        other = Place.objects.create()
+        Name.objects.create(name="tatsuF", content_object=other)
+        (possible_dupe, _) = PlacePlaceRelationType.objects.get_or_create(
+            name="Possibly the same place as"
+        )
+        relation = PlacePlaceRelation.objects.create(
+            place_a=fustat,
+            place_b=other,
+            type=possible_dupe,
+        )
+        assert str(relation) == f"{possible_dupe} relation: {fustat} and {other}"
+
+
+@pytest.mark.django_db
+class TestEvent:
+    def test_str(self):
+        event = Event.objects.create(name_en="PGPv4 released")
+        assert str(event) == event.name
+
+    def test_date_str(self, document):
+        event = Event.objects.create()
+        assert not event.date_str
+
+        # should use standardized dates from associated docs
+        document.events.add(event)
+        document.doc_date_standard = "1000/1010"
+        document.save()
+        assert event.date_str == standard_date_display(document.doc_date_standard)
+
+        # if defined, should use standard override date on event
+        event.standard_date = "1000/1099"
+        assert event.date_str == standard_date_display(event.standard_date)
+
+        # if defined, should use display override date on event
+        event.display_date = "ca. 11th century"
+        assert event.date_str == event.display_date
+
+    def test_documents_date_range(self, document, join):
+        event = Event.objects.create()
+        assert event.documents_date_range == ""
+
+        # should populate from standardized dates and date ranges in associated docs
+        document.events.add(event)
+        document.doc_date_standard = "1100"
+        document.save()
+        assert event.documents_date_range == document.doc_date_standard
+        document.doc_date_standard = "1100/1150"
+        document.save()
+        assert event.documents_date_range == document.doc_date_standard
+
+        # should use the combined range between dating and standard date
+        Dating.objects.create(
+            document=document,
+            display_date="",
+            standard_date="1010/1050",
+        )
+        # sometimes these years will have leading 0s
+        assert event.documents_date_range == "1010/1150"
+
+        # should use the combined range between multiple documents
+        event.documents.add(join)
+        join.doc_date_standard = "1000/1010"
+        join.save()
+        assert event.documents_date_range == "1000/1150"
+
+
+@pytest.mark.django_db
+class TestPersonEventRelation:
+    def test_str(self):
+        goitein = Person.objects.create()
+        Name.objects.create(name="Goitein", content_object=goitein)
+        event = Event.objects.create(name="S.D. Goitein's first publication")
+        relation = PersonEventRelation.objects.create(person=goitein, event=event)
+        assert str(relation) == f"Person-Event relation: {goitein} and {event}"
+
+
+@pytest.mark.django_db
+class TestPlaceEventRelation:
+    def test_str(self):
+        fustat = Place.objects.create()
+        Name.objects.create(name="Fustat", content_object=fustat)
+        event = Event.objects.create(name="Founding of the Ben Ezra Synagogue")
+        relation = PlaceEventRelation.objects.create(place=fustat, event=event)
+        assert str(relation) == f"Place-Event relation: {fustat} and {event}"

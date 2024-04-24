@@ -125,3 +125,7 @@ TRANSCRIPTIONS_JSON_FILE = BASE_DIR.parent / "data" / "transcriptions.json"
 # METADATA_BACKUP_GITREPO = 'https://github.com/Princeton-CDH/test-geniza-metadata'
 # Local path for metadata repo
 # METADATA_BACKUP_PATH = 'data/metadata_repo'
+
+# Maptiler API token, required for showing maps on the admin site and the public site
+# for more information: https://docs.maptiler.com/cloud/api/authentication-key/
+# MAPTILER_API_TOKEN = ''

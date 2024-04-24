@@ -8,6 +8,8 @@ from django.contrib import messages
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.postgres.search import SearchVector
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.db.models.query import Prefetch
@@ -169,12 +171,18 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
 
             if search_opts["q"]:
                 # NOTE: using requireFieldMatch so that field-specific search
-                # terms will NOT be usind for highlighting text matches
+                # terms will NOT be used for highlighting text matches
                 # (unless they are in the appropriate field)
                 documents = (
                     documents.keyword_search(search_opts["q"])
                     .highlight(
                         "description",
+                        snippets=3,
+                        method="unified",
+                        requireFieldMatch=True,
+                    )
+                    .highlight(
+                        "description_nostem",
                         snippets=3,
                         method="unified",
                         requireFieldMatch=True,
@@ -186,6 +194,8 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                         method="unified",
                         fragsize=150,  # try including more context
                         requireFieldMatch=True,
+                        # use newline as passage boundary
+                        **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
                     )
                     .highlight(
                         "translation",
@@ -193,6 +203,15 @@ class DocumentSearchView(ListView, FormMixin, SolrLastModifiedMixin):
                         fragsize=150,
                         requireFieldMatch=True,
                     )
+                    .highlight(
+                        "transcription_nostem",
+                        method="unified",
+                        fragsize=150,
+                        requireFieldMatch=False,
+                        **{"bs.type": "SEPARATOR", "bs.separator": "\n"},
+                    )
+                    # highlight old shelfmark so we can show match in results
+                    .highlight("old_shelfmark", requireFieldMatch=True)
                     .also("score")
                 )  # include relevance score in results
 
@@ -730,11 +749,19 @@ class SourceAutocompleteView(PermissionRequiredMixin, autocomplete.Select2QueryS
         q = self.request.GET.get("q", None)
         qs = Source.objects.all().order_by("authors__last_name")
         if q:
-            qs = qs.filter(
-                Q(title__icontains=q)
-                | Q(authors__first_name__istartswith=q)
-                | Q(authors__last_name__istartswith=q)
-            ).distinct()
+            qs = (
+                qs.annotate(
+                    # ArrayAgg to group together related values from related model instances
+                    authors_last=ArrayAgg("authors__last_name", distinct=True),
+                    authors_first=ArrayAgg("authors__first_name", distinct=True),
+                    # PostgreSQL search vector to search across combined fields
+                    search=SearchVector(
+                        "title", "authors_last", "authors_first", "volume"
+                    ),
+                )
+                .filter(search=q)
+                .distinct()
+            )
         return qs
 
 
@@ -862,6 +889,8 @@ class DocumentTranscribeView(PermissionRequiredMixin, DocumentDetailView):
                     if self.doc_relation == "transcription"
                     else "translating",
                     "text_direction": text_direction,
+                    # line-by-line mode for eScriptorium sourced transcriptions
+                    "line_mode": "model" in source.source_type.type,
                 },
                 # TODO: Add Footnote notes to the following display, if present
                 "source_detail": mark_safe(source.formatted_display())

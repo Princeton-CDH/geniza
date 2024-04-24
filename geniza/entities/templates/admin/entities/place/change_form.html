@@ -1,4 +1,12 @@
 {% extends "admin/change_form.html" %}
+{% load render_bundle_csp  %}
+{% block admin_change_form_document_ready %}
+    {{ block.super }}
+    {% render_bundle_csp "admin" "js" attrs='defer' %}
+    <!-- maptiler token and maplibre CSS stylesheet -->
+    {{ maptiler_token|json_script:"maptiler-token" }}
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.css" />
+{% endblock %}
 
 {# Render mixed normal and inline fieldsets #}
 {% block field_sets %}

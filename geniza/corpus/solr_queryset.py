@@ -1,3 +1,4 @@
+import itertools
 import re
 
 from bs4 import BeautifulSoup
@@ -12,6 +13,23 @@ from geniza.corpus.ja import arabic_or_ja
 def clean_html(html_snippet):
     """utility method to clean up html, since solr snippets of html content
     may result in non-valid content"""
+
+    # if this snippet starts with a line that includes a closing </li> but no opening,
+    # try to append the opening <li> (and an ellipsis to show incompleteness)
+    incomplete_line = re.match(r"^(?!<li).+<\/li>$", html_snippet, flags=re.MULTILINE)
+    incomplete_line_with_p = re.match(r"^<p>.*?</p>\n</li>", html_snippet)
+    if incomplete_line or incomplete_line_with_p:
+        ellipsis = "..." if incomplete_line else ""
+        line_number = re.search(r'<li value="(\d+)"', html_snippet, flags=re.MULTILINE)
+        if line_number:
+            # try to include the line number with the malformed <li>:
+            # use the line number of the first displayed numbered line, and subtract 1
+            html_snippet = (
+                f'<li value="{int(line_number.group(1)) - 1}">{ellipsis}{html_snippet}'
+            )
+        else:
+            html_snippet = f"<li>{ellipsis}{html_snippet}"
+
     return BeautifulSoup(html_snippet, "html.parser").prettify(formatter="minimal")
 
 
@@ -57,6 +75,9 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         "has_digital_edition": "has_digital_edition_b",
         "has_digital_translation": "has_digital_translation_b",
         "has_discussion": "has_discussion_b",
+        "old_shelfmark": "old_shelfmark_bigram",
+        "transcription_nostem": "transcription_nostem",
+        "description_nostem": "description_nostem",
     }
 
     # regex to convert field aliases used in search to actual solr fields
@@ -90,7 +111,7 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
     # beginning/end of the string or after/before a space, and not followed by a
     # tilde for fuzzy/proximity search (non-greedy to prevent matching the entire
     # string if there are multiple sets of doublequotes)
-    re_exact_match = re.compile(r'(?<!:)\B(".+?")\B(?!~)')
+    re_exact_match = re.compile(r'(?<!:)\B".+?"\B(?!~)')
 
     # if keyword search includes an exact phrase, store unmodified query
     # to use as highlighting query
@@ -105,18 +126,34 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         # to avoid it being interpreted as a boolean
         search_term = self.re_shelfmark_nonbool.sub("BL or", search_term)
 
-        search_term = arabic_or_ja(search_term)
-
         # look for exact search, indicated by double quotes
         exact_queries = self.re_exact_match.findall(search_term)
         if exact_queries:
             # store unmodified query for highlighting
             self.highlight_query = search_term
             # limit any exact phrase searches to non-stemmed field
-            search_term = self.re_exact_match.sub(
-                lambda m: f"content_nostem:{m.group(0)}",
-                search_term,
+            exact_phrases = [
+                f"(description_nostem:{m} OR transcription_nostem:{m})"
+                for m in self.re_exact_match.findall(search_term)
+            ]
+            # add in judaeo-arabic conversion for the rest (double-quoted phrase should NOT be
+            # converted to JA, as this breaks if any brackets or other sigla are in doublequotes)
+            remaining_phrases = [
+                arabic_or_ja(p) for p in self.re_exact_match.split(search_term)
+            ]
+            # stitch the search query back together, in order, so that boolean operators
+            # and phrase order are preserved
+            search_term = "".join(
+                itertools.chain.from_iterable(
+                    (
+                        itertools.zip_longest(
+                            remaining_phrases, exact_phrases, fillvalue=""
+                        )
+                    )
+                )
             )
+        else:
+            search_term = arabic_or_ja(search_term)
 
         # convert any field aliases used in search terms to actual solr fields
         # (i.e. "pgpid:950 shelfmark:ena" -> "pgpid_i:950 shelfmark_t:ena")
@@ -140,15 +177,25 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
 
     def admin_search(self, search_term):
         # remove " + " from search string to allow searching on shelfmark joins
-        return self.search(self.admin_doc_qf).raw_query_parameters(
-            doc_query=self._search_term_cleanup(search_term)
-        )
+        doc_query = self._search_term_cleanup(search_term)
+        query_params = {"doc_query": doc_query}
+        # nested edismax query no longer works since solr 7.2
+        # https://solr.apache.org/guide/7_2/solr-upgrade-notes.html#solr-7-2
+        if "{!type=edismax" in doc_query:
+            query_params.update({"uf": "* _query_"})
+
+        return self.search(self.admin_doc_qf).raw_query_parameters(**query_params)
 
     keyword_search_qf = "{!type=edismax qf=$keyword_qf pf=$keyword_pf v=$keyword_query}"
 
     def keyword_search(self, search_term):
+        keyword_query = self._search_term_cleanup(search_term)
+        query_params = {"keyword_query": keyword_query}
+        # nested edismax query no longer works since solr 7.2 (see above)
+        if "{!type=edismax" in keyword_query:
+            query_params.update({"uf": "* _query_"})
         search = self.search(self.keyword_search_qf).raw_query_parameters(
-            keyword_query=self._search_term_cleanup(search_term)
+            **query_params
         )
         # if search term cleanup identifies any exact phrase searches,
         # pass the unmodified search to Solr as a highlighting query,
@@ -212,8 +259,17 @@ class DocumentSolrQuerySet(AliasedSolrQuerySet):
         """highlight snippets within transcription/translation html may result in
         invalid tags that will render strangely; clean up the html before returning"""
         highlights = super().get_highlighting()
+        is_exact_search = "hl_query" in self.raw_params
         for doc in highlights.keys():
-            if "transcription" in highlights[doc]:
+            # _nostem fields should take precedence over stemmed fields in the case of an
+            # exact search; in that case, replace highlights for stemmed fields with nostem
+            if is_exact_search and "description_nostem" in highlights[doc]:
+                highlights[doc]["description"] = highlights[doc]["description_nostem"]
+            if is_exact_search and "transcription_nostem" in highlights[doc]:
+                highlights[doc]["transcription"] = [
+                    clean_html(s) for s in highlights[doc]["transcription_nostem"]
+                ]
+            elif "transcription" in highlights[doc]:
                 highlights[doc]["transcription"] = [
                     clean_html(s) for s in highlights[doc]["transcription"]
                 ]

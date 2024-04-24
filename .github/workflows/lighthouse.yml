@@ -23,7 +23,7 @@ jobs:
         ports:
           - 8983:8983
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Decrypt encrypted fonts zip
         run: |
           gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.GPG_PASSPHRASE }}" --output sitemedia/fonts.zip sitemedia/fonts.zip.gpg
@@ -37,11 +37,9 @@ jobs:
           docker exec -d ${{ job.services.solr.id }} cp -r /opt/solr/server/solr/configsets /var/solr/data
           docker exec ${{ job.services.solr.id }} solr create -c geniza -n geniza
       - run: sudo apt install gettext
-      - run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
-      - uses: actions/setup-python@v2
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - uses: actions/cache@v2
+      - uses: actions/setup-python@v5
+        # uses version set in .python-version
+      - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('requirements/*.txt') }}
@@ -53,7 +51,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: ~/.npm
           key: npm-${{ hashFiles('package-lock.json') }}

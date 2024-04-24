@@ -3,6 +3,10 @@
 // - enable clicking images for an associated TextBlock to set which images are part of the
 //   document and which are not
 // - enable rotating images within a Document
+// - latitude and longitude validation for Places
+// - map for places
+
+import maplibregl from "maplibre-gl";
 
 window.addEventListener("DOMContentLoaded", () => {
     // append rotation controls to each image in the image order field thumbnail display
@@ -52,7 +56,127 @@ window.addEventListener("DOMContentLoaded", () => {
                 toggleDisabled(inputList, cb);
             });
     });
+
+    // latitude and longitude validation, and map, for Places
+    const latField = document.querySelector("input#id_latitude");
+    const lonField = document.querySelector("input#id_longitude");
+    if (latField && lonField) {
+        // center fustat by default
+        let lonlat = [31.231, 30.0057];
+
+        // if present, round initial values to 4 decimal places to prevent "step" bug
+        if (
+            lonField.value &&
+            parseFloat(lonField.value) <= 180 &&
+            parseFloat(lonField.value) >= -180
+        ) {
+            lonlat[0] = parseFloat(lonField.value);
+            lonField.setAttribute("value", lonlat[0].toFixed(4));
+        }
+        if (
+            latField.value &&
+            parseFloat(latField.value) <= 90 &&
+            parseFloat(latField.value) >= -90
+        ) {
+            lonlat[1] = parseFloat(latField.value);
+            latField.setAttribute("value", lonlat[1].toFixed(4));
+        }
+
+        // add map if we have an access token
+        const accessToken = JSON.parse(
+            document.getElementById("maptiler-token").textContent
+        );
+        let marker = null;
+        let map = null;
+        if (accessToken) {
+            const latRow = document.querySelector(".field-latitude");
+            const mapContainer = document.createElement("div");
+            mapContainer.setAttribute("id", "map");
+            mapContainer.style.width = "600px";
+            mapContainer.style.height = "400px";
+            latRow.parentNode.insertBefore(mapContainer, latRow);
+            map = new maplibregl.Map({
+                container: "map",
+                style: `https://api.maptiler.com/maps/openstreetmap/style.json?key=${accessToken}`,
+                center: lonlat,
+                zoom: 9,
+            });
+            marker = new maplibregl.Marker({
+                draggable: true,
+            })
+                .setLngLat(lonlat)
+                .addTo(map);
+
+            // add event listener to map marker
+            marker.on("dragend", () =>
+                onDragMapMarker(marker, lonField, latField)
+            );
+        }
+        // attach input event listeners (validate and move marker)
+        latField.addEventListener("input", (e) =>
+            onLatLonInput(e, marker, map)
+        );
+        lonField.addEventListener("input", (e) =>
+            onLatLonInput(e, marker, map)
+        );
+
+        // attach form submit event listener
+        const form = document.querySelector("form");
+        form.addEventListener("submit", (e) => {
+            if (!latField.value || !lonField.value) {
+                if (
+                    !confirm(
+                        "Are you sure you want to save without adding coordinates?"
+                    )
+                ) {
+                    e.preventDefault();
+                }
+            }
+        });
+    }
 });
+
+function onLatLonInput(evt, marker, map) {
+    // show message if invalid
+    const isValid = evt.target.reportValidity();
+    const asFloat = parseFloat(evt.target.value);
+    if (!isValid) {
+        if (asFloat) {
+            // might be invalid until coerced to float with 4 decimal places
+            evt.target.value = parseFloat(asFloat.toFixed(4));
+            // remove errors class in that case
+            evt.target.parentNode.parentNode.classList.remove("errors");
+        } else {
+            // add errors class to show red border if invalid
+            evt.target.parentNode.parentNode.classList.add("errors");
+        }
+    } else {
+        evt.target.parentNode.parentNode.classList.remove("errors");
+    }
+    // move marker to new coordinates
+    if (map && marker && asFloat) {
+        const lngLat = marker.getLngLat();
+        try {
+            if (evt.target.id.includes("longitude")) {
+                marker.setLngLat([asFloat, lngLat.lat]);
+                map.jumpTo({ center: [asFloat, lngLat.lat] });
+            } else {
+                marker.setLngLat([lngLat.lng, asFloat]);
+                map.jumpTo({ center: [lngLat.lng, asFloat] });
+            }
+        } catch (e) {
+            // if it's out of bounds, our form validation will catch it anyway
+            console.error(e);
+        }
+    }
+}
+
+function onDragMapMarker(marker, lonInput, latInput) {
+    // if you drag the marker, set the input values to the marker's coordinates
+    const lngLat = marker.getLngLat();
+    lonInput.value = lngLat.lng.toFixed(4);
+    latInput.value = lngLat.lat.toFixed(4);
+}
 
 function addDocRelationToggle(inputList) {
     // add click event listener to the list of checkboxes

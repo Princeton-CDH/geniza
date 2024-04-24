@@ -17,7 +17,7 @@ django-tabular-export
 parasolr>=0.9.1
 django-gfklookupwidget
 django-adminlogentries
-django-autocomplete-light>=3.9.4
+django-autocomplete-light>=3.11.0
 django-webpack-loader
 django-csp
 gitpython

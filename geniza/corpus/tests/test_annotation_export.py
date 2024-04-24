@@ -13,6 +13,7 @@ from geniza.common.models import UserProfile
 from geniza.corpus.annotation_export import AnnotationExporter
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
 from geniza.corpus.models import Document
+from geniza.footnotes.models import SourceType
 
 
 def test_filename(document, footnote):
@@ -30,6 +31,14 @@ def test_filename(document, footnote):
     footnote.source.authors.clear()
     filename = AnnotationExporter.filename(document, footnote.source, "transcription")
     assert "_unknown-author_" in filename
+
+    # test with no author, machine generated
+    (footnote.source.source_type, _) = SourceType.objects.get_or_create(
+        type="Machine learning model"
+    )
+    filename = AnnotationExporter.filename(document, footnote.source, "transcription")
+    assert "_machine-generated_" in filename
+    assert "_unknown-author_" not in filename
 
 
 # test input, expected results

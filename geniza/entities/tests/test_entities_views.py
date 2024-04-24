@@ -5,8 +5,12 @@ from django.forms import ValidationError
 from django.test import TestCase
 from django.urls import resolve, reverse
 
-from geniza.entities.models import Person
-from geniza.entities.views import PersonMerge
+from geniza.entities.models import Name, Person, Place
+from geniza.entities.views import (
+    PersonAutocompleteView,
+    PersonMerge,
+    PlaceAutocompleteView,
+)
 
 
 class TestPersonMergeView:
@@ -85,3 +89,64 @@ class TestPersonMergeView:
             TestCase().assertRedirects(response, merge_url)
             messages = [str(msg) for msg in list(response.context["messages"])]
             assert "test message" in messages
+
+
+class TestPersonAutocompleteView:
+    @pytest.mark.django_db
+    def test_get_queryset(self):
+        # create two people
+        person = Person.objects.create()
+        Name.objects.create(
+            name="Mūsā b. Yaḥyā al-Majjānī", content_object=person, primary=True
+        )
+        Name.objects.create(name="Abū 'Imrān", content_object=person, primary=False)
+        person_2 = Person.objects.create()
+        Name.objects.create(
+            name="Ḥayyim b. 'Ammār al-Madīnī", content_object=person_2, primary=True
+        )
+        person_autocomplete_view = PersonAutocompleteView()
+        # mock request with empty search
+        person_autocomplete_view.request = Mock()
+        person_autocomplete_view.request.GET = {"q": ""}
+        qs = person_autocomplete_view.get_queryset()
+        # should get exactly two results (all people) even though one has two names
+        assert qs.count() == 2
+
+        # should filter on names, case and diacritic insensitive
+        person_autocomplete_view.request.GET = {"q": "musa b. yahya"}
+        qs = person_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == person.pk
+
+        # should allow search by non-primary name
+        person_autocomplete_view.request.GET = {"q": "imran"}
+        qs = person_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == person.pk
+
+        # should allow search by name WITH diacritics
+        person_autocomplete_view.request.GET = {"q": "Ḥayyim"}
+        qs = person_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == person_2.pk
+
+
+class TestPlaceAutocompleteView:
+    @pytest.mark.django_db
+    def test_get_queryset(self):
+        # create a place
+        place = Place.objects.create()
+        Name.objects.create(name="Fusṭāṭ", content_object=place, primary=True)
+        place_autocomplete_view = PlaceAutocompleteView()
+
+        # should filter on place name, case and diacritic insensitive
+        place_autocomplete_view.request = Mock()
+        place_autocomplete_view.request.GET = {"q": "Fusṭāṭ"}
+        qs = place_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == place.pk
+
+        place_autocomplete_view.request.GET = {"q": "fustat"}
+        qs = place_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == place.pk

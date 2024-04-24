@@ -18,12 +18,14 @@ from modeltranslation.admin import TabbedTranslationAdmin
 
 from geniza.annotations.models import Annotation
 from geniza.common.admin import custom_empty_field_list_filter
-from geniza.corpus.dates import DocumentDateMixin
+from geniza.corpus.dates import DocumentDateMixin, standard_date_display
+from geniza.corpus.forms import DocumentPersonForm, DocumentPlaceForm
 from geniza.corpus.metadata_export import AdminDocumentExporter, AdminFragmentExporter
 from geniza.corpus.models import (
     Collection,
     Dating,
     Document,
+    DocumentEventRelation,
     DocumentType,
     Fragment,
     LanguageScript,
@@ -32,7 +34,7 @@ from geniza.corpus.models import (
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.corpus.views import DocumentMerge
 from geniza.entities.admin import PersonInline, PlaceInline
-from geniza.entities.models import DocumentPlaceRelation, PersonDocumentRelation
+from geniza.entities.models import DocumentPlaceRelation, Event, PersonDocumentRelation
 from geniza.footnotes.admin import DocumentFootnoteInline
 from geniza.footnotes.models import Footnote
 
@@ -131,6 +133,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
     readonly_fields = (
         "thumbnail",
         "side",
+        "fragment_provenance",
     )
     fields = (
         "fragment",
@@ -139,6 +142,7 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
         "region",
         "order",
         "certain",
+        "fragment_provenance",
         "thumbnail",
         "selected_images",
     )
@@ -148,6 +152,10 @@ class DocumentTextBlockInline(SortableInlineAdminMixin, admin.TabularInline):
         CharField: {"widget": TextInput(attrs={"size": "10"})},
         ArrayField: {"widget": HiddenInput()},  # hidden input for selected_images
     }
+
+    @admin.display(description="Provenance")
+    def fragment_provenance(self, obj):
+        return obj.fragment.provenance
 
 
 class DocumentForm(forms.ModelForm):
@@ -358,12 +366,30 @@ class DocumentPersonInline(PersonInline):
     """Inline for people related to a document"""
 
     model = PersonDocumentRelation
+    form = DocumentPersonForm
 
 
 class DocumentPlaceInline(PlaceInline):
     """Inline for places related to a document"""
 
     model = DocumentPlaceRelation
+    form = DocumentPlaceForm
+
+
+class DocumentEventInline(admin.TabularInline):
+    """Inline for events related to a document"""
+
+    autocomplete_fields = ("event",)
+    fields = ("event", "notes")
+    model = DocumentEventRelation
+    min_num = 0
+    extra = 1
+    show_change_link = True
+    verbose_name = "Related Event"
+    verbose_name_plural = "Related Events"
+    formfield_overrides = {
+        TextField: {"widget": Textarea(attrs={"rows": "4"})},
+    }
 
 
 @admin.register(Document)
@@ -392,6 +418,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         "view_old_pgpids",
         "standard_date",
         "admin_thumbnails",
+        "fragment_historical_shelfmarks",
     )
     search_fields = (
         "fragments__shelfmark",
@@ -409,6 +436,12 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
     )
     def view_old_pgpids(self, obj):
         return ",".join([str(pid) for pid in obj.old_pgpids]) if obj.old_pgpids else "-"
+
+    @admin.display(
+        description="Standard date",
+    )
+    def standard_date(self, obj):
+        return standard_date_display(obj.doc_date_standard)
 
     list_filter = (
         "doctype",
@@ -437,7 +470,12 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
             None,
             {
                 "fields": (
-                    ("shelfmark", "id", "view_old_pgpids"),
+                    (
+                        "shelfmark",
+                        "id",
+                        "view_old_pgpids",
+                        "fragment_historical_shelfmarks",
+                    ),
                     "shelfmark_override",
                     "doctype",
                     ("languages", "secondary_languages"),
@@ -481,6 +519,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         DocumentFootnoteInline,
         DocumentPersonInline,
         DocumentPlaceInline,
+        DocumentEventInline,
     ]
     # mixed fieldsets and inlines: /templates/admin/snippets/mixed_inlines_fieldsets.html
     fieldsets_and_inlines_order = (
@@ -493,6 +532,7 @@ class DocumentAdmin(TabbedTranslationAdmin, SortableAdminBase, admin.ModelAdmin)
         "i",  # DocumentFootnoteInline
         "i",  # DocumentPersonInline
         "i",  # DocumentPlaceInline
+        "i",  # DocumentEventInline
     )
 
     class Media:
@@ -714,7 +754,7 @@ class DocumentTypeAdmin(TabbedTranslationAdmin, admin.ModelAdmin):
 class FragmentAdmin(admin.ModelAdmin):
     list_display = ("shelfmark", "collection_display", "url", "is_multifragment")
     search_fields = ("shelfmark", "old_shelfmarks", "notes", "needs_review")
-    readonly_fields = ("created", "last_modified")
+    readonly_fields = ("created", "last_modified", "iiif_provenance")
     list_filter = (
         ("url", custom_empty_field_list_filter("IIIF image", "Has image", "No image")),
         (
@@ -731,6 +771,8 @@ class FragmentAdmin(admin.ModelAdmin):
         "collection",
         ("url", "iiif_url"),
         "is_multifragment",
+        "provenance",
+        "iiif_provenance",
         "notes",
         "needs_review",
         ("created", "last_modified"),

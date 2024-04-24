@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 
 from geniza.corpus.models import Document, Fragment
@@ -28,5 +29,8 @@ class GenizaAdminSite(admin.AdminSite):
         context["fragments_need_review"] = fragments_need_review[
             : self.REVIEW_PREVIEW_MAX
         ]
+
+        # add maptiler token if we have one
+        context["maptiler_token"] = getattr(settings, "MAPTILER_API_TOKEN", "")
 
         return context

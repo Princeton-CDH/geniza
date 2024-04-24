@@ -1,3 +1,4 @@
+from dal import autocomplete
 from django import forms
 from django.db.models import Count
 from django.template.loader import get_template
@@ -8,6 +9,7 @@ from taggit.models import Tag
 from geniza.common.fields import RangeField, RangeForm, RangeWidget
 from geniza.common.utils import simplify_quotes
 from geniza.corpus.models import Document, DocumentType
+from geniza.entities.models import DocumentPlaceRelation, PersonDocumentRelation
 
 
 class SelectDisabledMixin:
@@ -153,7 +155,6 @@ class YearRangeWidget(RangeWidget):
 
 
 class DocumentSearchForm(RangeForm):
-
     q = forms.CharField(
         label="Keyword or Phrase",
         required=False,
@@ -413,3 +414,33 @@ class TagMergeForm(forms.Form):
         ).annotate(
             item_count=Count("taggit_taggeditem_items", distinct=True),
         )
+
+
+class DocumentPersonForm(forms.ModelForm):
+    class Meta:
+        model = PersonDocumentRelation
+        fields = (
+            "person",
+            "type",
+            "notes",
+        )
+        widgets = {
+            "notes": forms.Textarea(attrs={"rows": 4}),
+            "person": autocomplete.ModelSelect2(url="entities:person-autocomplete"),
+            "type": autocomplete.ModelSelect2(),
+        }
+
+
+class DocumentPlaceForm(forms.ModelForm):
+    class Meta:
+        model = DocumentPlaceRelation
+        fields = (
+            "place",
+            "type",
+            "notes",
+        )
+        widgets = {
+            "notes": forms.Textarea(attrs={"rows": 4}),
+            "place": autocomplete.ModelSelect2(url="entities:place-autocomplete"),
+            "type": autocomplete.ModelSelect2(),
+        }

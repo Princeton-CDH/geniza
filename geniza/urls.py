@@ -57,6 +57,7 @@ urlpatterns = [
 # urls that should be available in multiple languages
 urlpatterns += i18n_patterns(
     path("", include("geniza.corpus.urls", namespace="corpus")),
+    path("", include("geniza.entities.urls", namespace="entities")),
     path("", include(wagtail_urls)),
 )
 

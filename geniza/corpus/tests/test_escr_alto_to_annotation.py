@@ -66,10 +66,16 @@ class TestEscrToAltoAnnotation:
         block = alto.printspace.textblocks[0]
         with patch.object(self.cmd, "scale_polygon") as scale_mock:
             scale_mock.return_value = "100 200"
-            anno_content = self.cmd.create_block_annotation(block, "mock_canvas", 2)
+            anno_content = self.cmd.create_block_annotation(
+                block, "mock_canvas", 2, "Oblique_225", 1
+            )
 
-            # anno body should contain the transcription text
-            assert "<li>חטל אללה בקאך נ[</li>" in anno_content["body"][0]["value"]
+            # block anno body should NOT contain the transcription text
+            assert "value" not in anno_content["body"][0]
+
+            # but should contain the type
+            assert anno_content["body"][0]["label"] == "Oblique_225"
+            assert anno_content["target"]["styleClass"] == "Oblique_225"
 
             # anno target source should be canvas
             assert anno_content["target"]["source"]["id"] == "mock_canvas"
@@ -82,8 +88,41 @@ class TestEscrToAltoAnnotation:
 
         # block without polygon should cover most of entire image with fragmentselector
         del block.polygon
-        anno_content = self.cmd.create_block_annotation(block, "mock_canvas", 2)
+        anno_content = self.cmd.create_block_annotation(
+            block, "mock_canvas", 2, "type", 1
+        )
         assert anno_content["target"]["selector"]["value"] == "xywh=percent:1,1,98,98"
+
+    def test_create_line_annotation(self, annotation):
+        alto = xmlmap.load_xmlobject_from_file(xmlfile, EscriptoriumAlto)
+        line = alto.printspace.textblocks[0].lines[0]
+        with patch.object(self.cmd, "scale_polygon") as scale_mock:
+            scale_mock.return_value = "100 200"
+            anno_content = self.cmd.create_line_annotation(
+                line, annotation, 2, "Oblique_225", 1
+            )
+            # should get the actual line content
+            assert "חטל אללה בקאך נ[" in anno_content["body"][0]["value"]
+
+            # should have line-level textGranularity property
+            assert anno_content["textGranularity"] == "line"
+
+            # should get style class from rotation styles
+            assert anno_content["target"]["styleClass"] == "Oblique_225"
+
+            # selector should be svg containing mock result polygon points
+            assert (
+                '<svg><polygon points="100 200">'
+                in anno_content["target"]["selector"]["value"]
+            )
+
+            annotation.content["target"]["styleClass"] = "test"
+            line.polygon = None
+            anno_content = self.cmd.create_line_annotation(line, annotation, 2, None, 1)
+            # should inherit style class from block if not present in line
+            assert anno_content["target"]["styleClass"] == "test"
+            # should not have any target selector if no polygon
+            assert "selector" not in anno_content["target"]
 
     def test_get_manifest(self, document):
         manifests = [b.fragment.manifest for b in document.textblock_set.all()]
@@ -156,7 +195,6 @@ class TestEscrToAltoAnnotation:
         TextBlock.objects.create(document=doc, fragment=fragment)
         out = StringIO()
         call_command("escr_alto_to_annotation", xmlfile, stdout=out)
-        print(out.getvalue())
         assert "1 file(s) failed to match a specific image" in out.getvalue()
         assert f"\t- {xmlfile}" in out.getvalue()
 
@@ -207,11 +245,17 @@ class TestEscrToAltoAnnotation:
             mock_create_anno.return_value = annotation_json
             # mock iiif image to avoid network req
             with patch.object(Canvas, "image"):
-                call_command("escr_alto_to_annotation", xmlfile, stdout=out)
-                mock_create_anno.assert_called_with(ANY, canvas.uri, ANY)
+                # mock indexing
+                with patch.object(Document, "index"):
+                    call_command("escr_alto_to_annotation", xmlfile, stdout=out)
+                    mock_create_anno.assert_called_with(ANY, canvas.uri, ANY, ANY, ANY)
 
         # should have created log entries for the new annotations
         assert LogEntry.objects.filter(
-            change_message="Imported from eScriptorium HTR ALTO",
+            change_message="Imported block from eScriptorium HTR ALTO",
+            action_flag=ADDITION,
+        ).exists()
+        assert LogEntry.objects.filter(
+            change_message="Imported line from eScriptorium HTR ALTO",
             action_flag=ADDITION,
         ).exists()

@@ -969,7 +969,7 @@ $toggle-default-neg: -82px; /* only applies on tablet up */
         h2 + span.current-translation {
             display: block;
             @include typography.meta;
-            color: var(--input-date-text);
+            color: var(--extra-metadata-text);
             &.multiple {
                 min-height: calc(1rem * 1.5 * 2);
             }
@@ -1353,5 +1353,19 @@ html[dir="rtl"] #itt-panel {
         @include breakpoints.for-tablet-landscape-up {
             margin-left: $toggle-default-neg;
         }
+    }
+}
+/**
+ * Line-level editor style tweaks
+ */
+.tahqiq-line-group .tahqiq-block-display p {
+    margin: 0;
+    padding: 0;
+}
+.tahqiq-line-group .tahqiq-block-display::before {
+    @include typography.transcription-numerals;
+    font-size: typography.$text-size-md;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: typography.$text-size-xl;
     }
 }

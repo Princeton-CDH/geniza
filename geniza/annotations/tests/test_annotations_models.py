@@ -18,6 +18,27 @@ class TestAnnotation:
         anno = Annotation()
         assert anno.get_absolute_url() == "/annotations/%s/" % anno.pk
 
+    def test_etag(self, annotation):
+        old_etag = annotation.etag
+        # should be surrounded by doublequotes
+        assert old_etag[0] == old_etag[-1] == '"'
+        # should be length of an md5 hash + two characters
+        assert len(old_etag) == 34
+        # changing content should change etag
+        annotation.content.update(
+            {
+                "foo": "bar",
+                "id": "bogus",
+                "created": "yesterday",
+                "modified": "today",
+            }
+        )
+        assert annotation.etag != old_etag
+        new_etag = annotation.etag
+        # changing other properties on the annotation should not change etag
+        annotation.footnote = Footnote()
+        assert annotation.etag == new_etag
+
     @pytest.mark.django_db
     def test_uri(self):
         anno = Annotation()
@@ -31,12 +52,13 @@ class TestAnnotation:
             "id": absolutize_url("/annotations/1"),
             "type": "Annotation",
             "foo": "bar",
+            "etag": "abcd1234",
         }
         anno = Annotation(footnote=footnote)
         anno.set_content(content)
 
         # check that appropriate fields were removed
-        for field in ["@context", "id", "type"]:
+        for field in ["@context", "id", "type", "etag"]:
             assert field not in anno.content
         # remaining content was set
         assert anno.content["foo"] == "bar"
@@ -116,6 +138,18 @@ class TestAnnotation:
         assert compiled["canonical"] == annotation.canonical
         assert compiled["via"] == annotation.via
 
+        line = Annotation.objects.create(
+            footnote=annotation.footnote, block=annotation, content={}
+        )
+        compiled = line.compile()
+        assert compiled["partOf"] == annotation.uri()
+
+        # when include_context=False (i.e. part of a list), should include etag, since
+        # we need a way to associate individual ETag to each item returned in list response
+        compiled = line.compile(include_context=False)
+        assert compiled["etag"] == line.etag
+        assert "@context" not in compiled
+
     def test_sanitize_html(self):
         html = '<table><div><p style="foo:bar;">test</p></div><ol><li>line</li></ol></table>'
         # should strip out all unwanted elements and attributes (table, div, style)
@@ -133,6 +167,40 @@ class TestAnnotation:
         # should remove \xa0 Unicode non-breaking space
         html = "<p>text\xa0and more \xa0 text</p>"
         assert Annotation.sanitize_html(html) == "<p>text and more text</p>"
+
+    def test_block_content_html(self, annotation):
+        annotation.content["body"][0]["label"] = "Test label"
+        # should include label and content
+        block_html = annotation.block_content_html
+        assert len(block_html) == 2
+        assert block_html[0] == "<h3>Test label</h3>"
+        assert block_html[1] == annotation.body_content
+
+        # with associated lines, should produce ordered list
+        del annotation.content["body"][0]["value"]
+        line_1 = Annotation.objects.create(
+            block=annotation,
+            content={"body": [{"value": "Line 1"}], "schema:position": 1},
+            footnote=annotation.footnote,
+        )
+        line_2 = Annotation.objects.create(
+            block=annotation,
+            content={"body": [{"value": "Line 2"}], "schema:position": 2},
+            footnote=annotation.footnote,
+        )
+
+        # invalidate cached properties
+        del annotation.has_lines
+        del annotation.block_content_html
+
+        # should now show that it has lines and produce the ordered list
+        assert annotation.has_lines == True
+        block_html = annotation.block_content_html
+        assert len(block_html) == 5
+        assert block_html[0] == "<h3>Test label</h3>"
+        assert block_html[1] == "<ol>"
+        assert block_html[2] == f"<li>{line_1.body_content}</li>"
+        assert block_html[3] == f"<li>{line_2.body_content}</li>"
 
 
 @pytest.mark.django_db

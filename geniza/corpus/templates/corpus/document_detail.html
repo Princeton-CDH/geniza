@@ -74,6 +74,23 @@
                         </time>
                     </dd>
                 {% endif %}
+                {% if document.dating_set.exists %}
+                    <dt>
+                        {# Translators: Inferred dating label #}
+                        {% blocktranslate count counter=document.dating_set.count trimmed %}
+                            Inferred Date
+                        {% plural %}
+                            Inferred Dates
+                        {% endblocktranslate %}
+                    </dt>
+                    {% for date in document.dating_set.all %}
+                        <dd>
+                            <time{% if date.standard_date %} datetime="{{ date.standard_date }}"{% endif %}>
+                                {{ date.display_date|default:date.standard_date_display }}
+                            </time>
+                        </dd>
+                    {% endfor %}
+                {% endif %}
                 {% if document.languages.exists %}
                     <dt>
                         {# Translators: Primary language label #}
@@ -117,13 +134,26 @@
             </section>
         {% endif %}
 
-        <section class="input-date">
-            {# Translators: Label for date document was first added to the PGP #}
-            <h2 class="sr-only">{% translate 'Input date' %}</h2>
-            {# Translators: Date document was first added to the PGP #}
-            {% blocktranslate with date=document.log_entries.last.action_time.year %}
-                In PGP since {{ date }}
-            {% endblocktranslate %}
+        <section class="extra-metadata">
+            <h2 class="sr-only">
+                {# Translators: label for secondary/historiographical metadata #}
+                {% translate 'Additional metadata' %}
+            </h2>
+            <dl>
+                {% if document.fragment_historical_shelfmarks %}
+                {# Translators: label for historical/old shelfmarks on document fragments #}
+                    <dt>{% translate 'Historical shelfmarks' %}</dt>
+                    <dd>{{ document.fragment_historical_shelfmarks }}</dd>
+                {% endif %}
+                {# Translators: Label for date document was first added to the PGP #}
+                <dt>{% translate 'Input date' %}</dt>
+                <dd>
+                    {# Translators: Date document was first added to the PGP #}
+                    {% blocktranslate with date=document.log_entries.last.action_time.year %}
+                        In PGP since {{ date }}
+                    {% endblocktranslate %}
+                </dd>
+            </dl>
         </section>
 
         <section class="description">
@@ -140,13 +170,14 @@
 
     {# tertiary metadata #}
     <dl class="metadata-list tertiary">
-        <dt id="permalink">
+        {# Translators: label for permanent link to a document #}
+        {% translate 'Permalink' as permalink %}
+        <dt id="permalink" aria-hidden="true"> {# aria hidden because redundant for screen readers #}
             <svg role="presentation"><use xlink:href="{% static 'img/ui/all/all/permalink-icon.svg' %}#permalink-icon" /></svg>
-            {# Translators: label for permanent link to a document #}
-            {% translate 'Permalink' %}
+            {{ permalink }}
         </dt>
         <dd>
-            <a href="{{ document.permalink }}" rel="bookmark">
+            <a href="{{ document.permalink }}" rel="bookmark" aria-label="{{ permalink }}">
                 {{ document.permalink }}
             </a>
         </dd>

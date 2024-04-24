@@ -104,14 +104,56 @@
     <fieldType name="transcription_text" class="solr.TextField" positionIncrementGap="100" multiValued="true">
     <analyzer type="index">
       <charFilter class="solr.HTMLStripCharFilterFactory"/>
-      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <!-- Strip transcription sigla and unwanted Arabic connectors from passed text, for indexing,
+        so that users can search for words otherwise interrupted by transcription meta-typography.
+
+        the following sigla are used to indicate various kinds of additions or substitutions:
+        <> = erroneous omission; \/ or \\// = interlinear addition; () = expanded abbreviation;
+        [] = restored lacuna; 〚〛 = restored deletion
+      -->
+
+      <!-- the Arabic connector tatweel/kasheeda (ـ U+0640) is sometimes used purely for
+      typographical reasons before and after sigla in the middle of words with insertions.
+      (it is also used as a normal part of words, but those cases should not be cleaned.) -->
+      <charFilter class="solr.PatternReplaceCharFilterFactory"
+                  pattern="\u0640[\u003c\u003e\\\/\(\)\[\]〚〛]+\u0640" replacement="" />
+      <!-- sometimes connector will appear only before or only after a siglum; cleaned separately
+      to ensure no stray tatweel in the more common case -->
+      <charFilter class="solr.PatternReplaceCharFilterFactory"
+                  pattern="([\u003c\u003e\\\/\(\)\[\]〚〛]\u0640)|(\u0640[\u003c\u003e\\\/\(\)\[\]〚〛])"
+                  replacement="" />
+      <!-- additional sigla: erroneous/superfluous characters surrounded by {}; dot with space -->
+      <charFilter class="solr.PatternReplaceCharFilterFactory"
+                  pattern="([\u003c\u003e\\\/\(\)\[\]〚〛])|(\{\S+\})|( \.)|(\. )" replacement="" />
+      <!-- the pipe | symbol is used to indicate the edge of a manuscript, and may be used between
+      two words, or in the middle of a word. since there is no way to tell which one is
+      happening without NLP, we store both in the cleaned text (i.e. "A | B" -> "A B AB") -->
+      <charFilter class="solr.PatternReplaceCharFilterFactory"
+                  pattern="(\S+) \| (\S+)" replacement="$1 $2 $1$2" />
+      <!--  in some cases, transcriptions include the pipe in the middle of a word using A|B; simply
+      remove the remaining pipes to handle this -->
+      <charFilter class="solr.PatternReplaceCharFilterFactory"
+                  pattern="\|" replacement="" />
+      <tokenizer class="solr.WhitespaceTokenizerFactory"/>
       <filter class="solr.ICUFoldingFilterFactory"/>
       <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
       <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="20" />
       <filter class="solr.LowerCaseFilterFactory"/>
     </analyzer>
     <analyzer type="query">
-      <tokenizer class="solr.StandardTokenizerFactory"/>
+      <!-- use same charFilters on query, to highlight matches when query term contains sigla -->
+      <charFilter class="solr.PatternReplaceCharFilterFactory"
+                  pattern="\u0640[\u003c\u003e\\\/\(\)\[\]〚〛]+\u0640" replacement="" />
+      <charFilter class="solr.PatternReplaceCharFilterFactory"
+                  pattern="([\u003c\u003e\\\/\(\)\[\]〚〛]\u0640)|(\u0640[\u003c\u003e\\\/\(\)\[\]〚〛])"
+                  replacement="" />
+      <charFilter class="solr.PatternReplaceCharFilterFactory"
+                  pattern="([\u003c\u003e\\\/\(\)\[\]〚〛])|(\{\S+\})|( \.)|(\. )" replacement="" />
+      <charFilter class="solr.PatternReplaceCharFilterFactory"
+                  pattern="(\S+) \| (\S+)" replacement="$1 $2 $1$2" />
+      <charFilter class="solr.PatternReplaceCharFilterFactory"
+                  pattern="\|" replacement="" />
+      <tokenizer class="solr.WhitespaceTokenizerFactory"/>
       <filter class="solr.ICUFoldingFilterFactory"/>
       <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
       <filter class="solr.SynonymGraphFilterFactory" expand="true" ignoreCase="true" synonyms="synonyms.txt"/>
@@ -261,6 +303,7 @@
     <!-- Simple text field with no stemming, used to find exact matches. -->
     <fieldType name="text_nostem" class="solr.TextField">
       <analyzer>
+        <charFilter class="solr.HTMLStripCharFilterFactory"/>
         <tokenizer class="solr.WhitespaceTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.ICUFoldingFilterFactory"/>
@@ -299,9 +342,9 @@
   <copyField source="tags_ss_lower" dest="tags_t" maxChars="30000" />
   <copyField source="type_s" dest="type_t" maxChars="300" />
 
-  <!-- copy description and transcription to a nostem field for exact matches -->
-  <copyField source="description_en_bigram" dest="content_nostem" maxChars="30000" />
-  <copyField source="text_transcription" dest="content_nostem" maxChars="30000" />
+  <!-- copy description and transcription to nostem fields for exact matches -->
+  <copyField source="description_en_bigram" dest="description_nostem" maxChars="30000" />
+  <copyField source="text_transcription" dest="transcription_nostem" maxChars="30000" />
 
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
@@ -358,6 +401,6 @@
   <dynamicField name="*_d" type="double" indexed="true" stored="true"/>
   <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
   <dynamicField name="*_natsort" type="natural_sort" indexed="true" stored="true" sortMissingLast="true"/>
-  <dynamicField name="*_nostem" type="text_nostem" indexed="true" stored="false" multiValued="true"/>
+  <dynamicField name="*_nostem" type="text_nostem" indexed="true" stored="true" multiValued="true"/>
 
 </schema>

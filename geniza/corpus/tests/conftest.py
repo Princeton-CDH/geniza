@@ -21,6 +21,7 @@ def make_fragment(manifest=True):
     """A real fragment from CUL, with URLs for testing."""
     return Fragment.objects.create(
         shelfmark="CUL Add.2586",
+        old_shelfmarks="ULC Add. 2586",
         url="https://cudl.lib.cam.ac.uk/view/MS-ADD-02586",
         iiif_url="https://cudl.lib.cam.ac.uk/iiif/MS-ADD-02586",
         manifest=Manifest.objects.create(

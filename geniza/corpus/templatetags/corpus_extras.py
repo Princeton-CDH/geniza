@@ -159,6 +159,13 @@ def shelfmark_wrap(shelfmark):
     )
 
 
+@register.filter
+def get_document_label(result_doc):
+    """Helper method to construct an appropriate aria-label for a document link
+    with a fallback in case of a missing shelfmark."""
+    return f'{result_doc.get("type")}: {result_doc.get("shelfmark") or "[unknown shelfmark]"}'
+
+
 @register.simple_tag(takes_context=True)
 def translate_url(context, lang_code):
     """Translate current full path into requested language by code."""

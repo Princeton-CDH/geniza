@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand
 from django.db.models import Q
 from djiffy.models import Canvas, Manifest
 from eulxml import xmlmap
+from parasolr.django.signals import IndexableSignalHandler
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.models import Document
@@ -27,7 +28,9 @@ class AltoPolygonalObject(AltoObject):
 
 
 class Line(AltoPolygonalObject):
+    id = xmlmap.StringField("./@ID")
     content = xmlmap.StringField("alto:String/@CONTENT")
+    line_type_id = xmlmap.StringField("./@TAGREFS")
 
 
 class TextBlock(AltoPolygonalObject):
@@ -59,6 +62,17 @@ class Command(BaseCommand):
     # regex pattern for image filenames
     filename_pattern = r"PGPID_(?P<pgpid>\d+)_(?P<shelfmark>[\w\-]+)_(?P<img>\d)\..+"
 
+    # tags used for rotated blocks and lines
+    rotation_tags = [
+        "Oblique_45",  # 45°
+        "Vertical_Bottom_Up_90",  # 90°
+        "Oblique_135",  # 135°
+        "Upside_Down",  # 180°
+        "Oblique_225",  # 225°
+        "Vertical_Top_Down_270",  # 270°
+        "Oblique_315",  # 315°
+    ]
+
     def add_arguments(self, parser):
         # needs xml filenames as input
         parser.add_argument(
@@ -68,9 +82,15 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.script_user = User.objects.get(username=settings.SCRIPT_USERNAME)
 
+        # store content type pk for logentry
+        self.anno_contenttype = ContentType.objects.get_for_model(Annotation).pk
+
         # lists for reporting
         self.document_errors = set()
         self.canvas_errors = set()
+
+        # disconnect solr indexing signals; this script will index annotations manually
+        IndexableSignalHandler.disconnect()
 
         # process all files
         for xmlfile in options["alto"]:
@@ -128,7 +148,7 @@ class Command(BaseCommand):
         )
 
         # create annotations
-        for tb in alto.printspace.textblocks:
+        for tb_idx, tb in enumerate(alto.printspace.textblocks, start=1):
             block_type = None
             if tb.block_type_id:
                 # find first tag in tag list whose id matches block type id
@@ -136,25 +156,56 @@ class Command(BaseCommand):
                 tag = next(tag_matches, None)
                 if tag:
                     block_type = tag.label
-                # TODO: When implementing line-by-line, use block_type to determine rotation
 
             # skip arabic; these are Hebrew script transcriptions
             if not (block_type and "Arabic" in block_type) and len(tb.lines):
                 # get or create footnote
                 footnote = self.get_footnote(doc)
                 # create annotation and log entry
-                anno = Annotation.objects.create(
-                    content=self.create_block_annotation(tb, canvas_uri, scale_factor),
+                block = Annotation.objects.create(
+                    content=self.create_block_annotation(
+                        tb, canvas_uri, scale_factor, block_type, tb_idx
+                    ),
                     footnote=footnote,
                 )
                 LogEntry.objects.log_action(
                     user_id=self.script_user.pk,
-                    content_type_id=ContentType.objects.get_for_model(Annotation).pk,
-                    object_id=anno.pk,
-                    object_repr=str(anno),
-                    change_message="Imported from eScriptorium HTR ALTO",
+                    content_type_id=self.anno_contenttype,
+                    object_id=block.pk,
+                    object_repr=str(block),
+                    change_message="Imported block from eScriptorium HTR ALTO",
                     action_flag=ADDITION,
                 )
+
+                # create line annotations from lines and link to block
+                for i, line in enumerate(tb.lines, start=1):
+                    line_type = None
+                    if line.line_type_id:
+                        # find first tag in tag list whose id matches line type id
+                        tag_matches = filter(
+                            lambda t: t.id == line.line_type_id, alto.tags
+                        )
+                        tag = next(tag_matches, None)
+                        if tag:
+                            line_type = tag
+                    line_anno = Annotation.objects.create(
+                        content=self.create_line_annotation(
+                            line, block, scale_factor, line_type, order=i
+                        ),
+                        block=block,
+                        footnote=footnote,
+                    )
+                    LogEntry.objects.log_action(
+                        user_id=self.script_user.pk,
+                        content_type_id=self.anno_contenttype,
+                        object_id=line_anno.pk,
+                        object_repr=str(line_anno),
+                        change_message="Imported line from eScriptorium HTR ALTO",
+                        action_flag=ADDITION,
+                    )
+
+        # index after all blocks added
+        doc.index()
 
     def get_manifest(self, document, short_id, filename):
         """Attempt to get the manifest using the supplied short id; fallback to first manifest,
@@ -232,26 +283,16 @@ class Command(BaseCommand):
         # return as string for use in svg polygon element
         return " ".join([str(point) for point in scaled_points])
 
-    def create_block_annotation(self, textblock, canvas_uri, scale_factor):
+    def create_block_annotation(
+        self, textblock, canvas_uri, scale_factor, block_type, order
+    ):
         """Produce a valid IIIF annotation with the block-level content and geometry,
         linked to the IIIF canvas by URI"""
 
-        # lines to HTML list
-        block_text = "<ol>\n"
-        for line in textblock.lines:
-            block_text += f"<li>{line.content}</li>\n"
-        block_text += "</ol>"
-
         # create IIIF annotation
         anno_content = {}
-        anno_content["body"] = [
-            {
-                "TextInput": "rtl",
-                "format": "text/html",
-                "type": "TextualBody",
-                "value": block_text,
-            }
-        ]
+        anno_content["schema:position"] = order
+        anno_content["textGranularity"] = "block"
         anno_content["motivation"] = ["sc:supplementing", "transcribing"]
         anno_content["target"] = {
             "source": {
@@ -259,6 +300,15 @@ class Command(BaseCommand):
                 "type": "Canvas",
             },
         }
+        if block_type:
+            anno_content["body"] = [
+                {
+                    "label": block_type,
+                }
+            ]
+            if block_type in self.rotation_tags:
+                # add rotation tag as a CSS class to this block
+                anno_content["target"]["styleClass"] = block_type
 
         # add selector
         if textblock.polygon:
@@ -276,5 +326,42 @@ class Command(BaseCommand):
                 "type": "FragmentSelector",
                 "value": "xywh=percent:1,1,98,98",
             }
+
+        return anno_content
+
+    def create_line_annotation(self, line, block_anno, scale_factor, line_type, order):
+        # create IIIF annotation
+        anno_content = {}
+        anno_content["schema:position"] = order
+        anno_content["body"] = [
+            {
+                "TextInput": "rtl",
+                "format": "text/html",
+                "type": "TextualBody",
+                "value": line.content,
+            }
+        ]
+        anno_content["textGranularity"] = "line"
+        anno_content["motivation"] = block_anno.content["motivation"]
+        anno_content["target"] = {"source": block_anno.content["target"]["source"]}
+        if line_type and line_type in self.rotation_tags:
+            # add rotation tag as a CSS class to this line (sometimes differs from block)
+            anno_content["target"]["styleClass"] = line_type
+        elif "styleClass" in block_anno.content["target"]:
+            # if block has rotation but line doesn't, use block's rotation
+            anno_content["target"]["styleClass"] = block_anno.content["target"][
+                "styleClass"
+            ]
+
+        # add selector
+        if line.polygon:
+            # scale polygon points and use SvgSelector
+            points = self.scale_polygon(line.polygon, scale_factor)
+            anno_content["target"]["selector"] = {
+                "type": "SvgSelector",
+                "value": f'<svg><polygon points="{points}"></polygon></svg>',
+            }
+        else:
+            self.stdout.write(f"No line-level geometry available for {line.id}")
 
         return anno_content

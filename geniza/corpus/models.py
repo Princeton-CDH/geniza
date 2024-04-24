@@ -44,7 +44,7 @@ from geniza.common.models import (
 )
 from geniza.common.utils import absolutize_url
 from geniza.corpus.annotation_utils import document_id_from_manifest_uri
-from geniza.corpus.dates import DocumentDateMixin, PartialDate
+from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.iiif_utils import GenizaManifestImporter, get_iiif_string
 from geniza.corpus.solr_queryset import DocumentSolrQuerySet
 from geniza.footnotes.models import Creator, Footnote
@@ -197,6 +197,9 @@ class Fragment(TrackChangesModel):
         default=False,
         help_text="True if there are multiple fragments in one shelfmark",
     )
+    provenance = models.TextField(
+        blank=True, help_text="The origin and acquisition history of this fragment."
+    )
     notes = models.TextField(blank=True)
     needs_review = models.TextField(
         blank=True,
@@ -316,8 +319,9 @@ class Fragment(TrackChangesModel):
                 )
 
     @property
-    def provenance(self):
-        """Generate a provenance statement for this fragment"""
+    @admin.display(description="Provenance from IIIF manifest")
+    def iiif_provenance(self):
+        """Generate a provenance statement for this fragment from IIIF"""
         if self.manifest and self.manifest.metadata:
             return get_iiif_string(self.manifest.metadata.get("Provenance", ""))
 
@@ -558,7 +562,12 @@ class Document(ModelIndexable, DocumentDateMixin):
         default=PUBLIC,
         help_text="Decide whether a document should be publicly visible",
     )
-
+    events = models.ManyToManyField(
+        to="entities.Event",
+        related_name="documents",
+        verbose_name="Related Events",
+        through="DocumentEventRelation",
+    )
     footnotes = GenericRelation(Footnote, related_query_name="document")
     log_entries = GenericRelation(LogEntry, related_query_name="document")
 
@@ -631,6 +640,16 @@ class Document(ModelIndexable, DocumentDateMixin):
         """Label for this document; by default, based on the combined shelfmarks from all certain
         associated fragments; uses :attr:`shelfmark_override` if set"""
         return self.shelfmark_override or self.shelfmark
+
+    @property
+    @admin.display(description="Historical shelfmarks")
+    def fragment_historical_shelfmarks(self):
+        """Property to display set of all historical shelfmarks on the document"""
+        all_textblocks = self.textblock_set.all()
+        all_fragments = [tb.fragment for tb in all_textblocks]
+        return "; ".join(
+            [frag.old_shelfmarks for frag in all_fragments if frag.old_shelfmarks]
+        )
 
     @property
     def collection(self):
@@ -943,6 +962,8 @@ class Document(ModelIndexable, DocumentDateMixin):
         """
         # it is unlikely, but technically possible, that a document could have both on-document
         # dates and inferred datings, so find the min and max out of all of them.
+
+        # start_date and end_date are PartialDate instances
         dating_range = [self.start_date or None, self.end_date or None]
 
         # bail out if we don't have any inferred datings
@@ -951,24 +972,15 @@ class Document(ModelIndexable, DocumentDateMixin):
 
         # loop through inferred datings to find min and max among all dates (including both
         # on-document and inferred)
-        for dating in self.dating_set.all():
+        for inferred in self.dating_set.all():
             # get start from standardized date range (formatted as "date1/date2" or "date")
-            split_date = dating.standard_date.split("/")
+            split_date = inferred.standard_date.split("/")
             start = PartialDate(split_date[0])
-            # use numeric format to compare to current min, replace if smaller
-            start_numeric = int(start.numeric_format(mode="min"))
-            min = dating_range[0]
-            if min is None or start_numeric < int(min.numeric_format(mode="min")):
-                # store as PartialDate
-                dating_range[0] = start
             # get end from standardized date range
             end = PartialDate(split_date[1]) if len(split_date) > 1 else start
-            # use numeric format to compare to current max, replace if larger
-            end_numeric = int(end.numeric_format(mode="max"))
-            max = dating_range[1]
-            if max is None or end_numeric > int(max.numeric_format(mode="max")):
-                # store as PartialDate
-                dating_range[1] = end
+            dating_range = PartialDate.get_date_range(
+                old_range=dating_range, new_range=[start, end]
+            )
 
         return tuple(dating_range)
 
@@ -1159,12 +1171,14 @@ class Document(ModelIndexable, DocumentDateMixin):
                 # type gets matched back to DocumentType object in get_result_document, for i18n;
                 # should always be indexed in English
                 "type_s": (
-                    self.doctype.display_label_en
-                    or self.doctype.name_en
-                    or str(self.doctype)
-                )
-                if self.doctype
-                else "Unknown type",
+                    (
+                        self.doctype.display_label_en
+                        or self.doctype.name_en
+                        or str(self.doctype)
+                    )
+                    if self.doctype
+                    else "Unknown type"
+                ),
                 # use english description for now
                 "description_en_bigram": strip_tags(self.description_en),
                 "notes_t": self.notes or None,
@@ -1187,12 +1201,12 @@ class Document(ModelIndexable, DocumentDateMixin):
                 "document_dating_dr": self.solr_dating_range(),
                 # historic date, for searching
                 # start/end of document date or date range
-                "start_date_i": self.start_date.numeric_format()
-                if self.start_date
-                else None,
-                "end_date_i": self.end_date.numeric_format(mode="max")
-                if self.end_date
-                else None,
+                "start_date_i": (
+                    self.start_date.numeric_format() if self.start_date else None
+                ),
+                "end_date_i": (
+                    self.end_date.numeric_format(mode="max") if self.end_date else None
+                ),
                 # library/collection possibly redundant?
                 "collection_ss": [str(f.collection) for f in fragments],
                 "tags_ss_lower": [t.name for t in self.tags.all()],
@@ -1712,3 +1726,19 @@ class Dating(models.Model):
     notes = models.TextField(
         help_text="Optional further details about the rationale",
     )
+
+    @property
+    def standard_date_display(self):
+        """Standard date in human-readable format for document details pages"""
+        return standard_date_display(self.standard_date)
+
+
+class DocumentEventRelation(models.Model):
+    """A relationship between a document and an event"""
+
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    event = models.ForeignKey("entities.Event", on_delete=models.CASCADE)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Document-Event relation: {self.document} and {self.event}"

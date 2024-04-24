@@ -13,7 +13,7 @@ from pytest_django.asserts import assertContains, assertNotContains, assertTempl
 
 from geniza.annotations.models import Annotation
 from geniza.corpus.admin import DocumentDatingInline
-from geniza.corpus.models import Document, LanguageScript
+from geniza.corpus.models import Dating, Document, LanguageScript
 from geniza.corpus.templatetags.corpus_extras import shelfmark_wrap
 from geniza.footnotes.models import Footnote, SourceLanguage
 
@@ -33,8 +33,12 @@ class TestDocumentDetailTemplate:
     def test_first_input(self, client, document):
         """Document detail template should include document first input date"""
         response = client.get(document.get_absolute_url())
-        # NOTE: No longer using definition list
         assertContains(response, "In PGP since 2004")
+
+    def test_old_shelfmarks(self, client, document):
+        """Document detail template should include historical shelfmarks"""
+        response = client.get(document.get_absolute_url())
+        assertContains(response, "ULC Add. 2586")
 
     def test_tags(self, client, document):
         """Document detail template should include all document tags"""
@@ -297,6 +301,22 @@ class TestDocumentDetailTemplate:
         assertContains(response, str(judeo_arabic))
         assertContains(response, str(arabic))
 
+    def test_inferred_dates(self, client, document):
+        # add a dating
+        dating = Dating.objects.create(document=document, display_date="c. 1050")
+        response = client.get(document.get_absolute_url())
+        # should have one inferred date
+        assertContains(response, "Inferred Date")
+        assertNotContains(response, "Inferred Dates")
+        assertContains(response, str(dating.display_date))
+        # add a second dating
+        dating2 = Dating.objects.create(document=document, display_date="11th century")
+        response = client.get(document.get_absolute_url())
+        # should have two inferred dates
+        assertContains(response, "Inferred Dates")
+        assertContains(response, str(dating.display_date))
+        assertContains(response, str(dating2.display_date))
+
 
 class TestDocumentScholarshipTemplate:
     def test_source_title(self, client, document, twoauthor_source):
@@ -475,7 +495,7 @@ class TestDocumentResult:
     def test_no_scholarship_records(self):
         assert "No Scholarship Records" in self.template.render(
             context={
-                "document": {"pgpid": 1, "id": "document.1"},
+                "document": {"pgpid": 1, "id": "document.1", "shelfmark": "MS a"},
                 "highlighting": {},
                 "page_obj": self.page_obj,
             }
@@ -487,6 +507,7 @@ class TestDocumentResult:
                 "document": {
                     "pgpid": 1,
                     "id": "document.1",
+                    "shelfmark": "MS 12",
                     "num_editions": 15,
                     "scholarship_count": 10,
                 },
@@ -503,7 +524,12 @@ class TestDocumentResult:
         tags = ["bill of sale", "real estate"]
         result = self.template.render(
             context={
-                "document": {"pgpid": 1, "id": "document.1", "tags": tags},
+                "document": {
+                    "pgpid": 1,
+                    "id": "document.1",
+                    "tags": tags,
+                    "shelfmark": "MS 1",
+                },
                 "highlighting": {},
                 "page_obj": self.page_obj,
             }
@@ -519,7 +545,12 @@ class TestDocumentResult:
         tags = ["bill of sale", "real estate", "arabic", "ib6", "ibn", "red sea"]
         result = self.template.render(
             context={
-                "document": {"pgpid": 1, "id": "document.1", "tags": tags},
+                "document": {
+                    "pgpid": 1,
+                    "id": "document.1",
+                    "tags": tags,
+                    "shelfmark": "ms a",
+                },
                 "highlighting": {},
                 "page_obj": self.page_obj,
             }
@@ -532,6 +563,7 @@ class TestDocumentResult:
             context={
                 "document": {
                     "pgpid": 1,
+                    "shelfmark": "JRL Series A 1",
                     "id": "document.1",
                     "num_editions": 2,
                     "num_translations": 1,
@@ -552,6 +584,7 @@ class TestDocumentResult:
                 "pgpid": document.id,
                 "id": "document.%d" % document.id,
                 "description": [document.description],
+                "shelfmark": "ms heb ab",
             },
             # no highlighting at all (i.e., no keyword search)
             "highlighting": {},
@@ -572,7 +605,11 @@ class TestDocumentResult:
         test_highlight = "passage of the <em>Tujib<em> quarter"
         result = self.template.render(
             context={
-                "document": {"pgpid": document.id, "id": "document.%d" % document.id},
+                "document": {
+                    "pgpid": document.id,
+                    "id": "document.%d" % document.id,
+                    "shelfmark": "ms heb 3",
+                },
                 "highlighting": {
                     "document.%d" % document.id: {"description": [test_highlight]}
                 },
@@ -590,6 +627,7 @@ class TestDocumentResult:
             "document": {
                 "pgpid": document.id,
                 "id": "document.%d" % document.id,
+                "shelfmark": "ms abc",
                 "transcription": [transcription_txt],
             },
             "highlighting": {},
@@ -621,6 +659,7 @@ class TestDocumentResult:
                 "document": {
                     "pgpid": document.id,
                     "id": "document.%d" % document.id,
+                    "shelfmark": "ms abc",
                     "transcription": [transcription_txt],
                     "lang": ["jrb"],
                 },

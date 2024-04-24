@@ -1,5 +1,8 @@
+from dal import autocomplete
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Q
 from django.forms import ValidationError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -7,7 +10,7 @@ from django.utils.safestring import mark_safe
 from django.views.generic import FormView
 
 from geniza.entities.forms import PersonMergeForm
-from geniza.entities.models import Person
+from geniza.entities.models import Person, Place
 
 
 class PersonMerge(PermissionRequiredMixin, FormView):
@@ -72,3 +75,28 @@ class PersonMerge(PermissionRequiredMixin, FormView):
         )
 
         return super().form_valid(form)
+
+
+class UnaccentedNameAutocompleteView(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        """entities filtered by entered query, or all entities, ordered by name"""
+        q = self.request.GET.get("q", None)
+        qs = self.model.objects.annotate(
+            # ArrayAgg to group together related values from related model instances
+            name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
+        ).order_by("name_unaccented")
+        if q:
+            qs = qs.filter(
+                Q(name_unaccented__icontains=q) | Q(names__name__icontains=q)
+            ).distinct()
+        return qs
+
+
+class PersonAutocompleteView(PermissionRequiredMixin, UnaccentedNameAutocompleteView):
+    permission_required = ("entities.change_person",)
+    model = Person
+
+
+class PlaceAutocompleteView(PermissionRequiredMixin, UnaccentedNameAutocompleteView):
+    permission_required = ("entities.change_place",)
+    model = Place

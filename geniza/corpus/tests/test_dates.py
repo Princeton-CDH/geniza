@@ -12,6 +12,7 @@ from geniza.corpus.dates import (
     convert_seleucid_date,
     get_hebrew_month,
     get_islamic_month,
+    standard_date_display,
 )
 from geniza.corpus.models import Document
 
@@ -47,31 +48,6 @@ class TestDocumentDateMixin:
         doc.doc_date_calendar = ""
         assert doc.original_date == "507"
 
-    def test_standard_date(self):
-        # no dates; no error
-        doc = Document()
-        assert doc.standard_date is None
-
-        # single day
-        doc.doc_date_standard = "1569-10-23"
-        assert doc.standard_date == "23 October, 1569 CE"
-
-        # date range
-        doc.doc_date_standard = "1839-03-17/1840-03-04"
-        assert doc.standard_date == "17 March, 1839 — 4 March, 1840 CE"
-
-        # year/month
-        doc.doc_date_standard = "1839-03"
-        assert doc.standard_date == "March 1839 CE"
-
-        # year only
-        doc.doc_date_standard = "1839"
-        assert doc.standard_date == "1839 CE"
-
-        # fallback behavior for dates in the wrong format
-        doc.doc_date_standard = "1029–38"
-        assert doc.standard_date == "1029–38 CE"
-
     def test_document_date(self):
         """Should combine historical and converted dates"""
         doc = Document(
@@ -83,12 +59,12 @@ class TestDocumentDateMixin:
         # should wrap standard date in parentheses and add CE
         doc.doc_date_standard = "1113/1114"
         assert (
-            doc.document_date == "<span>507 Hijrī</span> <span>(1113 — 1114 CE)</span>"
+            doc.document_date == "<span>507 Hijrī</span> <span>(1113 – 1114 CE)</span>"
         )
         # should return standard date only, no parentheses
         doc.doc_date_original = ""
         doc.doc_date_calendar = ""
-        assert doc.document_date == "1113 — 1114 CE"
+        assert doc.document_date == "1113 – 1114 CE"
 
     def test_standardize_date(self):
         doc = Document()
@@ -344,3 +320,32 @@ class TestPartialDate:
         assert PartialDate("1569").numeric_format("max") == "15691231"
         # handle month-specific maxes
         assert PartialDate("1569-02").numeric_format("max") == "15690228"
+
+
+def test_standard_date_display():
+    # no dates; no error
+    doc = Document()
+    assert standard_date_display(doc.doc_date_standard) is None
+
+    # single day
+    doc.doc_date_standard = "1569-10-23"
+    assert standard_date_display(doc.doc_date_standard) == "23 October, 1569 CE"
+
+    # date range
+    doc.doc_date_standard = "1839-03-17/1840-03-04"
+    assert (
+        standard_date_display(doc.doc_date_standard)
+        == "17 March, 1839 – 4 March, 1840 CE"
+    )
+
+    # year/month
+    doc.doc_date_standard = "1839-03"
+    assert standard_date_display(doc.doc_date_standard) == "March 1839 CE"
+
+    # year only
+    doc.doc_date_standard = "1839"
+    assert standard_date_display(doc.doc_date_standard) == "1839 CE"
+
+    # fallback behavior for dates in the wrong format
+    doc.doc_date_standard = "1029–38"
+    assert standard_date_display(doc.doc_date_standard) == "1029–38 CE"

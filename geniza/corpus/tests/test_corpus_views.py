@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from time import sleep
 from unittest.mock import ANY, MagicMock, Mock, patch
@@ -20,7 +21,7 @@ from geniza.annotations.models import Annotation
 from geniza.common.utils import absolutize_url
 from geniza.corpus.iiif_utils import EMPTY_CANVAS_ID, new_iiif_canvas
 from geniza.corpus.models import Document, DocumentType, Fragment, TextBlock
-from geniza.corpus.solr_queryset import DocumentSolrQuerySet
+from geniza.corpus.solr_queryset import DocumentSolrQuerySet, clean_html
 from geniza.corpus.views import (
     DocumentAnnotationListView,
     DocumentDetailView,
@@ -945,7 +946,7 @@ class TestDocumentSearchView:
         assert new_last_modified != init_last_modified
 
     def test_exact_match(self, empty_solr, document):
-        # integration test for description exact match indexing (content_nostem)
+        # integration test for description exact match indexing (description_nostem)
         doc1 = Document.objects.create(description_en="His son sells seashells")
         doc2 = Document.objects.create(
             description_en="Example of something a father sells to his son"
@@ -999,6 +1000,209 @@ class TestDocumentSearchView:
             # it will still break elements on whitespace and dash separators
             "<em>Abū</em> <em>l</em>-<em>Munā</em>"
             in context_data["highlighting"]["document.%d" % doc.id]["description"]
+        )
+
+    @pytest.mark.django_db
+    def test_nostem_boost(self, empty_solr):
+        # integration tests for boosting description_nostem to ensure exact matches in description are
+        # boosted above partial matches in shelfmark
+        harun_doc1 = Document.objects.create(
+            description_en="Story in Judaeo-Arabic, mentioning Ḥārūn b. Yaʿīsh and ʿAbd al-ʿAzīz al-Kohen."
+        )
+        harun_doc2 = Document.objects.create(
+            description_en="Letter from Hārūn b. Yaʿqūb, in Tiberias, possibly addressed to Mūsā b. Ismāʿīl b. Sahl. Dating: Likely 11th century. Dealing with the indigo trade. Needs examination."
+        )
+        yevr_doc1 = Document.objects.create(
+            shelfmark_override="Yevr.-Arab. II 1408 + Yevr. Arab. II 1739"
+        )
+        yevr_doc2 = Document.objects.create(
+            shelfmark_override="Yevr.-Arab. II 1739 + Yevr. Arab. II 1408"
+        )
+        SolrClient().update.index(
+            [
+                harun_doc1.index_data(),
+                harun_doc2.index_data(),
+                yevr_doc1.index_data(),
+                yevr_doc2.index_data(),
+            ],
+            commit=True,
+        )
+        docsearch_view = DocumentSearchView(kwargs={})
+        docsearch_view.request = Mock()
+        docsearch_view.request.GET = {"q": "Harun b. Y*", "sort": "relevance"}
+        qs = docsearch_view.get_queryset()
+        # should return all four documents
+        assert qs.count() == 4
+        # should return the exact matches in descriptions first
+        assert qs[0]["pgpid"] == harun_doc1.id
+        assert qs[1]["pgpid"] == harun_doc2.id
+        # ^ tested and this fails when the boost is at its old value (130)
+
+    @pytest.mark.django_db
+    def test_cleaned_transcription(self, source, empty_solr):
+        # integration tests for cleaned transcription searches
+        document = Document.objects.create()
+        footnote = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            footnote=footnote,
+            content={
+                # annotation contains brackets and tatweel
+                "body": [{"value": "العـ[ـبد]"}],
+                "target": {
+                    "source": {
+                        "id": source.uri,
+                    }
+                },
+            },
+        )
+        SolrClient().update.index([document.index_data()], commit=True)
+
+        # first search for just the phrase without doublequotes
+        docsearch_view = DocumentSearchView(kwargs={})
+        docsearch_view.request = Mock()
+
+        # normal search query without the bracket and connectors should match
+        docsearch_view.request.GET = {"q": "العبد"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+
+        # exact search without brackets should not match
+        docsearch_view.request.GET = {"q": '"العبد"'}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 0
+
+        # exact search with brackets should match AND highlight
+        docsearch_view.request.GET = {"q": '"العـ[ـبد]"'}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+        docsearch_view.object_list = qs
+        context_data = docsearch_view.get_context_data()
+        hl = context_data["highlighting"]["document.%d" % document.id]["transcription"]
+        assert len(hl) == 1
+        assert "<em>العـ[ـبد]</em>" in re.sub(
+            r"\s+", "", hl[0]
+        )  # rm solr-added whitespace
+
+        doc2 = Document.objects.create()
+        footnote2 = Footnote.objects.create(
+            content_object=doc2,
+            source=source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            footnote=footnote2,
+            content={
+                # annotation contains other types of sigla
+                "body": [{"value": "פי 〚מ〛תל //דלך// [א]לל[ה] תע/א\לי[ . . . ]"}],
+                "target": {
+                    "source": {
+                        "id": source.uri,
+                    }
+                },
+            },
+        )
+        SolrClient().update.index([doc2.index_data()], commit=True)
+        docsearch_view.request.GET = {"q": "פי מתל דלך אללה תעאלי"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+        docsearch_view.object_list = qs
+        context_data = docsearch_view.get_context_data()
+        hl = context_data["highlighting"]["document.%d" % doc2.id]["transcription"]
+        assert len(hl) == 1
+        highlight = re.sub(r"\s+", "", hl[0])  # rm solr-added whitespace
+        # should match on all words
+        assert all(
+            h in highlight for h in ["<em>מ〛תל", "לל[ה]</em>", "<em>תע/א\לי", "<em>דלך"]
+        )
+
+        # should remove superfluous characters surrounded by {}
+        Annotation.objects.create(
+            footnote=footnote2,
+            content={
+                # annotation contains other types of sigla
+                "body": [{"value": "ויב{י}עו"}],
+                "target": {"source": {"id": source.uri}},
+            },
+        )
+        SolrClient().update.index([doc2.index_data()], commit=True)
+        docsearch_view.request.GET = {"q": "ויבעו"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+
+        # should do the transformation "A | B" --> "A B AB"
+        Annotation.objects.create(
+            footnote=footnote2,
+            content={
+                # annotation contains other types of sigla
+                "body": [{"value": "להא | בגמיע"}],
+                "target": {"source": {"id": source.uri}},
+            },
+        )
+        SolrClient().update.index([doc2.index_data()], commit=True)
+        docsearch_view.request.GET = {"q": "להא בגמיע"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+        docsearch_view.request.GET = {"q": "להאבגמיע"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+
+        # and remove | otherwise
+        Annotation.objects.create(
+            footnote=footnote2,
+            content={
+                # annotation contains other types of sigla
+                "body": [{"value": "ולא|ואן"}],
+                "target": {"source": {"id": source.uri}},
+            },
+        )
+        SolrClient().update.index([doc2.index_data()], commit=True)
+        docsearch_view.request.GET = {"q": "ולאואן"}
+        qs = docsearch_view.get_queryset()
+        assert qs.count() == 1
+
+    @pytest.mark.django_db
+    def test_exact_search_highlight(self, source, empty_solr):
+        # integration tests for exact search highlighting
+        document = Document.objects.create()
+        footnote = Footnote.objects.create(
+            content_object=document,
+            source=source,
+            doc_relation=Footnote.DIGITAL_EDITION,
+        )
+        Annotation.objects.create(
+            footnote=footnote,
+            content={
+                # body contains both a partial and an exact match for אלממ
+                "body": [{"value": "אלממחה ... אלממ"}],
+                "target": {
+                    "source": {
+                        "id": source.uri,
+                    }
+                },
+            },
+        )
+        SolrClient().update.index([document.index_data()], commit=True)
+        docsearch_view = DocumentSearchView(kwargs={})
+        docsearch_view.request = Mock()
+
+        # no double quotes in search, should highlight entire phrase
+        docsearch_view.request.GET = {"q": "אלממ"}
+        dqs = docsearch_view.get_queryset()
+        assert dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][
+            0
+        ] == clean_html("<em>אלממחה ... אלממ</em>")
+
+        # double quotes in search, should highlight only the exact match
+        docsearch_view.request.GET = {"q": '"אלממ"'}
+        dqs = docsearch_view.get_queryset()
+        assert dqs.raw_params["hl_query"] == '"אלממ"'
+        assert (
+            clean_html("<em>אלממ</em>")
+            in dqs.get_highlighting()[f"document.{document.pk}"]["transcription"][0]
         )
 
 
@@ -1807,6 +2011,20 @@ class TestSourceAutocompleteView:
 
         # should filter on title, case insensitive
         source_autocomplete_view.request.GET = {"q": "programming"}
+        qs = source_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == twoauthor_source.pk
+
+        # should filter on combination of title and author, case insensitive
+        source_autocomplete_view.request.GET = {"q": "ritchie programming"}
+        qs = source_autocomplete_view.get_queryset()
+        assert qs.count() == 1
+        assert qs.first().pk == twoauthor_source.pk
+
+        # should filter on volume
+        twoauthor_source.volume = "XXII"
+        twoauthor_source.save()
+        source_autocomplete_view.request.GET = {"q": "ritchie programming xxii"}
         qs = source_autocomplete_view.get_queryset()
         assert qs.count() == 1
         assert qs.first().pk == twoauthor_source.pk

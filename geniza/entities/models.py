@@ -5,12 +5,14 @@ from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.core.validators import RegexValidator
 from django.db import models
 from django.forms import ValidationError
 from django.utils.translation import gettext as _
 from gfklookupwidget.fields import GfkLookupField
 
 from geniza.common.models import cached_class_property
+from geniza.corpus.dates import DocumentDateMixin, PartialDate, standard_date_display
 from geniza.corpus.models import DisplayLabelMixin, Document, LanguageScript
 from geniza.footnotes.models import Footnote
 
@@ -18,7 +20,10 @@ from geniza.footnotes.models import Footnote
 class Name(models.Model):
     """A name for an entity, such as a person or a place."""
 
-    name = models.CharField(max_length=255)
+    name = models.CharField(
+        max_length=255,
+        help_text="Please add common forms of the name in both English and other languages in which it appears in documents.",
+    )
     primary = models.BooleanField(
         default=False,
         help_text="Check box if this is the primary name that should be displayed on the site.",
@@ -28,7 +33,7 @@ class Name(models.Model):
         LanguageScript,
         on_delete=models.SET_NULL,
         null=True,
-        help_text="Please indicate the language of most components of the name as written here.",
+        help_text='Please indicate the language of most components of the name as written here. Refers to the language in which a name is written, not the linguistic origin of the name. Ex: “Nahray b. Nissim” and "Fusṭāṭ" should be marked as English.',
     )
     notes = models.TextField(blank=True)
 
@@ -63,6 +68,75 @@ class Name(models.Model):
         """Override of the model save method to cleanup unicode non breaking space character"""
         self.name = re.sub(r"[\xa0 ]+", " ", self.name)
         super().save(*args, **kwargs)
+
+
+class Event(models.Model):
+    """A historical event involving one or more documents, and optionally additional entities."""
+
+    name = models.CharField(
+        max_length=255,
+        help_text="A short name for the event to use as a display label",
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="A description of the event",
+    )
+    footnotes = GenericRelation(Footnote, blank=True, related_query_name="event")
+    display_date = models.CharField(
+        "Display date",
+        help_text='''Display date for manually entered or automatically generated date,
+        as it should appear in the public site, such as "Late 12th century"''',
+        max_length=255,
+        blank=True,  # use standard date for display if this is blank
+    )
+    standard_date = models.CharField(
+        "CE date override",
+        help_text="Manual override for automatically generated date or date range. "
+        + DocumentDateMixin.standard_date_helptext,
+        blank=True,  # use automatic date range from associated documents if this is blank
+        null=True,
+        max_length=255,
+        validators=[RegexValidator(DocumentDateMixin.re_date_format)],
+    )
+
+    def __str__(self):
+        """Use the name field for string representations"""
+        return self.name
+
+    @property
+    def date_str(self):
+        """Return a formatted string for the event's date/range, for use in public site.
+        Display date override takes highest precedence; fallback to formatted CE date override,
+        then computed date range from associated documents if neither override is set.
+        """
+        return (
+            self.display_date
+            or standard_date_display(self.standard_date)
+            or standard_date_display(self.documents_date_range)
+        )
+
+    @property
+    def documents_date_range(self):
+        """Standardized range of dates across associated documents"""
+        full_range = [None, None]
+        for doc in self.documents.all():
+            # get each doc's full range, including inferred and on-document
+            doc_range = doc.dating_range()
+            # if doc has a range, and the range is not [None, None], compare
+            # it against the current min and max
+            if doc_range and doc_range[0]:
+                start = doc_range[0]
+                end = doc_range[1] if len(doc_range) > 1 else start
+                # update full range with comparison results
+                full_range = PartialDate.get_date_range(
+                    old_range=full_range, new_range=[start, end]
+                )
+
+        # prune Nones and use isoformat for standardized representation
+        full_range = [d.isoformat() for d in full_range if d]
+        if len(full_range) == 2 and full_range[0] == full_range[1]:
+            full_range.pop(1)
+        return "/".join(full_range)
 
 
 class PersonRoleManager(models.Manager):
@@ -128,6 +202,13 @@ class Person(models.Model):
         verbose_name="Role",
         help_text="Social role",
     )
+    events = models.ManyToManyField(
+        Event,
+        related_name="people",
+        verbose_name="Related Events",
+        through="PersonEventRelation",
+    )
+
     # sources for the information gathered here
     footnotes = GenericRelation(Footnote, blank=True, related_name="people")
 
@@ -469,6 +550,17 @@ class PersonPersonRelation(models.Model):
         return f"{relation_type} relation: {self.to_person} and {self.from_person}"
 
 
+class PersonEventRelation(models.Model):
+    """A relationship between a person and an event"""
+
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Person-Event relation: {self.person} and {self.event}"
+
+
 class Place(models.Model):
     """A named geographical location, which may be associated with documents or people."""
 
@@ -478,12 +570,25 @@ class Place(models.Model):
         decimal_places=4,
         blank=True,
         null=True,
+        help_text="""Latitude as a numeric value between -90 and 90, with up to 4 decimal places
+        of precision. <br /><a href='https://www.fcc.gov/media/radio/dms-decimal'>This tool</a> can be
+        used to convert from degrees, minutes, seconds (DMS) to decimal.""",
     )
     longitude = models.DecimalField(
         max_digits=7,
         decimal_places=4,
         blank=True,
         null=True,
+        help_text="""Longitude as a numeric value between -180 and 180, with up to 4 decimal places
+        of precision. <br /><a href='https://www.fcc.gov/media/radio/dms-decimal'>This tool</a> can be
+        used to convert from degrees, minutes, seconds (DMS) to decimal.""",
+    )
+    notes = models.TextField(blank=True)
+    events = models.ManyToManyField(
+        Event,
+        related_name="places",
+        verbose_name="Related Events",
+        through="PlaceEventRelation",
     )
     # sources for the information gathered here
     footnotes = GenericRelation(Footnote, blank=True, related_name="places")
@@ -577,3 +682,77 @@ class DocumentPlaceRelation(models.Model):
 
     def __str__(self):
         return f"{self.type} relation: {self.document} and {self.place}"
+
+
+class PlacePlaceRelationTypeManager(models.Manager):
+    """Custom manager for :class:`PlacePlaceRelationType` with natural key lookup"""
+
+    def get_by_natural_key(self, name):
+        "natural key lookup, based on name"
+        return self.get(name_en=name)
+
+
+class PlacePlaceRelationType(models.Model):
+    """Controlled vocabulary of place's relationships to other places."""
+
+    name = models.CharField(max_length=255, unique=True)
+    objects = PlacePlaceRelationTypeManager()
+
+    class Meta:
+        verbose_name = "Place-Place relationship"
+        verbose_name_plural = "Place-Place relationships"
+
+    def __str__(self):
+        return self.name
+
+
+class PlacePlaceRelation(models.Model):
+    """A relationship between two places."""
+
+    place_a = models.ForeignKey(
+        Place,
+        on_delete=models.CASCADE,
+        related_name="place_b",
+        verbose_name="Place",
+    )
+    place_b = models.ForeignKey(
+        Place,
+        on_delete=models.CASCADE,
+        related_name="place_a",
+        verbose_name="Place",
+    )
+    type = models.ForeignKey(
+        PlacePlaceRelationType,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name="Relation",
+    )
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        constraints = [
+            # only allow one relationship per type between place and place
+            models.UniqueConstraint(
+                fields=("type", "place_a", "place_b"),
+                name="unique_place_place_relation_by_type",
+            ),
+            # do not allow place_a and place_b to be the same place
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_prevent_self_relationship",
+                check=~models.Q(place_a=models.F("place_b")),
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.type} relation: {self.place_a} and {self.place_b}"
+
+
+class PlaceEventRelation(models.Model):
+    """A relationship between a place and an event"""
+
+    place = models.ForeignKey(Place, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"Place-Event relation: {self.place} and {self.event}"
