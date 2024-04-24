@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Annotations &#8212; Princeton Geniza Project 4.16.1 documentation</title>
+    <title>Annotations &#8212; Princeton Geniza Project 4.17.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1102ebc" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
-    <script src="../_static/documentation_options.js?v=c9094266"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=1ca48c26"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -45,6 +45,14 @@ project transcriptions.</p>
 <dt class="sig sig-object py" id="geniza.annotations.models.Annotation">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.annotations.models.</span></span><span class="sig-name descname"><span class="pre">Annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/annotations/models.html#Annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.annotations.models.Annotation" title="Link to this definition">¶</a></dt>
 <dd><p>Annotation model for storing annotations in the database.</p>
+<p>Annotations may be either block-level or line-level. Block-level annotation is the default;
+in most cases, a block-level annotation’s content is stored as a TextualBody in its <cite>content</cite>
+JSON.</p>
+<p>However, block-level annotations may also be used to group line-level annotations, in which case
+they have no textual content themselves, except for an optional label. Instead, their content
+is serialized by joining TextualBody values from all associated line-level annotations.</p>
+<p>Line-level annotations are associated with blocks via the <cite>block</cite> property, and that relationship
+is serialized as <cite>partOf</cite> at the root of the line-level annotation.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="geniza.annotations.models.Annotation.DoesNotExist">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#geniza.annotations.models.Annotation.DoesNotExist" title="Link to this definition">¶</a></dt>
@@ -54,6 +62,20 @@ project transcriptions.</p>
 <dt class="sig sig-object py" id="geniza.annotations.models.Annotation.MultipleObjectsReturned">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.annotations.models.Annotation.MultipleObjectsReturned" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="geniza.annotations.models.Annotation.block">
+<span class="sig-name descname"><span class="pre">block</span></span><a class="headerlink" href="#geniza.annotations.models.Annotation.block" title="Link to this definition">¶</a></dt>
+<dd><p>block-level annotation associated with this (line-level) annotation. if null, this is a
+block-level annotation. if a block is deleted, all associated lines will be deleted.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.annotations.models.Annotation.block_content_html">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">block_content_html</span></span><a class="headerlink" href="#geniza.annotations.models.Annotation.block_content_html" title="Link to this definition">¶</a></dt>
+<dd><p>convenience method to get HTML content, including label and any associated lines,
+of a block-level annotation, as a list of HTML strings</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="geniza.annotations.models.Annotation.body_content">
@@ -79,13 +101,25 @@ that already has it defined.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="geniza.annotations.models.Annotation.content">
 <span class="sig-name descname"><span class="pre">content</span></span><a class="headerlink" href="#geniza.annotations.models.Annotation.content" title="Link to this definition">¶</a></dt>
-<dd><p>json content of the annotation</p>
+<dd><p>json content of the annotation. in addition to W3C Web Annotation Data Model properties,
+may also include: “schema:position”, which tracks the order of the annotation with respect
+to others in the same block or canvas; and “textGranularity”, which indicates whether this
+is a block- or line-level annotation</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="geniza.annotations.models.Annotation.created">
 <span class="sig-name descname"><span class="pre">created</span></span><a class="headerlink" href="#geniza.annotations.models.Annotation.created" title="Link to this definition">¶</a></dt>
 <dd><p>date created</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.annotations.models.Annotation.etag">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">etag</span></span><a class="headerlink" href="#geniza.annotations.models.Annotation.etag" title="Link to this definition">¶</a></dt>
+<dd><p>Compute and return an md5 hash of content to use as an ETag.</p>
+<p>NOTE: Only <a class="reference internal" href="#geniza.annotations.models.Annotation.content" title="geniza.annotations.models.Annotation.content"><code class="xref py py-attr docutils literal notranslate"><span class="pre">content</span></code></a> can be modified in the editor, so it is the only hashed
+attribute. If other attributes become mutable, modify this function to include them in
+the ETag computation.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -98,6 +132,13 @@ that already has it defined.</p>
 <dt class="sig sig-object py" id="geniza.annotations.models.Annotation.get_absolute_url">
 <span class="sig-name descname"><span class="pre">get_absolute_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/annotations/models.html#Annotation.get_absolute_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.annotations.models.Annotation.get_absolute_url" title="Link to this definition">¶</a></dt>
 <dd><p>url for this annotation (relative to the current application)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.annotations.models.Annotation.has_lines">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_lines</span></span><a class="headerlink" href="#geniza.annotations.models.Annotation.has_lines" title="Link to this definition">¶</a></dt>
+<dd><p>cached property to indicate whether or not this is a block-level
+annotation with line-level children</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -208,9 +249,28 @@ Returns a dict that can be serialized as JSON.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="geniza.annotations.views.AnnotationDetail.dispatch">
+<span class="sig-name descname"><span class="pre">dispatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/annotations/views.html#AnnotationDetail.dispatch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.annotations.views.AnnotationDetail.dispatch" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap the dispatch method to add ETag/last modified headers when
+appropriate, then return a conditional response.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="geniza.annotations.views.AnnotationDetail.get">
 <span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/annotations/views.html#AnnotationDetail.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.annotations.views.AnnotationDetail.get" title="Link to this definition">¶</a></dt>
 <dd><p>display as annotation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.annotations.views.AnnotationDetail.get_etag">
+<span class="sig-name descname"><span class="pre">get_etag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/annotations/views.html#AnnotationDetail.get_etag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.annotations.views.AnnotationDetail.get_etag" title="Link to this definition">¶</a></dt>
+<dd><p>Get etag from annotation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.annotations.views.AnnotationDetail.get_last_modified">
+<span class="sig-name descname"><span class="pre">get_last_modified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/annotations/views.html#AnnotationDetail.get_last_modified"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.annotations.views.AnnotationDetail.get_last_modified" title="Link to this definition">¶</a></dt>
+<dd><p>Return last modified <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">datetime.datetime</span></code></a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -361,13 +421,17 @@ to set/update associated footnote. Returns content dict and footnote object.</p>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation"><code class="docutils literal notranslate"><span class="pre">Annotation</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">Annotation.DoesNotExist</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">Annotation.MultipleObjectsReturned</span></code></a></li>
+<li><a class="reference internal" href="#geniza.annotations.models.Annotation.block"><code class="docutils literal notranslate"><span class="pre">Annotation.block</span></code></a></li>
+<li><a class="reference internal" href="#geniza.annotations.models.Annotation.block_content_html"><code class="docutils literal notranslate"><span class="pre">Annotation.block_content_html</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.body_content"><code class="docutils literal notranslate"><span class="pre">Annotation.body_content</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.canonical"><code class="docutils literal notranslate"><span class="pre">Annotation.canonical</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.compile"><code class="docutils literal notranslate"><span class="pre">Annotation.compile()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.content"><code class="docutils literal notranslate"><span class="pre">Annotation.content</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.created"><code class="docutils literal notranslate"><span class="pre">Annotation.created</span></code></a></li>
+<li><a class="reference internal" href="#geniza.annotations.models.Annotation.etag"><code class="docutils literal notranslate"><span class="pre">Annotation.etag</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.footnote"><code class="docutils literal notranslate"><span class="pre">Annotation.footnote</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.get_absolute_url"><code class="docutils literal notranslate"><span class="pre">Annotation.get_absolute_url()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.annotations.models.Annotation.has_lines"><code class="docutils literal notranslate"><span class="pre">Annotation.has_lines</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.id"><code class="docutils literal notranslate"><span class="pre">Annotation.id</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.label"><code class="docutils literal notranslate"><span class="pre">Annotation.label</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.models.Annotation.modified"><code class="docutils literal notranslate"><span class="pre">Annotation.modified</span></code></a></li>
@@ -391,7 +455,10 @@ to set/update associated footnote. Returns content dict and footnote object.</p>
 <li><a class="reference internal" href="#module-geniza.annotations.views">views</a><ul>
 <li><a class="reference internal" href="#geniza.annotations.views.AnnotationDetail"><code class="docutils literal notranslate"><span class="pre">AnnotationDetail</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.annotations.views.AnnotationDetail.delete"><code class="docutils literal notranslate"><span class="pre">AnnotationDetail.delete()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.annotations.views.AnnotationDetail.dispatch"><code class="docutils literal notranslate"><span class="pre">AnnotationDetail.dispatch()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.views.AnnotationDetail.get"><code class="docutils literal notranslate"><span class="pre">AnnotationDetail.get()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.annotations.views.AnnotationDetail.get_etag"><code class="docutils literal notranslate"><span class="pre">AnnotationDetail.get_etag()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.annotations.views.AnnotationDetail.get_last_modified"><code class="docutils literal notranslate"><span class="pre">AnnotationDetail.get_last_modified()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.views.AnnotationDetail.get_permission_required"><code class="docutils literal notranslate"><span class="pre">AnnotationDetail.get_permission_required()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.views.AnnotationDetail.model"><code class="docutils literal notranslate"><span class="pre">AnnotationDetail.model</span></code></a></li>
 <li><a class="reference internal" href="#geniza.annotations.views.AnnotationDetail.post"><code class="docutils literal notranslate"><span class="pre">AnnotationDetail.post()</span></code></a></li>
@@ -419,7 +486,7 @@ to set/update associated footnote. Returns content dict and footnote object.</p>
 </ul>
 
   </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -427,7 +494,7 @@ to set/update associated footnote. Returns content dict and footnote object.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script><div class="powered_by">
     <p>Powered by:</p>
     <a href="http://cdh.princeton.edu/">
@@ -443,7 +510,7 @@ to set/update associated footnote. Returns content dict and footnote object.</p>
       &#169;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |

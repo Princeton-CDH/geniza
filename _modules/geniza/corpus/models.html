@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>geniza.corpus.models &#8212; Princeton Geniza Project 4.16.1 documentation</title>
+    <title>geniza.corpus.models &#8212; Princeton Geniza Project 4.17.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d1102ebc" />
     <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../../_static/documentation_options.js?v=c9094266"></script>
-    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/documentation_options.js?v=1ca48c26"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -76,7 +76,7 @@
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">geniza.common.utils</span> <span class="kn">import</span> <span class="n">absolutize_url</span>
 <span class="kn">from</span> <span class="nn">geniza.corpus.annotation_utils</span> <span class="kn">import</span> <span class="n">document_id_from_manifest_uri</span>
-<span class="kn">from</span> <span class="nn">geniza.corpus.dates</span> <span class="kn">import</span> <span class="n">DocumentDateMixin</span><span class="p">,</span> <span class="n">PartialDate</span>
+<span class="kn">from</span> <span class="nn">geniza.corpus.dates</span> <span class="kn">import</span> <span class="n">DocumentDateMixin</span><span class="p">,</span> <span class="n">PartialDate</span><span class="p">,</span> <span class="n">standard_date_display</span>
 <span class="kn">from</span> <span class="nn">geniza.corpus.iiif_utils</span> <span class="kn">import</span> <span class="n">GenizaManifestImporter</span><span class="p">,</span> <span class="n">get_iiif_string</span>
 <span class="kn">from</span> <span class="nn">geniza.corpus.solr_queryset</span> <span class="kn">import</span> <span class="n">DocumentSolrQuerySet</span>
 <span class="kn">from</span> <span class="nn">geniza.footnotes.models</span> <span class="kn">import</span> <span class="n">Creator</span><span class="p">,</span> <span class="n">Footnote</span>
@@ -261,6 +261,9 @@
         <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;True if there are multiple fragments in one shelfmark&quot;</span><span class="p">,</span>
     <span class="p">)</span>
+    <span class="n">provenance</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span>
+        <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;The origin and acquisition history of this fragment.&quot;</span>
+    <span class="p">)</span>
     <span class="n">notes</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">needs_review</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span>
         <span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -392,8 +395,9 @@
                 <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a provenance statement for this fragment&quot;&quot;&quot;</span>
+    <span class="nd">@admin</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Provenance from IIIF manifest&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">iiif_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a provenance statement for this fragment from IIIF&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">metadata</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">get_iiif_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manifest</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Provenance&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
 
@@ -685,7 +689,12 @@
         <span class="n">default</span><span class="o">=</span><span class="n">PUBLIC</span><span class="p">,</span>
         <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Decide whether a document should be publicly visible&quot;</span><span class="p">,</span>
     <span class="p">)</span>
-
+    <span class="n">events</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span>
+        <span class="n">to</span><span class="o">=</span><span class="s2">&quot;entities.Event&quot;</span><span class="p">,</span>
+        <span class="n">related_name</span><span class="o">=</span><span class="s2">&quot;documents&quot;</span><span class="p">,</span>
+        <span class="n">verbose_name</span><span class="o">=</span><span class="s2">&quot;Related Events&quot;</span><span class="p">,</span>
+        <span class="n">through</span><span class="o">=</span><span class="s2">&quot;DocumentEventRelation&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="n">footnotes</span> <span class="o">=</span> <span class="n">GenericRelation</span><span class="p">(</span><span class="n">Footnote</span><span class="p">,</span> <span class="n">related_query_name</span><span class="o">=</span><span class="s2">&quot;document&quot;</span><span class="p">)</span>
     <span class="n">log_entries</span> <span class="o">=</span> <span class="n">GenericRelation</span><span class="p">(</span><span class="n">LogEntry</span><span class="p">,</span> <span class="n">related_query_name</span><span class="o">=</span><span class="s2">&quot;document&quot;</span><span class="p">)</span>
 
@@ -764,6 +773,16 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Label for this document; by default, based on the combined shelfmarks from all certain</span>
 <span class="sd">        associated fragments; uses :attr:`shelfmark_override` if set&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">shelfmark_override</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">shelfmark</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@admin</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Historical shelfmarks&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">fragment_historical_shelfmarks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Property to display set of all historical shelfmarks on the document&quot;&quot;&quot;</span>
+        <span class="n">all_textblocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">textblock_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">all_fragments</span> <span class="o">=</span> <span class="p">[</span><span class="n">tb</span><span class="o">.</span><span class="n">fragment</span> <span class="k">for</span> <span class="n">tb</span> <span class="ow">in</span> <span class="n">all_textblocks</span><span class="p">]</span>
+        <span class="k">return</span> <span class="s2">&quot;; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">frag</span><span class="o">.</span><span class="n">old_shelfmarks</span> <span class="k">for</span> <span class="n">frag</span> <span class="ow">in</span> <span class="n">all_fragments</span> <span class="k">if</span> <span class="n">frag</span><span class="o">.</span><span class="n">old_shelfmarks</span><span class="p">]</span>
+        <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">collection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1123,6 +1142,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># it is unlikely, but technically possible, that a document could have both on-document</span>
         <span class="c1"># dates and inferred datings, so find the min and max out of all of them.</span>
+
+        <span class="c1"># start_date and end_date are PartialDate instances</span>
         <span class="n">dating_range</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">]</span>
 
         <span class="c1"># bail out if we don&#39;t have any inferred datings</span>
@@ -1131,24 +1152,15 @@
 
         <span class="c1"># loop through inferred datings to find min and max among all dates (including both</span>
         <span class="c1"># on-document and inferred)</span>
-        <span class="k">for</span> <span class="n">dating</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dating_set</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">inferred</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dating_set</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
             <span class="c1"># get start from standardized date range (formatted as &quot;date1/date2&quot; or &quot;date&quot;)</span>
-            <span class="n">split_date</span> <span class="o">=</span> <span class="n">dating</span><span class="o">.</span><span class="n">standard_date</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+            <span class="n">split_date</span> <span class="o">=</span> <span class="n">inferred</span><span class="o">.</span><span class="n">standard_date</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
             <span class="n">start</span> <span class="o">=</span> <span class="n">PartialDate</span><span class="p">(</span><span class="n">split_date</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="c1"># use numeric format to compare to current min, replace if smaller</span>
-            <span class="n">start_numeric</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">))</span>
-            <span class="nb">min</span> <span class="o">=</span> <span class="n">dating_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">min</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">start_numeric</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">)):</span>
-                <span class="c1"># store as PartialDate</span>
-                <span class="n">dating_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">start</span>
             <span class="c1"># get end from standardized date range</span>
             <span class="n">end</span> <span class="o">=</span> <span class="n">PartialDate</span><span class="p">(</span><span class="n">split_date</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_date</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">start</span>
-            <span class="c1"># use numeric format to compare to current max, replace if larger</span>
-            <span class="n">end_numeric</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">))</span>
-            <span class="nb">max</span> <span class="o">=</span> <span class="n">dating_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">max</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">end_numeric</span> <span class="o">&gt;</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">)):</span>
-                <span class="c1"># store as PartialDate</span>
-                <span class="n">dating_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">end</span>
+            <span class="n">dating_range</span> <span class="o">=</span> <span class="n">PartialDate</span><span class="o">.</span><span class="n">get_date_range</span><span class="p">(</span>
+                <span class="n">old_range</span><span class="o">=</span><span class="n">dating_range</span><span class="p">,</span> <span class="n">new_range</span><span class="o">=</span><span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
+            <span class="p">)</span>
 
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">dating_range</span><span class="p">)</span></div>
 
@@ -1375,12 +1387,14 @@
                 <span class="c1"># type gets matched back to DocumentType object in get_result_document, for i18n;</span>
                 <span class="c1"># should always be indexed in English</span>
                 <span class="s2">&quot;type_s&quot;</span><span class="p">:</span> <span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">doctype</span><span class="o">.</span><span class="n">display_label_en</span>
-                    <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">doctype</span><span class="o">.</span><span class="n">name_en</span>
-                    <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doctype</span><span class="p">)</span>
-                <span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doctype</span>
-                <span class="k">else</span> <span class="s2">&quot;Unknown type&quot;</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">doctype</span><span class="o">.</span><span class="n">display_label_en</span>
+                        <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">doctype</span><span class="o">.</span><span class="n">name_en</span>
+                        <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">doctype</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">doctype</span>
+                    <span class="k">else</span> <span class="s2">&quot;Unknown type&quot;</span>
+                <span class="p">),</span>
                 <span class="c1"># use english description for now</span>
                 <span class="s2">&quot;description_en_bigram&quot;</span><span class="p">:</span> <span class="n">strip_tags</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_en</span><span class="p">),</span>
                 <span class="s2">&quot;notes_t&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">notes</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
@@ -1403,12 +1417,12 @@
                 <span class="s2">&quot;document_dating_dr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">solr_dating_range</span><span class="p">(),</span>
                 <span class="c1"># historic date, for searching</span>
                 <span class="c1"># start/end of document date or date range</span>
-                <span class="s2">&quot;start_date_i&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">()</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span>
-                <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="s2">&quot;end_date_i&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span>
-                <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;start_date_i&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_date</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;end_date_i&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span><span class="o">.</span><span class="n">numeric_format</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">end_date</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">),</span>
                 <span class="c1"># library/collection possibly redundant?</span>
                 <span class="s2">&quot;collection_ss&quot;</span><span class="p">:</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">collection</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fragments</span><span class="p">],</span>
                 <span class="s2">&quot;tags_ss_lower&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">all</span><span class="p">()],</span>
@@ -1943,7 +1957,26 @@
     <span class="p">)</span>
     <span class="n">notes</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span>
         <span class="n">help_text</span><span class="o">=</span><span class="s2">&quot;Optional further details about the rationale&quot;</span><span class="p">,</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">standard_date_display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Standard date in human-readable format for document details pages&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">standard_date_display</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">standard_date</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DocumentEventRelation">
+<a class="viewcode-back" href="../../../codedocs/corpus.html#geniza.corpus.models.DocumentEventRelation">[docs]</a>
+<span class="k">class</span> <span class="nc">DocumentEventRelation</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A relationship between a document and an event&quot;&quot;&quot;</span>
+
+    <span class="n">document</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Document</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
+    <span class="n">event</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;entities.Event&quot;</span><span class="p">,</span> <span class="n">on_delete</span><span class="o">=</span><span class="n">models</span><span class="o">.</span><span class="n">CASCADE</span><span class="p">)</span>
+    <span class="n">notes</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Document-Event relation: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 </pre></div>
 
@@ -1993,7 +2026,7 @@
 </ul>
 
 
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
@@ -2001,7 +2034,7 @@
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script><div class="powered_by">
     <p>Powered by:</p>
     <a href="http://cdh.princeton.edu/">
@@ -2017,7 +2050,7 @@
       &#169;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
     </div>

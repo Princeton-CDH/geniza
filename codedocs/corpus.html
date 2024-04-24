@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.16.1 documentation</title>
+    <title>Documents and Fragments &#8212; Princeton Geniza Project 4.17.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1102ebc" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
-    <script src="../_static/documentation_options.js?v=c9094266"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/documentation_options.js?v=1ca48c26"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -89,6 +89,12 @@ to track the source of the fragment, document type, languages and scripts used i
 <dt class="sig sig-object py" id="geniza.corpus.models.Dating.MultipleObjectsReturned">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.corpus.models.Dating.MultipleObjectsReturned" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.corpus.models.Dating.standard_date_display">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">standard_date_display</span></span><a class="headerlink" href="#geniza.corpus.models.Dating.standard_date_display" title="Link to this definition">¶</a></dt>
+<dd><p>Standard date in human-readable format for document details pages</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -210,6 +216,12 @@ edition.</p>
 <dt class="sig sig-object py" id="geniza.corpus.models.Document.editors">
 <span class="sig-name descname"><span class="pre">editors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Document.editors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Document.editors" title="Link to this definition">¶</a></dt>
 <dd><p>All unique authors of digital editions for this document.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.corpus.models.Document.fragment_historical_shelfmarks">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fragment_historical_shelfmarks</span></span><a class="headerlink" href="#geniza.corpus.models.Document.fragment_historical_shelfmarks" title="Link to this definition">¶</a></dt>
+<dd><p>Property to display set of all historical shelfmarks on the document</p>
 </dd></dl>
 
 <dl class="py method">
@@ -426,6 +438,22 @@ associated fragments; uses <code class="xref py py-attr docutils literal notrans
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="geniza.corpus.models.DocumentEventRelation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.models.</span></span><span class="sig-name descname"><span class="pre">DocumentEventRelation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#DocumentEventRelation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.DocumentEventRelation" title="Link to this definition">¶</a></dt>
+<dd><p>A relationship between a document and an event</p>
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.corpus.models.DocumentEventRelation.DoesNotExist">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoesNotExist</span></span><a class="headerlink" href="#geniza.corpus.models.DocumentEventRelation.DoesNotExist" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="geniza.corpus.models.DocumentEventRelation.MultipleObjectsReturned">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultipleObjectsReturned</span></span><a class="headerlink" href="#geniza.corpus.models.DocumentEventRelation.MultipleObjectsReturned" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="geniza.corpus.models.DocumentQuerySet">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">geniza.corpus.models.</span></span><span class="sig-name descname"><span class="pre">DocumentQuerySet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#DocumentQuerySet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.DocumentQuerySet" title="Link to this definition">¶</a></dt>
 <dd><dl class="py method">
@@ -578,6 +606,12 @@ separated for reuse in Document</p>
 or None if this fragement has no IIIF url associated.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="geniza.corpus.models.Fragment.iiif_provenance">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iiif_provenance</span></span><a class="headerlink" href="#geniza.corpus.models.Fragment.iiif_provenance" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a provenance statement for this fragment from IIIF</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.corpus.models.Fragment.iiif_thumbnails">
 <span class="sig-name descname"><span class="pre">iiif_thumbnails</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Fragment.iiif_thumbnails"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Fragment.iiif_thumbnails" title="Link to this definition">¶</a></dt>
@@ -588,12 +622,6 @@ or None if this fragement has no IIIF url associated.</p>
 <dt class="sig sig-object py" id="geniza.corpus.models.Fragment.natural_key">
 <span class="sig-name descname"><span class="pre">natural_key</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/models.html#Fragment.natural_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.models.Fragment.natural_key" title="Link to this definition">¶</a></dt>
 <dd><p>natural key: shelfmark</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="geniza.corpus.models.Fragment.provenance">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">provenance</span></span><a class="headerlink" href="#geniza.corpus.models.Fragment.provenance" title="Link to this definition">¶</a></dt>
-<dd><p>Generate a provenance statement for this fragment</p>
 </dd></dl>
 
 <dl class="py method">
@@ -795,12 +823,6 @@ of start/end <a class="reference internal" href="#geniza.corpus.dates.PartialDat
 <dd><p>Return a Solr date range for the document’s standardized date.</p>
 </dd></dl>
 
-<dl class="py property">
-<dt class="sig sig-object py" id="geniza.corpus.dates.DocumentDateMixin.standard_date">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">standard_date</span></span><a class="headerlink" href="#geniza.corpus.dates.DocumentDateMixin.standard_date" title="Link to this definition">¶</a></dt>
-<dd><p>Display standard date in human readable format, when set.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="geniza.corpus.dates.DocumentDateMixin.standardize_date">
 <span class="sig-name descname"><span class="pre">standardize_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/dates.html#DocumentDateMixin.standardize_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.dates.DocumentDateMixin.standardize_date" title="Link to this definition">¶</a></dt>
@@ -826,6 +848,12 @@ is based on known precision of year, month, or day.</p>
 <dt class="sig sig-object py" id="geniza.corpus.dates.PartialDate.display_format">
 <span class="sig-name descname"><span class="pre">display_format</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'day':</span> <span class="pre">'DATE_FORMAT',</span> <span class="pre">'month':</span> <span class="pre">'F</span> <span class="pre">Y',</span> <span class="pre">'year':</span> <span class="pre">'Y'}</span></em><a class="headerlink" href="#geniza.corpus.dates.PartialDate.display_format" title="Link to this definition">¶</a></dt>
 <dd><p>public display format based on date precision</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="geniza.corpus.dates.PartialDate.get_date_range">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_date_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_range</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/dates.html#PartialDate.get_date_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.dates.PartialDate.get_date_range" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the union (widest possible date range) between two PartialDate ranges.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -939,6 +967,12 @@ with or without accents, and supports local month-name overrides.</p>
 <dt class="sig sig-object py" id="geniza.corpus.dates.re_original_date">
 <span class="sig-prename descclassname"><span class="pre">geniza.corpus.dates.</span></span><span class="sig-name descname"><span class="pre">re_original_date</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">re.compile('(?:(?P&lt;weekday&gt;\\w+day),?</span> <span class="pre">)?(?:(?P&lt;day&gt;\\d+)</span> <span class="pre">)?(?:(?P&lt;month&gt;[^\\d]+(</span> <span class="pre">I{1,2})?)</span> <span class="pre">)?(?P&lt;year&gt;\\d{3,4})')</span></em><a class="headerlink" href="#geniza.corpus.dates.re_original_date" title="Link to this definition">¶</a></dt>
 <dd><p>regular expression for extracting information from original date string</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="geniza.corpus.dates.standard_date_display">
+<span class="sig-prename descclassname"><span class="pre">geniza.corpus.dates.</span></span><span class="sig-name descname"><span class="pre">standard_date_display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">standard_date</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/dates.html#standard_date_display"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.dates.standard_date_display" title="Link to this definition">¶</a></dt>
+<dd><p>Display a standardized CE date in human readable format.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -1590,6 +1624,13 @@ Example use:</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="geniza.corpus.templatetags.corpus_extras.get_document_label">
+<span class="sig-prename descclassname"><span class="pre">geniza.corpus.templatetags.corpus_extras.</span></span><span class="sig-name descname"><span class="pre">get_document_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result_doc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/templatetags/corpus_extras.html#get_document_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.templatetags.corpus_extras.get_document_label" title="Link to this definition">¶</a></dt>
+<dd><p>Helper method to construct an appropriate aria-label for a document link
+with a fallback in case of a missing shelfmark.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="geniza.corpus.templatetags.corpus_extras.has_location_or_url">
 <span class="sig-prename descclassname"><span class="pre">geniza.corpus.templatetags.corpus_extras.</span></span><span class="sig-name descname"><span class="pre">has_location_or_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">footnotes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/geniza/corpus/templatetags/corpus_extras.html#has_location_or_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#geniza.corpus.templatetags.corpus_extras.has_location_or_url" title="Link to this definition">¶</a></dt>
 <dd><p>For scholarship records list: return True if any footnote in the list
@@ -2031,6 +2072,7 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.Dating"><code class="docutils literal notranslate"><span class="pre">Dating</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.corpus.models.Dating.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">Dating.DoesNotExist</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Dating.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">Dating.MultipleObjectsReturned</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Dating.standard_date_display"><code class="docutils literal notranslate"><span class="pre">Dating.standard_date_display</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document"><code class="docutils literal notranslate"><span class="pre">Document</span></code></a><ul>
@@ -2052,6 +2094,7 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.digital_translations"><code class="docutils literal notranslate"><span class="pre">Document.digital_translations()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.editions"><code class="docutils literal notranslate"><span class="pre">Document.editions()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.editors"><code class="docutils literal notranslate"><span class="pre">Document.editors()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Document.fragment_historical_shelfmarks"><code class="docutils literal notranslate"><span class="pre">Document.fragment_historical_shelfmarks</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.fragment_urls"><code class="docutils literal notranslate"><span class="pre">Document.fragment_urls()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.fragments_other_docs"><code class="docutils literal notranslate"><span class="pre">Document.fragments_other_docs()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.from_manifest_uri"><code class="docutils literal notranslate"><span class="pre">Document.from_manifest_uri()</span></code></a></li>
@@ -2080,6 +2123,11 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.status"><code class="docutils literal notranslate"><span class="pre">Document.status</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.title"><code class="docutils literal notranslate"><span class="pre">Document.title</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Document.total_to_index"><code class="docutils literal notranslate"><span class="pre">Document.total_to_index()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#geniza.corpus.models.DocumentEventRelation"><code class="docutils literal notranslate"><span class="pre">DocumentEventRelation</span></code></a><ul>
+<li><a class="reference internal" href="#geniza.corpus.models.DocumentEventRelation.DoesNotExist"><code class="docutils literal notranslate"><span class="pre">DocumentEventRelation.DoesNotExist</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.DocumentEventRelation.MultipleObjectsReturned"><code class="docutils literal notranslate"><span class="pre">DocumentEventRelation.MultipleObjectsReturned</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#geniza.corpus.models.DocumentQuerySet"><code class="docutils literal notranslate"><span class="pre">DocumentQuerySet</span></code></a><ul>
@@ -2114,9 +2162,9 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.models.Fragment.clean"><code class="docutils literal notranslate"><span class="pre">Fragment.clean()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Fragment.clean_iiif_url"><code class="docutils literal notranslate"><span class="pre">Fragment.clean_iiif_url()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Fragment.iiif_images"><code class="docutils literal notranslate"><span class="pre">Fragment.iiif_images()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.models.Fragment.iiif_provenance"><code class="docutils literal notranslate"><span class="pre">Fragment.iiif_provenance</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Fragment.iiif_thumbnails"><code class="docutils literal notranslate"><span class="pre">Fragment.iiif_thumbnails()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Fragment.natural_key"><code class="docutils literal notranslate"><span class="pre">Fragment.natural_key()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.models.Fragment.provenance"><code class="docutils literal notranslate"><span class="pre">Fragment.provenance</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.models.Fragment.save"><code class="docutils literal notranslate"><span class="pre">Fragment.save()</span></code></a></li>
 </ul>
 </li>
@@ -2166,13 +2214,13 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.original_date"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.original_date</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.parsed_date"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.parsed_date</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.solr_date_range"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.solr_date_range()</span></code></a></li>
-<li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.standard_date"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.standard_date</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.standardize_date"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.standardize_date()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.DocumentDateMixin.start_date"><code class="docutils literal notranslate"><span class="pre">DocumentDateMixin.start_date</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#geniza.corpus.dates.PartialDate"><code class="docutils literal notranslate"><span class="pre">PartialDate</span></code></a><ul>
 <li><a class="reference internal" href="#geniza.corpus.dates.PartialDate.display_format"><code class="docutils literal notranslate"><span class="pre">PartialDate.display_format</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.dates.PartialDate.get_date_range"><code class="docutils literal notranslate"><span class="pre">PartialDate.get_date_range()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.PartialDate.iso_format"><code class="docutils literal notranslate"><span class="pre">PartialDate.iso_format</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.PartialDate.isoformat"><code class="docutils literal notranslate"><span class="pre">PartialDate.isoformat()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.PartialDate.num_fmt"><code class="docutils literal notranslate"><span class="pre">PartialDate.num_fmt</span></code></a></li>
@@ -2189,6 +2237,7 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.dates.get_hebrew_month"><code class="docutils literal notranslate"><span class="pre">get_hebrew_month()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.get_islamic_month"><code class="docutils literal notranslate"><span class="pre">get_islamic_month()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.re_original_date"><code class="docutils literal notranslate"><span class="pre">re_original_date</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.dates.standard_date_display"><code class="docutils literal notranslate"><span class="pre">standard_date_display()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.dates.standardize_date"><code class="docutils literal notranslate"><span class="pre">standardize_date()</span></code></a></li>
 </ul>
 </li>
@@ -2327,6 +2376,7 @@ for the set of users who associated with any of the log entries.</p>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.alphabetize"><code class="docutils literal notranslate"><span class="pre">alphabetize()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.dict_item"><code class="docutils literal notranslate"><span class="pre">dict_item()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.format_attribution"><code class="docutils literal notranslate"><span class="pre">format_attribution()</span></code></a></li>
+<li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.get_document_label"><code class="docutils literal notranslate"><span class="pre">get_document_label()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.has_location_or_url"><code class="docutils literal notranslate"><span class="pre">has_location_or_url()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.iiif_image"><code class="docutils literal notranslate"><span class="pre">iiif_image()</span></code></a></li>
 <li><a class="reference internal" href="#geniza.corpus.templatetags.corpus_extras.iiif_info_json"><code class="docutils literal notranslate"><span class="pre">iiif_info_json()</span></code></a></li>
@@ -2402,7 +2452,7 @@ for the set of users who associated with any of the log entries.</p>
 </ul>
 
   </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
@@ -2410,7 +2460,7 @@ for the set of users who associated with any of the log entries.</p>
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script><div class="powered_by">
     <p>Powered by:</p>
     <a href="http://cdh.princeton.edu/">
@@ -2426,7 +2476,7 @@ for the set of users who associated with any of the log entries.</p>
       &#169;2022, Center for Digital Humanities @ Princeton.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
