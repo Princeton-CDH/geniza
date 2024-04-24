@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+4.17.1
+------
+
+- bugfix: Pin django-dbml to 0.7 and dbdocs to 0.8, until django-dbml supports dbdocs 0.9+
+
 4.17
 ----
 
