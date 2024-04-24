@@ -1,6 +1,37 @@
 Change Log
 ==========
 
+4.17
+----
+
+- public site
+    - As a public site user, I would like to see date ranges separated with an en-dash (–) instead of an em-dash (—).
+    - As a front end user, I only want to see one document number for a source displayed in the scholarship records on the public site.
+    - As a frontend user, I want to see dating information displayed on document details when available, so that I can find out the time frame of a document when it is known.
+    - bugfix: Double quotes search returning unexpected results
+    - bugfix: Issues with shelfmark scoped search
+    - bugfix: Highlighting context shows entire transcription or translation in search result
+    - bugfix: Transcription search results not always formatted correctly
+    - bugfix: Bracket and other character search is functioning unpredictably
+    - bugfix: Incorrect words are highlighted in complete word quotation search (Hebrew script)
+    - bugfix: Some partial search results in description not boosted by relevancy
+    - chore: accessibility issues flagged by DubBot
+
+- image, transcription, translation viewer/editor
+    - As a transcription editor, I should see an error if I try to update an annotation with out of date content so that I don't overwrite someone else's changes.
+    - bugfix: Autofill for source search (when inputting a transcription source) not functioning properly
+
+- admin
+    - As a content editor, I want to record places-to-places relationship on the place page and on the document detail page, so that I can track ambiguity.
+    - As a content admin, I want to drop down a pin on a map and then be able to move the pin around so that I can manually adjust the coordinates of a place before saving the location.
+    - As a content editor, I want there to be a notes field in the places pages so that I can add more detail about places that are hard-to-find.
+    - As a content admin, I want a provenance field on the document detail page so that I can note the origin and aquisition history of fragments when available.
+    - As a content editor, I want clearer help text for the name field of the person page so I know how best to present people's names on their pages
+    - As a content editor, I would like to see Historic Shelfmark on the Document edit page, to ensure that my work is correct when working with old scholarship.
+    - bugfix: Full shelfmark search for multiple shelfmarks not working in admin
+    - bugfix: Invalid lat/long coordinates are allowed for Places, but don't persist
+    - bugfix: People names are not diacritic neutral when adding them from Document Detail page
+
 4.16.1
 ------
 
