@@ -27,8 +27,9 @@ jobs:
         uses: actions/setup-node@v2-beta
         with:
           node-version: ${{ env.NODE_VERSION }}
+      # dbdocs is pinned to 0.8 until django-dbml supports 0.9+
       - name: Install dbdocs
-        run: npm install -g dbdocs
+        run: npm install -g dbdocs@0.8
       - name: Check dbdocs
         run: dbdocs
       # Python version to use is stored in the .python-version file, which is the
@@ -46,7 +47,7 @@ jobs:
 
       # Build and publish dbdocs
       - name: Generate DBML
-        run: python manage.py dbml corpus common footnotes djiffy contenttypes admin auth > geniza.dbml
+        run: python manage.py dbml corpus common footnotes djiffy contenttypes admin auth entities > geniza.dbml
       - name: Push to dbdocs
         env:
           DBDOCS_TOKEN: ${{ secrets.DBDOCS_TOKEN }}

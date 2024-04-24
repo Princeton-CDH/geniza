@@ -6,6 +6,6 @@ pytest>=4.6 # required for pytest-cov
 pytest-django>=4.1.0,<4.5.0
 pytest-cov
 wheel
-django-dbml>=0.6.0
+django-dbml>=0.7.0
 percy-selenium
 selenium>=4.8.0
