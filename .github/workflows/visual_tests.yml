@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout commits up to and including HEAD^2
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
@@ -58,7 +58,7 @@ jobs:
           - 8983:8983
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Decrypt encrypted fonts zip
         run: |
@@ -89,7 +89,7 @@ jobs:
         run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 

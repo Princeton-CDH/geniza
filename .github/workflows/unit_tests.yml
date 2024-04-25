@@ -35,7 +35,7 @@ jobs:
           - 8983:8983
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # use docker cp to copy the configset, then bash to set ownership to solr
       - name: Copy Solr configset to solr service
@@ -51,7 +51,7 @@ jobs:
       - name: Get Python version
         run: echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
