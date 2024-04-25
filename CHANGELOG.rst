@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+4.17.2
+------
+
+- bugfix: Unable to rotate or reorder images in admin due to undefined rotation controls
+
 4.17.1
 ------
 
