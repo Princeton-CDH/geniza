@@ -276,10 +276,10 @@ function appendRotationControls() {
             "div.field-admin_thumbnails div.admin-thumbnail"
         ) || [];
     orderImages.forEach((div, i) => {
-        rotationControls = document.createElement("div");
+        const rotationControls = document.createElement("div");
         rotationControls.classList.add("rotation-controls");
         // rotate left button
-        rotateLeftButton = document.createElement("button");
+        const rotateLeftButton = document.createElement("button");
         rotateLeftButton.classList.add("rotate-left");
         rotateLeftButton.setAttribute("type", "button");
         rotateLeftButton.setAttribute(
@@ -289,7 +289,7 @@ function appendRotationControls() {
         rotateLeftButton.innerHTML = "&#8634;";
         rotationControls.appendChild(rotateLeftButton);
         // rotate right button
-        rotateRightButton = document.createElement("button");
+        const rotateRightButton = document.createElement("button");
         rotateRightButton.classList.add("rotate-right");
         rotateRightButton.setAttribute("type", "button");
         rotateRightButton.setAttribute(
