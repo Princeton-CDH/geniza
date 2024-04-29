@@ -41,7 +41,7 @@ from geniza.corpus.models import (
     LanguageScript,
     TextBlock,
 )
-from geniza.entities.models import Person, PersonDocumentRelation
+from geniza.entities.models import Event, Person, PersonDocumentRelation
 from geniza.footnotes.models import Footnote, Source, SourceLanguage, SourceType
 
 
@@ -700,3 +700,31 @@ class TestInferredDatingListFilter:
         filter = InferredDatingListFilter(Mock(), {}, Document, DocumentAdmin)
         filter.queryset(Mock(), queryset_mock)
         queryset_mock.filter.assert_not_called()
+
+
+class TestDocumentEventInline:
+    def test_get_formset(self, admin_client, document):
+        # get_formset substitutes DocumentEventWidgetWrapper in place of
+        # RelatedFieldWidgetWrapper around the Event related field widget;
+        # this adds a URL param to the add event link
+        url = reverse("admin:corpus_document_add")
+        response = admin_client.get(url)
+        content = str(response.content)
+        assert "Add another event" in content
+        assert "from_document=true" in content
+
+        # person edit page has an Event related field but does not use the custom wrapper,
+        # and thus should not have the from_document URL param
+        url = reverse("admin:entities_person_add")
+        response = admin_client.get(url)
+        content = str(response.content)
+        assert "Add another event" in content
+        assert "from_document=true" not in content
+
+        # document with an event already attached should have an edit link for that event
+        evt = Event.objects.create(name="test")
+        document.events.add(evt)
+        url = reverse("admin:corpus_document_change", args=(document.pk,))
+        response = admin_client.get(url)
+        content = str(response.content)
+        assert "Change selected event" in content
