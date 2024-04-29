@@ -2,15 +2,16 @@ from dal import autocomplete
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.forms import ValidationError
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from django.views.generic import FormView
+from django.utils.text import Truncator
+from django.views.generic import DetailView, FormView
 
 from geniza.entities.forms import PersonMergeForm
-from geniza.entities.models import Person, Place
+from geniza.entities.models import PastPersonSlug, Person, Place
 
 
 class PersonMerge(PermissionRequiredMixin, FormView):
@@ -100,3 +101,65 @@ class PersonAutocompleteView(PermissionRequiredMixin, UnaccentedNameAutocomplete
 class PlaceAutocompleteView(PermissionRequiredMixin, UnaccentedNameAutocompleteView):
     permission_required = ("entities.change_place",)
     model = Place
+
+
+class PersonDetailMixin(DetailView):
+    """Mixin for redirecting on past slugs, to be used on all Person pages (detail
+    and related objects lists)"""
+
+    def get(self, request, *args, **kwargs):
+        """extend GET to check for old slug and redirect on 404"""
+        try:
+            return super().get(request, *args, **kwargs)
+        except Http404:
+            # if not found, check for a match on a past slug
+            past_slug = PastPersonSlug.objects.filter(slug=self.kwargs["slug"]).first()
+            # if found, redirect to the correct url for this view
+            if past_slug:
+                self.kwargs["slug"] = past_slug.person.slug
+                return HttpResponsePermanentRedirect(
+                    past_slug.person.get_absolute_url()
+                )
+            # otherwise, continue raising the 404
+            raise
+
+
+class PersonDetailView(PersonDetailMixin):
+    """public display of a single :class:`~geniza.entities.models.Person`"""
+
+    model = Person
+    context_object_name = "person"
+    MIN_DOCUMENTS = 10
+
+    def page_title(self):
+        """page title, for metadata; uses Person primary name"""
+        return str(self.get_object())
+
+    def page_description(self):
+        """page description, for metadata; uses truncated description"""
+        return Truncator(self.get_object().description).words(20)
+
+    def get_queryset(self, *args, **kwargs):
+        """Don't show person if it does not have more than MIN_DOCUMENTS document associations
+        and has_page override is False"""
+        queryset = (
+            super()
+            .get_queryset(*args, **kwargs)
+            .annotate(
+                doc_count=Count("documents", distinct=True),
+            )
+        )
+        return queryset.filter(Q(doc_count__gte=self.MIN_DOCUMENTS) | Q(has_page=True))
+
+    def get_context_data(self, **kwargs):
+        """extend context data to add page metadata"""
+        context_data = super().get_context_data(**kwargs)
+
+        context_data.update(
+            {
+                "page_title": self.page_title(),
+                "page_description": self.page_description(),
+                "page_type": "person",
+            }
+        )
+        return context_data

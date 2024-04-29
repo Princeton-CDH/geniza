@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest.mock import patch
 
 import pytest
 from django.contrib.admin.models import ADDITION, CHANGE, LogEntry
@@ -6,6 +7,8 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.forms import ValidationError
 from django.utils import timezone
+from slugify import slugify
+from unidecode import unidecode
 
 from geniza.corpus.dates import standard_date_display
 from geniza.corpus.models import Dating, Document
@@ -14,6 +17,7 @@ from geniza.entities.models import (
     DocumentPlaceRelationType,
     Event,
     Name,
+    PastPersonSlug,
     Person,
     PersonDocumentRelation,
     PersonDocumentRelationType,
@@ -29,6 +33,23 @@ from geniza.entities.models import (
     PlacePlaceRelationType,
 )
 from geniza.footnotes.models import Footnote
+
+
+@pytest.mark.django_db
+class TestNameQuerySet:
+    def test_non_primary(self):
+        person = Person.objects.create()
+        name = Name.objects.create(
+            name="S.D. Goitein", content_object=person, primary=True
+        )
+        non_primary = Name.objects.create(
+            name="Goitein", content_object=person, primary=False
+        )
+        # should filter out primary names, only include non-primary
+        assert person.names.non_primary().exists()
+        assert person.names.non_primary().count() == 1
+        assert name not in person.names.non_primary()
+        assert non_primary in person.names.non_primary()
 
 
 @pytest.mark.django_db
@@ -298,6 +319,43 @@ class TestPerson:
             in moved_log.change_message
         )
 
+    def test_get_absolute_url(self):
+        # should get person page url in user's language by slug
+        person = Person.objects.create()
+        assert person.get_absolute_url() == "/en/people/%s/" % person.slug
+
+    def test_save(self):
+        # test past slugs are recorded on save
+        person = Person(slug="test")
+        person.save()
+        person.slug = ""
+        person.save()
+        assert PastPersonSlug.objects.filter(slug="test", person=person).exists()
+
+    def test_generate_slug(self):
+        person = Person.objects.create()
+        Name.objects.create(name="S.D. Goitein", content_object=person, primary=True)
+        person.generate_slug()
+
+        # should use slugified, unidecoded string
+        assert person.slug == slugify(unidecode(str(person)))
+        person.save()
+
+        # numeric differentiation when needed
+        person2 = Person.objects.create()
+        Name.objects.create(name="S.D. Goitein", content_object=person2, primary=True)
+        person2.generate_slug()
+
+        # should determine -2 based on the existence of identical slug
+        assert person2.slug == f"{person.slug}-2"
+        person2.save()
+
+        # should increment if there are existing numbers
+        person3 = Person.objects.create()
+        Name.objects.create(name="S.D. Goitein", content_object=person3, primary=True)
+        person3.generate_slug()
+        assert person3.slug == f"{person.slug}-3"
+
 
 @pytest.mark.django_db
 class TestPersonRole:
@@ -321,6 +379,13 @@ class TestPersonRole:
         # should match by name_en or display_label_en, depending on what's set
         assert PersonRole.objects_by_label.get("Some kind of official").pk == role.pk
         assert PersonRole.objects_by_label.get("Example").pk == role_2.pk
+
+    def test_str(self):
+        # str should use display label, with name as a fallback
+        pr = PersonRole.objects.create(name="test")
+        assert str(pr) == pr.name
+        pr.display_label = "Test Display"
+        assert str(pr) == pr.display_label
 
 
 @pytest.mark.django_db

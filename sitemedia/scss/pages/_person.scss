@@ -1,0 +1,155 @@
+// -----------------------------------------------------------------------------
+// Person detail page.
+// -----------------------------------------------------------------------------
+
+@use "../base/breakpoints";
+@use "../base/colors";
+@use "../base/container";
+@use "../base/spacing";
+@use "../base/typography";
+
+main.person {
+    // Header
+    h1 {
+        z-index: 2;
+        font-size: typography.$text-size-3xl;
+        margin: spacing.$spacing-xl spacing.$spacing-md spacing.$spacing-md;
+        @include breakpoints.for-tablet-landscape-up {
+            margin: spacing.$spacing-2xl spacing.$spacing-md spacing.$spacing-lg;
+            font-size: typography.$text-size-3xl;
+        }
+    }
+    // Primary container
+    .container {
+        max-width: 896px;
+        display: flex;
+        flex-direction: column;
+        padding: 0 spacing.$spacing-md spacing.$spacing-md;
+        margin-bottom: spacing.$spacing-md;
+        @include breakpoints.for-tablet-landscape-up {
+            margin-bottom: spacing.$spacing-xl;
+        }
+        section.metadata {
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-top: spacing.$spacing-xl;
+                flex-direction: row;
+                justify-content: flex-start;
+            }
+        }
+        // Person metadata
+        dl.metadata-list {
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin: spacing.$spacing-lg 0 0;
+            font-size: typography.$text-size-md;
+            @include breakpoints.for-tablet-landscape-up {
+                margin: spacing.$spacing-2xl spacing.$spacing-md 0;
+                font-size: typography.$text-size-xl;
+                flex: 1 1 50%;
+                padding-right: 0;
+                margin: 0 0 0;
+            }
+            // Lighter color metadata; secondary class on dl or dd/dt
+            .tertiary,
+            &.tertiary dd,
+            &.tertiary dt {
+                color: var(--on-background-alt);
+            }
+            dd {
+                margin-left: 20px;
+            }
+            dd + dt {
+                margin-top: spacing.$spacing-md;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-top: spacing.$spacing-lg;
+                }
+            }
+            dd + dd {
+                margin-top: spacing.$spacing-xs;
+            }
+        }
+        dl.metadata-list.primary + dl.metadata-list.secondary {
+            margin-top: 0;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-left: 35px;
+            }
+            :first-child {
+                margin-top: spacing.$spacing-md;
+                @include breakpoints.for-tablet-landscape-up {
+                    margin-top: 0px;
+                }
+            }
+        }
+        // "Description" header and content
+        section.description {
+            max-width: 100%;
+            margin: spacing.$spacing-md 0 spacing.$spacing-md;
+            font-size: typography.$text-size-md;
+            @include breakpoints.for-tablet-landscape-up {
+                margin-top: spacing.$spacing-lg;
+                font-size: typography.$text-size-xl;
+            }
+            p {
+                max-width: 100%;
+                white-space: pre-line;
+                padding-left: 20px;
+            }
+        }
+
+        section.metadata dt,
+        section.description h2 {
+            margin-bottom: spacing.$spacing-xs;
+            @include typography.meta-bold;
+            font-size: typography.$text-size-lg;
+            @include breakpoints.for-tablet-landscape-up {
+                font-size: typography.$text-size-xl;
+            }
+            display: flex;
+            align-items: center;
+            &::before {
+                content: " ";
+                display: inline-block;
+                width: 8px;
+                height: 18px;
+                background-color: var(--secondary);
+                margin-right: 12px;
+            }
+        }
+    }
+    // person tabs styling: 4 tabs!
+    nav#tabs {
+        max-width: 896px;
+        // TODO: show <select> on mobile instead when another page is ready
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            display: block;
+        }
+    }
+    .tabs {
+        @include breakpoints.for-tablet-landscape-up {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            a,
+            span {
+                padding-left: spacing.$spacing-2xl;
+                padding-right: spacing.$spacing-2xl;
+            }
+            // special styling for tabs to match typography designs
+            a:nth-child(2),
+            span:nth-child(2) {
+                padding-left: 3rem;
+                padding-right: 3rem;
+            }
+            a:nth-child(3),
+            span:nth-child(3),
+            a:nth-child(4),
+            span:nth-child(4) {
+                padding-left: 4rem;
+                padding-right: 4rem;
+            }
+        }
+    }
+}

@@ -198,7 +198,7 @@ def test_userprofile_str(admin_user):
 class TestMigrations(TransactionTestCase):
     # Base class for migration test case
 
-    # NOTE: subclasses must be marked with @pytest.mark.last
+    # NOTE: subclasses must be marked with @pytest.mark.order("last")
     # to avoid causing errors in fixtures/db state for other tests
 
     app = None

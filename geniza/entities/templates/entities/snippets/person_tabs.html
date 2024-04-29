@@ -1,0 +1,31 @@
+{% load i18n %}
+<!-- person detail page navigation -->
+{# Translators: accessibility text label for person detail view tabs navigation #}
+<nav aria-label="{% translate "tabs" %}" id="tabs">
+    <ul class="tabs">
+        {% url 'entities:person' slug=person.slug as person_url %}
+        <li><a href="{{ person_url }}"{% if request.path == person_url %} aria-current="page"{% endif %}>{% translate "Person Details" %}</a></li>
+
+        {# TODO: Enable these tabs when each design is implemented #}
+        {# Translators: n_reldocs is number of related documents #}
+        {% with n_reldocs=person.documents.count %}
+            {% blocktranslate asvar reldoc_text %}Related Documents ({{ n_reldocs }}){% endblocktranslate %}
+            {# <li>{% if n_reldocs > 0 %}<a href="{{ reldoc_url }}"{% if request.path == reldoc_url %} aria-current="page"{% endif %}>{{ reldoc_text }}</a>{% else %}<span disabled aria-disabled="true">{{ reldoc_text }}</span>{% endif %}</li> #}
+            <span disabled aria-disabled="true">{{ reldoc_text }}</span>
+        {% endwith %}
+
+        {# Translators: n_relpeople is number of related people #}
+        {% with n_relpeople=person.relationships.count %}
+            {% blocktranslate asvar relpeople_text %}Related People ({{ n_relpeople }}){% endblocktranslate %}
+            {# <li>{% if n_relpeople > 0 %}<a href="{{ relpeople_url }}"{% if request.path == relpeople_url %} aria-current="page"{% endif %}>{{ relpeople_text }}</a>{% else %}<span disabled aria-disabled="true">{{ relpeople_text }}</span>{% endif %}</li> #}
+            <span disabled aria-disabled="true">{{ relpeople_text }}</span>
+        {% endwith %}
+
+        {# Translators: n_relplaces is number of related places #}
+        {% with n_relplaces=person.personplacerelation_set.count %}
+            {% blocktranslate asvar relplace_text %}Related Places ({{ n_relplaces }}){% endblocktranslate %}
+            {# <li>{% if n_relplaces > 0 %}<a href="{{ relplace_url }}"{% if request.path == relplace_url %} aria-current="page"{% endif %}>{{ relplace_text }}</a>{% else %}<span disabled aria-disabled="true">{{ relplace_text }}</span>{% endif %}</li> #}
+            <span disabled aria-disabled="true">{{ relplace_text }}</span>
+        {% endwith %}
+    </ul>
+</nav>

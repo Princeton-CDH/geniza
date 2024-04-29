@@ -69,7 +69,7 @@ class TestDocumentDetailView:
         """should contain permalink generated from absolutize_url"""
         response = client.get(reverse("corpus:document", args=(document.id,)))
         permalink = absolutize_url(document.get_absolute_url()).replace("/en/", "/")
-        assertContains(response, f'<link rel="canonical" href="{permalink}"')
+        assertContains(response, f'<a href="{permalink}"')
 
     def test_past_id_mixin(self, db, client):
         """should redirect from 404 to new pgpid when an old_pgpid is matched"""
