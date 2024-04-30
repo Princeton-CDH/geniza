@@ -1,4 +1,5 @@
 from dal import autocomplete
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -11,7 +12,7 @@ from django.utils.text import Truncator
 from django.views.generic import DetailView, FormView
 
 from geniza.entities.forms import PersonMergeForm
-from geniza.entities.models import PastPersonSlug, Person, Place
+from geniza.entities.models import PastPersonSlug, PastPlaceSlug, Person, Place
 
 
 class PersonMerge(PermissionRequiredMixin, FormView):
@@ -171,6 +172,37 @@ class PersonDetailView(SlugDetailMixin):
                 "page_title": self.page_title(),
                 "page_description": self.page_description(),
                 "page_type": "person",
+            }
+        )
+        return context_data
+
+
+class PlaceDetailView(SlugDetailMixin):
+    """public display of a single :class:`~geniza.entities.models.Place`"""
+
+    model = Place
+    context_object_name = "place"
+    past_slug_model = PastPlaceSlug
+    past_slug_relatedfield = "place"
+
+    def page_title(self):
+        """page title, for metadata; uses Place primary name"""
+        return str(self.get_object())
+
+    def page_description(self):
+        """page description, for metadata; uses truncated notes"""
+        return Truncator(self.get_object().notes).words(20)
+
+    def get_context_data(self, **kwargs):
+        """extend context data to add page metadata"""
+        context_data = super().get_context_data(**kwargs)
+
+        context_data.update(
+            {
+                "page_title": self.page_title(),
+                "page_description": self.page_description(),
+                "page_type": "place",
+                "maptiler_token": getattr(settings, "MAPTILER_API_TOKEN", ""),
             }
         )
         return context_data

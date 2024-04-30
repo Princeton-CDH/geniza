@@ -8,7 +8,8 @@
 @use "../base/spacing";
 @use "../base/typography";
 
-main.person {
+main.person,
+main.place {
     // Header
     h1 {
         z-index: 2;
@@ -85,7 +86,8 @@ main.person {
             }
         }
         // "Description" header and content
-        section.description {
+        section.description,
+        section.notes {
             max-width: 100%;
             margin: spacing.$spacing-md 0 spacing.$spacing-md;
             font-size: typography.$text-size-md;
@@ -101,7 +103,8 @@ main.person {
         }
 
         section.metadata dt,
-        section.description h2 {
+        section.description h2,
+        section.notes h2 {
             margin-bottom: spacing.$spacing-xs;
             @include typography.meta-bold;
             font-size: typography.$text-size-lg;
@@ -120,7 +123,6 @@ main.person {
             }
         }
     }
-    // person tabs styling: 4 tabs!
     nav#tabs {
         max-width: 896px;
         // TODO: show <select> on mobile instead when another page is ready
@@ -129,6 +131,9 @@ main.person {
             display: block;
         }
     }
+}
+main.person {
+    // person tabs styling: 4 tabs!
     .tabs {
         @include breakpoints.for-tablet-landscape-up {
             grid-template-columns: 1fr 1fr 1fr 1fr;

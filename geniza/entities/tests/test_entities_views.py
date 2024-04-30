@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from django.forms import ValidationError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import resolve, reverse
 from django.utils.text import Truncator
 
@@ -212,7 +212,7 @@ class TestPersonDetailView:
 
 
 @pytest.mark.django_db
-class TestPersonDetailMixin:
+class TestSlugDetailMixin:
     def test_get(self, client):
         # should redirect on past slug
         person = Person.objects.create()
@@ -233,3 +233,38 @@ class TestPersonDetailMixin:
 
         # should still raise 404 if conditions aren't met (has_page or MIN_DOCUMENTS)
         assert client.get(response.url).status_code == 404
+
+
+@pytest.mark.django_db
+class TestPlaceDetailView:
+    def test_page_title(self, client):
+        # should use primary name as page title
+        place = Place.objects.create()
+        name1 = Name.objects.create(name="Fustat", content_object=place, primary=True)
+        Name.objects.create(name="Secondary Name", content_object=place, primary=False)
+        place.generate_slug()
+        place.save()
+        response = client.get(reverse("entities:place", args=(place.slug,)))
+        assert response.context["page_title"] == str(name1)
+
+    def test_page_description(self, client):
+        # should use place notes as page description
+        place = Place.objects.create(notes="Example", slug="test")
+        response = client.get(reverse("entities:place", args=(place.slug,)))
+        assert response.context["page_description"] == "Example"
+
+        # should truncate long notes
+        long_notes = " ".join(["test" for _ in range(50)])
+        place.notes = long_notes
+        place.save()
+        response = client.get(reverse("entities:place", args=(place.slug,)))
+        assert response.context["page_description"] == Truncator(long_notes).words(20)
+
+    @override_settings(MAPTILER_API_TOKEN="example")
+    def test_get_context_data(self, client):
+        place = Place.objects.create(slug="test")
+        response = client.get(reverse("entities:place", args=(place.slug,)))
+        # context should include "page_type": "place"
+        assert response.context["page_type"] == "place"
+        # context should include the maptiler token if one exists in settings
+        assert response.context["maptiler_token"] == "example"

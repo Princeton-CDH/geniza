@@ -1,4 +1,5 @@
 import re
+from math import modf
 
 from django.conf import settings
 from django.contrib.admin.models import CHANGE, LogEntry
@@ -693,13 +694,35 @@ class Place(SlugMixin):
         # (skip if record is not yet saved)
         if self.pk and self.has_changed("slug") and self.initial_value("slug"):
             PastPlaceSlug.objects.get_or_create(
-                slug=self.initial_value("slug"), person=self
+                slug=self.initial_value("slug"), place=self
             )
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
         """url for this place"""
         return reverse("entities:place", args=[self.slug])
+
+    @staticmethod
+    def deg_to_dms(deg, type="lat"):
+        """Decimal degrees to DMS (degrees, minutes, seconds) for string display.
+        Adapted from https://stackoverflow.com/a/52371976/394067"""
+        decimals, number = modf(deg)
+        d = int(number)
+        m = int(decimals * 60)
+        s = int((float(deg) - d - m / 60) * 3600.00)
+        compass = {"lat": ("N", "S"), "lon": ("E", "W")}
+        compass_str = compass[type][0 if d >= 0 else 1]
+        return "{}° {}′ {}″ {}".format(abs(d), abs(m), abs(s), compass_str)
+
+    @property
+    def coordinates(self):
+        """String formatted latitude and longitude coordinates"""
+        latlon = []
+        if self.latitude:
+            latlon.append(self.deg_to_dms(self.latitude))
+        if self.longitude:
+            latlon.append(self.deg_to_dms(self.longitude, "lon"))
+        return ", ".join(latlon)
 
 
 class PastPlaceSlug(models.Model):
