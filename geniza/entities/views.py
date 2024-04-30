@@ -103,9 +103,14 @@ class PlaceAutocompleteView(PermissionRequiredMixin, UnaccentedNameAutocompleteV
     model = Place
 
 
-class PersonDetailMixin(DetailView):
-    """Mixin for redirecting on past slugs, to be used on all Person pages (detail
+class SlugDetailMixin(DetailView):
+    """Mixin for redirecting on past slugs, to be used on all Person and Place pages (detail
     and related objects lists)"""
+
+    # NOTE: past_slug_model and past_slug_relatedfield are required for each inheriting model.
+    # past_slug_relatedfield must be the inheriting model's related name from past_slug_model, i.e.
+    # if past_slug_model = PastPersonSlug, then past_slug_relatedfield must be "person", because
+    # PastPersonSlug.person is the field that relates back to the Person model.
 
     def get(self, request, *args, **kwargs):
         """extend GET to check for old slug and redirect on 404"""
@@ -113,23 +118,29 @@ class PersonDetailMixin(DetailView):
             return super().get(request, *args, **kwargs)
         except Http404:
             # if not found, check for a match on a past slug
-            past_slug = PastPersonSlug.objects.filter(slug=self.kwargs["slug"]).first()
+            past_slug = self.past_slug_model.objects.filter(
+                slug=self.kwargs["slug"]
+            ).first()
             # if found, redirect to the correct url for this view
             if past_slug:
-                self.kwargs["slug"] = past_slug.person.slug
+                self.kwargs["slug"] = getattr(
+                    past_slug, self.past_slug_relatedfield
+                ).slug
                 return HttpResponsePermanentRedirect(
-                    past_slug.person.get_absolute_url()
+                    getattr(past_slug, self.past_slug_relatedfield).get_absolute_url()
                 )
             # otherwise, continue raising the 404
             raise
 
 
-class PersonDetailView(PersonDetailMixin):
+class PersonDetailView(SlugDetailMixin):
     """public display of a single :class:`~geniza.entities.models.Person`"""
 
     model = Person
     context_object_name = "person"
     MIN_DOCUMENTS = 10
+    past_slug_model = PastPersonSlug
+    past_slug_relatedfield = "person"
 
     def page_title(self):
         """page title, for metadata; uses Person primary name"""
