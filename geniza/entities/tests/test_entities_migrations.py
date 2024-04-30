@@ -1,5 +1,3 @@
-import os
-
 import pytest
 from slugify import slugify
 
@@ -78,3 +76,74 @@ class TestPopulatePersonSlugs(TestMigrations):
         # same name should get number
         person_samename = Person.objects.get(pk=self.person_samename.pk)
         assert person_samename.slug == f"{person.slug}-2"
+
+
+@pytest.mark.order(
+    before="geniza/annotations/tests/test_annotations_migrations.py::TestAssociateRelatedFootnotes::test_footnote_associated"
+)
+@pytest.mark.django_db
+class TestPopulatePlaceSlugs(TestMigrations):
+    app = "entities"
+    migrate_from = "0023_person_slug"
+    migrate_to = "0024_place_slug"
+    place = None
+    place_noname = None
+    place_multiname = None
+    place_samename = None
+
+    def setUpBeforeMigration(self, apps):
+        Place = apps.get_model("entities", "Place")
+        Name = apps.get_model("entities", "Name")
+        ContentType = apps.get_model("contenttypes", "ContentType")
+        place_contenttype = ContentType.objects.get(app_label="entities", model="place")
+
+        # normal place with a name
+        self.place = Place.objects.create()
+        Name.objects.create(
+            name="Fustat",
+            content_type=place_contenttype,
+            object_id=self.place.pk,
+            primary=True,
+        )
+        # place with no name
+        self.place_noname = Place.objects.create()
+        # place with multiple primary names
+        self.place_multiname = Place.objects.create()
+        Name.objects.create(
+            name="Test Name",
+            content_type=place_contenttype,
+            object_id=self.place_multiname.pk,
+            primary=True,
+        )
+        Name.objects.create(
+            name="Other Primary",
+            content_type=place_contenttype,
+            object_id=self.place_multiname.pk,
+            primary=True,
+        )
+        # place with the same name as another place
+        self.place_samename = Place.objects.create()
+        Name.objects.create(
+            name="Fustat",
+            content_type=place_contenttype,
+            object_id=self.place_samename.pk,
+            primary=True,
+        )
+
+    def test_slugs_populated(self):
+        Place = self.apps.get_model("entities", "Place")
+        # normal slugify
+        place = Place.objects.get(pk=self.place.pk)
+        assert place.slug == slugify("Fustat")
+
+        # no name should use str
+        place_noname = Place.objects.get(pk=self.place_noname.pk)
+        assert place_noname.slug == slugify(str(self.place_noname))
+
+        # multiple primary names should just pick one
+        place_multiname = Place.objects.get(pk=self.place_multiname.pk)
+        assert place_multiname.slug in [slugify("Test Name"), slugify("Other Primary")]
+
+        # same name should get number
+        place_samename = Place.objects.get(pk=self.place_samename.pk)
+        assert place_samename.slug == f"{place.slug}-2"
