@@ -158,3 +158,12 @@ main.person {
         }
     }
 }
+
+// RTL overrides
+html[dir="rtl"] main.person,
+html[dir="rtl"] main.place {
+    .container dl.metadata-list dt::before {
+        margin-right: 0;
+        margin-left: 12px;
+    }
+}
