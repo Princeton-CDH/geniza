@@ -22,12 +22,15 @@ main.place {
     }
     // Primary container
     .container {
-        max-width: 896px;
+        max-width: 100vw;
+        box-sizing: border-box;
         display: flex;
         flex-direction: column;
         padding: 0 spacing.$spacing-md spacing.$spacing-md;
         margin-bottom: spacing.$spacing-md;
         @include breakpoints.for-tablet-landscape-up {
+            max-width: 896px;
+            box-sizing: content-box;
             margin-bottom: spacing.$spacing-xl;
         }
         section.metadata {
@@ -76,7 +79,7 @@ main.place {
         dl.metadata-list.primary + dl.metadata-list.secondary {
             margin-top: 0;
             @include breakpoints.for-tablet-landscape-up {
-                margin-left: 35px;
+                margin-left: 1rem;
             }
             :first-child {
                 margin-top: spacing.$spacing-md;
@@ -129,6 +132,7 @@ main.place {
         display: none;
         @include breakpoints.for-tablet-landscape-up {
             display: block;
+            box-sizing: content-box;
         }
     }
 }
@@ -142,15 +146,23 @@ main.person {
                 padding-left: spacing.$spacing-2xl;
                 padding-right: spacing.$spacing-2xl;
             }
+            a[aria-current="page"] {
+                padding-left: spacing.$spacing-3xl;
+                padding-right: spacing.$spacing-3xl;
+            }
             // special styling for tabs to match typography designs
-            a:nth-child(2),
+            li:first-child a:not([aria-current="page"]) {
+                padding-left: 4rem;
+                padding-right: 4rem;
+            }
+            li:nth-child(2) a,
             span:nth-child(2) {
                 padding-left: 3rem;
                 padding-right: 3rem;
             }
-            a:nth-child(3),
+            li:nth-child(3) a,
             span:nth-child(3),
-            a:nth-child(4),
+            li:nth-child(4) a,
             span:nth-child(4) {
                 padding-left: 4rem;
                 padding-right: 4rem;

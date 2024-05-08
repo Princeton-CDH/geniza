@@ -846,6 +846,26 @@ class TestDocument:
             assert images["canvas1"]["rotation"] == 90
             assert images["canvas2"]["rotation"] == 180
 
+    def test_list_thumbnail(self):
+        # Create a document and fragment and a TextBlock to associate them
+        doc = Document.objects.create()
+        frag = Fragment.objects.create(shelfmark="T-S 8J22.21")
+        TextBlock.objects.create(document=doc, fragment=frag, selected_images=[0])
+        img1 = IIIFImage()
+        img2 = IIIFImage()
+        # Mock Fragment.iiif_images() to return those two images and two fake labels
+        with patch.object(
+            Fragment,
+            "iiif_images",
+            return_value=([img1, img2], ["1r", "1v"], ["canvas1", "canvas2"]),
+        ):
+            thumb = doc.list_thumbnail()
+            # should get a thumbnail for the first image at 60x60
+            assert 'height="60"' in thumb
+            # should only produce img tags for the first of the two images
+            assert 'data-canvas="canvas1"' in thumb
+            assert 'data-canvas="canvas2"' not in thumb
+
     def test_admin_thumbnails(self):
         # Create a document and fragment and a TextBlock to associate them
         doc = Document.objects.create()

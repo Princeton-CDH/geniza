@@ -9,8 +9,11 @@ from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedi
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django.views.generic import DetailView, FormView
 
+from geniza.corpus.dates import PartialDate
 from geniza.entities.forms import PersonMergeForm
 from geniza.entities.models import PastPersonSlug, PastPlaceSlug, Person, Place
 
@@ -175,6 +178,102 @@ class PersonDetailView(SlugDetailMixin):
             }
         )
         return context_data
+
+
+class PersonDocumentsView(PersonDetailView):
+    """List of :class:`~geniza.corpus.models.Document` objects that are related
+    to specific :class:`~geniza.entities.models.Person` (e.g., by authorship)."""
+
+    template_name = "entities/person_related_documents.html"
+    viewname = "entities:person-documents"
+
+    def page_title(self):
+        """The title of the person related documents page"""
+        # Translators: title of person "related documents" page
+        return _("Related documents for %(p)s") % {"p": str(self.get_object())}
+
+    def page_description(self):
+        """Description of the person related documents page, with count"""
+        person = self.get_object()
+        count = person.documents.count()
+        # Translators: description of related documents page, for search engines
+        return ngettext(
+            "%(count)d related document",
+            "%(count)d related documents",
+            count,
+        ) % {
+            "count": count,
+        }
+
+    def get_related(self):
+        """Get and process the queryset of related documents"""
+        person = self.get_object()
+        related_documents = person.persondocumentrelation_set.all()
+
+        sort = self.request.GET.get("sort", "shelfmark_asc")
+
+        sort_dir = "-" if sort.endswith("desc") else ""
+
+        if "shelfmark" in sort:
+            # annotate and sort by combined shelfmarks
+            related_documents = related_documents.annotate(
+                shelfmk_all=ArrayAgg("document__textblock__fragment__shelfmark")
+            ).order_by(f"{sort_dir}shelfmk_all")
+
+        if "doctype" in sort:
+            # sort by doc type (display label first then name)
+            related_documents = related_documents.order_by(
+                f"{sort_dir}document__doctype__display_label",
+                f"{sort_dir}document__doctype__name",
+            )
+
+        if "relation" in sort:
+            # sort by document-person relation type name
+            related_documents = related_documents.order_by(f"{sort_dir}type__name")
+
+        if "date" in sort:
+            # sort by start or end of date range
+            if sort_dir == "-":
+                # sort nones at the bottom, i.e., give them the lowest date
+                none = PartialDate("0001").numeric_format(mode="min")
+                # sort by maximum possible date for the end of the range, descending
+                (mode, idx, reverse) = ("max", 1, True)
+            else:
+                # sort nones at the bottom, i.e., give them the highest date
+                none = PartialDate("9999").numeric_format(mode="max")
+                # sort by minimum possible date for the start of the range, ascending
+                (mode, idx, reverse) = ("min", 0, False)
+
+            # NOTE: is there a way to do this with in-DB sorting?
+            related_documents = sorted(
+                related_documents,
+                key=lambda t: (
+                    t.document.dating_range()[idx].numeric_format(mode=mode)
+                    if t.document.dating_range()[idx]
+                    else none
+                ),
+                reverse=reverse,
+            )
+
+        return related_documents
+
+    def get_context_data(self, **kwargs):
+        """Include list of documents and sort state in context"""
+
+        person = self.get_object()
+        # if there are no related documents, don't serve out this page
+        if not person.documents.exists():
+            raise Http404
+
+        # otherwise, add related documents queryset to context
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "related_documents": self.get_related(),
+                "sort": self.request.GET.get("sort", "shelfmark_asc"),
+            }
+        )
+        return context
 
 
 class PlaceDetailView(SlugDetailMixin):

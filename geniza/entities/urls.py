@@ -11,6 +11,11 @@ urlpatterns = [
         name="person",
     ),
     path(
+        "people/<slug:slug>/documents/",
+        entities_views.PersonDocumentsView.as_view(),
+        name="person-documents",
+    ),
+    path(
         "person-autocomplete/",
         entities_views.PersonAutocompleteView.as_view(),
         name="person-autocomplete",

@@ -10,8 +10,8 @@
         {# Translators: n_reldocs is number of related documents #}
         {% with n_reldocs=person.documents.count %}
             {% blocktranslate asvar reldoc_text %}Related Documents ({{ n_reldocs }}){% endblocktranslate %}
-            {# <li>{% if n_reldocs > 0 %}<a href="{{ reldoc_url }}"{% if request.path == reldoc_url %} aria-current="page"{% endif %}>{{ reldoc_text }}</a>{% else %}<span disabled aria-disabled="true">{{ reldoc_text }}</span>{% endif %}</li> #}
-            <span disabled aria-disabled="true">{{ reldoc_text }}</span>
+            {% url 'entities:person-documents' slug=person.slug as reldoc_url %}
+            <li>{% if n_reldocs > 0 %}<a href="{{ reldoc_url }}"{% if request.path == reldoc_url %} aria-current="page"{% endif %}>{{ reldoc_text }}</a>{% else %}<span disabled aria-disabled="true">{{ reldoc_text }}</span>{% endif %}</li>
         {% endwith %}
 
         {# Translators: n_relpeople is number of related people #}

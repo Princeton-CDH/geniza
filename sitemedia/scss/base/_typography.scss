@@ -233,6 +233,14 @@ $text-size-5xl: 2rem; //     = 32px
     font-weight: bold;
 }
 
+// related documents and entities tables typography
+@mixin related-table {
+    font-size: $text-size-sm;
+    @include breakpoints.for-tablet-landscape-up {
+        font-size: $text-size-md;
+    }
+}
+
 // caption - "includes" on scholarship records, image
 // captions on generic content pages, number of results on
 // search
