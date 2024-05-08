@@ -16,12 +16,13 @@ main.person table.related-documents,
 main.place table.related-documents {
     @include typography.related-table;
     max-width: none;
-    margin-top: (2rem + spacing.$spacing-xs);
+    margin-top: 1.5rem;
     // display the table like a grid
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.5rem;
     @include breakpoints.for-tablet-landscape-up {
+        margin-top: (2rem + spacing.$spacing-xs);
         background-color: var(--background-light);
         grid-template-columns: 34% 25% 25% 1fr;
         gap: 0;
@@ -70,6 +71,7 @@ main.place table.related-documents {
     }
     // row: flex column on mobile, display contents on desktop
     tr {
+        max-width: none;
         display: flex;
         flex-flow: column;
         background-color: var(--background-light);
