@@ -145,7 +145,7 @@ class PersonListForm(forms.Form):
                 # helper functions to get labels
                 facet[key]: (self.label_accessors[key](facet[key]), facet["count"])
                 for facet in facet_list
-                if facet[key] is not None
+                if key and facet[key]
             }
             formfield = self.facet_field_aliases.get(key, key)
             # for each facet, set the corresponding choice field

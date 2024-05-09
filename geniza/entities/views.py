@@ -238,6 +238,10 @@ class PersonListView(ListView, FormMixin):
         is_filtered = form.filters_active()
         if is_filtered:
             all_objects = self.model.objects.all()
+            # use pk__in to prevent filters from excluding multi-valued entries, e.g. if a Person
+            # has multiple PersonDocumentRelations with different Types, ensure that filtering on
+            # one of those Types doesn't result in a 0 value for all other Type facets
+            qs = all_objects.filter(pk__in=qs.values_list("pk"))
         for field in self.facet_fields:
             # get counts of each unique value for this field in the current queryset
             facets[field] = list(
