@@ -8,7 +8,8 @@ from django.http import Http404, HttpResponsePermanentRedirect, HttpResponseRedi
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
-from django.views.generic import DetailView, FormView
+from django.utils.translation import gettext as _
+from django.views.generic import DetailView, FormView, ListView
 
 from geniza.entities.forms import PersonMergeForm
 from geniza.entities.models import PastPersonSlug, Person, Place
@@ -129,7 +130,6 @@ class PersonDetailView(PersonDetailMixin):
 
     model = Person
     context_object_name = "person"
-    MIN_DOCUMENTS = 10
 
     def page_title(self):
         """page title, for metadata; uses Person primary name"""
@@ -149,7 +149,9 @@ class PersonDetailView(PersonDetailMixin):
                 doc_count=Count("documents", distinct=True),
             )
         )
-        return queryset.filter(Q(doc_count__gte=self.MIN_DOCUMENTS) | Q(has_page=True))
+        return queryset.filter(
+            Q(doc_count__gte=Person.MIN_DOCUMENTS) | Q(has_page=True)
+        )
 
     def get_context_data(self, **kwargs):
         """extend context data to add page metadata"""
@@ -160,6 +162,41 @@ class PersonDetailView(PersonDetailMixin):
                 "page_title": self.page_title(),
                 "page_description": self.page_description(),
                 "page_type": "person",
+            }
+        )
+        return context_data
+
+
+class PersonListView(ListView):
+    model = Person
+    context_object_name = "people"
+    template_name = "entities/person_list.html"
+    # Translators: title of people list/browse page
+    page_title = _("People")
+    # Translators: description of people list/browse page
+    page_description = _("Browse people present in Geniza documents.")
+    paginate_by = 50
+
+    def get_queryset(self, *args, **kwargs):
+        """modify queryset to sort and filter on people in the list"""
+        # order people by primary name unaccented
+        return (
+            Person.objects.filter(names__primary=True)
+            .annotate(
+                name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
+            )
+            .order_by("name_unaccented")
+        )
+
+    def get_context_data(self, **kwargs):
+        """extend context data to add page metadata"""
+        context_data = super().get_context_data(**kwargs)
+
+        context_data.update(
+            {
+                "page_title": self.page_title,
+                "page_description": self.page_description,
+                "page_type": "people",
             }
         )
         return context_data
