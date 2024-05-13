@@ -2,23 +2,31 @@
 <!-- place detail page navigation -->
 {# Translators: accessibility text label for place detail view tabs navigation #}
 <nav aria-label="{% translate "tabs" %}" id="tabs">
-    <ul class="tabs">
-        {% url 'entities:place' slug=place.slug as place_url %}
-        <li><a href="{{ place_url }}"{% if request.path == place_url %} aria-current="page"{% endif %}>{% translate "Place Details" %}</a></li>
+    {% with n_reldocs=place.documentplacerelation_set.count n_relpeople=place.personplacerelation_set.count %}
+        <ul class="tabs">
+            {% url 'entities:place' slug=place.slug as place_url %}
+            {% translate "Place Details" as details_text %}
+            <li><a href="{{ place_url }}"{% if request.path == place_url %} aria-current="page"{% endif %}>{{ details_text }}</a></li>
 
-        {# TODO: Enable these tabs when each design is implemented #}
-        {# Translators: n_reldocs is number of related documents #}
-        {% with n_reldocs=place.documentplacerelation_set.count %}
+            {# Translators: n_reldocs is number of related documents #}
             {% blocktranslate asvar reldoc_text %}Related Documents ({{ n_reldocs }}){% endblocktranslate %}
-            {# <li>{% if n_reldocs > 0 %}<a href="{{ reldoc_url }}"{% if request.path == reldoc_url %} aria-current="page"{% endif %}>{{ reldoc_text }}</a>{% else %}<span disabled aria-disabled="true">{{ reldoc_text }}</span>{% endif %}</li> #}
-            <span disabled aria-disabled="true">{{ reldoc_text }}</span>
-        {% endwith %}
+            {% url 'entities:place-documents' slug=place.slug as reldoc_url %}
+            <li>{% if n_reldocs > 0 %}<a href="{{ reldoc_url }}"{% if request.path == reldoc_url %} aria-current="page"{% endif %}>{{ reldoc_text }}</a>{% else %}<span disabled aria-disabled="true">{{ reldoc_text }}</span>{% endif %}</li>
 
-        {# Translators: n_relpeople is number of related people #}
-        {% with n_relpeople=place.personplacerelation_set.count %}
+            {# Translators: n_relpeople is number of related people #}
             {% blocktranslate asvar relpeople_text %}Related People ({{ n_relpeople }}){% endblocktranslate %}
             {# <li>{% if n_relpeople > 0 %}<a href="{{ relpeople_url }}"{% if request.path == relpeople_url %} aria-current="page"{% endif %}>{{ relpeople_text }}</a>{% else %}<span disabled aria-disabled="true">{{ relpeople_text }}</span>{% endif %}</li> #}
             <span disabled aria-disabled="true">{{ relpeople_text }}</span>
-        {% endwith %}
-    </ul>
+        </ul>
+        {# select dropdown for mobile only #}
+        <select class="mobile-select" data-controller="menu" data-action="change->menu#changePage">
+            <option value="{{ place_url }}"{% if request.path == place_url %} selected{% endif %}>
+                {{ details_text }}
+            </option>
+            <option value="{{ reldoc_url }}"{% if n_reldocs == 0 %} disabled{% elif request.path == reldoc_url %} selected{% endif %}>
+                {{ reldoc_text }}
+            </option>
+            <option disabled>{{ relpeople_text }}</option>
+        </select>
+    {% endwith %}
 </nav>

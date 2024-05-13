@@ -19,14 +19,14 @@ main.place {
             grid-template-columns: 1fr 1fr 1fr;
             a,
             span {
-                padding-left: 6rem;
-                padding-right: 6rem;
+                padding-left: 6.5rem;
+                padding-right: 6.5rem;
             }
             // special styling for tabs to match typography designs
-            a:nth-child(2),
-            span:nth-child(2) {
-                padding-left: 5.33rem;
-                padding-right: 5.33rem;
+            li:nth-child(2) a,
+            li:nth-child(2) span {
+                padding-left: 5.333rem;
+                padding-right: 5.333rem;
             }
         }
     }

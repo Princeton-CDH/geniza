@@ -180,22 +180,16 @@ class PersonDetailView(SlugDetailMixin):
         return context_data
 
 
-class PersonDocumentsView(PersonDetailView):
-    """List of :class:`~geniza.corpus.models.Document` objects that are related
-    to specific :class:`~geniza.entities.models.Person` (e.g., by authorship)."""
-
-    template_name = "entities/person_related_documents.html"
-    viewname = "entities:person-documents"
-
+class RelatedDocumentsMixin:
     def page_title(self):
-        """The title of the person related documents page"""
-        # Translators: title of person "related documents" page
+        """The title of the entity related documents page"""
+        # Translators: title of entity "related documents" page
         return _("Related documents for %(p)s") % {"p": str(self.get_object())}
 
     def page_description(self):
-        """Description of the person related documents page, with count"""
-        person = self.get_object()
-        count = person.documents.count()
+        """Description of an entity related documents page, with count"""
+        obj = self.get_object()
+        count = getattr(obj, self.relation_field).count()
         # Translators: description of related documents page, for search engines
         return ngettext(
             "%(count)d related document",
@@ -207,8 +201,8 @@ class PersonDocumentsView(PersonDetailView):
 
     def get_related(self):
         """Get and process the queryset of related documents"""
-        person = self.get_object()
-        related_documents = person.persondocumentrelation_set.all()
+        obj = self.get_object()
+        related_documents = getattr(obj, self.relation_field).all()
 
         sort = self.request.GET.get("sort", "shelfmark_asc")
 
@@ -228,7 +222,7 @@ class PersonDocumentsView(PersonDetailView):
             )
 
         if "relation" in sort:
-            # sort by document-person relation type name
+            # sort by document-entity relation type name
             related_documents = related_documents.order_by(f"{sort_dir}type__name")
 
         if "date" in sort:
@@ -260,9 +254,9 @@ class PersonDocumentsView(PersonDetailView):
     def get_context_data(self, **kwargs):
         """Include list of documents and sort state in context"""
 
-        person = self.get_object()
+        obj = self.get_object()
         # if there are no related documents, don't serve out this page
-        if not person.documents.exists():
+        if not getattr(obj, self.relation_field).exists():
             raise Http404
 
         # otherwise, add related documents queryset to context
@@ -274,6 +268,15 @@ class PersonDocumentsView(PersonDetailView):
             }
         )
         return context
+
+
+class PersonDocumentsView(RelatedDocumentsMixin, PersonDetailView):
+    """List of :class:`~geniza.corpus.models.Document` objects that are related to a specific
+    :class:`~geniza.entities.models.Person` (e.g., by authorship)."""
+
+    template_name = "entities/person_related_documents.html"
+    viewname = "entities:person-documents"
+    relation_field = "persondocumentrelation_set"
 
 
 class PlaceDetailView(SlugDetailMixin):
@@ -305,3 +308,12 @@ class PlaceDetailView(SlugDetailMixin):
             }
         )
         return context_data
+
+
+class PlaceDocumentsView(RelatedDocumentsMixin, PlaceDetailView):
+    """List of :class:`~geniza.corpus.models.Document` objects that are related to a specific
+    :class:`~geniza.entities.models.Place` (e.g., as a letter's destination)."""
+
+    template_name = "entities/place_related_documents.html"
+    viewname = "entities:place-documents"
+    relation_field = "documentplacerelation_set"
