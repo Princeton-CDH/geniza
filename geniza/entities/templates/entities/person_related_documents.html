@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n render_bundle_csp fullurl entities_extras %}
+{% load i18n render_bundle_csp fullurl %}
 
 {% block meta_title %}{{ page_title }}{% endblock meta_title %}
 {% block meta_description %}{{ page_description }}{% endblock meta_description %}
@@ -22,58 +22,5 @@
     {% include "entities/snippets/person_header.html" %}
     {# tabs #}
     {% include "entities/snippets/person_tabs.html" %}
-    <div class="container">
-        <table class="related-documents">
-            <thead>
-                <tr>
-                    <th{% if "shelfmark" in sort %} class="sorted"{% endif %}>
-                        <a href="{% next_sort_param 'shelfmark' %}"{% if "shelfmark" in sort %} class="{{ sort }}"{% endif %}>
-                            <span>{% translate 'Document' %}</span>
-                            <svg role="presentation"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
-                        </a>
-                    </th>
-                    <th{% if "doctype" in sort %} class="sorted"{% endif %}>
-                        <a href="{% next_sort_param 'doctype' %}"{% if "doctype" in sort %} class="{{ sort }}"{% endif %}>
-                            <span>{% translate 'Type' %}</span>
-                            <svg role="presentation"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
-                        </a>
-                    </th>
-                    <th{% if "relation" in sort %} class="sorted"{% endif %}>
-                        <a href="{% next_sort_param 'relation' %}"{% if "relation" in sort %} class="{{ sort }}"{% endif %}>
-                            <span>{% translate 'Relation' %}</span>
-                            <svg role="presentation"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
-                        </a>
-                    </th>
-                    <th{% if "date" in sort %} class="sorted"{% endif %}>
-                        <a href="{% next_sort_param 'date' %}"{% if "date" in sort %} class="{{ sort }}"{% endif %}>
-                            <span>{% translate 'Date' %}</span>
-                            <svg role="presentation"><use xlink:href="{% static 'img/ui/desktop/all/caret-up-down.svg' %}#caret-up-down" /></svg>
-                        </a>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for rel in related_documents %}
-                    <tr>
-                        <td class="document-title">
-                            {% if rel.document.list_thumbnail %}
-                                {{ rel.document.list_thumbnail }}
-                            {% else %}
-                                {# Translators: label for when no image thumbnail is available #}
-                                <span class="no-image">{% translate 'No Image' %}</span>
-                            {% endif %}
-                            <a href="{{ rel.document.permalink }}" title="{{ rel.document.shelfmark_display }}">
-                                {{ rel.document.shelfmark_display }}
-                            </a>
-                        </td>
-                        <td>{{ rel.document.doctype }}</td>
-                        <td>{{ rel.type }}</td>
-                        <td class="document-date">
-                            {{ rel.document.dating_set.first.display_date|default:rel.document.document_date }}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    {% include "entities/snippets/related_documents_table.html" with relations=related_documents %}
 {% endblock main %}
