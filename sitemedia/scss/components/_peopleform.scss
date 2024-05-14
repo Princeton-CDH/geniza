@@ -1,0 +1,285 @@
+// -----------------------------------------------------------------------------
+// Form for filtering the person list/browse page.
+// -----------------------------------------------------------------------------
+
+@use "../base/a11y";
+@use "../base/breakpoints";
+@use "../base/fonts";
+@use "../base/typography";
+
+main.people {
+    // Form with filters
+    form {
+        display: flex;
+        flex-flow: column;
+        width: 100%;
+        padding: 0.25rem 0 0;
+        border-top: 1px solid var(--background-gray);
+        border-bottom: 1px solid var(--background-gray);
+    }
+    // buttons for opening and closing the filter modal
+    a#filters-button,
+    a#close-filters-button {
+        text-decoration: none;
+        @include typography.meta-bold;
+        display: flex;
+        align-items: center;
+        min-height: 48px;
+        padding: 0 0.5rem;
+        border-radius: 5px;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0 2rem 0 0.5rem;
+        }
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+        &:focus {
+            outline: 0.125rem solid var(--focus);
+        }
+        // text that reads "Filters"
+        span {
+            position: relative;
+            margin-left: 0.25rem;
+            display: flex;
+            align-items: center;
+            // caret to indicate opening and closing
+            &:last-of-type:after {
+                position: absolute;
+                font-family: "Phosphor";
+                font-size: typography.$text-size-md;
+                right: -1.5rem;
+                font-weight: 600;
+            }
+        }
+        // count of active filters
+        span.filter-count {
+            justify-content: center;
+            min-width: 1.25rem;
+            height: 1.25rem;
+            font-family: fonts.$primary;
+            font-weight: 400;
+            font-size: typography.$text-size-md;
+            background-color: var(--background-gray);
+            border-radius: 0.25rem;
+        }
+    }
+    a#filters-button {
+        align-self: flex-start;
+        flex: 0 1 auto;
+        margin-bottom: 0.25rem;
+        &.active svg {
+            color: var(--filter-active);
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            span:last-of-type:after {
+                content: "\f0c2"; // phosphor caret-down icon
+            }
+            &:has(~ fieldset#filters:target),
+            &:has(~ fieldset#filters[aria-expanded="true"]) {
+                // prevent display and focus when expanded, maintain flow/spacing
+                visibility: hidden;
+            }
+        }
+    }
+    // close button
+    a#close-filters-button {
+        display: none;
+        @include breakpoints.for-tablet-landscape-up {
+            display: flex;
+            position: absolute;
+            margin-top: -4.81rem;
+            margin-left: -1.5rem;
+            background-color: var(--secondary);
+            color: var(--on-secondary);
+            fill: var(--on-secondary);
+            span:last-of-type:after {
+                content: "\f0c5"; // phosphor caret-up icon
+            }
+            span.filter-count {
+                background-color: var(--primary);
+            }
+        }
+    }
+    a#close-filters-modal {
+        text-decoration: none;
+        position: absolute;
+        right: 0.25rem;
+        top: 0.25rem;
+        @include typography.icon-button-md;
+        width: 3rem;
+        height: 3rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        &::before {
+            content: "\f36d"; // phosphor X icon
+        }
+        @include breakpoints.for-tablet-landscape-up {
+            display: none;
+        }
+    }
+    // filter modal backdrop (mobile)
+    .modal-backdrop:has(~ fieldset#filters:target),
+    .modal-backdrop:has(~ fieldset#filters[aria-expanded="true"]) {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 7;
+        min-width: 100vw;
+        min-height: 100vh;
+        background-color: var(--modal-backdrop);
+        @include breakpoints.for-tablet-landscape-up {
+            display: none;
+        }
+    }
+    // filters section
+    fieldset#filters {
+        // only display if targeted/expanded
+        display: none;
+        &:target,
+        &[aria-expanded="true"] {
+            // mobile view: flex column
+            display: flex;
+            flex-flow: column;
+            gap: 1.5rem;
+            background-color: var(--background);
+            // mobile: fixed above all other content
+            z-index: 8;
+            position: fixed;
+            max-width: none;
+            width: min(20rem, 100vw);
+            height: 100vh;
+            top: 0;
+            right: 0;
+            overflow-y: scroll;
+            padding: 1rem;
+            pointer-events: all;
+            align-items: flex-start;
+            @include breakpoints.for-tablet-landscape-up {
+                // desktop view: grid
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 2rem;
+                padding: 1.5rem;
+                border-top: 1px solid var(--background-gray);
+                // desktop: in flow
+                overflow-y: auto;
+                top: auto;
+                right: auto;
+                position: static;
+                width: auto;
+                height: auto;
+            }
+        }
+        legend {
+            // legend should be visible on mobile, sr-only on desktop
+            @include breakpoints.for-tablet-landscape-up {
+                @include a11y.sr-only;
+            }
+            // on mobile, should look like header
+            float: left;
+            width: 100%;
+            font-family: fonts.$primary-bold;
+            font-size: 1.5rem;
+            line-height: 1.4166;
+        }
+        label {
+            width: 100%;
+            span.fieldname {
+                display: block;
+                @include typography.form-option-sm-bold;
+                font-size: typography.$text-size-lg;
+                line-height: 1.166;
+                margin-bottom: 0.75rem;
+            }
+            &:not(last-of-type) {
+                border-bottom: 1px solid var(--background-gray);
+                padding-bottom: 1rem;
+                @include breakpoints.for-tablet-landscape-up {
+                    border: none;
+                }
+            }
+        }
+        li label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            // focus indicator for accessibility (will not appear on click)
+            &:has(input[type="checkbox"]:focus-visible) {
+                outline: 1px solid var(--secondary);
+            }
+            border: none;
+            padding: 0;
+        }
+        input[type="checkbox"] {
+            @include a11y.sr-only;
+        }
+        input[type="checkbox"] + span {
+            display: flex;
+            align-items: center;
+        }
+        input[type="checkbox"] + span,
+        input[type="checkbox"] + span + span {
+            @include typography.form-option-xs;
+        }
+        input[type="checkbox"] + span::before {
+            display: block;
+            content: "\f0ec"; // phosphor circle icon
+            @include typography.icon-button;
+            font-size: typography.$text-size-xl;
+            transition: transform 0.75s ease;
+            float: left;
+            color: var(--disabled);
+            padding-right: 0.5rem;
+            margin-top: -1px;
+        }
+        input:active + span::before,
+        input:checked + span::before {
+            content: "\f851"; // phosphor check-circle-fill icon
+            color: var(--secondary);
+        }
+        input:checked:active + span::before {
+            content: "\f0ec"; // phosphor circle icon
+        }
+    }
+}
+// RTL overrides
+html[dir="rtl"] main.people {
+    a#filters-button,
+    a#close-filters-button {
+        padding: 0 0.5rem;
+        @include breakpoints.for-tablet-landscape-up {
+            padding: 0 0.5rem 0 2rem;
+        }
+        span {
+            margin-left: auto;
+            margin-right: 0.25rem;
+            &:last-of-type:after {
+                right: auto;
+                left: -1.5rem;
+            }
+        }
+    }
+    a#close-filters-button {
+        @include breakpoints.for-tablet-landscape-up {
+            margin-left: 0;
+            margin-right: -1.5rem;
+        }
+    }
+    a#close-filters-modal {
+        right: auto;
+        left: 0.25rem;
+    }
+    form input[type="checkbox"] + span::before {
+        float: right;
+        padding-right: 0;
+        padding-left: 0.5rem;
+    }
+    fieldset#filters:target,
+    fieldset#filters[aria-expanded="true"] {
+        right: auto;
+        left: 0;
+    }
+}

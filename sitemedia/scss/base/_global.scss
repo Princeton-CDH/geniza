@@ -133,21 +133,23 @@ turbo-frame {
 }
 
 // "Primary" button style
-button.primary {
+button.primary,
+a.button-primary {
     @include typography.meta-bold;
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 0.75rem 1.5rem;
+    padding: 0.85rem 0.5rem;
     height: 2.75rem;
     @include breakpoints.for-tablet-landscape-up {
-        height: 3.375rem;
+        height: 3rem;
     }
     box-sizing: border-box;
-    border-radius: 2px;
+    border-radius: 5px;
     border: 1px solid var(--button-primary);
     background-color: var(--button-primary);
     color: var(--background);
+    fill: var(--background);
     cursor: pointer;
     &:focus {
         background-color: var(--button-primary);
@@ -159,6 +161,7 @@ button.primary {
         border: 1px solid var(--button-primary);
         background-color: var(--background);
         color: var(--button-primary);
+        fill: var(--button-primary);
     }
     &:hover {
         outline: none;

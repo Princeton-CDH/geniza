@@ -1,7 +1,8 @@
 // -----------------------------------------------------------------------------
-// Person detail page.
+// Person list/browse page.
 // -----------------------------------------------------------------------------
 
+@use "../base/a11y";
 @use "../base/breakpoints";
 @use "../base/colors";
 @use "../base/fonts";
@@ -21,6 +22,7 @@ main.people {
     @include breakpoints.for-tablet-landscape-up {
         padding: 0;
     }
+    // Header
     h1 {
         width: 100%;
         font-family: fonts.$primary;
@@ -28,10 +30,12 @@ main.people {
         @include breakpoints.for-tablet-landscape-up {
             font-size: typography.$text-size-7xl;
         }
+        margin-bottom: 1rem;
     }
     // Primary container
     section#person-list {
         width: 100%;
+        padding-top: 1.5rem;
         h2 {
             @include breakpoints.for-tablet-landscape-up {
                 font-size: typography.$text-size-2xl;
@@ -90,7 +94,8 @@ main.people {
                     border-top-right-radius: 5px;
                     border-bottom-right-radius: 5px;
                 }
-                td.name {
+                td.name,
+                td.name a {
                     font-family: fonts.$primary-bold;
                     font-weight: bold;
                 }
@@ -122,7 +127,8 @@ main.people {
                     font-size: typography.$text-size-md;
                     line-height: calc(24 / 16);
                 }
-                dd.name {
+                dd.name,
+                dd.name a {
                     @include typography.body-bold;
                     line-height: calc(27 / 18);
                     &:has(a) {
@@ -205,15 +211,53 @@ main.people {
     }
 }
 
-// RTL pagination
-html[dir="rtl"] main.people nav.pagination {
-    // Hebrew and Arabic reversed arrows
-    .prev::before {
-        margin: 0.1rem 0 0 spacing.$spacing-xs;
-        content: "\f0c4"; // phosphor caret-right icon
+// RTL overrides
+html[dir="rtl"] main.people {
+    // pagination
+    nav.pagination {
+        // Hebrew and Arabic reversed arrows
+        .prev::before {
+            margin: 0.1rem 0 0 spacing.$spacing-xs;
+            content: "\f0c4"; // phosphor caret-right icon
+        }
+        .next::after {
+            margin: 0.1rem spacing.$spacing-xs 0 0;
+            content: "\f0c3"; // phosphor caret-left icon
+        }
     }
-    .next::after {
-        margin: 0.1rem spacing.$spacing-xs 0 0;
-        content: "\f0c3"; // phosphor caret-left icon
+    section#person-list table {
+        th:not(.related) {
+            text-align: right;
+        }
+        th:first-of-type {
+            padding-right: spacing.$spacing-md;
+            padding-left: 0;
+        }
+        th:last-of-type {
+            padding-left: spacing.$spacing-md;
+            padding-right: 0;
+        }
+        tbody tr {
+            td:first-of-type {
+                padding-right: spacing.$spacing-md;
+                padding-left: 0;
+                border-right: 1px solid var(--background-gray);
+                border-left: none;
+                border-top-right-radius: 5px;
+                border-bottom-right-radius: 5px;
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+            td:last-of-type {
+                padding-left: spacing.$spacing-md;
+                padding-right: 0;
+                border-left: 1px solid var(--background-gray);
+                border-right: none;
+                border-top-left-radius: 5px;
+                border-bottom-left-radius: 5px;
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+        }
     }
 }

@@ -26,20 +26,27 @@ export default class extends Controller {
     openFilters(e) {
         e.preventDefault();
         this.filterModalTarget.setAttribute("aria-expanded", "true");
-        window.sessionStorage.setItem("filters-expanded", "true");
+        const searchPage = this.element.dataset.page;
+        window.sessionStorage.setItem(`${searchPage}-filters-expanded`, "true");
     }
 
     closeFilters(e) {
         e.preventDefault();
         this.filterModalTarget.setAttribute("aria-expanded", "false");
-        window.sessionStorage.setItem("filters-expanded", "false");
+        const searchPage = this.element.dataset.page;
+        window.sessionStorage.setItem(
+            `${searchPage}-filters-expanded`,
+            "false"
+        );
         this.navBackToSearch();
     }
 
     filterModalTargetConnected() {
         // Expanded/collapsed state should persist when connected
-        let savedFilterState =
-            window.sessionStorage.getItem("filters-expanded");
+        const searchPage = this.element.dataset.page;
+        let savedFilterState = window.sessionStorage.getItem(
+            `${searchPage}-filters-expanded`
+        );
         if (savedFilterState) {
             this.filterModalTarget.setAttribute(
                 "aria-expanded",
