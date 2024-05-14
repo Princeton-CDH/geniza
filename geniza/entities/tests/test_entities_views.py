@@ -343,6 +343,7 @@ class TestPersonListView:
 
             # unfiltered results should get all facets annotated with counts
             mock_get_form.return_value.is_filtered.return_value = False
+            mock_get_form.return_value.cleaned_data = {}
             facets = personlist_view.get_facets()
             assert all(
                 any([d["role__name"] == role for d in facets["role__name"]])
