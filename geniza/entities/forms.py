@@ -117,6 +117,42 @@ class PersonListForm(forms.Form):
     social_role = FacetChoiceField(label=_("Social role"))
     document_relation = FacetChoiceField(label=_("Relation to documents"))
 
+    SORT_CHOICES = [
+        # Translators: label for sort by name
+        ("name", _("Name")),
+        # Translators: label for sort by person activity dates
+        # ("date_desc", _("Date")),
+        # Translators: label for sort by social role
+        ("role", _("Social Role")),
+        # Translators: label for sort by number of related documents
+        ("documents", _("Related Documents")),
+        # Translators: label for sort by number of related people
+        ("people", _("Related People")),
+        # Translators: label for sort by number of related places
+        ("places", _("Related Places")),
+    ]
+
+    sort = forms.ChoiceField(
+        # Translators: label for form sort field
+        label=_("Sort by"),
+        choices=SORT_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
+    )
+
+    SORT_DIR_CHOICES = [
+        # Translators: label for ascending sort
+        ("asc", _("Ascending")),
+        # Translators: label for descending sort
+        ("desc", _("Descending")),
+    ]
+
+    sort_dir = forms.ChoiceField(
+        choices=SORT_DIR_CHOICES,
+        required=False,
+        widget=forms.RadioSelect,
+    )
+
     # form field name aliases for faceted django queries
     facet_field_aliases = {
         "role__name": "social_role",
@@ -152,11 +188,26 @@ class PersonListForm(forms.Form):
             if formfield in self.fields:
                 self.fields[formfield].populate_from_facets(facet_dict)
 
+    def get_sort_label(self):
+        """Helper method to get the label for the current value of the sort field"""
+        if (
+            self.is_valid()
+            and "sort" in self.cleaned_data
+            and self.cleaned_data["sort"]
+        ):
+            raw_value = self.cleaned_data["sort"]
+            return dict(self.SORT_CHOICES)[raw_value]
+        return None
+
     def filters_active(self):
         """Check if any filters are active; returns true if form fields are set"""
         if self.is_valid():
             return bool(
-                {k: v for k, v in self.cleaned_data.items() if k != "sort" and bool(v)}
+                {
+                    k: v
+                    for k, v in self.cleaned_data.items()
+                    if k not in ["sort", "sort_dir"] and bool(v)
+                }
             )
         return False
 

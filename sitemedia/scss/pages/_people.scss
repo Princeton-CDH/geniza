@@ -36,6 +36,7 @@ main.people {
     section#person-list {
         width: 100%;
         padding-top: 1.5rem;
+        border-top: 1px solid var(--background-gray);
         h2 {
             @include breakpoints.for-tablet-landscape-up {
                 font-size: typography.$text-size-2xl;

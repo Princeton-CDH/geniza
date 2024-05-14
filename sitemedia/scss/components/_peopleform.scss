@@ -15,7 +15,6 @@ main.people {
         width: 100%;
         padding: 0.25rem 0 0;
         border-top: 1px solid var(--background-gray);
-        border-bottom: 1px solid var(--background-gray);
     }
     // buttons for opening and closing the filter modal
     a#filters-button,
@@ -244,6 +243,116 @@ main.people {
             content: "\f0ec"; // phosphor circle icon
         }
     }
+    // header row (result count and sort options)
+    div.header-row {
+        display: flex;
+        flex-flow: row;
+        justify-content: space-between;
+        fieldset#sort {
+            display: flex;
+            align-items: center;
+            flex-flow: row nowrap;
+            gap: 0.5rem;
+            & > label {
+                @include typography.meta-bold;
+                &::after {
+                    content: ":";
+                }
+            }
+            // sort "dropdown" (actually details/summary)
+            details {
+                position: relative;
+                summary {
+                    @include typography.meta;
+                    display: flex;
+                    align-items: center;
+                    cursor: pointer;
+                    list-style-type: none;
+                    // Suppress default details marker
+                    &::-webkit-details-marker {
+                        display: none;
+                    }
+                    &::after {
+                        content: "\f0c2"; // phosphor caret-down icon
+                        @include typography.icon-button-sm;
+                        margin-left: 0.5rem;
+                        transition: transform 0.75s ease;
+                        float: right;
+                    }
+                }
+                // sort options, floats above content
+                div#sort-options {
+                    position: absolute;
+                    right: 0;
+                    margin-top: 0.5rem;
+                    min-width: 13rem;
+                    padding: 1rem;
+                    background-color: var(--background);
+                    box-shadow: 0px 1px 8px 0px var(--on-background-25);
+                    ul {
+                        display: flex;
+                        flex-flow: column;
+                        gap: 0.35rem;
+                        // first UL = main sort options
+                        &:first-of-type {
+                            border-bottom: 1px solid var(--disabled);
+                            padding-bottom: 0.75rem;
+                            label:has(input:checked) {
+                                @include typography.meta-bold;
+                            }
+                            input {
+                                accent-color: var(--secondary);
+                                min-width: 1.05rem;
+                                height: 1rem;
+                                margin: 0 0.5rem 0.2rem 0;
+                                overflow: visible;
+                            }
+                        }
+                        // last UL = ascending/descending only
+                        &:last-of-type {
+                            padding-top: 0.75rem;
+                            input {
+                                @include a11y.sr-only;
+                            }
+                            label {
+                                border-radius: 5px;
+                                &:before {
+                                    font-family: "Phosphor";
+                                    margin: 0 0.5rem;
+                                }
+                                &:has(input:checked) {
+                                    background-color: var(--background-gray);
+                                }
+                                &:focus-within,
+                                &:has(*:focus-within) {
+                                    outline: 1px solid var(--secondary);
+                                }
+                            }
+                            li:first-of-type label::before {
+                                // ascending
+                                content: "\f061"; // phosphor arrow-up icon
+                            }
+                            li:last-of-type label::before {
+                                // descending
+                                content: "\f022"; // phosphor arrow-down icon
+                            }
+                        }
+                    }
+                    label {
+                        width: 100%;
+                        cursor: pointer;
+                        display: flex;
+                        flex-flow: row;
+                        align-items: center;
+                        @include typography.meta;
+                        input {
+                            cursor: pointer;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 // RTL overrides
 html[dir="rtl"] main.people {
@@ -281,5 +390,16 @@ html[dir="rtl"] main.people {
     fieldset#filters[aria-expanded="true"] {
         right: auto;
         left: 0;
+    }
+    div.header-row fieldset#sort details {
+        summary::after {
+            margin-right: 0.5rem;
+            margin-left: 0;
+            float: left;
+        }
+        div#sort-options {
+            right: auto;
+            left: 0;
+        }
     }
 }

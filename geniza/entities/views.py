@@ -187,11 +187,24 @@ class PersonListView(ListView, FormMixin):
     # ORM references to database fields to facet
     facet_fields = ["gender", "role__name", "persondocumentrelation__type__name"]
 
+    # sort options mapped to db fields
+    sort_fields = {
+        "name": "name_unaccented",
+        "role": "role__name",
+        "documents": "documents_count",
+        "people": "people_count",
+        "places": "places_count",
+    }
+    initial = {"sort": "name", "sort_dir": "asc"}
+
     def get_queryset(self, *args, **kwargs):
         """modify queryset to sort and filter on people in the list"""
         people = (
             Person.objects.filter(names__primary=True).annotate(
                 name_unaccented=ArrayAgg("names__name__unaccent", distinct=True),
+                documents_count=Count("documents", distinct=True),
+                people_count=Count("relationships", distinct=True),
+                places_count=Count("personplacerelation", distinct=True),
             )
             # order people by primary name unaccented
             .order_by("name_unaccented")
@@ -217,6 +230,12 @@ class PersonListView(ListView, FormMixin):
             relations = literal_eval(search_opts["document_relation"])
             people = people.filter(persondocumentrelation__type__name__in=relations)
             self.applied_filter_count += len(relations)
+        if "sort" in search_opts and search_opts["sort"]:
+            order_by = self.sort_fields[search_opts["sort"]]
+            # default is ascending; handle descending by appending a - in django order_by
+            if "sort_dir" in search_opts and search_opts["sort_dir"] == "desc":
+                order_by = f"-{order_by}"
+            people = people.order_by(order_by)
 
         return people
 
@@ -226,6 +245,11 @@ class PersonListView(ListView, FormMixin):
 
         # use GET instead of default POST/PUT for form data
         form_data = self.request.GET.copy()
+
+        # set all form values to default
+        for key, val in self.initial.items():
+            form_data.setdefault(key, val)
+
         kwargs["data"] = form_data
 
         return kwargs
