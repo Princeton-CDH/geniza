@@ -171,6 +171,8 @@ class PersonDetailView(PersonDetailMixin):
 
 
 class PersonListView(ListView, FormMixin):
+    """A list view with faceted filtering and sorting using only the Django ORM/database."""
+
     model = Person
     context_object_name = "people"
     template_name = "entities/person_list.html"
@@ -182,7 +184,7 @@ class PersonListView(ListView, FormMixin):
     form_class = PersonListForm
     applied_filter_count = 0
 
-    # fields to facet
+    # ORM references to database fields to facet
     facet_fields = ["gender", "role__name", "persondocumentrelation__type__name"]
 
     def get_queryset(self, *args, **kwargs):
@@ -200,7 +202,7 @@ class PersonListView(ListView, FormMixin):
         if not form.is_valid():
             return people.none()
 
-        # filter by each supported field
+        # filter by database fields using the Django ORM
         search_opts = form.cleaned_data
         self.applied_filter_count = 0
         if search_opts.get("gender"):
