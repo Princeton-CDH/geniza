@@ -203,15 +203,15 @@ class PersonListView(ListView, FormMixin):
         # filter by each supported field
         search_opts = form.cleaned_data
         self.applied_filter_count = 0
-        if "gender" in search_opts and search_opts["gender"]:
+        if search_opts.get("gender"):
             genders = literal_eval(search_opts["gender"])
             people = people.filter(gender__in=genders)
             self.applied_filter_count += len(genders)
-        if "social_role" in search_opts and search_opts["social_role"]:
+        if search_opts.get("social_role"):
             roles = literal_eval(search_opts["social_role"])
             people = people.filter(role__name__in=roles)
             self.applied_filter_count += len(roles)
-        if "document_relation" in search_opts and search_opts["document_relation"]:
+        if search_opts.get("document_relation"):
             relations = literal_eval(search_opts["document_relation"])
             people = people.filter(persondocumentrelation__type__name__in=relations)
             self.applied_filter_count += len(relations)
